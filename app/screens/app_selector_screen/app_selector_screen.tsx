@@ -81,7 +81,9 @@ export default class AppSelectorScreen extends PureComponent<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        this.next = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS;
+        this.next = props.dataSource === ViewTypes.DATA_SOURCE_USERS ||
+            props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS ||
+            props.dataSource === 'app';
 
         let data: OptionsData = [];
         if (!props.dataSource) {

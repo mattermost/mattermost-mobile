@@ -10,7 +10,7 @@ import ChannelInfoRow from '../channel_info_row';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
-import {AppCallTypes, AppExpandLevels, AppsBindings} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
 import {dismissModal} from '@actions/navigation';
 
@@ -80,7 +80,7 @@ const Option = injectIntl((props: OptionProps) => {
             context: {
                 app_id: props.binding.app_id,
                 channel_id: channelId,
-                location: AppsBindings.CHANNEL_HEADER_ICON,
+                location: AppBindingLocations.CHANNEL_HEADER_ICON,
                 user_id: props.currentUser.id,
             },
             url: props.binding.call?.url || '',

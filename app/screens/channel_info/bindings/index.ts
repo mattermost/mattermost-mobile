@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
-import {AppsBindings} from '@mm-redux/constants/apps';
+import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
 
@@ -17,7 +17,7 @@ import {bindActionCreators, Dispatch} from 'redux';
 function mapStateToProps(state: GlobalState) {
     const apps = appsEnabled(state);
     const currentChannel = getCurrentChannel(state) || {};
-    const bindings = apps ? getAppsBindings(state, AppsBindings.CHANNEL_HEADER_ICON) : [];
+    const bindings = apps ? getAppsBindings(state, AppBindingLocations.CHANNEL_HEADER_ICON) : [];
     const currentUser = getCurrentUser(state) || {};
 
     return {

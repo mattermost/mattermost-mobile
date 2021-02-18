@@ -8,7 +8,7 @@ import {AppField, AppSelectOption} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import React from 'react';
 
-import AppFormSelector from './app_form_selector/app_form_selector';
+import AppFormSelector from './app_form_selector';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -24,24 +24,7 @@ export type Props = {
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 }
 
-type Option = {
-    text: string;
-    value: string;
-}
-
 export default class AppsFormField extends React.PureComponent<Props> {
-    handleSelected = (selected: AppSelectOption | Option) => {
-        const {name, field, onChange} = this.props;
-
-        if (field.type === 'user' || field.type === 'channel') {
-            const option = selected as Option;
-            onChange(name, {label: option.text, value: option.value});
-        } else {
-            const option = selected as AppSelectOption;
-            onChange(name, option);
-        }
-    }
-
     render() {
         const {
             field,
@@ -133,7 +116,7 @@ export default class AppsFormField extends React.PureComponent<Props> {
                     options={field.options}
                     dataSource={dataSource}
                     optional={!field.is_required}
-                    onSelected={this.handleSelected}
+                    onSelected={(selected: AppSelectOption) => this.props.onChange(field.name, selected)}
                     helpText={field.description}
                     errorText={errorText}
                     placeholder={placeholder}
@@ -141,7 +124,7 @@ export default class AppsFormField extends React.PureComponent<Props> {
                     selected={option}
                     roundedBorders={false}
                     disabled={field.readonly}
-                    performLookupCall={(term) => this.props.performLookup(field.name, term)}
+                    performLookupCall={(term: string) => this.props.performLookup(field.name, term)}
                 />
             );
         } else if (field.type === 'bool') {

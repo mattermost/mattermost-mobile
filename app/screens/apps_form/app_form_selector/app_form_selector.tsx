@@ -37,11 +37,7 @@ type Props = {
     performLookupCall?: (term: string) => Promise<AppSelectOption[]>;
 }
 
-type State = {
-    selected?: AppSelectOption;
-}
-
-export default class AppFormSelector extends PureComponent<Props, State> {
+export default class AppFormSelector extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape,
     };
@@ -51,16 +47,6 @@ export default class AppFormSelector extends PureComponent<Props, State> {
         showRequiredAsterisk: false,
         roundedBorders: true,
     };
-
-    static getDerivedStateFromProps(props: Props, state: State) {
-        if (props.selected && props.selected !== state.selected) {
-            return {
-                selected: props.selected,
-            };
-        }
-
-        return null;
-    }
 
     handleSelect = (selected: UserProfile | Channel | AppSelectOption) => {
         if (!selected) {
@@ -128,8 +114,8 @@ export default class AppFormSelector extends PureComponent<Props, State> {
             showRequiredAsterisk,
             roundedBorders,
             disabled,
+            selected,
         } = this.props;
-        const {selected} = this.state;
         const style = getStyleSheet(theme);
 
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
