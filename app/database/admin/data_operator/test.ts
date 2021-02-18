@@ -2,13 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '../database_manager';
-import {operateAppRecord} from './entity_factory';
+import DatabaseManager, {DatabaseType} from '../database_manager';
+import {
+    operateAppRecord,
+    operateCustomEmojiRecord,
+    operateGlobalRecord,
+    operateRoleRecord,
+    operateServersRecord,
+    operateSystemRecord,
+} from './entity_factory';
 import {OperationType} from './index';
 
 jest.mock('../database_manager');
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
+const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type App for operateAppRecord', async () => {
@@ -34,7 +42,7 @@ describe('*** Data Operator tests ***', () => {
         const db = await DatabaseManager.getDefaultDatabase();
         expect(db).toBeTruthy();
 
-        const preparedRecords = await operateAppRecord({
+        const preparedRecords = await operateGlobalRecord({
             db: db!,
             optType: OperationType.CREATE,
             tableName: GLOBAL,
@@ -51,7 +59,7 @@ describe('*** Data Operator tests ***', () => {
         const db = await DatabaseManager.getDefaultDatabase();
         expect(db).toBeTruthy();
 
-        const preparedRecords = await operateAppRecord({
+        const preparedRecords = await operateServersRecord({
             db: db!,
             optType: OperationType.CREATE,
             tableName: SERVERS,
@@ -67,5 +75,105 @@ describe('*** Data Operator tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('Servers');
+    });
+
+    it('=> should return an array of type CustomEmoji for operateCustomEmojiRecord', async () => {
+        expect.assertions(3);
+
+        const db = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        expect(db).toBeTruthy();
+
+        const preparedRecords = await operateCustomEmojiRecord({
+            db: db!,
+            optType: OperationType.CREATE,
+            tableName: CUSTOM_EMOJI,
+            value: {id: 'emo-1', name: 'emoji'},
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
+    });
+
+    it('=> should return an array of type Role for operateRoleRecord', async () => {
+        expect.assertions(3);
+
+        const db = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        expect(db).toBeTruthy();
+
+        const preparedRecords = await operateRoleRecord({
+            db: db!,
+            optType: OperationType.CREATE,
+            tableName: ROLE,
+            value: {id: 'role-1', name: 'role-name-1', permissions: []},
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Role');
+    });
+
+    it('=> should return an array of type System for operateSystemRecord', async () => {
+        expect.assertions(3);
+
+        const db = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        expect(db).toBeTruthy();
+
+        const preparedRecords = await operateSystemRecord({
+            db: db!,
+            optType: OperationType.CREATE,
+            tableName: SYSTEM,
+            value: {id: 'system-1', name: 'system-name-1', value: 'system'},
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('System');
+    });
+
+    it('=> should return an array of type TermsOfService for operateTermsOfServiceRecord', async () => {
+        expect.assertions(3);
+
+        const db = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        expect(db).toBeTruthy();
+
+        const preparedRecords = await operateSystemRecord({
+            db: db!,
+            optType: OperationType.CREATE,
+            tableName: TERMS_OF_SERVICE,
+            value: {id: 'system-1', acceptedAt: 1},
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('TermsOfService');
     });
 });

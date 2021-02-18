@@ -83,7 +83,7 @@ export type RawTermsOfService = {
     acceptedAt: number
 }
 
-export type RecordValue = RawApp | RawGlobal | RawServers | RawRole | RawSystem | RawTermsOfService
+export type RecordValue = RawApp | RawGlobal | RawServers | RawCustomEmoji| RawRole | RawSystem | RawTermsOfService
 
 export type DataFactory = {
     db: Database,
