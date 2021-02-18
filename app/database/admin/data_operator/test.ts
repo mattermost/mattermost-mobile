@@ -10,7 +10,7 @@ import {
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
-} from './entity_factory';
+} from './operators';
 import {OperationType} from './index';
 
 jest.mock('../database_manager');

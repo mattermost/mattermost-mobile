@@ -16,7 +16,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
-} from './entity_factory';
+} from './operators';
 
 export enum OperationType {
     CREATE = 'CREATE',
