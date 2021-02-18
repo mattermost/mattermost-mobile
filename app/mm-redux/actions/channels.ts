@@ -4,7 +4,7 @@ import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '../constants';
 import {ChannelTypes, PreferenceTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
 import {savePreferences, deletePreferences} from './preferences';
-import {compareNotifyProps, getChannelsIdForTeam, getChannelByName} from '@mm-redux/utils/channel_utils';
+import {compareNotifyProps, getChannelsIdForTeam, getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
 import {
     getChannelsNameMapInTeam,
     getMyChannelMember as getMyChannelMemberSelector,
@@ -438,6 +438,29 @@ export function getChannelByNameAndTeamName(teamName: string, channelName: strin
     };
 }
 
+export function getChannelByName(teamId: string, channelName: string, includeDeleted = false): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let channel;
+        try {
+            channel = await Client4.getChannelByName(teamId, channelName, includeDeleted);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.CHANNELS_FAILURE, error},
+                logError(error),
+            ]));
+            return {error};
+        }
+
+        dispatch({
+            type: ChannelTypes.RECEIVED_CHANNEL,
+            data: channel,
+        });
+
+        return {data: channel};
+    };
+}
+
 export function getChannel(channelId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
@@ -739,7 +762,7 @@ export function deleteChannel(channelId: string): ActionFunc {
         if (channelId === currentChannelId && !viewArchivedChannels) {
             const teamId = getCurrentTeamId(state);
             const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
-            const channel = getChannelByName(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
+            const channel = selectChannelByName(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
             if (channel && channel.id) {
                 dispatch({type: ChannelTypes.SELECT_CHANNEL, data: channel.id});
             }
