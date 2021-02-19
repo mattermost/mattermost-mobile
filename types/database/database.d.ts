@@ -4,9 +4,9 @@
 import {AppSchema, Database} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
+import {Class} from '@nozbe/watermelondb/utils/common';
 
 import {MM_TABLES} from '@constants/database';
-import {Class} from '@nozbe/watermelondb/utils/common';
 
 import {OperationType} from '../../app/database/admin/data_operator';
 import {DatabaseType} from '../../app/database/admin/database_manager';
@@ -84,7 +84,7 @@ export type RawTermsOfService = {
     acceptedAt: number
 }
 
-export type RecordValue = RawApp | RawGlobal | RawServers | RawCustomEmoji| RawRole | RawSystem | RawTermsOfService
+export type RecordValue = RawApp | RawGlobal | RawServers | RawCustomEmoji | RawRole | RawSystem | RawTermsOfService
 
 export type DataFactory = {
     db: Database,
@@ -112,7 +112,7 @@ export type BatchOperations = { db: Database, models: Model[] }
 
 export type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedTables, values: Records }
 
-type Models = Class<Model>[]
+export type Models = Class<Model>[]
 
 // The elements needed to create a new connection
 export type DatabaseConnection = {
@@ -122,10 +122,4 @@ export type DatabaseConnection = {
 
 // The elements required to switch to another active server database
 export type ActiveServerDatabase = { displayName: string, serverUrl: string }
-
-// The only two types of databases in the app
-export enum DatabaseType {
-    DEFAULT,
-    SERVER
-}
 

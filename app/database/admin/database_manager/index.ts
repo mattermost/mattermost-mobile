@@ -2,14 +2,20 @@
 // See LICENSE.txt for license information.
 
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import {Class} from '@nozbe/watermelondb/utils/common';
-import {Database, Model, Q} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import IServers from '@typings/database/servers';
-import type {DBInstance, DefaultNewServer, MMDatabaseConnection, MigrationEvents} from '@typings/database/database';
+import type {
+    ActiveServerDatabase,
+    DBInstance,
+    DatabaseConnection,
+    DefaultNewServer,
+    MigrationEvents,
+    Models,
+} from '@typings/database/database';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import DefaultMigration from '../../default/migration';
@@ -49,17 +55,6 @@ import ServerMigration from '../../server/migration';
 import {serverSchema} from '../../server/schema';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
-
-type Models = Class<Model>[]
-
-// The elements needed to create a new connection
-type DatabaseConnection = {
-    databaseConnection: MMDatabaseConnection, shouldAddToDefaultDatabase
-        : boolean
-}
-
-// The elements required to switch to another active server database
-type ActiveServerDatabase = { displayName: string, serverUrl: string }
 
 // The only two types of databases in the app
 export enum DatabaseType {
