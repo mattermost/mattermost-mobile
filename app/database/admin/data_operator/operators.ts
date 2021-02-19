@@ -128,7 +128,7 @@ export const operateRoleRecord = async ({db, optType, tableName, value}: DataFac
 };
 
 /**
- * operateRoleRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
+ * operateSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
