@@ -6,9 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
 import {Class} from '@nozbe/watermelondb/utils/common';
 
-import {MM_TABLES} from '@constants/database';
-
-import {OperationType} from '../../app/database/admin/data_operator';
+import {IsolatedEntities, OperationType} from '../../app/database/admin/data_operator';
 import {DatabaseType} from '../../app/database/admin/database_manager';
 
 export type MigrationEvents = {
@@ -94,11 +92,6 @@ export type DataFactory = {
     value: RecordValue,
 }
 
-const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
-const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
-
-export type IsolatedTables = APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE
-
 export type Records = RecordValue | RecordValue[]
 
 export type HandleBaseData = {
@@ -110,7 +103,7 @@ export type HandleBaseData = {
 
 export type BatchOperations = { db: Database, models: Model[] }
 
-export type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedTables, values: Records }
+export type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedEntities, values: Records }
 
 export type Models = Class<Model>[]
 

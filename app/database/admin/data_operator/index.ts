@@ -4,7 +4,6 @@
 import {MM_TABLES} from '@constants/database';
 import {
     BatchOperations,
-    DataFactory,
     DBInstance,
     HandleBaseData,
     HandleIsolatedEntityData,
@@ -29,6 +28,16 @@ export enum OperationType {
     DELETE = 'DELETE'
 }
 
+export enum IsolatedEntities {
+    APP= 'app',
+    GLOBAL = 'global',
+    SERVERS = 'servers',
+    CUSTOM_EMOJI = 'CustomEmoji',
+    ROLE = 'Role',
+    SYSTEM = 'System',
+    TERMS_OF_SERVICE = 'TermsOfService'
+}
+
 class DataOperator {
     private defaultDatabase: DBInstance;
     private serverDatabase: DBInstance;
@@ -42,44 +51,45 @@ class DataOperator {
      * @returns {Promise<void>}
      */
     handleIsolatedEntityData = async ({optType, tableName, values}: HandleIsolatedEntityData): Promise<void> => {
-        const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
-        const {CUSTOM_EMOJI, ROLE, SYSTEM} = MM_TABLES.SERVER;
-
-        let recordOperator: (recordOperator: DataFactory) => void;
+        let recordOperator;
 
         switch (tableName) {
-        case APP : {
+        case IsolatedEntities.APP : {
             recordOperator = operateAppRecord;
             break;
         }
-        case GLOBAL : {
+        case IsolatedEntities.GLOBAL : {
             recordOperator = operateGlobalRecord;
             break;
         }
-        case SERVERS : {
+        case IsolatedEntities.SERVERS : {
             recordOperator = operateServersRecord;
             break;
         }
-        case CUSTOM_EMOJI : {
+        case IsolatedEntities.CUSTOM_EMOJI : {
             recordOperator = operateCustomEmojiRecord;
             break;
         }
-        case ROLE : {
+        case IsolatedEntities.ROLE : {
             recordOperator = operateRoleRecord;
             break;
         }
-        case SYSTEM : {
+        case IsolatedEntities.SYSTEM : {
             recordOperator = operateSystemRecord;
             break;
         }
-        default: {
-            // TERMS_OF_SERVICE
+        case IsolatedEntities.TERMS_OF_SERVICE : {
             recordOperator = operateTermsOfServiceRecord;
             break;
         }
+        default: {
+            recordOperator = null;
+            break;
         }
-
-        await this.handleBaseData({optType, values, tableName, recordOperator});
+        }
+        if (recordOperator) {
+            await this.handleBaseData({optType, values, tableName, recordOperator});
+        }
     };
 
     /**

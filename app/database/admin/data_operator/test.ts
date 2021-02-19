@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-
 import {MM_TABLES} from '@constants/database';
+import {Q} from '@nozbe/watermelondb';
 import App from '@typings/database/app';
 
 import DatabaseManager, {DatabaseType} from '../database_manager';
+import DataOperator, {IsolatedEntities, OperationType} from './index';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
@@ -15,7 +15,6 @@ import {
     operateServersRecord,
     operateSystemRecord,
 } from './operators';
-import DataOperator, {OperationType} from './index';
 
 jest.mock('../database_manager');
 
@@ -187,7 +186,7 @@ describe('*** Data Operator tests ***', () => {
         // Creates a record in the App table
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.CREATE,
-            tableName: APP,
+            tableName: IsolatedEntities.APP,
             values: {buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
         });
 
@@ -207,7 +206,7 @@ describe('*** Data Operator tests ***', () => {
         // Creates a record in the App table
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.CREATE,
-            tableName: APP,
+            tableName: IsolatedEntities.APP,
             values: [
                 {buildNumber: 'build-10', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
                 {buildNumber: 'build-11', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
@@ -235,7 +234,7 @@ describe('*** Data Operator tests ***', () => {
         // Update record having id 'id-1'
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.UPDATE,
-            tableName: APP,
+            tableName: IsolatedEntities.APP,
             values: {buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
         });
 
@@ -255,7 +254,7 @@ describe('*** Data Operator tests ***', () => {
         // Update records having id 'id-10' and 'id-11'
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.UPDATE,
-            tableName: APP,
+            tableName: IsolatedEntities.APP,
             values: [
                 {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
                 {buildNumber: 'build-11y', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
@@ -279,7 +278,7 @@ describe('*** Data Operator tests ***', () => {
         // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the records instead of prepareCreate
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.CREATE,
-            tableName: APP,
+            tableName: IsolatedEntities.APP,
             values: [
                 {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
                 {buildNumber: 'build-11x', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
@@ -302,7 +301,7 @@ describe('*** Data Operator tests ***', () => {
         // id-15 and id-16 do not exist but yet the optType is UPDATE.  The operator should then prepareCreate the records instead of prepareUpdate
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.UPDATE,
-            tableName: APP,
+            tableName: IsolatedEntities.APP,
             values: [
                 {buildNumber: 'build-10x', createdAt: 1, id: 'id-15', versionNumber: 'version-10'},
                 {buildNumber: 'build-11x', createdAt: 1, id: 'id-16', versionNumber: 'version-11'},
