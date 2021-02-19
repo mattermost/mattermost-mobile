@@ -11,10 +11,17 @@ class PostList {
     }
 
     getPost = (postId, postMessage) => {
-        const {postItem, postItemHeaderReply, postItemMessage} = Post.getPost(this.testID.postListPostItem, postId, postMessage);
+        const {
+            postItem,
+            postItemHeaderReply,
+            postItemPreHeaderText,
+            postItemMessage,
+        } = Post.getPost(this.testID.postListPostItem, postId, postMessage);
+
         return {
             postListPostItem: postItem,
             postListPostItemHeaderReply: postItemHeaderReply,
+            postListPostItemPreHeaderText: postItemPreHeaderText,
             postListPostItemMessage: postItemMessage,
         };
     }
