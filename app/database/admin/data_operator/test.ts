@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
@@ -200,7 +201,7 @@ describe('*** Data Operator tests ***', () => {
         expect(records.length).toBe(1);
     });
 
-    it('=> should create several record in the App table in the default database', async () => {
+    it('=> should create several records in the App table in the default database', async () => {
         expect.assertions(2);
 
         // Creates a record in the App table
@@ -267,5 +268,28 @@ describe('*** Data Operator tests ***', () => {
         // Verify if the buildNumber for those two record has been updated
         expect(records[0].buildNumber).toMatch('build-10x');
         expect(records[1].buildNumber).toMatch('build-11y');
+    });
+
+    it('=> [EDGE CASE] should UPDATE instead of CREATE record for existing id', async () => {
+        expect.assertions(3);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the record instead of prepareCreate
+        await DataOperator.handleIsolatedEntityData({
+            optType: OperationType.CREATE,
+            tableName: APP,
+            values: [
+                {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
+                {buildNumber: 'build-11x', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
+            ],
+        });
+
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11']))).fetch() as App[];
+
+        // Verify if the buildNumber for those two record has been updated
+        expect(records[0].buildNumber).toMatch('build-10x');
+        expect(records[1].buildNumber).toMatch('build-11x');
     });
 });
