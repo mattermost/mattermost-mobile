@@ -89,7 +89,7 @@ export const operateServersRecord = async ({db, optType, tableName, value}: Data
 };
 
 /**
- * operateServersRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
+ * operateCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
