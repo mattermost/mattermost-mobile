@@ -34,7 +34,7 @@ class DataOperator {
     private serverDatabase: DBInstance;
 
     /**
-     * handleIsolatedEntityData :Operator that handles Create/Update operations on the isolated entities as
+     * handleIsolatedEntityData: Operator that handles Create/Update operations on the isolated entities as
      * described by the IsolatedTables type
      * @param {OperationType} optType
      * @param {APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE} tableName
@@ -83,7 +83,7 @@ class DataOperator {
     };
 
     /**
-     * batchOperations : Accepts an instance of Database (either Default or Server) and an array of
+     * batchOperations: Accepts an instance of Database (either Default or Server) and an array of
      * prepareCreate/prepareUpdate values and executes the actions on the database.
      * @param {Database} db
      * @param {Array} models
@@ -101,7 +101,7 @@ class DataOperator {
      * handleBaseData: Handles the Create/Update operations on an entity.
      * @param {OperationType} optType
      * @param {string} tableName
-     * @param {RawApp  | RawGlobal  | RawServers } values
+     * @param {RecordValue | RecordValue[]} values
      * @param {(recordOperator: DataFactory) => void} recordOperator
      * @returns {Promise<void>}
      */
@@ -131,7 +131,7 @@ class DataOperator {
     };
 
     /**
-     * getDatabase : Based on the table's name, it will return a database instance either from the 'DEFAULT' database or
+     * getDatabase: Based on the table's name, it will return a database instance either from the 'DEFAULT' database or
      * the 'SERVER' database.
      * @param {string} tableName
      * @returns {Promise<DBInstance>}
