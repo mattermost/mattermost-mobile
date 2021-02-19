@@ -41,6 +41,7 @@ exports[`Theme should match snapshot 1`] = `
             "testUri": "../../../dist/assets/images/themes/mattermost.png",
           }
         }
+        isLandscape={false}
         isTablet={false}
         label={
           <Text>
@@ -86,6 +87,7 @@ exports[`Theme should match snapshot 1`] = `
             "testUri": "../../../dist/assets/images/themes/organization.png",
           }
         }
+        isLandscape={false}
         isTablet={false}
         label={
           <Text>
@@ -131,6 +133,7 @@ exports[`Theme should match snapshot 1`] = `
             "testUri": "../../../dist/assets/images/themes/mattermost_dark.png",
           }
         }
+        isLandscape={false}
         isTablet={false}
         label={
           <Text>
@@ -176,6 +179,7 @@ exports[`Theme should match snapshot 1`] = `
             "testUri": "../../../dist/assets/images/themes/windows_dark.png",
           }
         }
+        isLandscape={false}
         isTablet={false}
         label={
           <Text>

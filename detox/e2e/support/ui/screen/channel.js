@@ -17,6 +17,7 @@ import {
     LoginScreen,
     LongPostScreen,
     SelectServerScreen,
+    ThreadScreen,
 } from '@support/ui/screen';
 import {isAndroid} from '@support/utils';
 
@@ -130,6 +131,14 @@ class ChannelScreen {
         await this.closeMainSidebar();
     }
 
+    deletePost = async (postId, text, confirm = true) => {
+        await this.openPostOptionsFor(postId, text);
+
+        // # Delete post
+        await PostOptions.deletePost(confirm);
+        await this.toBeVisible();
+    }
+
     openMainSidebar = async () => {
         // # Open main sidebar
         await this.mainSidebarDrawerButton.tap();
@@ -156,6 +165,14 @@ class ChannelScreen {
         // # Open post options
         await postListPostItem.longPress();
         await PostOptions.toBeVisible();
+    }
+
+    openReplyThreadFor = async (postId, text) => {
+        await this.openPostOptionsFor(postId, text);
+
+        // # Open reply thread screen
+        await PostOptions.replyAction.tap();
+        await ThreadScreen.toBeVisible();
     }
 
     postMessage = async (message) => {

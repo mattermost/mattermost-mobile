@@ -10,11 +10,6 @@ import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {CallbackFunctionWithoutArguments} from 'types/screens/gallery';
 
-export enum VIDEO_PLAYER_STATE {
-    PLAYING = 'PLAYING',
-    PAUSED = 'PAUSED',
-}
-
 interface VideoControlsProps {
     isLandscape: boolean;
     mainColor?: string;

@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Alert} from 'react-native';
+
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {General} from '../constants';
 import {Client4} from '@mm-redux/client';
@@ -14,6 +17,17 @@ import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} f
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
+import {makeGroupMessageVisibleIfNecessary} from './preferences';
+import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} from '@actions/views/channel';
+import {makeDirectChannel} from '@actions/views/more_dms';
+import {showPermalink} from '@actions/views/permalink';
+import {DeepLinkTypes} from '@constants';
+import {getUserByUsername} from '@mm-redux/actions/users';
+import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import * as DraftUtils from '@utils/draft';
+import {permalinkBadTeam} from '@utils/general';
+import {getURLAndMatch, tryOpenURL} from '@utils/url';
+
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.createIncomingWebhook,
@@ -397,5 +411,66 @@ export function submitInteractiveDialog(submission: DialogSubmission): ActionFun
         }
 
         return {data};
+    };
+}
+
+export function handleGotoLocation(href: string, intl: any): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const config = getConfig(state);
+
+        const {url, match} = await getURLAndMatch(href, getCurrentUrl(state), config.SiteURL);
+
+        if (match) {
+            switch (match.type) {
+            case DeepLinkTypes.CHANNEL:
+                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl), intl));
+                break;
+            case DeepLinkTypes.PERMALINK: {
+                const {error} = await dispatch(loadChannelsByTeamName(match.teamName, () => permalinkBadTeam(intl)));
+                if (!error && match.postId) {
+                    dispatch(showPermalink(intl, match.teamName, match.postId));
+                }
+                break;
+            }
+            case DeepLinkTypes.DMCHANNEL: {
+                if (!match.userName) {
+                    DraftUtils.errorBadUser(intl);
+                    return {data: false};
+                }
+
+                const {data} = await dispatch(getUserByUsername(match.userName));
+                if (!data) {
+                    DraftUtils.errorBadUser(intl);
+                    return {data: false};
+                }
+                dispatch(makeDirectChannel(data.id));
+                break;
+            }
+            case DeepLinkTypes.GROUPCHANNEL:
+                if (!match.id) {
+                    DraftUtils.errorBadChannel(intl);
+                    return {data: false};
+                }
+                dispatch(makeGroupMessageVisibleIfNecessary(match.id));
+                dispatch(handleSelectChannel(match.id));
+                break;
+            }
+        } else {
+            const {formatMessage} = this.context.intl;
+            const onError = () => Alert.alert(
+                formatMessage({
+                    id: 'mobile.server_link.error.title',
+                    defaultMessage: 'Link Error',
+                }),
+                formatMessage({
+                    id: 'mobile.server_link.error.text',
+                    defaultMessage: 'The link could not be found on this server.',
+                }),
+            );
+
+            tryOpenURL(url, onError);
+        }
+        return {data: true};
     };
 }

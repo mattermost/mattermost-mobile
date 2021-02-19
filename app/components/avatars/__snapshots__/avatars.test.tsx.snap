@@ -1,0 +1,155 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Avatars should match snapshot for overflow 1`] = `
+<TouchableWithFeedbackIOS
+  type="native"
+>
+  <View
+    style={
+      Object {
+        "flexDirection": "row",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#ffffff",
+          "borderRadius": 12,
+          "borderWidth": 13,
+          "height": 24,
+          "justifyContent": "center",
+          "width": 24,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={24}
+        userId="user1"
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#ffffff",
+          "borderRadius": 12,
+          "borderWidth": 13,
+          "height": 24,
+          "justifyContent": "center",
+          "marginLeft": -6,
+          "width": 24,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={24}
+        userId="user2"
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#ffffff",
+          "borderRadius": 12,
+          "borderWidth": 13,
+          "height": 24,
+          "justifyContent": "center",
+          "marginLeft": -6,
+          "width": 24,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={24}
+        userId="user3"
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#ffffff",
+          "borderRadius": 13.5,
+          "borderWidth": 1,
+          "height": 27,
+          "justifyContent": "center",
+          "marginLeft": -6,
+          "width": 27,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.08)",
+            "borderColor": "#ffffff",
+            "borderRadius": 13.5,
+            "borderWidth": 1,
+            "height": 27,
+            "justifyContent": "center",
+            "width": 27,
+          }
+        }
+      >
+        <Text
+          style={
+            Object {
+              "color": "rgba(61,60,64,0.64)",
+              "fontSize": 10,
+              "textAlign": "center",
+            }
+          }
+        >
+          +3
+        </Text>
+      </View>
+    </View>
+  </View>
+</TouchableWithFeedbackIOS>
+`;
+
+exports[`Avatars should match snapshot for single avatar 1`] = `
+<TouchableWithFeedbackIOS
+  type="native"
+>
+  <View
+    style={
+      Object {
+        "flexDirection": "row",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#ffffff",
+          "borderRadius": 12,
+          "borderWidth": 13,
+          "height": 24,
+          "justifyContent": "center",
+          "width": 24,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={24}
+        userId="user1"
+      />
+    </View>
+  </View>
+</TouchableWithFeedbackIOS>
+`;

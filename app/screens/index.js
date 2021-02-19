@@ -21,7 +21,7 @@ const withGestures = (screen, styles) => {
 };
 
 // eslint-disable-next-line react/display-name
-const withReduxProvider = (Screen, excludeEvents = true) => (props) => (
+export const withReduxProvider = (Screen, excludeEvents = true) => (props) => (
     <Provider store={store}>
         <ThemeProvider>
             <RootWrapper excludeEvents={excludeEvents}>

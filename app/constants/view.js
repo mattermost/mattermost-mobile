@@ -77,7 +77,9 @@ const ViewTypes = keyMirror({
     REMOVE_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
+    GOOGLE: null,
     OFFICE365: null,
+    OPENID: null,
     SAML: null,
 
     SET_INITIAL_POST_VISIBILITY: null,
@@ -139,4 +141,5 @@ export default {
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
     INDICATOR_BAR_HEIGHT,
+    AVATAR_LIST_PICTURE_SIZE: 24,
 };

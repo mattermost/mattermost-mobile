@@ -4,6 +4,7 @@
 import Channel from './channel';
 import Ldap from './ldap';
 import Post from './post';
+import Preference from './preference';
 import Setup from './setup';
 import System from './system';
 import Team from './team';
@@ -13,6 +14,7 @@ export {
     Channel,
     Ldap,
     Post,
+    Preference,
     Setup,
     System,
     Team,

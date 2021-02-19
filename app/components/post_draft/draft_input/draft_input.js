@@ -21,6 +21,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import * as DraftUtils from '@utils/draft';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const AUTOCOMPLETE_MARGIN = 20;
@@ -44,6 +45,7 @@ export default class DraftInput extends PureComponent {
         getChannelTimezones: PropTypes.func.isRequired,
         handleClearFiles: PropTypes.func.isRequired,
         handleClearFailedFiles: PropTypes.func.isRequired,
+        handleGotoLocation: PropTypes.func.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTimezoneEnabled: PropTypes.bool,
         maxMessageLength: PropTypes.number.isRequired,
@@ -227,7 +229,7 @@ export default class DraftInput extends PureComponent {
         });
     };
 
-    handleSendMessage = () => {
+    handleSendMessage = preventDoubleTap(() => {
         if (!this.input.current) {
             return;
         }
@@ -235,42 +237,44 @@ export default class DraftInput extends PureComponent {
         const value = this.input.current.getValue();
         this.input.current.resetTextInput();
 
-        requestAnimationFrame(() => {
-            if (!this.isSendButtonEnabled()) {
-                this.input.current.setValue(value);
-                return;
-            }
+        this.doHandleSendMessage(value);
+    });
 
-            this.setState({sendingMessage: true});
+    doHandleSendMessage = (value) => requestAnimationFrame(() => {
+        if (!this.isSendButtonEnabled()) {
+            this.input.current.setValue(value);
+            return;
+        }
 
-            const {channelId, files, handleClearFailedFiles, rootId} = this.props;
+        this.setState({sendingMessage: true});
 
-            const isReactionMatch = value.match(IS_REACTION_REGEX);
-            if (isReactionMatch) {
-                const emoji = isReactionMatch[2];
-                this.sendReaction(emoji);
-                return;
-            }
+        const {channelId, files, handleClearFailedFiles, rootId} = this.props;
 
-            const hasFailedAttachments = files.some((f) => f.failed);
-            if (hasFailedAttachments) {
-                const {formatMessage} = this.context.intl;
-                const cancel = () => {
-                    this.setInputValue(value);
-                    this.setState({sendingMessage: false});
-                };
-                const accept = () => {
-                    // Remove only failed files
-                    handleClearFailedFiles(channelId, rootId);
-                    this.sendMessage(value);
-                };
+        const isReactionMatch = value.match(IS_REACTION_REGEX);
+        if (isReactionMatch) {
+            const emoji = isReactionMatch[2];
+            this.sendReaction(emoji);
+            return;
+        }
 
-                DraftUtils.alertAttachmentFail(formatMessage, accept, cancel);
-            } else {
+        const hasFailedAttachments = files.some((f) => f.failed);
+        if (hasFailedAttachments) {
+            const {formatMessage} = this.context.intl;
+            const cancel = () => {
+                this.setInputValue(value);
+                this.setState({sendingMessage: false});
+            };
+            const accept = () => {
+                // Remove only failed files
+                handleClearFailedFiles(channelId, rootId);
                 this.sendMessage(value);
-            }
-        });
-    }
+            };
+
+            DraftUtils.alertAttachmentFail(formatMessage, accept, cancel);
+        } else {
+            this.sendMessage(value);
+        }
+    });
 
     isFileLoading = () => {
         const {files} = this.props;
@@ -299,7 +303,7 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
-        const {error} = await executeCommand(msg, channelId, rootId);
+        const {data, error} = await executeCommand(msg, channelId, rootId);
         this.setState({sendingMessage: false});
 
         if (error) {
@@ -310,6 +314,10 @@ export default class DraftInput extends PureComponent {
 
         this.setInputValue('');
         this.input.current.changeDraft('');
+
+        if (data.goto_location) {
+            this.props.handleGotoLocation(data.goto_location, this.context.intl);
+        }
     };
 
     sendMessage = (value = '') => {

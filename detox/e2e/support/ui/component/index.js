@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Alert from './alert';
 import Autocomplete from './autocomplete';
+import BottomSheet from './bottom_sheet';
 import CameraQuickAction from './camera_quick_action';
 import EditChannelInfo from './edit_channel_info';
 import FileQuickAction from './file_quick_action';
@@ -20,7 +22,9 @@ import SendButton from './send_button';
 import SettingsSidebar from './settings_sidebar';
 
 export {
+    Alert,
     Autocomplete,
+    BottomSheet,
     CameraQuickAction,
     EditChannelInfo,
     FileQuickAction,

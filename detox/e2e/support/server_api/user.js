@@ -50,7 +50,7 @@ export const apiLogin = async (user) => {
 /**
  * Login to Mattermost server as sysadmin.
  */
-export const apiAdminLogin = async () => {
+export const apiAdminLogin = () => {
     return apiLogin({
         username: testConfig.adminUsername,
         password: testConfig.adminPassword,
