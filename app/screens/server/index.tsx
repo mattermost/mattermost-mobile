@@ -7,12 +7,10 @@ import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react
 import React from 'react';
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
-import {runDataOperatorTests} from '../../database/admin/data_operator/test_manual';
 
 declare const global: { HermesInternal: null | {} };
 
 const App = () => {
-    runDataOperatorTests();
     return (
         <>
             <StatusBar barStyle='dark-content'/>

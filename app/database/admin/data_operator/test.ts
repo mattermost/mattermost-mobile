@@ -181,6 +181,8 @@ describe('*** Data Operator tests ***', () => {
     });
 
     it('=> should create a record in the App table in the default database', async () => {
+        expect.assertions(2);
+
         // Creates a record in the App table
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.CREATE,
@@ -188,11 +190,82 @@ describe('*** Data Operator tests ***', () => {
             values: {buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
         });
 
-        // do a query and find out if the value as been registered in the App table of the default database
+        // Do a query and find out if the value has been registered in the App table of the default database
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', 'id-7')).fetch() as App[];
-        expect(records).toBeTruthy();
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch() as App[];
+
+        // We should expect to have a record returned as dictated by our query
+        expect(records.length).toBe(1);
+    });
+
+    it('=> should create several record in the App table in the default database', async () => {
+        expect.assertions(2);
+
+        // Creates a record in the App table
+        await DataOperator.handleIsolatedEntityData({
+            optType: OperationType.CREATE,
+            tableName: APP,
+            values: [
+                {buildNumber: 'build-10', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
+                {buildNumber: 'build-11', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
+                {buildNumber: 'build-12', createdAt: 1, id: 'id-12', versionNumber: 'version-12'},
+                {buildNumber: 'build-13', createdAt: 1, id: 'id-13', versionNumber: 'version-13'},
+            ],
+        });
+
+        // Do a query and find out if the value has been registered in the App table of the default database
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11', 'id-12', 'id-13']))).fetch() as App[];
+
+        // We should expect to have 4 records created
+        expect(records.length).toBe(4);
+    });
+
+    it('=> should update a record in the App table in the default database', async () => {
+        expect.assertions(3);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        // Update record having id 'id-1'
+        await DataOperator.handleIsolatedEntityData({
+            optType: OperationType.UPDATE,
+            tableName: APP,
+            values: {buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
+        });
+
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch() as App[];
+        expect(records.length).toBeGreaterThan(0);
+
+        // Verify if the buildNumber for this record has been updated
+        expect(records[0].buildNumber).toMatch('build-13-13');
+    });
+
+    it('=> should update several records in the App table in the default database', async () => {
+        expect.assertions(4);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        // Update records having id 'id-10' and 'id-11'
+        await DataOperator.handleIsolatedEntityData({
+            optType: OperationType.UPDATE,
+            tableName: APP,
+            values: [
+                {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
+                {buildNumber: 'build-11y', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
+            ],
+        });
+
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11']))).fetch() as App[];
+        expect(records.length).toBe(2);
+
+        // Verify if the buildNumber for those two record has been updated
+        expect(records[0].buildNumber).toMatch('build-10x');
+        expect(records[1].buildNumber).toMatch('build-11y');
     });
 });
