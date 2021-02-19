@@ -276,7 +276,7 @@ describe('*** Data Operator tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the record instead of prepareCreate
+        // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the records instead of prepareCreate
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.CREATE,
             tableName: APP,
@@ -289,6 +289,29 @@ describe('*** Data Operator tests ***', () => {
         const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11']))).fetch() as App[];
 
         // Verify if the buildNumber for those two record has been updated
+        expect(records[0].buildNumber).toMatch('build-10x');
+        expect(records[1].buildNumber).toMatch('build-11x');
+    });
+
+    it('=> [EDGE CASE] should CREATE instead of UPDATE record for non-existing id', async () => {
+        expect.assertions(3);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        // id-15 and id-16 do not exist but yet the optType is UPDATE.  The operator should then prepareCreate the records instead of prepareUpdate
+        await DataOperator.handleIsolatedEntityData({
+            optType: OperationType.UPDATE,
+            tableName: APP,
+            values: [
+                {buildNumber: 'build-10x', createdAt: 1, id: 'id-15', versionNumber: 'version-10'},
+                {buildNumber: 'build-11x', createdAt: 1, id: 'id-16', versionNumber: 'version-11'},
+            ],
+        });
+
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-15', 'id-16']))).fetch() as App[];
+
+        // Verify if the buildNumber for those two record has been created
         expect(records[0].buildNumber).toMatch('build-10x');
         expect(records[1].buildNumber).toMatch('build-11x');
     });
