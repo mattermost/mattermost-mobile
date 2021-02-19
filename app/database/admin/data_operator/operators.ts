@@ -25,7 +25,7 @@ import TermsOfService from '@typings/database/terms_of_service';
 import {OperationType} from './index';
 
 /**
- * operateAppRecord : Prepares record of entity 'App' from the DEFAULT database for update or create actions.
+ * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -46,7 +46,7 @@ export const operateAppRecord = async ({db, optType, tableName, value}: DataFact
 };
 
 /**
- * operateGlobalRecord : Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
+ * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -66,7 +66,7 @@ export const operateGlobalRecord = async ({db, optType, tableName, value}: DataF
 };
 
 /**
- * operateServersRecord : Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
+ * operateServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -89,7 +89,7 @@ export const operateServersRecord = async ({db, optType, tableName, value}: Data
 };
 
 /**
- * operateServersRecord : Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
+ * operateServersRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -108,7 +108,7 @@ export const operateCustomEmojiRecord = async ({db, optType, tableName, value}: 
 };
 
 /**
- * operateRoleRecord : Prepares record of entity 'Role' from the SERVER database for update or create actions.
+ * operateRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -128,7 +128,7 @@ export const operateRoleRecord = async ({db, optType, tableName, value}: DataFac
 };
 
 /**
- * operateRoleRecord : Prepares record of entity 'System' from the SERVER database for update or create actions.
+ * operateRoleRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -148,7 +148,7 @@ export const operateSystemRecord = async ({db, optType, tableName, value}: DataF
 };
 
 /**
- * operateRoleRecord : Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
+ * operateRoleRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
@@ -167,7 +167,7 @@ export const operateTermsOfServiceRecord = async ({db, optType, tableName, value
 };
 
 /**
- * operateBaseRecord :  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
+ * operateBaseRecord:  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
  * encounters an existing record during a CREATE operation, it silently fails the operation.
  *
  * In our case, we check to see if we have an existing 'id' and if so, we'll update the record with the data.
