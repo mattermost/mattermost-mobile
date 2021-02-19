@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {FlatList, View} from 'react-native';
+import {View} from 'react-native';
+import {FlatList} from 'react-native-gesture-handler';
 import {UserProfile} from '@mm-redux/types/users';
 import type {Theme} from '@mm-redux/types/preferences';
 import SlideUpPanel from 'app/components/slide_up_panel';
