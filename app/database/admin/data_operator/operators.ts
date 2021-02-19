@@ -148,7 +148,7 @@ export const operateSystemRecord = async ({db, optType, tableName, value}: DataF
 };
 
 /**
- * operateRoleRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
+ * operateTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
  * @param {Database} db
  * @param {OperationType} optType
  * @param {string} tableName
