@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
 import {MM_TABLES} from '@constants/database';
-import {DataFactory, DBInstance, IsolatedTables, RecordValue} from '@typings/database/database';
+import {
+    BatchOperations,
+    DataFactory,
+    DBInstance,
+    HandleBaseData,
+    HandleIsolatedEntityData,
+    RecordValue,
+} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 
@@ -25,25 +29,12 @@ export enum OperationType {
     DELETE = 'DELETE'
 }
 
-type Records = RecordValue | RecordValue[]
-
-type HandleBaseData = {
-    optType: OperationType,
-    tableName: string,
-    values: Records,
-    recordOperator: (recordOperator: DataFactory) => void
-}
-
-type BatchOperations = { db: Database, models: Model[] }
-
-type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedTables, values: Records }
-
 class DataOperator {
-    private defaultDatabase: DBInstance | undefined;
-    private serverDatabase: DBInstance | undefined;
+    private defaultDatabase: DBInstance;
+    private serverDatabase: DBInstance;
 
     /**
-     * handleIsolatedEntityData :Operator that handles Create/Update/Delete Operation on the isolated entities as
+     * handleIsolatedEntityData :Operator that handles Create/Update operations on the isolated entities as
      * described by the IsolatedTables type
      * @param {OperationType} optType
      * @param {APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE} tableName
@@ -92,7 +83,8 @@ class DataOperator {
     };
 
     /**
-     * batchOperations : Accepts an instance of Database ( either Default or Server) and an array of prepareCreate/prepareUpdate values.
+     * batchOperations : Accepts an instance of Database (either Default or Server) and an array of
+     * prepareCreate/prepareUpdate values and executes the actions on the database.
      * @param {Database} db
      * @param {Array} models
      * @returns {Promise<void>}
@@ -106,7 +98,7 @@ class DataOperator {
     };
 
     /**
-     * handleBaseData: Handles the Create/Update/Delete operations on an entity.
+     * handleBaseData: Handles the Create/Update operations on an entity.
      * @param {OperationType} optType
      * @param {string} tableName
      * @param {RawApp  | RawGlobal  | RawServers } values

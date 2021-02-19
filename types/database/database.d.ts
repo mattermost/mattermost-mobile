@@ -6,6 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
+import {Class} from '@nozbe/watermelondb/utils/common';
 
 import {OperationType} from '../../app/database/admin/data_operator';
 import {DatabaseType} from '../../app/database/admin/database_manager';
@@ -97,3 +98,34 @@ const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 export type IsolatedTables = APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE
+
+export type Records = RecordValue | RecordValue[]
+
+export type HandleBaseData = {
+    optType: OperationType,
+    tableName: string,
+    values: Records,
+    recordOperator: (recordOperator: DataFactory) => void
+}
+
+export type BatchOperations = { db: Database, models: Model[] }
+
+export type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedTables, values: Records }
+
+type Models = Class<Model>[]
+
+// The elements needed to create a new connection
+export type DatabaseConnection = {
+    databaseConnection: MMDatabaseConnection,
+    shouldAddToDefaultDatabase: boolean
+}
+
+// The elements required to switch to another active server database
+export type ActiveServerDatabase = { displayName: string, serverUrl: string }
+
+// The only two types of databases in the app
+export enum DatabaseType {
+    DEFAULT,
+    SERVER
+}
+
