@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, View, Text} from 'react-native';
 
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -19,6 +19,7 @@ import {t} from '@utils/i18n';
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
+import Emoji from '@components/emoji';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
@@ -29,11 +30,14 @@ export default class SettingsSidebarBase extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
+        customStatus: PropTypes.object,
     };
 
     static defaultProps = {
         currentUser: {},
         status: 'offline',
+        customStatus: {},
     };
 
     componentDidMount() {
@@ -185,6 +189,33 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    renderCustomStatus = () => {
+        if (!this.props.isCustomStatusEnabled) {
+            return null;
+        }
+        const customStatus = this.props.customStatus;
+        const isStatusSet = customStatus && (customStatus.text || customStatus.emoji);
+        const labelComponent = isStatusSet ? <Text>{customStatus.text}</Text> : null;
+        const customStatusEmoji = (
+            <Emoji
+                emojiName={isStatusSet ? customStatus.emoji : 'trollface'}
+                size={20}
+            />
+        );
+        return (
+            <DrawerItem
+                testID='settings.sidebar.custom_status.action'
+                labelComponent={labelComponent}
+                leftComponent={customStatusEmoji}
+                i18nId={'settings.sidebar.set_status'}
+                defaultMessage={'Set a Status'}
+                separator={false}
+                onPress={this.handleSetStatus}
+                theme={this.props.theme}
+            />
+        );
+    }
+
     renderOptions = (style) => {
         const {currentUser, theme} = this.props;
 
@@ -207,10 +238,11 @@ export default class SettingsSidebarBase extends PureComponent {
                             testID='settings.sidebar.status.action'
                             labelComponent={this.renderUserStatusLabel(currentUser.id)}
                             leftComponent={this.renderUserStatusIcon(currentUser.id)}
-                            separator={false}
+                            separator={this.props.isCustomStatusEnabled}
                             onPress={this.handleSetStatus}
                             theme={theme}
                         />
+                        {this.renderCustomStatus()}
                     </View>
                     <View style={style.separator}/>
                     <View style={style.block}>
