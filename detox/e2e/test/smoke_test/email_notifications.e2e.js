@@ -118,7 +118,7 @@ describe('Email Notifications', () => {
         // * Verify mentioned user does not receive email notification
         const {data} = await getRecentEmail(testUser.username);
         const bodyText = splitEmailBodyText(data.body.text);
-        jestExpect(bodyText[7]).not.toEqual(`${message}`);
+        jestExpect(bodyText[7]).not.toEqual(message);
     });
 });
 
