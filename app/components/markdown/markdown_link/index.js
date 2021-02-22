@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {handleSelectChannelByName} from '@actions/views/channel';
+import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 
 import MarkdownLink from './markdown_link';
 
@@ -13,6 +14,7 @@ function mapStateToProps(state) {
     return {
         serverURL: getCurrentUrl(state),
         siteURL: getConfig(state).SiteURL,
+        currentTeamName: getCurrentTeam(state)?.name,
     };
 }
 

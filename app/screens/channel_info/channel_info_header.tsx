@@ -41,6 +41,7 @@ type Props = {
     isTeammateGuest: boolean,
     hasGuests: boolean,
     isGroupConstrained?: boolean,
+    testID?: string,
     timeZone?: string,
 }
 
@@ -141,6 +142,7 @@ export default class ChannelInfoHeader extends React.PureComponent<Props> {
             isArchived,
             isBot,
             isGroupConstrained,
+            testID,
             timeZone,
         } = this.props;
 
@@ -163,11 +165,13 @@ export default class ChannelInfoHeader extends React.PureComponent<Props> {
                         type={type}
                         isArchived={isArchived}
                         isBot={isBot}
+                        testID={`${testID}.channel_icon`}
                     />
                     <Text
                         ellipsizeMode='tail'
                         numberOfLines={1}
                         style={style.channelName}
+                        testID={`${testID}.display_name`}
                     >
                         {displayName}
                     </Text>

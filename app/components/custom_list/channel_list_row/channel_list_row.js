@@ -41,6 +41,10 @@ export default class ChannelListRow extends React.PureComponent {
             );
         }
 
+        const testID = this.props.testID;
+        const itemTestID = `${testID}.${this.props.id}`;
+        const channelDisplayNameTestID = `${testID}.display_name`;
+
         return (
             <CustomListRow
                 id={this.props.id}
@@ -48,14 +52,21 @@ export default class ChannelListRow extends React.PureComponent {
                 enabled={this.props.enabled}
                 selectable={this.props.selectable}
                 selected={this.props.selected}
+                testID={testID}
             >
-                <View style={style.container}>
+                <View
+                    style={style.container}
+                    testID={itemTestID}
+                >
                     <View style={style.titleContainer}>
                         <CompassIcon
                             name={this.props.isArchived ? 'archive-outline' : 'globe'}
                             style={style.icon}
                         />
-                        <Text style={style.displayName}>
+                        <Text
+                            style={style.displayName}
+                            testID={channelDisplayNameTestID}
+                        >
                             {this.props.channel.display_name}
                         </Text>
                     </View>

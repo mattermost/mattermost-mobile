@@ -70,8 +70,10 @@ function channelInfoRow(props: Props) {
 
     let actionElement = null;
     if (togglable) {
+        const switchTestID = `${testID}.switch.${detail}`;
         actionElement = (
             <Switch
+                testID={switchTestID}
                 onValueChange={action}
                 value={Boolean(detail)}
             />

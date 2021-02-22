@@ -12,11 +12,11 @@ import {ChannelTypes} from '@mm-redux/action_types';
 import postReducer from '@mm-redux/reducers/entities/posts';
 import initialState from '@store/initial_state';
 import {General} from '@mm-redux/constants';
-import {IDMappedObjects, RelationOneToOne} from '@mm-redux/types/utilities';
+import {Dictionary, IDMappedObjects, RelationOneToOne} from '@mm-redux/types/utilities';
 import {Post, PostsState} from '@mm-redux/types/posts';
 import {GlobalState} from '@mm-redux/types/store';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
-import {Team} from '@mm-redux/types/teams';
+import {Team, TeamMembership} from '@mm-redux/types/teams';
 import {DispatchFunc} from '@mm-redux/types/actions';
 import {AnyAction} from 'redux';
 import {WebSocketState} from '@mm-redux/types/websocket';
@@ -39,11 +39,33 @@ jest.mock('@mm-redux/actions/channels', () => {
     };
 });
 
+jest.mock('@mm-redux/actions/teams', () => {
+    const teamActions = jest.requireActual('../../mm-redux/actions/teams');
+    return {
+        ...teamActions,
+        getTeamByName: jest.fn((teamName) => {
+            if (teamName) {
+                return {
+                    type: 'MOCK_RECEIVE_TEAM_TYPE',
+                    data: {
+                        id: 'current-team-id',
+                        name: 'received-team-id',
+                    },
+                };
+            }
+            return {
+                type: 'MOCK_ERROR',
+                error: 'error',
+            };
+        }),
+    };
+});
+
 jest.mock('@mm-redux/selectors/entities/teams', () => {
     const teamSelectors = jest.requireActual('../../mm-redux/selectors/entities/teams');
     return {
         ...teamSelectors,
-        getTeamByName: jest.fn(() => ({name: 'current-team-name'})),
+        selectTeamByName: jest.fn(() => ({name: 'current-team-name'})),
     };
 });
 
@@ -59,8 +81,9 @@ describe('Actions.Views.Channel', () => {
     const MOCK_RECEIVED_POSTS_SINCE = 'MOCK_RECEIVED_POSTS_SINCE';
 
     const actions = require('@mm-redux/actions/channels');
-    actions.getChannelByNameAndTeamName = jest.fn((teamName) => {
-        if (teamName) {
+
+    actions.getChannelByName = jest.fn((teamId, channelName) => {
+        if (teamId && channelName) {
             return {
                 type: MOCK_RECEIVE_CHANNEL_TYPE,
                 data: 'received-channel-id',
@@ -148,6 +171,9 @@ describe('Actions.Views.Channel', () => {
                         name: currentTeamName,
                     } as Team,
                 } as IDMappedObjects<Team>,
+                myMembers: {
+                    [currentTeamId]: {} as TeamMembership,
+                } as Dictionary<TeamMembership>,
             },
         },
     } as GlobalState;
@@ -192,7 +218,7 @@ describe('Actions.Views.Channel', () => {
 
     test('handleSelectChannelByName failure from no permission to channel', async () => {
         store = mockStore({...storeObj});
-        actions.getChannelByNameAndTeamName = jest.fn(() => {
+        actions.getChannelByName = jest.fn(() => {
             return {
                 type: 'MOCK_ERROR',
                 error: {
@@ -221,7 +247,7 @@ describe('Actions.Views.Channel', () => {
     });
 
     test('handleSelectChannelByName select channel that user is not a member of', async () => {
-        actions.getChannelByNameAndTeamName = jest.fn(() => {
+        actions.getChannelByName = jest.fn(() => {
             return {
                 type: MOCK_RECEIVE_CHANNEL_TYPE,
                 data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL},
@@ -248,7 +274,7 @@ describe('Actions.Views.Channel', () => {
         store = mockStore(archivedChannelStoreObj);
 
         appChannelSelectors.getChannelReachable = getChannelReachableOriginal;
-        actions.getChannelByNameAndTeamName = jest.fn(() => {
+        actions.getChannelByName = jest.fn(() => {
             return {
                 type: MOCK_RECEIVE_CHANNEL_TYPE,
                 data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL, delete_at: 100},
@@ -275,7 +301,7 @@ describe('Actions.Views.Channel', () => {
         store = mockStore(noArchivedChannelStoreObj);
 
         appChannelSelectors.getChannelReachable = getChannelReachableOriginal;
-        actions.getChannelByNameAndTeamName = jest.fn(() => {
+        actions.getChannelByName = jest.fn(() => {
             return {
                 type: MOCK_RECEIVE_CHANNEL_TYPE,
                 data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL, delete_at: 100},

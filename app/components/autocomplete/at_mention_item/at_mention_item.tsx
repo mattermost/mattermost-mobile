@@ -137,12 +137,12 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                     style={style.rowUsername}
                     numberOfLines={1}
                 >
-                    {` @${username}`}
                     {isCurrentUser &&
                     <FormattedText
                         id='suggestion.mention.you'
                         defaultMessage='(you)'
                     />}
+                    {` @${username}`}
                 </Text>
             </View>
         </TouchableWithFeedback>

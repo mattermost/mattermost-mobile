@@ -43,6 +43,7 @@ describe('channel_info_header', () => {
         isTeammateGuest: false,
         hasGuests: false,
         isGroupConstrained: false,
+        testID: 'channel_info.header',
     };
 
     test('should match snapshot', async () => {
