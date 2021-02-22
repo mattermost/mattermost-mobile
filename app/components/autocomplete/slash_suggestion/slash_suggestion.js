@@ -14,7 +14,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
-import AppCommandParser from './apps_command_parser';
+import AppCommandParser from './app_command_parser';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
@@ -132,12 +132,12 @@ export default class SlashSuggestion extends PureComponent {
 
     fetchAppCommandSuggestions = async (pretext, channelID, rootID) => {
         this.appCommandParser.setChannelContext(channelID, rootID);
-        return this.appCommandParser.getSuggestionsForSubCommandsAndArguments(pretext);
+        return this.appCommandParser.getSuggestions(pretext);
     }
 
     getAppBaseCommandSuggestions = (pretext, channelID, rootID) => {
         this.appCommandParser.setChannelContext(channelID, rootID);
-        return this.appCommandParser.getSuggestionsForBaseCommands(pretext);
+        return this.appCommandParser.getSuggestionsBase(pretext);
     }
 
     updateSuggestions = (matches) => {

@@ -3,11 +3,15 @@
 
 import {AppCallResponseType, AppCallType, AppExpandLevel, AppFieldType} from '@mm-redux/types/apps';
 
-export const AppsBindings = {
+export const AppBindingLocations = {
     POST_MENU_ITEM: '/post_menu',
     CHANNEL_HEADER_ICON: '/channel_header',
     COMMAND: '/command',
     IN_POST: '/in_post',
+};
+
+export const AppBindingPresentations = {
+    MODAL: 'modal',
 };
 
 export const AppCallResponseTypes: { [name: string]: AppCallResponseType } = {
@@ -20,6 +24,7 @@ export const AppCallResponseTypes: { [name: string]: AppCallResponseType } = {
 
 export const AppCallTypes: { [name: string]: AppCallType } = {
     SUBMIT: '',
+    LOOKUP: 'lookup',
     FORM: 'form',
     CANCEL: 'cancel',
 };

@@ -4,7 +4,7 @@
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import AppCommandParser from '@components/autocomplete/slash_suggestion/apps_command_parser';
+import AppCommandParser from '@components/autocomplete/slash_suggestion/app_command_parser';
 import {AppCallTypes} from '@mm-redux/constants/apps';
 
 import {doAppCall} from '@actions/apps';

@@ -3,11 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import {getAppBindings} from 'mattermost-redux/selectors/entities/apps';
-
-import {AppBindingLocations, AppCallResponseTypes, AppCallTypes, AppFieldTypes} from 'mattermost-redux/constants/apps';
-
-import {
+import type {
     AppCall,
     AppBinding,
     AppField,
@@ -19,22 +15,31 @@ import {
     AutocompleteStaticSelect,
     AutocompleteSuggestionWithComplete,
     AppLookupCallValues,
-} from 'mattermost-redux/types/apps';
 
-import {DispatchFunc} from 'mattermost-redux/types/actions';
-import {getPost} from 'mattermost-redux/selectors/entities/posts';
-import {getChannel, getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
-import {Channel} from 'mattermost-redux/types/channels';
+    DispatchFunc,
+    GlobalState,
+} from './app_command_parser_dependencies';
 
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {
+    AppBindingLocations,
+    AppCallTypes,
+    AppFieldTypes,
 
-import {Constants} from 'utils/constants';
-import {GlobalState} from 'types/store';
-import {sendEphemeralPost} from 'actions/global_actions';
-import {doAppCall} from 'actions/apps';
-import * as Utils from 'utils/utils.jsx';
+    getAppBindings,
+    getPost,
+    getChannel,
+    getCurrentChannel,
+    getCurrentTeamId,
+    doAppCall,
+    sendEphemeralPost,
+    Store,
+} from './app_command_parser_dependencies';
 
-const EXECUTE_CURRENT_COMMAND_ITEM_ID = Constants.Integrations.EXECUTE_CURRENT_COMMAND_ITEM_ID;
+const Utils = {
+    isMac: () => false,
+};
+
+const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
 
 export type Store = {
     dispatch: DispatchFunc;

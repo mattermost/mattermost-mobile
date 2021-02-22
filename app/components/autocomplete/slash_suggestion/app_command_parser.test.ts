@@ -3,15 +3,20 @@
 
 /* eslint-disable max-lines */
 
-import thunk from 'redux-thunk';
-import configureStore from 'redux-mock-store';
+import {
+    thunk,
+    configureStore,
+    Client4,
+    AppBinding,
+    AppForm,
+    AppFieldTypes,
+} from './app_command_parser_test_dependencies';
 
-import {Client4} from 'mattermost-redux/client';
-
-import {AppBinding, AppForm} from 'mattermost-redux/types/apps';
-import {AppFieldTypes} from 'mattermost-redux/constants/apps';
-
-import {AppCommandParser, ParseState, ParsedCommand} from './app_command_parser';
+import {
+    AppCommandParser,
+    ParseState,
+    ParsedCommand,
+} from './app_command_parser';
 
 const mockStore = configureStore([thunk]);
 
