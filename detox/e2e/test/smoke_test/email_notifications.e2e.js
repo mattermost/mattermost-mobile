@@ -218,7 +218,7 @@ function verifyEmailNotification(response, siteName, teamDisplayName, channelDis
     jestExpect(bodyText[1]).toEqual('You have a new notification.');
     jestExpect(bodyText[4]).toEqual(`Channel: ${channelDisplayName}`);
     jestExpect(bodyText[5]).toContain(`@${byUser.username}`);
-    jestExpect(bodyText[7]).toEqual(`${message}`);
+    jestExpect(bodyText[7]).toEqual(message);
     jestExpect(bodyText[9]).toContain('Go To Post');
     jestExpect(bodyText[11]).toEqual(`Any questions at all, mail us any time: ${supportEmail}`);
     jestExpect(bodyText[12]).toEqual('Best wishes,');
