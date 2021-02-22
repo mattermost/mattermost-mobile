@@ -29,8 +29,6 @@ export default class SlideUpPanel extends PureComponent {
         // Whether or not to allow the panel to snap to the initial position after it has been opened
         allowStayMiddle: PropTypes.bool,
 
-        skipAnimatedDrag: PropTypes.bool,
-
         containerHeight: PropTypes.number,
         children: PropTypes.oneOfType([
             PropTypes.arrayOf(PropTypes.node),
@@ -56,7 +54,6 @@ export default class SlideUpPanel extends PureComponent {
         initialPosition: 0.5,
         marginFromTop: TOP_MARGIN,
         onRequestClose: () => true,
-        skipAnimatedDrag: false,
     };
 
     constructor(props) {
@@ -233,7 +230,7 @@ export default class SlideUpPanel extends PureComponent {
     };
 
     render() {
-        const {children, header, theme, skipAnimatedDrag} = this.props;
+        const {children, header, theme} = this.props;
         const {lastSnap} = this.state;
 
         const styles = getStyleSheet(theme);
@@ -247,44 +244,6 @@ export default class SlideUpPanel extends PureComponent {
         };
 
         const headerComponent = header(this.headerRef);
-
-        let wrappedChildren;
-        if (skipAnimatedDrag) {
-            wrappedChildren = (
-                <View style={[styles.container, !headerComponent && styles.border]}>
-                    {children}
-                </View>
-            );
-        } else {
-            wrappedChildren = (
-                <PanGestureHandler
-                    ref={this.panRef}
-                    simultaneousHandlers={[this.scrollRef, this.masterRef]}
-                    waitFor={this.headerRef}
-                    shouldCancelWhenOutside={false}
-                    onGestureEvent={this.onGestureEvent}
-                    onHandlerStateChange={this.onHandlerStateChange}
-                >
-                    <Animated.View style={[styles.container, !headerComponent && styles.border]}>
-                        <NativeViewGestureHandler
-                            ref={this.scrollRef}
-                            waitFor={this.masterRef}
-                            simultaneousHandlers={this.panRef}
-                        >
-                            <Animated.ScrollView
-                                ref={this.scrollViewRef}
-                                bounces={false}
-                                onScrollBeginDrag={this.onRegisterLastScroll}
-                                scrollEventThrottle={1}
-                                style={{marginBottom: (this.props.marginFromTop + BOTTOM_MARGIN)}}
-                            >
-                                {children}
-                            </Animated.ScrollView>
-                        </NativeViewGestureHandler>
-                    </Animated.View>
-                </PanGestureHandler>
-            );
-        }
 
         return (
             <TapGestureHandler
@@ -332,7 +291,32 @@ export default class SlideUpPanel extends PureComponent {
                         </PanGestureHandler>
                         {headerComponent}
                         <View style={styles.wrapper}>
-                            {wrappedChildren}
+                            <PanGestureHandler
+                                ref={this.panRef}
+                                simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                                waitFor={this.headerRef}
+                                shouldCancelWhenOutside={false}
+                                onGestureEvent={this.onGestureEvent}
+                                onHandlerStateChange={this.onHandlerStateChange}
+                            >
+                                <Animated.View style={[styles.container, !headerComponent && styles.border]}>
+                                    <NativeViewGestureHandler
+                                        ref={this.scrollRef}
+                                        waitFor={this.masterRef}
+                                        simultaneousHandlers={this.panRef}
+                                    >
+                                        <Animated.ScrollView
+                                            ref={this.scrollViewRef}
+                                            bounces={false}
+                                            onScrollBeginDrag={this.onRegisterLastScroll}
+                                            scrollEventThrottle={1}
+                                            style={{marginBottom: (this.props.marginFromTop + BOTTOM_MARGIN)}}
+                                        >
+                                            {children}
+                                        </Animated.ScrollView>
+                                    </NativeViewGestureHandler>
+                                </Animated.View>
+                            </PanGestureHandler>
                         </View>
                     </Animated.View>
                 </View>

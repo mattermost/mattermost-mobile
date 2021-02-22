@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
 import {UserProfile} from '@mm-redux/types/users';
 import type {Theme} from '@mm-redux/types/preferences';
 import SlideUpPanel from 'app/components/slide_up_panel';
@@ -15,8 +14,6 @@ interface ParticipantsListProps {
     userProfiles: UserProfile[];
     theme: Theme;
 }
-
-type ListItem = (info: {item: UserProfile}) => React.ReactElement;
 
 const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
     const close = () => {
@@ -36,24 +33,14 @@ const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
         );
     };
 
-    const renderItem: ListItem = ({item}) => (
-        <ParticipantRow
-            key={item.id}
-            theme={theme}
-            user={item}
-        />
-    );
-
-    const keyExtractor = (user: UserProfile) => user.id;
-
     const renderParticipantRows = () => {
-        return (
-            <FlatList
-                testID='share_extension.team_list.screen'
-                data={userProfiles}
-                renderItem={renderItem}
-                keyExtractor={keyExtractor}
-            />);
+        return userProfiles.map((user: UserProfile) => (
+            <ParticipantRow
+                key={user.id}
+                theme={theme}
+                user={user}
+            />
+        ));
     };
 
     return (
@@ -64,7 +51,6 @@ const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
                 header={renderHeader}
                 headerHeight={37.5}
                 theme={theme}
-                skipAnimatedDrag={true}
             >
                 {renderParticipantRows()}
             </SlideUpPanel>
