@@ -20,13 +20,13 @@ import {getResponseFromError} from './common';
  * Get user status.
  * See https://api.mattermost.com/#tag/status/paths/~1users~1{user_id}~1status/get
  * @param {string} userId - the user ID
- * @return {Object} returns {status} on success or {error, status} on error
+ * @return {Object} returns {userStatus} on success or {error, status} on error
  */
 export const apiGetUserStatus = async (userId) => {
     try {
         const response = await client.get(`/api/v4/users/${userId}/status`);
 
-        return {status: response.data};
+        return {userStatus: response.data};
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -37,7 +37,7 @@ export const apiGetUserStatus = async (userId) => {
  * See https://api.mattermost.com/#tag/status/paths/~1users~1{user_id}~1status/put
  * @param {string} userId - the user ID
  * @param {string} status - the user status, can be online, away, offline and dnd
- * @return {Object} returns {status} on success or {error, status} on error
+ * @return {Object} returns {userStatus} on success or {error, status} on error
  */
 export const apiUpdateUserStatus = async (userId, status = 'online') => {
     try {
@@ -46,7 +46,7 @@ export const apiUpdateUserStatus = async (userId, status = 'online') => {
             {user_id: userId, status},
         );
 
-        return {status: response.data};
+        return {userStatus: response.data};
     } catch (err) {
         return getResponseFromError(err);
     }
