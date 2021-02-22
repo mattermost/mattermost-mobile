@@ -9,8 +9,8 @@ import thunk from 'redux-thunk';
 import {render} from '@testing-library/react-native';
 
 import intitialState from '@store/initial_state';
-import { AnyAction, Store } from 'redux';
-import { GlobalState } from '@mm-redux/types/store';
+import {AnyAction, Store} from 'redux';
+import {GlobalState} from '@mm-redux/types/store';
 
 const mockStore = configureMockStore<GlobalState, AnyAction>([thunk]);
 const defaultStore = mockStore(intitialState);
