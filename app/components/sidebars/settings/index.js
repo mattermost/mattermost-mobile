@@ -9,6 +9,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 
 import {logout} from 'app/actions/views/user';
+import {unsetCustomStatus} from '@actions/views/custom_status';
 
 import SettingsSidebar from './settings_sidebar';
 import {isCustomStatusEnabled, makeGetCustomStatus} from '@selectors/custom_status';
@@ -33,6 +34,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             logout,
             setStatus,
+            unsetCustomStatus,
         }, dispatch),
     };
 }

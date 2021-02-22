@@ -18,7 +18,8 @@ const CustomStatusEmoji = (props: ComponentProps) => {
     const customStatus = useSelector((state: GlobalState) => {
         return getCustomStatus(state, userID);
     });
-    if (!(customStatusEnabled && customStatus && customStatus.emoji)) {
+    const emojiExists = customStatusEnabled && customStatus && customStatus.emoji;
+    if (!emojiExists) {
         return null;
     }
 
@@ -28,6 +29,10 @@ const CustomStatusEmoji = (props: ComponentProps) => {
             emojiName={customStatus.emoji}
         />
     );
+};
+
+CustomStatusEmoji.defaultProps = {
+    emojiSize: 20,
 };
 
 export default CustomStatusEmoji;

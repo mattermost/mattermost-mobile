@@ -20,12 +20,14 @@ import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
 import Emoji from '@components/emoji';
+import CustomStatusLabel from './custom_status_label';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
@@ -195,23 +197,31 @@ export default class SettingsSidebarBase extends PureComponent {
         }
         const customStatus = this.props.customStatus;
         const isStatusSet = customStatus && (customStatus.text || customStatus.emoji);
-        const labelComponent = isStatusSet ? <Text>{customStatus.text}</Text> : null;
-        const customStatusEmoji = (
-            <Emoji
-                emojiName={isStatusSet ? customStatus.emoji : 'trollface'}
-                size={20}
-            />
-        );
+        const labelComponent = isStatusSet &&
+            (<CustomStatusLabel
+                text={customStatus.text}
+                theme={this.props.theme}
+            />);
+        const customStatusEmoji = isStatusSet ?
+            (<Emoji
+                emojiName={customStatus.emoji}
+                size={24}
+            />) :
+            (<CompassIcon
+                name='emoticon-happy-outline'
+                size={24}
+            />);
+
+        const clearButton = isStatusSet ? <Text onPress={this.props.actions.unsetCustomStatus}>{'x'}</Text> : null;
         return (
             <DrawerItem
                 testID='settings.sidebar.custom_status.action'
                 labelComponent={labelComponent}
                 leftComponent={customStatusEmoji}
-                i18nId={'settings.sidebar.set_status'}
-                defaultMessage={'Set a Status'}
                 separator={false}
                 onPress={this.handleSetStatus}
                 theme={this.props.theme}
+                labelSibling={clearButton}
             />
         );
     }

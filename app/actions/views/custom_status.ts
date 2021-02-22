@@ -28,3 +28,9 @@ export function removeRecentCustomStatus(customStatus: UserCustomStatus): Action
         ],
     });
 }
+
+export default {
+    setCustomStatus,
+    unsetCustomStatus,
+    removeRecentCustomStatus,
+};
