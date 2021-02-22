@@ -66,7 +66,7 @@ describe('Direct Messages', () => {
 
         // * Verify DM channel is created
         await ChannelInfoScreen.open();
-        await expect(ChannelInfoScreen.headerDisplayName).toHaveText(`${testOtherUser.username}`);
+        await expect(ChannelInfoScreen.headerDisplayName).toHaveText(testOtherUser.username);
         await ChannelInfoScreen.close();
         await openMainSidebar();
         await getChannelByDisplayName(testOtherUser.username).tap();
