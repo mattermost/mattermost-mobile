@@ -307,4 +307,154 @@ describe('*** Data Operator tests ***', () => {
         expect(records[0].buildNumber).toMatch('build-10x');
         expect(records[1].buildNumber).toMatch('build-11x');
     });
+
+    it('=> should use operateAppRecord for APP entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.APP,
+            values: [
+                {buildNumber: 'build-10x', createdAt: 1, id: 'id-21', versionNumber: 'version-10'},
+                {buildNumber: 'build-11y', createdAt: 1, id: 'id-22', versionNumber: 'version-11'},
+            ],
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateAppRecord});
+    });
+
+    it('=> should use operateGlobalRecord for GLOBAL entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.GLOBAL,
+            values: {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateGlobalRecord});
+    });
+
+    it('=> should use operateServersRecord for SERVERS entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.SERVERS,
+            values: {
+                dbPath: 'server.db',
+                displayName: 'community',
+                id: 'server-id-1',
+                mentionCount: 0,
+                unreadCount: 0,
+                url: 'https://community.mattermost.com',
+            },
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateServersRecord});
+    });
+
+    it('=> should use operateCustomEmojiRecord for CUSTOM_EMOJI entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.CUSTOM_EMOJI,
+            values: {
+                id: 'custom-emoji-id-1',
+                name: 'custom-emoji-1',
+            },
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateCustomEmojiRecord});
+    });
+
+    it('=> should use operateRoleRecord for ROLE entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.ROLE,
+            values: {
+                id: 'custom-emoji-id-1',
+                name: 'custom-emoji-1',
+                permissions: ['custom-emoji-1'],
+            },
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateRoleRecord});
+    });
+
+    it('=> should use operateSystemRecord for SYSTEM entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.SYSTEM,
+            values: {id: 'system-id-1', name: 'system-1', value: 'system-1'},
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateSystemRecord});
+    });
+
+    it('=> should use operateTermsOfServiceRecord for TERMS_OF_SERVICE entity in handleBaseData', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.TERMS_OF_SERVICE,
+            values: {id: 'tos-1', acceptedAt: 1},
+        };
+
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateTermsOfServiceRecord});
+    });
 });
