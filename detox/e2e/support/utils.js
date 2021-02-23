@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import axios from 'axios';
 import {v4 as uuidv4} from 'uuid';
+import testConfig from '@support/test_config';
 
 /**
  * Explicit `wait` should not normally used but made available for special cases.
@@ -47,6 +49,59 @@ export const getRandomId = (length = 6) => {
 export const capitalize = (text) => {
     return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+/**
+ * Get admin account.
+ */
+export const getAdminAccount = () => {
+    return {
+        username: testConfig.adminUsername,
+        password: testConfig.adminPassword,
+        email: testConfig.adminEmail,
+    };
+};
+
+/**
+ * Get recent email.
+ * @param {string} username - username of email recipient
+ * @param {string} mailUrl - url of email
+ */
+export const getRecentEmail = async (username, mailUrl = `${testConfig.smtpUrl}/api/v1/mailbox`) => {
+    const mailboxUrl = `${mailUrl}/${username}`;
+    let response;
+    let recentEmail;
+
+    try {
+        response = await axios({url: mailboxUrl, method: 'get'});
+        recentEmail = response.data[response.data.length - 1];
+    } catch (error) {
+        return {status: error.status, data: null};
+    }
+
+    if (!recentEmail || !recentEmail.id) {
+        return {status: 501, data: null};
+    }
+
+    let recentEmailMessage;
+    const mailMessageUrl = `${mailboxUrl}/${recentEmail.id}`;
+    try {
+        response = await axios({url: mailMessageUrl, method: 'get'});
+        recentEmailMessage = response.data;
+    } catch (error) {
+        return {status: error.status, data: null};
+    }
+
+    return {status: response.status, data: recentEmailMessage};
+};
+
+/**
+ * Split email body text.
+ * @param {string} text
+ * @return {string} split text
+ */
+export function splitEmailBodyText(text) {
+    return text.split('\n').map((d) => d.trim());
+}
 
 const SECOND = 1000;
 const MINUTE = 60 * 1000;

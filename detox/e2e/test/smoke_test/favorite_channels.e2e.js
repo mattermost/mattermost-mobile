@@ -15,6 +15,18 @@ import {
 import {Setup} from '@support/server_api';
 
 describe('Favorite Channels', () => {
+    const {
+        closeMainSidebar,
+        openMainSidebar,
+    } = ChannelScreen;
+    const {
+        favoriteSwitchFalse,
+        favoriteSwitchTrue,
+    } = ChannelInfoScreen;
+    const {
+        getChannelByDisplayName,
+        hasChannelDisplayNameAtIndex,
+    } = MainSidebar;
     let testChannel;
 
     beforeAll(async () => {
@@ -30,19 +42,6 @@ describe('Favorite Channels', () => {
     });
 
     it('MM-T3191 should be able to favorite a channel', async () => {
-        const {
-            closeMainSidebar,
-            openMainSidebar,
-        } = ChannelScreen;
-        const {
-            favoriteSwitchFalse,
-            favoriteSwitchTrue,
-        } = ChannelInfoScreen;
-        const {
-            getChannelByDisplayName,
-            hasChannelDisplayNameAtIndex,
-        } = MainSidebar;
-
         // # Open channel info screen
         await openMainSidebar();
         await getChannelByDisplayName(testChannel.display_name).tap();
@@ -63,6 +62,33 @@ describe('Favorite Channels', () => {
         await ChannelInfoScreen.close();
         await openMainSidebar();
         await expect(element(by.text('FAVORITE CHANNELS'))).toBeVisible();
+        await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
+
+        // # Close main sidebar
+        await closeMainSidebar();
+    });
+
+    it('MM-T3192 should be able to un-favorite a channel', async () => {
+        // # Open channel info screen
+        await openMainSidebar();
+        await getChannelByDisplayName(testChannel.display_name).tap();
+        await ChannelInfoScreen.open();
+
+        // * Verify favorite switch is toggled on
+        await expect(favoriteSwitchTrue).toBeVisible();
+        await expect(favoriteSwitchFalse).not.toBeVisible();
+
+        // # Toggle off favorite switch
+        await favoriteSwitchTrue.tap();
+
+        // * Verify favorite switch is toggled off
+        await expect(favoriteSwitchFalse).toBeVisible();
+        await expect(favoriteSwitchTrue).not.toBeVisible();
+
+        // * Verify channel does not appear in favorite channels list
+        await ChannelInfoScreen.close();
+        await openMainSidebar();
+        await expect(element(by.text('FAVORITE CHANNELS'))).not.toBeVisible();
         await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
 
         // # Close main sidebar

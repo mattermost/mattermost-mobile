@@ -14,6 +14,7 @@ import LongPostScreen from './long_post';
 import MoreChannelsScreen from './more_channels';
 import MoreDirectMessagesScreen from './more_direct_messages';
 import NotificationScreen from './notification';
+import NotificationSettingsEmailScreen from './notification_settings_email';
 import NotificationSettingsMobileScreen from './notification_settings_mobile';
 import NotificationSettingsScreen from './notification_settings';
 import PermalinkScreen from './permalink';
@@ -40,6 +41,7 @@ export {
     MoreChannelsScreen,
     MoreDirectMessagesScreen,
     NotificationScreen,
+    NotificationSettingsEmailScreen,
     NotificationSettingsMobileScreen,
     NotificationSettingsScreen,
     PermalinkScreen,
