@@ -50,6 +50,7 @@ const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
 
     const {id, username} = user;
     const usernameDisplay = '@' + username;
+    const displayName = displayUsername(user, Preferences.DISPLAY_PREFER_FULL_NAME);
 
     const style = getStyleSheet(theme);
 
@@ -74,11 +75,13 @@ const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
                     numberOfLines={1}
                 >
                     <Text style={style.displayName}>
-                        {displayUsername(user, Preferences.DISPLAY_PREFER_FULL_NAME)}
+                        {`${displayName === username ? username : displayName}`}
                     </Text>
-                    <Text style={style.username}>
-                        {`  ${usernameDisplay}`}
-                    </Text>
+                    { displayName !== username &&
+                        <Text style={style.username}>
+                            {`  ${usernameDisplay}`}
+                        </Text>
+                    }
                 </Text>
             </View>
         </TouchableOpacity>
