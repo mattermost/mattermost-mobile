@@ -14,12 +14,12 @@ import {
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
+    operateTermsOfServiceRecord,
 } from './operators';
 
 jest.mock('../database_manager');
 
-const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
-const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
+const {APP} = MM_TABLES.DEFAULT;
 
 describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type App for operateAppRecord', async () => {
@@ -31,7 +31,6 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateAppRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: APP,
             value: {buildNumber: 'build-7', createdAt: 1, id: 'id-18', versionNumber: 'v-1'},
         });
 
@@ -48,7 +47,6 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateGlobalRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: GLOBAL,
             value: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
         });
 
@@ -65,7 +63,6 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateServersRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: SERVERS,
             value: {
                 dbPath: 'mm-server',
                 displayName: 's-displayName',
@@ -97,7 +94,6 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateCustomEmojiRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: CUSTOM_EMOJI,
             value: {id: 'emo-1', name: 'emoji'},
         });
 
@@ -122,7 +118,6 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateRoleRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: ROLE,
             value: {id: 'role-1', name: 'role-name-1', permissions: []},
         });
 
@@ -147,7 +142,6 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateSystemRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: SYSTEM,
             value: {id: 'system-1', name: 'system-name-1', value: 'system'},
         });
 
@@ -169,10 +163,9 @@ describe('*** Data Operator tests ***', () => {
         });
         expect(db).toBeTruthy();
 
-        const preparedRecords = await operateSystemRecord({
+        const preparedRecords = await operateTermsOfServiceRecord({
             db: db!,
             optType: OperationType.CREATE,
-            tableName: TERMS_OF_SERVICE,
             value: {id: 'system-1', acceptedAt: 1},
         });
 

@@ -88,7 +88,7 @@ export type DataFactory = {
     db: Database,
     generator?: (model: Model) => void,
     optType?: OperationType,
-    tableName: string,
+    tableName?: string,
     value: RecordValue,
 }
 
