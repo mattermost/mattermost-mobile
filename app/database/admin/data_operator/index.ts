@@ -45,9 +45,10 @@ class DataOperator {
     /**
      * handleIsolatedEntityData: Operator that handles Create/Update operations on the isolated entities as
      * described by the IsolatedTables type
-     * @param {OperationType} optType
-     * @param {IsolatedEntities} tableName
-     * @param {Records} values
+     * @param {HandleIsolatedEntityData} entityData
+     * @param {OperationType} entityData.optType
+     * @param {IsolatedEntities} entityData.tableName
+     * @param {Records} entityData.values
      * @returns {Promise<void>}
      */
     handleIsolatedEntityData = async ({optType, tableName, values}: HandleIsolatedEntityData): Promise<void> => {
@@ -95,8 +96,9 @@ class DataOperator {
     /**
      * batchOperations: Accepts an instance of Database (either Default or Server) and an array of
      * prepareCreate/prepareUpdate values and executes the actions on the database.
-     * @param {Database} db
-     * @param {Array} models
+     * @param {BatchOperations} operation
+     * @param {Database} operation.db
+     * @param {Array} operation.models
      * @returns {Promise<void>}
      */
     private batchOperations = async ({db, models}: BatchOperations) => {
@@ -109,10 +111,11 @@ class DataOperator {
 
     /**
      * handleBaseData: Handles the Create/Update operations on an entity.
-     * @param {OperationType} optType
-     * @param {string} tableName
-     * @param {RecordValue | RecordValue[]} values
-     * @param {(recordOperator: DataFactory) => void} recordOperator
+     * @param {HandleBaseData} opsBase
+     * @param {OperationType} opsBase.optType
+     * @param {string} opsBase.tableName
+     * @param {Records} opsBase.values
+     * @param {(recordOperator: DataFactory) => void} opsBase.recordOperator
      * @returns {Promise<void>}
      */
     private handleBaseData = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {

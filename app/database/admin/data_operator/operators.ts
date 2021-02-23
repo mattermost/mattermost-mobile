@@ -30,9 +30,10 @@ const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateAppRecord = async ({db, optType, value}: DataFactory) => {
@@ -50,9 +51,10 @@ export const operateAppRecord = async ({db, optType, value}: DataFactory) => {
 
 /**
  * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateGlobalRecord = async ({db, optType, value}: DataFactory) => {
@@ -69,9 +71,10 @@ export const operateGlobalRecord = async ({db, optType, value}: DataFactory) => 
 
 /**
  * operateServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateServersRecord = async ({db, optType, value}: DataFactory) => {
@@ -91,9 +94,10 @@ export const operateServersRecord = async ({db, optType, value}: DataFactory) =>
 
 /**
  * operateCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateCustomEmojiRecord = async ({db, optType, value}: DataFactory) => {
@@ -109,9 +113,10 @@ export const operateCustomEmojiRecord = async ({db, optType, value}: DataFactory
 
 /**
  * operateRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateRoleRecord = async ({db, optType, value}: DataFactory) => {
@@ -128,9 +133,10 @@ export const operateRoleRecord = async ({db, optType, value}: DataFactory) => {
 
 /**
  * operateSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateSystemRecord = async ({db, optType, value}: DataFactory) => {
@@ -147,9 +153,10 @@ export const operateSystemRecord = async ({db, optType, value}: DataFactory) => 
 
 /**
  * operateTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
- * @param {Database} db
- * @param {OperationType} optType
- * @param {RecordValue} value
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
 export const operateTermsOfServiceRecord = async ({db, optType, value}: DataFactory) => {
@@ -171,11 +178,12 @@ export const operateTermsOfServiceRecord = async ({db, optType, value}: DataFact
  * For an UPDATE operation, we fetch the existing record using the 'id' value and then we do the update operation;
  * if no record is found for that 'id', we'll create it a new record.
  *
- * @param {Database} db
- * @param {OperationType} optType
- * @param {string} tableName
- * @param {any} value
- * @param {((model: Model) => void)} generator
+ * @param {DataFactory} operatorBase
+ * @param {Database} operatorBase.db
+ * @param {OperationType} operatorBase.optType
+ * @param {string} operatorBase.tableName
+ * @param {any} operatorBase.value
+ * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */
 const operateBaseRecord = async ({db, optType, tableName, value, generator}: DataFactory) => {
