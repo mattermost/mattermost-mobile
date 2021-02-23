@@ -46,8 +46,8 @@ class DataOperator {
      * handleIsolatedEntityData: Operator that handles Create/Update operations on the isolated entities as
      * described by the IsolatedTables type
      * @param {OperationType} optType
-     * @param {APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE} tableName
-     * @param {RawApp | RawGlobal | RawServers} values
+     * @param {IsolatedEntities} tableName
+     * @param {Records} values
      * @returns {Promise<void>}
      */
     handleIsolatedEntityData = async ({optType, tableName, values}: HandleIsolatedEntityData): Promise<void> => {

@@ -457,4 +457,25 @@ describe('*** Data Operator tests ***', () => {
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateTermsOfServiceRecord});
     });
+
+    it('=> should not call handleBaseData if tableName is invalid', async () => {
+        expect.assertions(2);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+
+        const data = {
+            optType: OperationType.CREATE,
+            tableName: 'INVALID_TABLE_NAME',
+            values: {id: 'tos-1', acceptedAt: 1},
+        };
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        await DataOperator.handleIsolatedEntityData(data);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
+    });
 });
