@@ -9,6 +9,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import DocumentPicker from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {Client4} from '@mm-redux/client';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
@@ -569,10 +570,10 @@ export default class EditProfile extends PureComponent {
 
         if (updating) {
             return (
-                <View style={[style.container, style.flex]}>
+                <SafeAreaView style={[style.container, style.flex]}>
                     <StatusBar/>
                     <Loading color={theme.centerChannelColor}/>
-                </View>
+                </SafeAreaView>
             );
         }
 
@@ -582,6 +583,7 @@ export default class EditProfile extends PureComponent {
                 <View style={style.errorContainer}>
                     <View style={style.errorWrapper}>
                         <ErrorText
+                            testID='edit_profile.error.text'
                             error={error}
                             textStyle={style.errorText}
                         />
@@ -591,7 +593,10 @@ export default class EditProfile extends PureComponent {
         }
 
         return (
-            <View style={style.flex}>
+            <SafeAreaView
+                testID='edit_profile.screen'
+                style={style.flex}
+            >
                 <StatusBar/>
                 <KeyboardAwareScrollView
                     bounces={false}
@@ -614,7 +619,7 @@ export default class EditProfile extends PureComponent {
                         <View style={style.footer}/>
                     </View>
                 </KeyboardAwareScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

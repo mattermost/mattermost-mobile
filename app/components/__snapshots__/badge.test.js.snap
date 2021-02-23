@@ -15,6 +15,7 @@ exports[`Badge should match snapshot 1`] = `
       },
     ]
   }
+  testID="badge"
 >
   <View
     style={
@@ -70,6 +71,7 @@ exports[`Badge should match snapshot 1`] = `
               },
             ]
           }
+          testID="badge.unread_count"
         >
           99+
         </Text>

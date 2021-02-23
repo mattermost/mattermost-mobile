@@ -6,7 +6,6 @@ exports[`NotificationPreference should match snapshot 1`] = `
   defaultMessage="Mobile Notifications"
   detail="Default"
   icon="cellphone"
-  isLandscape={false}
   rightArrow={true}
   shouldRender={true}
   testID="test-id"

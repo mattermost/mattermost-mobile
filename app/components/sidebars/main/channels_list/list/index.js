@@ -3,6 +3,7 @@
 
 import {connect} from 'react-redux';
 
+import {DeviceTypes, ViewTypes} from '@constants';
 import {General} from '@mm-redux/constants';
 import {
     getSortedFavoriteChannelIds,
@@ -18,9 +19,6 @@ import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-
 import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import Permissions from '@mm-redux/constants/permissions';
-
-import {isLandscape} from 'app/selectors/device';
-import {DeviceTypes, ViewTypes} from 'app/constants';
 
 import List from './list';
 
@@ -71,7 +69,6 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         unreadChannelIds,
         orderedChannelIds,
-        isLandscape: isLandscape(state),
     };
 }
 

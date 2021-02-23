@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Animated,
-    Linking,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -17,6 +16,7 @@ import FormattedText from '@components/formatted_text';
 import {DeviceTypes} from '@constants';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 import {showModal, dismissModal} from '@actions/navigation';
 
 const {View: AnimatedView} = Animated;
@@ -62,17 +62,21 @@ export default class ClientUpgradeListener extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {forceUpgrade, latestVersion, minVersion} = this.props;
-        const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = nextProps;
+    setTop(top) {
+        this.setState({top});
+    }
+
+    componentDidUpdate(prevProps) {
+        const {forceUpgrade, latestVersion, minVersion} = prevProps;
+        const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = this.props;
 
         const versionMismatch = latestVersion !== nextLatestVersion || minVersion !== nextMinVersion;
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
-            this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
-        } else if (this.props.isLandscape !== nextProps.isLandscape &&
+            this.checkUpgrade(minVersion, latestVersion, this.props.isLandscape);
+        } else if (prevProps.isLandscape !== this.props.isLandscape &&
             isUpgradeAvailable(this.state.upgradeType) && DeviceTypes.IS_IPHONE_WITH_INSETS) {
-            const newTop = nextProps.isLandscape ? 45 : 100;
-            this.setState({top: new Animated.Value(newTop)});
+            const newTop = this.props.isLandscape ? 45 : 100;
+            this.setTop(new Animated.Value(newTop));
         }
     }
 
@@ -117,7 +121,7 @@ export default class ClientUpgradeListener extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.openURL(downloadLink).catch(() => {
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -128,7 +132,8 @@ export default class ClientUpgradeListener extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
-        });
+        };
+        tryOpenURL(downloadLink, onError);
 
         this.toggleUpgradeMessage(false);
     };

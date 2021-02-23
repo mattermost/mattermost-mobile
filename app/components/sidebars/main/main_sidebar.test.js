@@ -4,9 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
-
-import {DeviceTypes} from 'app/constants';
 
 import MainSidebar from './main_sidebar.ios';
 
@@ -31,27 +30,27 @@ describe('MainSidebar', () => {
         theme: Preferences.THEMES.default,
     };
 
-    test('should match, full snapshot', () => {
-        const wrapper = shallow(
-            <MainSidebar {...baseProps}/>,
+    const loadShallow = (props) => {
+        return shallow(
+            <MainSidebar {...(props || baseProps)}/>,
         );
+    };
+
+    test('should match, full snapshot', () => {
+        const wrapper = loadShallow();
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should not set the permanentSidebar state if not Tablet', () => {
-        const wrapper = shallow(
-            <MainSidebar {...baseProps}/>,
-        );
+        const wrapper = loadShallow();
 
         wrapper.instance().handlePermanentSidebar();
-        expect(wrapper.state('permanentSidebar')).toBeUndefined();
+        expect(wrapper.state('permanentSidebar')).toBeFalsy();
     });
 
     test('should set the permanentSidebar state if Tablet', async () => {
-        const wrapper = shallow(
-            <MainSidebar {...baseProps}/>,
-        );
+        const wrapper = loadShallow();
 
         DeviceTypes.IS_TABLET = true;
 
@@ -71,9 +70,7 @@ describe('MainSidebar', () => {
             theme,
         };
 
-        const wrapper = shallow(
-            <MainSidebar {...props}/>,
-        );
+        const wrapper = loadShallow(props);
 
         const instance = wrapper.instance();
         instance.render = jest.fn();
@@ -81,14 +78,5 @@ describe('MainSidebar', () => {
         expect(instance.render).toHaveBeenCalledTimes(0);
         wrapper.setProps({theme: newTheme});
         expect(instance.render).toHaveBeenCalledTimes(1);
-    });
-
-    test('should render main sidebar below PostList for iOS', () => {
-        const wrapper = shallow(
-            <MainSidebar {...baseProps}/>,
-        );
-        const drawer = wrapper.dive().childAt(1);
-        const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));
-        expect(drawerStyle).toHaveProperty('zIndex', 0);
     });
 });

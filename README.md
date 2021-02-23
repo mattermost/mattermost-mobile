@@ -63,7 +63,7 @@ We plan to add support for tablets in the future, but the timeline depends on ho
 
 ### I keep getting a message "Cannot connect to the server. Please check your server URL and internet connection."
 
-This sometimes appears when there is an issue with the SSL certitificate configuration. 
+This sometimes appears when there is an issue with the SSL certificate configuration. 
 
 To check that your SSL certificate is set up correctly, test the SSL certificate by visiting a site such as https://www.ssllabs.com/ssltest/index.html. If there’s an error about the missing chain or certificate path, there is likely an intermediate certificate missing that needs to be included.
 

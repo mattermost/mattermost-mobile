@@ -16,6 +16,7 @@ import {
     MoreChannelsScreen,
 } from '@support/ui/screen';
 import {Setup} from '@support/server_api';
+import {isAndroid} from '@support/utils';
 
 describe('Channels', () => {
     beforeAll(async () => {
@@ -38,7 +39,7 @@ describe('Channels', () => {
         await expect(element(by.text('No more channels to join'))).toBeVisible();
 
         // # Tap to create new channel
-        await MoreChannelsScreen.publicChannelCreateButton.tap();
+        await MoreChannelsScreen.createButton.tap();
 
         // * Expect a new screen to create a new public channel
         const createChannelScreen = await CreateChannelScreen.toBeVisible();
@@ -52,7 +53,7 @@ describe('Channels', () => {
 
         // # Fill data
         await nameInput.typeText('a');
-        await attemptToTapButton('edit_channel.create.button');
+        await attemptToTapCreateButton();
 
         // * Expect to be in the same screen since the channel name must be longer
         await expect(nameInput).toBeVisible();
@@ -61,7 +62,12 @@ describe('Channels', () => {
         await purposeInput.typeText('This sentence has');
         await purposeInput.tapReturnKey();
         await purposeInput.typeText('multiple lines');
-        await createChannelScreen.scroll(200, 'down');
+
+        // # Scroll down if Android
+        if (isAndroid()) {
+            await createChannelScreen.scroll(200, 'down');
+        }
+
         await expect(headerInput).toBeVisible();
         const expectedChannelHeader = 'I 🌮 love 🌮 tacos 🌮';
         await headerInput.replaceText(expectedChannelHeader);
@@ -86,12 +92,12 @@ describe('Channels', () => {
     });
 });
 
-async function attemptToTapButton(id) {
-    if (device.getPlatform() === 'ios') {
-        const attributes = await element(by.id(id)).getAttributes();
+async function attemptToTapCreateButton() {
+    if (isAndroid()) {
+        await CreateChannelScreen.createButton.tap();
+    } else {
+        const attributes = await CreateChannelScreen.createButton.getAttributes();
         jestExpect(attributes.visible).toEqual(true);
         jestExpect(attributes.enabled).toEqual(false);
-    } else {
-        await element(by.id(id)).tap();
     }
 }

@@ -25,8 +25,8 @@ interface LeaveProps {
     isDirectMessage: boolean;
     isFavorite: boolean;
     isGroupMessage: boolean;
-    isLandscape: boolean;
     isPublic: boolean;
+    testID?: string;
     theme: Theme;
 }
 
@@ -92,7 +92,7 @@ export default class Leave extends PureComponent<LeaveProps> {
     });
 
     render() {
-        const {canLeave, isDirectMessage, isGroupMessage, isLandscape, theme} = this.props;
+        const {canLeave, isDirectMessage, isGroupMessage, testID, theme} = this.props;
 
         if (!canLeave && !isDirectMessage && !isGroupMessage) {
             return null;
@@ -116,11 +116,11 @@ export default class Leave extends PureComponent<LeaveProps> {
                     defaultMessage={defaultMessage}
                     icon='close'
                     iconColor='#CA3B27'
+                    rightArrow={false}
+                    testID={testID}
                     textColor='#CA3B27'
                     textId={i18nId}
                     theme={theme}
-                    isLandscape={isLandscape}
-                    rightArrow={false}
                 />
             );
         } else {
@@ -130,11 +130,11 @@ export default class Leave extends PureComponent<LeaveProps> {
                     defaultMessage='Leave Channel'
                     icon='exit-to-app'
                     iconColor='#CA3B27'
+                    rightArrow={false}
+                    testID={testID}
                     textColor='#CA3B27'
                     textId={t('navbar.leave')}
                     theme={theme}
-                    isLandscape={isLandscape}
-                    rightArrow={false}
                 />
             );
         }

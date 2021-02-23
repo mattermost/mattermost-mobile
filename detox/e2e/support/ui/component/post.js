@@ -3,14 +3,29 @@
 
 class Post {
     testID = {
-        postPrefix: 'post.',
+        postHeaderReply: 'post_header.reply',
+        postPreHeaderText: 'post_pre_header.text',
+        markdownText: 'markdown_text',
     }
 
-    getPost = (postTypePrefix, postId, text) => {
-        if (text) {
-            return element(by.id(`${postTypePrefix}${this.testID.postPrefix}${postId}`).withDescendant(by.text(text)));
-        }
-        return element(by.id(`${postTypePrefix}${this.testID.postPrefix}${postId}`));
+    getPost = (postItemSourceTestID, postId, postMessage) => {
+        const postTestID = `${postItemSourceTestID}.${postId}`;
+        const baseMatcher = by.id(postTestID);
+        const postItemMatcher = postMessage ? baseMatcher.withDescendant(by.text(postMessage)) : baseMatcher;
+        const postItemHeaderReplyMatcher = by.id(this.testID.postHeaderReply).withAncestor(postItemMatcher);
+        const postItemPreHeaderTextMatch = by.id(this.testID.postPreHeaderText).withAncestor(postItemMatcher);
+        const postItemMessageMatcher = by.id(this.testID.markdownText).withAncestor(postItemMatcher);
+
+        return {
+            postItem: element(postItemMatcher),
+            postItemHeaderReply: element(postItemHeaderReplyMatcher),
+            postItemPreHeaderText: element(postItemPreHeaderTextMatch),
+            postItemMessage: element(postItemMessageMatcher),
+        };
+    }
+
+    getPostMessage = (postItemSourceTestID) => {
+        return element(by.id(this.testID.markdownText).withAncestor(by.id(postItemSourceTestID)));
     }
 }
 

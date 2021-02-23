@@ -92,6 +92,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 action={this.showEmailModal}
                 actionType='default'
                 theme={theme}
+                testID='notification_settings_email.send.action'
             />
         );
     }
@@ -122,6 +123,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
             }),
             value: Preferences.INTERVAL_IMMEDIATE.toString(),
             checked: newInterval === Preferences.INTERVAL_IMMEDIATE.toString(),
+            testID: 'notification_settings_email.immediately.action',
         }];
 
         if (enableEmailBatching) {
@@ -149,6 +151,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
             }),
             value: Preferences.INTERVAL_NEVER.toString(),
             checked: newInterval === Preferences.INTERVAL_NEVER.toString(),
+            testID: 'notification_settings_email.never.action',
         });
 
         return (
@@ -158,7 +161,10 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 visible={this.state.showEmailNotificationsModal}
                 onRequestClose={this.handleClose}
             >
-                <View style={style.modalOverlay}>
+                <View
+                    style={style.modalOverlay}
+                    testID='notification_settings_email.send.modal'
+                >
                     <View style={style.modal}>
                         <View style={style.modalBody}>
                             <View style={style.modalTitleContainer}>
@@ -190,6 +196,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                                 <TouchableOpacity
                                     style={style.modalFooterOptionContainer}
                                     onPress={this.handleClose}
+                                    testID='notification_settings_email.send_modal_cancel.button'
                                 >
                                     <FormattedText
                                         id='mobile.notification_settings.modal_cancel'
@@ -203,6 +210,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                                     <TouchableOpacity
                                         style={style.modalFooterOptionContainer}
                                         onPress={this.handleSaveEmailNotification}
+                                        testID='notification_settings_email.send_modal_save.button'
                                     >
                                         <FormattedText
                                             id='mobile.notification_settings.modal_save'
@@ -225,7 +233,10 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID='notification_settings_email.screen'
+            >
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}

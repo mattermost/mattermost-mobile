@@ -26,10 +26,10 @@ import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import PostListRetry from '@components/post_list_retry';
 import SafeAreaView from '@components/safe_area_view';
-import {marginHorizontal as margin} from '@components/safe_area_view/iphone_x_spacing';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import {privateChannelJoinPrompt} from '@utils/channels';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -53,12 +53,15 @@ Animatable.initializeRegistryWithDefinitions({
 export default class Permalink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addUserToTeam: PropTypes.func.isRequired,
             getPostsAround: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
+            getTeamByName: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            removeUserFromTeam: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -69,11 +72,13 @@ export default class Permalink extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
-        myMembers: PropTypes.object.isRequired,
+        myChannelMemberships: PropTypes.object.isRequired,
+        myTeamMemberships: PropTypes.object.isRequired,
         onClose: PropTypes.func,
         postIds: PropTypes.array,
+        team: PropTypes.object,
+        teamName: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         error: PropTypes.string,
     };
 
@@ -98,6 +103,7 @@ export default class Permalink extends PureComponent {
         this.state = {
             title: '',
             loading,
+            joinChannelPromptVisible: false,
             error: error || '',
             retry: false,
         };
@@ -242,13 +248,55 @@ export default class Permalink extends PureComponent {
                 return;
             }
 
-            if (!channelId) {
+            if (!focusChannelId) {
                 const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
                 focusChannelId = focusedPost ? focusedPost.channel_id : '';
-                if (focusChannelId) {
-                    const {data: channel} = await actions.getChannel(focusChannelId);
-                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+            }
+
+            if (focusChannelId) {
+                const {teamName} = this.props;
+                let {team} = this.props;
+                if (!team) {
+                    const teamResponse = await actions.getTeamByName(teamName);
+                    if (teamResponse.error) {
+                        this.setState({error: teamResponse.error.message, loading: false});
+                        return;
+                    }
+                    team = teamResponse.data;
+                }
+                let joinedNewTeam = false;
+                if (!this.props.myTeamMemberships[team.id]) {
+                    const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
+                    if (teamJoinResponse.error) {
+                        this.setState({error: teamJoinResponse.error.message, loading: false});
+                        return;
+                    }
+                    joinedNewTeam = true;
+                }
+                if (!this.props.myChannelMemberships[focusChannelId]) {
+                    const {error: channelError, data: channel} = await actions.getChannel(focusChannelId);
+                    if (channelError) {
+                        this.setState({error: channelError.message, loading: false});
+                    } else {
+                        if (channel.type === General.PRIVATE_CHANNEL) {
+                            this.setState({joinChannelPromptVisible: true});
+                            const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
+                            if (!join) {
+                                if (joinedNewTeam) {
+                                    await actions.removeUserFromTeam(team.id, currentUserId);
+                                }
+                                this.handleClose();
+                                return;
+                            }
+                            this.setState({joinChannelPromptVisible: false});
+                        }
+
+                        // Join Open/Private channel
+                        const channelJoinResponse = await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                        if (channelJoinResponse.error) {
+                            this.setState({error: channelJoinResponse.error.message, loading: false});
+                            return;
+                        }
                     }
                 }
             }
@@ -287,8 +335,8 @@ export default class Permalink extends PureComponent {
     };
 
     render() {
-        const {channelName, currentUserId, focusedPostId, isLandscape, postIds, theme} = this.props;
-        const {error, loading, retry, title} = this.state;
+        const {channelName, currentUserId, focusedPostId, postIds, theme} = this.props;
+        const {error, joinChannelPromptVisible, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
         let postList;
@@ -308,10 +356,11 @@ export default class Permalink extends PureComponent {
                 </View>
             );
         } else if (loading) {
-            postList = <Loading color={theme.centerChannelColor}/>;
+            postList = joinChannelPromptVisible ? null : <Loading color={theme.centerChannelColor}/>;
         } else {
             postList = (
                 <PostList
+                    testID='permalink.post_list'
                     highlightPostId={focusedPostId}
                     indicateNewMessages={false}
                     isSearchResult={false}
@@ -335,7 +384,8 @@ export default class Permalink extends PureComponent {
                 footerColor='transparent'
             >
                 <View
-                    style={[style.container, margin(isLandscape)]}
+                    testID='permalink.screen'
+                    style={style.container}
                 >
                     <Animatable.View
                         ref={this.setViewRef}
@@ -381,6 +431,7 @@ export default class Permalink extends PureComponent {
                             onPress={this.handlePress}
                         >
                             <FormattedText
+                                testID='permalink.search.jump'
                                 id='mobile.search.jump'
                                 defautMessage='Jump to recent messages'
                                 style={style.jump}

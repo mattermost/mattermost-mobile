@@ -82,6 +82,7 @@ export type Config = {
     EnableSignUpWithGitLab: string;
     EnableSignUpWithGoogle: string;
     EnableSignUpWithOffice365: string;
+    EnableSignUpWithOpenId: string;
     EnableSVGs: string;
     EnableTesting: string;
     EnableThemeSelection: string;
@@ -128,6 +129,8 @@ export type Config = {
     MaxFileSize: string;
     MaxNotificationsPerChannel: string;
     MinimumHashtagLength: string;
+    OpenIdButtonColor: string;
+    OpenIdButtonText: string;
     PasswordMinimumLength: string;
     PasswordRequireLowercase: string;
     PasswordRequireNumber: string;

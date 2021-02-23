@@ -8,13 +8,13 @@ import {ViewTypes} from 'app/constants';
 import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
-    getChannelByNameAndTeamName,
+    getChannelByName,
     joinChannel,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {getLicense} from '@mm-redux/selectors/entities/general';
-import {selectTeam} from '@mm-redux/actions/teams';
+import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
@@ -27,7 +27,7 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getTeamByName, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import {getTeamByName as selectTeamByName, getCurrentTeam, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -37,7 +37,7 @@ import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
-import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
+import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 
 const MAX_RETRIES = 3;
@@ -48,7 +48,7 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
         const {currentTeamId} = state.entities.teams;
 
         if (teamName) {
-            const team = getTeamByName(state, teamName);
+            const team = selectTeamByName(state, teamName);
 
             if (!team && errorHandler) {
                 errorHandler();
@@ -213,18 +213,39 @@ export function handleSelectChannel(channelId) {
 
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
+
+        return {data: true};
     };
 }
 
-export function handleSelectChannelByName(channelName, teamName, errorHandler) {
+export function handleSelectChannelByName(channelName, teamName, errorHandler, intl) {
     return async (dispatch, getState) => {
         let state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
-        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
-        const {error, data: channel} = response;
+        const currentUserId = getCurrentUserId(state);
         const currentChannelId = getCurrentChannelId(state);
+
+        const {error: teamError, data: team} = await dispatch(getTeamByName(teamName || currentTeamName));
+
+        // Fallback to API response error, if any.
+        if (teamError) {
+            if (errorHandler) {
+                errorHandler();
+            }
+            return {error: teamError};
+        }
+
+        // Join team if not a member already
+        const myTeamMemberships = getTeamMemberships(state);
+        let joinedNewTeam = false;
+        if (!myTeamMemberships[team.id]) {
+            await dispatch(addUserToTeam(team.id, currentUserId));
+            joinedNewTeam = true;
+        }
+
+        const {error: channelError, data: channel} = await dispatch(getChannelByName(team.id, channelName));
 
         state = getState();
         const reachable = getChannelReachable(state, channelName, teamName);
@@ -234,31 +255,43 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         }
 
         // Fallback to API response error, if any.
-        if (error) {
-            return {error};
+        if (channelError) {
+            return {error: channelError};
+        }
+
+        // Join Channel if not a member already
+        if (channel && currentChannelId !== channel.id) {
+            const myChannelMemberships = getMyChannelMemberships(state);
+            if (!myChannelMemberships[channel.id]) {
+                if (channel.type === General.PRIVATE_CHANNEL) {
+                    const {join} = await privateChannelJoinPrompt(channel, intl);
+                    if (!join) {
+                        if (joinedNewTeam) {
+                            await dispatch(removeUserFromTeam(team.id, currentUserId));
+                        }
+                        return {data: true};
+                    }
+                }
+                console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
+                const result = await dispatch(joinChannel(currentUserId, '', channel.id));
+                if (result.error || !result.data || !result.data.channel) {
+                    if (joinedNewTeam) {
+                        await dispatch(removeUserFromTeam(team.id, currentUserId));
+                    }
+                    return result;
+                }
+            }
         }
 
         if (teamName && teamName !== currentTeamName) {
-            const team = getTeamByName(state, teamName);
             dispatch(selectTeam(team));
         }
 
         if (channel && currentChannelId !== channel.id) {
-            if (channel.type === General.OPEN_CHANNEL) {
-                const myMemberships = getMyChannelMemberships(state);
-                if (!myMemberships[channel.id]) {
-                    const currentUserId = getCurrentUserId(state);
-                    console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
-                    const result = await dispatch(joinChannel(currentUserId, teamName, channel.id));
-                    if (result.error || !result.data || !result.data.channel) {
-                        return {error};
-                    }
-                }
-            }
             dispatch(handleSelectChannel(channel.id));
         }
 
-        return null;
+        return {data: true};
     };
 }
 

@@ -3,21 +3,16 @@
 
 class SendButton {
     testID = {
-        sendButton: 'post_draft.send.button',
-        sendButtonDisabled: 'post_draft.send.button.disabled',
+        sendButtonSuffix: 'post_draft.send_action.send.button',
+        sendButtonDisabledSuffix: 'post_draft.send_action.send.button.disabled',
     }
 
-    sendButton = element(by.id(this.testID.sendButton));
-    sendButtonDisabled = element(by.id(this.testID.sendButtonDisabled));
+    getSendButton = (screenPrefix) => {
+        return element(by.id(`${screenPrefix}${this.testID.sendButtonSuffix}`));
+    }
 
-    toBeVisible = async (options = {disabled: false}) => {
-        if (options.disabled) {
-            await expect(this.sendButtonDisabled).toBeVisible();
-            return this.sendButtonDisabled;
-        }
-
-        await expect(this.sendButton).toBeVisible();
-        return this.sendButton;
+    getSendButtonDisabled = (screenPrefix) => {
+        return element(by.id(`${screenPrefix}${this.testID.sendButtonDisabledSuffix}`));
     }
 }
 

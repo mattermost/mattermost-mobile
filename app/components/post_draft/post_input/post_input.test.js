@@ -11,13 +11,13 @@ import PostInput from './post_input';
 
 describe('PostInput', () => {
     const baseProps = {
+        testID: 'post_draft.post.input',
         channelDisplayName: 'Test Channel',
         channelId: 'channel-id',
         cursorPositionEvent: '',
         handleCommentDraftChanged: jest.fn(),
         handlePostDraftChanged: jest.fn(),
         inputEventType: '',
-        isLandscape: false,
         maxMessageLength: 4000,
         onPasteFiles: jest.fn(),
         onSend: jest.fn(),

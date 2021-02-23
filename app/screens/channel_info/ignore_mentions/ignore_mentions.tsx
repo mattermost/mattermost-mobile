@@ -13,13 +13,12 @@ interface IgnoreMentionsProps {
     testID?: string;
     channelId: string;
     ignore: boolean;
-    isLandscape: boolean;
     theme: Theme;
     updateChannelNotifyProps: (userId: string, channelId: string, opts: {ignore_channel_mentions: string}) => void;
     userId: string;
 }
 
-const IgnoreMentions = ({testID, channelId, ignore, isLandscape, updateChannelNotifyProps, userId, theme}: IgnoreMentionsProps) => {
+const IgnoreMentions = ({channelId, ignore, updateChannelNotifyProps, userId, testID, theme}: IgnoreMentionsProps) => {
     const [mentions, setMentions] = useState(ignore);
 
     const handleIgnoreChannelMentions = preventDoubleTap(() => {
@@ -41,7 +40,6 @@ const IgnoreMentions = ({testID, channelId, ignore, isLandscape, updateChannelNo
             textId={t('channel_notifications.ignoreChannelMentions.settings')}
             togglable={true}
             theme={theme}
-            isLandscape={isLandscape}
         />
     );
 };

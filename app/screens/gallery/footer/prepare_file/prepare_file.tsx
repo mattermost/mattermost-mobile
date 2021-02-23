@@ -5,12 +5,12 @@ import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} fro
 import {intlShape} from 'react-intl';
 import {Alert, Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
 import RNFetchBlob, {FetchBlobResponse, RNFetchBlobConfig, StatefulPromise} from 'rn-fetch-blob';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressBar from '@components/progress_bar';
-import {paddingHorizontal} from '@components/safe_area_view/iphone_x_spacing';
 import {Client4} from '@mm-redux/client';
 import {getLocalPath} from '@utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
 const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLandscape, theme}: PrepareFileProps, ref) => {
     const containerStyles: Array<ViewStyle> = [styles.container];
     let downloadTask = useRef<StatefulPromise<FetchBlobResponse>>().current;
+    const insets = useSafeAreaInsets();
     const [progress, setProgress] = useState(0);
     const [visible, setVisible] = useState(false);
     const start = async (file: FileInfo, share = true): Promise<string | undefined> => {
@@ -74,8 +75,7 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
 
         let path;
         try {
-            const prefix = Platform.OS === 'android' ? 'file:/' : '';
-            const exist = await RNFetchBlob.fs.exists(`${prefix}${localPath}`);
+            const exist = await RNFetchBlob.fs.exists(localPath);
             if (exist) {
                 path = localPath;
             } else {
@@ -164,7 +164,7 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
     }
 
     return (
-        <View style={[containerStyles, paddingHorizontal(isLandscape)]}>
+        <View style={[containerStyles, {paddingLeft: insets.left, paddingRight: insets.right}]}>
             <FormattedText
                 id='mobile.prepare_file.text'
                 defaultMessage='Preparing'

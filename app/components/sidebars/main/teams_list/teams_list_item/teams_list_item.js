@@ -12,12 +12,12 @@ import {
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_icon';
-import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
@@ -26,7 +26,6 @@ export default class TeamsListItem extends React.PureComponent {
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     selectTeam = preventDoubleTap(() => {
@@ -35,6 +34,7 @@ export default class TeamsListItem extends React.PureComponent {
 
     render() {
         const {
+            testID,
             currentTeamId,
             currentUrl,
             displayName,
@@ -42,7 +42,6 @@ export default class TeamsListItem extends React.PureComponent {
             name,
             teamId,
             theme,
-            isLandscape,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -50,9 +49,11 @@ export default class TeamsListItem extends React.PureComponent {
         const minWidth = lowMentionCount ? 8 : 20;
         const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;
         const containerStyle = lowMentionCount ? styles.smallBadgeContainer : styles.badgeContainer;
+        const badgeTestID = `${testID}.badge`;
 
         const badge = (
             <Badge
+                testID={badgeTestID}
                 containerStyle={containerStyle}
                 countStyle={styles.mention}
                 count={mentionCount}
@@ -63,8 +64,13 @@ export default class TeamsListItem extends React.PureComponent {
 
         let current;
         if (teamId === currentTeamId) {
+            const currentTestID = `${testID}.current`;
+
             current = (
-                <View style={styles.checkmarkContainer}>
+                <View
+                    testID={currentTestID}
+                    style={styles.checkmarkContainer}
+                >
                     <CompassIcon
                         name='check'
                         style={styles.checkmark}
@@ -73,15 +79,26 @@ export default class TeamsListItem extends React.PureComponent {
             );
         }
 
+        const itemTestID = `${testID}.${teamId}`;
+        const displayNameTestID = `${testID}.display_name`;
+        const teamIconTestID = `${testID}.team_icon`;
+
         return (
-            <View style={styles.teamWrapper}>
+            <View
+                testID={testID}
+                style={styles.teamWrapper}
+            >
                 <TouchableHighlight
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.selectTeam}
                 >
-                    <View style={[styles.teamContainer, padding(isLandscape)]}>
+                    <View
+                        testID={itemTestID}
+                        style={styles.teamContainer}
+                    >
                         <View>
                             <TeamIcon
+                                testID={teamIconTestID}
                                 teamId={teamId}
                                 styleContainer={styles.teamIconContainer}
                                 styleText={styles.teamIconText}
@@ -90,6 +107,7 @@ export default class TeamsListItem extends React.PureComponent {
                         </View>
                         <View style={styles.teamNameContainer}>
                             <Text
+                                testID={displayNameTestID}
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
                                 style={styles.teamName}

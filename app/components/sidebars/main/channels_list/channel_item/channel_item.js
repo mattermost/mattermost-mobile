@@ -11,7 +11,6 @@ import {
 import {intlShape} from 'react-intl';
 
 import {General} from '@mm-redux/constants';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -19,6 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
@@ -37,7 +37,6 @@ export default class ChannelItem extends PureComponent {
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -63,6 +62,7 @@ export default class ChannelItem extends PureComponent {
 
     render() {
         const {
+            testID,
             channelId,
             currentChannelId,
             displayName,
@@ -78,7 +78,6 @@ export default class ChannelItem extends PureComponent {
             isSearchResult,
             channel,
             isBot,
-            isLandscape,
         } = this.props;
 
         // Only ever show an archived channel if it's the currently viewed channel.
@@ -135,8 +134,11 @@ export default class ChannelItem extends PureComponent {
 
         let badge;
         if (mentions) {
+            const badgeTestID = `${testID}.badge`;
+
             badge = (
                 <Badge
+                    testID={badgeTestID}
                     containerStyle={style.badgeContainer}
                     style={style.badge}
                     countStyle={style.mention}
@@ -165,23 +167,33 @@ export default class ChannelItem extends PureComponent {
                 type={channel.type}
                 isArchived={isArchived}
                 isBot={isBot}
+                testID={`${testID}.channel_icon`}
             />
         );
+
+        const itemTestID = `${testID}.${channelId}`;
+        const displayNameTestID = `${testID}.display_name`;
 
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
             >
-                <View style={[style.container, mutedStyle, padding(isLandscape)]}>
+                <View
+                    testID={testID}
+                    style={[style.container, mutedStyle]}
+                >
                     {extraBorder}
-                    <View style={[style.item, extraItemStyle]}>
+                    <View
+                        testID={itemTestID}
+                        style={[style.item, extraItemStyle]}
+                    >
                         {icon}
                         <Text
+                            testID={displayNameTestID}
                             style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID='channel_item.display_name'
                         >
                             {channelDisplayName}
                         </Text>

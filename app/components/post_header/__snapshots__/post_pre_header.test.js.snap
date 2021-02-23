@@ -54,6 +54,7 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
           "lineHeight": 15,
         }
       }
+      testID="post_pre_header.text"
     />
   </View>
 </View>
@@ -133,6 +134,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
           "lineHeight": 15,
         }
       }
+      testID="post_pre_header.text"
     />
   </View>
 </View>
@@ -194,6 +196,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
           "lineHeight": 15,
         }
       }
+      testID="post_pre_header.text"
     />
   </View>
 </View>
@@ -253,6 +256,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
           "lineHeight": 15,
         }
       }
+      testID="post_pre_header.text"
     />
   </View>
 </View>
@@ -312,6 +316,7 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
           "lineHeight": 15,
         }
       }
+      testID="post_pre_header.text"
     />
   </View>
 </View>

@@ -1,9 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MainSidebar should match, full snapshot 1`] = `
-<DrawerLayout
-  drawerPosition="left"
+<DrawerLayoutAdapter
   drawerWidth={710}
+  forwardRef={
+    Object {
+      "current": null,
+    }
+  }
   isTablet={false}
   onDrawerClose={[Function]}
   onDrawerOpen={[Function]}

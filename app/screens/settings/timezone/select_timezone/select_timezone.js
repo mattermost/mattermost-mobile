@@ -8,20 +8,19 @@ import {
     FlatList,
     Platform,
 } from 'react-native';
-import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import SearchBar from 'app/components/search_bar';
-import StatusBar from 'app/components/status_bar';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-
-import {ListTypes} from 'app/constants';
+import SearchBar from '@components/search_bar';
+import StatusBar from '@components/status_bar';
+import {ListTypes} from '@constants';
+import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {popTopScreen} from 'app/actions/navigation';
+} from '@utils/theme';
+import {popTopScreen} from '@actions/navigation';
 
 import SelectTimezoneRow from './select_timezone_row';
 
@@ -35,7 +34,6 @@ export default class Timezone extends PureComponent {
         timezones: PropTypes.array.isRequired,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -92,13 +90,12 @@ export default class Timezone extends PureComponent {
                 timezone={timezone}
                 selectedTimezone={this.props.selectedTimezone}
                 onPress={this.timezoneSelected}
-                isLandscape={this.props.isLandscape}
             />
         );
     };
 
     render() {
-        const {theme, initialScrollIndex, isLandscape} = this.props;
+        const {theme, initialScrollIndex} = this.props;
         const {value} = this.state;
         const {intl} = this.context;
         const style = getStyleSheet(theme);
@@ -110,30 +107,33 @@ export default class Timezone extends PureComponent {
         };
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                testID='settings.select_timezone.screen'
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.header}>
-                    <View style={padding(isLandscape)}>
-                        <SearchBar
-                            ref={this.setSearchBarRef}
-                            placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                            cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            backgroundColor='transparent'
-                            inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                            inputStyle={searchBarInput}
-                            placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                            selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                            tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                            titleCancelColor={theme.sidebarHeaderTextColor}
-                            onChangeText={this.handleTextChanged}
-                            autoCapitalize='none'
-                            value={value}
-                            containerStyle={style.searchBarContainer}
-                            showArrow={false}
-                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        />
-                    </View>
+                    <SearchBar
+                        testID='settings.select_timezone.search_bar'
+                        ref={this.setSearchBarRef}
+                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        backgroundColor='transparent'
+                        inputHeight={Platform.OS === 'ios' ? 33 : 46}
+                        inputStyle={searchBarInput}
+                        placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        titleCancelColor={theme.sidebarHeaderTextColor}
+                        onChangeText={this.handleTextChanged}
+                        autoCapitalize='none'
+                        value={value}
+                        containerStyle={style.searchBarContainer}
+                        showArrow={false}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    />
                 </View>
                 <FlatList
                     data={this.filteredTimezones(value)}
@@ -146,7 +146,7 @@ export default class Timezone extends PureComponent {
                     initialScrollIndex={initialScrollIndex}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
-            </View>
+            </SafeAreaView>
         );
     }
 }

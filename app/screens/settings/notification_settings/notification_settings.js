@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import deepEqual from 'deep-equal';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {General, RequestStatus} from '@mm-redux/constants';
 
@@ -33,7 +34,6 @@ export default class NotificationSettings extends PureComponent {
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
         enableAutoResponder: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -175,7 +175,7 @@ export default class NotificationSettings extends PureComponent {
     };
 
     render() {
-        const {theme, enableAutoResponder, isLandscape} = this.props;
+        const {theme, enableAutoResponder} = this.props;
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
 
@@ -191,13 +191,13 @@ export default class NotificationSettings extends PureComponent {
                     separator={false}
                     showArrow={showArrow}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
             );
         }
 
         return (
-            <View
+            <SafeAreaView
+                edges={['left', 'right']}
                 testID='notification_settings.screen'
                 style={style.container}
             >
@@ -215,10 +215,9 @@ export default class NotificationSettings extends PureComponent {
                         separator={true}
                         showArrow={showArrow}
                         theme={theme}
-                        isLandscape={isLandscape}
+                        testID='notification_settings.mentions_replies.action'
                     />
                     <SettingsItem
-                        testID='notification_settings.mobile.action'
                         defaultMessage='Mobile'
                         i18nId={t('mobile.notification_settings.mobile')}
                         iconName='cellphone'
@@ -226,7 +225,7 @@ export default class NotificationSettings extends PureComponent {
                         separator={true}
                         showArrow={showArrow}
                         theme={theme}
-                        isLandscape={isLandscape}
+                        testID='notification_settings.mobile.action'
                     />
                     <SettingsItem
                         defaultMessage='Email'
@@ -236,12 +235,12 @@ export default class NotificationSettings extends PureComponent {
                         separator={showEmailSeparator}
                         showArrow={showArrow}
                         theme={theme}
-                        isLandscape={isLandscape}
+                        testID='notification_settings.email.action'
                     />
                     {autoResponder}
                     <View style={style.divider}/>
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

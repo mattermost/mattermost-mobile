@@ -12,6 +12,7 @@ import {
     TextInput,
     View,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getCodeFont} from 'app/utils/markdown';
 import {
@@ -20,13 +21,11 @@ import {
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {popTopScreen} from 'app/actions/navigation';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     componentDidMount() {
@@ -47,7 +46,6 @@ export default class Code extends React.PureComponent {
     };
 
     render() {
-        const {isLandscape} = this.props;
         const style = getStyleSheet(this.props.theme);
 
         const numberOfLines = this.countLines(this.props.content);
@@ -88,23 +86,28 @@ export default class Code extends React.PureComponent {
         }
 
         return (
-            <ScrollView
-                style={[style.scrollContainer, margin(isLandscape)]}
-                contentContainerStyle={style.container}
+            <SafeAreaView
+                edges={['bottom', 'left', 'right']}
+                style={style.scrollContainer}
             >
-                <View style={lineNumbersStyle}>
-                    <Text style={style.lineNumbersText}>
-                        {lineNumbers}
-                    </Text>
-                </View>
                 <ScrollView
-                    style={style.codeContainer}
-                    contentContainerStyle={style.code}
-                    horizontal={true}
+                    style={[style.scrollContainer]}
+                    contentContainerStyle={style.container}
                 >
-                    {textComponent}
+                    <View style={lineNumbersStyle}>
+                        <Text style={style.lineNumbersText}>
+                            {lineNumbers}
+                        </Text>
+                    </View>
+                    <ScrollView
+                        style={style.codeContainer}
+                        contentContainerStyle={style.code}
+                        horizontal={true}
+                    >
+                        {textComponent}
+                    </ScrollView>
                 </ScrollView>
-            </ScrollView>
+            </SafeAreaView>
         );
     }
 }

@@ -36,7 +36,6 @@ NotificationSettingsMentionsKeywords {
       "textComponent": "span",
       "timeZone": null,
     },
-    "isLandscape": false,
     "keywords": "",
     "onBack": [MockFunction],
     "theme": Object {
@@ -122,7 +121,6 @@ NotificationSettingsMentionsKeywords {
             "timeZone": null,
           }
         }
-        isLandscape={false}
         keywords=""
         onBack={[MockFunction]}
         theme={
@@ -162,7 +160,13 @@ NotificationSettingsMentionsKeywords {
       "_newState": null,
       "_numberOfReRenders": 0,
       "_renderPhaseUpdates": null,
-      "_rendered": <View
+      "_rendered": <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
+        }
         style={
           Object {
             "backgroundColor": "#ffffff",
@@ -210,29 +214,23 @@ NotificationSettingsMentionsKeywords {
               placeholderTextColor="rgba(61,60,64,0.4)"
               returnKeyType="done"
               style={
-                Array [
-                  Object {
-                    "color": "#3d3c40",
-                    "fontSize": 15,
-                    "height": 150,
-                    "paddingHorizontal": 15,
-                    "paddingVertical": 10,
-                  },
-                  null,
-                ]
+                Object {
+                  "color": "#3d3c40",
+                  "fontSize": 15,
+                  "height": 150,
+                  "paddingHorizontal": 15,
+                  "paddingVertical": 10,
+                }
               }
               value=""
             />
           </View>
           <View
             style={
-              Array [
-                Object {
-                  "marginTop": 10,
-                  "paddingHorizontal": 15,
-                },
-                null,
-              ]
+              Object {
+                "marginTop": 10,
+                "paddingHorizontal": 15,
+              }
             }
           >
             <FormattedText
@@ -247,7 +245,7 @@ NotificationSettingsMentionsKeywords {
             />
           </View>
         </ScrollView>
-      </View>,
+      </RNCSafeAreaView>,
       "_rendering": false,
       "_updater": [Circular],
       "_workInProgressHook": null,

@@ -14,13 +14,18 @@ import LongPostScreen from './long_post';
 import MoreChannelsScreen from './more_channels';
 import MoreDirectMessagesScreen from './more_direct_messages';
 import NotificationScreen from './notification';
+import NotificationSettingsEmailScreen from './notification_settings_email';
 import NotificationSettingsMobileScreen from './notification_settings_mobile';
 import NotificationSettingsScreen from './notification_settings';
-import PostListScreen from './post_list';
+import PermalinkScreen from './permalink';
+import PinnedMessagesScreen from './pinned_messages';
 import RecentMentionsScreen from './recent_mentions';
+import SavedMessagesScreen from './saved_messages';
 import SearchResultPostScreen from './search_result_post';
 import SearchScreen from './search';
 import SelectServerScreen from './select_server';
+import SelectTeamScreen from './select_team';
+import ThreadScreen from './thread';
 
 export {
     AddReactionScreen,
@@ -36,11 +41,16 @@ export {
     MoreChannelsScreen,
     MoreDirectMessagesScreen,
     NotificationScreen,
+    NotificationSettingsEmailScreen,
     NotificationSettingsMobileScreen,
     NotificationSettingsScreen,
-    PostListScreen,
+    PermalinkScreen,
+    PinnedMessagesScreen,
     RecentMentionsScreen,
+    SavedMessagesScreen,
     SearchResultPostScreen,
     SearchScreen,
     SelectServerScreen,
+    SelectTeamScreen,
+    ThreadScreen,
 };

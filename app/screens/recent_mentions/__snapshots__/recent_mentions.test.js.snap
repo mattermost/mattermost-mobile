@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`RecentMentions should match snapshot 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
@@ -13,11 +13,11 @@ exports[`RecentMentions should match snapshot 1`] = `
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`RecentMentions should match snapshot when component waiting for response 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
@@ -29,11 +29,11 @@ exports[`RecentMentions should match snapshot when component waiting for respons
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
@@ -74,5 +74,5 @@ exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] 
       }
     }
   />
-</View>
+</RNCSafeAreaView>
 `;

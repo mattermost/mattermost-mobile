@@ -9,7 +9,7 @@ import {incrementEmojiPickerPage} from '@actions/views/emoji';
 import {getCustomEmojis} from '@mm-redux/actions/emojis';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {getDimensions, isLandscape} from '@selectors/device';
+import {isLandscape} from '@selectors/device';
 import {selectEmojisByName, selectEmojisBySection} from '@selectors/emojis';
 
 import EmojiPicker from './emoji_picker';
@@ -17,12 +17,9 @@ import EmojiPicker from './emoji_picker';
 function mapStateToProps(state) {
     const emojisBySection = selectEmojisBySection(state);
     const emojis = selectEmojisByName(state);
-    const {deviceWidth} = getDimensions(state);
     const options = {
         shouldSort: false,
-        threshold: 0.3,
-        location: 0,
-        distance: 10,
+        ignoreLocation: true,
         includeMatches: true,
         findAllMatches: true,
     };
@@ -34,7 +31,6 @@ function mapStateToProps(state) {
         fuse,
         emojis,
         emojisBySection,
-        deviceWidth,
         isLandscape: isLandscape(state),
         theme: getTheme(state),
         customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',

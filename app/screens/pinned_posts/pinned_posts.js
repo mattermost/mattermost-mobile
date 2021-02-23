@@ -9,9 +9,9 @@ import {
     Keyboard,
     FlatList,
     StyleSheet,
-    View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal, goToScreen, showSearchModal} from '@actions/navigation';
 import ChannelLoader from '@components/channel_loader';
@@ -223,10 +223,14 @@ export default class PinnedPosts extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                testID='pinned_messages.screen'
+                edges={['bottom', 'left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 {component}
-            </View>
+            </SafeAreaView>
         );
     }
 }

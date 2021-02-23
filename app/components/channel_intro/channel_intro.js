@@ -15,7 +15,6 @@ import {General} from '@mm-redux/constants';
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {preventDoubleTap} from '@utils/tap';
@@ -30,7 +29,6 @@ class ChannelIntro extends PureComponent {
         currentChannelMembers: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
     };
 
@@ -257,7 +255,10 @@ class ChannelIntro extends PureComponent {
 
         return (
             <View>
-                <Text style={style.channelTitle}>
+                <Text
+                    testID='channel_intro.beginning.text'
+                    style={style.channelTitle}
+                >
                     {intl.formatMessage({
                         id: 'intro_messages.beginning',
                         defaultMessage: 'Beginning of {name}',
@@ -329,7 +330,7 @@ class ChannelIntro extends PureComponent {
     };
 
     render() {
-        const {currentChannel, theme, isLandscape} = this.props;
+        const {currentChannel, theme} = this.props;
         const style = getStyleSheet(theme);
         const channelType = currentChannel.type;
 
@@ -337,10 +338,10 @@ class ChannelIntro extends PureComponent {
         if (channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL) {
             profiles = (
                 <View>
-                    <View style={[style.profilesContainer, padding(isLandscape)]}>
+                    <View style={style.profilesContainer}>
                         {this.buildProfiles()}
                     </View>
-                    <View style={[style.namesContainer, padding(isLandscape)]}>
+                    <View style={style.namesContainer}>
                         {this.buildNames()}
                     </View>
                 </View>
@@ -350,7 +351,7 @@ class ChannelIntro extends PureComponent {
         return (
             <View style={style.container}>
                 {profiles}
-                <View style={[style.contentContainer, padding(isLandscape)]}>
+                <View style={style.contentContainer}>
                     {this.buildContent()}
                 </View>
             </View>

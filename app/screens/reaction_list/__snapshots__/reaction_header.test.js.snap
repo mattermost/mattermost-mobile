@@ -9,7 +9,9 @@ exports[`ReactionHeader should match snapshot 1`] = `
         "borderTopLeftRadius": 10,
         "borderTopRightRadius": 10,
         "height": 36.5,
+        "maxWidth": 450,
         "paddingHorizontal": 0,
+        "width": "100%",
       }
     }
   >
@@ -17,7 +19,6 @@ exports[`ReactionHeader should match snapshot 1`] = `
       alwaysBounceHorizontal={false}
       horizontal={true}
       overScrollMode="never"
-      style={null}
     >
       <ReactionHeaderItem
         count={2}

@@ -43,6 +43,7 @@ const store = mockStore(state);
 
 describe('PostDraft', () => {
     const baseProps = {
+        testID: 'post_draft',
         canPost: true,
         channelId: 'channel-id',
         channelIsArchived: false,

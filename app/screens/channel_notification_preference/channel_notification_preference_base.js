@@ -17,7 +17,6 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
         }),
         channelId: PropTypes.string.isRequired,
         globalNotifyProps: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         notifyProps: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         userId: PropTypes.string.isRequired,

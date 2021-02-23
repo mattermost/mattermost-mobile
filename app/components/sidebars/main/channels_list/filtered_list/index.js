@@ -21,7 +21,6 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from '@mm-redux/selectors/entities/users';
 import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from '@selectors/device';
 
 import FilteredList from './filtered_list';
 
@@ -127,7 +126,6 @@ function mapStateToProps(state) {
         pastDirectMessages: pastDirectMessages(state),
         restrictDms,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

@@ -429,12 +429,13 @@ platform :ios do
 
     # Set the deep link prefix
     app_scheme = ENV['APP_SCHEME'] || 'mattermost'
+    app_auth_scheme = ENV['BETA_BUILD'] == 'true' ? 'mmauthbeta' : 'mmauth'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
         block: proc do |plist|
           urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.mattermost"}
-          urlScheme[:CFBundleURLSchemes] = [app_scheme]
+          urlScheme[:CFBundleURLSchemes] = [app_scheme, app_auth_scheme]
         end
     )
 
@@ -659,6 +660,14 @@ platform :android do
       old_string: 'scheme="mattermost"',
       new_string: "scheme=\'#{app_scheme}\'"
     )
+
+    if ENV['BETA_BUILD'] != 'true'
+      find_replace_string(
+          path_to_file: "./android/app/src/main/AndroidManifest.xml",
+          old_string: 'scheme="mmauthbeta"',
+          new_string: 'scheme="mmauth"',
+      )
+    end
 
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
     release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"

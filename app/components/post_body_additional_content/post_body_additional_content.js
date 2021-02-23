@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Image,
-    Linking,
     Platform,
     StyleSheet,
     StatusBar,
@@ -23,7 +22,7 @@ import CustomPropTypes from '@constants/custom_prop_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
-import {getYouTubeVideoId, isImageLink, isYoutubeLink} from '@utils/url';
+import {getYouTubeVideoId, isImageLink, isYoutubeLink, tryOpenURL} from '@utils/url';
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
 const MAX_YOUTUBE_IMAGE_WIDTH = 360;
@@ -166,7 +165,8 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             imageUrl = link;
         } else if (isYoutubeLink(link)) {
             const videoId = getYouTubeVideoId(link);
-            imageUrl = Object.keys(this.props.metadata.images)[0] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            const images = Object.keys(this.props.metadata?.images || {});
+            imageUrl = images[0] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         }
 
         return imageUrl;
@@ -271,7 +271,21 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     startTime,
                 }).catch(this.playYouTubeVideoError);
             } else {
-                Linking.openURL(videoLink);
+                const {intl} = this.context;
+                const onError = () => {
+                    Alert.alert(
+                        intl.formatMessage({
+                            id: 'mobile.link.error.title',
+                            defaultMessage: 'Error',
+                        }),
+                        intl.formatMessage({
+                            id: 'mobile.link.error.text',
+                            defaultMessage: 'Unable to open the link.',
+                        }),
+                    );
+                };
+
+                tryOpenURL(videoLink, onError);
             }
         }
     };

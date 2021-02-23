@@ -3,21 +3,16 @@
 
 class ImageQuickAction {
     testID = {
-        imageQuickAction: 'post_draft.image_quick_action',
-        imageQuickActionDisabled: 'post_draft.image_quick_action.disabled',
+        imageActionSuffix: 'post_draft.quick_actions.image_action',
+        imageActionDisabledSuffix: 'post_draft.quick_actions.image_action.disabled',
     }
 
-    imageQuickAction = element(by.id(this.testID.imageQuickAction));
-    imageQuickActionDisabled = element(by.id(this.testID.imageQuickActionDisabled));
+    getImageQuickAction = (screenPrefix) => {
+        return element(by.id(`${screenPrefix}${this.testID.imageActionSuffix}`));
+    }
 
-    toBeVisible = async (options = {disabled: false}) => {
-        if (options.disabled) {
-            await expect(this.imageQuickActionDisabled).toBeVisible();
-            return this.imageQuickActionDisabled;
-        }
-
-        await expect(this.imageQuickAction).toBeVisible();
-        return this.imageQuickAction;
+    getImageQuickActionDisabled = (screenPrefix) => {
+        return element(by.id(`${screenPrefix}${this.testID.imageActionDisabledSuffix}`));
     }
 }
 

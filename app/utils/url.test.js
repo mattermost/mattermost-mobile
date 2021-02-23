@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as UrlUtils from 'app/utils/url';
+import {Linking} from 'react-native';
+
+import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
 
@@ -130,5 +132,29 @@ describe('UrlUtils', () => {
                 expect(UrlUtils.matchDeepLink(input.url, input.serverURL, input.siteURL)).toEqual(expected);
             });
         }
+    });
+
+    describe('tryOpenUrl', () => {
+        const url = 'https://some.url.com';
+
+        it('should call onSuccess when Linking.openURL succeeds', async () => {
+            Linking.openURL.mockResolvedValueOnce();
+            const onError = jest.fn();
+            const onSuccess = jest.fn();
+
+            await UrlUtils.tryOpenURL(url, onError, onSuccess);
+            expect(onError).not.toHaveBeenCalled();
+            expect(onSuccess).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call onError when Linking.openURL fails', async () => {
+            Linking.openURL.mockRejectedValueOnce();
+            const onError = jest.fn();
+            const onSuccess = jest.fn();
+
+            await UrlUtils.tryOpenURL(url, onError, onSuccess);
+            expect(onError).toHaveBeenCalledTimes(1);
+            expect(onSuccess).not.toHaveBeenCalled();
+        });
     });
 });

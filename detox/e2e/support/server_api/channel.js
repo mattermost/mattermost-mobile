@@ -41,6 +41,44 @@ export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'cha
 };
 
 /**
+ * Create a direct message channel.
+ * See https://api.mattermost.com/#tag/channels/paths/~1channels~1direct/post
+ * @param {Array} userIds - the two user IDs to be in the direct message
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateDirectChannel = async (userIds = []) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels/direct',
+            userIds,
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Create a group message channel.
+ * See https://api.mattermost.com/#tag/channels/paths/~1channels~1group/post
+ * @param {Array} userIds - user IDs to be in the group message channel
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateGroupChannel = async (userIds = []) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels/group',
+            userIds,
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get a channel by name and team name.
  * See https://api.mattermost.com/#tag/channels/paths/~1teams~1name~1{team_name}~1channels~1name~1{channel_name}/get
  * @param {string} teamName - team name
@@ -77,6 +115,42 @@ export const apiAddUserToChannel = async (userId, channelId) => {
     }
 };
 
+/**
+ * Remove user from channel.
+ * See https://api.mattermost.com/#tag/channels/paths/~1channels~1{channel_id}~1members~1{user_id}/delete
+ * @param {string} channelId - The channel ID
+ * @param {string} userId - The user ID to be removed from channel
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiDeleteUserFromChannel = async (channelId, userId) => {
+    try {
+        const response = await client.delete(
+            `/api/v4/channels/${channelId}/members/${userId}`,
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get channels for user.
+ * See https://api.mattermost.com/#tag/channels/paths/~1users~1{user_id}~1teams~1{team_id}~1channels/get
+ * @param {string} userId - The user ID
+ * @param {string} teamId - The team ID the user belongs to
+ * @return {Object} returns {channels} on success or {error, status} on error
+ */
+export const apiGetChannelsForUser = async (userId, teamId) => {
+    try {
+        const response = await client.get(`/api/v4/users/${userId}/teams/${teamId}/channels`);
+
+        return {channels: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 function generateRandomChannel(teamId, type, prefix) {
     const randomId = getRandomId();
 
@@ -93,7 +167,11 @@ function generateRandomChannel(teamId, type, prefix) {
 export const Channel = {
     apiAddUserToChannel,
     apiCreateChannel,
+    apiCreateDirectChannel,
+    apiCreateGroupChannel,
+    apiDeleteUserFromChannel,
     apiGetChannelByName,
+    apiGetChannelsForUser,
 };
 
 export default Channel;

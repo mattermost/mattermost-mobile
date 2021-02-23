@@ -91,6 +91,13 @@ describe('Channel Notification Preference - Default', () => {
 });
 
 async function setGlobalNotificationsTo(pushKey) {
+    const {
+        getPushActionFor,
+        pushAction,
+        pushModal,
+        pushModalSaveButton,
+    } = NotificationSettingsMobileScreen;
+
     // # Open notifications settings mobile screen
     await ChannelScreen.openSettingsSidebar();
     await GeneralSettingsScreen.open();
@@ -99,16 +106,16 @@ async function setGlobalNotificationsTo(pushKey) {
 
     // # Tap on Send Notifications option if Android
     if (isAndroid()) {
-        await NotificationSettingsMobileScreen.pushAction.tap();
-        await expect(NotificationSettingsMobileScreen.pushModal).toBeVisible();
+        await pushAction.tap();
+        await expect(pushModal).toBeVisible();
     }
 
     // # Tap on push activity option
-    await NotificationSettingsMobileScreen.getPushActionFor(pushKey).tap();
+    await getPushActionFor(pushKey).tap();
 
     // # Tap on Save button if Android
     if (isAndroid()) {
-        await NotificationSettingsMobileScreen.pushModalSaveButton.tap();
+        await pushModalSaveButton.tap();
     }
 
     // # Navigate back to channel screen

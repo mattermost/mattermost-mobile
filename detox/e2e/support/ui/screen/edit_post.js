@@ -7,13 +7,15 @@ import {isAndroid} from '@support/utils';
 class EditPostScreen {
     testID = {
         editPostScreen: 'edit_post.screen',
-        editPostInput: 'edit_post.input',
-        editPostClose: 'edit_post.close',
+        closeEditPostButton: 'close.edit_post.button',
+        messageInput: 'edit_post.message.input',
+        saveButton: 'edit_post.save.button',
     }
 
     editPostScreen = element(by.id(this.testID.editPostScreen));
-    editPostInput = element(by.id(this.testID.editPostInput));
-    editPostClose = element(by.id(this.testID.editPostClose));
+    closeEditPostButton = element(by.id(this.testID.closeEditPostButton));
+    messageInput = element(by.id(this.testID.messageInput));
+    saveButton = element(by.id(this.testID.saveButton));
 
     toBeVisible = async () => {
         if (isAndroid()) {

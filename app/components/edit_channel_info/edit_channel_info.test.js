@@ -7,10 +7,11 @@ import {shallow} from 'enzyme';
 import Preferences from '@mm-redux/constants/preferences';
 
 import Autocomplete from 'app/components/autocomplete';
-import EditChannelInfo from './edit_channel_info';
+import EditChannelInfo from './index';
 
 describe('EditChannelInfo', () => {
     const baseProps = {
+        testID: 'edit_channel_info',
         theme: Preferences.THEMES.default,
         deviceWidth: 400,
         deviceHeight: 600,
@@ -24,6 +25,7 @@ describe('EditChannelInfo', () => {
         channelURL: '/team_a/channels/channel_a',
         purpose: 'purpose',
         header: 'header',
+        isLandscape: false,
         onDisplayNameChange: jest.fn(),
         onChannelURLChange: jest.fn(),
         onPurposeChange: jest.fn(),
@@ -32,7 +34,6 @@ describe('EditChannelInfo', () => {
         oldChannelURL: '/team_a/channels/channel_old',
         oldHeader: 'old_header',
         oldPurpose: 'old_purpose',
-        isLandscape: true,
     };
 
     test('should match snapshot', () => {

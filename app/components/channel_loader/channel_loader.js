@@ -4,15 +4,21 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    ActivityIndicator,
     Animated,
-    View,
     Dimensions,
+    Platform,
+    View,
 } from 'react-native';
 import * as RNPlaceholder from 'rn-placeholder';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import FormattedText from '@components/formatted_text';
+import CustomPropTypes from '@constants/custom_prop_types';
+import {INDICATOR_BAR_HEIGHT} from '@constants/view';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 function calculateMaxRows(height) {
     return Math.round(height / 100);
@@ -36,7 +42,7 @@ export default class ChannelLoader extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
-        isLandscape: PropTypes.bool.isRequired,
+        retryLoad: PropTypes.func,
     };
 
     constructor(props) {
@@ -50,6 +56,8 @@ export default class ChannelLoader extends PureComponent {
             switch: false,
             maxRows,
         };
+
+        this.top = new Animated.Value(-INDICATOR_BAR_HEIGHT);
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -64,6 +72,27 @@ export default class ChannelLoader extends PureComponent {
         }
 
         return Object.keys(state) ? state : null;
+    }
+
+    componentDidMount() {
+        if (this.props.retryLoad) {
+            this.stillLoadingTimeout = setTimeout(this.showIndicator, 10000);
+            this.retryLoadInterval = setInterval(this.props.retryLoad, 10000);
+        }
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.stillLoadingTimeout);
+        clearInterval(this.retryLoadInterval);
+    }
+
+    showIndicator = () => {
+        Animated.timing(this.top, {
+            toValue: 0,
+            duration: 300,
+            delay: 500,
+            useNativeDriver: false,
+        }).start();
     }
 
     buildSections({key, style, bg, color}) {
@@ -107,7 +136,6 @@ export default class ChannelLoader extends PureComponent {
             channelIsLoading,
             style: styleProp,
             theme,
-            isLandscape,
         } = this.props;
 
         if (!channelIsLoading) {
@@ -119,9 +147,29 @@ export default class ChannelLoader extends PureComponent {
 
         return (
             <View
-                style={[style.container, styleProp, padding(isLandscape), {backgroundColor: bg}]}
+                style={[style.container, styleProp, {backgroundColor: bg}]}
                 onLayout={this.handleLayout}
             >
+                <Animated.View
+                    style={[style.indicator, {top: this.top}]}
+                >
+                    <AnimatedSafeAreaView
+                        edges={['left', 'right']}
+                        style={style.indicatorWrapper}
+                    >
+                        <View style={style.activityIndicator}>
+                            <ActivityIndicator
+                                color='#FFFFFF'
+                                size='small'
+                            />
+                        </View>
+                        <FormattedText
+                            id='mobile.channel_loader.still_loading'
+                            defaultMessage='Still trying to load your content...'
+                            style={style.indicatorText}
+                        />
+                    </AnimatedSafeAreaView>
+                </Animated.View>
                 {Array(this.state.maxRows).fill().map((item, index) => this.buildSections({
                     key: index,
                     style,
@@ -145,6 +193,37 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 12,
             paddingRight: 20,
             marginVertical: 10,
+        },
+        indicator: {
+            position: 'absolute',
+            height: INDICATOR_BAR_HEIGHT,
+            width: '100%',
+            ...Platform.select({
+                android: {
+                    elevation: 9,
+                },
+                ios: {
+                    zIndex: 9,
+                },
+            }),
+            backgroundColor: '#3D3C40',
+        },
+        indicatorWrapper: {
+            alignItems: 'center',
+            height: INDICATOR_BAR_HEIGHT,
+            flexDirection: 'row',
+            paddingLeft: 12,
+            paddingRight: 5,
+        },
+        indicatorText: {
+            color: '#fff',
+            fontWeight: 'bold',
+        },
+        activityIndicator: {
+            alignItems: 'flex-start',
+            height: 24,
+            justifyContent: 'center',
+            paddingRight: 10,
         },
     };
 });

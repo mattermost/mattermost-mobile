@@ -21,7 +21,6 @@ import {debounce} from '@mm-redux/actions/helpers';
 
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
-import {paddingLeft} from '@components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
 
@@ -39,6 +38,7 @@ let UnreadIndicator = null;
 
 export default class List extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
@@ -48,7 +48,6 @@ export default class List extends PureComponent {
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -82,21 +81,23 @@ export default class List extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    setSections(sections) {
+        this.setState({sections});
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         const {
             canCreatePrivateChannels,
             orderedChannelIds,
             unreadChannelIds,
-        } = this.props;
+        } = prevProps;
 
-        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
-            nextProps.unreadChannelIds !== unreadChannelIds ||
-            nextProps.orderedChannelIds !== orderedChannelIds) {
-            this.setState({sections: this.buildSections(nextProps)});
+        if (this.props.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            this.props.unreadChannelIds !== unreadChannelIds ||
+            this.props.orderedChannelIds !== orderedChannelIds) {
+            this.setSections(this.buildSections(this.props));
         }
-    }
 
-    componentDidUpdate(prevProps, prevState) {
         if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.recordInteraction();
             this.updateUnreadIndicators({
@@ -313,10 +314,12 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {favoriteChannelIds, unreadChannelIds} = this.props;
+        const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
+        const channelItemTestID = `${testID}.channel_item`;
 
         return (
             <ChannelItem
+                testID={channelItemTestID}
                 channelId={item}
                 isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}
@@ -326,30 +329,30 @@ export default class List extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {styles, isLandscape} = this.props;
+        const {styles} = this.props;
         const {intl} = this.context;
         const {action, defaultMessage, id} = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 
         return (
-            <React.Fragment>
-                <View style={[styles.titleContainer, paddingLeft(isLandscape)]}>
-                    <Text style={styles.title}>
-                        {intl.formatMessage({id, defaultMessage}).toUpperCase()}
-                    </Text>
-                    <View style={styles.separatorContainer}>
-                        <View style={styles.separator}/>
-                    </View>
-                    {action && this.renderSectionAction(styles, action, anchor, id)}
+            <View style={styles.titleContainer}>
+                <Text style={styles.title}>
+                    {intl.formatMessage({id, defaultMessage}).toUpperCase()}
+                </Text>
+                <View style={styles.separatorContainer}>
+                    <View style={styles.separator}/>
                 </View>
-            </React.Fragment>
+                {action && this.renderSectionAction(styles, action, anchor, id)}
+            </View>
         );
     };
 
     scrollToTop = () => {
+        //eslint-disable-next-line no-underscore-dangle
         if (this.listRef?._wrapperListRef) {
-            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            //eslint-disable-next-line no-underscore-dangle
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({
                 x: 0,
                 y: 0,
                 animated: true,
@@ -394,13 +397,14 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {styles, theme} = this.props;
+        const {testID, styles, theme} = this.props;
         const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
 
         return (
             <View
+                testID={testID}
                 style={styles.container}
                 onLayout={this.onLayout}
             >

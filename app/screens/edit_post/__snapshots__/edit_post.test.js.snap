@@ -2,7 +2,7 @@
 
 exports[`EditPost should match snapshot 1`] = `
 <React.Fragment>
-  <View
+  <RNCSafeAreaView
     style={
       Object {
         "flex": 1,
@@ -30,7 +30,6 @@ exports[`EditPost should match snapshot 1`] = `
               "borderTopWidth": 1,
               "marginTop": 2,
             },
-            null,
             Object {
               "height": NaN,
             },
@@ -66,12 +65,12 @@ exports[`EditPost should match snapshot 1`] = `
               },
             ]
           }
-          testID="edit_post.input"
+          testID="edit_post.message.input"
           underlineColorAndroid="transparent"
         />
       </View>
     </View>
-  </View>
+  </RNCSafeAreaView>
   <KeyboardTrackingView
     style={
       Array [

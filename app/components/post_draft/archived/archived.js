@@ -14,6 +14,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Archived extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         deactivated: PropTypes.bool,
         rootId: PropTypes.string,
         selectPenultimateChannel: PropTypes.func.isRequired,
@@ -46,12 +47,12 @@ export default class Archived extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {testID, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
             <View
-                testID='post_draft.archived'
+                testID={testID}
                 style={style.archivedWrapper}
             >
                 <FormattedMarkdownText

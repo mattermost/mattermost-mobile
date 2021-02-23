@@ -8,6 +8,7 @@ import {intlShape} from 'react-intl';
 
 import PasteableTextInput from '@components/pasteable_text_input';
 import {NavigationTypes} from '@constants';
+import DEVICE from '@constants/device';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
@@ -27,6 +28,7 @@ export default class PostInput extends PureComponent {
     };
 
     static propTypes = {
+        testID: PropTypes.string,
         channelDisplayName: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         cursorPositionEvent: PropTypes.string,
@@ -267,10 +269,10 @@ export default class PostInput extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {channelDisplayName, isLandscape, theme} = this.props;
+        const {testID, channelDisplayName, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
-        let maxHeight = 150;
+        let maxHeight = DEVICE.POST_INPUT_MAX_HEIGHT;
 
         if (isLandscape) {
             maxHeight = 88;
@@ -278,7 +280,7 @@ export default class PostInput extends PureComponent {
 
         return (
             <PasteableTextInput
-                testID='post_draft.post.input'
+                testID={testID}
                 ref={this.input}
                 style={{...style.input, maxHeight}}
                 onChangeText={this.handleTextChange}

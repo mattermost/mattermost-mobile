@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const ActionTypes = {
@@ -30,7 +29,6 @@ function sectionItem(props) {
         theme,
         selected,
         description,
-        isLandscape,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -42,6 +40,7 @@ function sectionItem(props) {
             <CompassIcon
                 name='check'
                 style={selectStyle}
+                testID={`${testID}.selected`}
             />
         );
     } else if (actionType === ActionTypes.TOGGLE) {
@@ -62,21 +61,27 @@ function sectionItem(props) {
 
     const labelComponent = React.cloneElement(
         label,
-        {style: style.label},
+        {
+            style: style.label,
+            testID: `${testID}.label`,
+        },
     );
 
     let descriptionComponent;
     if (description) {
         descriptionComponent = React.cloneElement(
             description,
-            {style: style.description},
+            {
+                style: style.description,
+                testID: `${testID}.description`,
+            },
         );
     }
 
     const component = (
         <View
             testID={testID}
-            style={[style.container, padding(isLandscape)]}
+            style={style.container}
         >
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 {labelComponent}

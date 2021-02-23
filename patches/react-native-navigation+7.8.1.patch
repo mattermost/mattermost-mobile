@@ -1,0 +1,86 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+index 2d8f1ba..708f130 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
+@@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+         reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
+             @Override
+             public void onHostResume() {
+-                eventEmitter = new EventEmitter(reactContext);
+-                navigator().setEventEmitter(eventEmitter);
+-                layoutFactory.init(
+-                        activity(),
+-                        eventEmitter,
+-                        navigator().getChildRegistry(),
+-                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
+-                );
++                try {
++                    eventEmitter = new EventEmitter(reactContext);
++                    navigator().setEventEmitter(eventEmitter);
++                    layoutFactory.init(
++                            activity(),
++                            eventEmitter,
++                            navigator().getChildRegistry(),
++                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                    );
++                } catch (ClassCastException e) {
++                    // The most current activity is not a NavigationActivity
++                }
+             }
+         });
+     }
+@@ -201,8 +205,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+ 
+     protected void handle(Runnable task) {
+         UiThread.post(() -> {
+-            if (getCurrentActivity() != null && !activity().isFinishing()) {
+-                task.run();
++            try {
++                if (getCurrentActivity() != null && !activity().isFinishing()) {
++                    task.run();
++                }
++            } catch (ClassCastException e) {
++                // The most current activity is not a NavigationActivity
+             }
+         });
+     }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
+index 815e1c6..a35a087 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
+@@ -1,5 +1,7 @@
+ #import "RNNOverlayWindow.h"
+ #import "RNNReactView.h"
++#import <react-native-safe-area-context/RNCSafeAreaView.h>
++#import <react-native-safe-area-context/RNCSafeAreaProvider.h>
+ 
+ @implementation RNNOverlayWindow
+ 
+@@ -7,7 +9,9 @@ - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+     UIView *hitTestResult = [super hitTest:point withEvent:event];
+ 
+     if ([hitTestResult isKindOfClass:[UIWindow class]] ||
+-        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class]) {
++        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
++        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
++        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]]) {
+         return nil;
+     }
+ 
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
+index 6b9981d..f725701 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
+@@ -31,11 +31,7 @@ - (CGFloat)getClippedCornerRadius:(UIView *)view {
+ 
+ - (CATransform3D)getTransform:(UIView *)view {
+     if (view) {
+-        if (!CATransform3DEqualToTransform(view.layer.transform, CATransform3DIdentity)) {
+-            return view.layer.transform;
+-        } else {
+-            return [self getTransform:view.superview];
+-        }
++        return view.layer.transform;
+     }
+ 
+     return CATransform3DIdentity;

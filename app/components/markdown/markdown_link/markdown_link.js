@@ -3,20 +3,19 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Linking, Text} from 'react-native';
+import {Alert, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
-import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
+import urlParse from 'url-parse';
 
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import CustomPropTypes from '@constants/custom_prop_types';
 import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
-import {alertErrorWithFallback} from '@utils/general';
-import {t} from '@utils/i18n';
+import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
-import {matchDeepLink, normalizeProtocol} from '@utils/url';
+import {matchDeepLink, normalizeProtocol, tryOpenURL, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -30,6 +29,7 @@ export default class MarkdownLink extends PureComponent {
         onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string,
         siteURL: PropTypes.string.isRequired,
+        currentTeamName: PropTypes.string,
     };
 
     static defaultProps = {
@@ -59,36 +59,33 @@ export default class MarkdownLink extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                const {intl} = this.context;
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel.bind(null, intl), intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
-                onPermalinkPress(match.postId, match.teamName);
+                if (match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
+                    onPermalinkPress(match.postId, this.props.currentTeamName);
+                } else {
+                    onPermalinkPress(match.postId, match.teamName);
+                }
             }
         } else {
-            Linking.openURL(url).catch(() => {
+            const onError = () => {
                 const {formatMessage} = this.context.intl;
                 Alert.alert(
                     formatMessage({
-                        id: 'mobile.server_link.error.title',
-                        defaultMessage: 'Link Error',
+                        id: 'mobile.link.error.title',
+                        defaultMessage: 'Error',
                     }),
                     formatMessage({
-                        id: 'mobile.server_link.error.text',
-                        defaultMessage: 'The link could not be found on this server.',
+                        id: 'mobile.link.error.text',
+                        defaultMessage: 'Unable to open the link.',
                     }),
                 );
-            });
+            };
+
+            tryOpenURL(url, onError);
         }
     });
-
-    errorBadChannel = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_channel.error'),
-            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
-    };
 
     parseLinkLiteral = (literal) => {
         let nextLiteral = literal;
