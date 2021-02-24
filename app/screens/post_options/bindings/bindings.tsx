@@ -73,7 +73,7 @@ const Option = injectIntl((props: OptionProps) => {
         const {closeWithAnimation, post} = props;
 
         props.actions.doAppCall({
-            url: props.binding.call?.url || '',
+            path: props.binding.call?.path || '',
             context: {
                 app_id: props.binding.app_id,
                 channel_id: post.channel_id,

@@ -70,7 +70,7 @@ const Option = injectIntl((props: OptionProps) => {
                 location: AppsBindings.CHANNEL_HEADER_ICON,
                 user_id: props.currentUser.id,
             },
-            url: props.binding.call?.url || '',
+            path: props.binding.call?.path || '',
         }, props.intl);
 
         dismissModal();

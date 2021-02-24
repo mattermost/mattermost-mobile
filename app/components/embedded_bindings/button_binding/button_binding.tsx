@@ -31,7 +31,7 @@ export default class ButtonBinding extends PureComponent<Props> {
     handleActionPress = preventDoubleTap(() => {
         const {binding, post, userId} = this.props;
         const call: AppCall = {
-            url: binding.call?.url || '',
+            path: binding.call?.path || '',
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
             },
