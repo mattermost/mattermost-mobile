@@ -77,7 +77,7 @@ export default class Permalink extends PureComponent {
         onClose: PropTypes.func,
         postIds: PropTypes.array,
         team: PropTypes.object,
-        teamName: PropTypes.string.isRequired,
+        teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         error: PropTypes.string,
     };
@@ -256,23 +256,28 @@ export default class Permalink extends PureComponent {
             if (focusChannelId) {
                 const {teamName} = this.props;
                 let {team} = this.props;
-                if (!team) {
-                    const teamResponse = await actions.getTeamByName(teamName);
-                    if (teamResponse.error) {
-                        this.setState({error: teamResponse.error.message, loading: false});
-                        return;
-                    }
-                    team = teamResponse.data;
-                }
                 let joinedNewTeam = false;
-                if (!this.props.myTeamMemberships[team.id]) {
-                    const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
-                    if (teamJoinResponse.error) {
-                        this.setState({error: teamJoinResponse.error.message, loading: false});
-                        return;
+
+                // teamname is only passed for permalinks and not post previews in mentions, search & pinned posts
+                if (teamName) {
+                    if (!team) {
+                        const teamResponse = await actions.getTeamByName(teamName);
+                        if (teamResponse.error) {
+                            this.setState({error: teamResponse.error.message, loading: false});
+                            return;
+                        }
+                        team = teamResponse.data;
                     }
-                    joinedNewTeam = true;
+                    if (!this.props.myTeamMemberships[team.id]) {
+                        const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
+                        if (teamJoinResponse.error) {
+                            this.setState({error: teamJoinResponse.error.message, loading: false});
+                            return;
+                        }
+                        joinedNewTeam = true;
+                    }
                 }
+
                 if (!this.props.myChannelMemberships[focusChannelId]) {
                     const {error: channelError, data: channel} = await actions.getChannel(focusChannelId);
                     if (channelError) {
