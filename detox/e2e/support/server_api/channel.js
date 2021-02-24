@@ -44,6 +44,7 @@ export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'cha
  * Create a direct message channel.
  * See https://api.mattermost.com/#tag/channels/paths/~1channels~1direct/post
  * @param {Array} userIds - the two user IDs to be in the direct message
+ * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateDirectChannel = async (userIds = []) => {
     try {
@@ -62,6 +63,7 @@ export const apiCreateDirectChannel = async (userIds = []) => {
  * Create a group message channel.
  * See https://api.mattermost.com/#tag/channels/paths/~1channels~1group/post
  * @param {Array} userIds - user IDs to be in the group message channel
+ * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateGroupChannel = async (userIds = []) => {
     try {

@@ -274,6 +274,7 @@ NotificationSettings {
             onPress={[Function]}
             separator={true}
             showArrow={true}
+            testID="notification_settings.mentions_replies.action"
             theme={
               Object {
                 "awayIndicator": "#ffbc42",
@@ -353,6 +354,7 @@ NotificationSettings {
             onPress={[Function]}
             separator={false}
             showArrow={true}
+            testID="notification_settings.email.action"
             theme={
               Object {
                 "awayIndicator": "#ffbc42",
