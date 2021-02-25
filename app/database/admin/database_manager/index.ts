@@ -10,7 +10,7 @@ import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import IServers from '@typings/database/servers';
 import type {
     ActiveServerDatabase,
-    DBInstance,
+    DatabaseInstance,
     DatabaseConnection,
     DefaultNewServer,
     MigrationEvents,
@@ -63,8 +63,8 @@ export enum DatabaseType {
 }
 
 class DatabaseManager {
-    private activeDatabase: DBInstance;
-    private defaultDatabase: DBInstance;
+    private activeDatabase: DatabaseInstance;
+    private defaultDatabase: DatabaseInstance;
     private readonly defaultModels: Models;
     private readonly iOSAppGroupDatabase: string | null;
     private readonly androidFilesDirectory: string | null;
@@ -87,12 +87,12 @@ class DatabaseManager {
      * @param {MMDatabaseConnection} databaseConnection
      * @param {boolean} shouldAddToDefaultDatabase
      *
-     * @returns {Promise<DBInstance>}
+     * @returns {Promise<DatabaseInstance>}
      */
     createDatabaseConnection = async ({
         databaseConnection,
         shouldAddToDefaultDatabase = true,
-    }: DatabaseConnection): Promise<DBInstance> => {
+    }: DatabaseConnection): Promise<DatabaseInstance> => {
         const {
             actionsEnabled = true,
             dbName = 'default',
@@ -166,9 +166,9 @@ class DatabaseManager {
     /**
      * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
      * Use this getter method to retrieve the active database if it has been set in your code.
-     * @returns {DBInstance}
+     * @returns {DatabaseInstance}
      */
-    getActiveServerDatabase = (): DBInstance => {
+    getActiveServerDatabase = (): DatabaseInstance => {
         return this.activeDatabase;
     };
 
@@ -176,7 +176,7 @@ class DatabaseManager {
      * getDefaultDatabase : Returns the default database.
      * @returns {Database} default database
      */
-    getDefaultDatabase = async (): Promise<DBInstance> => {
+    getDefaultDatabase = async (): Promise<DatabaseInstance> => {
         if (!this.defaultDatabase) {
             await this.setDefaultDatabase();
         }
@@ -188,9 +188,9 @@ class DatabaseManager {
      * and return them to the caller.
      *
      * @param {string[]} serverUrls
-     * @returns {Promise<{url: string, dbInstance: DBInstance}[] | null>}
+     * @returns {Promise<{url: string, dbInstance: DatabaseInstance}[] | null>}
      */
-    retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{ url: string, dbInstance: DBInstance }[] | null> => {
+    retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{ url: string, dbInstance: DatabaseInstance }[] | null> => {
         if (serverUrls?.length) {
             // Retrieve all server records from the default db
             const allServers = await this.getAllServers();
@@ -312,9 +312,9 @@ class DatabaseManager {
 
     /**
      * setDefaultDatabase : Sets the default database.
-     * @returns {Promise<DBInstance>}
+     * @returns {Promise<DatabaseInstance>}
      */
-    private setDefaultDatabase = async (): Promise<DBInstance> => {
+    private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
             databaseConnection: {dbName: 'default'},
             shouldAddToDefaultDatabase: false,

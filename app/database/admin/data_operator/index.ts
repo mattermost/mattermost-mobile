@@ -4,7 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import {
     BatchOperations,
-    DBInstance,
+    DatabaseInstance,
     HandleBaseData,
     HandleIsolatedEntityData,
     RecordValue,
@@ -39,8 +39,8 @@ export enum IsolatedEntities {
 }
 
 class DataOperator {
-    private defaultDatabase: DBInstance;
-    private serverDatabase: DBInstance;
+    private defaultDatabase: DatabaseInstance;
+    private serverDatabase: DatabaseInstance;
 
     /**
      * handleIsolatedEntityData: Operator that handles Create/Update operations on the isolated entities as
@@ -147,9 +147,9 @@ class DataOperator {
      * getDatabase: Based on the table's name, it will return a database instance either from the 'DEFAULT' database or
      * the 'SERVER' database.
      * @param {string} tableName
-     * @returns {Promise<DBInstance>}
+     * @returns {Promise<DatabaseInstance>}
      */
-    private getDatabase = async (tableName: string): Promise<DBInstance> => {
+    private getDatabase = async (tableName: string): Promise<DatabaseInstance> => {
         const isInDefaultDB = Object.values(MM_TABLES.DEFAULT).some((tbName) => {
             return tableName === tbName;
         });
@@ -163,7 +163,7 @@ class DataOperator {
 
     /**
      * getDefaultDatabase: Returns the default database
-     * @returns {Promise<DBInstance>}
+     * @returns {Promise<DatabaseInstance>}
      */
     private getDefaultDatabase = async () => {
         this.defaultDatabase = await DatabaseManager.getDefaultDatabase();
@@ -172,7 +172,7 @@ class DataOperator {
 
     /**
      * getServerDatabase: Returns the current active server database (multi-server support)
-     * @returns {Promise<DBInstance>}
+     * @returns {Promise<DatabaseInstance>}
      */
     private getServerDatabase = async () => {
         this.serverDatabase = await DatabaseManager.getActiveServerDatabase();

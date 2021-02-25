@@ -59,7 +59,7 @@ export default class Post extends Model {
     userId: string;
 
     /** props : Additional attributes for this props */
-    props: string;
+    props: object;
 
     /** drafts  : Every drafts associated with this Post */
     drafts: Draft;

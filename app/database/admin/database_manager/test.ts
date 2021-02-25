@@ -5,7 +5,7 @@ import {Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-import {DBInstance} from '@typings/database/database';
+import {DatabaseInstance} from '@typings/database/database';
 import IServers from '@typings/database/servers';
 
 import DatabaseManager, {DatabaseType} from './index';
@@ -50,7 +50,7 @@ describe('*** Database Manager tests ***', () => {
 
     it('=> should switch between active server connections', async () => {
         expect.assertions(7);
-        let activeServer: DBInstance;
+        let activeServer: DatabaseInstance;
         let adapter;
 
         activeServer = await DatabaseManager.getActiveServerDatabase();

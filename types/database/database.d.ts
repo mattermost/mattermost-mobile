@@ -36,7 +36,7 @@ export type DefaultNewServer = {
 }
 
 // A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
-export type DBInstance = Database | undefined
+export type DatabaseInstance = Database | undefined
 
 export type RawApp = {
     buildNumber: string,
@@ -82,7 +82,68 @@ export type RawTermsOfService = {
     acceptedAt: number
 }
 
-export type RecordValue = RawApp | RawGlobal | RawServers | RawCustomEmoji | RawRole | RawSystem | RawTermsOfService
+export type RawEmbeds = [{ type: string, url: string, data: {} }]
+
+export type RawEmojis = [{ id: string, creator_id: string, name: string, create_at: number, update_at: number, delete_at: number }]
+
+export type RawFile = {
+    create_at: number,
+    delete_at: number,
+    extension: string,
+    has_preview_image: boolean,
+    height: number,
+    id: string,
+    localPath?: string,
+    mime_type: string,
+    name: string,
+    post_id: string,
+    size: number,
+    update_at: number,
+    user_id: string,
+    width: number,
+}
+
+export type RawReaction = {
+    create_at: number
+    emoji_name: string,
+    post_id: string,
+    user_id: string,
+}
+
+// The RawPost describes the shape of the object received from a getPosts request
+export type RawPost = {
+    channel_id: string,
+    create_at: number,
+    delete_at: number,
+    edit_at: number,
+    file_ids: string[],
+    filenames: string[]
+    hashtags: string,
+    id: string,
+    is_pinned?: boolean,
+    last_reply_at?: number,
+    message: string,
+    original_id: string,
+    parent_id: string,
+    participants?: null,
+    pending_post_id: string,
+    prev_post_id?: string, // taken from getPosts API call; outside of post object
+    props: object,
+    reply_count?: 0,
+    root_id: string,
+    type: string,
+    update_at: number,
+    user_id: string,
+    metadata: {
+        embeds: RawEmbeds,
+        emojis: RawEmojis,
+        files: RawFile[],
+        images: {},
+        reactions: RawReaction[]
+    }
+}
+
+export type RecordValue = RawApp | RawGlobal | RawServers | RawCustomEmoji | RawRole | RawSystem | RawTermsOfService | RawPost
 
 export type DataFactory = {
     db: Database,

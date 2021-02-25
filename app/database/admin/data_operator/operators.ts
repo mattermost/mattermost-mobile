@@ -11,13 +11,14 @@ import {
     DataFactory,
     RawApp,
     RawCustomEmoji,
-    RawGlobal,
+    RawGlobal, RawPost,
     RawRole,
     RawServers,
     RawSystem,
     RawTermsOfService,
 } from '@typings/database/database';
 import Global from '@typings/database/global';
+import Post from '@typings/database/post';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
@@ -26,7 +27,7 @@ import TermsOfService from '@typings/database/terms_of_service';
 import {OperationType} from './index';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
-const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
+const {CUSTOM_EMOJI, POST, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
@@ -168,6 +169,37 @@ export const operateTermsOfServiceRecord = async ({db, optType, value}: DataFact
     };
 
     return operateBaseRecord({db, optType, tableName: TERMS_OF_SERVICE, value, generator});
+};
+
+/**
+ * operatePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.db
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
+export const operatePostRecord = async ({db, optType, value}: DataFactory) => {
+    const record = value as RawPost;
+
+    const generator = (post: Post) => {
+        post._raw.id = record?.id ?? post.id;
+        post.channelId = record?.channel_id ?? '';
+        post.createAt = record?.create_at ?? 0;
+        post.deleteAt = record?.delete_at ?? 0;
+        post.editAt = record?.edit_at ?? 0;
+        post.isPinned = record?.is_pinned ?? false;
+        post.message = record?.message ?? '';
+        post.originalId = record?.original_id ?? '';
+        post.pendingPostId = record?.pending_post_id ?? '';
+        post.previousPostId = record?.prev_post_id ?? '';
+        post.rootId = record?.root_id ?? '';
+        post.type = record?.type ?? '';
+        post.userId = record?.user_id ?? '';
+        post.props = record?.props ?? {};
+    };
+
+    return operateBaseRecord({db, optType, tableName: POST, value, generator});
 };
 
 /**

@@ -85,7 +85,7 @@ export default class Post extends Model {
     @field('user_id') userId!: string;
 
     /** props : Additional attributes for this props */
-    @json('props', (rawJson) => rawJson) props!: string;
+    @json('props', (rawJson) => rawJson) props!: object;
 
     // A draft can be associated with this post for as long as this post is a parent post
     @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<Draft>
