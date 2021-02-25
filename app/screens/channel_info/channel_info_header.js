@@ -34,6 +34,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         header: PropTypes.string,
         onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
+        shared: PropTypes.bool,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
@@ -135,6 +136,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             memberCount,
             onPermalinkPress,
             purpose,
+            shared,
             status,
             theme,
             type,
@@ -148,9 +150,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
-        const baseTextStyle = Platform.OS === 'ios' ?
-            {...style.detail, lineHeight: 20} :
-            style.detail;
+        const baseTextStyle = Platform.OS === 'ios' ? {...style.detail, lineHeight: 20} : style.detail;
 
         return (
             <View style={style.container}>
@@ -158,6 +158,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount}
+                        shared={shared}
                         size={24}
                         status={status}
                         theme={theme}

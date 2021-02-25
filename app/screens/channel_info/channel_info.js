@@ -45,7 +45,6 @@ export default class ChannelInfo extends PureComponent {
         currentChannelMemberCount: PropTypes.number,
         currentUserId: PropTypes.string,
         isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
         status: PropTypes.string,
@@ -197,6 +196,7 @@ export default class ChannelInfo extends PureComponent {
                         memberCount={currentChannelMemberCount}
                         onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
+                        shared={currentChannel.shared}
                         status={status}
                         theme={theme}
                         type={currentChannel.type}
