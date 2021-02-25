@@ -59,6 +59,7 @@ function makeMapStateToProps() {
             isBot: user.is_bot || false,
             isGuest: isGuest(user),
             isLandscape: isLandscape(state),
+            isShared: Boolean(user.remote_id),
             userTimezone,
         };
     };
