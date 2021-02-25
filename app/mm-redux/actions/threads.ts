@@ -23,11 +23,11 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
             return {error};
         }
 
-        // TODO: batch me??
         if (userThreadList?.threads?.length) {
+            const flat = require('array.prototype.flat');
             dispatch({
                 type: UserTypes.RECEIVED_PROFILES_LIST,
-                data: userThreadList.threads.map(({participants: users}) => users).flat(),
+                data: flat(userThreadList.threads.map(({participants: users}) => users)),
             });
 
             dispatch({
@@ -63,7 +63,6 @@ export function getThread(userId: string, teamId: string, threadId: string, exte
         if (thread) {
             thread = {...thread, is_following: true};
 
-            // TODO: Batch me??
             dispatch({
                 type: UserTypes.RECEIVED_PROFILES_LIST,
                 data: thread.participants,
