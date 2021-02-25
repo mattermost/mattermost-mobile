@@ -52,6 +52,7 @@ export default class RecentItem extends PureComponent {
                     <TouchableOpacity
                         onPress={this.handleRemove}
                         style={style.recentRemove}
+                        testID={`${testID}.remove.button`}
                     >
                         <CompassIcon
                             name='close-circle-outline'
