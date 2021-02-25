@@ -242,7 +242,7 @@ export default class ChannelMembers extends PureComponent {
         const selectProps = {
             selectable: true,
             selected: this.state.selectedIds[props.id],
-            enabled: props.id !== this.props.currentUserId,
+            enabled: props.id !== this.props.currentUserId && !props.item.remote_id,
         };
 
         return this.renderItem(props, selectProps);

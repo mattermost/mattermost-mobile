@@ -9,6 +9,8 @@ import {
     View,
 } from 'react-native';
 
+import ChannelIcon from '@components/channel_icon';
+import {General} from '@mm-redux/constants';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
@@ -36,6 +38,25 @@ export default class UserListRow extends React.PureComponent {
         if (this.props.onPress) {
             this.props.onPress(this.props.id, this.props.item);
         }
+    };
+
+    renderIcon = (style) => {
+        const {theme, user} = this.props;
+        if (!user.remote_id) {
+            return null;
+        }
+        return (
+            <ChannelIcon
+                isActive={false}
+                isUnread={true}
+                isInfo={true}
+                size={18}
+                shared={true}
+                style={style.sharedUserIcon}
+                theme={theme}
+                type={General.DM_CHANNEL}
+            />
+        );
     };
 
     render() {
@@ -129,6 +150,7 @@ export default class UserListRow extends React.PureComponent {
                         </View>
                         }
                     </View>
+                    {this.renderIcon(style)}
                 </CustomListRow>
             </View>
         );
@@ -169,6 +191,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginTop: 2,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        sharedUserIcon: {
+            alignSelf: 'center',
+            opacity: 0.75,
         },
     };
 });
