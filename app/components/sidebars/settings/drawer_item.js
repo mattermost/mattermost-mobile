@@ -90,17 +90,19 @@ export default class DrawerItem extends PureComponent {
             >
                 <View style={style.container}>
                     {icon &&
-                    <View style={style.iconContainer}>
-                        {icon}
-                    </View>
+                        <View style={style.iconContainer}>
+                            {icon}
+                        </View>
                     }
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
                             {label}
                         </View>
-                        {/* <View style={style.labelSiblingContainer}>
-                            {labelSibling}
-                        </View> */}
+                        {labelSibling &&
+                            <View style={style.labelSiblingContainer}>
+                                {labelSibling}
+                            </View>
+                        }
                         {divider}
                     </View>
                 </View>
@@ -130,8 +132,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             flex: 1,
-
-            // flexDirection: 'row'
+            position: 'relative',
         },
         labelContainer: {
             alignItems: 'center',
@@ -139,10 +140,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
         },
         labelSiblingContainer: {
-            alignItems: 'center',
-            flex: 1,
-
-            // flexDirection: 'row',
+            position: 'absolute',
+            top: 14,
+            right: 14,
         },
         centerLabel: {
             textAlign: 'center',

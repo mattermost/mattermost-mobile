@@ -15,13 +15,13 @@ const CustomStatusLabel = (props: ComponentProps) => {
     const {text, theme} = props;
     const style = getStyleSheet(theme);
 
-    return text ?
-        <Text style={style.label}>{text}</Text> :
+    return text === undefined ?
         <FormattedText
-            id={'settings.sidebar.set_status'}
+            id={'sidebar_right_menu.set_status'}
             defaultMessage={'Set a Status'}
             style={style.label}
-        />;
+        /> :
+        <Text style={style.label}>{text}</Text>;
 };
 
 export default CustomStatusLabel;

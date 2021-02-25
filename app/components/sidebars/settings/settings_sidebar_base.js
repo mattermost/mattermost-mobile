@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View, Text} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -21,6 +21,7 @@ import UserInfo from './user_info';
 import StatusLabel from './status_label';
 import Emoji from '@components/emoji';
 import CustomStatusLabel from './custom_status_label';
+import {changeOpacity} from '@utils/theme';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
@@ -192,27 +193,45 @@ export default class SettingsSidebarBase extends PureComponent {
     };
 
     renderCustomStatus = () => {
-        if (!this.props.isCustomStatusEnabled) {
+        const {isCustomStatusEnabled, customStatus, theme} = this.props;
+        if (!isCustomStatusEnabled) {
             return null;
         }
-        const customStatus = this.props.customStatus;
         const isStatusSet = customStatus && (customStatus.text || customStatus.emoji);
-        const labelComponent = isStatusSet &&
-            (<CustomStatusLabel
-                text={customStatus.text}
-                theme={this.props.theme}
-            />);
+        const labelComponent = (
+            <CustomStatusLabel
+                text={customStatus?.text}
+                theme={theme}
+            />
+        );
         const customStatusEmoji = isStatusSet ?
-            (<Emoji
-                emojiName={customStatus.emoji}
-                size={24}
-            />) :
-            (<CompassIcon
-                name='emoticon-happy-outline'
-                size={24}
-            />);
+            (
+                <Emoji
+                    emojiName={customStatus.emoji}
+                    size={24}
+                />
+            ) :
+            (
+                <CompassIcon
+                    name='emoticon-happy-outline'
+                    size={24}
+                />
+            );
 
-        const clearButton = isStatusSet ? <Text onPress={this.props.actions.unsetCustomStatus}>{'x'}</Text> : null;
+        const clearButton = isStatusSet &&
+            (
+                <CompassIcon
+                    onPress={this.props.actions.unsetCustomStatus}
+                    name='close'
+                    size={20}
+                    color={theme.centerChannelBg}
+                    style={{
+                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
+                        borderRadius: 1000,
+                    }}
+                />
+            );
+
         return (
             <DrawerItem
                 testID='settings.sidebar.custom_status.action'
@@ -220,7 +239,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 leftComponent={customStatusEmoji}
                 separator={false}
                 onPress={this.handleSetStatus}
-                theme={this.props.theme}
+                theme={theme}
                 labelSibling={clearButton}
             />
         );
