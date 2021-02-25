@@ -21,6 +21,7 @@ function mapStateToProps(state, ownProps) {
         showFullName: config.ShowFullName,
         isBot: Boolean(user.is_bot),
         isGuest: isGuest(user),
+        isShared: Boolean(user.remote_id),
         theme: getTheme(state),
         isCurrentUser: getCurrentUserId(state) === user.id,
     };
