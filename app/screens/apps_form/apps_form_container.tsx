@@ -57,6 +57,9 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
                     ...submission.values,
                 },
             });
+            if (res.data.type === AppCallResponseTypes.FORM && res.data.form) {
+                this.setState({form: res.data.form});
+            }
             return res;
         } catch (e) {
             return makeError(e.message);

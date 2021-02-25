@@ -11,6 +11,7 @@ import {showModal} from './navigation';
 import {Theme} from '@mm-redux/types/preferences';
 import CompassIcon from '@components/compass_icon';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import EphemeralStore from '@store/ephemeral_store';
 
 export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
     return async (dispatch, getState) => {
@@ -31,7 +32,7 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                 return {data: res};
             case AppCallResponseTypes.ERROR:
                 return {data: res};
-            case AppCallResponseTypes.FORM:
+            case AppCallResponseTypes.FORM: {
                 if (!res.form) {
                     const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `form`, but no form was included in response.';
 
@@ -39,11 +40,13 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                     return {data: res};
                 }
 
-                if (call.type === AppCallTypes.SUBMIT) {
+                const screen = EphemeralStore.getNavigationTopComponentId();
+                if (call.type === AppCallTypes.SUBMIT && screen !== 'AppForm') {
                     showAppForm(res.form, call, getTheme(getState()));
                 }
 
                 return {data: res};
+            }
             case AppCallResponseTypes.NAVIGATE:
                 if (!res.url) {
                     const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `navigate`, but no url was included in response.';
