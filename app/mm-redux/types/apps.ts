@@ -123,7 +123,7 @@ export type AppForm = {
     depends_on?: string[];
 };
 
-export type AppFormValue = string | AppSelectOption | null;
+export type AppFormValue = string | AppSelectOption | boolean | null;
 export type AppFormValues = {[name: string]: AppFormValue};
 
 export type AppSelectOption = {

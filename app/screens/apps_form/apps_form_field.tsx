@@ -4,7 +4,7 @@
 import BoolSetting from '@components/widgets/settings/bool_setting';
 import TextSetting from '@components/widgets/settings/text_setting';
 import {ViewTypes} from '@constants/index';
-import {AppField, AppSelectOption} from '@mm-redux/types/apps';
+import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import React from 'react';
 
@@ -19,7 +19,7 @@ export type Props = {
     errorText?: React.ReactNode;
     theme: Theme;
 
-    value: AppSelectOption | string | boolean | null;
+    value: AppFormValue;
     onChange: (name: string, value: string | AppSelectOption) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 }
