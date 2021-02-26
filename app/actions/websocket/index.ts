@@ -46,6 +46,7 @@ import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from 
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
 import {getChannelSinceValue} from '@utils/channels';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {fetchAppBindings} from '@mm-redux/actions/apps';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -299,7 +300,7 @@ function handleClose(connectFailCount: number) {
 }
 
 function handleEvent(msg: WebSocketMessage) {
-    return (dispatch: DispatchFunc) => {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -377,6 +378,11 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleOpenDialogEvent(msg));
         case WebsocketEvents.RECEIVED_GROUP:
             return dispatch(handleGroupUpdatedEvent(msg));
+        case 'custom_com.mattermost.apps_refresh_bindings': {
+            const state = getState();
+            dispatch(fetchAppBindings(getCurrentUserId(state), getCurrentChannelId(state)));
+            break;
+        }
         }
 
         return {data: true};
