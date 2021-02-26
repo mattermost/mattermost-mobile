@@ -81,6 +81,7 @@ export type AppContext = {
     post_id?: string;
     root_id?: string;
     props?: AppContextProps;
+    user_agent?: string;
 };
 
 export type AppContextProps = {

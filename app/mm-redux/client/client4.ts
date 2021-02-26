@@ -3051,6 +3051,7 @@ export default class Client4 {
     }
 
     executeAppCall = async (call: AppCall) => {
+        call.context.user_agent = 'mobile';
         return this.doFetch(
             `${this.getAppsProxyRoute()}/api/v1/call`,
             {method: 'post', body: JSON.stringify(call)},
