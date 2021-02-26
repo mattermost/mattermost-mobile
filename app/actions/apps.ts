@@ -102,5 +102,6 @@ const showAppForm = async (form: AppForm, call: AppCall, theme: Theme) => {
         },
     };
 
-    showModal('AppForm', form.title, {form, call}, options);
+    const passProps = {form, call};
+    showModal('AppForm', form.title, passProps, options);
 };

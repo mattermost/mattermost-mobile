@@ -104,7 +104,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         }
 
         if (buttonId.startsWith('submit-form_')) {
-            this.handleSubmit(buttonId.substr('submit_form_'.length));
+            this.handleSubmit(buttonId.substr('submit-form_'.length));
         }
     }
 
