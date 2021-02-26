@@ -4,7 +4,7 @@
 import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCall} from '@mm-redux/types/apps';
-import {AppsBindings, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {sendEphemeralPost} from './views/post';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 
@@ -35,7 +35,7 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                     return {data: res};
                 }
 
-                if (call.context.location === AppsBindings.COMMAND && call.type === AppCallTypes.FORM) {
+                if (call.context.location === AppBindingLocations.COMMAND && call.type === AppCallTypes.FORM) {
                     return {data: res};
                 }
 

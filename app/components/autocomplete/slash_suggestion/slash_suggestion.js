@@ -14,7 +14,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
-import AppCommandParser from './app_command_parser';
+import {AppCommandParser} from './app_command_parser/app_command_parser';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 

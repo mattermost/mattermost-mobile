@@ -34,6 +34,7 @@ import {
     sendEphemeralPost,
     Store,
 } from './app_command_parser_dependencies';
+import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 
 const Utils = {
     isMac: () => false,
