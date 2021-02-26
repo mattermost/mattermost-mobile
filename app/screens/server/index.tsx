@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
 import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'react-native/Libraries/NewAppScreen';
+import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
 
+import React from 'react';
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 

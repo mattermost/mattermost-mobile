@@ -2,17 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q} from '@nozbe/watermelondb';
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import {Class} from '@nozbe/watermelondb/utils/common';
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 
 import {MM_TABLES} from '@constants/database';
-import type {DBInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
 import IServers from '@typings/database/servers';
+import type {DBInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
 
 import DefaultMigration from '../../../default/migration';
 import {App, Global, Servers} from '../../../default/models';
-import {defaultSchema} from '../../../default/schema';
-import ServerMigration from '../../../server/migration';
 import {
     Channel,
     ChannelInfo,
@@ -43,6 +41,8 @@ import {
     TermsOfService,
     User,
 } from '../../../server/models';
+import {defaultSchema} from '../../../default/schema';
+import ServerMigration from '../../../server/migration';
 import {serverSchema} from '../../../server/schema';
 
 const {SERVERS} = MM_TABLES.DEFAULT;

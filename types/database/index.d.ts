@@ -95,3 +95,4 @@ type PostType = 'system_add_remove' |
     'system_leave_channel' |
     'system_purpose_change' |
     'system_remove_from_channel';
+
