@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import {Notifications} from 'react-native-notifications';
+import { Notifications } from 'react-native-notifications';
 
 export default {
     getDeliveredNotifications: Notifications.ios.getDeliveredNotifications,

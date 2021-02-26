@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Query, Relation} from '@nozbe/watermelondb';
-import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Q, Query, Relation } from '@nozbe/watermelondb';
+import { children, field, immutableRelation, lazy } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import ChannelInfo from '@typings/database/channel_info';
 import ChannelMembership from '@typings/database/channel_membership';
 import Draft from '@typings/database/draft';
@@ -40,36 +40,35 @@ export default class Channel extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
-        [CHANNEL_INFO]: {type: 'has_many', foreignKey: 'channel_id'},
+        [CHANNEL_INFO]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
-        [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
+        [CHANNEL_MEMBERSHIP]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
-        [DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
+        [DRAFT]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL can be associated with multiple GROUPS_IN_CHANNEL  (relationship is 1:N) */
-        [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [GROUPS_IN_CHANNEL]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL is associated with only one MY_CHANNEL (relationship is 1:1) */
-        [MY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [MY_CHANNEL]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL is associated to only one MY_CHANNEL_SETTINGS (relationship is 1:1) */
-        [MY_CHANNEL_SETTINGS]: {type: 'has_many', foreignKey: 'channel_id'},
+        [MY_CHANNEL_SETTINGS]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL can be associated with multiple POSTS_IN_CHANNEL (relationship is 1:N) */
-        [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [POSTS_IN_CHANNEL]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A CHANNEL can contain multiple POST (relationship is 1:N) */
-        [POST]: {type: 'has_many', foreignKey: 'channel_id'},
+        [POST]: { type: 'has_many', foreignKey: 'channel_id' },
 
         /** A TEAM can be associated to CHANNEL (relationship is 1:N) */
-        [TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: { type: 'belongs_to', key: 'team_id' },
 
         /** A USER can create multiple CHANNEL (relationship is 1:N) */
-        [USER]: {type: 'belongs_to', key: 'creator_id'},
+        [USER]: { type: 'belongs_to', key: 'creator_id' },
     };
 
     /** create_at : The creation date for this channel */
@@ -127,5 +126,7 @@ export default class Channel extends Model {
     @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannel>;
 
     /** settings: User specific settings/preferences for this channel */
-    @lazy settings = this.collections.get(MY_CHANNEL_SETTINGS).query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannelSettings>;
+    @lazy settings = this.collections
+        .get(MY_CHANNEL_SETTINGS)
+        .query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannelSettings>;
 }

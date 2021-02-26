@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Relation } from '@nozbe/watermelondb';
+import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import Channel from '@typings/database/channel';
 
-const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
+const { CHANNEL, CHANNEL_INFO } = MM_TABLES.SERVER;
 
 /**
  * ChannelInfo is an extension of the information contained in the Channel entity.
@@ -21,9 +21,8 @@ export default class ChannelInfo extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
-        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: { type: 'belongs_to', key: 'channel_id' },
     };
 
     /** channel_id : The foreign key from CHANNEL */
@@ -45,5 +44,5 @@ export default class ChannelInfo extends Model {
     @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

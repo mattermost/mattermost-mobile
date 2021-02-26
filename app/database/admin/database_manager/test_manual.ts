@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 
-import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import { getIOSAppGroupDetails } from '@utils/mattermost_managed';
 
-import DBManager, {DatabaseType} from './index';
+import DBManager, { DatabaseType } from './index';
 
 export default async () => {
     // Test: It should return the iOS App-Group shared directory

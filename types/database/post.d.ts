@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Relation } from '@nozbe/watermelondb';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
 import Channel from '@typings/database/channel';
 import Draft from '@typings/database/draft';

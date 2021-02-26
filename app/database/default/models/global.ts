@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-import {field, json} from '@nozbe/watermelondb/decorators';
+import { Model } from '@nozbe/watermelondb';
+import { field, json } from '@nozbe/watermelondb/decorators';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 
-const {GLOBAL} = MM_TABLES.DEFAULT;
+const { GLOBAL } = MM_TABLES.DEFAULT;
 
 // TODO : add TS definitions to sanitizer function signature.
 

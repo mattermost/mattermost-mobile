@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Appearance, Keyboard, Platform} from 'react-native';
-import {Layout, Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import { Appearance, Keyboard, Platform } from 'react-native';
+import { Layout, Navigation, Options, OptionsModalPresentationStyle } from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {Screens, Preferences} from '@constants';
+import { Screens, Preferences } from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -22,35 +22,37 @@ export function resetToChannel(passProps = {}) {
     EphemeralStore.clearNavigationComponents();
 
     const stack = {
-        children: [{
-            component: {
-                id: Screens.CHANNEL,
-                name: Screens.CHANNEL,
-                passProps,
-                options: {
-                    layout: {
-                        componentBackgroundColor: theme.centerChannelBg,
-                    },
-                    statusBar: {
-                        visible: true,
-                    },
-                    topBar: {
-                        visible: false,
-                        height: 0,
-                        background: {
-                            color: theme.sidebarHeaderBg,
+        children: [
+            {
+                component: {
+                    id: Screens.CHANNEL,
+                    name: Screens.CHANNEL,
+                    passProps,
+                    options: {
+                        layout: {
+                            componentBackgroundColor: theme.centerChannelBg,
                         },
-                        backButton: {
+                        statusBar: {
+                            visible: true,
+                        },
+                        topBar: {
                             visible: false,
-                            color: theme.sidebarHeaderTextColor,
+                            height: 0,
+                            background: {
+                                color: theme.sidebarHeaderBg,
+                            },
+                            backButton: {
+                                visible: false,
+                                color: theme.sidebarHeaderTextColor,
+                            },
                         },
                     },
                 },
             },
-        }],
+        ],
     };
 
-    let platformStack: Layout = {stack};
+    let platformStack: Layout = { stack };
     if (Platform.OS === 'android') {
         platformStack = {
             sideMenu: {
@@ -88,35 +90,37 @@ export function resetToSelectServer(allowOtherServers: boolean) {
     Navigation.setRoot({
         root: {
             stack: {
-                children: [{
-                    component: {
-                        id: Screens.SERVER,
-                        name: Screens.SERVER,
-                        passProps: {
-                            allowOtherServers,
-                        },
-                        options: {
-                            layout: {
-                                backgroundColor: theme.centerChannelBg,
-                                componentBackgroundColor: theme.centerChannelBg,
+                children: [
+                    {
+                        component: {
+                            id: Screens.SERVER,
+                            name: Screens.SERVER,
+                            passProps: {
+                                allowOtherServers,
                             },
-                            statusBar: {
-                                visible: true,
-                            },
-                            topBar: {
-                                backButton: {
-                                    color: theme.sidebarHeaderTextColor,
-                                    title: '',
+                            options: {
+                                layout: {
+                                    backgroundColor: theme.centerChannelBg,
+                                    componentBackgroundColor: theme.centerChannelBg,
                                 },
-                                background: {
-                                    color: theme.sidebarHeaderBg,
+                                statusBar: {
+                                    visible: true,
                                 },
-                                visible: false,
-                                height: 0,
+                                topBar: {
+                                    backButton: {
+                                        color: theme.sidebarHeaderTextColor,
+                                        title: '',
+                                    },
+                                    background: {
+                                        color: theme.sidebarHeaderBg,
+                                    },
+                                    visible: false,
+                                    height: 0,
+                                },
                             },
                         },
                     },
-                }],
+                ],
             },
         },
     });
@@ -152,14 +156,16 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
     Navigation.setRoot({
         root: {
             stack: {
-                children: [{
-                    component: {
-                        id: name,
-                        name,
-                        passProps,
-                        options: merge(defaultOptions, options),
+                children: [
+                    {
+                        component: {
+                            id: name,
+                            name,
+                            passProps,
+                            options: merge(defaultOptions, options),
+                        },
                     },
-                }],
+                ],
             },
         },
     });
@@ -174,8 +180,8 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
         },
         popGesture: true,
         sideMenu: {
-            left: {enabled: false},
-            right: {enabled: false},
+            left: { enabled: false },
+            right: { enabled: false },
         },
         topBar: {
             animate: true,
@@ -234,7 +240,8 @@ export async function dismissAllModalsAndPopToRoot() {
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
-    const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
+    const modalPresentationStyle: OptionsModalPresentationStyle =
+        Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
         modalPresentationStyle,
         layout: {
@@ -265,14 +272,16 @@ export function showModal(name: string, title: string, passProps = {}, options =
     EphemeralStore.addNavigationModal(name);
     Navigation.showModal({
         stack: {
-            children: [{
-                component: {
-                    id: name,
-                    name,
-                    passProps,
-                    options: merge(defaultOptions, options),
+            children: [
+                {
+                    component: {
+                        id: name,
+                        name,
+                        passProps,
+                        options: merge(defaultOptions, options),
+                    },
                 },
-            }],
+            ],
         },
     });
 }
@@ -318,7 +327,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
 export function showSearchModal(initialValue = '') {
     const name = 'Search';
     const title = '';
-    const passProps = {initialValue};
+    const passProps = { initialValue };
     const options = {
         topBar: {
             visible: false,
@@ -364,7 +373,7 @@ export async function dismissAllModals(options = {}) {
     }
 }
 
-export function setButtons(componentId: string, buttons = {leftButtons: [], rightButtons: []}) {
+export function setButtons(componentId: string, buttons = { leftButtons: [], rightButtons: [] }) {
     const options = {
         topBar: {
             ...buttons,
@@ -417,7 +426,7 @@ export function openMainSideMenu() {
     Keyboard.dismiss();
     Navigation.mergeOptions(componentId, {
         sideMenu: {
-            left: {visible: true},
+            left: { visible: true },
         },
     });
 }
@@ -430,7 +439,7 @@ export function closeMainSideMenu() {
     Keyboard.dismiss();
     Navigation.mergeOptions(Screens.CHANNEL, {
         sideMenu: {
-            left: {visible: false},
+            left: { visible: false },
         },
     });
 }
@@ -442,7 +451,7 @@ export function enableMainSideMenu(enabled: boolean, visible = true) {
 
     Navigation.mergeOptions(Screens.CHANNEL, {
         sideMenu: {
-            left: {enabled, visible},
+            left: { enabled, visible },
         },
     });
 }
@@ -455,7 +464,7 @@ export function openSettingsSideMenu() {
     Keyboard.dismiss();
     Navigation.mergeOptions(Screens.CHANNEL, {
         sideMenu: {
-            right: {visible: true},
+            right: { visible: true },
         },
     });
 }
@@ -468,7 +477,7 @@ export function closeSettingsSideMenu() {
     Keyboard.dismiss();
     Navigation.mergeOptions(Screens.CHANNEL, {
         sideMenu: {
-            right: {visible: false},
+            right: { visible: false },
         },
     });
 }

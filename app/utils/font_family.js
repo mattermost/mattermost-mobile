@@ -8,8 +8,8 @@
  * without having to create a custom Text component
  */
 
-import {cloneElement} from 'react';
-import {StyleSheet, Text} from 'react-native';
+import { cloneElement } from 'react';
+import { StyleSheet, Text } from 'react-native';
 
 const setFontFamily = () => {
     const styles = StyleSheet.create({

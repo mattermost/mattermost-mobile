@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Relation } from '@nozbe/watermelondb';
+import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import Post from '@typings/database/post';
 import User from '@typings/database/user';
 
-const {POST, REACTION, USER} = MM_TABLES.SERVER;
+const { POST, REACTION, USER } = MM_TABLES.SERVER;
 
 /**
  * The Reaction Model is used to present the reactions a user had on a particular post
@@ -20,12 +20,11 @@ export default class Reaction extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A POST can have multiple REACTION. (relationship is 1:N) */
-        [POST]: {type: 'belongs_to', key: 'post_id'},
+        [POST]: { type: 'belongs_to', key: 'post_id' },
 
         /** A USER can have multiple REACTION. (relationship is 1:N) */
-        [USER]: {type: 'belongs_to', key: 'user_id'},
+        [USER]: { type: 'belongs_to', key: 'user_id' },
     };
 
     /** create_at : Creation timestamp used for sorting reactions amongst users on a particular post */

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import { Relation } from '@nozbe/watermelondb';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
+import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import Post from '@typings/database/post';
 
-const {FILE, POST} = MM_TABLES.SERVER;
+const { FILE, POST } = MM_TABLES.SERVER;
 
 /**
  * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
@@ -19,9 +19,8 @@ export default class File extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A POST has a 1:N relationship with FILE. */
-        [POST]: {type: 'belongs_to', key: 'post_id'},
+        [POST]: { type: 'belongs_to', key: 'post_id' },
     };
 
     /** extension : The file's extension */

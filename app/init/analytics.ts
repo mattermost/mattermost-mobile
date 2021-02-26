@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DeviceInfo from 'react-native-device-info';
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 
 import LocalConfig from '@assets/config.json';
 
@@ -30,7 +30,7 @@ class Analytics {
         this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
 
         if (this.analytics) {
-            const {height, width} = Dimensions.get('window');
+            const { height, width } = Dimensions.get('window');
             this.diagnosticId = config.DiagnosticId;
 
             if (this.diagnosticId) {
@@ -57,10 +57,7 @@ class Analytics {
                     server: config.Version,
                 };
 
-                this.analytics.identify(
-                    this.diagnosticId,
-                    this.context,
-                );
+                this.analytics.identify(this.diagnosticId, this.context);
             } else {
                 this.analytics.reset();
             }
@@ -90,12 +87,16 @@ class Analytics {
             return;
         }
 
-        const properties = Object.assign({
-            category,
-            type: event,
-            user_actual_role: this.userRoles && isSystemAdmin(this.userRoles) ? 'system_admin, system_user' : 'system_user',
-            user_actual_id: this.userId,
-        }, props);
+        const properties = Object.assign(
+            {
+                category,
+                type: event,
+                user_actual_role:
+                    this.userRoles && isSystemAdmin(this.userRoles) ? 'system_admin, system_user' : 'system_user',
+                user_actual_id: this.userId,
+            },
+            props,
+        );
         const options = {
             context: this.context,
             anonymousId: '00000000000000000000000000',
@@ -108,16 +109,14 @@ class Analytics {
         if (this.analytics) {
             const startTime: number = this.tracker[category];
             this.tracker[category] = 0;
-            this.analytics.screen(
-                screenName, {
-                    userId: this.diagnosticId,
-                    context: this.context,
-                    properties: {
-                        user_actual_id: userId,
-                        time: Date.now() - startTime,
-                    },
+            this.analytics.screen(screenName, {
+                userId: this.diagnosticId,
+                context: this.context,
+                properties: {
+                    user_actual_id: userId,
+                    time: Date.now() - startTime,
                 },
-            );
+            });
         }
     }
 
@@ -129,9 +128,9 @@ class Analytics {
         const sanitizedCommand = this.sanitizeCommand(command);
         let props: any;
         if (errorMessage) {
-            props = {command: sanitizedCommand, error: errorMessage};
+            props = { command: sanitizedCommand, error: errorMessage };
         } else {
-            props = {command: sanitizedCommand};
+            props = { command: sanitizedCommand };
         }
 
         this.trackEvent('command', event, props);
@@ -142,12 +141,53 @@ class Analytics {
     }
 
     sanitizeCommand(userInput: string): string {
-        const commandList = ['agenda', 'autolink', 'away', 'bot-server', 'code', 'collapse',
-            'dnd', 'echo', 'expand', 'export', 'giphy', 'github', 'groupmsg', 'header', 'help',
-            'invite', 'invite_people', 'jira', 'jitsi', 'join', 'kick', 'leave', 'logout', 'me',
-            'msg', 'mute', 'nc', 'offline', 'online', 'open', 'poll', 'poll2', 'post-mortem',
-            'purpose', 'recommend', 'remove', 'rename', 'search', 'settings', 'shortcuts',
-            'shrug', 'standup', 'todo', 'wrangler', 'zoom'];
+        const commandList = [
+            'agenda',
+            'autolink',
+            'away',
+            'bot-server',
+            'code',
+            'collapse',
+            'dnd',
+            'echo',
+            'expand',
+            'export',
+            'giphy',
+            'github',
+            'groupmsg',
+            'header',
+            'help',
+            'invite',
+            'invite_people',
+            'jira',
+            'jitsi',
+            'join',
+            'kick',
+            'leave',
+            'logout',
+            'me',
+            'msg',
+            'mute',
+            'nc',
+            'offline',
+            'online',
+            'open',
+            'poll',
+            'poll2',
+            'post-mortem',
+            'purpose',
+            'recommend',
+            'remove',
+            'rename',
+            'search',
+            'settings',
+            'shortcuts',
+            'shrug',
+            'standup',
+            'todo',
+            'wrangler',
+            'zoom',
+        ];
         const index = userInput.indexOf(' ');
         if (index === -1) {
             return userInput[0];

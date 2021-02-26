@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {Alert, AlertButton, AppState, AppStateStatus, NativeModules, Platform} from 'react-native';
+import { Alert, AlertButton, AppState, AppStateStatus, NativeModules, Platform } from 'react-native';
 import JailMonkey from 'jail-monkey';
 
 import LocalConfig from '@assets/config.json';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import { DEFAULT_LOCALE, getTranslations, t } from '@i18n';
 
-import {getAppCredentials} from './credentials';
+import { getAppCredentials } from './credentials';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
@@ -29,7 +29,7 @@ class EMMProvider {
         AppState.addEventListener('change', this.onAppStateChange);
 
         if (Platform.OS === 'ios') {
-            const {MattermostManaged} = NativeModules;
+            const { MattermostManaged } = NativeModules;
             if (MattermostManaged) {
                 this.appGroupIdentifier = MattermostManaged.appGroupIdentifier;
             }
@@ -49,14 +49,16 @@ class EMMProvider {
             Alert.alert(
                 translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
                 translations[t('mobile.managed.jailbreak')].replace('{vendor}', this.vendor),
-                [{
-                    text: translations[t('mobile.managed.exit')],
-                    style: 'destructive',
-                    onPress: () => {
-                        Emm.exitApp();
+                [
+                    {
+                        text: translations[t('mobile.managed.exit')],
+                        style: 'destructive',
+                        onPress: () => {
+                            Emm.exitApp();
+                        },
                     },
-                }],
-                {cancelable: false},
+                ],
+                { cancelable: false },
             );
         }
     };
@@ -151,7 +153,7 @@ class EMMProvider {
         if (isActive && (!this.enabled || this.previousAppState === 'background')) {
             // if the app is being controlled by an EMM provider
             if (this.enabled && this.inAppPinCode) {
-                const authExpired = (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
+                const authExpired = Date.now() - this.backgroundSince >= PROMPT_IN_APP_PIN_CODE_AFTER;
 
                 // Once the app becomes active we check if the device needs to have a passcode set
                 // if more than 5 minutes have passed prompt for passcode
@@ -168,7 +170,8 @@ class EMMProvider {
     };
 
     showNotSecuredAlert = (translations: Record<string, string>) => {
-        return new Promise(async (resolve) => { /* eslint-disable-line no-async-promise-executor */
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve) => {
             const buttons: AlertButton[] = [];
 
             if (Platform.OS === 'android') {
@@ -188,7 +191,7 @@ class EMMProvider {
 
             let message;
             if (Platform.OS === 'ios') {
-                const {face} = await Emm.deviceSecureWith();
+                const { face } = await Emm.deviceSecureWith();
 
                 if (face) {
                     message = translations[t('mobile.managed.not_secured.ios')];
@@ -203,7 +206,7 @@ class EMMProvider {
                 translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
                 message,
                 buttons,
-                {cancelable: false, onDismiss: () => resolve},
+                { cancelable: false, onDismiss: () => resolve },
             );
         });
     };

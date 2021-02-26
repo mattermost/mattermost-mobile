@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {children, field, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { children, field, json } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
@@ -34,27 +34,26 @@ export default class User extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** USER has a 1:N relationship with CHANNEL.  A user can create multiple channels */
-        [CHANNEL]: {type: 'has_many', foreignKey: 'creator_id'},
+        [CHANNEL]: { type: 'has_many', foreignKey: 'creator_id' },
 
         /** USER has a 1:N relationship with CHANNEL_MEMBERSHIP.  A user can be part of multiple channels */
-        [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        [CHANNEL_MEMBERSHIP]: { type: 'has_many', foreignKey: 'user_id' },
 
         /** USER has a 1:N relationship with GROUP_MEMBERSHIP.  A user can be part of multiple groups */
-        [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        [GROUP_MEMBERSHIP]: { type: 'has_many', foreignKey: 'user_id' },
 
         /** USER has a 1:N relationship with POST.  A user can author multiple posts */
-        [POST]: {type: 'has_many', foreignKey: 'user_id'},
+        [POST]: { type: 'has_many', foreignKey: 'user_id' },
 
         /** USER has a 1:N relationship with PREFERENCE.  A user can have multiple preferences */
-        [PREFERENCE]: {type: 'has_many', foreignKey: 'user_id'},
+        [PREFERENCE]: { type: 'has_many', foreignKey: 'user_id' },
 
         /** USER has a 1:N relationship with REACTION.  A user can react to multiple posts */
-        [REACTION]: {type: 'has_many', foreignKey: 'user_id'},
+        [REACTION]: { type: 'has_many', foreignKey: 'user_id' },
 
         /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
-        [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        [TEAM_MEMBERSHIP]: { type: 'has_many', foreignKey: 'user_id' },
     };
 
     /** auth_service : The type of authentication service registered to that user */

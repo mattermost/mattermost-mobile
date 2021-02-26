@@ -20,9 +20,10 @@ const modulePaths = moduleNames.map((moduleName) => {
         return `./node_modules/${moduleName}`;
     }
     try {
-        const result = execSync(
-            `grep "@providesModule ${moduleName}" $(find . -name ${moduleName}\\\\.js) -l`,
-        ).toString().trim().split('\n')[0];
+        const result = execSync(`grep "@providesModule ${moduleName}" $(find . -name ${moduleName}\\\\.js) -l`)
+            .toString()
+            .trim()
+            .split('\n')[0];
 
         if (result != null) {
             return result;
@@ -33,7 +34,10 @@ const modulePaths = moduleNames.map((moduleName) => {
     return null;
 });
 
-const paths = modulePaths.filter((path) => path != null).map((path) => `'${path}'`).join(',\n');
+const paths = modulePaths
+    .filter((path) => path != null)
+    .map((path) => `'${path}'`)
+    .join(',\n');
 
 const fileData = `module.exports = [${paths}];`;
 

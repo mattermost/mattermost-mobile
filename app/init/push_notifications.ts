@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Platform} from 'react-native';
+import { AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {
     Notification,
@@ -14,9 +14,9 @@ import {
     Registered,
 } from 'react-native-notifications';
 
-import {dismissAllModals, popToRoot, showOverlay} from '@screens/navigation';
-import {Device, Navigation, View} from '@constants';
-import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
+import { dismissAllModals, popToRoot, showOverlay } from '@screens/navigation';
+import { Device, Navigation, View } from '@constants';
+import { DEFAULT_LOCALE, getLocalizedMessage, t } from '@i18n';
 import EphemeralStore from '@store/ephemeral_store';
 import NativeNotifications from '@notifications';
 
@@ -57,7 +57,9 @@ class PushNotifications {
     clearChannelNotifications = async (channelId: string) => {
         const notifications = await NativeNotifications.getDeliveredNotifications();
         if (Platform.OS === 'android') {
-            const notificationForChannel = notifications.find((n: NotificationWithChannel) => n.channel_id === channelId);
+            const notificationForChannel = notifications.find(
+                (n: NotificationWithChannel) => n.channel_id === channelId,
+            );
             if (notificationForChannel) {
                 NativeNotifications.removeDeliveredNotifications(notificationForChannel.identifier, channelId);
             }
@@ -107,43 +109,43 @@ class PushNotifications {
     };
 
     handleNotification = async (notification: NotificationWithData) => {
-        const {payload, foreground, userInteraction} = notification;
+        const { payload, foreground, userInteraction } = notification;
 
         if (payload) {
             switch (payload.type) {
-            case NOTIFICATION_TYPE.CLEAR:
-                // Mark the channel as read
-                break;
-            case NOTIFICATION_TYPE.MESSAGE:
-                // fetch the posts for the channel
+                case NOTIFICATION_TYPE.CLEAR:
+                    // Mark the channel as read
+                    break;
+                case NOTIFICATION_TYPE.MESSAGE:
+                    // fetch the posts for the channel
 
-                if (foreground) {
-                    // Show the in-app notification
-                } else if (userInteraction && !payload.userInfo?.local) {
-                    // Swith to the server / team / channel that matches the notification
+                    if (foreground) {
+                        // Show the in-app notification
+                    } else if (userInteraction && !payload.userInfo?.local) {
+                        // Swith to the server / team / channel that matches the notification
 
-                    const componentId = EphemeralStore.getNavigationTopComponentId();
-                    if (componentId) {
-                        // Emit events to close the sidebars
+                        const componentId = EphemeralStore.getNavigationTopComponentId();
+                        if (componentId) {
+                            // Emit events to close the sidebars
 
-                        await dismissAllModals();
-                        await popToRoot();
+                            await dismissAllModals();
+                            await popToRoot();
+                        }
                     }
-                }
-                break;
-            case NOTIFICATION_TYPE.SESSION:
-                // eslint-disable-next-line no-console
-                console.log('Session expired notification');
+                    break;
+                case NOTIFICATION_TYPE.SESSION:
+                    // eslint-disable-next-line no-console
+                    console.log('Session expired notification');
 
-                // Logout the user from the server that matches the notification
+                    // Logout the user from the server that matches the notification
 
-                break;
+                    break;
             }
         }
     };
 
     handleInAppNotification = async (notification: NotificationWithData) => {
-        const {payload} = notification;
+        const { payload } = notification;
 
         // TODO: Get current channel from the database
         const currentChannelId = '';
@@ -157,7 +159,7 @@ class PushNotifications {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
             showOverlay(screen, passProps);
         }
-    }
+    };
 
     localNotification = (notification: Notification) => {
         Notifications.postLocalNotification(notification);
@@ -169,7 +171,10 @@ class PushNotifications {
 
         if (isActive) {
             if (!this.pushNotificationListener) {
-                this.pushNotificationListener = DeviceEventEmitter.addListener(View.NOTIFICATION_IN_APP, this.handleInAppNotification);
+                this.pushNotificationListener = DeviceEventEmitter.addListener(
+                    View.NOTIFICATION_IN_APP,
+                    this.handleInAppNotification,
+                );
             }
         } else if (isBackground) {
             this.pushNotificationListener?.remove();
@@ -183,21 +188,27 @@ class PushNotifications {
         completion();
     };
 
-    onNotificationReceivedBackground = (notification: NotificationWithData, completion: (response: NotificationBackgroundFetchResult) => void) => {
+    onNotificationReceivedBackground = (
+        notification: NotificationWithData,
+        completion: (response: NotificationBackgroundFetchResult) => void,
+    ) => {
         this.handleNotification(notification);
         completion(NotificationBackgroundFetchResult.NO_DATA);
     };
 
-    onNotificationReceivedForeground = (notification: NotificationWithData, completion: (response: NotificationCompletion) => void) => {
+    onNotificationReceivedForeground = (
+        notification: NotificationWithData,
+        completion: (response: NotificationCompletion) => void,
+    ) => {
         notification.foreground = AppState.currentState === 'active';
-        completion({alert: false, sound: true, badge: true});
+        completion({ alert: false, sound: true, badge: true });
         this.handleNotification(notification);
     };
 
     onRemoteNotificationsRegistered = (event: Registered) => {
         if (!this.configured) {
             this.configured = true;
-            const {deviceToken} = event;
+            const { deviceToken } = event;
             let prefix;
 
             if (Platform.OS === 'ios') {

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeModules, PermissionsAndroid} from 'react-native';
+import { NativeModules, PermissionsAndroid } from 'react-native';
 
-const {NotificationPreferences} = NativeModules;
+const { NotificationPreferences } = NativeModules;
 
 const defaultPreferences: NativeNotificationPreferences = {
     sounds: [],
@@ -18,9 +18,7 @@ export default {
             const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
             let granted;
             if (!hasPermission) {
-                granted = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-                );
+                granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
             }
 
             if (hasPermission || granted === PermissionsAndroid.RESULTS.GRANTED) {

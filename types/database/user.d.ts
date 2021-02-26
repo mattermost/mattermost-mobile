@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
-import {NotifyProps, Timezone, UserProps} from '@typings/database/index';
+import { NotifyProps, Timezone, UserProps } from '@typings/database/index';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';

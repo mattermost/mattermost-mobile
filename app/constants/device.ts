@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FileSystem} from 'react-native-unimodules';
+import { FileSystem } from 'react-native-unimodules';
 import DeviceInfo from 'react-native-device-info';
 import keyMirror from '@utils/key_mirror';
 

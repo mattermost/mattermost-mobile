@@ -20,7 +20,7 @@ class EphemeralStore {
 
     clearNavigationModals = () => {
         this.navigationModalStack = [];
-    }
+    };
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -29,7 +29,7 @@ class EphemeralStore {
 
     addNavigationModal = (componentId: string) => {
         this.navigationModalStack.unshift(componentId);
-    }
+    };
 
     addToNavigationComponentIdStack = (componentId: string) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
@@ -38,13 +38,13 @@ class EphemeralStore {
         }
 
         this.navigationComponentIdStack.unshift(componentId);
-    }
+    };
 
     addToAllNavigationComponentIds = (componentId: string) => {
         if (!this.allNavigationComponentIds.includes(componentId)) {
             this.allNavigationComponentIds.unshift(componentId);
         }
-    }
+    };
 
     hasModalsOpened = () => this.navigationModalStack.length > 0;
 
@@ -53,7 +53,7 @@ class EphemeralStore {
         if (index >= 0) {
             this.navigationComponentIdStack.splice(index, 1);
         }
-    }
+    };
 
     removeNavigationModal = (componentId: string) => {
         const index = this.navigationModalStack.indexOf(componentId);
@@ -61,7 +61,7 @@ class EphemeralStore {
         if (index >= 0) {
             this.navigationModalStack.splice(index, 1);
         }
-    }
+    };
 
     getStartFromNotification = () => {
         return this.appStartedFromPushNotification;

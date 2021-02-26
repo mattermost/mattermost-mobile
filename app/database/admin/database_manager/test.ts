@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
+import { Database } from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 
-import {DatabaseInstance} from '@typings/database/database';
+import { DatabaseInstance } from '@typings/database/database';
 import IServers from '@typings/database/servers';
 
-import DatabaseManager, {DatabaseType} from './index';
+import DatabaseManager, { DatabaseType } from './index';
 
 jest.mock('./index');
 
-const {SERVERS} = MM_TABLES.DEFAULT;
+const { SERVERS } = MM_TABLES.DEFAULT;
 
 // NOTE :  On the mock Database Manager, we cannot test for :
 // 1. Android/iOS file path
@@ -58,15 +58,15 @@ describe('*** Database Manager tests ***', () => {
         // as we haven't set an active server yet, we should be getting undefined in the activeServer variable
         expect(activeServer).toBeUndefined();
 
-        const setActiveServer = async ({displayName, serverUrl}:{displayName: string, serverUrl: string}) => {
+        const setActiveServer = async ({ displayName, serverUrl }: { displayName: string; serverUrl: string }) => {
             // now we set the active database
-            const server = await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
+            const server = await DatabaseManager.setActiveServerDatabase({ displayName, serverUrl });
 
             // setActiveServer should be undefined as the method  does not actually return anything
             expect(server).toBeUndefined();
         };
 
-        await setActiveServer({displayName: 'community mattermost', serverUrl: 'https://appv1.mattermost.com'});
+        await setActiveServer({ displayName: 'community mattermost', serverUrl: 'https://appv1.mattermost.com' });
 
         // let's verify if we now have a value for activeServer
         activeServer = await DatabaseManager.getActiveServerDatabase();
@@ -76,7 +76,7 @@ describe('*** Database Manager tests ***', () => {
         expect(currentDBName).toStrictEqual('community mattermost');
 
         // spice things up; we'll set a new server and verify if the value of activeServer changes
-        await setActiveServer({displayName: 'appv2', serverUrl: 'https://appv2.mattermost.com'});
+        await setActiveServer({ displayName: 'appv2', serverUrl: 'https://appv2.mattermost.com' });
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
         adapter = activeServer!.adapter as any;
@@ -111,7 +111,7 @@ describe('*** Database Manager tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeDefined();
 
-        const serversRecords = await defaultDB!.collections.get(SERVERS).query().fetch() as IServers[];
+        const serversRecords = (await defaultDB!.collections.get(SERVERS).query().fetch()) as IServers[];
         expect(serversRecords).toBeDefined();
 
         // We have call the 'DatabaseManager.setActiveServerDatabase' twice in the previous test case; that implies that we have 2 records in the 'servers' table
@@ -127,7 +127,7 @@ describe('*** Database Manager tests ***', () => {
 
         // Verifying in the database to confirm if its record was deleted
         const defaultDB = await DatabaseManager.getDefaultDatabase();
-        const serversRecords = await defaultDB!.collections.get(SERVERS).query().fetch() as IServers[];
+        const serversRecords = (await defaultDB!.collections.get(SERVERS).query().fetch()) as IServers[];
         expect(serversRecords).toBeDefined();
         expect(serversRecords.length).toEqual(1);
     });
@@ -159,12 +159,14 @@ describe('*** Database Manager tests ***', () => {
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
 
-        const allServers = defaultDB && await defaultDB.collections.get(SERVERS).query().fetch() as IServers[];
+        const allServers = defaultDB && ((await defaultDB.collections.get(SERVERS).query().fetch()) as IServers[]);
 
         // We should be having some servers returned here
         expect(allServers?.length).toBeGreaterThan(0);
 
-        const occurrences = allServers?.map((server) => server.url).reduce((acc, cur) => (cur === serverUrl ? acc + 1 : acc), 0);
+        const occurrences = allServers
+            ?.map((server) => server.url)
+            .reduce((acc, cur) => (cur === serverUrl ? acc + 1 : acc), 0);
 
         // We should only have one occurence of the 'https://appv3.mattermost.com' url
         expect(occurrences).toEqual(1);

@@ -1,14 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const DEFAULT_EMOJIS = [
-    'thumbsup',
-    'smiley',
-    'white_check_mark',
-    'heart',
-    'eyes',
-    'raised_hands',
-];
+export const DEFAULT_EMOJIS = ['thumbsup', 'smiley', 'white_check_mark', 'heart', 'eyes', 'raised_hands'];
 export const LARGE_ICON_SIZE = 32;
 export const LARGE_CONTAINER_SIZE = 48;
 export const REACTION_PICKER_HEIGHT = 72;

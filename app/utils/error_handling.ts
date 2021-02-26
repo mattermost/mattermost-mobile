@@ -1,18 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
-import {setJSExceptionHandler, setNativeExceptionHandler} from 'react-native-exception-handler';
+import { Alert } from 'react-native';
+import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
-import {dismissAllModals} from '@screens/navigation';
-import {ClientError} from '@utils/client_error';
-import {
-    captureException,
-    captureJSException,
-    initializeSentry,
-    LOGGER_NATIVE,
-} from '@utils/sentry';
+import { DEFAULT_LOCALE, getTranslations, t } from '@i18n';
+import { dismissAllModals } from '@screens/navigation';
+import { ClientError } from '@utils/client_error';
+import { captureException, captureJSException, initializeSentry, LOGGER_NATIVE } from '@utils/sentry';
 
 class JavascriptAndNativeErrorHandler {
     initializeErrorHandling = () => {
@@ -45,13 +40,15 @@ class JavascriptAndNativeErrorHandler {
             Alert.alert(
                 translations[t('mobile.error_handler.title')],
                 translations[t('mobile.error_handler.description')] + `\n\n${e.message}\n\n${e.stack}`,
-                [{
-                    text: translations[t('mobile.error_handler.button')],
-                    onPress: async () => {
-                        await dismissAllModals();
+                [
+                    {
+                        text: translations[t('mobile.error_handler.button')],
+                        onPress: async () => {
+                            await dismissAllModals();
+                        },
                     },
-                }],
-                {cancelable: false},
+                ],
+                { cancelable: false },
             );
         }
     };

@@ -1,24 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'react-native/Libraries/NewAppScreen';
-import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
+import { Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
+import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
 import React from 'react';
-import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import { Screens } from '@constants';
+import { goToScreen } from '@screens/navigation';
 
 declare const global: { HermesInternal: null | {} };
 
 const App = () => {
     return (
         <>
-            <StatusBar barStyle='dark-content'/>
+            <StatusBar barStyle="dark-content" />
             <SafeAreaView>
-                <ScrollView
-                    contentInsetAdjustmentBehavior='automatic'
-                    style={styles.scrollView}
-                >
+                <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
                     {global.HermesInternal == null ? null : (
                         <View style={styles.engine}>
                             <Text style={styles.footer}>{'Engine: Hermes'}</Text>
@@ -29,25 +26,23 @@ const App = () => {
                             <Text style={styles.sectionTitle}>{'Step One'}</Text>
                             <Text style={styles.sectionDescription}>
                                 {'Edit '}
-                                <Text
-                                    style={styles.highlight}
-                                >{'screens/server/index.tsx'}</Text>{' to change this'}
+                                <Text style={styles.highlight}>{'screens/server/index.tsx'}</Text>
+                                {' to change this'}
                                 {'XXXXXscreen and then come back to see your edits.'}
                             </Text>
                         </View>
                         <View style={styles.sectionContainer}>
-                            <Text
-                                style={styles.sectionTitle}
-                                onPress={() => goToScreen(Screens.CHANNEL, 'Channel')}
-                            >{'See Your Changes'}</Text>
+                            <Text style={styles.sectionTitle} onPress={() => goToScreen(Screens.CHANNEL, 'Channel')}>
+                                {'See Your Changes'}
+                            </Text>
                             <Text style={styles.sectionDescription}>
-                                <ReloadInstructions/>
+                                <ReloadInstructions />
                             </Text>
                         </View>
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>{'Debug'}</Text>
                             <Text style={styles.sectionDescription}>
-                                <DebugInstructions/>
+                                <DebugInstructions />
                             </Text>
                         </View>
                         <View style={styles.sectionContainer}>
@@ -56,7 +51,7 @@ const App = () => {
                                 {'Read the docs to discover what to do next:'}
                             </Text>
                         </View>
-                        <LearnMoreLinks/>
+                        <LearnMoreLinks />
                     </View>
                 </ScrollView>
             </SafeAreaView>

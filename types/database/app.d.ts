@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
+import { Model } from '@nozbe/watermelondb';
 
 /**
  * The App model will hold information - such as the version number, build number and creation date -

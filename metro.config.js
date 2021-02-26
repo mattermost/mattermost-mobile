@@ -13,7 +13,7 @@ const modulesRegex = /\/(node_modules)/;
 
 const config = {
     transformer: {
-        getTransformOptions: (entryFile, {platform}) => {
+        getTransformOptions: (entryFile, { platform }) => {
             console.log('BUILDING MODULES FOR', platform);
             const moduleMap = {};
             let modulePaths = [];

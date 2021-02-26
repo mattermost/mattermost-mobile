@@ -14,7 +14,7 @@ function leftMergeDirs(rootA, rootB, dest, path) {
     const pathB = rootB + path;
 
     try {
-        fs.mkdirSync(dest + path, {recursive: true});
+        fs.mkdirSync(dest + path, { recursive: true });
     } catch (e) {
         if (e.code !== 'EEXIST') {
             console.error('Failed to create destination dir ' + dest + path);
@@ -31,7 +31,7 @@ function leftMergeDirs(rootA, rootB, dest, path) {
         try {
             stat = fs.statSync(filePathA);
         } catch (e) {
-            console.error('File ' + file + ' doesn\'t exist in ' + pathA);
+            console.error('File ' + file + " doesn't exist in " + pathA);
             throw e;
         }
 

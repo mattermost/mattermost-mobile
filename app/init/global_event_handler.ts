@@ -1,20 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
-import CookieManager, {Cookie} from '@react-native-community/cookies';
-import {FileSystem} from 'react-native-unimodules';
+import { Alert, DeviceEventEmitter, Linking, Platform } from 'react-native';
+import CookieManager, { Cookie } from '@react-native-community/cookies';
+import { FileSystem } from 'react-native-unimodules';
 import semver from 'semver';
 
 import LocalConfig from '@assets/config.json';
-import {Navigation} from '@constants';
-import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
+import { Navigation } from '@constants';
+import { DEFAULT_LOCALE, getTranslations, resetMomentLocale, t } from '@i18n';
 import * as analytics from '@init/analytics.ts';
-import {getAppCredentials, removeAppCredentials} from '@init/credentials';
+import { getAppCredentials, removeAppCredentials } from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
-import {deleteFileCache} from '@utils/file';
+import { deleteFileCache } from '@utils/file';
 
-type LinkingCallbackArg = {url: string};
+type LinkingCallbackArg = { url: string };
 
 class GlobalEventHandler {
     launchApp: launchAppFunc | undefined;
@@ -48,7 +48,7 @@ class GlobalEventHandler {
     };
 
     onDeepLink = (event: LinkingCallbackArg) => {
-        const {url} = event;
+        const { url } = event;
         if (url) {
             // TODO: Handle deeplink
             // if server is not added go to add new server screen
@@ -70,7 +70,7 @@ class GlobalEventHandler {
         } catch (error) {
             // Nothing to clear
         }
-    }
+    };
 
     clearCookiesAndWebData = async (serverUrl?: string) => {
         this.clearCookies(serverUrl, false);
@@ -81,38 +81,38 @@ class GlobalEventHandler {
 
         // TODO: Only execute this if there are no more servers
         switch (Platform.OS) {
-        case 'ios': {
-            const mainPath = FileSystem.documentDirectory?.split('/').slice(0, -1).join('/');
-            const libraryDir = `${mainPath}/Library`;
-            const cookiesDir = `${libraryDir}/Cookies`;
-            const cookies = await FileSystem.getInfoAsync(cookiesDir);
-            const webkitDir = `${libraryDir}/WebKit`;
-            const webkit = await FileSystem.getInfoAsync(webkitDir);
+            case 'ios': {
+                const mainPath = FileSystem.documentDirectory?.split('/').slice(0, -1).join('/');
+                const libraryDir = `${mainPath}/Library`;
+                const cookiesDir = `${libraryDir}/Cookies`;
+                const cookies = await FileSystem.getInfoAsync(cookiesDir);
+                const webkitDir = `${libraryDir}/WebKit`;
+                const webkit = await FileSystem.getInfoAsync(webkitDir);
 
-            if (cookies.exists) {
-                FileSystem.deleteAsync(cookiesDir);
+                if (cookies.exists) {
+                    FileSystem.deleteAsync(cookiesDir);
+                }
+
+                if (webkit.exists) {
+                    FileSystem.deleteAsync(webkitDir);
+                }
+                break;
             }
 
-            if (webkit.exists) {
-                FileSystem.deleteAsync(webkitDir);
-            }
-            break;
-        }
+            case 'android': {
+                const cacheDir = FileSystem.cacheDirectory;
+                const mainPath = cacheDir?.split('/').slice(0, -1).join('/');
+                const cookies = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies`);
+                const cookiesJ = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies-journal`);
+                if (cookies.exists) {
+                    FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies`);
+                }
 
-        case 'android': {
-            const cacheDir = FileSystem.cacheDirectory;
-            const mainPath = cacheDir?.split('/').slice(0, -1).join('/');
-            const cookies = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies`);
-            const cookiesJ = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies-journal`);
-            if (cookies.exists) {
-                FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies`);
+                if (cookiesJ.exists) {
+                    FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies-journal`);
+                }
+                break;
             }
-
-            if (cookiesJ.exists) {
-                FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies-journal`);
-            }
-            break;
-        }
         }
     };
 
@@ -164,11 +164,13 @@ class GlobalEventHandler {
                 Alert.alert(
                     translations[t('mobile.server_upgrade.title')],
                     translations[t('mobile.server_upgrade.description')],
-                    [{
-                        text: translations[t('mobile.server_upgrade.button')],
-                        onPress: () => this.serverUpgradeNeeded(serverUrl),
-                    }],
-                    {cancelable: false},
+                    [
+                        {
+                            text: translations[t('mobile.server_upgrade.button')],
+                            onPress: () => this.serverUpgradeNeeded(serverUrl),
+                        },
+                    ],
+                    { cancelable: false },
                 );
             }
 

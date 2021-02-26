@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
-import {Breadcrumb, Severity} from '@sentry/types';
+import { Platform } from 'react-native';
+import { Breadcrumb, Severity } from '@sentry/types';
 
 import Config from '@assets/config.json';
-import {ClientError} from './client_error';
+import { ClientError } from './client_error';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -31,7 +31,7 @@ export function initializeSentry() {
         return;
     }
 
-    Sentry.init({dsn, ...Config.SentryOptions});
+    Sentry.init({ dsn, ...Config.SentryOptions });
 }
 
 function getDsn() {
@@ -58,7 +58,7 @@ export function captureException(error: Error | string, logger: string) {
     // TODO: Get current server config and other relevant data
 
     capture(() => {
-        Sentry.captureException(error, {logger});
+        Sentry.captureException(error, { logger });
     });
 }
 
@@ -105,7 +105,7 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
             breadcrumb.data.status_code = error.status_code;
         }
 
-        const match = (/^(?:https?:\/\/)[^/]+(\/.*)$/).exec(error.url);
+        const match = /^(?:https?:\/\/)[^/]+(\/.*)$/.exec(error.url);
 
         if (match && match.length >= 2) {
             breadcrumb.data.url = match[1];

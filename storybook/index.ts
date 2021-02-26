@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Platform} from 'react-native';
-import {STORYBOOK_HOST, STORYBOOK_PORT} from '@env';
-import {getStorybookUI, configure} from '@storybook/react-native';
+import { Platform } from 'react-native';
+import { STORYBOOK_HOST, STORYBOOK_PORT } from '@env';
+import { getStorybookUI, configure } from '@storybook/react-native';
 
 // load react-native addons for storybook rn
 import '@storybook/addon-ondevice-knobs/register';
 
-import {loadStories} from './storyLoader';
+import { loadStories } from './storyLoader';
 
 // import stories
 configure(() => {

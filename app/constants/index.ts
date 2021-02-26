@@ -9,7 +9,7 @@ import List from './list';
 import Navigation from './navigation';
 import Preferences from './preferences';
 import Screens from './screens';
-import View, {Upgrade} from './view';
+import View, { Upgrade } from './view';
 import WebsocketEvents from './websocket';
 
 export {

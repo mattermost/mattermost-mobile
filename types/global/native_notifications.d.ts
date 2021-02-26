@@ -15,7 +15,7 @@ interface NativeNotificationPreferences {
 
 interface NativeNotification {
     getDeliveredNotifications(): Promise<NotificationWithChannel[]>;
-    getPreferences(): Promise<NativeNotificationPreferences|null>;
+    getPreferences(): Promise<NativeNotificationPreferences | null>;
     play(soundUri: string): void;
     removeDeliveredNotifications(identifier: string | string[], channelId?: string): void;
     setNotificationSound(): void;

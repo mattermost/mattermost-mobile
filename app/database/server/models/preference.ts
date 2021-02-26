@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Relation } from '@nozbe/watermelondb';
+import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import User from '@typings/database/user';
 
-const {PREFERENCE, USER} = MM_TABLES.SERVER;
+const { PREFERENCE, USER } = MM_TABLES.SERVER;
 
 /**
  * The Preference model hold information about the user's preference in the app.
@@ -20,9 +20,8 @@ export default class Preference extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A USER can have multiple PREFERENCE.(relationship is 1:N)*/
-        [USER]: {type: 'belongs_to', key: 'user_id'},
+        [USER]: { type: 'belongs_to', key: 'user_id' },
     };
 
     /** category : The preference category ( e.g. Themes, Account settings etc..) */

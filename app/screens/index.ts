@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleProp, ViewStyle} from 'react-native';
-import {withManagedConfig} from '@mattermost/react-native-emm';
+import { Platform, StyleProp, ViewStyle } from 'react-native';
+import { withManagedConfig } from '@mattermost/react-native-emm';
 
-import {Navigation} from 'react-native-navigation';
-import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
+import { Navigation } from 'react-native-navigation';
+import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
 
-import {Screens} from '@constants';
+import { Screens } from '@constants';
 
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -192,7 +192,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('@screens/user_profile').default;
     //     break;
     // }
-
     // if (screen) {
     //     Navigation.registerComponent(screenName, () => withGestures(withManagedConfig(screen), extraStyles));
     // }

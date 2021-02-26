@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
-import {StyleProp, ViewStyle} from 'react-native';
+import { intlShape } from 'react-intl';
+import { StyleProp, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
+import type { FileInfo } from '@mm-redux/types/files';
+import type { Theme } from '@mm-redux/types/preferences';
 
 export interface ActionCallback {
     (callback: CallbackFunctionWithoutArguments): void;
@@ -106,11 +106,11 @@ export interface ToastProps {
 }
 
 export interface ToastRef {
-    show: ShowToast
+    show: ShowToast;
 }
 
 export interface ToastState {
-    animation?: CompositeAnimation,
+    animation?: CompositeAnimation;
     duration?: number;
     callback?: () => void;
 }

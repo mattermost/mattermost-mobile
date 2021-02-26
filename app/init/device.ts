@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import AsyncStorage from '@react-native-community/async-storage';
-import {Device} from 'app/constants';
+import { Device } from 'app/constants';
 
 if (Device.IS_TABLET) {
     // TODO: Use the default database to set this property

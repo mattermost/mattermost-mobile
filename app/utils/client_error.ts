@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {cleanUrlForLogging} from '@utils/logging';
+import { cleanUrlForLogging } from '@utils/logging';
 
 export class ClientError extends Error {
     details: Error;
-    intl?: {defaultMessage?: string; id: string;} | { defaultMessage?: string; id: string } | { id: string; defaultMessage?: string; values: any } | { id: string; defaultMessage?: string };
+    intl?:
+        | { defaultMessage?: string; id: string }
+        | { defaultMessage?: string; id: string }
+        | { id: string; defaultMessage?: string; values: any }
+        | { id: string; defaultMessage?: string };
     url: string;
     server_error_id?: string | number;
     status_code?: number;
@@ -22,6 +26,6 @@ export class ClientError extends Error {
 
         // Ensure message is treated as a property of this class when object spreading. Without this,
         // copying the object by using `{...error}` would not include the message.
-        Object.defineProperty(this, 'message', {enumerable: true});
+        Object.defineProperty(this, 'message', { enumerable: true });
     }
 }

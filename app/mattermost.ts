@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Linking} from 'react-native';
-import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
+import { DeviceEventEmitter, Linking } from 'react-native';
+import { ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation } from 'react-native-navigation';
 
-import {Navigation as NavigationConstants, Screens} from '@constants';
-import {getAppCredentials} from '@init/credentials';
+import { Navigation as NavigationConstants, Screens } from '@constants';
+import { getAppCredentials } from '@init/credentials';
 import emmProvider from '@init/emm_provider';
 import globalEventHandler from '@init/global_event_handler';
-import {registerScreens} from '@screens/index';
-import {resetToChannel, resetToSelectServer} from '@screens/navigation';
+import { registerScreens } from '@screens/index';
+import { resetToChannel, resetToSelectServer } from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 const init = () => {
@@ -57,7 +57,7 @@ const launchApp = async (skipEmm: boolean) => {
 
         // eslint-disable-next-line no-console
         console.log('Launch app in Channel screen');
-        resetToChannel({skipMetrics: true});
+        resetToChannel({ skipMetrics: true });
     } else {
         resetToSelectServer(emmProvider.allowOtherServers);
     }
@@ -73,21 +73,21 @@ Navigation.events().registerAppLaunchedListener(() => {
     Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
 });
 
-export function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
+export function componentDidAppearListener({ componentId }: ComponentDidAppearEvent) {
     EphemeralStore.addNavigationComponentId(componentId);
 
     switch (componentId) {
-    case 'MainSidebar':
-        DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
-        DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
-        break;
-    case 'SettingsSidebar':
-        DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
-        break;
+        case 'MainSidebar':
+            DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+            DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
+            break;
+        case 'SettingsSidebar':
+            DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
+            break;
     }
 }
 
-export function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
+export function componentDidDisappearListener({ componentId }: ComponentDidDisappearEvent) {
     if (componentId !== Screens.CHANNEL) {
         EphemeralStore.removeNavigationComponentId(componentId);
     }

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Relation } from '@nozbe/watermelondb';
+import { field, immutableRelation, json } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import Team from '@typings/database/team';
 
-const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
+const { TEAM, TEAM_CHANNEL_HISTORY } = MM_TABLES.SERVER;
 
 /**
  * The TeamChannelHistory model helps keeping track of the last channel visited
@@ -20,9 +20,8 @@ export default class TeamChannelHistory extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A TEAM and TEAM_CHANNEL_HISTORY share a 1:1 relationship */
-        [TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: { type: 'belongs_to', key: 'team_id' },
     };
 
     /** team_id : The foreign key to the related Team record */

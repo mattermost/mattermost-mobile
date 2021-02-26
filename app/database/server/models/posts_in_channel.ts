@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Relation } from '@nozbe/watermelondb';
+import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import Channel from '@typings/database/channel';
 
-const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
+const { CHANNEL, POSTS_IN_CHANNEL } = MM_TABLES.SERVER;
 
 /**
  * PostsInChannel model helps us to combine adjacent posts together without leaving
@@ -20,9 +20,8 @@ export default class PostsInChannel extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A CHANNEL can have multiple POSTS_IN_CHANNEL. (relationship is 1:N)*/
-        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: { type: 'belongs_to', key: 'channel_id' },
     };
 
     /** channel_id : The foreign key of the related parent channel */

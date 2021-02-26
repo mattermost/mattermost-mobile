@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeModules} from 'react-native';
+import { NativeModules } from 'react-native';
 
-const {MattermostManaged} = NativeModules;
+const { MattermostManaged } = NativeModules;
 
-type IOSDeleteDatabase = { databaseName?: string, shouldRemoveDirectory?: boolean }
-type IOSAppGroupDetails = { appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string }
+type IOSDeleteDatabase = { databaseName?: string; shouldRemoveDirectory?: boolean };
+type IOSAppGroupDetails = { appGroupIdentifier: string; appGroupSharedDirectory: string; appGroupDatabase: string };
 
 /**
  * Retrieves information relative to the iOS AppGroup identifier and folders
@@ -15,7 +15,7 @@ type IOSAppGroupDetails = { appGroupIdentifier: string, appGroupSharedDirectory:
 export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
     const {
         appGroupIdentifier,
-        appGroupSharedDirectory: {sharedDirectory, databasePath},
+        appGroupSharedDirectory: { sharedDirectory, databasePath },
     } = MattermostManaged.getConstants();
 
     const appGroup = {
@@ -36,10 +36,7 @@ export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
  * e.g :
  * MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, (error: any, success: any) => {    });
  */
-export const deleteIOSDatabase = ({
-    databaseName = undefined,
-    shouldRemoveDirectory = false,
-}: IOSDeleteDatabase) => {
+export const deleteIOSDatabase = ({ databaseName = undefined, shouldRemoveDirectory = false }: IOSDeleteDatabase) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
 };

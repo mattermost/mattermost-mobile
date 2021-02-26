@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 
 /**
  * The Draft model represents  the draft state of messages in Direct/Group messages and in channels

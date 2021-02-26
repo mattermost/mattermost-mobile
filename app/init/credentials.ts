@@ -7,7 +7,7 @@ import * as KeyChain from 'react-native-keychain';
 import * as analytics from '@init/analytics.ts';
 import emmProvider from '@init/emm_provider';
 import EphemeralStore from '@store/ephemeral_store';
-import {getCSRFFromCookie} from '@utils/security';
+import { getCSRFFromCookie } from '@utils/security';
 
 const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
 
