@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { MM_TABLES } from '@constants/database';
 import {
     BatchOperations,
     DatabaseInstance,
@@ -9,9 +8,6 @@ import {
     HandleIsolatedEntityData,
     RecordValue,
 } from '@typings/database/database';
-
-import DatabaseManager from '../database_manager';
-
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
@@ -22,14 +18,17 @@ import {
     operateTermsOfServiceRecord,
 } from './operators';
 
+import DatabaseManager from '../database_manager';
+import { MM_TABLES } from '@constants/database';
+
 export enum OperationType {
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
-    DELETE = 'DELETE',
+    DELETE = 'DELETE'
 }
 
 export enum IsolatedEntities {
-    APP = 'app',
+    APP= 'app',
     GLOBAL = 'global',
     SERVERS = 'servers',
     CUSTOM_EMOJI = 'CustomEmoji',

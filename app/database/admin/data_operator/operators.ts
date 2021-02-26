@@ -1,12 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { MM_TABLES } from '@constants/database';
-import { Q } from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
-import App from '@typings/database/app';
-import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactory,
     RawApp,
@@ -18,14 +12,19 @@ import {
     RawSystem,
     RawTermsOfService,
 } from '@typings/database/database';
+
+import App from '@typings/database/app';
+import CustomEmoji from '@typings/database/custom_emoji';
 import Global from '@typings/database/global';
+import { MM_TABLES } from '@constants/database';
+import Model from '@nozbe/watermelondb/Model';
+import { OperationType } from './index';
 import Post from '@typings/database/post';
+import { Q } from '@nozbe/watermelondb';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
-
-import { OperationType } from './index';
 
 const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
 const { CUSTOM_EMOJI, POST, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;

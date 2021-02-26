@@ -1,26 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import {Database, Q} from '@nozbe/watermelondb';
-import {DeviceEventEmitter, Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
-
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import IServers from '@typings/database/servers';
 import type {
     ActiveServerDatabase,
-    DatabaseInstance,
     DatabaseConnection,
+    DatabaseInstance,
     DefaultNewServer,
     MigrationEvents,
     Models,
 } from '@typings/database/database';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-
-import DefaultMigration from '../../default/migration';
 import {App, Global, Servers} from '../../default/models';
-import {defaultSchema} from '../../default/schema';
 import {
     Channel,
     ChannelInfo,
@@ -51,7 +40,17 @@ import {
     TermsOfService,
     User,
 } from '../../server/models';
+import {Database, Q} from '@nozbe/watermelondb';
+import {DeviceEventEmitter, Platform} from 'react-native';
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+
+import DefaultMigration from '../../default/migration';
+import {FileSystem} from 'react-native-unimodules';
+import IServers from '@typings/database/servers';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import ServerMigration from '../../server/migration';
+import {defaultSchema} from '../../default/schema';
 import {serverSchema} from '../../server/schema';
 
 const {SERVERS} = MM_TABLES.DEFAULT;

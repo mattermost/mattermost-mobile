@@ -1,15 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model, Q} from '@nozbe/watermelondb';
-import {Class} from '@nozbe/watermelondb/utils/common';
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
-
-import {MM_TABLES} from '@constants/database';
-import IServers from '@typings/database/servers';
-import type {DatabaseInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
-
-import DefaultMigration from '../../../default/migration';
 import {App, Global, Servers} from '../../../default/models';
 import {
     Channel,
@@ -41,8 +32,16 @@ import {
     TermsOfService,
     User,
 } from '../../../server/models';
-import {defaultSchema} from '../../../default/schema';
+import {Database, Model, Q} from '@nozbe/watermelondb';
+import type {DatabaseInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
+
+import {Class} from '@nozbe/watermelondb/utils/common';
+import DefaultMigration from '../../../default/migration';
+import IServers from '@typings/database/servers';
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import {MM_TABLES} from '@constants/database';
 import ServerMigration from '../../../server/migration';
+import {defaultSchema} from '../../../default/schema';
 import {serverSchema} from '../../../server/schema';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
