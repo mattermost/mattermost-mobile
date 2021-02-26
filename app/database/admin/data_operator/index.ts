@@ -24,11 +24,11 @@ import { MM_TABLES } from '@constants/database';
 export enum OperationType {
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
-    DELETE = 'DELETE'
+    DELETE = 'DELETE',
 }
 
 export enum IsolatedEntities {
-    APP= 'app',
+    APP = 'app',
     GLOBAL = 'global',
     SERVERS = 'servers',
     CUSTOM_EMOJI = 'CustomEmoji',

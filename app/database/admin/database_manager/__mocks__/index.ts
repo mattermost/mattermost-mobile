@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {App, Global, Servers} from '../../../default/models';
+import { App, Global, Servers } from '../../../default/models';
 import {
     Channel,
     ChannelInfo,
@@ -32,35 +32,35 @@ import {
     TermsOfService,
     User,
 } from '../../../server/models';
-import {Database, Model, Q} from '@nozbe/watermelondb';
-import type {DatabaseInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
+import { Database, Model, Q } from '@nozbe/watermelondb';
+import type { DatabaseInstance, DefaultNewServer, MMDatabaseConnection } from '@typings/database/database';
 
-import {Class} from '@nozbe/watermelondb/utils/common';
+import { Class } from '@nozbe/watermelondb/utils/common';
 import DefaultMigration from '../../../default/migration';
 import IServers from '@typings/database/servers';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import ServerMigration from '../../../server/migration';
-import {defaultSchema} from '../../../default/schema';
-import {serverSchema} from '../../../server/schema';
+import { defaultSchema } from '../../../default/schema';
+import { serverSchema } from '../../../server/schema';
 
-const {SERVERS} = MM_TABLES.DEFAULT;
+const { SERVERS } = MM_TABLES.DEFAULT;
 
-type Models = Class<Model>[]
+type Models = Class<Model>[];
 
 // The elements needed to create a new connection
 type DatabaseConnection = {
-    databaseConnection: MMDatabaseConnection, shouldAddToDefaultDatabase
-        : boolean
-}
+    databaseConnection: MMDatabaseConnection;
+    shouldAddToDefaultDatabase: boolean;
+};
 
 // The elements required to switch to another active server database
-type ActiveServerDatabase = { displayName: string, serverUrl: string }
+type ActiveServerDatabase = { displayName: string; serverUrl: string };
 
 // The only two types of databases in the app
 export enum DatabaseType {
     DEFAULT,
-    SERVER
+    SERVER,
 }
 
 class DatabaseManager {
@@ -73,10 +73,36 @@ class DatabaseManager {
 
     constructor() {
         this.defaultModels = [App, Global, Servers];
-        this.serverModels = [Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File, Group, GroupMembership,
-            GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam, Post, PostMetadata, PostsInChannel,
-            PostsInThread, Preference, Reaction, Role, SlashCommand, System, Team, TeamChannelHistory, TeamMembership,
-            TeamSearchHistory, TermsOfService, User];
+        this.serverModels = [
+            Channel,
+            ChannelInfo,
+            ChannelMembership,
+            CustomEmoji,
+            Draft,
+            File,
+            Group,
+            GroupMembership,
+            GroupsInChannel,
+            GroupsInTeam,
+            MyChannel,
+            MyChannelSettings,
+            MyTeam,
+            Post,
+            PostMetadata,
+            PostsInChannel,
+            PostsInThread,
+            Preference,
+            Reaction,
+            Role,
+            SlashCommand,
+            System,
+            Team,
+            TeamChannelHistory,
+            TeamMembership,
+            TeamSearchHistory,
+            TermsOfService,
+            User,
+        ];
 
         this.iOSAppGroupDatabase = null;
         this.androidFilesDirectory = null;
@@ -117,9 +143,13 @@ class DatabaseManager {
 
             // Registers the new server connection into the DEFAULT database
             if (serverUrl && shouldAddToDefaultDatabase) {
-                await this.addServerToDefaultDatabase({databaseFilePath: databaseName, displayName: dbName, serverUrl});
+                await this.addServerToDefaultDatabase({
+                    databaseFilePath: databaseName,
+                    displayName: dbName,
+                    serverUrl,
+                });
             }
-            return new Database({adapter, actionsEnabled, modelClasses});
+            return new Database({ adapter, actionsEnabled, modelClasses });
         } catch (e) {
             // console.log(e);
         }
@@ -134,7 +164,7 @@ class DatabaseManager {
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
-    setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
+    setActiveServerDatabase = async ({ displayName, serverUrl }: ActiveServerDatabase) => {
         const isServerPresent = await this.isServerPresent(serverUrl);
 
         this.activeDatabase = await this.createDatabaseConnection({
@@ -159,7 +189,7 @@ class DatabaseManager {
             return server.url === serverUrl;
         });
         return existingServer && existingServer.length > 0;
-    }
+    };
 
     /**
      * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
@@ -188,7 +218,9 @@ class DatabaseManager {
      * @param {string[]} serverUrls
      * @returns {Promise<{url: string, dbInstance: DatabaseInstance}[] | null>}
      */
-    retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{ url: string, dbInstance: DatabaseInstance }[] | null> => {
+    retrieveDatabaseInstances = async (
+        serverUrls?: string[],
+    ): Promise<{ url: string; dbInstance: DatabaseInstance }[] | null> => {
         if (serverUrls?.length) {
             // Retrieve all server records from the default db
             const allServers = await this.getAllServers();
@@ -201,7 +233,7 @@ class DatabaseManager {
             // Creates server database instances
             if (servers.length) {
                 const databasePromises = servers.map(async (server: IServers) => {
-                    const {displayName, url} = server;
+                    const { displayName, url } = server;
                     const databaseConnection = {
                         actionsEnabled: true,
                         dbName: displayName,
@@ -215,7 +247,7 @@ class DatabaseManager {
                         shouldAddToDefaultDatabase: false,
                     });
 
-                    return {url, dbInstance};
+                    return { url, dbInstance };
                 });
 
                 const databaseInstances = await Promise.all(databasePromises);
@@ -238,7 +270,10 @@ class DatabaseManager {
             let server: IServers;
 
             if (defaultDB) {
-                const serversRecords = await defaultDB.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch() as IServers[];
+                const serversRecords = (await defaultDB.collections
+                    .get(SERVERS)
+                    .query(Q.where('url', serverUrl))
+                    .fetch()) as IServers[];
                 server = serversRecords?.[0] ?? undefined;
 
                 if (server) {
@@ -265,7 +300,9 @@ class DatabaseManager {
     private getAllServers = async () => {
         // Retrieve all server records from the default db
         const defaultDatabase = await this.getDefaultDatabase();
-        const allServers = defaultDatabase && await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
+        const allServers =
+            defaultDatabase &&
+            ((await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch()) as IServers[]);
         return allServers;
     };
 
@@ -275,7 +312,7 @@ class DatabaseManager {
      */
     private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
-            databaseConnection: {dbName: 'default'},
+            databaseConnection: { dbName: 'default' },
             shouldAddToDefaultDatabase: false,
         });
         return this.defaultDatabase;
@@ -288,11 +325,7 @@ class DatabaseManager {
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
-    private addServerToDefaultDatabase = async ({
-        databaseFilePath,
-        displayName,
-        serverUrl,
-    }: DefaultNewServer) => {
+    private addServerToDefaultDatabase = async ({ databaseFilePath, displayName, serverUrl }: DefaultNewServer) => {
         try {
             const defaultDatabase = await this.getDefaultDatabase();
             const isServerPresent = await this.isServerPresent(serverUrl);
