@@ -47,6 +47,7 @@ import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, 
 import {getChannelSinceValue} from '@utils/channels';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
+import {appsEnabled} from '@utils/apps';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -380,7 +381,9 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleGroupUpdatedEvent(msg));
         case 'custom_com.mattermost.apps_refresh_bindings': {
             const state = getState();
-            dispatch(fetchAppBindings(getCurrentUserId(state), getCurrentChannelId(state)));
+            if (appsEnabled(state)) {
+                dispatch(fetchAppBindings(getCurrentUserId(state), getCurrentChannelId(state)));
+            }
             break;
         }
         }
