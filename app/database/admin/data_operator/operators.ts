@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
-import {Q} from '@nozbe/watermelondb';
+import { MM_TABLES } from '@constants/database';
+import { Q } from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import App from '@typings/database/app';
@@ -11,7 +11,8 @@ import {
     DataFactory,
     RawApp,
     RawCustomEmoji,
-    RawGlobal, RawPost,
+    RawGlobal,
+    RawPost,
     RawRole,
     RawServers,
     RawSystem,
@@ -24,10 +25,10 @@ import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
 
-import {OperationType} from './index';
+import { OperationType } from './index';
 
-const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
-const {CUSTOM_EMOJI, POST, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
+const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
+const { CUSTOM_EMOJI, POST, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
@@ -37,7 +38,7 @@ const {CUSTOM_EMOJI, POST, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateAppRecord = async ({db, optType, value}: DataFactory) => {
+export const operateAppRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawApp;
 
     const generator = (app: App) => {
@@ -47,7 +48,7 @@ export const operateAppRecord = async ({db, optType, value}: DataFactory) => {
         app.versionNumber = record?.versionNumber ?? '';
     };
 
-    return operateBaseRecord({db, optType, tableName: APP, value, generator});
+    return operateBaseRecord({ db, optType, tableName: APP, value, generator });
 };
 
 /**
@@ -58,7 +59,7 @@ export const operateAppRecord = async ({db, optType, value}: DataFactory) => {
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateGlobalRecord = async ({db, optType, value}: DataFactory) => {
+export const operateGlobalRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawGlobal;
 
     const generator = (global: Global) => {
@@ -67,7 +68,7 @@ export const operateGlobalRecord = async ({db, optType, value}: DataFactory) => 
         global.value = record?.value ?? 0;
     };
 
-    return operateBaseRecord({db, optType, tableName: GLOBAL, value, generator});
+    return operateBaseRecord({ db, optType, tableName: GLOBAL, value, generator });
 };
 
 /**
@@ -78,7 +79,7 @@ export const operateGlobalRecord = async ({db, optType, value}: DataFactory) => 
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateServersRecord = async ({db, optType, value}: DataFactory) => {
+export const operateServersRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawServers;
 
     const generator = (servers: Servers) => {
@@ -90,7 +91,7 @@ export const operateServersRecord = async ({db, optType, value}: DataFactory) =>
         servers.url = record?.url ?? 0;
     };
 
-    return operateBaseRecord({db, optType, tableName: SERVERS, value, generator});
+    return operateBaseRecord({ db, optType, tableName: SERVERS, value, generator });
 };
 
 /**
@@ -101,7 +102,7 @@ export const operateServersRecord = async ({db, optType, value}: DataFactory) =>
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateCustomEmojiRecord = async ({db, optType, value}: DataFactory) => {
+export const operateCustomEmojiRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawCustomEmoji;
 
     const generator = (emoji: CustomEmoji) => {
@@ -109,7 +110,7 @@ export const operateCustomEmojiRecord = async ({db, optType, value}: DataFactory
         emoji.name = record?.name ?? '';
     };
 
-    return operateBaseRecord({db, optType, tableName: CUSTOM_EMOJI, value, generator});
+    return operateBaseRecord({ db, optType, tableName: CUSTOM_EMOJI, value, generator });
 };
 
 /**
@@ -120,7 +121,7 @@ export const operateCustomEmojiRecord = async ({db, optType, value}: DataFactory
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateRoleRecord = async ({db, optType, value}: DataFactory) => {
+export const operateRoleRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawRole;
 
     const generator = (role: Role) => {
@@ -129,7 +130,7 @@ export const operateRoleRecord = async ({db, optType, value}: DataFactory) => {
         role.permissions = record?.permissions ?? [];
     };
 
-    return operateBaseRecord({db, optType, tableName: ROLE, value, generator});
+    return operateBaseRecord({ db, optType, tableName: ROLE, value, generator });
 };
 
 /**
@@ -140,7 +141,7 @@ export const operateRoleRecord = async ({db, optType, value}: DataFactory) => {
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateSystemRecord = async ({db, optType, value}: DataFactory) => {
+export const operateSystemRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawSystem;
 
     const generator = (system: System) => {
@@ -149,7 +150,7 @@ export const operateSystemRecord = async ({db, optType, value}: DataFactory) => 
         system.value = record?.value ?? '';
     };
 
-    return operateBaseRecord({db, optType, tableName: SYSTEM, value, generator});
+    return operateBaseRecord({ db, optType, tableName: SYSTEM, value, generator });
 };
 
 /**
@@ -160,7 +161,7 @@ export const operateSystemRecord = async ({db, optType, value}: DataFactory) => 
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operateTermsOfServiceRecord = async ({db, optType, value}: DataFactory) => {
+export const operateTermsOfServiceRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawTermsOfService;
 
     const generator = (tos: TermsOfService) => {
@@ -168,7 +169,7 @@ export const operateTermsOfServiceRecord = async ({db, optType, value}: DataFact
         tos.acceptedAt = record?.acceptedAt ?? 0;
     };
 
-    return operateBaseRecord({db, optType, tableName: TERMS_OF_SERVICE, value, generator});
+    return operateBaseRecord({ db, optType, tableName: TERMS_OF_SERVICE, value, generator });
 };
 
 /**
@@ -179,7 +180,7 @@ export const operateTermsOfServiceRecord = async ({db, optType, value}: DataFact
  * @param {RecordValue} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostRecord = async ({db, optType, value}: DataFactory) => {
+export const operatePostRecord = async ({ db, optType, value }: DataFactory) => {
     const record = value as RawPost;
 
     const generator = (post: Post) => {
@@ -199,7 +200,7 @@ export const operatePostRecord = async ({db, optType, value}: DataFactory) => {
         post.props = record?.props ?? {};
     };
 
-    return operateBaseRecord({db, optType, tableName: POST, value, generator});
+    return operateBaseRecord({ db, optType, tableName: POST, value, generator });
 };
 
 /**
@@ -218,9 +219,9 @@ export const operatePostRecord = async ({db, optType, value}: DataFactory) => {
  * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */
-const operateBaseRecord = async ({db, optType, tableName, value, generator}: DataFactory) => {
+const operateBaseRecord = async ({ db, optType, tableName, value, generator }: DataFactory) => {
     // We query first to see if we have a record on that entity with the current value.id
-    const appRecord = await db.collections.get(tableName!).query(Q.where('id', value.id)).fetch() as Model[];
+    const appRecord = (await db.collections.get(tableName!).query(Q.where('id', value.id)).fetch()) as Model[];
     const isPresent = appRecord.length > 0;
 
     if ((isPresent && optType === OperationType.CREATE) || (isPresent && optType === OperationType.UPDATE)) {
@@ -231,7 +232,7 @@ const operateBaseRecord = async ({db, optType, tableName, value, generator}: Dat
         return record.prepareUpdate(() => generator!(record));
     }
 
-    if ((!isPresent && optType === OperationType.UPDATE) || (optType === OperationType.CREATE)) {
+    if ((!isPresent && optType === OperationType.UPDATE) || optType === OperationType.CREATE) {
         // Two possible scenarios
         // 1. We don't have a record yet to update; so we create it
         // 2. This is just a normal create operation

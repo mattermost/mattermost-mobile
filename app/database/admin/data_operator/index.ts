@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 import {
     BatchOperations,
     DatabaseInstance,
@@ -25,17 +25,17 @@ import {
 export enum OperationType {
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
-    DELETE = 'DELETE'
+    DELETE = 'DELETE',
 }
 
 export enum IsolatedEntities {
-    APP= 'app',
+    APP = 'app',
     GLOBAL = 'global',
     SERVERS = 'servers',
     CUSTOM_EMOJI = 'CustomEmoji',
     ROLE = 'Role',
     SYSTEM = 'System',
-    TERMS_OF_SERVICE = 'TermsOfService'
+    TERMS_OF_SERVICE = 'TermsOfService',
 }
 
 class DataOperator {
@@ -51,45 +51,45 @@ class DataOperator {
      * @param {Records} entityData.values
      * @returns {Promise<void>}
      */
-    handleIsolatedEntityData = async ({optType, tableName, values}: HandleIsolatedEntityData): Promise<void> => {
+    handleIsolatedEntityData = async ({ optType, tableName, values }: HandleIsolatedEntityData): Promise<void> => {
         let recordOperator;
 
         switch (tableName) {
-        case IsolatedEntities.APP : {
-            recordOperator = operateAppRecord;
-            break;
-        }
-        case IsolatedEntities.GLOBAL : {
-            recordOperator = operateGlobalRecord;
-            break;
-        }
-        case IsolatedEntities.SERVERS : {
-            recordOperator = operateServersRecord;
-            break;
-        }
-        case IsolatedEntities.CUSTOM_EMOJI : {
-            recordOperator = operateCustomEmojiRecord;
-            break;
-        }
-        case IsolatedEntities.ROLE : {
-            recordOperator = operateRoleRecord;
-            break;
-        }
-        case IsolatedEntities.SYSTEM : {
-            recordOperator = operateSystemRecord;
-            break;
-        }
-        case IsolatedEntities.TERMS_OF_SERVICE : {
-            recordOperator = operateTermsOfServiceRecord;
-            break;
-        }
-        default: {
-            recordOperator = null;
-            break;
-        }
+            case IsolatedEntities.APP: {
+                recordOperator = operateAppRecord;
+                break;
+            }
+            case IsolatedEntities.GLOBAL: {
+                recordOperator = operateGlobalRecord;
+                break;
+            }
+            case IsolatedEntities.SERVERS: {
+                recordOperator = operateServersRecord;
+                break;
+            }
+            case IsolatedEntities.CUSTOM_EMOJI: {
+                recordOperator = operateCustomEmojiRecord;
+                break;
+            }
+            case IsolatedEntities.ROLE: {
+                recordOperator = operateRoleRecord;
+                break;
+            }
+            case IsolatedEntities.SYSTEM: {
+                recordOperator = operateSystemRecord;
+                break;
+            }
+            case IsolatedEntities.TERMS_OF_SERVICE: {
+                recordOperator = operateTermsOfServiceRecord;
+                break;
+            }
+            default: {
+                recordOperator = null;
+                break;
+            }
         }
         if (recordOperator) {
-            await this.handleBaseData({optType, values, tableName, recordOperator});
+            await this.handleBaseData({ optType, values, tableName, recordOperator });
         }
     };
 
@@ -101,7 +101,7 @@ class DataOperator {
      * @param {Array} operation.models
      * @returns {Promise<void>}
      */
-    private batchOperations = async ({db, models}: BatchOperations) => {
+    private batchOperations = async ({ db, models }: BatchOperations) => {
         if (models.length > 0) {
             await db.action(async () => {
                 await db.batch(...models);
@@ -118,28 +118,28 @@ class DataOperator {
      * @param {(recordOperator: DataFactory) => void} opsBase.recordOperator
      * @returns {Promise<void>}
      */
-    private handleBaseData = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {
+    private handleBaseData = async ({ optType, tableName, values, recordOperator }: HandleBaseData) => {
         const db = await this.getDatabase(tableName);
         if (!db) {
             return;
         }
 
         let results;
-        const config = {db, optType, tableName};
+        const config = { db, optType, tableName };
 
         if (Array.isArray(values) && values.length) {
             const recordPromises = await values.map(async (value) => {
-                const record = await recordOperator({...config, value});
+                const record = await recordOperator({ ...config, value });
                 return record;
             });
 
             results = await Promise.all(recordPromises);
         } else {
-            results = await recordOperator({...config, value: values as RecordValue});
+            results = await recordOperator({ ...config, value: values as RecordValue });
         }
 
         if (results) {
-            await this.batchOperations({db, models: Array.isArray(results) ? results : Array(results)});
+            await this.batchOperations({ db, models: Array.isArray(results) ? results : Array(results) });
         }
     };
 
