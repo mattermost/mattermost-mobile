@@ -7,11 +7,10 @@ import {intlShape, injectIntl} from 'react-intl';
 import Separator from '@screens/channel_info/separator';
 
 import ChannelInfoRow from '../channel_info_row';
-import {AppBinding} from '@mm-redux/types/apps';
+import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
-import {doAppCall} from '@actions/apps';
-import {AppsBindings} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
 import {dismissModal} from '@actions/navigation';
 
@@ -21,6 +20,9 @@ type Props = {
     currentChannel: Channel;
     currentUser: UserProfile;
     appsEnabled: boolean;
+    actions: {
+        doAppCall: (call: AppCall, intl: any) => void
+    }
 }
 
 const Bindings = (props: Props) => {
@@ -56,6 +58,9 @@ type OptionProps = {
     currentChannel: Channel;
     currentUser: UserProfile;
     intl: typeof intlShape;
+    actions: {
+        doAppCall: (call: AppCall, intl: any) => void,
+    },
 }
 
 const Option = injectIntl((props: OptionProps) => {
@@ -63,11 +68,19 @@ const Option = injectIntl((props: OptionProps) => {
         const channelId = props.currentChannel.id;
 
         // TODO Consider handling result here
-        doAppCall({
+        props.actions.doAppCall({
+            type: AppCallTypes.SUBMIT,
+            values: {
+                ...props.binding.call?.values,
+            },
+            expand: {
+                channel: AppExpandLevels.EXPAND_ALL,
+                ...props.binding.call?.expand,
+            },
             context: {
                 app_id: props.binding.app_id,
                 channel_id: channelId,
-                location: AppsBindings.CHANNEL_HEADER_ICON,
+                location: AppBindingLocations.CHANNEL_HEADER_ICON,
                 user_id: props.currentUser.id,
             },
             url: props.binding.call?.url || '',

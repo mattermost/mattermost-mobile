@@ -13,7 +13,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {AppExpandLevels, AppsBindings} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
 
 type Props = {
     actions: {
@@ -40,7 +40,7 @@ export default class ButtonBinding extends PureComponent<Props> {
                 acting_user_id: userId,
                 app_id: binding.app_id,
                 channel_id: post.channel_id,
-                location: AppsBindings.IN_POST + '/' + binding.location,
+                location: AppBindingLocations.IN_POST + '/' + binding.location,
                 post_id: post.id,
                 user_id: userId,
             },

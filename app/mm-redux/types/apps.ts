@@ -1,6 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export type AppManifest = {
+    app_id: string;
+    display_name: string;
+    description?: string;
+    homepage_url?: string;
+    root_url: string;
+}
+
 export type AppModalState = {
     form: AppForm;
     call: AppCall;
@@ -44,7 +52,7 @@ export type AppBinding = {
 };
 
 export type AppCallValues = {
-    [name: string]: string;
+    [name: string]: any;
 };
 
 export type AppCallType = string;
@@ -111,8 +119,12 @@ export type AppForm = {
     cancel_button?: boolean;
     submit_on_cancel?: boolean;
     fields: AppField[];
+    call?: AppCall;
     depends_on?: string[];
 };
+
+export type AppFormValue = string | AppSelectOption | boolean | null;
+export type AppFormValues = {[name: string]: AppFormValue};
 
 export type AppSelectOption = {
     label: string;
@@ -129,9 +141,10 @@ export type AppField = {
     name: string;
     type: AppFieldType;
     is_required?: boolean;
+    readonly?: boolean;
 
     // Present (default) value of the field
-    value?: string;
+    value?: AppFormValue;
 
     description?: string;
 
@@ -142,9 +155,9 @@ export type AppField = {
     modal_label?: string;
 
     // Select props
-    refresh_on_change_to?: string[];
-    source_url?: string;
+    refresh?: boolean;
     options?: AppSelectOption[];
+    multiselect?: boolean;
 
     // Text props
     subtype?: string;
@@ -166,11 +179,11 @@ export type AutocompleteSuggestionWithComplete = AutocompleteSuggestion & {
 
 export type AutocompleteElement = AppField;
 export type AutocompleteStaticSelect = AutocompleteElement & {
-    options: {
+    options: Array<{
         label: string;
         value: string;
         hint?: string;
-    }[];
+    }>;
 };
 
 export type AutocompleteDynamicSelect = AutocompleteElement & {
@@ -180,3 +193,15 @@ export type AutocompleteDynamicSelect = AutocompleteElement & {
 export type AutocompleteUserSelect = AutocompleteElement & {}
 
 export type AutocompleteChannelSelect = AutocompleteElement & {}
+
+export type AppLookupCallValues = {
+    user_input: string;
+    values: AppFormValues;
+    name: string;
+}
+
+export type FormResponseData = {
+    errors?: {
+        [field: string]: string;
+    };
+}
