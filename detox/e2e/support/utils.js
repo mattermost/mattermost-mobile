@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Explicit `wait` should not normally used but made available for special cases.
@@ -26,7 +26,9 @@ export const isIos = () => {
 export const getRandomId = (length = 6) => {
     const MAX_SUBSTRING_INDEX = 27;
 
-    return uuidv4().replace(/-/g, '').substring(MAX_SUBSTRING_INDEX - length, MAX_SUBSTRING_INDEX);
+    return uuidv4()
+        .replace(/-/g, '')
+        .substring(MAX_SUBSTRING_INDEX - length, MAX_SUBSTRING_INDEX);
 };
 
 /**

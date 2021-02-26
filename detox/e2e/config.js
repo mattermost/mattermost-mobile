@@ -11,18 +11,24 @@ module.exports = {
     testRegex: '\\.e2e\\.js$',
     reporters: [
         '../node_modules/detox/runners/jest/streamlineReporter',
-        ['jest-junit', {
-            suiteName: 'Mobile App E2E with Detox and Jest',
-            outputDirectory: './artifacts',
-            outputName: `${platform}-junit.xml`,
-            uniqueOutputName: false,
-        }],
-        ['jest-html-reporters', {
-            pageTitle: 'Mobile App E2E with Detox and Jest',
-            publicPath: './artifacts',
-            filename: `${platform}-report.html`,
-            expand: false,
-        }],
+        [
+            'jest-junit',
+            {
+                suiteName: 'Mobile App E2E with Detox and Jest',
+                outputDirectory: './artifacts',
+                outputName: `${platform}-junit.xml`,
+                uniqueOutputName: false,
+            },
+        ],
+        [
+            'jest-html-reporters',
+            {
+                pageTitle: 'Mobile App E2E with Detox and Jest',
+                publicPath: './artifacts',
+                filename: `${platform}-report.html`,
+                expand: false,
+            },
+        ],
     ],
     verbose: true,
 };

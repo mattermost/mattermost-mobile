@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {capitalize, getRandomId} from '@support/utils';
+import { capitalize, getRandomId } from '@support/utils';
 
 import client from './client';
-import {getResponseFromError} from './common';
+import { getResponseFromError } from './common';
 
 // ****************************************************************
 // Channels
@@ -27,14 +27,11 @@ import {getResponseFromError} from './common';
  * @param {Object} option.channel - fix channel object to be created
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'channel', channel = null} = {}) => {
+export const apiCreateChannel = async ({ teamId = null, type = 'O', prefix = 'channel', channel = null } = {}) => {
     try {
-        const response = await client.post(
-            '/api/v4/channels',
-            channel || generateRandomChannel(teamId, type, prefix),
-        );
+        const response = await client.post('/api/v4/channels', channel || generateRandomChannel(teamId, type, prefix));
 
-        return {channel: response.data};
+        return { channel: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -51,7 +48,7 @@ export const apiGetChannelByName = async (teamName, channelName) => {
     try {
         const response = await client.get(`/api/v4/teams/name/${teamName}/channels/name/${channelName}`);
 
-        return {channel: response.data};
+        return { channel: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -66,12 +63,9 @@ export const apiGetChannelByName = async (teamName, channelName) => {
  */
 export const apiAddUserToChannel = async (userId, channelId) => {
     try {
-        const response = await client.post(
-            `/api/v4/channels/${channelId}/members`,
-            {user_id: userId},
-        );
+        const response = await client.post(`/api/v4/channels/${channelId}/members`, { user_id: userId });
 
-        return {member: response.data};
+        return { member: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }

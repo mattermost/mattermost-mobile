@@ -4,7 +4,7 @@
 import jestExpect from 'expect';
 
 import client from './client';
-import {getResponseFromError} from './common';
+import { getResponseFromError } from './common';
 
 // ****************************************************************
 // LDAP
@@ -52,10 +52,10 @@ export const apiLDAPTest = async () => {
  * Check that LDAP server can connect and is synchronized with Mattermost server.
  */
 export const apiRequireLDAPServer = async () => {
-    const {error: testError} = await apiLDAPTest();
+    const { error: testError } = await apiLDAPTest();
     jestExpect(testError).toBeUndefined();
 
-    const {error: syncError} = await apiLDAPSync();
+    const { error: syncError } = await apiLDAPSync();
     jestExpect(syncError).toBeUndefined();
 };
 

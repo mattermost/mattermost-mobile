@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import testConfig from '@support/test_config';
-import {getRandomId} from '@support/utils';
+import { getRandomId } from '@support/utils';
 
 import client from './client';
-import {getResponseFromError} from './common';
+import { getResponseFromError } from './common';
 
 // ****************************************************************
 // Users
@@ -27,12 +27,9 @@ import {getResponseFromError} from './common';
  */
 export const apiLogin = async (user) => {
     try {
-        const response = await client.post(
-            '/api/v4/users/login',
-            {login_id: user.username, password: user.password},
-        );
+        const response = await client.post('/api/v4/users/login', { login_id: user.username, password: user.password });
 
-        const {data, headers, status} = response;
+        const { data, headers, status } = response;
 
         // Get MMAUTHTOKEN cookie and attach to the client instance
         const [mmAuthToken] = headers['set-cookie'];
@@ -74,16 +71,13 @@ export const apiLogout = async () => {
  * See https://api.mattermost.com/#tag/users/paths/~1users/post
  * @param {Object} user - user object to be created
  */
-export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
+export const apiCreateUser = async ({ prefix = 'user', user = null } = {}) => {
     try {
         const newUser = user || generateRandomUser(prefix);
 
-        const response = await client.post(
-            '/api/v4/users',
-            newUser,
-        );
+        const response = await client.post('/api/v4/users', newUser);
 
-        return {user: {...response.data, password: newUser.password}};
+        return { user: { ...response.data, password: newUser.password } };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -105,7 +99,7 @@ export const apiGetUserById = async (userId) => {
     try {
         const response = await client.get(`/api/v4/users/${userId}`);
 
-        return {user: response.data};
+        return { user: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -120,7 +114,7 @@ export const apiGetUserByUsername = async (username) => {
     try {
         const response = await client.get(`/api/v4/users/username/${username}`);
 
-        return {user: response.data};
+        return { user: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }

@@ -4,11 +4,11 @@
 const path = require('path');
 const sanitizeFilename = require('sanitize-filename');
 
-const SANITIZE_OPTIONS = {replacement: '_'};
+const SANITIZE_OPTIONS = { replacement: '_' };
 const sanitize = (filename) => sanitizeFilename(filename, SANITIZE_OPTIONS);
 
 class CustomPathBuilder {
-    constructor({rootDir}) {
+    constructor({ rootDir }) {
         this.rootDir = rootDir;
     }
 
@@ -19,6 +19,6 @@ class CustomPathBuilder {
     }
 }
 
-module.exports = ({rootDir}) => {
-    return new CustomPathBuilder({rootDir});
+module.exports = ({ rootDir }) => {
+    return new CustomPathBuilder({ rootDir });
 };

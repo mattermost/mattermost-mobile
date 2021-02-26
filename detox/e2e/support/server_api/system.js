@@ -8,7 +8,7 @@ import path from 'path';
 import testConfig from '@support/test_config';
 
 import client from './client';
-import {apiUploadFile, getResponseFromError} from './common';
+import { apiUploadFile, getResponseFromError } from './common';
 import defaultServerConfig from './default_config.json';
 
 // ****************************************************************
@@ -33,7 +33,7 @@ import defaultServerConfig from './default_config.json';
 export const apiCheckSystemHealth = async () => {
     try {
         const response = await client.get('/api/v4/system/ping?get_server_status=true');
-        return {data: response.data};
+        return { data: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -47,7 +47,7 @@ export const apiGetConfig = async () => {
     try {
         const response = await client.get('/api/v4/config');
 
-        return {config: response.data};
+        return { config: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -60,15 +60,12 @@ export const apiGetConfig = async () => {
  */
 export const apiUpdateConfig = async (newConfig = {}) => {
     try {
-        const {config: currentConfig} = await apiGetConfig();
+        const { config: currentConfig } = await apiGetConfig();
         const config = merge.all([currentConfig, getDefaultConfig(), newConfig]);
 
-        const response = await client.put(
-            '/api/v4/config',
-            config,
-        );
+        const response = await client.put('/api/v4/config', config);
 
-        return {config: response.data};
+        return { config: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -80,7 +77,7 @@ function getDefaultConfig() {
             LdapServer: testConfig.ldapServer,
             LdapPort: testConfig.ldapPort,
         },
-        ServiceSettings: {SiteURL: testConfig.siteUrl},
+        ServiceSettings: { SiteURL: testConfig.siteUrl },
     };
 
     return merge(defaultServerConfig, fromEnv);
@@ -95,7 +92,7 @@ export const apiGetClientLicense = async () => {
     try {
         const response = await client.get('/api/v4/license/client?format=old');
 
-        return {license: response.data};
+        return { license: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -106,14 +103,14 @@ export const apiGetClientLicense = async () => {
  * @return {Object} returns {license} on success or fail when no license
  */
 export const apiRequireLicense = async () => {
-    const {license} = await getClientLicense();
+    const { license } = await getClientLicense();
 
     if (license.IsLicensed !== 'true') {
         console.error('Server has no Enterprise license.');
     }
     jestExpect(license.IsLicensed).toEqual('true');
 
-    return {license};
+    return { license };
 };
 
 /**
@@ -122,7 +119,7 @@ export const apiRequireLicense = async () => {
  * @return {Object} returns {license} on success or fail when no license or no license to specific feature.
  */
 export const apiRequireLicenseForFeature = async (key = '') => {
-    const {license} = await getClientLicense();
+    const { license } = await getClientLicense();
 
     if (license.IsLicensed !== 'true') {
         console.error('Server has no Enterprise license.');
@@ -142,7 +139,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
     }
     jestExpect(hasLicenseKey).toEqual(true);
 
-    return {license};
+    return { license };
 };
 
 /**
@@ -150,7 +147,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
  */
 export const apiUploadLicense = async () => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');
-    const response = await apiUploadFile('license', absFilePath, {url: '/api/v4/license', method: 'POST'});
+    const response = await apiUploadFile('license', absFilePath, { url: '/api/v4/license', method: 'POST' });
 
     return response;
 };
@@ -160,21 +157,21 @@ export const apiUploadLicense = async () => {
  * If no license, try to upload if license file is available at "/support/fixtures/mattermost-license.txt".
  */
 async function getClientLicense() {
-    const {license} = await apiGetClientLicense();
+    const { license } = await apiGetClientLicense();
     if (license.IsLicensed === 'true') {
-        return {license};
+        return { license };
     }
 
     // Upload a license if server is currently not loaded with license
     const response = await apiUploadLicense();
     if (response.error) {
         console.warn(response.error.message);
-        return {license};
+        return { license };
     }
 
     // Get an updated client license
     const out = await apiGetClientLicense();
-    return {license: out.license};
+    return { license: out.license };
 }
 
 export const System = {

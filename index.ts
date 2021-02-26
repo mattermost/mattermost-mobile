@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 import 'react-native-gesture-handler';
 
 import setFontFamily from './app/utils/font_family';
@@ -9,9 +9,7 @@ import './app/mattermost';
 
 if (__DEV__) {
     const LogBox = require('react-native/Libraries/LogBox/LogBox');
-    LogBox.ignoreLogs([
-        '`-[RCTRootView cancelTouches]`',
-    ]);
+    LogBox.ignoreLogs(['`-[RCTRootView cancelTouches]`']);
     require('storybook/mattermost_storybook.ts');
 }
 

@@ -7,7 +7,7 @@ import testConfig from '../test_config';
 
 export const client = axios.create({
     baseURL: testConfig.siteUrl,
-    headers: {'X-Requested-With': 'XMLHttpRequest'},
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
 });
 
 export default client;

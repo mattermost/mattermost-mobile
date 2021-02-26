@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import client from './client';
-import {getResponseFromError} from './common';
+import { getResponseFromError } from './common';
 
 // ****************************************************************
 // Channels
@@ -26,11 +26,11 @@ export const apiGetPostsInChannel = async (channelId) => {
     try {
         const response = await client.get(`/api/v4/channels/${channelId}/posts`);
 
-        const {order, posts} = response.data;
+        const { order, posts } = response.data;
 
         const orderedPosts = order.map((postId) => posts[postId]);
 
-        return {posts: orderedPosts};
+        return { posts: orderedPosts };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -42,8 +42,8 @@ export const apiGetPostsInChannel = async (channelId) => {
  * @return {Object} returns {post} on success or {error, status} on error
  */
 export const apiGetLastPostInChannel = async (channelId) => {
-    const {posts} = await apiGetPostsInChannel(channelId);
-    return {post: posts[0]};
+    const { posts } = await apiGetPostsInChannel(channelId);
+    return { post: posts[0] };
 };
 
 export const Post = {

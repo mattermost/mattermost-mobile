@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {capitalize, getRandomId} from '@support/utils';
+import { capitalize, getRandomId } from '@support/utils';
 
 import client from './client';
-import {getResponseFromError} from './common';
+import { getResponseFromError } from './common';
 
 // ****************************************************************
 // Teams
@@ -26,14 +26,11 @@ import {getResponseFromError} from './common';
  * @param {Object} team - fix team object to be created
  * @return {Object} returns {team} on success or {error, status} on error
  */
-export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} = {}) => {
+export const apiCreateTeam = async ({ type = 'O', prefix = 'team', team = null } = {}) => {
     try {
-        const response = await client.post(
-            '/api/v4/teams',
-            team || generateRandomTeam(type, prefix),
-        );
+        const response = await client.post('/api/v4/teams', team || generateRandomTeam(type, prefix));
 
-        return {team: response.data};
+        return { team: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -48,12 +45,9 @@ export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} =
  */
 export const apiAddUserToTeam = async (userId, teamId) => {
     try {
-        const response = await client.post(
-            `/api/v4/teams/${teamId}/members`,
-            {team_id: teamId, user_id: userId},
-        );
+        const response = await client.post(`/api/v4/teams/${teamId}/members`, { team_id: teamId, user_id: userId });
 
-        return {member: response.data};
+        return { member: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -69,7 +63,7 @@ export const apiGetTeamMembersForUser = async (userId = 'me') => {
     try {
         const response = await client.get(`/api/v4/users/${userId}/teams`);
 
-        return {teams: response.data};
+        return { teams: response.data };
     } catch (err) {
         return getResponseFromError(err);
     }

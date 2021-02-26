@@ -9,12 +9,4 @@ import System from './system';
 import Team from './team';
 import User from './user';
 
-export {
-    Channel,
-    Ldap,
-    Post,
-    Setup,
-    System,
-    Team,
-    User,
-};
+export { Channel, Ldap, Post, Setup, System, Team, User };

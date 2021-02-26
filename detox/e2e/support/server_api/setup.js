@@ -11,13 +11,13 @@ import User from './user';
  * @return {Object} returns {channel, team, user} on success or {error, status} on error
  */
 export const apiInit = async ({
-    channelOptions = {type: 'O', prefix: 'channel'},
-    teamOptions = {type: 'O', prefix: 'team'},
-    userOptions = {prefix: 'user'},
+    channelOptions = { type: 'O', prefix: 'channel' },
+    teamOptions = { type: 'O', prefix: 'team' },
+    userOptions = { prefix: 'user' },
 } = {}) => {
-    const {team} = await Team.apiCreateTeam(teamOptions);
-    const {channel} = await Channel.apiCreateChannel({...channelOptions, teamId: team.id});
-    const {user} = await User.apiCreateUser(userOptions);
+    const { team } = await Team.apiCreateTeam(teamOptions);
+    const { channel } = await Channel.apiCreateChannel({ ...channelOptions, teamId: team.id });
+    const { user } = await User.apiCreateUser(userOptions);
 
     await Team.apiAddUserToTeam(user.id, team.id);
     await Channel.apiAddUserToChannel(user.id, channel.id);
