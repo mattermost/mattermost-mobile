@@ -79,8 +79,6 @@ export default class AppFormSelector extends PureComponent<Props> {
 
         const selectedOption = {label: selectedLabel, value: selectedValue};
 
-        this.setState({selected: selectedOption});
-
         if (this.props.onSelected) {
             this.props.onSelected(selectedOption);
         }
