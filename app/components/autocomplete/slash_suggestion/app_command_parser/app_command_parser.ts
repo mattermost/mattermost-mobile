@@ -13,7 +13,6 @@ import type {
     AppForm,
     AutocompleteSuggestion,
     AutocompleteStaticSelect,
-    AutocompleteSuggestionWithComplete,
     AppLookupCallValues,
 
     DispatchFunc,
@@ -26,21 +25,16 @@ import {
     AppFieldTypes,
 
     getAppBindings,
-    getPost,
     getChannel,
-    getCurrentChannel,
     getCurrentTeamId,
     doAppCall,
     sendEphemeralPost,
-    Store,
+    getStore,
+    EXECUTE_CURRENT_COMMAND_ITEM_ID,
+    getExecuteSuggestionDescription,
 } from './app_command_parser_dependencies';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
-
-const Utils = {
-    isMac: () => false,
-};
-
-const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
+import {Channel} from '@mm-redux/types/channels';
 
 export type Store = {
     dispatch: DispatchFunc;
@@ -481,12 +475,14 @@ export class ParsedCommand {
 
 export class AppCommandParser {
     private store: Store;
-    private rootPostID: string;
+    private channelID: string;
+    private rootPostID?: string;
 
     forms: {[location: string]: AppForm} = {};
 
-    constructor(store: Store, rootPostID = '') {
-        this.store = store;
+    constructor(store: Store|null, channelID: string, rootPostID = '') {
+        this.store = store || getStore() as Store;
+        this.channelID = channelID;
         this.rootPostID = rootPostID;
     }
 
@@ -518,9 +514,9 @@ export class AppCommandParser {
     }
 
     // getSuggestionsBase is a synchronous function that returns results for base commands
-    public getSuggestionsBase = (pretext: string): AutocompleteSuggestionWithComplete[] => {
+    public getSuggestionsBase = (pretext: string): AutocompleteSuggestion[] => {
         const command = pretext.toLowerCase();
-        const result: AutocompleteSuggestionWithComplete[] = [];
+        const result: AutocompleteSuggestion[] = [];
 
         const bindings = this.getCommandBindings();
         for (const binding of bindings) {
@@ -534,10 +530,11 @@ export class AppCommandParser {
             }
             if (base.startsWith(command)) {
                 result.push({
-                    suggestion: base,
-                    complete: base,
-                    description: binding.description,
-                    hint: binding.hint || '',
+                    Suggestion: base,
+                    Complete: base.substring(1),
+                    Description: binding.description || '',
+                    Hint: binding.hint || '',
+                    IconData: binding.icon || '',
                 });
             }
         }
@@ -546,7 +543,7 @@ export class AppCommandParser {
     }
 
     // getSuggestions returns suggestions for subcommands and/or form arguments
-    public getSuggestions = async (pretext: string): Promise<AutocompleteSuggestionWithComplete[]> => {
+    public getSuggestions = async (pretext: string): Promise<AutocompleteSuggestion[]> => {
         let parsed = new ParsedCommand(pretext, this);
 
         const commandBindings = this.getCommandBindings();
@@ -611,23 +608,23 @@ export class AppCommandParser {
     }
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
-    decorateSuggestionComplete = (parsed: ParsedCommand, choice: AutocompleteSuggestion): AutocompleteSuggestionWithComplete => {
-        if (choice.complete && choice.complete.endsWith(EXECUTE_CURRENT_COMMAND_ITEM_ID)) {
-            return choice as AutocompleteSuggestionWithComplete;
+    decorateSuggestionComplete = (parsed: ParsedCommand, choice: AutocompleteSuggestion): AutocompleteSuggestion => {
+        if (choice.Complete && choice.Complete.endsWith(EXECUTE_CURRENT_COMMAND_ITEM_ID)) {
+            return choice as AutocompleteSuggestion;
         }
 
         let goBackSpace = 0;
-        if (choice.complete === '') {
+        if (choice.Complete === '') {
             goBackSpace = 1;
         }
         let complete = parsed.command.substring(0, parsed.incompleteStart - goBackSpace);
-        complete += choice.complete || choice.suggestion;
-        choice.hint = choice.hint || '';
-        choice.suggestion = '/' + choice.suggestion;
+        complete += choice.Complete || choice.Suggestion;
+        choice.Hint = choice.Hint || '';
+        choice.Suggestion = '/' + choice.Suggestion;
 
         return {
             ...choice,
-            complete,
+            Complete: complete,
         };
     }
 
@@ -637,8 +634,11 @@ export class AppCommandParser {
         const bindings = getAppBindings(this.store.getState(), AppBindingLocations.COMMAND);
         const grouped: {[appID: string]: AppBinding} = {};
 
+        return bindings;
+
         for (const b of bindings) {
             grouped[b.app_id] = grouped[b.app_id] || {
+                ...b,
                 app_id: b.app_id,
                 label: b.app_id,
                 location: AppBindingLocations.COMMAND,
@@ -656,16 +656,12 @@ export class AppCommandParser {
     // getChannel computes the right channel, based on if this command is running in the center channel or RHS
     getChannel = (): Channel | null => {
         const state = this.store.getState();
-        if (!this.rootPostID) {
-            return getCurrentChannel(state);
-        }
+        return getChannel(state, this.channelID);
+    }
 
-        const post = getPost(state, this.rootPostID);
-        if (!post) {
-            return null;
-        }
-
-        return getChannel(state, post.channel_id);
+    setChannelContext = (channelID: string, rootPostID?: string) => {
+        this.channelID = channelID;
+        this.rootPostID = rootPostID;
     }
 
     // isAppCommand determines if subcommand/form suggestions need to be returned
@@ -722,7 +718,7 @@ export class AppCommandParser {
 
         let callResponse: AppCallResponse | undefined;
         try {
-            const res = await this.store.dispatch(doAppCall(payload)) as {data?: AppCallResponse; error?: Error};
+            const res = await this.store.dispatch(doAppCall(payload, null)) as {data?: AppCallResponse; error?: Error};
             if (res.error) {
                 this.displayError(res.error);
                 return undefined;
@@ -776,10 +772,11 @@ export class AppCommandParser {
         bindings.forEach((b) => {
             if (b.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase())) {
                 result.push({
-                    complete: b.label,
-                    suggestion: b.label,
-                    description: b.description,
-                    hint: b.hint || '',
+                    Complete: b.label,
+                    Suggestion: b.label,
+                    Description: b.description || '',
+                    Hint: b.hint || '',
+                    IconData: b.icon || '',
                 });
             }
         });
@@ -817,17 +814,12 @@ export class AppCommandParser {
 
     // getExecuteSuggestion returns the "Execute Current Command" suggestion
     getExecuteSuggestion = (parsed: ParsedCommand): AutocompleteSuggestion => {
-        let key = 'Ctrl';
-        if (Utils.isMac()) {
-            key = '⌘';
-        }
-
         return {
-            complete: parsed.command + EXECUTE_CURRENT_COMMAND_ITEM_ID,
-            suggestion: '/Execute Current Command',
-            hint: '',
-            description: 'Select this option or use ' + key + '+Enter to execute the current command.',
-            iconData: EXECUTE_CURRENT_COMMAND_ITEM_ID,
+            Complete: parsed.command + EXECUTE_CURRENT_COMMAND_ITEM_ID,
+            Suggestion: '/Execute Current Command',
+            Hint: '',
+            Description: getExecuteSuggestionDescription(parsed),
+            IconData: EXECUTE_CURRENT_COMMAND_ITEM_ID,
         };
     }
 
@@ -873,15 +865,16 @@ export class AppCommandParser {
                     suffix = ' ~';
                 }
                 return {
-                    complete: prefix + (f.label || f.name) + suffix,
-                    suggestion: '--' + (f.label || f.name),
-                    description: f.description,
-                    hint: f.hint,
+                    Complete: prefix + (f.label || f.name) + suffix,
+                    Suggestion: '--' + (f.label || f.name),
+                    Description: f.description || '',
+                    Hint: f.hint || '',
+                    IconData: parsed.binding?.icon || '',
                 };
             });
         }
 
-        return [{suggestion: 'Could not find any suggestions'}];
+        return [{Suggestion: 'Could not find any suggestions'} as AutocompleteSuggestion];
     }
 
     // getSuggestionsForField gets suggestions for a positional or flag field value
@@ -910,10 +903,11 @@ export class AppCommandParser {
         }
 
         return [{
-            complete,
-            suggestion: parsed.incomplete,
-            description: f.description,
-            hint: f.hint,
+            Complete: complete,
+            Suggestion: parsed.incomplete,
+            Description: f.description || '',
+            Hint: f.hint || '',
+            IconData: parsed.binding?.icon || '',
         }];
     }
 
@@ -922,10 +916,11 @@ export class AppCommandParser {
         const f = parsed.field as AutocompleteStaticSelect;
         const opts = f.options.filter((opt) => opt.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()));
         return opts.map((opt) => ({
-            complete: opt.label,
-            suggestion: opt.label,
-            hint: '',
-            description: '',
+            Complete: opt.label,
+            Suggestion: opt.label,
+            Hint: f.hint || '',
+            Description: f.description || '',
+            IconData: parsed.binding?.icon || '',
         }));
     }
 
@@ -952,21 +947,22 @@ export class AppCommandParser {
         type ResponseType = {items: AppSelectOption[]};
         let res: {data?: AppCallResponse<ResponseType>; error?: any};
         try {
-            res = await this.store.dispatch(doAppCall<ResponseType>(payload));
+            res = await this.store.dispatch(doAppCall<ResponseType>(payload, null));
         } catch (e) {
-            return [{suggestion: `Error: ${e.message}`}];
+            return [{Suggestion: `Error: ${e.message}`} as AutocompleteSuggestion];
         }
 
         const items = res?.data?.data?.items;
         if (!items) {
-            return [{suggestion: 'Received no data for dynamic suggestions'}];
+            return [{Suggestion: 'Received no data for dynamic suggestions'} as AutocompleteSuggestion];
         }
 
         return items.map((s): AutocompleteSuggestion => ({
-            description: s.label,
-            suggestion: s.value,
-            hint: '',
-            iconData: s.icon_data,
+            Complete: s.value,
+            Description: s.label,
+            Suggestion: s.value,
+            Hint: '',
+            IconData: s.icon_data || '',
         }));
     }
 
@@ -974,9 +970,11 @@ export class AppCommandParser {
     getUserSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
         if (parsed.incomplete.trim().length === 0) {
             return [{
-                suggestion: '@',
-                description: parsed.field?.description || '',
-                hint: parsed.field?.hint || '',
+                Complete: '',
+                Suggestion: '@',
+                Description: parsed.field?.description || '',
+                Hint: parsed.field?.hint || '',
+                IconData: parsed.binding?.icon || '',
             }];
         }
 
@@ -987,9 +985,11 @@ export class AppCommandParser {
     getChannelSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
         if (parsed.incomplete.trim().length === 0) {
             return [{
-                suggestion: '~',
-                description: parsed.field?.description || '',
-                hint: parsed.field?.hint || '',
+                Complete: '',
+                Suggestion: '~',
+                Description: parsed.field?.description || '',
+                Hint: parsed.field?.hint || '',
+                IconData: parsed.binding?.icon || '',
             }];
         }
 
@@ -1002,14 +1002,20 @@ export class AppCommandParser {
 
         if ('true'.startsWith(parsed.incomplete)) {
             suggestions.push({
-                complete: 'true',
-                suggestion: 'true',
+                Complete: 'true',
+                Suggestion: 'true',
+                Description: parsed.field?.description || '',
+                Hint: parsed.field?.hint || '',
+                IconData: parsed.binding?.icon || '',
             });
         }
         if ('false'.startsWith(parsed.incomplete)) {
             suggestions.push({
-                complete: 'false',
-                suggestion: 'false',
+                Complete: 'false',
+                Suggestion: 'false',
+                Description: parsed.field?.description || '',
+                Hint: parsed.field?.hint || '',
+                IconData: parsed.binding?.icon || '',
             });
         }
         return suggestions;

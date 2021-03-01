@@ -10,7 +10,7 @@ import  {
     getCurrentTeamId,
     doAppCall,
     sendEphemeralPost,
-    Store,
+    getStore,
 } from './app_command_parser_dependencies';
 
 describe('AppCommandParserDependencies', () => {
@@ -26,8 +26,8 @@ describe('AppCommandParserDependencies', () => {
         expect(AppFieldTypes).toBeDefined();
     });
 
-    test('Store is defined', () => {
-        expect(Store).toBeDefined();
+    test('getStore() is defined', () => {
+        expect(getStore()).toBeDefined();
     });
 
     test ('getAppBindings is defined', () => {

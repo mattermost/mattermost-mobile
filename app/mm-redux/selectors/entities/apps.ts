@@ -11,7 +11,8 @@ export function getAppBindings(state: GlobalState, location?: string): AppBindin
 
     if (location) {
         const headerBindings = state.entities.apps.bindings.filter((b) => b.location === location);
-        return headerBindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
+        return headerBindings;
+        // return headerBindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
     }
     return state.entities.apps.bindings;
 }

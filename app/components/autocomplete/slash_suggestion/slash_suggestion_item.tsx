@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {Image, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import {Theme} from '@mm-redux/types/preferences';
 
 import slashIcon from '@assets/images/autocomplete/slash_command.png';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         icon: {
             fontSize: 24,
@@ -48,7 +49,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const SlashSuggestionItem = (props) => {
+type Props = {
+    complete: string;
+    description: string;
+    hint: string;
+    onPress: (complete: string) => void;
+    suggestion: string;
+    theme: Theme;
+}
+
+const SlashSuggestionItem = (props: Props) => {
     const insets = useSafeAreaInsets();
     const {
         complete,
@@ -99,15 +109,6 @@ const SlashSuggestionItem = (props) => {
             </View>
         </TouchableWithFeedback>
     );
-};
-
-SlashSuggestionItem.propTypes = {
-    description: PropTypes.string,
-    hint: PropTypes.string,
-    onPress: PropTypes.func.isRequired,
-    theme: PropTypes.object.isRequired,
-    suggestion: PropTypes.string,
-    complete: PropTypes.string,
 };
 
 export default SlashSuggestionItem;

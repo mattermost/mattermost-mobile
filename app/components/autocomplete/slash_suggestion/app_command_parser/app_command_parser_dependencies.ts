@@ -6,15 +6,18 @@ export type {
     AppCallResponse,
     AppContext,
     AppForm,
-    AutocompleteSuggestion,
     AutocompleteElement,
     AutocompleteDynamicSelect,
     AutocompleteStaticSelect,
     AutocompleteUserSelect,
     AutocompleteChannelSelect,
-    AutocompleteSuggestionWithComplete,
     AppLookupCallValues,
 } from '@mm-redux/types/apps';
+
+import type {
+    AutocompleteSuggestion,
+} from '@mm-redux/types/integrations';
+export type {AutocompleteSuggestion};
 
 export type {
     Channel,
@@ -43,4 +46,10 @@ export {doAppCall} from '@actions/apps';
 export {sendEphemeralPost} from '@actions/views/post';
 
 import Store from '@store/store';
-export {Store};
+export const getStore = () => Store.redux;
+
+export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
+
+export const getExecuteSuggestionDescription = (): string => {
+    return 'Select this option to execute the command.';
+}

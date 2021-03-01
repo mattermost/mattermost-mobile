@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import {
     FlatList,
     Platform,
@@ -11,6 +10,8 @@ import {
 import {analytics} from '@init/analytics.ts';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {Command, AutocompleteSuggestion} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/preferences';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
@@ -18,30 +19,38 @@ import {AppCommandParser} from './app_command_parser/app_command_parser';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
-export default class SlashSuggestion extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            getAutocompleteCommands: PropTypes.func.isRequired,
-            getCommandAutocompleteSuggestions: PropTypes.func.isRequired,
-        }).isRequired,
-        currentTeamId: PropTypes.string.isRequired,
-        commands: PropTypes.array,
-        isSearch: PropTypes.bool,
-        maxListHeight: PropTypes.number,
-        theme: PropTypes.object.isRequired,
-        onChangeText: PropTypes.func.isRequired,
-        onResultCountChange: PropTypes.func.isRequired,
-        value: PropTypes.string,
-        nestedScrollEnabled: PropTypes.bool,
-        suggestions: PropTypes.array,
-        rootId: PropTypes.string,
-        channelId: PropTypes.string,
+export type Props = {
+    actions: {
+        getAutocompleteCommands: (channelID: string) => void;
+        getCommandAutocompleteSuggestions: (value: string, teamID: string, args: {channel_id?: string, root_id?: string, parent_id?: string}) => void;
     };
+    currentTeamId: string;
+    commands: Command[];
+    isSearch?: boolean;
+    maxListHeight?: number;
+    theme: Theme;
+    onChangeText: (text: string) => void;
+    onResultCountChange: (count: number) => void;
+    value: string;
+    nestedScrollEnabled?: boolean;
+    suggestions: AutocompleteSuggestion[];
+    rootId?: string;
+    channelId: string;
+};
 
+type State = {
+    active: boolean;
+    dataSource: AutocompleteSuggestion[];
+    lastCommandRequest: number;
+}
+
+export default class SlashSuggestion extends PureComponent<Props, State> {
     static defaultProps = {
         defaultChannel: {},
         value: '',
     };
+
+    appCommandParser: AppCommandParser;
 
     state = {
         active: false,
@@ -49,20 +58,20 @@ export default class SlashSuggestion extends PureComponent {
         lastCommandRequest: 0,
     };
 
-    constructor(props) {
+    constructor(props: Props) {
         super(props);
-        this.appCommandParser = new AppCommandParser(props.channelId, props.rootId);
+        this.appCommandParser = new AppCommandParser(null, props.channelId, props.rootId);
     }
 
-    setActive(active) {
+    setActive(active: boolean) {
         this.setState({active});
     }
 
-    setLastCommandRequest(lastCommandRequest) {
+    setLastCommandRequest(lastCommandRequest: number) {
         this.setState({lastCommandRequest});
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: Props) {
         if ((this.props.value === prevProps.value && this.props.suggestions === prevProps.suggestions && this.props.commands === prevProps.commands) ||
             this.props.isSearch || this.props.value.startsWith('//') || !this.props.channelId) {
             return;
@@ -94,12 +103,13 @@ export default class SlashSuggestion extends PureComponent {
                 this.setLastCommandRequest(Date.now());
             }
 
-            let matches = this.getAppBaseCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
-            matches = matches.concat(this.filterSlashSuggestions(nextValue.substring(1), nextCommands));
-            this.updateSuggestions(matches);
+            this.showBaseCommands(nextValue, nextCommands, prevProps.channelId, prevProps.rootId);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
+
+            // If this is an app command, then hand it off to the app command parser.
             if (this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
-                this.fetchAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId).then(this.updateSuggestions);
+                this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
+                return;
             } else if (nextSuggestions === prevProps.suggestions) {
                 const args = {
                     channel_id: prevProps.channelId,
@@ -107,48 +117,63 @@ export default class SlashSuggestion extends PureComponent {
                 };
                 this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
             } else {
-                const matches = [];
-                nextSuggestions.forEach((sug) => {
+                const matches: AutocompleteSuggestion[] = [];
+                nextSuggestions.forEach((sug: AutocompleteSuggestion) => {
                     if (!this.contains(matches, '/' + sug.Complete)) {
                         matches.push({
                             Complete: sug.Complete,
                             Suggestion: sug.Suggestion,
                             Hint: sug.Hint,
                             Description: sug.Description,
+                            IconData: '',
                         });
                     }
                 });
                 this.updateSuggestions(matches);
             }
         } else {
+            const v = Client4.getServerVersion();
+            console.log(v);
             this.setActive(false);
         }
     }
 
-    isAppCommand = (pretext, channelID, rootID) => {
+    showBaseCommands = (text: string, commands: Command[], channelID: string, rootID?: string) => {
+        let matches = this.getAppBaseCommandSuggestions(text, channelID, rootID);
+        matches = matches.concat(this.filterSlashSuggestions(text.substring(1), commands));
+        matches.sort((match1, match2) => {
+            return match1.Suggestion > match2.Suggestion ? 1 : -1;
+        });
+
+        this.updateSuggestions(matches);
+    }
+
+    isAppCommand = (pretext: string, channelID: string, rootID?: string) => {
         this.appCommandParser.setChannelContext(channelID, rootID);
         return this.appCommandParser.isAppCommand(pretext);
     }
 
-    fetchAppCommandSuggestions = async (pretext, channelID, rootID) => {
+    fetchAndShowAppCommandSuggestions = async (pretext: string, channelID: string, rootID?: string) => {
         this.appCommandParser.setChannelContext(channelID, rootID);
-        return this.appCommandParser.getSuggestions(pretext);
+        const suggestions = await this.appCommandParser.getSuggestions(pretext)
+        this.updateSuggestions(suggestions);
     }
 
-    getAppBaseCommandSuggestions = (pretext, channelID, rootID) => {
+    getAppBaseCommandSuggestions = (pretext: string, channelID: string, rootID?: string): AutocompleteSuggestion[] => {
         this.appCommandParser.setChannelContext(channelID, rootID);
-        return this.appCommandParser.getSuggestionsBase(pretext);
+        const suggestions = this.appCommandParser.getSuggestionsBase(pretext);
+        return suggestions;
     }
 
-    updateSuggestions = (matches) => {
+    updateSuggestions = (matches: AutocompleteSuggestion[]) => {
         this.setState({
-            active: matches.length,
+            active: Boolean(matches.length),
             dataSource: matches,
         });
         this.props.onResultCountChange(matches.length);
     }
 
-    filterSlashSuggestions = (matchTerm, commands) => {
+    filterSlashSuggestions = (matchTerm: string, commands: Command[]): AutocompleteSuggestion[] => {
         const data = commands.filter((command) => {
             if (!command.auto_complete) {
                 return false;
@@ -164,15 +189,16 @@ export default class SlashSuggestion extends PureComponent {
                 Suggestion: '/' + item.trigger,
                 Hint: item.auto_complete_hint,
                 Description: item.auto_complete_desc,
+                IconData: '',
             };
         });
     }
 
-    contains = (matches, complete) => {
+    contains = (matches: AutocompleteSuggestion[], complete: string): boolean => {
         return matches.findIndex((match) => match.Complete === complete) !== -1;
     }
 
-    completeSuggestion = (command) => {
+    completeSuggestion = (command: string) => {
         const {onChangeText} = this.props;
         analytics.trackCommand('complete_suggestion', `/${command} `);
 
@@ -200,9 +226,9 @@ export default class SlashSuggestion extends PureComponent {
         }
     };
 
-    keyExtractor = (item) => item.id || item.Suggestion;
+    keyExtractor = (item: Command & AutocompleteSuggestion): string => item.id || item.Suggestion;
 
-    renderItem = ({item}) => (
+    renderItem = ({item}: {item: AutocompleteSuggestion}) => (
         <SlashSuggestionItem
             description={item.Description}
             hint={item.Hint}
@@ -233,15 +259,13 @@ export default class SlashSuggestion extends PureComponent {
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
                 renderItem={this.renderItem}
-                pageSize={10}
-                initialListSize={10}
                 nestedScrollEnabled={nestedScrollEnabled}
             />
         );
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         listView: {
             flex: 1,
