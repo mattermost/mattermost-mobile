@@ -19,7 +19,7 @@ import {
 } from '@support/server_api';
 import {getRandomId} from '@support/utils';
 
-describe('Group Message Channel', () => {
+describe('Group Messages', () => {
     const searchTerm = getRandomId();
     let testUser;
     let testOtherUser1;

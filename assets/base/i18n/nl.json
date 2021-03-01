@@ -566,7 +566,7 @@
   "permalink.error.link_not_found": "Link Niet Gevonden",
   "permalink.show_dialog_warn.cancel": "Annuleren",
   "permalink.show_dialog_warn.description": "Je staat op het punt om deel te nemen aan \"{channel}\" zonder expliciet toegevoegd te zijn door de kanaal admin. Weet je zeker dat je dit privékanaal wilt binnengaan?",
-  "permalink.show_dialog_warn.join": "Deelnemen",
+  "permalink.show_dialog_warn.join": "Lid worden",
   "permalink.show_dialog_warn.title": "Word lid van het privékanaal",
   "post_body.check_for_out_of_channel_groups_mentions.message": "werd niet verwittigd door deze vermelding omdat deze niet in het kanaal zijn. Zij kunnen niet aan het kanaal toegevoegd worden omdat ze geen lid zijn van de gekoppelde groepen. Om hem aan het kanaal toe te voegen, moeten ze toegevoegd worden aan de gelinkte groepen.",
   "post_body.check_for_out_of_channel_mentions.link.and": " en ",
