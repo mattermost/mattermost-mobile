@@ -75,7 +75,7 @@ const Option = injectIntl((props: OptionProps) => {
 
         props.actions.doAppCall({
             type: AppCallTypes.SUBMIT,
-            url: props.binding.call?.url || '',
+            path: props.binding.call?.path || '',
             values: {
                 ...props.binding.call?.values,
             },

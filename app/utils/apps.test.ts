@@ -11,7 +11,7 @@ describe('Apps Utils', () => {
                 app_id: 'id',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
@@ -35,28 +35,28 @@ describe('Apps Utils', () => {
                 app_id: 'id',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
                         location: 'loc1/loc2',
                         app_id: 'id',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                         bindings: [
                             {
                                 location: 'loc1/loc2/loc3',
                                 app_id: 'id',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                             {
                                 location: 'loc1/loc2/loc4',
                                 app_id: 'id',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -65,7 +65,7 @@ describe('Apps Utils', () => {
                         location: 'loc1/loc5',
                         app_id: 'id',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                     },
                 ],
@@ -80,7 +80,7 @@ describe('Apps Utils', () => {
                 app_id: 'id',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
@@ -97,7 +97,7 @@ describe('Apps Utils', () => {
                     } as AppBinding,
                     {
                         call: {
-                            url: 'url2',
+                            path: 'url2',
                         } as AppCall,
                         location: 'loc5',
                     } as AppBinding,
@@ -108,28 +108,28 @@ describe('Apps Utils', () => {
                 app_id: 'id',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
                         location: 'loc1/loc2',
                         app_id: 'id2',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                         bindings: [
                             {
                                 location: 'loc1/loc2/loc3',
                                 app_id: 'id2',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                             {
                                 location: 'loc1/loc2/loc4',
                                 app_id: 'id2',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -138,7 +138,7 @@ describe('Apps Utils', () => {
                         location: 'loc1/loc5',
                         app_id: 'id',
                         call: {
-                            url: 'url2',
+                            path: 'url2',
                         } as AppCall,
                     },
                 ],
@@ -152,7 +152,7 @@ describe('Apps Utils', () => {
             const inBinding: AppBinding = {
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
@@ -179,28 +179,28 @@ describe('Apps Utils', () => {
                 app_id: 'id1',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
                         location: 'loc1/loc2',
                         app_id: 'id1',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                         bindings: [
                             {
                                 location: 'loc1/loc2/loc3',
                                 app_id: 'id1',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                             {
                                 location: 'loc1/loc2/loc4',
                                 app_id: 'id2',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -209,7 +209,7 @@ describe('Apps Utils', () => {
                         location: 'loc1/loc5',
                         app_id: 'id3',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                     },
                 ],
@@ -230,14 +230,14 @@ describe('Apps Utils', () => {
                                 app_id: 'id1',
                                 location: 'loc3',
                                 call: {
-                                    url: 'url1',
+                                    path: 'url1',
                                 } as AppCall,
                             } as AppBinding,
                             {
                                 app_id: 'id2',
                                 location: 'loc4',
                                 call: {
-                                    url: 'url2',
+                                    path: 'url2',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -246,7 +246,7 @@ describe('Apps Utils', () => {
                         app_id: 'id3',
                         location: 'loc5',
                         call: {
-                            url: 'url3',
+                            path: 'url3',
                         } as AppCall,
                     } as AppBinding,
                 ],
@@ -256,28 +256,28 @@ describe('Apps Utils', () => {
                 app_id: 'id1',
                 location: 'loc1',
                 call: {
-                    url: 'url1',
+                    path: 'url1',
                 } as AppCall,
                 bindings: [
                     {
                         location: 'loc1/loc2',
                         app_id: 'id1',
                         call: {
-                            url: 'url1',
+                            path: 'url1',
                         } as AppCall,
                         bindings: [
                             {
                                 location: 'loc1/loc2/loc3',
                                 app_id: 'id1',
                                 call: {
-                                    url: 'url1',
+                                    path: 'url1',
                                 } as AppCall,
                             } as AppBinding,
                             {
                                 location: 'loc1/loc2/loc4',
                                 app_id: 'id2',
                                 call: {
-                                    url: 'url2',
+                                    path: 'url2',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -286,7 +286,7 @@ describe('Apps Utils', () => {
                         location: 'loc1/loc5',
                         app_id: 'id3',
                         call: {
-                            url: 'url3',
+                            path: 'url3',
                         } as AppCall,
                     },
                 ],
@@ -300,7 +300,7 @@ describe('Apps Utils', () => {
             const inBinding: AppBinding = {
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
@@ -325,21 +325,21 @@ describe('Apps Utils', () => {
                 app_id: 'id',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
                         location: 'loc1/loc2',
                         app_id: 'id',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                         bindings: [
                             {
                                 location: 'loc1/loc2/loc4',
                                 app_id: 'id',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -365,7 +365,7 @@ describe('Apps Utils', () => {
                             {
                                 location: 'loc4',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -380,21 +380,21 @@ describe('Apps Utils', () => {
                 app_id: 'id',
                 location: 'loc1',
                 call: {
-                    url: 'url',
+                    path: 'url',
                 } as AppCall,
                 bindings: [
                     {
                         location: 'loc1/loc2',
                         app_id: 'id',
                         call: {
-                            url: 'url',
+                            path: 'url',
                         } as AppCall,
                         bindings: [
                             {
                                 location: 'loc1/loc2/loc4',
                                 app_id: 'id',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],
@@ -419,7 +419,7 @@ describe('Apps Utils', () => {
                             {
                                 location: 'loc4',
                                 call: {
-                                    url: 'url',
+                                    path: 'url',
                                 } as AppCall,
                             } as AppBinding,
                         ],

@@ -53,7 +53,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
         } = this.props;
 
         const call: AppCall = {
-            url: binding.call?.url || '',
+            path: binding.call?.path || '',
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
             },

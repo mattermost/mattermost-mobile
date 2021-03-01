@@ -58,7 +58,7 @@ export type AppCallValues = {
 export type AppCallType = string;
 
 export type AppCall = {
-    url: string;
+    path: string;
     type?: AppCallType;
     values?: AppCallValues;
     context: AppContext;
