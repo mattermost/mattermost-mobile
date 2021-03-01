@@ -34,6 +34,7 @@ class ChannelScreen {
         channelSearchButton: 'channel.search.button',
         channelTitleButton: 'channel.title.button',
         settingsSidebarDrawerButton: 'settings_sidebar_drawer.button',
+        guestBadge: 'post_info.guest',
     }
 
     channelScreen = element(by.id(this.testID.channelScreen));
@@ -46,6 +47,7 @@ class ChannelScreen {
     channelSearchButton = element(by.id(this.testID.channelSearchButton));
     channelTitleButton = element(by.id(this.testID.channelTitleButton));
     settingsSidebarDrawerButton = element(by.id(this.testID.settingsSidebarDrawerButton));
+    guestBadge = element(by.id(this.testID.guestBadge));
 
     // convenience props
     atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.channelScreenPrefix);
@@ -87,6 +89,10 @@ class ChannelScreen {
         await expect(this.channelScreen).toBeVisible();
 
         return this.channelScreen;
+    }
+
+    guestBADGE = async () => {
+        await expect((this.guestBadge)).toBeVisible();
     }
 
     open = async (user) => {
