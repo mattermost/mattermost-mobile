@@ -96,7 +96,7 @@
   "intro_messages.beginning": "Start von {name}",
   "intro_messages.creator": "Dies ist der Start von {name}, erstellt durch {creator} am {date}.",
   "intro_messages.creatorPrivate": "Dies ist der Start von {name}, erstellt durch {creator} am {date}.",
-  "intro_messages.group_message": "Dies ist der Start ihres Gruppennachrichtenverlaufs mit diesen Teammitgliedern. Nachrichten und hier geteilte Dateien sind für Personen außerhalb dieses Bereichs nicht sichtbar.",
+  "intro_messages.group_message": "Dies ist der Start Ihres Gruppennachrichtenverlaufs mit diesen Teammitgliedern. Nachrichten und hier geteilte Dateien sind für Personen außerhalb dieses Bereichs nicht sichtbar.",
   "intro_messages.noCreator": "Dies ist der Start von {name}, erstellt am {date}.",
   "intro_messages.onlyInvited": " Nur eingeladene Mitglieder können diesen privaten Kanal sehen.",
   "last_users_message.added_to_channel.type": "wurden durch {actor} **dem Kanal hinzugefügt**.",
