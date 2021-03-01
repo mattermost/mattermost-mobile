@@ -446,6 +446,7 @@
   "mobile.routes.channelInfo.unarchive_channel": "Unarchive Channel",
   "mobile.routes.code": "{language} Code",
   "mobile.routes.code.noLanguage": "Code",
+  "mobile.routes.custom_status": "Set a Status",
   "mobile.routes.edit_profile": "Edit Profile",
   "mobile.routes.login": "Login",
   "mobile.routes.loginOptions": "Login Chooser",

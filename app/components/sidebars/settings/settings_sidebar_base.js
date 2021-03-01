@@ -130,11 +130,23 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    goToCustomStatusScreen = (intl) => {
+        this.openCustomStatusModal(
+            'CustomStatus',
+            intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}),
+        );
+    }
+
     logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
         this.closeSettingsSidebar();
         logout();
     });
+
+    openCustomStatusModal = (screen, title, passProps = {}) => {
+        this.closeSettingsSidebar();
+        showModal(screen, title, passProps);
+    }
 
     openModal = async (screen, title, passProps = {}) => {
         this.closeSettingsSidebar();
@@ -215,6 +227,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 <CompassIcon
                     name='emoticon-happy-outline'
                     size={24}
+                    style={{color: changeOpacity(theme.centerChannelColor, 0.64)}}
                 />
             );
 
@@ -238,7 +251,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 labelComponent={labelComponent}
                 leftComponent={customStatusEmoji}
                 separator={false}
-                onPress={this.handleSetStatus}
+                onPress={this.goToCustomStatus}
                 theme={theme}
                 labelSibling={clearButton}
             />

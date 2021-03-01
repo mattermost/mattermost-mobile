@@ -21,7 +21,10 @@ const CustomStatusLabel = (props: ComponentProps) => {
             defaultMessage={'Set a Status'}
             style={style.label}
         /> :
-        <Text style={style.label}>{text}</Text>;
+        <Text
+            numberOfLines={1}
+            style={style.label}
+        >{text}</Text>;
 };
 
 export default CustomStatusLabel;

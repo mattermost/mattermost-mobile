@@ -10,6 +10,7 @@ import NavigationTypes from './navigation';
 import Types from './types';
 import ViewTypes, {UpgradeTypes} from './view';
 import WebsocketEvents from './websocket';
+import * as CustomStatus from './custom_status';
 
 export {
     AttachmentTypes,
@@ -22,4 +23,5 @@ export {
     Types,
     ViewTypes,
     WebsocketEvents,
+    CustomStatus,
 };

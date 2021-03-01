@@ -5,6 +5,8 @@ import {UserCustomStatus} from '@mm-redux/types/users';
 
 import {createSelector} from 'reselect';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
+import {get} from '@mm-redux/selectors/entities/preferences';
+import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 
 export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => UserCustomStatus {
@@ -16,6 +18,13 @@ export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => 
         },
     );
 }
+
+export const getRecentCustomStatuses = createSelector(
+    (state: GlobalState) => get(state, Preferences.CATEGORY_CUSTOM_STATUS, Preferences.NAME_RECENT_CUSTOM_STATUSES),
+    (value) => {
+        return value ? JSON.parse(value) : [];
+    },
+);
 
 export function isCustomStatusEnabled(state: GlobalState) {
     const config = getConfig(state);

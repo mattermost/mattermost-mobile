@@ -136,6 +136,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         labelContainer: {
             alignItems: 'center',
+            width: '90%',
             flex: 1,
             flexDirection: 'row',
         },
