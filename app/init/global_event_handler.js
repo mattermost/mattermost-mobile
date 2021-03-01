@@ -17,6 +17,8 @@ import {loadMe, logout} from '@actions/views/user';
 import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {getTranslations, resetMomentLocale} from '@i18n';
+import {setupPermanentSidebar} from '@init/device';
+import PushNotifications from '@init/push_notifications';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
@@ -38,7 +40,6 @@ import {getDeviceTimezone} from '@utils/timezone';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
-import PushNotifications from 'app/push_notifications';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
@@ -317,6 +318,7 @@ class GlobalEventHandler {
     resetState = async () => {
         try {
             await AsyncStorage.clear();
+            await setupPermanentSidebar();
             const state = Store.redux.getState();
             const newState = {
                 ...initialState,
@@ -384,12 +386,12 @@ class GlobalEventHandler {
     }
 
     handleInAppNotification = (notification) => {
-        const {data} = notification;
+        const {payload} = notification;
         const {getState} = Store.redux;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
-        if (data && data.channel_id !== currentChannelId) {
+        if (payload?.channel_id !== currentChannelId) {
             const screen = 'Notification';
             const passProps = {
                 notification,

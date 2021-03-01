@@ -236,6 +236,7 @@ export default class SlideUpPanel extends PureComponent {
         const styles = getStyleSheet(theme);
 
         const translateStyle = {
+            alignItems: 'center',
             transform: [{translateY: this.translateY}],
         };
         const backdropStyle = {
@@ -289,32 +290,34 @@ export default class SlideUpPanel extends PureComponent {
                             </Animated.View>
                         </PanGestureHandler>
                         {headerComponent}
-                        <PanGestureHandler
-                            ref={this.panRef}
-                            simultaneousHandlers={[this.scrollRef, this.masterRef]}
-                            waitFor={this.headerRef}
-                            shouldCancelWhenOutside={false}
-                            onGestureEvent={this.onGestureEvent}
-                            onHandlerStateChange={this.onHandlerStateChange}
-                        >
-                            <Animated.View style={[styles.container, !headerComponent && styles.border]}>
-                                <NativeViewGestureHandler
-                                    ref={this.scrollRef}
-                                    waitFor={this.masterRef}
-                                    simultaneousHandlers={this.panRef}
-                                >
-                                    <Animated.ScrollView
-                                        ref={this.scrollViewRef}
-                                        bounces={false}
-                                        onScrollBeginDrag={this.onRegisterLastScroll}
-                                        scrollEventThrottle={1}
-                                        style={{marginBottom: (this.props.marginFromTop + BOTTOM_MARGIN)}}
+                        <View style={styles.wrapper}>
+                            <PanGestureHandler
+                                ref={this.panRef}
+                                simultaneousHandlers={[this.scrollRef, this.masterRef]}
+                                waitFor={this.headerRef}
+                                shouldCancelWhenOutside={false}
+                                onGestureEvent={this.onGestureEvent}
+                                onHandlerStateChange={this.onHandlerStateChange}
+                            >
+                                <Animated.View style={[styles.container, !headerComponent && styles.border]}>
+                                    <NativeViewGestureHandler
+                                        ref={this.scrollRef}
+                                        waitFor={this.masterRef}
+                                        simultaneousHandlers={this.panRef}
                                     >
-                                        {children}
-                                    </Animated.ScrollView>
-                                </NativeViewGestureHandler>
-                            </Animated.View>
-                        </PanGestureHandler>
+                                        <Animated.ScrollView
+                                            ref={this.scrollViewRef}
+                                            bounces={false}
+                                            onScrollBeginDrag={this.onRegisterLastScroll}
+                                            scrollEventThrottle={1}
+                                            style={{marginBottom: (this.props.marginFromTop + BOTTOM_MARGIN)}}
+                                        >
+                                            {children}
+                                        </Animated.ScrollView>
+                                    </NativeViewGestureHandler>
+                                </Animated.View>
+                            </PanGestureHandler>
+                        </View>
                     </Animated.View>
                 </View>
             </TapGestureHandler>
@@ -330,6 +333,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
+        },
+        wrapper: {
+            flex: 1,
+            maxWidth: 450,
+            width: '100%',
         },
         border: {
             ...Platform.select({

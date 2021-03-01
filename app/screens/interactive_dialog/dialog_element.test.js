@@ -7,6 +7,7 @@ import {shallow} from 'enzyme';
 import Preferences from '@mm-redux/constants/preferences';
 import RadioSetting from 'app/components/widgets/settings/radio_setting';
 import BoolSetting from 'app/components/widgets/settings/bool_setting';
+import AutocompleteSelector from 'app/components/autocomplete_selector';
 import DialogElement from './dialog_element.js';
 
 describe('DialogElement', () => {
@@ -14,7 +15,6 @@ describe('DialogElement', () => {
         displayName: 'Testing',
         name: 'testing',
         type: 'text',
-        isLandscape: false,
     };
 
     const theme = Preferences.THEMES.default;
@@ -95,6 +95,42 @@ describe('DialogElement', () => {
                 />,
             );
             expect(wrapper.find(BoolSetting).find({value: false}).exists()).toBe(true);
+        });
+    });
+
+    describe('select', () => {
+        const baseProps = {
+            ...baseDialogProps,
+            theme,
+            display_name: 'Select',
+            name: 'select',
+            optional: false,
+            type: 'select',
+            options: [
+                {name: 'name1', value: 'value1'},
+                {name: 'name2', value: 'value2'},
+                {name: 'name3', value: 'value3'},
+            ],
+        };
+
+        test('handles unknown value', () => {
+            const wrapper = shallow(
+                <DialogElement
+                    {...baseProps}
+                    value={'unknown'}
+                />,
+            );
+            expect(wrapper.find(AutocompleteSelector).find({selected: null}).exists()).toBe(true);
+        });
+
+        test('handles known value', () => {
+            const wrapper = shallow(
+                <DialogElement
+                    {...baseProps}
+                    value={'value2'}
+                />,
+            );
+            expect(wrapper.find(AutocompleteSelector).find({selected: {name: 'name2', value: 'value2'}}).exists()).toBe(true);
         });
     });
 });

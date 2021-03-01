@@ -11,9 +11,9 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface PinnedProps {
+    testID?: string;
     channelId: string;
     pinnedCount: number;
-    isLandscape: boolean;
     theme: Theme;
     userId: string;
 }
@@ -38,16 +38,16 @@ export default class Pinned extends PureComponent<PinnedProps> {
     });
 
     render() {
-        const {pinnedCount, isLandscape, theme} = this.props;
+        const {pinnedCount, testID, theme} = this.props;
         return (
             <ChannelInfoRow
+                testID={testID}
                 action={this.goToPinnedPosts}
                 defaultMessage='Pinned Messages'
                 detail={pinnedCount}
                 icon='pin-outline'
                 textId={t('channel_header.pinnedPosts')}
                 theme={theme}
-                isLandscape={isLandscape}
             />
         );
     }

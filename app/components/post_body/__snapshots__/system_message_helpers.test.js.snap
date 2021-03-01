@@ -22,6 +22,7 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
           ],
         ]
       }
+      testID="markdown_text"
     >
       {username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}
     </Text>
@@ -51,6 +52,7 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
           ],
         ]
       }
+      testID="markdown_text"
     >
       {username} updated the channel header from: {oldHeader} to: {newHeader}
     </Text>
@@ -88,6 +90,7 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
           ],
         ]
       }
+      testID="markdown_text"
     >
       {username} archived the channel
     </Text>
@@ -128,6 +131,7 @@ exports[`renderSystemMessage uses renderer for archived channel 2`] = `
           ],
         ]
       }
+      testID="markdown_text"
     >
       {username} archived the channel
     </Text>
@@ -157,6 +161,7 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
           ],
         ]
       }
+      testID="markdown_text"
     >
       {username} unarchived the channel
     </Text>

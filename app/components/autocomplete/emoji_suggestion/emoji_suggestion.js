@@ -21,9 +21,7 @@ const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
 const FUSE_OPTIONS = {
     shouldSort: false,
-    threshold: 0.3,
-    location: 0,
-    distance: 10,
+    ignoreLocation: true,
     includeMatches: true,
     findAllMatches: true,
 };

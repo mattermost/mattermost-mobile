@@ -1,0 +1,136 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchBar should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "height": 20,
+        "justifyContent": "flex-start",
+        "overflow": "hidden",
+      },
+      Object {},
+    ]
+  }
+  testID="search_bar"
+>
+  <ForwardRef(AnimatedComponentWrapper)
+    style={
+      Array [
+        Object {
+          "flex": 1,
+        },
+        Object {
+          "height": 10,
+          "marginRight": 5,
+        },
+        Object {
+          "marginLeft": 0,
+        },
+      ]
+    }
+  >
+    <ForwardRef(Themed.SearchBar)
+      autoCapitalize="auto-capitalize"
+      autoCorrect={false}
+      autoFocus={true}
+      blurOnSubmit={true}
+      cancelButtonProps={
+        Object {
+          "buttonTextStyle": Object {
+            "color": "#aaaaaa",
+            "fontSize": 14,
+          },
+        }
+      }
+      cancelButtonTitle="cancel title"
+      cancelIcon={null}
+      clearIcon={
+        <CompassIcon
+          name="close-circle"
+          onPress={[Function]}
+          size={18}
+          style={
+            Object {
+              "color": "#cccccc",
+            }
+          }
+          testID="search_bar.search.clear.button"
+        />
+      }
+      containerStyle={
+        Object {
+          "backgroundColor": "#ffffff",
+          "flex": 1,
+          "paddingBottom": 0,
+          "paddingTop": 0,
+        }
+      }
+      disableFullscreenUI={true}
+      editable={true}
+      enablesReturnKeyAutomatically={true}
+      inputContainerStyle={
+        Object {
+          "backgroundColor": undefined,
+          "borderRadius": 2,
+          "height": 10,
+        }
+      }
+      inputStyle={
+        Object {
+          "backgroundColor": "transparent",
+          "color": "#fff",
+          "fontSize": 14,
+          "height": 10,
+          "marginLeft": 4,
+          "marginTop": 0,
+          "paddingTop": 0,
+        }
+      }
+      keyboardAppearance="keyboard-appearance"
+      keyboardType="keyboard-type"
+      leftIconContainerStyle={
+        Object {
+          "marginLeft": 4,
+          "width": 30,
+        }
+      }
+      onBlur={[Function]}
+      onCancel={[Function]}
+      onChangeText={[Function]}
+      onClear={[Function]}
+      onFocus={[Function]}
+      onSelectionChange={[Function]}
+      onSubmitEditing={[Function]}
+      placeholder="placeholder"
+      placeholderTextColor="#000000"
+      platform="ios"
+      returnKeyType="return-key-type"
+      searchIcon={
+        <CompassIcon
+          name="magnify"
+          size={24}
+          style={
+            Array [
+              Object {
+                "flex": 1,
+              },
+              Object {
+                "color": "#bbbbbb",
+                "top": 8,
+              },
+            ]
+          }
+        />
+      }
+      selectionColor="#dddddd"
+      showCancel={true}
+      testID="search_bar.search.input"
+      underlineColorAndroid="transparent"
+      value="value"
+    />
+  </ForwardRef(AnimatedComponentWrapper)>
+</View>
+`;

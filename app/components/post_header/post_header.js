@@ -227,7 +227,10 @@ export default class PostHeader extends PureComponent {
         }
 
         return (
-            <View style={style.replyWrapper}>
+            <View
+                testID='post_header.reply'
+                style={style.replyWrapper}
+            >
                 <TouchableWithFeedback
                     onPress={onPress}
                     style={style.replyIconContainer}

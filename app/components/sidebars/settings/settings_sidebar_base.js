@@ -92,9 +92,9 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
-    goToFlaggedScreen = (intl) => {
+    goToSavedPostsScreen = (intl) => {
         this.openModal(
-            'FlaggedPosts',
+            'SavedPosts',
             intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Saved Messages'}),
         );
     };
@@ -139,6 +139,7 @@ export default class SettingsSidebarBase extends PureComponent {
         const options = {
             topBar: {
                 leftButtons: [{
+                    testID: 'close.settings.button',
                     id: 'close-settings',
                     icon: this.closeButton,
                 }],
@@ -188,17 +189,22 @@ export default class SettingsSidebarBase extends PureComponent {
         const {currentUser, theme} = this.props;
 
         return (
-            <View style={style.container}>
+            <View
+                testID='settings.sidebar'
+                style={style.container}
+            >
                 <ScrollView
                     alwaysBounceVertical={false}
                     contentContainerStyle={style.wrapper}
                 >
                     <UserInfo
+                        testID='settings.sidebar.user_info.action'
                         onPress={this.goToUserProfile}
                         user={currentUser}
                     />
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.status.action'
                             labelComponent={this.renderUserStatusLabel(currentUser.id)}
                             leftComponent={this.renderUserStatusIcon(currentUser.id)}
                             separator={false}
@@ -209,6 +215,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.recent_mentions.action'
                             defaultMessage='Recent Mentions'
                             i18nId='search_header.title2'
                             iconName='at'
@@ -217,10 +224,11 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                         <DrawerItem
+                            testID='settings.sidebar.saved_messages.action'
                             defaultMessage='Saved Messages'
                             i18nId='search_header.title3'
                             iconName='bookmark-outline'
-                            onPress={this.goToFlagged}
+                            onPress={this.goToSaved}
                             separator={false}
                             theme={theme}
                         />
@@ -228,6 +236,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.edit_profile.action'
                             defaultMessage='Edit Profile'
                             i18nId='mobile.routes.edit_profile'
                             iconName='pencil-outline'
@@ -236,6 +245,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                         <DrawerItem
+                            testID='settings.sidebar.settings.action'
                             defaultMessage='Settings'
                             i18nId='mobile.routes.settings'
                             iconName='settings-outline'
@@ -247,13 +257,13 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.logout.action'
                             defaultMessage='Logout'
                             i18nId='sidebar_right_menu.logout'
                             iconName='exit-to-app'
                             isDestructor={true}
                             onPress={this.logout}
                             separator={false}
-                            testID='sidebar.settings.logout'
                             theme={theme}
                         />
                     </View>

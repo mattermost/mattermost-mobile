@@ -50,7 +50,7 @@ export const apiLogin = async (user) => {
 /**
  * Login to Mattermost server as sysadmin.
  */
-export const apiAdminLogin = async () => {
+export const apiAdminLogin = () => {
     return apiLogin({
         username: testConfig.adminUsername,
         password: testConfig.adminPassword,
@@ -112,6 +112,21 @@ export const apiGetUserById = async (userId) => {
 };
 
 /**
+ * Demote user by ID.
+ * See https://api.mattermost.com/#tag/users/paths/~1users~1{user_id}~1demote/post
+ * @param {string} userId
+ */
+export const apiDemoteToGuest = async (userId) => {
+    try {
+        const response = await client.post(`/api/v4/users/${userId}/demote`);
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get a user by username.
  * See https://api.mattermost.com/#tag/users/paths/~1users~1username~1{username}/get
  * @param {string} username
@@ -141,6 +156,7 @@ function generateRandomUser(prefix) {
 
 export const User = {
     apiAdminLogin,
+    apiDemoteToGuest,
     apiLogin,
     apiLogout,
     apiCreateUser,

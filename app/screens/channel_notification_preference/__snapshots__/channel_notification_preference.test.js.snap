@@ -1,0 +1,290 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelNotificationPreference should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "rgba(61,60,64,0.03)",
+      "flex": 1,
+    }
+  }
+  testID="channel_notification_preference.screen"
+>
+  <Connect(StatusBar) />
+  <RNCSafeAreaView
+    edges={
+      Array [
+        "left",
+        "right",
+      ]
+    }
+  >
+    <FormattedText
+      defaultMessage="Send Notifications"
+      id="channel_notifications.preference.header"
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.56)",
+          "fontSize": 13,
+          "marginTop": 10,
+          "padding": 16,
+          "textTransform": "uppercase",
+        }
+      }
+    />
+  </RNCSafeAreaView>
+  <ScrollView
+    alwaysBounceVertical={false}
+    contentContainerStyle={
+      Object {
+        "backgroundColor": "rgba(61,60,64,0.03)",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "backgroundColor": "rgba(255,255,255,1)",
+        }
+      }
+    >
+      <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
+        }
+      >
+        <View>
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(61,60,64,0.1)",
+                "height": 1,
+                "marginLeft": 16,
+                "width": "100%",
+              }
+            }
+          />
+          <sectionItem
+            action={[Function]}
+            actionType="select"
+            actionValue="default"
+            label={
+              <FormattedText
+                defaultMessage="Global default ({notifyLevel})"
+                id="channel_notifications.preference.global_default"
+                values={
+                  Object {
+                    "notifyLevel": "Mentions",
+                  }
+                }
+              />
+            }
+            selected={true}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+          />
+        </View>
+        <View>
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(61,60,64,0.1)",
+                "height": 1,
+                "marginLeft": 16,
+                "width": "100%",
+              }
+            }
+          />
+          <sectionItem
+            action={[Function]}
+            actionType="select"
+            actionValue="all"
+            label={
+              <FormattedText
+                defaultMessage="For all activity"
+                id="channel_notifications.preference.all_activity"
+              />
+            }
+            selected={false}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+          />
+        </View>
+        <View>
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(61,60,64,0.1)",
+                "height": 1,
+                "marginLeft": 16,
+                "width": "100%",
+              }
+            }
+          />
+          <sectionItem
+            action={[Function]}
+            actionType="select"
+            actionValue="mention"
+            label={
+              <FormattedText
+                defaultMessage="Only mentions and direct messages"
+                id="channel_notifications.preference.only_mentions"
+              />
+            }
+            selected={false}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+          />
+        </View>
+        <View>
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(61,60,64,0.1)",
+                "height": 1,
+                "marginLeft": 16,
+                "width": "100%",
+              }
+            }
+          />
+          <sectionItem
+            action={[Function]}
+            actionType="select"
+            actionValue="none"
+            label={
+              <FormattedText
+                defaultMessage="Never"
+                id="channel_notifications.preference.never"
+              />
+            }
+            selected={false}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+          />
+        </View>
+      </RNCSafeAreaView>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.1)",
+            "height": 1,
+            "marginLeft": 16,
+            "width": "100%",
+          }
+        }
+      />
+    </View>
+  </ScrollView>
+</View>
+`;

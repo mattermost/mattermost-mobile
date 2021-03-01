@@ -32,7 +32,7 @@ import {
     pinchGestureHandler,
     useValue,
     vec,
-} from 'react-native-redash';
+} from 'react-native-redash/lib/module/v1';
 import {Platform} from 'react-native';
 import {State} from 'react-native-gesture-handler';
 

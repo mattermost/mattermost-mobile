@@ -9,12 +9,12 @@ import {getPostsAround, getPostThread} from '@actions/views/post';
 import {handleTeamChange} from '@actions/views/select_team';
 import {getChannel as getChannelAction, joinChannel} from '@mm-redux/actions/channels';
 import {selectPost} from '@mm-redux/actions/posts';
+import {addUserToTeam, getTeamByName, removeUserFromTeam} from '@mm-redux/actions/teams';
 import {makeGetChannel, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsAroundPost, getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCurrentTeamId, getTeamByName as selectTeamByName, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {isLandscape} from '@selectors/device';
 
 import Permalink from './permalink';
 
@@ -22,7 +22,7 @@ function makeMapStateToProps() {
     const getPostIdsAroundPost = makeGetPostIdsAroundPost();
     const getChannel = makeGetChannel();
 
-    return function mapStateToProps(state) {
+    return function mapStateToProps(state, props) {
         const {currentFocusedPostId} = state.entities.posts;
         const post = getPost(state, currentFocusedPostId);
 
@@ -45,10 +45,11 @@ function makeMapStateToProps() {
             currentTeamId: getCurrentTeamId(state),
             currentUserId: getCurrentUserId(state),
             focusedPostId: currentFocusedPostId,
-            myMembers: getMyChannelMemberships(state),
+            myChannelMemberships: getMyChannelMemberships(state),
+            myTeamMemberships: getTeamMemberships(state),
             postIds,
+            team: selectTeamByName(state, props.teamName),
             theme: getTheme(state),
-            isLandscape: isLandscape(state),
         };
     };
 }
@@ -56,12 +57,15 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            addUserToTeam,
             getPostsAround,
             getPostThread,
             getChannel: getChannelAction,
+            getTeamByName,
             handleSelectChannel,
             handleTeamChange,
             joinChannel,
+            removeUserFromTeam,
             selectPost,
         }, dispatch),
     };

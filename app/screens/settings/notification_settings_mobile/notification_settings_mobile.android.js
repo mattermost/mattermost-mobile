@@ -16,16 +16,15 @@ import {
 import deepEqual from 'deep-equal';
 import PropTypes from 'prop-types';
 
+import FormattedText from '@components/formatted_text';
+import RadioButtonGroup from '@components/radio_button';
+import StatusBar from '@components/status_bar';
+import PushNotifications from '@init/push_notifications';
 import {RequestStatus} from '@mm-redux/constants';
-
-import FormattedText from 'app/components/formatted_text';
-import RadioButtonGroup from 'app/components/radio_button';
+import SectionItem from '@screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getNotificationProps} from '@utils/notify_props';
 import NotificationPreferences from 'app/notification_preferences';
-import PushNotifications from 'app/push_notifications';
-import StatusBar from 'app/components/status_bar';
-import SectionItem from 'app/screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getNotificationProps} from 'app/utils/notify_props';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
 
@@ -110,6 +109,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const {newPush} = this.state;
 
         const options = [{
+            testID: 'notification_settings_mobile.all.action',
             label: intl.formatMessage({
                 id: 'user.settings.notifications.allActivity',
                 defaultMessage: 'For all activity',
@@ -117,6 +117,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             value: 'all',
             checked: newPush === 'all',
         }, {
+            testID: 'notification_settings_mobile.mentions.action',
             label: intl.formatMessage({
                 id: 'user.settings.notifications.onlyMentions',
                 defaultMessage: 'Only for mentions and direct messages',
@@ -124,6 +125,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             value: 'mention',
             checked: newPush === 'mention',
         }, {
+            testID: 'notification_settings_mobile.never.action',
             label: intl.formatMessage({
                 id: 'user.settings.notifications.never',
                 defaultMessage: 'Never',
@@ -139,7 +141,10 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 visible={this.state.showMobilePushModal}
                 onRequestClose={this.cancelMobilePushModal}
             >
-                <View style={style.modalOverlay}>
+                <View
+                    testID='notification_settings_mobile.push.modal'
+                    style={style.modalOverlay}
+                >
                     <View style={style.modal}>
                         <View style={style.modalBody}>
                             <View style={style.modalTitleContainer}>
@@ -168,6 +173,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                             <View style={style.separator}/>
                             <View style={style.modalFooterContainer}>
                                 <TouchableOpacity
+                                    testID='notification_settings_mobile.push_modal_cancel.button'
                                     style={style.modalFooterOptionContainer}
                                     onPress={this.cancelMobilePushModal}
                                 >
@@ -181,6 +187,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                                 <View>
                                     <View style={{marginRight: 10}}/>
                                     <TouchableOpacity
+                                        testID='notification_settings_mobile.push_modal_save.button'
                                         style={style.modalFooterOptionContainer}
                                         onPress={this.saveMobilePushModal}
                                     >
@@ -427,6 +434,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
 
         return (
             <SectionItem
+                testID='notification_settings_mobile.push.action'
                 {...props}
                 label={(
                     <FormattedText
@@ -689,13 +697,13 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const {intl} = this.props;
 
         PushNotifications.localNotification({
-            message: intl.formatMessage({
+            body: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.test_push',
                 defaultMessage: 'This is a test push notification',
             }),
             userInfo: {
-                localNotification: true,
-                localTest: true,
+                local: true,
+                test: true,
             },
         });
     };
@@ -727,7 +735,10 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <View
+                testID='notification_settings_mobile.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}

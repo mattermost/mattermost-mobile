@@ -7,20 +7,20 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-import SafeAreaView from 'app/components/safe_area_view';
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
+
+import SafeAreaView from '@components/safe_area_view';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
+import Section from '@screens/settings/section';
+import SectionItem from '@screens/settings/section_item';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
 
 class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
     renderMobilePushSection(style) {
-        const {config, theme, isLandscape} = this.props;
+        const {config, theme} = this.props;
 
         const pushNotificationsEnabled = config.SendPushNotifications === 'true';
         return (
@@ -28,11 +28,11 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 headerId={t('mobile.notification_settings_mobile.push_activity')}
                 headerDefaultMessage='SEND NOTIFICATIONS'
                 theme={theme}
-                isLandscape={isLandscape}
             >
                 {pushNotificationsEnabled &&
                 <View>
                     <SectionItem
+                        testID='notification_settings_mobile.all.action'
                         label={(
                             <FormattedText
                                 id='user.settings.notifications.allActivity'
@@ -44,10 +44,10 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         actionValue='all'
                         selected={this.state.push === 'all'}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                     <SectionItem
+                        testID='notification_settings_mobile.mentions.action'
                         label={(
                             <FormattedText
                                 id='user.settings.notifications.onlyMentions'
@@ -59,10 +59,10 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         actionValue='mention'
                         selected={this.state.push === 'mention'}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                     <View style={style.separator}/>
                     <SectionItem
+                        testID='notification_settings_mobile.never.action'
                         label={(
                             <FormattedText
                                 id='user.settings.notifications.never'
@@ -74,7 +74,6 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         actionValue='none'
                         selected={this.state.push === 'none'}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                 </View>
                 }
@@ -82,7 +81,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 <FormattedText
                     id='user.settings.push_notification.disabled_long'
                     defaultMessage='Push notifications for mobile devices have been disabled by your System Administrator.'
-                    style={[style.disabled, padding(isLandscape)]}
+                    style={style.disabled}
                 />
                 }
             </Section>
@@ -90,7 +89,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
     }
 
     renderMobilePushStatusSection(style) {
-        const {config, theme, isLandscape} = this.props;
+        const {config, theme} = this.props;
 
         const showSection = config.SendPushNotifications === 'true' && this.state.push !== 'none';
         if (!showSection) {
@@ -102,7 +101,6 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 headerId={t('mobile.notification_settings_mobile.push_status')}
                 headerDefaultMessage='TRIGGER PUSH NOTIFICATIONS WHEN'
                 theme={theme}
-                isLandscape={isLandscape}
             >
                 <SectionItem
                     label={(
@@ -116,7 +114,6 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     actionValue='online'
                     selected={this.state.push_status === 'online'}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -131,7 +128,6 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     actionValue='away'
                     selected={this.state.push_status === 'away'}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
                 <View style={style.separator}/>
                 <SectionItem
@@ -146,7 +142,6 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     actionValue='offline'
                     selected={this.state.push_status === 'offline'}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
             </Section>
         );
@@ -161,7 +156,10 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 excludeHeader={true}
                 excludeFooter={true}
             >
-                <View style={style.container}>
+                <View
+                    testID='notification_settings_mobile.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <ScrollView
                         style={style.scrollView}

@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlobFS from 'rn-fetch-blob/fs';
 import keyMirror from '@mm-redux/utils/key_mirror';
-
-const DeviceModel = DeviceInfo.getModel();
 
 const deviceTypes = keyMirror({
     CONNECTION_CHANGED: null,
@@ -15,13 +14,19 @@ const deviceTypes = keyMirror({
     STATUSBAR_HEIGHT_CHANGED: null,
 });
 
+const isPhoneWithInsets = Platform.OS === 'ios' && DeviceInfo.hasNotch();
+const isTablet = DeviceInfo.isTablet();
+const isIPhone12Mini = DeviceInfo.getModel() === 'iPhone 12 mini';
+
 export default {
     ...deviceTypes,
     DOCUMENTS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Documents`,
     IMAGES_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Images`,
-    IS_IPHONE_WITH_INSETS: DeviceModel.includes('iPhone X') || DeviceModel.includes('iPhone 11'),
+    IS_IPHONE_WITH_INSETS: isPhoneWithInsets,
     IS_TABLET: DeviceInfo.isTablet(),
     VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
     PERMANENT_SIDEBAR_SETTINGS: '@PERMANENT_SIDEBAR_SETTINGS',
     TABLET_WIDTH: 250,
+    AUTOCOMPLETE_MAX_HEIGHT: (isPhoneWithInsets && !isIPhone12Mini) || isTablet ? 200 : 145,
+    POST_INPUT_MAX_HEIGHT: (isPhoneWithInsets && !isIPhone12Mini) || isTablet ? 150 : 88,
 };

@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchResultPost should match snapshot 1`] = `
+<Connect(Post)
+  highlightPinnedOrFlagged={false}
+  isSearchResult={true}
+  managedConfig={Object {}}
+  onHashtagPress={[MockFunction]}
+  onPermalinkPress={[MockFunction]}
+  onPress={[MockFunction]}
+  onReply={[MockFunction]}
+  postId="post-id"
+  shouldRenderReplyButton={true}
+  showAddReaction={false}
+  showFullDate={false}
+  skipFlaggedHeader={false}
+  skipPinnedHeader={false}
+  testID="search_result_post.post"
+/>
+`;

@@ -14,9 +14,9 @@ exports[`ChannelItem should match snapshot 1`] = `
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -30,6 +30,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -42,6 +43,7 @@ exports[`ChannelItem should match snapshot 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -94,7 +96,7 @@ exports[`ChannelItem should match snapshot 1`] = `
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -117,9 +119,9 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -144,6 +146,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           },
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -156,6 +159,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -207,7 +211,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         {displayname} (you)
       </Text>
@@ -230,9 +234,9 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -257,6 +261,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           },
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -269,6 +274,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -320,7 +326,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         {displayname} (you)
       </Text>
@@ -343,9 +349,9 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -370,6 +376,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           },
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -382,6 +389,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -433,7 +441,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -456,9 +464,9 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -472,6 +480,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -484,6 +493,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -536,7 +546,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -559,9 +569,9 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -575,6 +585,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -587,6 +598,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -639,7 +651,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -662,9 +674,9 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -678,6 +690,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -690,6 +703,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -742,7 +756,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -769,9 +783,9 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -785,6 +799,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -797,6 +812,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -849,7 +865,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -874,9 +890,9 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         Object {
           "opacity": 0.5,
         },
-        null,
       ]
     }
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -890,6 +906,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -902,6 +919,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -954,7 +972,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             },
           ]
         }
-        testID="channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -990,6 +1008,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             "position": "relative",
           }
         }
+        testID="main.sidebar.channels_list.list.channel_item.badge"
       />
     </View>
   </View>

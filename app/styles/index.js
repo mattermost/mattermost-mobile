@@ -109,7 +109,4 @@ export const GlobalStyles = StyleSheet.create({
         borderRadius: 3,
         color: '#3d3c40',
     },
-    logo: {
-        color: '#2389D7',
-    },
 });

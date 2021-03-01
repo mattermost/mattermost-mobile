@@ -22,7 +22,6 @@ describe('ChannelInfo -> ConvertPrivate', () => {
         channelId: '123',
         convertChannelToPrivate: jest.fn(),
         displayName: 'Test Channel',
-        isLandscape: false,
         theme: Preferences.THEMES.default,
     };
 

@@ -1,64 +1,73 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelNavBar should match, full snapshot 1`] = `
-<View
+<RNCSafeAreaProvider
+  onInsetsChange={[Function]}
   style={
     Array [
       Object {
-        "backgroundColor": "#1153ab",
-        "flexDirection": "row",
-        "justifyContent": "flex-start",
-        "width": "100%",
-        "zIndex": 10,
+        "flex": 1,
       },
-      null,
-      Object {
-        "height": 44,
-      },
+      undefined,
     ]
   }
 >
-  <Connect(ChannelDrawerButton)
-    openSidebar={[MockFunction]}
-    visible={true}
-  />
-  <Connect(ChannelTitle)
-    canHaveSubtitle={true}
-    onPress={[MockFunction]}
-  />
-  <Connect(ChannelSearchButton)
-    theme={
+  <Context.Provider
+    value={
       Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
       }
     }
-  />
-  <Connect(SettingDrawerButton)
-    openSidebar={[MockFunction]}
-  />
-</View>
+  >
+    <Context.Provider
+      value={
+        Object {
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "top": 0,
+        }
+      }
+    >
+      <ChannelNavBar
+        isLandscape={false}
+        onPress={[MockFunction]}
+        openMainSidebar={[MockFunction]}
+        openSettingsSidebar={[MockFunction]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+      />
+    </Context.Provider>
+  </Context.Provider>
+</RNCSafeAreaProvider>
 `;

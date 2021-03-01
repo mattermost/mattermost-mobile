@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
-import {Animated, StyleSheet} from 'react-native';
+import {Animated, Easing, StyleSheet} from 'react-native';
 import {injectIntl} from 'react-intl';
 import Clipboard from '@react-native-community/clipboard';
 
@@ -35,7 +35,8 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const animate = (value: Animated.Value, show: boolean, callback?: () => void): Animated.CompositeAnimation => {
         const animation = Animated.timing(value, {
             toValue: show ? 1 : 0,
-            duration: 250,
+            duration: 200,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
         });
 
@@ -50,7 +51,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
             const message = formatMessage({id: 'mobile.public_link.copied', defaultMessage: 'Public link copied'});
             const res = await Client4.getFilePublicLink(props.file.id);
             Clipboard.setString(res.link);
-            showToast(message, undefined, callback);
+            showToast(message, 100, callback);
         } catch (e) {
             // eslint-disable-next-line no-console
             console.log('An error occurred, we should show a different toast', e);
@@ -129,6 +130,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
 
     useImperativeHandle(ref, () => ({
         isVisible,
+        setVisible,
         toggle,
     }), [visible]);
 

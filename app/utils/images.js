@@ -94,27 +94,28 @@ export function openGalleryAtIndex(index, files) {
             sharedElementTransitions.push({
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
-                interpolation: 'overshoot',
+                duration: 300,
+                interpolation: {type: 'accelerateDecelerate', factor: 9},
             });
         } else {
             contentPush.y = {
                 from: windowHeight,
                 to: 0,
-                duration: 300,
-                interpolation: 'decelerate',
+                duration: 150,
+                interpolation: {mode: 'decelerate'},
             };
 
             if (Platform.OS === 'ios') {
                 contentPop.translationY = {
                     from: 0,
                     to: windowHeight,
-                    duration: 300,
+                    duration: 150,
                 };
             } else {
                 contentPop.y = {
                     from: 0,
                     to: windowHeight,
-                    duration: 300,
+                    duration: 150,
                 };
                 contentPop.alpha = {
                     from: 1,
@@ -128,6 +129,7 @@ export function openGalleryAtIndex(index, files) {
             layout: {
                 backgroundColor: '#000',
                 componentBackgroundColor: '#000',
+                orientation: ['portrait', 'landscape'],
             },
             topBar: {
                 background: {

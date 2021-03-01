@@ -9,7 +9,6 @@ import {selectPost} from '@mm-redux/actions/posts';
 import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from '@selectors/device';
 
 import LongPost from './long_post';
 
@@ -24,7 +23,6 @@ function makeMapStateToProps() {
             channelName: channel ? channel.display_name : '',
             inThreadView: Boolean(state.entities.posts.selectedPostId),
             theme: getTheme(state),
-            isLandscape: isLandscape(state),
         };
     };
 }

@@ -18,10 +18,9 @@ class AddReactionScreen {
         return this.addReactionScreen;
     }
 
-    open = async (message) => {
-        await element(by.text(message)).longPress();
-        await PostOptions.toBeVisible();
-        await PostOptions.openReactionPicker.tap();
+    open = async () => {
+        // # Open add reaction screen
+        await PostOptions.openAddReactionButton.tap();
 
         return this.toBeVisible();
     }

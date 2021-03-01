@@ -4,8 +4,8 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode} from 'react-native-reanimated';
-import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash';
+import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, Easing} from 'react-native-reanimated';
+import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
 import {isImage, isVideo} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -18,8 +18,12 @@ import GalleryImage from './gallery_image';
 import GalleryVideo from './gallery_video';
 
 const itemTopStyle = (props: GalleryProps): number => {
-    if (Platform.OS === 'android' && props.footerVisible) {
-        return props.isLandscape ? -64 : -99;
+    if (Platform.OS === 'android') {
+        if (props.footerVisible) {
+            return props.isLandscape ? -64 : -99;
+        }
+
+        return props.isLandscape ? -6 : -41;
     }
 
     return 0;
@@ -161,7 +165,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 >
                     <GalleryVideo
                         isActive={currentIndex === i}
-                        onDoubleTap={props.onTap}
+                        showHideHeaderFooter={props.onTap}
                         theme={props.theme}
                         {...itemProps}
                     />
@@ -209,12 +213,12 @@ const GalleryViewer = (props: GalleryProps) => {
                 ]),
             ),
             cond(and(eq(pan.state, State.END), neq(translateY, 0)), [
-                cond(greaterOrEq(abs(translateY), 50), [
+                cond(greaterOrEq(abs(translateY), 10), [
                     cond(not(clockRunning(clock)), call([], props.onClose)),
                 ], set(translateY, timing({from: translateY, to: 0}))),
             ]),
             cond(and(eq(pan.state, State.END), neq(translationX, 0)), [
-                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 250})),
+                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 150, easing: Easing.out(Easing.quad)})),
                 set(offsetX, translateX),
                 cond(not(clockRunning(clock)), [
                     vec.set(translate, 0),

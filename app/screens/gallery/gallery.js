@@ -45,7 +45,7 @@ export default class Gallery extends PureComponent {
     componentDidMount() {
         this.cancelTopBar = setTimeout(() => {
             this.initHeader();
-        }, Platform.OS === 'ios' ? 250 : 0);
+        }, Platform.OS === 'ios' ? 200 : 0);
     }
 
     componentWillUnmount() {
@@ -67,7 +67,7 @@ export default class Gallery extends PureComponent {
             sharedElementTransitions.push({
                 fromId: `gallery-${file.id}`,
                 toId: `image-${file.id}`,
-                interpolation: 'accelerateDecelerate',
+                interpolation: {type: 'accelerateDecelerate', factor: 8},
             });
         }
 
@@ -92,6 +92,7 @@ export default class Gallery extends PureComponent {
                     text: title,
                 },
                 backButton: {
+                    enableMenu: false,
                     visible: true,
                     icon: closeButton,
                 },
@@ -128,8 +129,15 @@ export default class Gallery extends PureComponent {
         this.setState({index}, this.initHeader);
     };
 
-    handleTapped = () => {
-        const visible = this.footer.current?.getWrappedInstance()?.toggle();
+    handleTapped = (display) => {
+        let visible;
+        if (display === undefined) {
+            visible = this.footer.current?.getWrappedInstance()?.toggle();
+        } else {
+            visible = display;
+            this.footer.current?.getWrappedInstance()?.setVisible(display);
+        }
+
         const options = {
             topBar: {
                 background: {
@@ -139,7 +147,7 @@ export default class Gallery extends PureComponent {
             },
         };
         if (Platform.OS === 'ios') {
-            StatusBar.setHidden(!visible, 'slide');
+            StatusBar.setHidden(!visible, 'fade');
         }
         this.setState({footerVisible: visible});
         mergeNavigationOptions(this.props.componentId, options);

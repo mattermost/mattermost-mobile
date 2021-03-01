@@ -1,56 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {ActivityIndicator, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import FormattedText from 'app/components/formatted_text';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-
-export default class AutocompleteSectionHeader extends PureComponent {
-    static propTypes = {
-        defaultMessage: PropTypes.string.isRequired,
-        id: PropTypes.string.isRequired,
-        loading: PropTypes.bool,
-        theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
-        isFirstSection: PropTypes.bool,
-    };
-
-    static defaultProps = {
-        isLandscape: false,
-    };
-
-    render() {
-        const {defaultMessage, id, loading, theme, isLandscape, isFirstSection} = this.props;
-        const style = getStyleFromTheme(theme);
-        const sectionStyles = [style.section, padding(isLandscape)];
-
-        if (!isFirstSection) {
-            sectionStyles.push(style.borderTop);
-        }
-
-        return (
-            <View style={style.sectionWrapper}>
-                <View style={sectionStyles}>
-                    <FormattedText
-                        id={id}
-                        defaultMessage={defaultMessage}
-                        style={style.sectionText}
-                    />
-                    {loading &&
-                    <ActivityIndicator
-                        color={theme.centerChannelColor}
-                        size='small'
-                    />
-                    }
-                </View>
-            </View>
-        );
-    }
-}
+import FormattedText from '@components/formatted_text';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -79,3 +36,43 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const AutocompleteSectionHeader = (props) => {
+    const insets = useSafeAreaInsets();
+    const {defaultMessage, id, loading, theme, isFirstSection} = props;
+
+    const style = getStyleFromTheme(theme);
+    const sectionStyles = [style.section, {marginLeft: insets.left, marginRight: insets.right}];
+
+    if (!isFirstSection) {
+        sectionStyles.push(style.borderTop);
+    }
+
+    return (
+        <View style={style.sectionWrapper}>
+            <View style={sectionStyles}>
+                <FormattedText
+                    id={id}
+                    defaultMessage={defaultMessage}
+                    style={style.sectionText}
+                />
+                {loading &&
+                <ActivityIndicator
+                    color={theme.centerChannelColor}
+                    size='small'
+                />
+                }
+            </View>
+        </View>
+    );
+};
+
+AutocompleteSectionHeader.propTypes = {
+    defaultMessage: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
+    loading: PropTypes.bool,
+    theme: PropTypes.object.isRequired,
+    isFirstSection: PropTypes.bool,
+};
+
+export default AutocompleteSectionHeader;

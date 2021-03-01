@@ -48,7 +48,6 @@ export default class UserListRow extends React.PureComponent {
             teammateNameDisplay,
             theme,
             user,
-            isLandscape,
         } = this.props;
 
         const {id, username} = user;
@@ -64,6 +63,9 @@ export default class UserListRow extends React.PureComponent {
 
         const teammateDisplay = displayUsername(user, teammateNameDisplay);
         const showTeammateDisplay = teammateDisplay !== username;
+        const testID = this.props.testID;
+        const itemTestID = `${testID}.${id}`;
+        const displayUsernameTestID = `${testID}.display_username`;
 
         return (
             <View style={style.container}>
@@ -73,8 +75,7 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
-                    isLandscape={isLandscape}
-                    testID={this.props.testID}
+                    testID={testID}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture
@@ -83,13 +84,17 @@ export default class UserListRow extends React.PureComponent {
                             iconSize={24}
                         />
                     </View>
-                    <View style={style.textContainer}>
+                    <View
+                        style={style.textContainer}
+                        testID={itemTestID}
+                    >
                         <View>
                             <View style={style.indicatorContainer}>
                                 <Text
                                     style={style.username}
                                     ellipsizeMode='tail'
                                     numberOfLines={1}
+                                    testID={displayUsernameTestID}
                                 >
                                     {usernameDisplay}
                                 </Text>

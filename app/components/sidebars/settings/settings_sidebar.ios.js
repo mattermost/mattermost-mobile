@@ -7,11 +7,11 @@ import {Dimensions, Keyboard, View} from 'react-native';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import {DeviceTypes, NavigationTypes} from 'app/constants';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import SafeAreaView from '@components/safe_area_view';
+import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from '@components/sidebars/drawer_layout/index.tsx';
+import {DeviceTypes, NavigationTypes} from '@constants';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SettingsSidebarBase from './settings_sidebar_base';
 
@@ -22,6 +22,8 @@ export default class SettingsDrawer extends SettingsSidebarBase {
 
     constructor(props) {
         super(props);
+
+        this.drawerRef = React.createRef();
 
         this.state = {
             deviceWidth: Dimensions.get('window').width,
@@ -42,26 +44,22 @@ export default class SettingsDrawer extends SettingsSidebarBase {
         Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
-    setDrawerRef = (ref) => {
-        this.drawerRef = ref;
-    }
-
     confirmReset = (status) => {
         const {intl} = this.context;
         this.confirmResetBase(status, intl);
     };
 
     closeSettingsSidebar = () => {
-        if (this.drawerRef && this.drawerOpened) {
-            this.drawerRef.closeDrawer();
+        if (this.drawerRef.current && this.drawerOpened) {
+            this.drawerRef.current.closeDrawer();
         }
     };
 
     open = () => {
         EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
 
-        if (this.drawerRef && !this.drawerOpened) {
-            this.drawerRef.openDrawer();
+        if (this.drawerRef.current && !this.drawerOpened) {
+            this.drawerRef.current.openDrawer();
         }
     };
 
@@ -93,9 +91,9 @@ export default class SettingsDrawer extends SettingsSidebarBase {
         this.goToEditProfileScreen(intl);
     });
 
-    goToFlagged = preventDoubleTap(() => {
+    goToSaved = preventDoubleTap(() => {
         const {intl} = this.context;
-        this.goToFlaggedScreen(intl);
+        this.goToSavedPostsScreen(intl);
     });
 
     goToMentions = preventDoubleTap(() => {
@@ -120,6 +118,8 @@ export default class SettingsDrawer extends SettingsSidebarBase {
         return (
             <SafeAreaView
                 backgroundColor={theme.centerChannelBg}
+                excludeLeft={true}
+                excludeRight={true}
                 navBarBackgroundColor={theme.centerChannelBg}
                 footerColor={theme.centerChannelBg}
                 footerComponent={<View style={style.container}/>}
@@ -138,12 +138,12 @@ export default class SettingsDrawer extends SettingsSidebarBase {
 
         return (
             <DrawerLayout
-                ref={this.setDrawerRef}
+                drawerPosition='right'
+                drawerWidth={drawerWidth}
+                forwardRef={this.drawerRef}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
                 onDrawerOpen={this.handleDrawerOpen}
-                drawerPosition='right'
-                drawerWidth={drawerWidth}
                 useNativeAnimations={true}
             >
                 {children}

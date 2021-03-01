@@ -4,28 +4,30 @@
 import React from 'react';
 import {Platform} from 'react-native';
 import {ThemeProvider} from 'react-native-elements';
-import {Provider} from 'react-redux';
-
-import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
+import {Navigation} from 'react-native-navigation';
+import {Provider} from 'react-redux';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import RootWrapper from '@components/root';
 let store;
 
-const withGestures = (screen) => {
+const withGestures = (screen, styles) => {
     if (Platform.OS === 'android') {
-        return gestureHandlerRootHOC(screen);
+        return gestureHandlerRootHOC(screen, styles);
     }
 
     return screen;
 };
 
 // eslint-disable-next-line react/display-name
-const withReduxProvider = (Screen, excludeEvents = true) => (props) => (
+export const withReduxProvider = (Screen, excludeEvents = true) => (props) => (
     <Provider store={store}>
         <ThemeProvider>
             <RootWrapper excludeEvents={excludeEvents}>
-                <Screen {...props}/>
+                <SafeAreaProvider>
+                    <Screen {...props}/>
+                </SafeAreaProvider>
             </RootWrapper>
         </ThemeProvider>
     </Provider>
@@ -86,8 +88,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'ExpandedAnnouncementBanner':
         screen = require('@screens/expanded_announcement_banner').default;
         break;
-    case 'FlaggedPosts':
-        screen = require('@screens/flagged_posts').default;
+    case 'SavedPosts':
+        screen = require('@screens/saved_posts').default;
         break;
     case 'ForgotPassword':
         screen = require('@screens/forgot_password').default;
@@ -204,7 +206,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withReduxProvider(screen)), extraStyles, () => screen);
+        Navigation.registerComponent(screenName, () => withGestures(withReduxProvider(screen), extraStyles), () => screen);
     }
 });
 

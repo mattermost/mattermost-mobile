@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SettingsSidebar should match snapshot 1`] = `
+<DrawerLayoutAdapter
+  drawerPosition="right"
+  drawerWidth={710}
+  forwardRef={
+    Object {
+      "current": null,
+    }
+  }
+  onDrawerClose={[Function]}
+  onDrawerOpen={[Function]}
+  renderNavigationView={[Function]}
+  useNativeAnimations={true}
+/>
+`;

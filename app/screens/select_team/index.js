@@ -12,7 +12,6 @@ import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import {logout} from 'app/actions/views/user';
 import {handleTeamChange} from 'app/actions/views/select_team';
-import {isLandscape} from 'app/selectors/device';
 import {isGuest} from 'app/utils/users';
 
 import SelectTeam from './select_team.js';
@@ -25,7 +24,6 @@ function mapStateToProps(state) {
     return {
         currentUserId: currentUser && currentUser.id,
         currentUserIsGuest,
-        isLandscape: isLandscape(state),
         teamsRequest: state.requests.teams.getTeams,
         teams: getSortedJoinableTeams(state, locale),
         theme: getTheme(state),

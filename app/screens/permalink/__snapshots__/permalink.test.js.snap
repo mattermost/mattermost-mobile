@@ -1,21 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Permalink should match snapshot 1`] = `
-<Connect(SafeAreaIos)
+<Connect(SafeArea)
   backgroundColor="transparent"
   excludeHeader={true}
   footerColor="transparent"
 >
   <View
     style={
-      Array [
-        Object {
-          "flex": 1,
-          "marginTop": 20,
-        },
-        null,
-      ]
+      Object {
+        "flex": 1,
+        "marginTop": 20,
+      }
     }
+    testID="permalink.screen"
   >
     <withAnimatable(View)
       animation="zoomIn"
@@ -127,7 +125,7 @@ exports[`Permalink should match snapshot 1`] = `
       </View>
     </withAnimatable(View)>
   </View>
-</Connect(SafeAreaIos)>
+</Connect(SafeArea)>
 `;
 
 exports[`Permalink should match snapshot 2`] = `

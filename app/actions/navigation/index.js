@@ -9,9 +9,15 @@ import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
 
+import {DeviceTypes, NavigationTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
-import {NavigationTypes} from '@constants';
+
+Navigation.setDefaultOptions({
+    layout: {
+        orientation: [DeviceTypes.IS_TABLET ? 'all' : 'portrait'],
+    },
+});
 
 function getThemeFromState() {
     const state = Store.redux?.getState() || {};
@@ -46,6 +52,7 @@ export function resetToChannel(passProps = {}) {
                         backButton: {
                             visible: false,
                             color: theme.sidebarHeaderTextColor,
+                            enableMenu: false,
                         },
                     },
                 },
@@ -109,6 +116,7 @@ export function resetToSelectServer(allowOtherServers) {
                             topBar: {
                                 backButton: {
                                     color: theme.sidebarHeaderTextColor,
+                                    enableMenu: false,
                                     title: '',
                                 },
                                 background: {
@@ -142,6 +150,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
             },
             backButton: {
                 color: theme.sidebarHeaderTextColor,
+                enableMenu: false,
                 title: '',
             },
             background: {
@@ -185,6 +194,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
             visible: true,
             backButton: {
                 color: theme.sidebarHeaderTextColor,
+                enableMenu: false,
                 title: '',
                 testID: 'screen.back.button',
             },
@@ -250,6 +260,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
             visible: true,
             backButton: {
                 color: theme.sidebarHeaderTextColor,
+                enableMenu: false,
                 title: '',
             },
             background: {

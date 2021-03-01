@@ -7,11 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelSidebar} from '@support/ui/component';
 import {
-    ChannelScreen,
     ChannelInfoScreen,
-    DirectChannelsScreen,
+    ChannelScreen,
+    MoreDirectMessagesScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {Setup} from '@support/server_api';
@@ -19,6 +18,8 @@ import {Setup} from '@support/server_api';
 describe('Channel Info Header', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -27,18 +28,17 @@ describe('Channel Info Header', () => {
     });
 
     it('MM-T3406 should render correct GM member count in channel info header', async () => {
-        // # Open drawer
-        await ChannelScreen.channelDrawerButton.tap();
-        await expect(element(by.text('DIRECT MESSAGES'))).toBeVisible();
-
-        // # Open Direct Channels screen
-        await ChannelSidebar.addDirectChannel.tap();
-        await DirectChannelsScreen.toBeVisible();
+        // # Open more direct messages screen
+        await ChannelScreen.openMainSidebar();
+        await MoreDirectMessagesScreen.open();
 
         // # Wait for some profiles to load
         await wait(timeouts.ONE_SEC);
 
-        const {getUserAtIndex, startButton} = DirectChannelsScreen;
+        const {
+            getUserAtIndex,
+            startButton,
+        } = MoreDirectMessagesScreen;
 
         // # Select 3 profiles
         await getUserAtIndex(0).tap();
@@ -48,11 +48,11 @@ describe('Channel Info Header', () => {
         // # Create a GM with selected profiles
         await startButton.tap();
 
-        // # Open channel info modal
+        // # Open channel info screen
         await ChannelInfoScreen.open();
 
         // * Verify GM member count is 3
-        await expect(element(by.id(ChannelInfoScreen.testID.channelIconGMMemberCount)).atIndex(0)).toHaveText('3');
+        await expect(ChannelInfoScreen.headerChannelIconGMMemberCount).toHaveText('3');
 
         // # Close channel info screen
         await ChannelInfoScreen.close();

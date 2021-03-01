@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {Platform, ScrollView, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import PostInput from '@components/post_draft/post_input';
@@ -13,22 +14,23 @@ import QuickActions from '@components/post_draft/quick_actions';
 import SendAction from '@components/post_draft/send_action';
 import Typing from '@components/post_draft/typing';
 import Uploads from '@components/post_draft/uploads';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import DEVICE from '@constants/device';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import * as DraftUtils from '@utils/draft';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const AUTOCOMPLETE_MARGIN = 20;
-const AUTOCOMPLETE_MAX_HEIGHT = 200;
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
 export default class DraftInput extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
         getChannelMemberCountsByGroup: PropTypes.func.isRequired,
@@ -43,6 +45,7 @@ export default class DraftInput extends PureComponent {
         getChannelTimezones: PropTypes.func.isRequired,
         handleClearFiles: PropTypes.func.isRequired,
         handleClearFailedFiles: PropTypes.func.isRequired,
+        handleGotoLocation: PropTypes.func.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTimezoneEnabled: PropTypes.bool,
         maxMessageLength: PropTypes.number.isRequired,
@@ -58,6 +61,7 @@ export default class DraftInput extends PureComponent {
         useGroupMentions: PropTypes.bool.isRequired,
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
+        addRecentUsedEmojisInMessage: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -161,7 +165,11 @@ export default class DraftInput extends PureComponent {
             message: value,
         };
 
-        createPost(post, postFiles);
+        createPost(post, postFiles).then(({data}) => {
+            if (data) {
+                this.props.addRecentUsedEmojisInMessage(message);
+            }
+        });
 
         if (postFiles.length) {
             handleClearFiles(channelId, rootId);
@@ -221,7 +229,7 @@ export default class DraftInput extends PureComponent {
         });
     };
 
-    handleSendMessage = () => {
+    handleSendMessage = preventDoubleTap(() => {
         if (!this.input.current) {
             return;
         }
@@ -229,42 +237,44 @@ export default class DraftInput extends PureComponent {
         const value = this.input.current.getValue();
         this.input.current.resetTextInput();
 
-        requestAnimationFrame(() => {
-            if (!this.isSendButtonEnabled()) {
-                this.input.current.setValue(value);
-                return;
-            }
+        this.doHandleSendMessage(value);
+    });
 
-            this.setState({sendingMessage: true});
+    doHandleSendMessage = (value) => requestAnimationFrame(() => {
+        if (!this.isSendButtonEnabled()) {
+            this.input.current.setValue(value);
+            return;
+        }
 
-            const {channelId, files, handleClearFailedFiles, rootId} = this.props;
+        this.setState({sendingMessage: true});
 
-            const isReactionMatch = value.match(IS_REACTION_REGEX);
-            if (isReactionMatch) {
-                const emoji = isReactionMatch[2];
-                this.sendReaction(emoji);
-                return;
-            }
+        const {channelId, files, handleClearFailedFiles, rootId} = this.props;
 
-            const hasFailedAttachments = files.some((f) => f.failed);
-            if (hasFailedAttachments) {
-                const {formatMessage} = this.context.intl;
-                const cancel = () => {
-                    this.setInputValue(value);
-                    this.setState({sendingMessage: false});
-                };
-                const accept = () => {
-                    // Remove only failed files
-                    handleClearFailedFiles(channelId, rootId);
-                    this.sendMessage(value);
-                };
+        const isReactionMatch = value.match(IS_REACTION_REGEX);
+        if (isReactionMatch) {
+            const emoji = isReactionMatch[2];
+            this.sendReaction(emoji);
+            return;
+        }
 
-                DraftUtils.alertAttachmentFail(formatMessage, accept, cancel);
-            } else {
+        const hasFailedAttachments = files.some((f) => f.failed);
+        if (hasFailedAttachments) {
+            const {formatMessage} = this.context.intl;
+            const cancel = () => {
+                this.setInputValue(value);
+                this.setState({sendingMessage: false});
+            };
+            const accept = () => {
+                // Remove only failed files
+                handleClearFailedFiles(channelId, rootId);
                 this.sendMessage(value);
-            }
-        });
-    }
+            };
+
+            DraftUtils.alertAttachmentFail(formatMessage, accept, cancel);
+        } else {
+            this.sendMessage(value);
+        }
+    });
 
     isFileLoading = () => {
         const {files} = this.props;
@@ -293,7 +303,7 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
-        const {error} = await executeCommand(msg, channelId, rootId);
+        const {data, error} = await executeCommand(msg, channelId, rootId);
         this.setState({sendingMessage: false});
 
         if (error) {
@@ -304,6 +314,10 @@ export default class DraftInput extends PureComponent {
 
         this.setInputValue('');
         this.input.current.changeDraft('');
+
+        if (data.goto_location) {
+            this.props.handleGotoLocation(data.goto_location, this.context.intl);
+        }
     };
 
     sendMessage = (value = '') => {
@@ -395,11 +409,12 @@ export default class DraftInput extends PureComponent {
 
     render() {
         const {
+            testID,
             channelDisplayName,
             channelId,
             cursorPositionEvent,
-            isLandscape,
             files,
+            isLandscape,
             maxMessageLength,
             screenId,
             valueEvent,
@@ -407,6 +422,9 @@ export default class DraftInput extends PureComponent {
             rootId,
             theme,
         } = this.props;
+        const postInputTestID = `${testID}.post.input`;
+        const quickActionsTestID = `${testID}.quick_actions`;
+        const sendActionTestID = `${testID}.send_action`;
         const style = getStyleSheet(theme);
 
         return (
@@ -415,9 +433,22 @@ export default class DraftInput extends PureComponent {
                     theme={theme}
                     registerTypingAnimation={registerTypingAnimation}
                 />
-                <View
-                    style={[style.inputWrapper, padding(isLandscape)]}
+                {Platform.OS === 'android' &&
+                <Autocomplete
+                    cursorPositionEvent={cursorPositionEvent}
+                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, DEVICE.AUTOCOMPLETE_MAX_HEIGHT)}
+                    onChangeText={this.handleInputQuickAction}
+                    valueEvent={valueEvent}
+                    rootId={rootId}
+                    channelId={channelId}
+                    offsetY={0}
+                />
+                }
+                <SafeAreaView
+                    edges={['left', 'right']}
                     onLayout={this.handleLayout}
+                    style={style.inputWrapper}
+                    testID={testID}
                 >
                     <ScrollView
                         style={style.inputContainer}
@@ -431,6 +462,7 @@ export default class DraftInput extends PureComponent {
                         disableScrollViewPanResponder={true}
                     >
                         <PostInput
+                            testID={postInputTestID}
                             channelDisplayName={channelDisplayName}
                             channelId={channelId}
                             cursorPositionEvent={cursorPositionEvent}
@@ -451,6 +483,7 @@ export default class DraftInput extends PureComponent {
                         />
                         <View style={style.actionsContainer}>
                             <QuickActions
+                                testID={quickActionsTestID}
                                 ref={this.quickActions}
                                 fileCount={files.length}
                                 inputEventType={valueEvent}
@@ -458,23 +491,14 @@ export default class DraftInput extends PureComponent {
                                 theme={theme}
                             />
                             <SendAction
+                                testID={sendActionTestID}
                                 disabled={!this.state.canSubmit}
                                 handleSendMessage={this.handleSendMessage}
                                 theme={theme}
                             />
                         </View>
                     </ScrollView>
-                </View>
-                {Platform.OS === 'android' &&
-                <Autocomplete
-                    cursorPositionEvent={cursorPositionEvent}
-                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
-                    onChangeText={this.handleInputQuickAction}
-                    valueEvent={valueEvent}
-                    rootId={rootId}
-                    channelId={channelId}
-                />
-                }
+                </SafeAreaView>
             </>
         );
     }

@@ -30,6 +30,7 @@ jest.doMock('react-native', () => {
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
+        Linking: RNLinking,
     } = ReactNative;
 
     const Alert = {
@@ -96,6 +97,11 @@ jest.doMock('react-native', () => {
         },
     };
 
+    const Linking = {
+        ...RNLinking,
+        openURL: jest.fn(),
+    };
+
     return Object.setPrototypeOf({
         Platform: {
             ...Platform,
@@ -110,6 +116,7 @@ jest.doMock('react-native', () => {
         Alert,
         InteractionManager,
         NativeModules,
+        Linking,
     }, ReactNative);
 });
 
@@ -142,6 +149,7 @@ jest.mock('react-native-device-info', () => {
         getVersion: () => '0.0.0',
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
+        hasNotch: () => true,
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
     };
@@ -204,6 +212,7 @@ jest.mock('react-native-image-picker', () => ({
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
     RNN.Navigation.setLazyComponentRegistrator = jest.fn();
+    RNN.Navigation.setDefaultOptions = jest.fn();
     return {
         ...RNN,
         Navigation: {
@@ -224,6 +233,37 @@ jest.mock('react-native-navigation', () => {
             mergeOptions: jest.fn(),
             showOverlay: jest.fn(),
             dismissOverlay: jest.fn(),
+        },
+    };
+});
+
+jest.mock('react-native-notifications', () => {
+    let deliveredNotifications = [];
+
+    return {
+        Notifications: {
+            registerRemoteNotifications: jest.fn(),
+            addEventListener: jest.fn(),
+            setDeliveredNotifications: jest.fn((notifications) => {
+                deliveredNotifications = notifications;
+            }),
+            cancelAllLocalNotifications: jest.fn(),
+            NotificationAction: jest.fn(),
+            NotificationCategory: jest.fn(),
+            events: () => ({
+                registerNotificationOpened: jest.fn(),
+                registerRemoteNotificationsRegistered: jest.fn(),
+                registerNotificationReceivedBackground: jest.fn(),
+                registerNotificationReceivedForeground: jest.fn(),
+            }),
+            ios: {
+                getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
+                removeDeliveredNotifications: jest.fn((ids) => {
+                    // eslint-disable-next-line max-nested-callbacks
+                    deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
+                }),
+                setBadgeCount: jest.fn(),
+            },
         },
     };
 });

@@ -1,23 +1,56 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
+import {
+    RecentItem,
+    SearchBar,
+} from '@support/ui/component';
+import {
+    ChannelScreen,
+    SearchResultPostScreen,
+} from '@support/ui/screen';
 
 class SearchScreen {
     testID = {
+        searchScreenPrefix: 'search.',
         searchScreen: 'search.screen',
-        searchInput: 'searchInput',
-        searchFromSection: 'search_from.section',
-        searchInSection: 'search_in.section',
-        searchOnSection: 'search_on.section',
+        searchFromSection: 'search.from_section',
+        searchInSection: 'search.in_section',
+        searchOnSection: 'search.on_section',
+        searchAfterSection: 'search.after_section',
+        searchBeforeSection: 'search.before_section',
     }
 
     searchScreen = element(by.id(this.testID.searchScreen));
-    searchInput = element(by.id(this.testID.searchInput));
     searchFromSection = element(by.id(this.testID.searchFromSection));
     searchInSection = element(by.id(this.testID.searchInSection));
     searchOnSection = element(by.id(this.testID.searchOnSection));
+    searchAfterSection = element(by.id(this.testID.searchAfterSection));
+    searchBeforeSection = element(by.id(this.testID.searchBeforeSection));
+
+    searchFromModifier = 'from:';
+    searchInModifier = 'in:';
+    searchOnModifier = 'on:';
+    searchAfterModifier = 'after:';
+    searchBeforeModifier = 'before:';
+
+    // convenience props
+    searchBar = SearchBar.getSearchBar(this.testID.searchScreenPrefix);
+    searchInput = SearchBar.getSearchInput(this.testID.searchScreenPrefix);
+    cancelButton = SearchBar.getCancelButton(this.testID.searchScreenPrefix);
+    clearButton = SearchBar.getClearButton(this.testID.searchScreenPrefix);
+
+    getRecentSearchItem = (searchTerms) => {
+        return RecentItem.getRecentItem(searchTerms);
+    }
+
+    getSearchResultPostItem = (postId, text) => {
+        return SearchResultPostScreen.getPost(postId, text);
+    }
+
+    getSearchResultPostMessageAtIndex = (index) => {
+        return SearchResultPostScreen.getPostMessageAtIndex(index);
+    }
 
     toBeVisible = async () => {
         await expect(this.searchScreen).toBeVisible();
@@ -26,17 +59,26 @@ class SearchScreen {
     }
 
     open = async () => {
+        // # Open search screen
         await ChannelScreen.channelSearchButton.tap();
 
         return this.toBeVisible();
     }
 
     cancel = async () => {
-        if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            await element(by.text('Cancel')).atIndex(0).tap();
-        }
+        await this.cancelButton.tap();
+        await expect(this.searchScreen).not.toBeVisible();
+    }
+
+    clear = async () => {
+        await this.clearButton.tap();
+        await expect(this.clearButton).not.toExist();
+    }
+
+    hasSearchResultPostMessageAtIndex = async (index, postMessage) => {
+        await expect(
+            this.getSearchResultPostMessageAtIndex(index),
+        ).toHaveText(postMessage);
     }
 }
 

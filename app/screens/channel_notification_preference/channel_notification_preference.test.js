@@ -23,7 +23,6 @@ function makeProps(pushNotificationLevel) {
             push: pushNotificationLevel,
         },
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 }
 
@@ -45,6 +44,15 @@ function checkNotificationSelected(pushNotificationLevel, trueIdx) {
 }
 
 describe('ChannelNotificationPreference', () => {
+    test('should match snapshot', () => {
+        const baseProps = makeProps('default');
+        const wrapper = shallowWithIntlMessages(
+            <ChannelNotificationPreference {...baseProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should have correct setting selected', () => {
         checkNotificationSelected(null, 0);
         checkNotificationSelected(ViewTypes.NotificationLevels.DEFAULT, 0);

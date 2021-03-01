@@ -177,8 +177,9 @@ describe('Actions.Websocket doReconnect', () => {
         const timestamp = 1000;
         const expectedActions = [
             GeneralTypes.WEBSOCKET_SUCCESS,
+        ];
+        const expectedMissingActions = [
             'BATCH_WS_RECONNECT',
-            'BATCH_GET_POSTS',
         ];
 
         mockConfigRequest();
@@ -197,6 +198,7 @@ describe('Actions.Websocket doReconnect', () => {
         await TestHelper.wait(300);
         const actionTypes = testStore.getActions().map((a) => a.type);
         expect(actionTypes).toEqual(expectedActions);
+        expect(actionTypes).not.toEqual(expect.arrayContaining(expectedMissingActions));
     });
 
     it('handle doReconnect after the current channel was archived or the user left it', async () => {
@@ -217,7 +219,7 @@ describe('Actions.Websocket doReconnect', () => {
             'BATCH_WS_RECONNECT',
         ];
         const expectedMissingActions = [
-            'BATCH_GET_POSTS',
+            'BATCH_GET_POSTS_SINCE',
         ];
 
         mockConfigRequest();
@@ -259,6 +261,8 @@ describe('Actions.Websocket doReconnect', () => {
         const timestamp = 1000;
         const expectedActions = [
             GeneralTypes.WEBSOCKET_SUCCESS,
+        ];
+        const expectedMissingActions = [
             'BATCH_WS_RECONNECT',
         ];
 
@@ -279,6 +283,7 @@ describe('Actions.Websocket doReconnect', () => {
 
         const actions = testStore.getActions().map((a) => a.type);
         expect(actions).toEqual(expect.arrayContaining(expectedActions));
+        expect(actions).not.toEqual(expect.arrayContaining(expectedMissingActions));
     });
 
     it('handle doReconnect after the current channel was archived and setting is off', async () => {
@@ -303,7 +308,7 @@ describe('Actions.Websocket doReconnect', () => {
             'BATCH_WS_RECONNECT',
         ];
         const expectedMissingActions = [
-            'BATCH_GET_POSTS',
+            'BATCH_GET_POSTS_SINCE',
         ];
 
         mockConfigRequest({ExperimentalViewArchivedChannels: 'false'});
@@ -337,7 +342,7 @@ describe('Actions.Websocket doReconnect', () => {
             'BATCH_WS_RECONNECT',
         ];
         const expectedMissingActions = [
-            'BATCH_GET_POSTS',
+            'BATCH_GET_POSTS_SINCE',
         ];
 
         mockConfigRequest();

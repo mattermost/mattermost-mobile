@@ -9,6 +9,7 @@ import Badge from './badge';
 
 describe('Badge', () => {
     const baseProps = {
+        testID: 'badge',
         count: 100,
         countStyle: {color: '#145dbf', fontSize: 10},
         style: {backgroundColor: '#ffffff'},

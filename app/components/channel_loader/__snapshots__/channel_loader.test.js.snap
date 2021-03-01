@@ -10,13 +10,74 @@ exports[`ChannelLoader should match snapshot 1`] = `
         "overflow": "hidden",
       },
       undefined,
-      null,
       Object {
         "backgroundColor": "#ffffff",
       },
     ]
   }
 >
+  <ForwardRef(AnimatedComponentWrapper)
+    style={
+      Array [
+        Object {
+          "backgroundColor": "#3D3C40",
+          "height": 38,
+          "position": "absolute",
+          "width": "100%",
+          "zIndex": 9,
+        },
+        Object {
+          "top": -38,
+        },
+      ]
+    }
+  >
+    <ForwardRef(AnimatedComponentWrapper)
+      edges={
+        Array [
+          "left",
+          "right",
+        ]
+      }
+      style={
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "height": 38,
+          "paddingLeft": 12,
+          "paddingRight": 5,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "flex-start",
+            "height": 24,
+            "justifyContent": "center",
+            "paddingRight": 10,
+          }
+        }
+      >
+        <ActivityIndicator
+          animating={true}
+          color="#FFFFFF"
+          hidesWhenStopped={true}
+          size="small"
+        />
+      </View>
+      <FormattedText
+        defaultMessage="Still trying to load your content..."
+        id="mobile.channel_loader.still_loading"
+        style={
+          Object {
+            "color": "#fff",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </ForwardRef(AnimatedComponentWrapper)>
+  </ForwardRef(AnimatedComponentWrapper)>
   <View
     style={
       Array [

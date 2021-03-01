@@ -45,13 +45,12 @@ describe('PostOptions', () => {
         currentUserId: 'user1',
         deviceHeight: 600,
         hasBeenDeleted: false,
-        isFlagged: false,
+        isFlagged: true,
         isSystemMessage: false,
         managedConfig: {},
         post,
         showAddReaction: true,
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 
     function getWrapper(props = {}) {

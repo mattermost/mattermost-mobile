@@ -51,7 +51,7 @@ exports[`ReactionList should match snapshot 1`] = `
         }
       }
     >
-      <Connect(ReactionRow)
+      <ReactionRow
         emojiName="+1"
         teammateNameDisplay="username"
         theme={
@@ -107,7 +107,7 @@ exports[`ReactionList should match snapshot 1`] = `
         }
       }
     >
-      <Connect(ReactionRow)
+      <ReactionRow
         emojiName="smile"
         teammateNameDisplay="username"
         theme={
@@ -169,7 +169,7 @@ Array [
       }
     }
   >
-    <Connect(ReactionRow)
+    <ReactionRow
       emojiName="+1"
       teammateNameDisplay="username"
       theme={
@@ -225,7 +225,7 @@ Array [
       }
     }
   >
-    <Connect(ReactionRow)
+    <ReactionRow
       emojiName="smile"
       teammateNameDisplay="username"
       theme={

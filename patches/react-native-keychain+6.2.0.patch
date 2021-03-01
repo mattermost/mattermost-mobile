@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
+index d4ded69..7b1042a 100644
+--- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
++++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
+@@ -139,13 +139,13 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+     super(reactContext);
+     prefsStorage = new PrefsStorage(reactContext);
+ 
+-    addCipherStorageToMap(new CipherStorageFacebookConceal(reactContext));
++    // addCipherStorageToMap(new CipherStorageFacebookConceal(reactContext));
+     addCipherStorageToMap(new CipherStorageKeystoreAesCbc());
+ 
+     // we have a references to newer api that will fail load of app classes in old androids OS
+-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+-      addCipherStorageToMap(new CipherStorageKeystoreRsaEcb());
+-    }
++    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
++    //   addCipherStorageToMap(new CipherStorageKeystoreRsaEcb());
++    // }
+   }
+ 
+   /** Allow initialization in chain. */

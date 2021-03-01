@@ -21,6 +21,7 @@ export interface ActionProps {
 
 export interface ActionsProps {
     canDownloadFiles: boolean;
+    enablePublicLink: boolean;
     downloadAction: ActionCallback;
     file: FileInfo;
     linkAction: ActionCallback;
@@ -54,6 +55,7 @@ export interface FooterProps {
 export interface FooterRef {
     toggle(): boolean;
     isVisible(): boolean;
+    setVisible(visible: boolean): void;
 }
 
 export interface GalleryProps {
@@ -75,7 +77,7 @@ export interface GalleryItemProps {
     deviceWidth: number;
     intl?: typeof intlShape;
     isActive?: boolean;
-    onDoubleTap?: CallbackFunctionWithoutArguments;
+    showHideHeaderFooter?(display: boolean): void;
     style?: StyleProp<Animated.AnimateStyle>;
     theme?: Theme;
 }

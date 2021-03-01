@@ -2,35 +2,31 @@
 // See LICENSE.txt for license information.
 
 interface NotificationUserInfo {
-    localNotification: boolean;
-    localTest: boolean;
-    channel_id?: string;
+    local: boolean;
+    test?: boolean;
 }
 
 interface NotificationData {
+    body?: string;
     channel_id: string;
     channel_name?: string;
     from_webhook?: string;
-    post_id: string;
-    root_id?: string;
-    type: string;
-    use_user_icon?: string;
+    message?: string;
     override_icon_url?: string;
     override_username?: string;
-    version: string;
+    post_id: string;
+    root_id?: string;
     sender_id?: string;
-}
-
-interface NotificationMessage {
-    body: string;
-}
-
-interface PushNotificationData {
-    date?: Date;
-    data?: NotificationData;
-    fireDate?: string;
-    foreground: boolean;
-    message: NotificationMessage | string;
+    team_id?: string;
+    type: string;
+    use_user_icon?: string;
     userInfo?: NotificationUserInfo;
-    userInteraction: boolean;
+    version: string;
+}
+
+interface NotificationWithData extends Notification {
+    identifier: string;
+    payload?: NotificationData;
+    foreground?: boolean;
+    userInteraction?: boolean;
 }
