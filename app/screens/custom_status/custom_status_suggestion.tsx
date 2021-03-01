@@ -19,14 +19,8 @@ type Props = {
 };
 
 const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, handleClear, theme, separator} = props;
+    const {handleSuggestionClick, emoji, text, theme, separator} = props;
     const style = getStyleSheet(theme);
-
-    const handleRecentCustomStatusClear = () => {
-        if (handleClear) {
-            handleClear({emoji, text});
-        }
-    };
 
     const divider = separator ? <View style={style.divider}/> : null;
 
