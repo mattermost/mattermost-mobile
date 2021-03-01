@@ -9,9 +9,16 @@ class SearchResultPostScreen {
     }
 
     getPost = (postId, postMessage) => {
-        const {postItem, postItemHeaderReply, postItemMessage} = Post.getPost(this.testID.searchResultPostItem, postId, postMessage);
+        const {
+            postItem,
+            postItemHeaderGuestTag,
+            postItemHeaderReply,
+            postItemMessage,
+        } = Post.getPost(this.testID.searchResultPostItem, postId, postMessage);
+
         return {
             searchResultPostItem: postItem,
+            searchResultPostItemHeaderGuestTag: postItemHeaderGuestTag,
             searchResultPostItemHeaderReply: postItemHeaderReply,
             searchResultPostItemMessage: postItemMessage,
         };

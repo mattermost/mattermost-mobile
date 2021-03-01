@@ -266,6 +266,7 @@ export default class PostHeader extends PureComponent {
             return (
                 <GuestTag
                     style={style.tag}
+                    testID='post_header.guest_tag'
                     theme={theme}
                 />
             );

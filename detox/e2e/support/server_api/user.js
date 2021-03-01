@@ -112,11 +112,12 @@ export const apiGetUserById = async (userId) => {
 };
 
 /**
- * Demote user by ID.
+ * Demote a user to a guest.
  * See https://api.mattermost.com/#tag/users/paths/~1users~1{user_id}~1demote/post
- * @param {string} userId
+ * @param {string} userId - the user ID
+ * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDemoteToGuest = async (userId) => {
+export const apiDemoteUserToGuest = async (userId) => {
     try {
         const response = await client.post(`/api/v4/users/${userId}/demote`);
 
@@ -156,7 +157,7 @@ function generateRandomUser(prefix) {
 
 export const User = {
     apiAdminLogin,
-    apiDemoteToGuest,
+    apiDemoteUserToGuest,
     apiLogin,
     apiLogout,
     apiCreateUser,

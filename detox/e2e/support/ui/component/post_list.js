@@ -13,6 +13,7 @@ class PostList {
     getPost = (postId, postMessage) => {
         const {
             postItem,
+            postItemHeaderGuestTag,
             postItemHeaderReply,
             postItemPreHeaderText,
             postItemMessage,
@@ -20,6 +21,7 @@ class PostList {
 
         return {
             postListPostItem: postItem,
+            postListPostItemHeaderGuestTag: postItemHeaderGuestTag,
             postListPostItemHeaderReply: postItemHeaderReply,
             postListPostItemPreHeaderText: postItemPreHeaderText,
             postListPostItemMessage: postItemMessage,

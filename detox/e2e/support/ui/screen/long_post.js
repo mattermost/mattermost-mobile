@@ -9,9 +9,16 @@ class LongPostScreen {
     }
 
     getPost = (postId, postMessage) => {
-        const {postItem, postItemHeaderReply, postItemMessage} = Post.getPost(this.testID.longPostItem, postId, postMessage);
+        const {
+            postItem,
+            postItemHeaderGuestTag,
+            postItemHeaderReply,
+            postItemMessage,
+        } = Post.getPost(this.testID.longPostItem, postId, postMessage);
+
         return {
             longPostItem: postItem,
+            longPostItemHeaderGuestTag: postItemHeaderGuestTag,
             longPostItemHeaderReply: postItemHeaderReply,
             longPostItemMessage: postItemMessage,
         };
