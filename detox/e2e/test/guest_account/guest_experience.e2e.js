@@ -56,7 +56,10 @@ describe('Guest Experience', () => {
             searchInSection,
             searchInput,
         } = SearchScreen;
-        const {channelMentionSuggestionList} = Autocomplete;
+        const {
+            channelMentionSuggestionList,
+            getChannelMentionItem,
+        } = Autocomplete;
 
         // # Post a message as guest user
         const testMessage = Date.now().toString();
@@ -73,7 +76,7 @@ describe('Guest Experience', () => {
         await searchInSection.tap();
         await searchInput.typeText(testChannel.name);
         await expect(channelMentionSuggestionList).toExist();
-        const channelMentionAutocomplete = await Autocomplete.getChannelMentionItem(testChannel.id);
+        const channelMentionAutocomplete = await getChannelMentionItem(testChannel.id);
         await channelMentionAutocomplete.tap();
         await searchInput.tapReturnKey();
 
