@@ -13,7 +13,7 @@ import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {doAppCall} from '@actions/apps';
 import {shouldProcessApps} from '@utils/apps';
 
-import Pluggable from './bindings';
+import Bindings from './bindings';
 
 function mapStateToProps(state: GlobalState) {
     const processApps = shouldProcessApps(state);
@@ -36,4 +36,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(Pluggable);
+export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(Bindings);

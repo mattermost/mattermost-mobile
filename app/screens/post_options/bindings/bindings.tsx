@@ -21,11 +21,11 @@ type Props = {
     closeWithAnimation: () => void,
     shouldProcessApps: boolean,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<{error?: Error}>
+        doAppCall: (call: AppCall, intl: any) => any;
     }
 }
 
-const Bindings = (props: Props) => {
+const Bindings: React.FC<Props> = (props: Props) => {
     if (!props.shouldProcessApps) {
         return null;
     }
@@ -65,7 +65,7 @@ type OptionProps = {
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<{error?: Error}>
+        doAppCall: (call: AppCall, intl: any) => any;
     },
 }
 
@@ -73,7 +73,7 @@ const Option = injectIntl((props: OptionProps) => {
     const onPress = async () => {
         const {closeWithAnimation, post} = props;
 
-        const {error} = await props.actions.doAppCall({
+        const res = await props.actions.doAppCall({
             ...props.binding.call,
             type: AppCallTypes.SUBMIT,
             url: props.binding.call?.url || '',
@@ -85,7 +85,7 @@ const Option = injectIntl((props: OptionProps) => {
             },
         }, props.intl);
 
-        if (error) {
+        if (res.error) {
             // TODO: show error
             // alert(error.message);
         }
