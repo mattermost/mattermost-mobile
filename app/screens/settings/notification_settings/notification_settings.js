@@ -215,9 +215,9 @@ export default class NotificationSettings extends PureComponent {
                         separator={true}
                         showArrow={showArrow}
                         theme={theme}
+                        testID='notification_settings.mentions_replies.action'
                     />
                     <SettingsItem
-                        testID='notification_settings.mobile.action'
                         defaultMessage='Mobile'
                         i18nId={t('mobile.notification_settings.mobile')}
                         iconName='cellphone'
@@ -225,6 +225,7 @@ export default class NotificationSettings extends PureComponent {
                         separator={true}
                         showArrow={showArrow}
                         theme={theme}
+                        testID='notification_settings.mobile.action'
                     />
                     <SettingsItem
                         defaultMessage='Email'
@@ -234,6 +235,7 @@ export default class NotificationSettings extends PureComponent {
                         separator={showEmailSeparator}
                         showArrow={showArrow}
                         theme={theme}
+                        testID='notification_settings.email.action'
                     />
                     {autoResponder}
                     <View style={style.divider}/>

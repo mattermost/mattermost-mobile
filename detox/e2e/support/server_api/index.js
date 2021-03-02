@@ -6,6 +6,7 @@ import Ldap from './ldap';
 import Post from './post';
 import Preference from './preference';
 import Setup from './setup';
+import Status from './status';
 import System from './system';
 import Team from './team';
 import User from './user';
@@ -16,6 +17,7 @@ export {
     Post,
     Preference,
     Setup,
+    Status,
     System,
     Team,
     User,

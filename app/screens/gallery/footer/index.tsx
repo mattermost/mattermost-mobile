@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
-import {Animated, StyleSheet} from 'react-native';
+import {Animated, Easing, StyleSheet} from 'react-native';
 import {injectIntl} from 'react-intl';
 import Clipboard from '@react-native-community/clipboard';
 
@@ -35,7 +35,8 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const animate = (value: Animated.Value, show: boolean, callback?: () => void): Animated.CompositeAnimation => {
         const animation = Animated.timing(value, {
             toValue: show ? 1 : 0,
-            duration: 250,
+            duration: 200,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
         });
 

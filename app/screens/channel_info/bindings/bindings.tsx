@@ -10,23 +10,24 @@ import ChannelInfoRow from '../channel_info_row';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
-import {AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
 import {dismissModal} from '@actions/navigation';
+import {ActionResult} from '@mm-redux/types/actions';
 
 type Props = {
     bindings: AppBinding[];
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
+    appsEnabled: boolean;
     actions: {
-        doAppCall: (call: AppCall) => any;
-    };
-    shouldProcessApps: boolean;
+        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>
+    }
 }
 
 const Bindings = (props: Props) => {
-    if (!props.shouldProcessApps) {
+    if (!props.appsEnabled) {
         return null;
     }
 
@@ -57,31 +58,37 @@ type OptionProps = {
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
-    actions: {
-        doAppCall: (call: AppCall, intl: typeof intlShape) => any;
-    };
     intl: typeof intlShape;
+    actions: {
+        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>
+    },
 }
 
 const Option = injectIntl((props: OptionProps) => {
     const onPress = async () => {
         const channelId = props.currentChannel.id;
 
-        const {error} = await props.actions.doAppCall({
-            ...props.binding.call,
+        const res = await props.actions.doAppCall({
             type: AppCallTypes.SUBMIT,
+            values: {
+                ...props.binding.call?.values,
+            },
+            expand: {
+                channel: AppExpandLevels.EXPAND_ALL,
+                ...props.binding.call?.expand,
+            },
             context: {
                 app_id: props.binding.app_id,
                 channel_id: channelId,
                 location: AppBindingLocations.CHANNEL_HEADER_ICON,
                 user_id: props.currentUser.id,
             },
-            url: props.binding.call?.url || '',
+            path: props.binding.call?.path || '',
         }, props.intl);
 
-        if (error) {
+        if (res.error) {
             // TODO: show error
-            // alert(error.message);
+            // alert(res.error.message);
         }
 
         dismissModal();

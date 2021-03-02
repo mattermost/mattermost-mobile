@@ -43,6 +43,7 @@ exports[`ChannelItem should match snapshot 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -158,6 +159,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -272,6 +274,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -386,6 +389,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -489,6 +493,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -593,6 +598,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -697,6 +703,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -805,6 +812,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -911,6 +919,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         membersCount={1}
         size={16}
         status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
             "awayIndicator": "#ffbc42",

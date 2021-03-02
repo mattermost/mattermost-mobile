@@ -2,30 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {bindActionCreators, Dispatch} from 'redux';
 
-import {getAppBindings} from '@mm-redux/selectors/entities/apps';
+import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
-import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-
-import {shouldProcessApps} from '@utils/apps';
-import {doAppCall} from '@actions/apps';
 
 import Bindings from './bindings';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+import {appsEnabled} from '@utils/apps';
+import {doAppCall} from '@actions/apps';
+import {bindActionCreators, Dispatch} from 'redux';
 
 function mapStateToProps(state: GlobalState) {
-    const processApps = shouldProcessApps(state);
+    const apps = appsEnabled(state);
     const currentChannel = getCurrentChannel(state) || {};
-    const bindings = processApps ? getAppBindings(state, AppBindingLocations.CHANNEL_HEADER_ICON) : [];
+    const bindings = apps ? getAppsBindings(state, AppBindingLocations.CHANNEL_HEADER_ICON) : [];
     const currentUser = getCurrentUser(state) || {};
 
     return {
         bindings,
         currentChannel,
         currentUser,
-        shouldProcessApps: processApps,
+        appsEnabled: apps,
     };
 }
 

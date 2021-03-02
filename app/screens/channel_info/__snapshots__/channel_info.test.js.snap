@@ -24,6 +24,7 @@ exports[`channelInfo should match snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="channel_info.scroll_view"
   >
     <ChannelInfoHeader
       createAt={123}
@@ -39,6 +40,7 @@ exports[`channelInfo should match snapshot 1`] = `
       onPermalinkPress={[Function]}
       purpose="Purpose"
       status="status"
+      testID="channel_info.header"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -543,6 +545,7 @@ exports[`channelInfo should match snapshot 1`] = `
     >
       <Connect(Leave)
         close={[Function]}
+        testID="channel_info.leave.action"
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -575,6 +578,7 @@ exports[`channelInfo should match snapshot 1`] = `
       />
       <Connect(Archive)
         close={[Function]}
+        testID="channel_info.archive.action"
         theme={
           Object {
             "awayIndicator": "#ffbc42",

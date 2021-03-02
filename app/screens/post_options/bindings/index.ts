@@ -2,29 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
-import {getAppBindings} from '@mm-redux/selectors/entities/apps';
+import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {doAppCall} from '@actions/apps';
-import {shouldProcessApps} from '@utils/apps';
+import {bindActionCreators, Dispatch} from 'redux';
+import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
 
 function mapStateToProps(state: GlobalState) {
-    const processApps = shouldProcessApps(state);
-    const bindings = processApps ? getAppBindings(state, AppBindingLocations.POST_MENU_ITEM) : [];
+    const apps = appsEnabled(state);
+    const bindings = apps ? getAppsBindings(state, AppBindingLocations.POST_MENU_ITEM) : [];
     const currentUser = getCurrentUser(state);
 
     return {
         theme: getTheme(state),
         bindings,
         currentUser,
-        shouldProcessApps: processApps,
+        appsEnabled: apps,
     };
 }
 

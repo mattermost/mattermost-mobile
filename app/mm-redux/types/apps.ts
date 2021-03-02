@@ -58,7 +58,7 @@ export type AppCallValues = {
 export type AppCallType = string;
 
 export type AppCall = {
-    url: string;
+    path: string;
     type?: AppCallType;
     values?: AppCallValues;
     context: AppContext;
@@ -89,6 +89,7 @@ export type AppContext = {
     post_id?: string;
     root_id?: string;
     props?: AppContextProps;
+    user_agent?: string;
 };
 
 export type AppContextProps = {
@@ -123,7 +124,7 @@ export type AppForm = {
     depends_on?: string[];
 };
 
-export type AppFormValue = string | AppSelectOption | null;
+export type AppFormValue = string | AppSelectOption | boolean | null;
 export type AppFormValues = {[name: string]: AppFormValue};
 
 export type AppSelectOption = {
@@ -198,4 +199,10 @@ export type AppLookupCallValues = {
     user_input: string;
     values: AppFormValues;
     name: string;
+}
+
+export type FormResponseData = {
+    errors?: {
+        [field: string]: string;
+    };
 }

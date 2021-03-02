@@ -11,7 +11,8 @@ import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
-import {AppCallTypes} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 
 type Props = {
     bindings: AppBinding[],
@@ -19,14 +20,14 @@ type Props = {
     post: Post,
     currentUser: UserProfile,
     closeWithAnimation: () => void,
-    shouldProcessApps: boolean,
+    appsEnabled: boolean,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => any;
+        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>,
     }
 }
 
-const Bindings: React.FC<Props> = (props: Props) => {
-    if (!props.shouldProcessApps) {
+const Bindings = (props: Props) => {
+    if (!props.appsEnabled) {
         return null;
     }
 
@@ -65,7 +66,7 @@ type OptionProps = {
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => any;
+        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>,
     },
 }
 
@@ -74,9 +75,15 @@ const Option = injectIntl((props: OptionProps) => {
         const {closeWithAnimation, post} = props;
 
         const res = await props.actions.doAppCall({
-            ...props.binding.call,
             type: AppCallTypes.SUBMIT,
-            url: props.binding.call?.url || '',
+            path: props.binding.call?.path || '',
+            values: {
+                ...props.binding.call?.values,
+            },
+            expand: {
+                post: AppExpandLevels.EXPAND_ALL,
+                ...props.binding.call?.expand,
+            },
             context: {
                 app_id: props.binding.app_id,
                 channel_id: post.channel_id,
@@ -87,7 +94,7 @@ const Option = injectIntl((props: OptionProps) => {
 
         if (res.error) {
             // TODO: show error
-            // alert(error.message);
+            // alert(res.error.message);
         }
 
         closeWithAnimation();
