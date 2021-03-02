@@ -215,11 +215,11 @@ describe('components/autocomplete/slash_suggestion', () => {
 
         const expected: AutocompleteSuggestion[] = [
             {
-                Complete: '/jira issue',
+                Complete: 'jira issue',
                 Description: 'Interact with Jira issues',
                 Hint: '',
                 IconData: '',
-                Suggestion: '/issue',
+                Suggestion: 'issue',
             },
         ];
 

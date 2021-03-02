@@ -3,7 +3,7 @@
 import thunk from 'redux-thunk';
 export {thunk};
 
-import configureStore from 'redux-mock-store';
+const configureStore = require('redux-mock-store').default;
 export {configureStore};
 
 export {Client4} from '@mm-redux/client';

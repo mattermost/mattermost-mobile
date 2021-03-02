@@ -812,8 +812,8 @@ export class AppCommandParser {
     // getExecuteSuggestion returns the "Execute Current Command" suggestion
     getExecuteSuggestion = (parsed: ParsedCommand): AutocompleteSuggestion => {
         return {
-            Complete: parsed.command + EXECUTE_CURRENT_COMMAND_ITEM_ID,
-            Suggestion: '/Execute Current Command',
+            Complete: parsed.command.substring(1) + EXECUTE_CURRENT_COMMAND_ITEM_ID,
+            Suggestion: 'Execute Current Command',
             Hint: '',
             Description: getExecuteSuggestionDescription(parsed),
             IconData: EXECUTE_CURRENT_COMMAND_ITEM_ID,
