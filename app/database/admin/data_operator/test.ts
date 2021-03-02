@@ -25,11 +25,11 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type App for operateAppRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.getDefaultDatabase();
-        expect(db).toBeTruthy();
+        const database = await DatabaseManager.getDefaultDatabase();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateAppRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: { buildNumber: 'build-7', createdAt: 1, id: 'id-18', versionNumber: 'v-1' },
         });
@@ -41,11 +41,11 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type Global for operateGlobalRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.getDefaultDatabase();
-        expect(db).toBeTruthy();
+        const database = await DatabaseManager.getDefaultDatabase();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateGlobalRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: { id: 'g-1', name: 'g-n1', value: 'g-v1' },
         });
@@ -57,11 +57,11 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type Servers for operateServersRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.getDefaultDatabase();
-        expect(db).toBeTruthy();
+        const database = await DatabaseManager.getDefaultDatabase();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateServersRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: {
                 dbPath: 'mm-server',
@@ -80,7 +80,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type CustomEmoji for operateCustomEmojiRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.createDatabaseConnection({
+        const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             databaseConnection: {
                 actionsEnabled: true,
@@ -89,10 +89,10 @@ describe('*** Data Operator tests ***', () => {
                 serverUrl: 'https://appv2.mattermost.com',
             },
         });
-        expect(db).toBeTruthy();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateCustomEmojiRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: { id: 'emo-1', name: 'emoji' },
         });
@@ -104,7 +104,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type Role for operateRoleRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.createDatabaseConnection({
+        const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             databaseConnection: {
                 actionsEnabled: true,
@@ -113,10 +113,10 @@ describe('*** Data Operator tests ***', () => {
                 serverUrl: 'https://appv2.mattermost.com',
             },
         });
-        expect(db).toBeTruthy();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateRoleRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: { id: 'role-1', name: 'role-name-1', permissions: [] },
         });
@@ -128,7 +128,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type System for operateSystemRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.createDatabaseConnection({
+        const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             databaseConnection: {
                 actionsEnabled: true,
@@ -137,10 +137,10 @@ describe('*** Data Operator tests ***', () => {
                 serverUrl: 'https://appv2.mattermost.com',
             },
         });
-        expect(db).toBeTruthy();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateSystemRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: { id: 'system-1', name: 'system-name-1', value: 'system' },
         });
@@ -152,7 +152,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type TermsOfService for operateTermsOfServiceRecord', async () => {
         expect.assertions(3);
 
-        const db = await DatabaseManager.createDatabaseConnection({
+        const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             databaseConnection: {
                 actionsEnabled: true,
@@ -161,10 +161,10 @@ describe('*** Data Operator tests ***', () => {
                 serverUrl: 'https://appv2.mattermost.com',
             },
         });
-        expect(db).toBeTruthy();
+        expect(database).toBeTruthy();
 
         const preparedRecords = await operateTermsOfServiceRecord({
-            db: db!,
+            database: database!,
             optType: OperationType.CREATE,
             value: { id: 'system-1', acceptedAt: 1 },
         });
@@ -180,7 +180,7 @@ describe('*** Data Operator tests ***', () => {
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
-            values: { buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1' },
+            values: [{ buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1' }],
         });
 
         // Do a query and find out if the value has been registered in the App table of the default database
@@ -231,7 +231,7 @@ describe('*** Data Operator tests ***', () => {
         await DataOperator.handleIsolatedEntityData({
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
-            values: { buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1' },
+            values: [{ buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1' }],
         });
 
         const records = (await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch()) as App[];
@@ -353,7 +353,7 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.GLOBAL,
-            values: { id: 'global-1-id', name: 'global-1-name', value: 'global-1-value' },
+            values: [{ id: 'global-1-id', name: 'global-1-name', value: 'global-1-value' }],
         };
 
         await DataOperator.handleIsolatedEntityData(data);
@@ -372,14 +372,16 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.SERVERS,
-            values: {
-                dbPath: 'server.db',
-                displayName: 'community',
-                id: 'server-id-1',
-                mentionCount: 0,
-                unreadCount: 0,
-                url: 'https://community.mattermost.com',
-            },
+            values: [
+                {
+                    dbPath: 'server.db',
+                    displayName: 'community',
+                    id: 'server-id-1',
+                    mentionCount: 0,
+                    unreadCount: 0,
+                    url: 'https://community.mattermost.com',
+                },
+            ],
         };
 
         await DataOperator.handleIsolatedEntityData(data);
@@ -398,10 +400,12 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: {
-                id: 'custom-emoji-id-1',
-                name: 'custom-emoji-1',
-            },
+            values: [
+                {
+                    id: 'custom-emoji-id-1',
+                    name: 'custom-emoji-1',
+                },
+            ],
         };
 
         await DataOperator.handleIsolatedEntityData(data);
@@ -420,11 +424,13 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.ROLE,
-            values: {
-                id: 'custom-emoji-id-1',
-                name: 'custom-emoji-1',
-                permissions: ['custom-emoji-1'],
-            },
+            values: [
+                {
+                    id: 'custom-emoji-id-1',
+                    name: 'custom-emoji-1',
+                    permissions: ['custom-emoji-1'],
+                },
+            ],
         };
 
         await DataOperator.handleIsolatedEntityData(data);
@@ -443,7 +449,7 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.SYSTEM,
-            values: { id: 'system-id-1', name: 'system-1', value: 'system-1' },
+            values: [{ id: 'system-id-1', name: 'system-1', value: 'system-1' }],
         };
 
         await DataOperator.handleIsolatedEntityData(data);
@@ -462,7 +468,7 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
-            values: { id: 'tos-1', acceptedAt: 1 },
+            values: [{ id: 'tos-1', acceptedAt: 1 }],
         };
 
         await DataOperator.handleIsolatedEntityData(data);
@@ -481,7 +487,7 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: 'INVALID_TABLE_NAME',
-            values: { id: 'tos-1', acceptedAt: 1 },
+            values: [{ id: 'tos-1', acceptedAt: 1 }],
         };
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

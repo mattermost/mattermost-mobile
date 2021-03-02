@@ -183,36 +183,43 @@ export type RawChannel = {
     update_at: number;
 };
 
+export type RawPostsInThread = { latest?: number; earliest: number; post_id: string; id?: string };
+
 export type RecordValue =
     | RawApp
-    | RawGlobal
-    | RawServers
     | RawCustomEmoji
+    | RawGlobal
+    | RawPost
+    | RawPostsInThread
     | RawRole
+    | RawServers
     | RawSystem
-    | RawTermsOfService
-    | RawPost;
+    | RawTermsOfService;
 
 export type DataFactory = {
-    db: Database;
+    database: Database;
     generator?: (model: Model) => void;
     optType?: OperationType;
     tableName?: string;
     value: RecordValue;
 };
 
-export type Records = RecordValue | RecordValue[];
-
 export type HandleBaseData = {
+    database?: Database;
     optType: OperationType;
     tableName: string;
-    values: Records;
-    recordOperator: (recordOperator: DataFactory) => void;
+    values: RecordValue[];
+    recordOperator: (recordOperator: {
+        optType: OperationType;
+        value: RecordValue;
+        database: Database;
+        tableName: string;
+    }) => void;
 };
 
-export type BatchOperations = { db: Database; models: Model[] };
+export type BatchOperations = { database: Database; models: Model[] };
 
-export type HandleIsolatedEntityData = { optType: OperationType; tableName: IsolatedEntities; values: Records };
+export type HandleIsolatedEntityData = { optType: OperationType; tableName: IsolatedEntities; values: RecordValue[] };
 
 export type Models = Class<Model>[];
 
