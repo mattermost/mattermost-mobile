@@ -3060,7 +3060,7 @@ export default class Client4 {
 
     getAppsBindings = async (userID: string, channelID: string) => {
         return this.doFetch(
-            this.getAppsProxyRoute() + `/api/v1/bindings?user_id=${userID}&channel_id=${channelID}&scope=mobile`,
+            this.getAppsProxyRoute() + `/api/v1/bindings?user_id=${userID}&channel_id=${channelID}&user_agent_type=mobile`,
             {method: 'get'},
         );
     }
