@@ -1,3 +1,7 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import {AppBindingLocations} from '@mm-redux/constants/apps';
+
 import {
     AppBinding,
     AppForm,
@@ -173,15 +177,12 @@ export const createCommand: AppBinding = {
     } as AppForm,
 };
 
-export const definitions: AppBinding[] = [
-    {
-        app_id: 'jira',
-        location: '/command',
-        label: 'jira',
-        description: 'Interact with Jira',
-        hint: 'Jira hint',
-        icon: 'Jira icon',
-        bindings: [{
+export const definitions: AppBinding[] = [{
+    app_id: '',
+    label: '',
+    location: AppBindingLocations.COMMAND,
+    bindings: [
+        {
             app_id: 'jira',
             label: 'issue',
             description: 'Interact with Jira issues',
@@ -189,13 +190,8 @@ export const definitions: AppBinding[] = [
                 viewCommand,
                 createCommand,
             ],
-        }],
-    },
-    {
-        app_id: 'other',
-        location: '/command',
-        label: 'other',
-        bindings: [{
+        },
+        {
             app_id: 'other',
             label: 'sub1',
             description: 'Some Description',
@@ -209,5 +205,4 @@ export const definitions: AppBinding[] = [
                 }],
             },
         }],
-    },
-];
+}];

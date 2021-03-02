@@ -7,8 +7,8 @@ import {bindActionCreators, Dispatch} from 'redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
-import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
-import {AppsBindings} from '@mm-redux/constants/apps';
+import {getAppBindings} from '@mm-redux/selectors/entities/apps';
+import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {doAppCall} from '@actions/apps';
 import {shouldProcessApps} from '@utils/apps';
@@ -17,7 +17,7 @@ import Pluggable from './bindings';
 
 function mapStateToProps(state: GlobalState) {
     const processApps = shouldProcessApps(state);
-    const bindings = processApps ? getAppsBindings(state, AppsBindings.POST_MENU_ITEM) : [];
+    const bindings = processApps ? getAppBindings(state, AppBindingLocations.POST_MENU_ITEM) : [];
     const currentUser = getCurrentUser(state);
 
     return {

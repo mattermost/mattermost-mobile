@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import type {
+import {
     AppCall,
     AppBinding,
     AppField,
@@ -14,16 +14,14 @@ import type {
     AutocompleteSuggestion,
     AutocompleteStaticSelect,
     AppLookupCallValues,
-
+    Channel,
     DispatchFunc,
     GlobalState,
-} from './app_command_parser_dependencies';
 
-import {
     AppBindingLocations,
+    AppCallResponseTypes,
     AppCallTypes,
     AppFieldTypes,
-
     getAppBindings,
     getChannel,
     getCurrentTeamId,
@@ -33,8 +31,6 @@ import {
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
     getExecuteSuggestionDescription,
 } from './app_command_parser_dependencies';
-import {AppCallResponseTypes} from '@mm-redux/constants/apps';
-import {Channel} from '@mm-redux/types/channels';
 
 export type Store = {
     dispatch: DispatchFunc;
@@ -58,6 +54,26 @@ export enum ParseState {
     EndValue,
     Error,
 }
+
+// This will go away once each App's base command is defined separately
+export const groupBindingsByApp = (bindings: AppBinding[]): AppBinding[] => {
+    const grouped: {[appID: string]: AppBinding} = {};
+
+    for (const b of bindings) {
+        grouped[b.app_id] = grouped[b.app_id] || {
+            app_id: b.app_id,
+            label: b.app_id,
+            location: AppBindingLocations.COMMAND,
+            bindings: [],
+        };
+
+        const group = grouped[b.app_id];
+        group.bindings = group.bindings || [];
+        group.bindings.push(b);
+    }
+
+    return Object.values(grouped);
+};
 
 interface FormsCache {
     getForm: (location: string, binding: AppBinding) => Promise<AppForm | undefined>;
@@ -620,7 +636,7 @@ export class AppCommandParser {
         let complete = parsed.command.substring(0, parsed.incompleteStart - goBackSpace);
         complete += choice.Complete || choice.Suggestion;
         choice.Hint = choice.Hint || '';
-        choice.Suggestion = '/' + choice.Suggestion;
+        complete = complete.substring(1);
 
         return {
             ...choice,
@@ -632,25 +648,7 @@ export class AppCommandParser {
     // They are grouped by app id since each app has one base command
     getCommandBindings = (): AppBinding[] => {
         const bindings = getAppBindings(this.store.getState(), AppBindingLocations.COMMAND);
-        const grouped: {[appID: string]: AppBinding} = {};
-
-        return bindings;
-
-        for (const b of bindings) {
-            grouped[b.app_id] = grouped[b.app_id] || {
-                ...b,
-                app_id: b.app_id,
-                label: b.app_id,
-                location: AppBindingLocations.COMMAND,
-                bindings: [],
-            };
-
-            const group = grouped[b.app_id];
-            group.bindings = group.bindings || [];
-            group.bindings.push(b);
-        }
-
-        return Object.values(grouped);
+        return groupBindingsByApp(bindings);
     }
 
     // getChannel computes the right channel, based on if this command is running in the center channel or RHS
@@ -970,7 +968,7 @@ export class AppCommandParser {
     getUserSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
         if (parsed.incomplete.trim().length === 0) {
             return [{
-                Complete: '',
+                Complete: ' @',
                 Suggestion: '@',
                 Description: parsed.field?.description || '',
                 Hint: parsed.field?.hint || '',
@@ -985,7 +983,7 @@ export class AppCommandParser {
     getChannelSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
         if (parsed.incomplete.trim().length === 0) {
             return [{
-                Complete: '',
+                Complete: ' ~',
                 Suggestion: '~',
                 Description: parsed.field?.description || '',
                 Hint: parsed.field?.hint || '',

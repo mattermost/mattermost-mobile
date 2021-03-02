@@ -11,6 +11,7 @@ import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
+import {AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
 
 type Props = {
     bindings: AppBinding[],
@@ -20,7 +21,7 @@ type Props = {
     closeWithAnimation: () => void,
     shouldProcessApps: boolean,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => void
+        doAppCall: (call: AppCall, intl: any) => Promise<{error?: Error}>
     }
 }
 
@@ -64,17 +65,17 @@ type OptionProps = {
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => void,
+        doAppCall: (call: AppCall, intl: any) => Promise<{error?: Error}>
     },
 }
 
 const Option = injectIntl((props: OptionProps) => {
-    const onPress = () => {
+    const onPress = async () => {
         const {closeWithAnimation, post} = props;
 
-        // TODO consider handling result here
-        props.actions.doAppCall({
+        const {error} = await props.actions.doAppCall({
             ...props.binding.call,
+            type: AppCallTypes.SUBMIT,
             url: props.binding.call?.url || '',
             context: {
                 app_id: props.binding.app_id,
@@ -83,6 +84,12 @@ const Option = injectIntl((props: OptionProps) => {
                 user_id: props.currentUser.id,
             },
         }, props.intl);
+
+        if (error) {
+            // TODO: show error
+            // alert(error.message);
+        }
+
         closeWithAnimation();
     };
 

@@ -1,3 +1,6 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
 export type {
     AppCall,
     AppBinding,
@@ -35,6 +38,7 @@ export {
     AppBindingLocations,
     AppCallTypes,
     AppFieldTypes,
+    AppCallResponseTypes,
 } from '@mm-redux/constants/apps';
 
 export {getAppBindings} from '@mm-redux/selectors/entities/apps';
@@ -52,4 +56,4 @@ export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
 
 export const getExecuteSuggestionDescription = (): string => {
     return 'Select this option to execute the command.';
-}
+};

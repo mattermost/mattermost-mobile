@@ -4,8 +4,9 @@
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import AppCommandParser from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 import {AppCallTypes} from '@mm-redux/constants/apps';
+
+import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 
 import {doAppCall} from '@actions/apps';
 
@@ -32,19 +33,15 @@ export function executeCommand(message, channelId, rootId) {
         const cmd = msg.substring(0, cmdLength).toLowerCase();
         msg = cmd + msg.substring(cmdLength, msg.length);
 
-        const parser = new AppCommandParser(args.root_id, args.channel_id);
+        const parser = new AppCommandParser(null, args.root_id, args.channel_id);
         if (parser.isAppCommand(msg)) {
-            const call = await parser.composeCallFromCommandString(message);
+            const call = await parser.composeCallFromCommand(message);
             if (!call) {
                 return {error: new Error('Error submitting command')};
             }
 
             call.type = AppCallTypes.SUBMIT;
-            try {
-                return dispatch(doAppCall(call));
-            } catch (err) {
-                return {error: err};
-            }
+            return dispatch(doAppCall(call));
         }
 
         const {data, error} = await dispatch(executeCommandService(msg, args));

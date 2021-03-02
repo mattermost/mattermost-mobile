@@ -18,6 +18,7 @@ import {
     AppCommandParser,
     ParseState,
     ParsedCommand,
+    groupBindingsByApp,
 } from './app_command_parser';
 
 import {
@@ -216,12 +217,15 @@ describe('AppCommandParser', () => {
 
         table.forEach((tc) => {
             test(tc.title, async () => {
+                let bindings = definitions[0].bindings as AppBinding[];
+                bindings = groupBindingsByApp(bindings);
+
                 let a = new ParsedCommand(tc.command, parser);
-                a = await a.matchBinding(definitions, true);
+                a = await a.matchBinding(bindings, true);
                 checkResult(a, tc.autocomplete || tc.submit);
 
                 let s = new ParsedCommand(tc.command, parser);
-                s = await s.matchBinding(definitions, false);
+                s = await s.matchBinding(bindings, false);
                 checkResult(s, tc.submit);
             });
         });
@@ -416,13 +420,16 @@ describe('AppCommandParser', () => {
 
         table.forEach((tc) => {
             test(tc.title, async () => {
+                let bindings = definitions[0].bindings as AppBinding[];
+                bindings = groupBindingsByApp(bindings);
+
                 let a = new ParsedCommand(tc.command, parser);
-                a = await a.matchBinding(definitions, true);
+                a = await a.matchBinding(bindings, true);
                 a = a.parseForm(true);
                 checkResult(a, tc.autocomplete || tc.submit);
 
                 let s = new ParsedCommand(tc.command, parser);
-                s = await s.matchBinding(definitions, false);
+                s = await s.matchBinding(bindings, false);
                 s = s.parseForm(false);
                 checkResult(s, tc.submit);
             });

@@ -105,7 +105,7 @@ describe('components/autocomplete/slash_suggestion', () => {
                 IconData: '',
                 Suggestion: '/thetrigger',
             },
-        ]
+        ];
         expect(wrapper.state('dataSource')).toEqual(expected);
     });
 
@@ -123,12 +123,12 @@ describe('components/autocomplete/slash_suggestion', () => {
         const expected: AutocompleteSuggestion[] = [
             {
                 Complete: 'jira',
-                Description: 'Interact with Jira',
-                Hint: 'Jira hint',
-                IconData: 'Jira icon',
+                Description: '',
+                Hint: '',
+                IconData: '',
                 Suggestion: '/jira',
             },
-        ]
+        ];
         expect(wrapper.state('dataSource')).toEqual(expected);
     });
 
@@ -149,8 +149,6 @@ describe('components/autocomplete/slash_suggestion', () => {
         };
 
         const store = await makeStore(definitions);
-        // reduxStore.getState.mockImplementation(store.getState);
-        // ReduxStore.redux.getState = store.getState;
 
         Store.redux = store;
 
@@ -160,9 +158,9 @@ describe('components/autocomplete/slash_suggestion', () => {
         let expected: AutocompleteSuggestion[] = [
             {
                 Complete: 'jira',
-                Description: 'Interact with Jira',
-                Hint: 'Jira hint',
-                IconData: 'Jira icon',
+                Description: '',
+                Hint: '',
+                IconData: '',
                 Suggestion: '/jira',
             },
             {
@@ -179,15 +177,15 @@ describe('components/autocomplete/slash_suggestion', () => {
                 IconData: '',
                 Suggestion: '/other',
             },
-        ]
+        ];
         expect(wrapper.state('dataSource')).toEqual(expected);
 
         expected = [
             {
                 Complete: 'jira',
-                Description: 'Interact with Jira',
-                Hint: 'Jira hint',
-                IconData: 'Jira icon',
+                Description: '',
+                Hint: '',
+                IconData: '',
                 Suggestion: '/jira',
             },
             {
@@ -197,7 +195,7 @@ describe('components/autocomplete/slash_suggestion', () => {
                 IconData: '',
                 Suggestion: '/jiro',
             },
-        ]
+        ];
 
         wrapper.setProps({value: '/jir'});
         expect(wrapper.state('dataSource')).toEqual(expected);
@@ -209,7 +207,6 @@ describe('components/autocomplete/slash_suggestion', () => {
         };
 
         const store = await makeStore(definitions);
-        // ReduxStore.redux.getState = store.getState;
 
         Store.redux = store;
 

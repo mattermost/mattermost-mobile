@@ -105,11 +105,9 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
 
             this.showBaseCommands(nextValue, nextCommands, prevProps.channelId, prevProps.rootId);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-
             // If this is an app command, then hand it off to the app command parser.
             if (this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
                 this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
-                return;
             } else if (nextSuggestions === prevProps.suggestions) {
                 const args = {
                     channel_id: prevProps.channelId,
@@ -132,8 +130,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 this.updateSuggestions(matches);
             }
         } else {
-            const v = Client4.getServerVersion();
-            console.log(v);
             this.setActive(false);
         }
     }
@@ -155,7 +151,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
 
     fetchAndShowAppCommandSuggestions = async (pretext: string, channelID: string, rootID?: string) => {
         this.appCommandParser.setChannelContext(channelID, rootID);
-        const suggestions = await this.appCommandParser.getSuggestions(pretext)
+        const suggestions = await this.appCommandParser.getSuggestions(pretext);
         this.updateSuggestions(suggestions);
     }
 

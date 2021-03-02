@@ -10,7 +10,7 @@ import ChannelInfoRow from '../channel_info_row';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
-import {AppsBindings} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
 import {dismissModal} from '@actions/navigation';
 
@@ -64,20 +64,25 @@ type OptionProps = {
 }
 
 const Option = injectIntl((props: OptionProps) => {
-    const onPress = () => {
+    const onPress = async () => {
         const channelId = props.currentChannel.id;
 
-        // TODO Consider handling result here
-        props.actions.doAppCall({
+        const {error} = await props.actions.doAppCall({
             ...props.binding.call,
+            type: AppCallTypes.SUBMIT,
             context: {
                 app_id: props.binding.app_id,
                 channel_id: channelId,
-                location: AppsBindings.CHANNEL_HEADER_ICON,
+                location: AppBindingLocations.CHANNEL_HEADER_ICON,
                 user_id: props.currentUser.id,
             },
             url: props.binding.call?.url || '',
         }, props.intl);
+
+        if (error) {
+            // TODO: show error
+            // alert(error.message);
+        }
 
         dismissModal();
     };
