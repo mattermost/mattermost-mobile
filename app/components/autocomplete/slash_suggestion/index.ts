@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
+import {bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
+import {GlobalState} from '@mm-redux/types/store';
 import {getAutocompleteCommands, getCommandAutocompleteSuggestions} from '@mm-redux/actions/integrations';
 import {getAutocompleteCommandsList, getCommandAutocompleteSuggestionsList} from '@mm-redux/selectors/entities/integrations';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -25,7 +26,7 @@ const mobileCommandsSelector = createSelector(
     },
 );
 
-function mapStateToProps(state) {
+function mapStateToProps(state: GlobalState) {
     return {
         commands: mobileCommandsSelector(state),
         currentTeamId: getCurrentTeamId(state),
@@ -34,7 +35,7 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
             getAutocompleteCommands,

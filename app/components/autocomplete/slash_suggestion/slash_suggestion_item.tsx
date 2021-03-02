@@ -7,9 +7,9 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Theme} from '@mm-redux/types/preferences';
 
-import slashIcon from '@assets/images/autocomplete/slash_command.png';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+const slashIcon = require('@assets/images/autocomplete/slash_command.png');
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {

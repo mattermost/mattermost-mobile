@@ -785,7 +785,7 @@ export class AppCommandParser {
 
     // getParameterSuggestions computes suggestions for positional argument values, flag names, and flag argument values
     getParameterSuggestions = async (parsed: ParsedCommand): Promise<AutocompleteSuggestion[]> => {
-        switch (Number(parsed.state)) {
+        switch (parsed.state) {
         case ParseState.StartParameter: {
             // see if there's a matching positional field
             const positional = parsed.form?.fields?.find((f: AppField) => f.position === parsed.position + 1);
