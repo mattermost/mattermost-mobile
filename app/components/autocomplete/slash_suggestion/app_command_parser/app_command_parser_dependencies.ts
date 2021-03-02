@@ -61,4 +61,4 @@ export const getExecuteSuggestionDescription = (_parsed?: ParsedCommand): string
 import {sendEphemeralPost} from '@actions/views/post';
 export const displayError = (err: string) => {
     sendEphemeralPost(err);
-}
+};
