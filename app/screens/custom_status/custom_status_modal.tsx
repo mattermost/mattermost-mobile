@@ -35,7 +35,6 @@ const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
 
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
-    componentId: string;
     theme: Theme;
     customStatus: UserCustomStatus;
     recentCustomStatuses: UserCustomStatus[];
