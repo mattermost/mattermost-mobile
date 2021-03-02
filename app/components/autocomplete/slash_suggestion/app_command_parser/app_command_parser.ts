@@ -177,6 +177,10 @@ export class ParsedCommand {
             }
 
             case ParseState.CommandSeparator: {
+                if (c === '') {
+                    done = true;
+                }
+
                 switch (c) {
                 case ' ':
                 case '\t': {
@@ -185,8 +189,6 @@ export class ParsedCommand {
                 }
 
                 case '':
-                    done = true;
-                    // eslint-disable-next-line no-fallthrough
                 default: {
                     this.incomplete = '';
                     this.incompleteStart = this.i;
@@ -296,15 +298,12 @@ export class ParsedCommand {
             }
 
             case ParseState.Flag: {
-                switch (c) {
-                case '': {
-                    if (autocompleteMode) {
-                        return this;
-                    }
-
-                    // for submit fall through to whitespace, to handle an (implicit) BOOl value.
+                if (c === '' && autocompleteMode) {
+                    return this;
                 }
-                // eslint-disable-next-line no-fallthrough
+
+                switch (c) {
+                case '':
                 case ' ':
                 case '\t':
                 case '=': {
