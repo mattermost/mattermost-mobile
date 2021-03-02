@@ -41,7 +41,7 @@ export {
     AppCallResponseTypes,
 } from '@mm-redux/constants/apps';
 
-export {getAppBindings} from '@mm-redux/selectors/entities/apps';
+export {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 export {getPost} from '@mm-redux/selectors/entities/posts';
 export {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 export {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';

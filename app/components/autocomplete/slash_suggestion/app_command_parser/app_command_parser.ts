@@ -24,7 +24,7 @@ import {
     AppCallResponseTypes,
     AppCallTypes,
     AppFieldTypes,
-    getAppBindings,
+    getAppsBindings,
     getChannel,
     getCurrentTeamId,
     doAppCall,
@@ -646,7 +646,7 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     getCommandBindings = (): AppBinding[] => {
-        const bindings = getAppBindings(this.store.getState(), AppBindingLocations.COMMAND);
+        const bindings = getAppsBindings(this.store.getState(), AppBindingLocations.COMMAND);
         return groupBindingsByApp(bindings);
     }
 

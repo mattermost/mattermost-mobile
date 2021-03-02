@@ -68,7 +68,7 @@ export type AppCall = {
 
 export type AppCallResponseType = string;
 
-export type AppCallResponse<Res = {}> = {
+export type AppCallResponse<Res = unknown> = {
     type: AppCallResponseType;
     markdown?: string;
     data?: Res;
@@ -180,20 +180,14 @@ export type AutocompleteSuggestionWithComplete = AutocompleteSuggestion & {
 
 export type AutocompleteElement = AppField;
 export type AutocompleteStaticSelect = AutocompleteElement & {
-    options: Array<{
-        label: string;
-        value: string;
-        hint?: string;
-    }>;
+    options: AppSelectOption[];
 };
 
-export type AutocompleteDynamicSelect = AutocompleteElement & {
-    call: AppCall;
-};
+export type AutocompleteDynamicSelect = AutocompleteElement;
 
-export type AutocompleteUserSelect = AutocompleteElement & {}
+export type AutocompleteUserSelect = AutocompleteElement;
 
-export type AutocompleteChannelSelect = AutocompleteElement & {}
+export type AutocompleteChannelSelect = AutocompleteElement;
 
 export type AppLookupCallValues = {
     user_input: string;

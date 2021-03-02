@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Alert} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 
 import Separator from '@screens/channel_info/separator';
@@ -87,8 +88,8 @@ const Option = injectIntl((props: OptionProps) => {
         }, props.intl);
 
         if (res.error) {
-            // TODO: show error
-            // alert(res.error.message);
+            Alert.alert(res.error);
+            return;
         }
 
         dismissModal();
