@@ -1,6 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import { MM_TABLES } from '@constants/database';
+import { Q } from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+
+import App from '@typings/database/app';
+import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactory,
     RawApp,
@@ -12,23 +18,18 @@ import {
     RawSystem,
     RawTermsOfService,
 } from '@typings/database/database';
-
-import App from '@typings/database/app';
-import CustomEmoji from '@typings/database/custom_emoji';
 import Global from '@typings/database/global';
-import { MM_TABLES } from '@constants/database';
-import Model from '@nozbe/watermelondb/Model';
-import { OperationType } from './index';
 import Post from '@typings/database/post';
-import { Q } from '@nozbe/watermelondb';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
+import { OperationType } from './index';
 
 const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
 const { CUSTOM_EMOJI, POST, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
 
+// FIXME : review all default values in the field mappings; they should make sense for mandatory fields
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactory} operator
@@ -183,19 +184,20 @@ export const operatePostRecord = async ({ db, optType, value }: DataFactory) => 
     const record = value as RawPost;
 
     const generator = (post: Post) => {
-        post._raw.id = record?.id ?? post.id;
-        post.channelId = record?.channel_id ?? '';
-        post.createAt = record?.create_at ?? 0;
-        post.deleteAt = record?.delete_at ?? 0;
-        post.editAt = record?.edit_at ?? 0;
-        post.isPinned = record?.is_pinned ?? false;
-        post.message = record?.message ?? '';
+        post._raw.id = record?.id;
+        post.channelId = record?.channel_id;
+        post.createAt = record?.create_at;
+        post.deleteAt = record?.delete_at || record?.delete_at === 0 ? record?.delete_at : 0;
+        post.editAt = record?.edit_at;
+        post.isPinned = record!.is_pinned!;
+        post.message = Q.sanitizeLikeString(record?.message);
+        post.userId = record?.user_id;
+        // mandatory fields are above this line
         post.originalId = record?.original_id ?? '';
         post.pendingPostId = record?.pending_post_id ?? '';
         post.previousPostId = record?.prev_post_id ?? '';
         post.rootId = record?.root_id ?? '';
         post.type = record?.type ?? '';
-        post.userId = record?.user_id ?? '';
         post.props = record?.props ?? {};
     };
 
@@ -214,7 +216,7 @@ export const operatePostRecord = async ({ db, optType, value }: DataFactory) => 
  * @param {Database} operatorBase.db
  * @param {OperationType} operatorBase.optType
  * @param {string} operatorBase.tableName
- * @param {any} operatorBase.value
+ * @param {RecordValue} operatorBase.value
  * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */

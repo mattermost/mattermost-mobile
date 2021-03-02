@@ -145,6 +145,44 @@ export type RawPost = {
     };
 };
 
+export type RawChannelMembers = {
+    channel_id: string;
+    explicit_roles: string;
+    last_update_at: number;
+    last_viewed_at: number;
+    mention_count: number;
+    msg_count: number;
+    notify_props: NotifyProps;
+    roles: string;
+    scheme_admin: boolean;
+    scheme_guest: boolean;
+    scheme_user: boolean;
+    user_id: string;
+};
+
+export type ChannelType = 'D' | 'O' | 'G' | 'P';
+
+export type RawChannel = {
+    create_at: number;
+    creator_id: string;
+    delete_at: number;
+    display_name: string;
+    extra_update_at: number;
+    group_constrained: boolean | null;
+    header: string;
+    id: string;
+    last_post_at: number;
+    name: string;
+    props: null;
+    purpose: string;
+    scheme_id: null;
+    shared: null;
+    team_id: string;
+    total_msg_count: number;
+    type: ChannelType;
+    update_at: number;
+};
+
 export type RecordValue =
     | RawApp
     | RawGlobal
