@@ -13,12 +13,12 @@ import {GenericAction} from '@mm-redux/types/actions';
 
 function mapStateToProps(state: GlobalState) {
     const getCustomStatus = makeGetCustomStatus();
-    const currentCustomStatus = getCustomStatus(state) || {};
+    const customStatus = getCustomStatus(state) || {};
     const recentCustomStatuses = getRecentCustomStatuses(state);
     const theme = getTheme(state);
 
     return {
-        customStatus: currentCustomStatus,
+        customStatus,
         recentCustomStatuses,
         theme,
     };

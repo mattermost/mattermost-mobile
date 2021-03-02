@@ -5,7 +5,7 @@ import CustomStatusLabel from '@components/sidebars/settings/custom_status_label
 import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View} from 'react-native-animatable';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
@@ -24,10 +24,14 @@ const CustomStatusSuggestion = (props: Props) => {
 
     const divider = separator ? <View style={style.divider}/> : null;
 
+    const handleClick = useCallback(() => {
+        handleSuggestionClick({emoji, text});
+    }, [handleSuggestionClick, emoji, text]);
+
     return (
         <TouchableOpacity
             testID={'custom_status.status_suggestion'}
-            onPress={() => handleSuggestionClick({emoji, text})}
+            onPress={handleClick}
         >
             <View style={style.container}>
                 <View style={style.iconContainer}>

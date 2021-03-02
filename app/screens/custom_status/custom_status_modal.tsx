@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 import React, {PureComponent} from 'react';
 import {View, Text} from 'react-native';
-
-// @ts-ignore
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import {NavigationComponentProps} from 'react-native-navigation';
+
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
 import {UserCustomStatus} from '@mm-redux/types/users';
@@ -16,7 +17,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {TextInput} from 'react-native-gesture-handler';
 import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {setButtons, dismissModal} from '@actions/navigation';
+import {mergeNavigationOptions, dismissModal} from '@actions/navigation';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -32,7 +33,8 @@ const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
     {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation'},
 ];
 
-type Props = {
+interface Props extends NavigationComponentProps {
+    intl: typeof intlShape;
     componentId: string;
     theme: Theme;
     customStatus: UserCustomStatus;
@@ -49,35 +51,35 @@ type State = {
     text: string;
 }
 
-export default class CustomStatusModal extends PureComponent<Props, State> {
-    static options() {
-        return {
-            topBar: {
-                title: {
-                    text: 'Set a Status',
-                    alignment: 'center',
-                },
-            },
-        };
-    }
-
-    rightButton = {
+class CustomStatusModal extends PureComponent<Props, State> {
+    // TODO: type for rightButton
+    rightButton: any = {
         id: 'update-custom-status',
         enabled: true,
         showAsAction: 'always',
-        text: 'Done',
     };
 
     constructor(props: Props) {
         super(props);
 
+        this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
+
         const buttons = {
             rightButtons: [this.rightButton],
         };
 
-        this.rightButton.color = props.theme.sidebarHeaderTextColor;
+        const options = {
+            topBar: {
+                title: {
+                    text: props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'}),
+                    alignment: 'center',
+                },
+                ...buttons,
+            },
+        };
 
-        setButtons(props.componentId, buttons);
+        mergeNavigationOptions(props.componentId, options);
 
         this.state = {
             emoji: props.customStatus.emoji,
@@ -135,7 +137,12 @@ export default class CustomStatusModal extends PureComponent<Props, State> {
             <>
                 <View style={style.separator}/>
                 <View >
-                    <Text style={style.title}>{'RECENT'}</Text>
+                    <Text style={style.title}>
+                        {this.props.intl.formatMessage({
+                            id: 'custom_status.suggestions.recent_title',
+                            defaultMessage: 'RECENT',
+                        })}
+                    </Text>
                     <View style={style.block}>
                         {recentStatuses}
                     </View>
@@ -156,7 +163,7 @@ export default class CustomStatusModal extends PureComponent<Props, State> {
             filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
             map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
                 <CustomStatusSuggestion
-                    key={index}
+                    key={status.text}
                     handleSuggestionClick={this.handleSuggestionClick}
                     emoji={status.emoji}
                     text={status.text}
@@ -173,7 +180,12 @@ export default class CustomStatusModal extends PureComponent<Props, State> {
             <>
                 <View style={style.separator}/>
                 <View>
-                    <Text style={style.title}>{'SUGGESTIONS'}</Text>
+                    <Text style={style.title}>
+                        {this.props.intl.formatMessage({
+                            id: 'custom_status.suggestions.title',
+                            defaultMessage: 'SUGGESTIONS',
+                        })}
+                    </Text>
                     <View style={style.block}>
                         {customStatusSuggestions}
                     </View>
@@ -187,29 +199,27 @@ export default class CustomStatusModal extends PureComponent<Props, State> {
         const {theme} = this.props;
 
         const style = getStyleSheet(theme);
-        const customStatusEmoji = emoji || text ?
-            (
-                <View style={style.emoji}>
-                    <Emoji
-                        emojiName={emoji || 'speech_balloon'}
-                        size={24}
-                    />
-                </View>
-            ) :
-            (
-                <CompassIcon
-                    name='emoticon-happy-outline'
+        const customStatusEmoji = emoji || text ? (
+            <View style={style.emoji}>
+                <Emoji
+                    emojiName={emoji || 'speech_balloon'}
                     size={24}
-                    style={style.icon}
                 />
-            );
+            </View>
+        ) : (
+            <CompassIcon
+                name='emoticon-happy-outline'
+                size={24}
+                style={style.icon}
+            />
+        );
 
         const customStatusInput = (
             <View style={style.inputContainer}>
                 {customStatusEmoji}
                 <TextInput
                     value={text}
-                    placeholder='Set a Status'
+                    placeholder={this.props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={this.handleTextChange}
                     style={style.input}
@@ -245,6 +255,8 @@ export default class CustomStatusModal extends PureComponent<Props, State> {
         );
     }
 }
+
+export default injectIntl(CustomStatusModal);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const emojiStyle = {
