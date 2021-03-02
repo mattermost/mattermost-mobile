@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {Linking} from 'react-native';
-import {MockStoreEnhanced} from 'redux-mock-store';
 
 import {renderWithReduxIntl} from 'test/testing_library';
 import configureStore from 'test/test_store';
@@ -27,7 +26,7 @@ describe('SSO', () => {
                     },
                 },
             },
-        }) as MockStoreEnhanced;
+        });
         const basicWrapper = renderWithReduxIntl(<SSOComponent {...baseProps}/>, store);
         expect(basicWrapper.queryByTestId('sso.webview')).toBeTruthy();
         expect(basicWrapper.queryByTestId('sso.redirect_url')).toBeFalsy();
@@ -43,7 +42,7 @@ describe('SSO', () => {
                     },
                 },
             },
-        }) as MockStoreEnhanced;
+        });
         const basicWrapper = renderWithReduxIntl(<SSOComponent {...baseProps}/>, store);
         expect(basicWrapper.queryByTestId('sso.webview')).toBeFalsy();
         expect(basicWrapper.queryByTestId('sso.redirect_url')).toBeTruthy();
