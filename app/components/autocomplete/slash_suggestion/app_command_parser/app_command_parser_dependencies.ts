@@ -54,6 +54,7 @@ export const getStore = () => Store.redux;
 
 export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
 
-export const getExecuteSuggestionDescription = (): string => {
+import type {ParsedCommand} from './app_command_parser';
+export const getExecuteSuggestionDescription = (_parsed?: ParsedCommand): string => { // eslint-disable-line @typescript-eslint/no-unused-vars
     return 'Select this option to execute the command.';
 };

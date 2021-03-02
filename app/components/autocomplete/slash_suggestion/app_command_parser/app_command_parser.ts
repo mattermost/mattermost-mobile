@@ -186,7 +186,7 @@ export class ParsedCommand {
 
                 case '':
                     done = true;
-                // eslint-disable-next-line no-fallthrough
+                    // eslint-disable-next-line no-fallthrough
                 default: {
                     this.incomplete = '';
                     this.incompleteStart = this.i;
@@ -238,7 +238,7 @@ export class ParsedCommand {
                 c = this.command[this.i];
             }
 
-            switch (Number(this.state)) {
+            switch (this.state) {
             case ParseState.StartParameter: {
                 switch (c) {
                 case '':
@@ -583,7 +583,7 @@ export class AppCommandParser {
 
         // Add "Execute Current Command" suggestion
         // TODO get full text from SuggestionBox
-        const executableStates = [
+        const executableStates: string[] = [
             ParseState.EndCommand,
             ParseState.CommandSeparator,
             ParseState.StartParameter,
