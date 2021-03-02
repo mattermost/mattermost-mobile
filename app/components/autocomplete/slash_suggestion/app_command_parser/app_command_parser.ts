@@ -542,9 +542,7 @@ export class AppCommandParser {
                 continue;
             }
 
-            if (base[0] !== '/') {
-                base = '/' + base;
-            }
+            base = '/' + base;
             if (base.startsWith(command)) {
                 result.push({
                     Suggestion: base,
@@ -652,7 +650,7 @@ export class AppCommandParser {
         return groupBindingsByApp(bindings);
     }
 
-    // getChannel computes the right channel, based on if this command is running in the center channel or RHS
+    // getChannel gets the channel in which the user is typing the command
     getChannel = (): Channel | null => {
         const state = this.store.getState();
         return getChannel(state, this.channelID);
@@ -672,10 +670,7 @@ export class AppCommandParser {
                 continue;
             }
 
-            if (base[0] !== '/') {
-                base = '/' + base;
-            }
-
+            base = '/' + base;
             if (command.startsWith(base + ' ')) {
                 return true;
             }
