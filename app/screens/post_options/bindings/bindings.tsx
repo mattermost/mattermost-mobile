@@ -11,7 +11,7 @@ import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
-import {AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppCallTypes} from '@mm-redux/constants/apps';
 
 type Props = {
     bindings: AppBinding[],

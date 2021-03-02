@@ -3,7 +3,7 @@
 
 import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
-import {AppCallResponse, AppCall, AppForm} from '@mm-redux/types/apps';
+import {AppCallResponse, AppCall} from '@mm-redux/types/apps';
 import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {sendEphemeralPost} from './views/post';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';

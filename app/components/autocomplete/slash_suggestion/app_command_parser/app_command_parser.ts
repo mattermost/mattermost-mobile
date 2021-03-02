@@ -3,6 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import keyMirror from '@mm-redux/utils/key_mirror';
+
 import {
     AppCall,
     AppBinding,
@@ -37,23 +39,23 @@ export type Store = {
     getState: () => GlobalState;
 }
 
-export enum ParseState {
-    Start = 0,
-    Command,
-    EndCommand,
-    CommandSeparator,
-    StartParameter,
-    ParameterSeparator,
-    Flag1,
-    Flag,
-    FlagValueSeparator,
-    StartValue,
-    NonspaceValue,
-    QuotedValue,
-    TickValue,
-    EndValue,
-    Error,
-}
+export const ParseState = keyMirror({
+    Start: null,
+    Command: null,
+    EndCommand: null,
+    CommandSeparator: null,
+    StartParameter: null,
+    ParameterSeparator: null,
+    Flag1: null,
+    Flag: null,
+    FlagValueSeparator: null,
+    StartValue: null,
+    NonspaceValue: null,
+    QuotedValue: null,
+    TickValue: null,
+    EndValue: null,
+    Error: null,
+});
 
 // This will go away once each App's base command is defined separately
 export const groupBindingsByApp = (bindings: AppBinding[]): AppBinding[] => {
@@ -80,7 +82,7 @@ interface FormsCache {
 }
 
 export class ParsedCommand {
-    state: ParseState = ParseState.Start;
+    state: string = ParseState.Start;
     command: string;
     i = 0;
     incomplete = '';
@@ -123,7 +125,7 @@ export class ParsedCommand {
                 c = this.command[this.i];
             }
 
-            switch (Number(this.state)) {
+            switch (this.state) {
             case ParseState.Start: {
                 if (c !== '/') {
                     return this.asError('command must start with a /');
