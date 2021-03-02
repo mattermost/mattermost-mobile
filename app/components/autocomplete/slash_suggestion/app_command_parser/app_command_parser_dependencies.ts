@@ -47,7 +47,6 @@ export {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channe
 export {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 export {doAppCall} from '@actions/apps';
-export {sendEphemeralPost} from '@actions/views/post';
 
 import Store from '@store/store';
 export const getStore = () => Store.redux;
@@ -58,3 +57,8 @@ import type {ParsedCommand} from './app_command_parser';
 export const getExecuteSuggestionDescription = (_parsed?: ParsedCommand): string => { // eslint-disable-line @typescript-eslint/no-unused-vars
     return 'Select this option to execute the command.';
 };
+
+import {sendEphemeralPost} from '@actions/views/post';
+export const displayError = (err: string) => {
+    sendEphemeralPost(err);
+}

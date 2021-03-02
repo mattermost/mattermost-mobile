@@ -28,10 +28,10 @@ import {
     getChannel,
     getCurrentTeamId,
     doAppCall,
-    sendEphemeralPost,
     getStore,
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
     getExecuteSuggestionDescription,
+    displayError,
 } from './app_command_parser_dependencies';
 
 export type Store = {
@@ -755,9 +755,7 @@ export class AppCommandParser {
         if (err.message) {
             errStr = err.message;
         }
-        sendEphemeralPost(errStr, '', '');
-
-        // TODO display error under the command line
+        displayError(errStr);
     }
 
     // getSuggestionsForSubCommands returns suggestions for a subcommand's name
