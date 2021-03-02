@@ -27,7 +27,7 @@ type Props = {
     }
 }
 
-const Bindings = (props: Props) => {
+const Bindings: React.FC<Props> = (props: Props) => {
     if (!props.appsEnabled) {
         return null;
     }

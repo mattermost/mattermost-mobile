@@ -239,7 +239,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.incomplete).toBe('epic2');
                     expect(parsed.incompleteStart).toBe(75);
                     expect(parsed.values?.project).toBe('P 1');
@@ -250,7 +250,7 @@ describe('AppCommandParser', () => {
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.values?.project).toBe('P 1');
                     expect(parsed.values?.epic).toBe('epic2');
                     expect(parsed.values?.summary).toBe('SUM MA RY');
@@ -263,7 +263,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.incomplete).toBe('epic2');
                     expect(parsed.incompleteStart).toBe(75);
                     expect(parsed.values?.project).toBe('P 1');
@@ -274,7 +274,7 @@ describe('AppCommandParser', () => {
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.values?.project).toBe('P 1');
                     expect(parsed.values?.epic).toBe('epic2');
                     expect(parsed.values?.summary).toBe('SUM MA RY');
@@ -287,7 +287,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.incomplete).toBe('M');
                     expect(parsed.incompleteStart).toBe(65);
                     expect(parsed.values?.project).toBe('KT');
@@ -296,7 +296,7 @@ describe('AppCommandParser', () => {
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.values?.epic).toBe('M');
                 }},
             },
@@ -307,7 +307,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('MM-123');
                     expect(parsed.incompleteStart).toBe(33);
                     expect(parsed.values?.project).toBe('P 1');
@@ -316,7 +316,7 @@ describe('AppCommandParser', () => {
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.values?.project).toBe('P 1');
                     expect(parsed.values?.issue).toBe('MM-123');
                 }},
@@ -327,7 +327,7 @@ describe('AppCommandParser', () => {
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.StartParameter);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('');
                     expect(parsed.incompleteStart).toBe(17);
                     expect(parsed.values).toEqual({});
@@ -339,14 +339,14 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.FlagValueSeparator);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.incomplete).toBe('');
                     expect(parsed.values).toEqual({});
                 }},
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('create');
-                    expect(parsed.form?.call?.url).toBe('/create-issue');
+                    expect(parsed.form?.call?.path).toBe('/create-issue');
                     expect(parsed.incomplete).toBe('');
                     expect(parsed.values).toEqual({
                         summary: '',
@@ -359,7 +359,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.TickValue);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('P 1');
                     expect(parsed.incompleteStart).toBe(27);
                     expect(parsed.values?.project).toBe(undefined);
@@ -373,7 +373,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.QuotedValue);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('P 1');
                     expect(parsed.incompleteStart).toBe(27);
                     expect(parsed.values?.project).toBe(undefined);
@@ -387,7 +387,7 @@ describe('AppCommandParser', () => {
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('P 1');
                     expect(parsed.incompleteStart).toBe(27);
                     expect(parsed.values?.project).toBe(undefined);
@@ -396,7 +396,7 @@ describe('AppCommandParser', () => {
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.EndValue);
                     expect(parsed.binding?.label).toBe('view');
-                    expect(parsed.form?.call?.url).toBe('/view-issue');
+                    expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.values?.project).toBe('P 1');
                     expect(parsed.values?.issue).toBe(undefined);
                 }},

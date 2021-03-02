@@ -12,7 +12,7 @@ export type Props = {
     form?: AppForm;
     call?: AppCall;
     actions: {
-        doAppCall: (call: AppCall) => Promise<{data: AppCallResponse}>;
+        doAppCall: (call: AppCall) => Promise<{data: AppCallResponse<FormResponseData>}>;
     };
     theme: Theme;
     componentId: string;

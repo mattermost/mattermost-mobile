@@ -102,7 +102,7 @@ export const viewCommand: AppBinding = {
     description: 'View details of a Jira issue',
     form: {
         call: {
-            url: '/view-issue',
+            path: '/view-issue',
         },
         fields: [
             {
@@ -132,7 +132,7 @@ export const createCommand: AppBinding = {
     description: 'Create a new Jira issue',
     form: {
         call: {
-            url: '/create-issue',
+            path: '/create-issue',
         },
         fields: [
             {

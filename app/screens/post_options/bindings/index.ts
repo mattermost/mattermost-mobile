@@ -2,15 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
+import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
+import {AppCall} from '@mm-redux/types/apps';
+import {ActionResult, GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+
 import {doAppCall} from '@actions/apps';
-import {bindActionCreators, Dispatch} from 'redux';
 import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
@@ -28,9 +31,13 @@ function mapStateToProps(state: GlobalState) {
     };
 }
 
-function mapDispatchToProps(dispatch: Dispatch) {
+type Actions = {
+    doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>;
+}
+
+function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
-        actions: bindActionCreators({
+        actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
         }, dispatch),
     };
