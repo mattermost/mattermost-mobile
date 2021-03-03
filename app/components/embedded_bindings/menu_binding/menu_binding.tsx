@@ -9,7 +9,7 @@ import {PostActionOption} from '@mm-redux/types/integration_actions';
 import {Post} from '@mm-redux/types/posts';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
 
 type Props = {
     actions: {
@@ -53,6 +53,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
         } = this.props;
 
         const call: AppCall = {
+            type: AppCallTypes.SUBMIT,
             path: binding.call?.path || '',
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,

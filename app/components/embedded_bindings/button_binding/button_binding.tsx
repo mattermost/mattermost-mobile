@@ -13,7 +13,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
 
 type Props = {
     actions: {
@@ -31,6 +31,7 @@ export default class ButtonBinding extends PureComponent<Props> {
     handleActionPress = preventDoubleTap(() => {
         const {binding, post, userId} = this.props;
         const call: AppCall = {
+            type: AppCallTypes.SUBMIT,
             path: binding.call?.path || '',
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
