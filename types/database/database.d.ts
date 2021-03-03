@@ -107,6 +107,7 @@ export type RawFile = {
 };
 
 export type RawReaction = {
+    id?: string;
     create_at: number;
     delete_at: number;
     emoji_name: string;
@@ -194,7 +195,12 @@ export type RawChannel = {
     update_at: number;
 };
 
-export type RawPostsInThread = { latest?: number; earliest: number; post_id: string; id?: string };
+export type RawPostsInThread = {
+    id?: string;
+    earliest: number;
+    latest?: number;
+    post_id: string;
+};
 
 export type RecordValue =
     | RawApp

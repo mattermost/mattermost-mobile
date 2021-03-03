@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import { MM_TABLES } from '@constants/database';
-import { Q, Database } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import App from '@typings/database/app';
@@ -197,7 +197,6 @@ export const operatePostRecord = async ({ database, optType, value }: DataFactor
         post.isPinned = record!.is_pinned!;
         post.message = Q.sanitizeLikeString(record?.message);
         post.userId = record?.user_id;
-        // mandatory fields are above this line
         post.originalId = record?.original_id ?? '';
         post.pendingPostId = record?.pending_post_id ?? '';
         post.previousPostId = record?.prev_post_id ?? '';
@@ -212,8 +211,8 @@ export const operatePostRecord = async ({ database, optType, value }: DataFactor
 export const operatePostInThreadRecord = async ({ database, optType, value }: DataFactory) => {
     const record = value as RawPostsInThread;
 
-    // NOTE: We are overwriting the id field as this is a client-side only table
     const generator = (postsInThread: PostsInThread) => {
+        postsInThread._raw.id = postsInThread.id;
         postsInThread.postId = record.post_id;
         postsInThread.earliest = record.earliest;
         postsInThread.latest = record.latest!;
@@ -225,9 +224,8 @@ export const operatePostInThreadRecord = async ({ database, optType, value }: Da
 export const operateReactionRecord = async ({ database, optType, value }: DataFactory) => {
     const record = value as RawReaction;
 
-    // NOTE: delete_at and update_at fields are being used on our Reaction table schema.
-    // The id field is also not being overwritten as we don't have a value coming from the server for this field.
     const generator = (reaction: Reaction) => {
+        reaction._raw.id = reaction.id;
         reaction.userId = record.user_id;
         reaction.postId = record.post_id;
         reaction.emojiName = record.emoji_name;
@@ -256,6 +254,7 @@ export const operateReactionRecord = async ({ database, optType, value }: DataFa
 const operateBaseRecord = async ({ database, optType, tableName, value, generator }: DataFactory) => {
     // We query first to see if we have a record on that entity with the current value.id
     const appRecord = (await database.collections.get(tableName!).query(Q.where('id', value.id!)).fetch()) as Model[];
+
     const isPresent = appRecord.length > 0;
 
     if ((isPresent && optType === OperationType.CREATE) || (isPresent && optType === OperationType.UPDATE)) {

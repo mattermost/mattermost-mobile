@@ -172,6 +172,55 @@ class DataOperator {
         return null;
     };
 
+    sanitizeReactions = async ({
+        database,
+        post_id,
+        rawReactions,
+    }: {
+        database: DatabaseInstance;
+        post_id: string;
+        rawReactions: RawReaction[];
+    }) => {
+        const reactions = (await database!.collections
+            .get(REACTION)
+            .query(Q.where('post_id', post_id))
+            .fetch()) as Reaction[];
+
+        if (reactions?.length < 1) {
+            // We do not have existing reactions bearing this post_id; thus we CREATE them.
+            return { createReactions: rawReactions, deleteReactions: [] };
+        }
+
+        // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
+        const similarObjects = [] as Reaction[];
+
+        const createReactions = [] as RawReaction[];
+
+        for (let i = 0; i < rawReactions.length; i++) {
+            const rawReaction = rawReactions[i] as RawReaction;
+
+            // Do we have a similar value of rawReaction in the REACTION table?
+            const idxPresent = reactions.findIndex((value) => {
+                return value.userId === rawReaction.user_id && value.emojiName === rawReaction.emoji_name;
+            });
+
+            if (idxPresent === -1) {
+                // So, we don't have a similar Reaction object.  That one is new...so we'll create it
+                createReactions.push(rawReaction);
+            } else {
+                // we have a similar object in both reactions and rawReactions; we'll pop it out from both arrays
+                similarObjects.push(reactions[idxPresent]);
+            }
+        }
+
+        // finding out elements to delete using array subtract
+        const deleteReactions = reactions
+            .filter((reaction) => !similarObjects.includes(reaction))
+            .map((outCast) => outCast.prepareDestroyPermanently());
+
+        return { createReactions, deleteReactions };
+    };
+
     handleReactions = async ({
         reactions,
         prepareRowsOnly,
@@ -181,20 +230,26 @@ class DataOperator {
     }) => {
         const database = await this.getDatabase(REACTION);
         if (database) {
+            const { createReactions, deleteReactions } = await this.sanitizeReactions({
+                database,
+                post_id: reactions[0].post_id,
+                rawReactions: reactions,
+            });
+
             const postReactions = ((await this.prepareBaseData({
                 database,
                 optType: OperationType.CREATE,
                 recordOperator: operateReactionRecord,
                 tableName: REACTION,
-                values: reactions,
+                values: createReactions,
             })) as unknown) as Reaction[];
 
             if (prepareRowsOnly) {
-                return postReactions;
+                return [...postReactions, ...deleteReactions];
             }
 
             if (postReactions?.length) {
-                await this.batchOperations({ database, models: postReactions });
+                await this.batchOperations({ database, models: [...postReactions, ...deleteReactions] });
             }
         } else {
             // TODO: throw no database exception
@@ -214,54 +269,51 @@ class DataOperator {
         //     // TODO []: from all the received arrays of prepareUpdate|Create, batch all of them
 
         const database = await this.getDatabase(tableName);
+
         const batch = [];
+        // const files = [];
         const postsInThread = [];
-        const files = [];
         const reactions: RawReaction[] = [];
 
-        if (values.length > 0) {
-            // Prepares records for batch processing onto the 'Post' entity for the server schema
-            const posts = await this.prepareBaseData({
-                database,
-                optType,
-                tableName,
-                values,
-                recordOperator: operatePostRecord,
-            });
+        // Prepares records for batch processing onto the 'Post' entity for the server schema
+        const posts = ((await this.prepareBaseData({
+            database,
+            optType,
+            tableName,
+            values,
+            recordOperator: operatePostRecord,
+        })) as unknown) as Post[];
 
-            // Appends the processed records into the final batch array
-            batch.push(posts);
+        // Appends the processed records into the final batch array
+        batch.push([...posts]);
 
-            for (let i = 0; i < values.length; i++) {
-                const post = values[i] as RawPost;
-                // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
-                if (post.id === post.root_id) {
-                    postsInThread.push({
-                        earliest: post.create_at,
-                        post_id: post.id,
-                    });
-                }
+        for (let i = 0; i < values.length; i++) {
+            const post = values[i] as RawPost;
+            // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
+            if (post.id === post.root_id) {
+                postsInThread.push({
+                    earliest: post.create_at,
+                    post_id: post.id,
+                });
+            }
 
-                // Reaction handler
-                if (post?.metadata?.reactions) {
-                    reactions.concat(post.metadata.reactions);
-                }
-                // TODO:  call for metadata
+            // Extracts Reaction on post
+            if (post?.metadata?.reactions) {
+                reactions.concat(post.metadata.reactions);
+            }
+            // TODO:  call for metadata
+            // TODO: call for file operator
+        } // end of for loop
 
-                // TODO: call for file operator
-            } // end of for loop
+        // calls handler for Reactions
+        const postReactions = (await this.handleReactions({ reactions, prepareRowsOnly: true })) as Reaction[];
+        batch.push(...postReactions);
 
-            // calls handler for Reactions
-            const postReactions = await this.handleReactions({ reactions, prepareRowsOnly: true });
+        // TODO: call batch operations
+        // await this.batchOperations({ database, models: batch });
 
-            // TODO: call batch operations
-            // await this.batchOperations({ database, models: batch });
-
-            // LAST :: calls handler for PostsInThread
-            await this.handlePostsInThreadData(postsInThread);
-        } else {
-            // TODO : throw ??
-        }
+        // LAST :: calls handler for PostsInThread
+        await this.handlePostsInThreadData(postsInThread);
     };
 
     /**
