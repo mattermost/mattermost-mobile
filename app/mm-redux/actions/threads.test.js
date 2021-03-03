@@ -9,17 +9,14 @@ import {Client4} from '@mm-redux/client';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 
-const ID_PAD = 'a0b1c2z9n7';
-
 /**
  * Returns a mock thread with 2 participants and 5 replies.
  */
 function mockUserThread({
-    uniq = 0,
-    userId = `uid${uniq}`.padEnd(26, ID_PAD),
-    otherUserId = `uid${uniq + 1}`.padEnd(26, ID_PAD),
-    channelId = `cid${uniq}`.padEnd(26, ID_PAD),
-    postId = `pid${uniq}`.padEnd(26, ID_PAD),
+    userId = TestHelper.generateId(),
+    otherUserId = TestHelper.generateId(),
+    channelId = TestHelper.generateId(),
+    postId = TestHelper.generateId(),
 } = {}) {
     const threadId = postId;
 
@@ -69,8 +66,8 @@ describe('Actions.Threads', () => {
         await TestHelper.initBasic(Client4);
     });
 
-    const currentTeamId = 'currentTeamId'.padEnd(26, ID_PAD);
-    const currentUserId = 'currentUserId'.padEnd(26, ID_PAD);
+    const currentTeamId = TestHelper.generateId();
+    const currentUserId = TestHelper.generateId();
 
     beforeEach(async () => {
         store = await configureStore({
