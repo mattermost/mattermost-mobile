@@ -26,6 +26,7 @@ export default class ClockDisplay extends ClockDisplayBase {
             <SafeAreaView
                 edges={['left', 'right']}
                 style={style.container}
+                testID='clock_display_settings.screen'
             >
                 <StatusBar/>
                 <View style={style.wrapper}>
@@ -46,6 +47,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionType='select'
                             actionValue='false'
                             selected={newMilitaryTime === 'false'}
+                            testID='clock_display_settings.normal_clock.action'
                             theme={theme}
                         />
                         <View style={style.divider}/>
@@ -60,6 +62,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionType='select'
                             actionValue='true'
                             selected={newMilitaryTime === 'true'}
+                            testID='clock_display_settings.military_clock.action'
                             theme={theme}
                         />
                     </Section>

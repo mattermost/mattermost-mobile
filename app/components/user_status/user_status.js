@@ -50,6 +50,7 @@ export default class UserStatus extends PureComponent {
             <CompassIcon
                 name={iconName}
                 style={{fontSize: size, color: iconColor}}
+                testID={`user_status.icon.${status}`}
             />
         );
     }

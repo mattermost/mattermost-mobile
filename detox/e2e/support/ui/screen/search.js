@@ -41,11 +41,11 @@ class SearchScreen {
     clearButton = SearchBar.getClearButton(this.testID.searchScreenPrefix);
 
     getRecentSearchItem = (searchTerms) => {
-        return RecentItem.getRecentItem(searchTerms);
+        return RecentItem.getRecentSearchItem(searchTerms);
     }
 
-    getSearchResultPostItem = (postId, text) => {
-        return SearchResultPostScreen.getPost(postId, text);
+    getSearchResultPostItem = (postId, text, postProfileOptions = {}) => {
+        return SearchResultPostScreen.getPost(postId, text, postProfileOptions);
     }
 
     getSearchResultPostMessageAtIndex = (index) => {
