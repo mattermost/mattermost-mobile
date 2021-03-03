@@ -59,28 +59,6 @@ interface FileInfo {
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 
-interface PostImage {
-    height: number;
-    width: number;
-    format?: string;
-    frame_count?: number;
-}
-
-interface Reaction {
-    user_id: string;
-    post_id: string;
-    emoji_name: string;
-    create_at: number;
-}
-
-interface PostMetadataTypes {
-    embeds: Array<PostEmbed>;
-    emojis: Array<CustomEmoji>;
-    files: Array<FileInfo>;
-    images: Dictionary<PostImage>;
-    reactions: Array<Reaction>;
-}
-
 type PostType =
     | 'system_add_remove'
     | 'system_add_to_channel'

@@ -14,6 +14,7 @@ import {
     RawGlobal,
     RawPost,
     RawPostsInThread,
+    RawReaction,
     RawRole,
     RawServers,
     RawSystem,
@@ -22,6 +23,7 @@ import {
 import Global from '@typings/database/global';
 import Post from '@typings/database/post';
 import PostsInThread from '@typings/database/posts_in_thread';
+import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
@@ -29,7 +31,7 @@ import TermsOfService from '@typings/database/terms_of_service';
 import { OperationType } from './index';
 
 const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
-const { CUSTOM_EMOJI, POST, POSTS_IN_THREAD, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
+const { CUSTOM_EMOJI, POST, POSTS_IN_THREAD, REACTION, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
 
 // FIXME : review all default values in the field mappings; they should make sense for mandatory fields
 /**
@@ -207,9 +209,10 @@ export const operatePostRecord = async ({ database, optType, value }: DataFactor
     return operateBaseRecord({ database, optType, tableName: POST, value, generator });
 };
 
-export const operatePostInThread = async ({ database, optType, value }: DataFactory) => {
+export const operatePostInThreadRecord = async ({ database, optType, value }: DataFactory) => {
     const record = value as RawPostsInThread;
 
+    // NOTE: We are overwriting the id field as this is a client-side only table
     const generator = (postsInThread: PostsInThread) => {
         postsInThread.postId = record.post_id;
         postsInThread.earliest = record.earliest;
@@ -217,6 +220,21 @@ export const operatePostInThread = async ({ database, optType, value }: DataFact
     };
 
     return operateBaseRecord({ database, optType, tableName: POSTS_IN_THREAD, value, generator });
+};
+
+export const operateReactionRecord = async ({ database, optType, value }: DataFactory) => {
+    const record = value as RawReaction;
+
+    // NOTE: delete_at and update_at fields are being used on our Reaction table schema.
+    // The id field is also not being overwritten as we don't have a value coming from the server for this field.
+    const generator = (reaction: Reaction) => {
+        reaction.userId = record.user_id;
+        reaction.postId = record.post_id;
+        reaction.emojiName = record.emoji_name;
+        reaction.createAt = record.create_at;
+    };
+
+    return operateBaseRecord({ database, optType, tableName: REACTION, value, generator });
 };
 
 /**

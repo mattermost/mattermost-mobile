@@ -4,7 +4,6 @@
 import { Q } from '@nozbe/watermelondb';
 
 import { MM_TABLES } from '@constants/database';
-import Model from '@nozbe/watermelondb/Model';
 import {
     BatchOperations,
     DatabaseInstance,
@@ -12,9 +11,12 @@ import {
     HandleIsolatedEntityData,
     RawPost,
     RawPostsInThread,
+    RawReaction,
     RecordValue,
 } from '@typings/database/database';
 import Post from '@typings/database/post';
+import PostsInThread from '@typings/database/posts_in_thread';
+import Reaction from '@typings/database/reaction';
 
 import DatabaseManager from '../database_manager';
 
@@ -22,12 +24,13 @@ import {
     operateAppRecord,
     operateCustomEmojiRecord,
     operateGlobalRecord,
+    operatePostInThreadRecord,
     operatePostRecord,
+    operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
-    operatePostInThread,
 } from './operators';
 
 export enum OperationType {
@@ -46,9 +49,7 @@ export enum IsolatedEntities {
     TERMS_OF_SERVICE = 'TermsOfService',
 }
 
-const { POST, POSTS_IN_THREAD } = MM_TABLES.SERVER;
-
-// FIXME : handlers should accept only array of values
+const { POST, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
 
 class DataOperator {
     private defaultDatabase: DatabaseInstance;
@@ -136,10 +137,10 @@ class DataOperator {
             const postInThreadRecords = ((await this.prepareBaseData({
                 database,
                 optType: OperationType.CREATE,
+                recordOperator: operatePostInThreadRecord,
                 tableName: POSTS_IN_THREAD,
-                recordOperator: operatePostInThread,
                 values: rawPostsInThreads,
-            })) as unknown) as Model[];
+            })) as unknown) as PostsInThread[];
 
             if (postInThreadRecords?.length) {
                 await this.batchOperations({ database, models: postInThreadRecords });
@@ -147,6 +148,58 @@ class DataOperator {
         } else {
             // TODO : throw error for we couldn't get a database connection
         }
+    };
+
+    handleFileData = () => {
+        /*
+         *
+         *   file >>>>
+         * {
+         *   "create_at": 1614587741705,
+         *   "delete_at": 0,
+         *   "extension": "mov",
+         *   "id": "snnikwtszifb7rxutwnxd3uxmc",
+         *   "mime_type": "video/quicktime",
+         *   "mini_preview": null,
+         *   "name": "Screen Recording 2021-03-01 at 09.33.05.mov",
+         *   "post_id": "dfw61bbmgigjux4nwq4ag398hc",
+         *   "size": 4476719,
+         *   "update_at": 1614587741705,
+         *   "user_id": "uon1x7brb3br7gi9u4ykehegsa"
+         * }
+         * */
+
+        return null;
+    };
+
+    handleReactions = async ({
+        reactions,
+        prepareRowsOnly,
+    }: {
+        reactions: RawReaction[];
+        prepareRowsOnly: boolean;
+    }) => {
+        const database = await this.getDatabase(REACTION);
+        if (database) {
+            const postReactions = ((await this.prepareBaseData({
+                database,
+                optType: OperationType.CREATE,
+                recordOperator: operateReactionRecord,
+                tableName: REACTION,
+                values: reactions,
+            })) as unknown) as Reaction[];
+
+            if (prepareRowsOnly) {
+                return postReactions;
+            }
+
+            if (postReactions?.length) {
+                await this.batchOperations({ database, models: postReactions });
+            }
+        } else {
+            // TODO: throw no database exception
+        }
+        return null;
     };
 
     handlePostData = async ({ optType, values }: { optType: OperationType; values: RecordValue[] }) => {
@@ -163,6 +216,8 @@ class DataOperator {
         const database = await this.getDatabase(tableName);
         const batch = [];
         const postsInThread = [];
+        const files = [];
+        const reactions: RawReaction[] = [];
 
         if (values.length > 0) {
             // Prepares records for batch processing onto the 'Post' entity for the server schema
@@ -179,18 +234,30 @@ class DataOperator {
 
             for (let i = 0; i < values.length; i++) {
                 const post = values[i] as RawPost;
-                // checks for id === root_id , if so, then call PostsInThread operator
+                // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
                 if (post.id === post.root_id) {
                     postsInThread.push({
                         earliest: post.create_at,
                         post_id: post.id,
                     });
                 }
+
+                // Reaction handler
+                if (post?.metadata?.reactions) {
+                    reactions.concat(post.metadata.reactions);
+                }
                 // TODO:  call for metadata
+
                 // TODO: call for file operator
-                // TODO: call batch operations
-            }
-            // calls handler for PostsInThread
+            } // end of for loop
+
+            // calls handler for Reactions
+            const postReactions = await this.handleReactions({ reactions, prepareRowsOnly: true });
+
+            // TODO: call batch operations
+            // await this.batchOperations({ database, models: batch });
+
+            // LAST :: calls handler for PostsInThread
             await this.handlePostsInThreadData(postsInThread);
         } else {
             // TODO : throw ??
@@ -219,17 +286,6 @@ class DataOperator {
         }
     };
 
-    // FIXME :  treat everything as an array => avoids code repetition
-    // per entity
-    /**
-     *
-     * @param { | undefined} database
-     * @param {OperationType} optType
-     * @param {string} tableName
-     * @param {RecordValue[]} values
-     * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
-     * @returns {Promise<any>}
-     */
     private prepareBaseData = async ({ database, optType, tableName, values, recordOperator }: HandleBaseData) => {
         if (Array.isArray(values) && values.length) {
             const recordPromises = await values.map(async (value) => {

@@ -92,25 +92,36 @@ export type RawFile = {
     create_at: number;
     delete_at: number;
     extension: string;
-    has_preview_image: boolean;
+    has_preview_image?: boolean;
     height: number;
     id: string;
     localPath?: string;
-    mime_type: string;
+    mime_type?: string;
+    mini_preview?: string; // thumbnail
     name: string;
     post_id: string;
     size: number;
     update_at: number;
     user_id: string;
-    width: number;
+    width?: number;
 };
 
 export type RawReaction = {
     create_at: number;
+    delete_at: number;
     emoji_name: string;
     post_id: string;
+    update_at: number;
     user_id: string;
 };
+
+// interface PostMetadataTypes {
+//     embeds: Array<PostEmbed>;
+//     emojis: Array<CustomEmoji>;
+//     files: Array<FileInfo>;
+//     images: Dictionary<PostImage>;
+//     reactions: Array<Reaction>;
+// }
 
 // The RawPost describes the shape of the object received from a getPosts request
 export type RawPost = {
@@ -191,6 +202,7 @@ export type RecordValue =
     | RawGlobal
     | RawPost
     | RawPostsInThread
+    | RawReaction
     | RawRole
     | RawServers
     | RawSystem
