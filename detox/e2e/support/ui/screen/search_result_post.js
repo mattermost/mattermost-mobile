@@ -8,12 +8,25 @@ class SearchResultPostScreen {
         searchResultPostItem: 'search_result_post.post',
     }
 
-    getPost = (postId, postMessage) => {
-        const {postItem, postItemHeaderReply, postItemMessage} = Post.getPost(this.testID.searchResultPostItem, postId, postMessage);
+    getPost = (postId, postMessage, postProfileOptions = {}) => {
+        const {
+            postItem,
+            postItemHeaderDateTime,
+            postItemHeaderDisplayName,
+            postItemHeaderReply,
+            postItemMessage,
+            postItemProfilePicture,
+            postItemProfilePictureUserStatus,
+        } = Post.getPost(this.testID.searchResultPostItem, postId, postMessage, postProfileOptions);
+
         return {
             searchResultPostItem: postItem,
+            searchResultPostItemHeaderDateTime: postItemHeaderDateTime,
+            searchResultPostItemHeaderDisplayName: postItemHeaderDisplayName,
             searchResultPostItemHeaderReply: postItemHeaderReply,
             searchResultPostItemMessage: postItemMessage,
+            searchResultPostItemProfilePicture: postItemProfilePicture,
+            searchResultPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
         };
     }
 

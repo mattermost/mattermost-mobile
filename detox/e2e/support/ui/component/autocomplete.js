@@ -3,6 +3,8 @@
 
 class Autocomplete {
     testID = {
+        atMentionItemPrefix: 'autocomplete.at_mention.item.',
+        channelMentionItemPrefix: 'autocomplete.channel_mention.item.',
         autocomplete: 'autocomplete',
         atMentionSuggestionList: 'at_mention_suggestion.list',
         channelMentionSuggestionList: 'channel_mention_suggestion.list',
@@ -19,7 +21,11 @@ class Autocomplete {
     slashSuggestionList = element(by.id(this.testID.slashSuggestionList));
 
     getAtMentionItem = (userId) => {
-        return element(by.id(`autocomplete.at_mention.item.${userId}`));
+        return element(by.id(`${this.testID.atMentionItemPrefix}${userId}`));
+    }
+
+    getChannelMentionItem = (channelId) => {
+        return element(by.id(`${this.testID.channelMentionItemPrefix}${channelId}`));
     }
 
     toBeVisible = async (isVisible = true) => {

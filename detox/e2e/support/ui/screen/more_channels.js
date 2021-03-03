@@ -9,8 +9,8 @@ import {
 
 class MoreChannelsScreen {
     testID = {
-        moreChannelsScreen: 'more_channels.screen',
         moreChannelsScreenPrefix: 'more_channels.',
+        moreChannelsScreen: 'more_channels.screen',
         closeMoreChannelsButton: 'close.more_channels.button',
         createButton: 'more_channels.create.button',
         channelDropdown: 'more_channels.channel.dropdown',
