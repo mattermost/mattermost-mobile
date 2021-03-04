@@ -27,7 +27,7 @@ describe('threads', () => {
             },
         });
 
-        expect(nextState).not.toBe(state);
+        expect(nextState).not.toEqual(state);
         expect(nextState.threads.t1).toEqual({
             id: 't1',
         });
@@ -60,7 +60,7 @@ describe('threads', () => {
             },
         });
 
-        expect(nextState).not.toBe(state);
+        expect(nextState).not.toEqual(state);
         expect(nextState.counts.a).toEqual({
             total: 3,
             total_unread_threads: 0,
@@ -89,7 +89,7 @@ describe('threads', () => {
             },
         });
 
-        expect(nextState).not.toBe(state);
+        expect(nextState).not.toEqual(state);
 
         // leave team
         nextState = threadsReducer(state, {
