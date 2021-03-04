@@ -15,11 +15,13 @@ import {
     RawPost,
     RawPostsInThread,
     RawReaction,
+    RawImage,
 } from '@typings/database/database';
 import File from '@typings/database/file';
 import Post from '@typings/database/post';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
+import CustomEmoji from '@typings/database/custom_emoji';
 
 import DatabaseManager from '../database_manager';
 
@@ -54,7 +56,7 @@ export enum IsolatedEntities {
     TERMS_OF_SERVICE = 'TermsOfService',
 }
 
-const { FILE, POST, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
+const { CUSTOM_EMOJI, FILE, POST, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
 
 class DataOperator {
     private defaultDatabase: DatabaseInstance;
@@ -164,12 +166,13 @@ class DataOperator {
     }) => {
         const database = await this.getDatabase(REACTION);
         if (database) {
-            const { createReactions, deleteReactions } = await sanitizeReactions({
+            const { createReactions, createEmojis, deleteReactions } = await sanitizeReactions({
                 database,
                 post_id: reactions[0].post_id,
                 rawReactions: reactions,
             });
 
+            // Prepares record for model Reactions
             const postReactions = ((await this.prepareBase({
                 database,
                 optType: OperationType.CREATE,
@@ -178,12 +181,24 @@ class DataOperator {
                 values: createReactions,
             })) as unknown) as Reaction[];
 
+            // Prepares records for model CustomEmoji
+            const reactionEmojis = ((await this.prepareBase({
+                database,
+                optType: OperationType.CREATE,
+                recordOperator: operateCustomEmojiRecord,
+                tableName: CUSTOM_EMOJI,
+                values: createEmojis,
+            })) as unknown) as CustomEmoji[];
+
             if (prepareRowsOnly) {
-                return [...postReactions, ...deleteReactions];
+                return [...postReactions, ...deleteReactions, ...reactionEmojis];
             }
 
             if (postReactions?.length) {
-                await this.batchOperations({ database, models: [...postReactions, ...deleteReactions] });
+                await this.batchOperations({
+                    database,
+                    models: [...postReactions, ...deleteReactions, ...reactionEmojis],
+                });
             }
         } else {
             // TODO: throw no database exception
@@ -227,12 +242,8 @@ class DataOperator {
         const tableName = POST;
 
         //     // TODO []: heavily make use of this.prepareBase so as to call the batchMethod only once
-        //     // TODO []: generate prepareUpdate|Create for the values
-        //     // TODO []: if we have metadata, create the metadata record prepareCreate/Update
-        //     // TODO []: if we have file, create the file record prepareCreate/Update
-        //     // TODO []:  if id === root_id, then add a record into PostsInThread
-        //     // TODO []: if we have reaction, then create/update reaction table
-        //     // TODO []: from all the received arrays of prepareUpdate|Create, batch all of them
+        //     // TODO []: postmetadata ( embeds, images )
+        //     // TODO []: draft, postsInThreads, postsInChannel
 
         const database = await this.getDatabase(tableName);
 
@@ -241,6 +252,7 @@ class DataOperator {
         const postsInThread = [];
         const reactions: RawReaction[] = [];
         const emojis: RawCustomEmoji[] = [];
+        const images: RawImage[] = [];
 
         let augmentedRawPosts = values;
 
@@ -286,7 +298,11 @@ class DataOperator {
             if (post?.metadata?.files) {
                 files.concat(post.metadata.files);
             }
-            // TODO: call for file operator
+
+            // Extracts images from post's metadata
+            if (post?.metadata?.images) {
+                images.concat(post.metadata.images);
+            }
         } // end of for loop
 
         // calls handler for Reactions
@@ -297,7 +313,7 @@ class DataOperator {
         const postFiles = (await this.handleFiles({ files, prepareRowsOnly: true })) as File[];
         batch.concat(postFiles);
 
-        // TODO: call batch operations
+        // // TODO: call batch operations
         await this.batchOperations({ database: database!, models: batch });
 
         // LAST :: calls handler for CustomEmojis, PostsInThread

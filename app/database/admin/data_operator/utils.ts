@@ -4,7 +4,7 @@
 import { Q } from '@nozbe/watermelondb';
 
 import { MM_TABLES } from '@constants/database';
-import { DatabaseInstance, RawPost, RawReaction, RecordValue } from '@typings/database/database';
+import { DatabaseInstance, RawCustomEmoji, RawPost, RawReaction, RecordValue } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 import OperatorFieldException from './exceptions/operator_field_exception';
@@ -48,13 +48,14 @@ export const sanitizeReactions = async ({
 
     if (reactions?.length < 1) {
         // We do not have existing reactions bearing this post_id; thus we CREATE them.
-        return { createReactions: rawReactions, deleteReactions: [] };
+        return { createReactions: rawReactions, deleteReactions: [], createEmojis: [] };
     }
 
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
-    const similarObjects = [] as Reaction[];
+    const similarObjects: Reaction[] = [];
 
-    const createReactions = [] as RawReaction[];
+    const createReactions: RawReaction[] = [];
+    const createEmojis: RawCustomEmoji[] = [];
 
     for (let i = 0; i < rawReactions.length; i++) {
         const rawReaction = rawReactions[i] as RawReaction;
@@ -67,6 +68,11 @@ export const sanitizeReactions = async ({
         if (idxPresent === -1) {
             // So, we don't have a similar Reaction object.  That one is new...so we'll create it
             createReactions.push(rawReaction);
+
+            // If that reaction is new, that implies that the emoji is also not in the database
+            createEmojis.push({
+                name: rawReaction.emoji_name,
+            });
         } else {
             // we have a similar object in both reactions and rawReactions; we'll pop it out from both arrays
             similarObjects.push(reactions[idxPresent]);
@@ -78,7 +84,7 @@ export const sanitizeReactions = async ({
         .filter((reaction) => !similarObjects.includes(reaction))
         .map((outCast) => outCast.prepareDestroyPermanently());
 
-    return { createReactions, deleteReactions };
+    return { createReactions, createEmojis, deleteReactions };
 };
 
 export const addPrevPostId = ({ orders, values }: { orders: string[]; values: RawPost[] }) => {

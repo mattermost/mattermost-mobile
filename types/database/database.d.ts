@@ -5,6 +5,8 @@ import { AppSchema, Database } from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 import { Migration } from '@nozbe/watermelondb/Schema/migrations';
 import { Class } from '@nozbe/watermelondb/utils/common';
+import CustomEmoji from '@typings/database/custom_emoji';
+import Reaction from '@typings/database/reaction';
 
 import { IsolatedEntities, OperationType } from '../../app/database/admin/data_operator';
 import { DatabaseType } from '../../app/database/admin/database_manager';
@@ -61,12 +63,12 @@ export type RawServers = {
 };
 
 export type RawCustomEmoji = {
-    id: string;
+    id?: string;
     name: string;
-    create_at: number;
-    update_at: number;
-    delete_at: number;
-    creator_id: string;
+    create_at?: number;
+    update_at?: number;
+    delete_at?: number;
+    creator_id?: string;
 };
 
 export type RawRole = {
@@ -86,11 +88,7 @@ export type RawTermsOfService = {
     acceptedAt: number;
 };
 
-export type RawEmbeds = [{ type: string; url: string; data: {} }];
-
-export type RawEmojis = [
-    { id: string; creator_id: string; name: string; create_at: number; update_at: number; delete_at: number },
-];
+export type RawEmbeds = { data: {}; type: string; url: string };
 
 export type RawFile = {
     create_at: number;
@@ -120,13 +118,22 @@ export type RawReaction = {
     user_id: string;
 };
 
-// interface PostMetadataTypes {
-//     embeds: Array<PostEmbed>;
-//     emojis: Array<CustomEmoji>;
-//     files: Array<FileInfo>;
-//     images: Dictionary<PostImage>;
-//     reactions: Array<Reaction>;
-// }
+interface PostImage {
+    height: number;
+    width: number;
+    format?: string;
+    frame_count?: number;
+}
+
+interface PostMetadataTypes {
+    embeds: Array<PostEmbed>;
+    emojis: Array<CustomEmoji>;
+    files: Array<FileInfo>;
+    images: Dictionary<PostImage>;
+    reactions: Array<Reaction>;
+}
+
+export type RawImage = {};
 
 // The RawPost describes the shape of the object received from a getPosts request
 export type RawPost = {
@@ -153,8 +160,8 @@ export type RawPost = {
     update_at: number;
     user_id: string;
     metadata: {
-        embeds: RawEmbeds;
-        emojis: RawEmojis;
+        embeds: RawEmbeds[];
+        emojis: RawCustomEmoji[];
         files: RawFile[];
         images: {};
         reactions: RawReaction[];

@@ -27,16 +27,6 @@ interface PostEmbed {
     data: Record<string, any>;
 }
 
-interface CustomEmoji {
-    id: string;
-    create_at: number;
-    update_at: number;
-    delete_at: number;
-    creator_id: string;
-    name: string;
-    category: 'custom';
-}
-
 interface FileInfo {
     id: string;
     user_id: string;
