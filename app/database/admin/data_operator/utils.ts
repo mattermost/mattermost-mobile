@@ -4,7 +4,7 @@
 import { Q } from '@nozbe/watermelondb';
 
 import { MM_TABLES } from '@constants/database';
-import { DatabaseInstance, RawReaction, RecordValue } from '@typings/database/database';
+import { DatabaseInstance, RawPost, RawReaction, RecordValue } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 import OperatorFieldException from './exceptions/operator_field_exception';
@@ -79,4 +79,23 @@ export const sanitizeReactions = async ({
         .map((outCast) => outCast.prepareDestroyPermanently());
 
     return { createReactions, deleteReactions };
+};
+
+export const addPrevPostId = ({ orders, values }: { orders: string[]; values: RawPost[] }) => {
+    const posts: RawPost[] = [];
+    values.forEach((post) => {
+        const postId = post.id;
+        const postIdx = orders.findIndex((order) => {
+            return order === postId;
+        });
+
+        if (postIdx === -1) {
+            // shit happened here
+        } else {
+            const prevPostId = postIdx + 1 < orders.length ? orders[postIdx + 1] : '';
+            posts.push({ ...post, prev_post_id: prevPostId });
+        }
+    });
+
+    return posts;
 };

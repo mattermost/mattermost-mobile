@@ -9,6 +9,7 @@ import {
     DatabaseInstance,
     HandleBaseData,
     HandleIsolatedEntityData,
+    RawCustomEmoji,
     RawPost,
     RawPostsInThread,
     RawReaction,
@@ -32,7 +33,7 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import { sanitizeReactions } from './utils';
+import { addPrevPostId, sanitizeReactions } from './utils';
 
 export enum OperationType {
     CREATE = 'CREATE',
@@ -209,7 +210,15 @@ class DataOperator {
         return null;
     };
 
-    handlePosts = async ({ optType, values }: { optType: OperationType; values: RecordValue[] }) => {
+    handlePosts = async ({
+        optType,
+        orders,
+        values,
+    }: {
+        optType: OperationType;
+        orders?: string[];
+        values: RawPost[];
+    }) => {
         const tableName = POST;
 
         //     // TODO []: heavily make use of this.prepareBase so as to call the batchMethod only once
@@ -226,13 +235,19 @@ class DataOperator {
         // const files = [];
         const postsInThread = [];
         const reactions: RawReaction[] = [];
+        const emojis: RawCustomEmoji[] = [];
+
+        let augmentedRawPosts = values;
+        if (orders?.length) {
+            augmentedRawPosts = addPrevPostId({ orders, values });
+        }
 
         // Prepares records for batch processing onto the 'Post' entity for the server schema
         const posts = ((await this.prepareBase({
             database,
             optType,
             tableName,
-            values,
+            values: augmentedRawPosts,
             recordOperator: operatePostRecord,
         })) as unknown) as Post[];
 
@@ -249,10 +264,13 @@ class DataOperator {
                 });
             }
 
-            // Extracts Reaction on post
+            // Extracts reaction from post's metadata
             if (post?.metadata?.reactions) {
                 reactions.concat(post.metadata.reactions);
             }
+
+            // Extracts emojis from post's metadata
+
             // TODO:  call for metadata
             // TODO: call for file operator
         } // end of for loop
