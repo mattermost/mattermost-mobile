@@ -858,14 +858,14 @@ def submit_to_testflight(ipa_path)
         :key => ENV['IOS_API_KEY'],
         :in_house => ENV['IOS_IN_HOUSE'] == 'true'
       }
-      api_key_path = "./#{ENV['IOS_API_KEY_ID']}.json"
-      save_json_as_file(api_key_path, JSON.generate(json_hash))
+      api_key_path = "#{ENV['IOS_API_KEY_ID']}.json"
+      save_json_as_file("../#{api_key_path}", JSON.generate(json_hash))
       UI.success("Uploading with API Key")
       pilot(
         ipa: ipa,
         api_key_path: api_key_path
       )
-      File.delete(api_key_path)
+      File.delete("../#{api_key_path}")
     else
       UI.success("Uploading with Username / Password")
       pilot(
