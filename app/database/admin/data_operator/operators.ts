@@ -187,7 +187,6 @@ export const operateTermsOfServiceRecord = async ({ database, optType, value }: 
 export const operatePostRecord = async ({ database, optType, value }: DataFactory) => {
     const record = value as RawPost;
 
-    // FIXME : need to handle draft post...and hence the post id might come from the record or the post object from the callback
     const generator = (post: Post) => {
         post._raw.id = record?.id;
         post.channelId = record?.channel_id;
@@ -199,7 +198,7 @@ export const operatePostRecord = async ({ database, optType, value }: DataFactor
         post.userId = record?.user_id;
         post.originalId = record?.original_id ?? '';
         post.pendingPostId = record?.pending_post_id ?? '';
-        post.previousPostId = record?.prev_post_id ?? '';
+        post.previousPostId = record?.prev_post_id ?? ''; // FIXME : this is wrong - read the value from order
         post.rootId = record?.root_id ?? '';
         post.type = record?.type ?? '';
         post.props = record?.props ?? {};

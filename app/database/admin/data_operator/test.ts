@@ -177,7 +177,7 @@ describe('*** Data Operator tests ***', () => {
         expect.assertions(2);
 
         // Creates a record in the App table
-        await DataOperator.handleIsolatedEntityData({
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [{ buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1' }],
@@ -197,7 +197,7 @@ describe('*** Data Operator tests ***', () => {
         expect.assertions(2);
 
         // Creates a record in the App table
-        await DataOperator.handleIsolatedEntityData({
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
@@ -228,7 +228,7 @@ describe('*** Data Operator tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         // Update record having id 'id-1'
-        await DataOperator.handleIsolatedEntityData({
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [{ buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1' }],
@@ -248,7 +248,7 @@ describe('*** Data Operator tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         // Update records having id 'id-10' and 'id-11'
-        await DataOperator.handleIsolatedEntityData({
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
@@ -275,7 +275,7 @@ describe('*** Data Operator tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the records instead of prepareCreate
-        await DataOperator.handleIsolatedEntityData({
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
@@ -301,7 +301,7 @@ describe('*** Data Operator tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         // id-15 and id-16 do not exist but yet the optType is UPDATE.  The operator should then prepareCreate the records instead of prepareUpdate
-        await DataOperator.handleIsolatedEntityData({
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
@@ -320,13 +320,13 @@ describe('*** Data Operator tests ***', () => {
         expect(records[1].buildNumber).toMatch('build-11x');
     });
 
-    it('=> should use operateAppRecord for APP entity in handleBaseData', async () => {
+    it('=> should use operateAppRecord for APP entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -337,18 +337,18 @@ describe('*** Data Operator tests ***', () => {
             ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateAppRecord });
     });
 
-    it('=> should use operateGlobalRecord for GLOBAL entity in handleBaseData', async () => {
+    it('=> should use operateGlobalRecord for GLOBAL entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -356,18 +356,18 @@ describe('*** Data Operator tests ***', () => {
             values: [{ id: 'global-1-id', name: 'global-1-name', value: 'global-1-value' }],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateGlobalRecord });
     });
 
-    it('=> should use operateServersRecord for SERVERS entity in handleBaseData', async () => {
+    it('=> should use operateServersRecord for SERVERS entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -384,18 +384,18 @@ describe('*** Data Operator tests ***', () => {
             ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateServersRecord });
     });
 
-    it('=> should use operateCustomEmojiRecord for CUSTOM_EMOJI entity in handleBaseData', async () => {
+    it('=> should use operateCustomEmojiRecord for CUSTOM_EMOJI entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -408,18 +408,18 @@ describe('*** Data Operator tests ***', () => {
             ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateCustomEmojiRecord });
     });
 
-    it('=> should use operateRoleRecord for ROLE entity in handleBaseData', async () => {
+    it('=> should use operateRoleRecord for ROLE entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -433,18 +433,18 @@ describe('*** Data Operator tests ***', () => {
             ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateRoleRecord });
     });
 
-    it('=> should use operateSystemRecord for SYSTEM entity in handleBaseData', async () => {
+    it('=> should use operateSystemRecord for SYSTEM entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -452,18 +452,18 @@ describe('*** Data Operator tests ***', () => {
             values: [{ id: 'system-id-1', name: 'system-1', value: 'system-1' }],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateSystemRecord });
     });
 
-    it('=> should use operateTermsOfServiceRecord for TERMS_OF_SERVICE entity in handleBaseData', async () => {
+    it('=> should use operateTermsOfServiceRecord for TERMS_OF_SERVICE entity in handleBase', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -471,18 +471,18 @@ describe('*** Data Operator tests ***', () => {
             values: [{ id: 'tos-1', acceptedAt: 1 }],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledWith({ ...data, recordOperator: operateTermsOfServiceRecord });
     });
 
-    it('=> should not call handleBaseData if tableName is invalid', async () => {
+    it('=> should not call handleBase if tableName is invalid', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
@@ -492,7 +492,7 @@ describe('*** Data Operator tests ***', () => {
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
     });

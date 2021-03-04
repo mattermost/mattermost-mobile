@@ -32,6 +32,7 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
+import { sanitizeReactions } from './utils';
 
 export enum OperationType {
     CREATE = 'CREATE',
@@ -56,7 +57,7 @@ class DataOperator {
     private serverDatabase: DatabaseInstance;
 
     /**
-     * handleIsolatedEntityData: Operator that handles Create/Update operations on the isolated entities as
+     * handleIsolatedEntity: Operator that handles Create/Update operations on the isolated entities as
      * described by the IsolatedTables type
      * @param {HandleIsolatedEntityData} entityData
      * @param {OperationType} entityData.optType
@@ -64,7 +65,7 @@ class DataOperator {
      * @param {Records} entityData.values
      * @returns {Promise<void>}
      */
-    handleIsolatedEntityData = async ({ optType, tableName, values }: HandleIsolatedEntityData): Promise<void> => {
+    handleIsolatedEntity = async ({ optType, tableName, values }: HandleIsolatedEntityData): Promise<void> => {
         let recordOperator;
 
         switch (tableName) {
@@ -102,14 +103,14 @@ class DataOperator {
             }
         }
         if (recordOperator) {
-            await this.handleBaseData({ optType, values, tableName, recordOperator });
+            await this.handleBase({ optType, values, tableName, recordOperator });
         }
     };
 
     // TODO : draft should be a separate handler : handleDraft ( post body, draft info )
     // handleDraftData = ({ post, draft }) => null;
 
-    handlePostsInThreadData = async (postsInThread: RawPostsInThread[]) => {
+    handlePostsInThread = async (postsInThread: RawPostsInThread[]) => {
         const database = await this.getDatabase(POSTS_IN_THREAD);
         const postIds = postsInThread.map((postThread) => postThread.post_id);
         const rawPostsInThreads: { latest: number; earliest: number; post_id: string }[] = [];
@@ -134,7 +135,7 @@ class DataOperator {
                 rawPostsInThreads.push({ ...rootPost, latest: maxCreateAt });
             });
 
-            const postInThreadRecords = ((await this.prepareBaseData({
+            const postInThreadRecords = ((await this.prepareBase({
                 database,
                 optType: OperationType.CREATE,
                 recordOperator: operatePostInThreadRecord,
@@ -150,7 +151,7 @@ class DataOperator {
         }
     };
 
-    handleFileData = () => {
+    handleFile = () => {
         /*
          *
          *   file >>>>
@@ -172,55 +173,6 @@ class DataOperator {
         return null;
     };
 
-    sanitizeReactions = async ({
-        database,
-        post_id,
-        rawReactions,
-    }: {
-        database: DatabaseInstance;
-        post_id: string;
-        rawReactions: RawReaction[];
-    }) => {
-        const reactions = (await database!.collections
-            .get(REACTION)
-            .query(Q.where('post_id', post_id))
-            .fetch()) as Reaction[];
-
-        if (reactions?.length < 1) {
-            // We do not have existing reactions bearing this post_id; thus we CREATE them.
-            return { createReactions: rawReactions, deleteReactions: [] };
-        }
-
-        // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
-        const similarObjects = [] as Reaction[];
-
-        const createReactions = [] as RawReaction[];
-
-        for (let i = 0; i < rawReactions.length; i++) {
-            const rawReaction = rawReactions[i] as RawReaction;
-
-            // Do we have a similar value of rawReaction in the REACTION table?
-            const idxPresent = reactions.findIndex((value) => {
-                return value.userId === rawReaction.user_id && value.emojiName === rawReaction.emoji_name;
-            });
-
-            if (idxPresent === -1) {
-                // So, we don't have a similar Reaction object.  That one is new...so we'll create it
-                createReactions.push(rawReaction);
-            } else {
-                // we have a similar object in both reactions and rawReactions; we'll pop it out from both arrays
-                similarObjects.push(reactions[idxPresent]);
-            }
-        }
-
-        // finding out elements to delete using array subtract
-        const deleteReactions = reactions
-            .filter((reaction) => !similarObjects.includes(reaction))
-            .map((outCast) => outCast.prepareDestroyPermanently());
-
-        return { createReactions, deleteReactions };
-    };
-
     handleReactions = async ({
         reactions,
         prepareRowsOnly,
@@ -230,13 +182,13 @@ class DataOperator {
     }) => {
         const database = await this.getDatabase(REACTION);
         if (database) {
-            const { createReactions, deleteReactions } = await this.sanitizeReactions({
+            const { createReactions, deleteReactions } = await sanitizeReactions({
                 database,
                 post_id: reactions[0].post_id,
                 rawReactions: reactions,
             });
 
-            const postReactions = ((await this.prepareBaseData({
+            const postReactions = ((await this.prepareBase({
                 database,
                 optType: OperationType.CREATE,
                 recordOperator: operateReactionRecord,
@@ -257,10 +209,10 @@ class DataOperator {
         return null;
     };
 
-    handlePostData = async ({ optType, values }: { optType: OperationType; values: RecordValue[] }) => {
+    handlePosts = async ({ optType, values }: { optType: OperationType; values: RecordValue[] }) => {
         const tableName = POST;
 
-        //     // TODO []: heavily make use of this.prepareBaseData so as to call the batchMethod only once
+        //     // TODO []: heavily make use of this.prepareBase so as to call the batchMethod only once
         //     // TODO []: generate prepareUpdate|Create for the values
         //     // TODO []: if we have metadata, create the metadata record prepareCreate/Update
         //     // TODO []: if we have file, create the file record prepareCreate/Update
@@ -276,7 +228,7 @@ class DataOperator {
         const reactions: RawReaction[] = [];
 
         // Prepares records for batch processing onto the 'Post' entity for the server schema
-        const posts = ((await this.prepareBaseData({
+        const posts = ((await this.prepareBase({
             database,
             optType,
             tableName,
@@ -313,7 +265,7 @@ class DataOperator {
         // await this.batchOperations({ database, models: batch });
 
         // LAST :: calls handler for PostsInThread
-        await this.handlePostsInThreadData(postsInThread);
+        await this.handlePostsInThread(postsInThread);
     };
 
     /**
@@ -338,7 +290,7 @@ class DataOperator {
         }
     };
 
-    private prepareBaseData = async ({ database, optType, tableName, values, recordOperator }: HandleBaseData) => {
+    private prepareBase = async ({ database, optType, tableName, values, recordOperator }: HandleBaseData) => {
         if (Array.isArray(values) && values.length) {
             const recordPromises = await values.map(async (value) => {
                 const record = await recordOperator({ database: database!, optType, tableName, value });
@@ -352,7 +304,7 @@ class DataOperator {
     };
 
     /**
-     * handleBaseData: Handles the Create/Update operations on an entity.
+     * handleBase: Handles the Create/Update operations on an entity.
      * @param {HandleBaseData} opsBase
      * @param {OperationType} opsBase.optType
      * @param {string} opsBase.tableName
@@ -360,13 +312,13 @@ class DataOperator {
      * @param {(recordOperator: DataFactory) => void} opsBase.recordOperator
      * @returns {Promise<void>}
      */
-    private handleBaseData = async ({ optType, tableName, values, recordOperator }: HandleBaseData) => {
+    private handleBase = async ({ optType, tableName, values, recordOperator }: HandleBaseData) => {
         const database = await this.getDatabase(tableName);
         if (!database) {
             return undefined;
         }
 
-        const results = await this.prepareBaseData({ database, optType, tableName, values, recordOperator });
+        const results = await this.prepareBase({ database, optType, tableName, values, recordOperator });
 
         if (results) {
             await this.batchOperations({ database, models: Array.isArray(results) ? results : Array(results) });
