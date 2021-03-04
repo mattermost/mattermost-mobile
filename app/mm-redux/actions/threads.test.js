@@ -12,12 +12,11 @@ import configureStore from 'test/test_store';
 /**
  * Returns a mock thread with 2 participants and 5 replies.
  */
-function mockUserThread({
-    userId = TestHelper.generateId(),
-    otherUserId = TestHelper.generateId(),
-    channelId = TestHelper.generateId(),
-    postId = TestHelper.generateId(),
-} = {}) {
+function mockUserThread() {
+    const userId = TestHelper.generateId();
+    const otherUserId = TestHelper.generateId();
+    const channelId = TestHelper.generateId();
+    const postId = TestHelper.generateId();
     const threadId = postId;
 
     /**
@@ -102,9 +101,9 @@ describe('Actions.Threads', () => {
     });
 
     test('getThreads', async () => {
-        const [mockThread0, {threadId: threadId0}] = mockUserThread({uniq: 0});
-        const [mockThread1, {threadId: threadId1}] = mockUserThread({uniq: 1});
-        const [mockThread2, {threadId: threadId2}] = mockUserThread({uniq: 2});
+        const [mockThread0, {threadId: threadId0}] = mockUserThread();
+        const [mockThread1, {threadId: threadId1}] = mockUserThread();
+        const [mockThread2, {threadId: threadId2}] = mockUserThread();
 
         const mockResponse = {
             threads: [mockThread0, mockThread1, mockThread2],
