@@ -852,20 +852,29 @@ def submit_to_testflight(ipa_path)
     unless ENV['IOS_API_KEY_ID'].nil? || ENV['IOS_API_KEY_ID'].empty? ||
     ENV['IOS_API_ISSUER_ID'].nil? || ENV['IOS_API_ISSUER_ID'].empty? ||
     ENV['IOS_API_KEY'].nil? || ENV['IOS_API_KEY'].empty?
-      json_hash = {
-        :key_id => ENV['IOS_API_KEY_ID'],
-        :issuer_id => ENV['IOS_API_ISSUER_ID'],
-        :key => ENV['IOS_API_KEY'],
-        :in_house => ENV['IOS_IN_HOUSE'] == 'true'
-      }
-      api_key_path = "#{ENV['IOS_API_KEY_ID']}.json"
-      save_json_as_file("../#{api_key_path}", JSON.generate(json_hash))
+      api_key_path = "#{ENV['IOS_API_KEY_ID']}.p8"
+      File.open("../#{api_key_path}", 'w') do |f|
+        key_string = ENV['IOS_API_KEY']
+        p8_array = key_string.split("\n")
+        p8_array.each_with_index do |value, index|
+          f.write(value)
+          f.write("\n") unless index == p8_array.length - 1
+        end
+      end
+    
+      api_key = app_store_connect_api_key(
+        key_id: ENV['IOS_API_KEY_ID'],
+        issuer_id: ENV['IOS_API_ISSUER_ID'],
+        key_filepath: "./#{api_key_path}",
+        in_house: ENV['IOS_IN_HOUSE'] == 'true', # optional but may be required if using match/sigh
+      )
+    
+      File.delete("../#{api_key_path}")
       UI.success("Uploading with API Key")
       pilot(
         ipa: ipa,
-        api_key_path: api_key_path
+        api_key: api_key
       )
-      File.delete("../#{api_key_path}")
     else
       UI.success("Uploading with Username / Password")
       pilot(
