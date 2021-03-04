@@ -15,10 +15,13 @@ import {
     RawPost,
     RawPostsInThread,
     RawReaction,
-    RawImage,
+    RawEmbed,
+    PostImage,
+    RawPostMetadata,
 } from '@typings/database/database';
 import File from '@typings/database/file';
 import Post from '@typings/database/post';
+import PostMetadata from '@typings/database/post_metadata';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 import CustomEmoji from '@typings/database/custom_emoji';
@@ -37,6 +40,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
+    operatePostMetadataRecord,
 } from './operators';
 import { addPrevPostId, sanitizeReactions } from './utils';
 
@@ -56,7 +60,7 @@ export enum IsolatedEntities {
     TERMS_OF_SERVICE = 'TermsOfService',
 }
 
-const { CUSTOM_EMOJI, FILE, POST, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
+const { CUSTOM_EMOJI, FILE, POST, POST_METADATA, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
 
 class DataOperator {
     private defaultDatabase: DatabaseInstance;
@@ -116,9 +120,9 @@ class DataOperator {
     // TODO : draft should be a separate handler : handleDraft ( post body, draft info )
     // handleDraftData = ({ post, draft }) => null;
 
-    handlePostsInThread = async (postsInThread: RawPostsInThread[]) => {
+    handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
         const database = await this.getDatabase(POSTS_IN_THREAD);
-        const postIds = postsInThread.map((postThread) => postThread.post_id);
+        const postIds = postsInThreads.map((postThread) => postThread.post_id);
         const rawPostsInThreads: { latest: number; earliest: number; post_id: string }[] = [];
         if (database) {
             const threads = (await database.collections
@@ -126,7 +130,7 @@ class DataOperator {
                 .query(Q.where('id', Q.oneOf(postIds)))
                 .fetch()) as Post[];
 
-            postsInThread.forEach((rootPost) => {
+            postsInThreads.forEach((rootPost) => {
                 // Creates a sub-array of threads relating to rootPost.post_id
                 const childPosts = threads.filter((thread) => {
                     return rootPost.post_id === thread.id;
@@ -230,6 +234,67 @@ class DataOperator {
         return null;
     };
 
+    /*
+    *               if (meta?.images) {
+                        images.push({ images: meta?.images, postId: post.id });
+                    }
+                    if (meta?.embeds) {
+                        embeds.push({ embed: meta?.embeds, postId: post.id });
+                    }
+                    * */
+    handlePostMetadata = async ({
+        embeds,
+        images,
+        prepareRowsOnly,
+    }: {
+        embeds: { embed: RawEmbed[]; postId: string }[];
+        images: { images: Dictionary<PostImage>; postId: string }[];
+        prepareRowsOnly: boolean;
+    }) => {
+        const database = await this.getDatabase(POST_METADATA);
+        if (database) {
+            const metadata: RawPostMetadata[] = [];
+
+            images.forEach((image) => {
+                const imageEntry = Object.entries(images);
+                metadata.push({
+                    data: { url2: imageEntry[0], ...imageEntry[1] },
+                    type: 'images',
+                    postId: image.postId,
+                });
+            });
+
+            embeds.forEach((postEmbed) => {
+                postEmbed.embed.forEach((embed: RawEmbed) => {
+                    metadata.push({
+                        data: { ...embed.data, url: embed.url },
+                        type: embed.type,
+                        postId: postEmbed.postId,
+                    });
+                });
+            });
+
+            const postMetas = ((await this.prepareBase({
+                database,
+                optType: OperationType.CREATE,
+                recordOperator: operatePostMetadataRecord,
+                tableName: POST_METADATA,
+                values: metadata,
+            })) as unknown) as PostMetadata[];
+
+            if (prepareRowsOnly) {
+                return postMetas;
+            }
+
+            if (postMetas?.length) {
+                await this.batchOperations({ database, models: [...postMetas] });
+            }
+        } else {
+            // TODO: throw no database exception
+        }
+        return null;
+    };
+
     handlePosts = async ({
         optType,
         orders,
@@ -252,7 +317,8 @@ class DataOperator {
         const postsInThread = [];
         const reactions: RawReaction[] = [];
         const emojis: RawCustomEmoji[] = [];
-        const images: RawImage[] = [];
+        const images: { images: Dictionary<PostImage>; postId: string }[] = [];
+        const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
         let augmentedRawPosts = values;
 
@@ -282,28 +348,38 @@ class DataOperator {
                 });
             }
 
-            // TODO:  call for metadata
+            // // TODO:  call for metadata
 
-            // Extracts reaction from post's metadata
-            if (post?.metadata?.reactions) {
-                reactions.concat(post.metadata.reactions);
-            }
+            const meta = post?.metadata;
+            if (meta) {
+                // Extracts reaction from post's metadata
+                if (meta?.reactions?.length > 0) {
+                    reactions.concat(meta.reactions);
+                }
 
-            // Extracts emojis from post's metadata
-            if (post?.metadata?.emojis) {
-                emojis.concat(post.metadata.emojis);
-            }
+                // Extracts emojis from post's metadata
+                if (meta?.emojis?.length > 0) {
+                    emojis.concat(meta.emojis);
+                }
 
-            // Extracts files from post's metadata
-            if (post?.metadata?.files) {
-                files.concat(post.metadata.files);
-            }
+                // Extracts files from post's metadata
+                if (meta?.files?.length > 0) {
+                    files.concat(meta.files);
+                }
 
-            // Extracts images from post's metadata
-            if (post?.metadata?.images) {
-                images.concat(post.metadata.images);
+                // Extracts images and embeds from post's metadata
+                if (meta) {
+                    if (meta?.images) {
+                        images.push({ images: meta.images, postId: post.id });
+                    }
+                    if (meta?.embeds) {
+                        embeds.push({ embed: meta.embeds, postId: post.id });
+                    }
+                }
             }
         } // end of for loop
+
+        // // TODO : test with empty array for reactions <<<<<<<<<<<<<<
 
         // calls handler for Reactions
         const postReactions = (await this.handleReactions({ reactions, prepareRowsOnly: true })) as Reaction[];
@@ -312,6 +388,14 @@ class DataOperator {
         // calls handler for Files
         const postFiles = (await this.handleFiles({ files, prepareRowsOnly: true })) as File[];
         batch.concat(postFiles);
+
+        // calls handler for postMetadata ( embeds and images )
+        const postMetadata = (await this.handlePostMetadata({
+            images,
+            embeds,
+            prepareRowsOnly: true,
+        })) as PostMetadata[];
+        batch.concat(postMetadata);
 
         // // TODO: call batch operations
         await this.batchOperations({ database: database!, models: batch });

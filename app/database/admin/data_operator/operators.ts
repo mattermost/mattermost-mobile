@@ -14,6 +14,7 @@ import {
     RawFile,
     RawGlobal,
     RawPost,
+    RawPostMetadata,
     RawPostsInThread,
     RawReaction,
     RawRole,
@@ -24,6 +25,7 @@ import {
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Post from '@typings/database/post';
+import PostMetadata from '@typings/database/post_metadata';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
@@ -33,7 +35,17 @@ import TermsOfService from '@typings/database/terms_of_service';
 import { OperationType } from './index';
 
 const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
-const { CUSTOM_EMOJI, FILE, POST, POSTS_IN_THREAD, REACTION, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
+const {
+    CUSTOM_EMOJI,
+    FILE,
+    POST,
+    POST_METADATA,
+    POSTS_IN_THREAD,
+    REACTION,
+    ROLE,
+    SYSTEM,
+    TERMS_OF_SERVICE,
+} = MM_TABLES.SERVER;
 
 // FIXME : review all default values in the field mappings; they should make sense for mandatory fields
 // FIXME : review all table names
@@ -201,7 +213,7 @@ export const operatePostRecord = async ({ database, optType, value }: DataFactor
         post.userId = record?.user_id;
         post.originalId = record?.original_id ?? '';
         post.pendingPostId = record?.pending_post_id ?? '';
-        post.previousPostId = record?.prev_post_id ?? ''; // FIXME : this is wrong - read the value from order
+        post.previousPostId = record?.prev_post_id ?? '';
         post.rootId = record?.root_id ?? '';
         post.type = record?.type ?? '';
         post.props = record?.props ?? {};
@@ -254,6 +266,19 @@ export const operateFileRecord = async ({ database, optType, value }: DataFactor
     };
 
     return operateBaseRecord({ database, optType, tableName: FILE, value, generator });
+};
+
+export const operatePostMetadataRecord = async ({ database, optType, value }: DataFactory) => {
+    const record = value as RawPostMetadata;
+
+    const generator = (postMeta: PostMetadata) => {
+        postMeta._raw.id = postMeta.id;
+        postMeta.data = JSON.stringify(record.data);
+        postMeta.postId = record.postId;
+        postMeta.type = record.type;
+    };
+
+    return operateBaseRecord({ database, optType, tableName: POST_METADATA, value, generator });
 };
 
 /**
