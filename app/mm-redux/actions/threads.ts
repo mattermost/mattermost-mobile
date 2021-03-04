@@ -4,7 +4,7 @@
 import {ThreadTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 
 import {Client4} from '@mm-redux/client';
-import {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {batchActions, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
 import {UserThreadList} from '@mm-redux/types/threads';
 
 import ThreadConstants from '../constants/threads';
@@ -23,27 +23,34 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
             return {error};
         }
 
-        if (userThreadList?.threads?.length) {
-            const flat = require('array.prototype.flat');
-            dispatch({
-                type: UserTypes.RECEIVED_PROFILES_LIST,
-                data: flat(userThreadList.threads.map(({participants: users}) => users)),
-            });
+        if (userThreadList) {
+            const getThreadsActions: Array<GenericAction> = [
+                {
+                    type: ThreadTypes.RECEIVED_THREADS,
+                    data: {
+                        ...userThreadList,
+                        threads: userThreadList?.threads?.map((thread) => ({...thread, is_following: true})),
+                        team_id: teamId,
+                    },
+                },
+            ];
 
-            dispatch({
-                type: PostTypes.RECEIVED_POSTS,
-                data: {posts: userThreadList.threads.map(({post}) => post)},
-            });
+            if (userThreadList.threads?.length) {
+                const flat = require('array.prototype.flat');
+                getThreadsActions.push(
+                    {
+                        type: UserTypes.RECEIVED_PROFILES_LIST,
+                        data: flat(userThreadList.threads.map(({participants: users}) => users)),
+                    },
+                    {
+                        type: PostTypes.RECEIVED_POSTS,
+                        data: {posts: userThreadList.threads.map(({post}) => post)},
+                    },
+                );
+            }
+
+            dispatch(batchActions(getThreadsActions));
         }
-
-        dispatch({
-            type: ThreadTypes.RECEIVED_THREADS,
-            data: {
-                ...userThreadList,
-                threads: userThreadList?.threads?.map((thread) => ({...thread, is_following: true})),
-                team_id: teamId,
-            },
-        });
 
         return {data: userThreadList};
     };
@@ -63,23 +70,23 @@ export function getThread(userId: string, teamId: string, threadId: string, exte
         if (thread) {
             thread = {...thread, is_following: true};
 
-            dispatch({
-                type: UserTypes.RECEIVED_PROFILES_LIST,
-                data: thread.participants,
-            });
-
-            dispatch({
-                type: PostTypes.RECEIVED_POSTS,
-                data: {posts: [thread.post]},
-            });
-
-            dispatch({
-                type: ThreadTypes.RECEIVED_THREAD,
-                data: {
-                    thread,
-                    team_id: teamId,
+            dispatch(batchActions([
+                {
+                    type: UserTypes.RECEIVED_PROFILES_LIST,
+                    data: thread.participants,
                 },
-            });
+                {
+                    type: PostTypes.RECEIVED_POSTS,
+                    data: {posts: [thread.post]},
+                },
+                {
+                    type: ThreadTypes.RECEIVED_THREAD,
+                    data: {
+                        thread,
+                        team_id: teamId,
+                    },
+                },
+            ]));
         }
 
         return {data: thread};
