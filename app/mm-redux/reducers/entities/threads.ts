@@ -88,7 +88,7 @@ export const countsReducer = (state: ThreadsState['counts'] = {}, action: Generi
         return {
             ...state,
             [action.data.team_id]: {
-                ...state[action.data.team_id] ?? {},
+                ...(state[action.data.team_id] ?? {}),
                 unread_mentions_per_channel: action.data.counts,
             },
         };
