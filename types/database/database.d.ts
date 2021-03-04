@@ -63,6 +63,10 @@ export type RawServers = {
 export type RawCustomEmoji = {
     id: string;
     name: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    creator_id: string;
 };
 
 export type RawRole = {
@@ -94,7 +98,7 @@ export type RawFile = {
     extension: string;
     has_preview_image?: boolean;
     height: number;
-    id: string;
+    id?: string;
     localPath?: string;
     mime_type?: string;
     mini_preview?: string; // thumbnail
@@ -205,6 +209,7 @@ export type RawPostsInThread = {
 export type RecordValue =
     | RawApp
     | RawCustomEmoji
+    | RawFile
     | RawGlobal
     | RawPost
     | RawPostsInThread

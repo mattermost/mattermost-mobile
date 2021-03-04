@@ -11,6 +11,7 @@ import {
     DataFactory,
     RawApp,
     RawCustomEmoji,
+    RawFile,
     RawGlobal,
     RawPost,
     RawPostsInThread,
@@ -20,6 +21,7 @@ import {
     RawSystem,
     RawTermsOfService,
 } from '@typings/database/database';
+import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Post from '@typings/database/post';
 import PostsInThread from '@typings/database/posts_in_thread';
@@ -31,9 +33,10 @@ import TermsOfService from '@typings/database/terms_of_service';
 import { OperationType } from './index';
 
 const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
-const { CUSTOM_EMOJI, POST, POSTS_IN_THREAD, REACTION, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
+const { CUSTOM_EMOJI, FILE, POST, POSTS_IN_THREAD, REACTION, ROLE, SYSTEM, TERMS_OF_SERVICE } = MM_TABLES.SERVER;
 
 // FIXME : review all default values in the field mappings; they should make sense for mandatory fields
+// FIXME : review all table names
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactory} operator
@@ -232,6 +235,25 @@ export const operateReactionRecord = async ({ database, optType, value }: DataFa
     };
 
     return operateBaseRecord({ database, optType, tableName: REACTION, value, generator });
+};
+
+export const operateFileRecord = async ({ database, optType, value }: DataFactory) => {
+    const record = value as RawFile;
+
+    const generator = (file: File) => {
+        file._raw.id = record?.id ?? file.id;
+        file.postId = record.post_id;
+        file.name = record.name;
+        file.extension = record.extension;
+        file.size = record.size;
+        file.mimeType = record?.mime_type ?? '';
+        file.width = record?.width ?? 0;
+        file.height = record?.height ?? 0;
+        file.imageThumbnail = record?.mini_preview ?? '';
+        file.localPath = record?.localPath ?? '';
+    };
+
+    return operateBaseRecord({ database, optType, tableName: FILE, value, generator });
 };
 
 /**

@@ -4,17 +4,19 @@
 import { Q } from '@nozbe/watermelondb';
 
 import { MM_TABLES } from '@constants/database';
+import Model from '@nozbe/watermelondb/Model';
 import {
     BatchOperations,
     DatabaseInstance,
     HandleBaseData,
     HandleIsolatedEntityData,
     RawCustomEmoji,
+    RawFile,
     RawPost,
     RawPostsInThread,
     RawReaction,
-    RecordValue,
 } from '@typings/database/database';
+import File from '@typings/database/file';
 import Post from '@typings/database/post';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
@@ -24,6 +26,7 @@ import DatabaseManager from '../database_manager';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
+    operateFileRecord,
     operateGlobalRecord,
     operatePostInThreadRecord,
     operatePostRecord,
@@ -51,7 +54,7 @@ export enum IsolatedEntities {
     TERMS_OF_SERVICE = 'TermsOfService',
 }
 
-const { POST, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
+const { FILE, POST, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
 
 class DataOperator {
     private defaultDatabase: DatabaseInstance;
@@ -152,28 +155,6 @@ class DataOperator {
         }
     };
 
-    handleFile = () => {
-        /*
-         *
-         *   file >>>>
-         * {
-         *   "create_at": 1614587741705,
-         *   "delete_at": 0,
-         *   "extension": "mov",
-         *   "id": "snnikwtszifb7rxutwnxd3uxmc",
-         *   "mime_type": "video/quicktime",
-         *   "mini_preview": null,
-         *   "name": "Screen Recording 2021-03-01 at 09.33.05.mov",
-         *   "post_id": "dfw61bbmgigjux4nwq4ag398hc",
-         *   "size": 4476719,
-         *   "update_at": 1614587741705,
-         *   "user_id": "uon1x7brb3br7gi9u4ykehegsa"
-         * }
-         * */
-
-        return null;
-    };
-
     handleReactions = async ({
         reactions,
         prepareRowsOnly,
@@ -210,6 +191,30 @@ class DataOperator {
         return null;
     };
 
+    handleFiles = async ({ files, prepareRowsOnly }: { files: RawFile[]; prepareRowsOnly: boolean }) => {
+        const database = await this.getDatabase(FILE);
+        if (database) {
+            const postFiles = ((await this.prepareBase({
+                database,
+                optType: OperationType.CREATE,
+                recordOperator: operateFileRecord,
+                tableName: FILE,
+                values: files,
+            })) as unknown) as File[];
+
+            if (prepareRowsOnly) {
+                return postFiles;
+            }
+
+            if (postFiles?.length) {
+                await this.batchOperations({ database, models: [...postFiles] });
+            }
+        } else {
+            // TODO: throw no database exception
+        }
+        return null;
+    };
+
     handlePosts = async ({
         optType,
         orders,
@@ -231,13 +236,14 @@ class DataOperator {
 
         const database = await this.getDatabase(tableName);
 
-        const batch = [];
-        // const files = [];
+        const batch: Model[] = [];
+        const files: RawFile[] = [];
         const postsInThread = [];
         const reactions: RawReaction[] = [];
         const emojis: RawCustomEmoji[] = [];
 
         let augmentedRawPosts = values;
+
         if (orders?.length) {
             augmentedRawPosts = addPrevPostId({ orders, values });
         }
@@ -252,7 +258,7 @@ class DataOperator {
         })) as unknown) as Post[];
 
         // Appends the processed records into the final batch array
-        batch.push([...posts]);
+        batch.concat(posts);
 
         for (let i = 0; i < values.length; i++) {
             const post = values[i] as RawPost;
@@ -264,25 +270,43 @@ class DataOperator {
                 });
             }
 
+            // TODO:  call for metadata
+
             // Extracts reaction from post's metadata
             if (post?.metadata?.reactions) {
                 reactions.concat(post.metadata.reactions);
             }
 
             // Extracts emojis from post's metadata
+            if (post?.metadata?.emojis) {
+                emojis.concat(post.metadata.emojis);
+            }
 
-            // TODO:  call for metadata
+            // Extracts files from post's metadata
+            if (post?.metadata?.files) {
+                files.concat(post.metadata.files);
+            }
             // TODO: call for file operator
         } // end of for loop
 
         // calls handler for Reactions
         const postReactions = (await this.handleReactions({ reactions, prepareRowsOnly: true })) as Reaction[];
-        batch.push(...postReactions);
+        batch.concat(postReactions);
+
+        // calls handler for Files
+        const postFiles = (await this.handleFiles({ files, prepareRowsOnly: true })) as File[];
+        batch.concat(postFiles);
 
         // TODO: call batch operations
-        // await this.batchOperations({ database, models: batch });
+        await this.batchOperations({ database: database!, models: batch });
 
-        // LAST :: calls handler for PostsInThread
+        // LAST :: calls handler for CustomEmojis, PostsInThread
+        await this.handleIsolatedEntity({
+            optType: OperationType.CREATE,
+            tableName: IsolatedEntities.CUSTOM_EMOJI,
+            values: emojis,
+        });
+
         await this.handlePostsInThread(postsInThread);
     };
 
