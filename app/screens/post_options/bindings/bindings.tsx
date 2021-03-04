@@ -88,6 +88,7 @@ const Option = injectIntl((props: OptionProps) => {
                 channel_id: post.channel_id,
                 post_id: post.id,
                 user_id: props.currentUser.id,
+                location: props.binding.location,
             },
         }, props.intl);
         closeWithAnimation();

@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {AppBinding} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
 
@@ -14,11 +15,16 @@ export function copyAndFillBindings(binding?: AppBinding): AppBinding | undefine
     }
 
     const copy = JSON.parse(JSON.stringify(binding));
-    fillBindingsInformation(copy);
+    fillAndTrimBindingsInformation(copy);
     return copy;
 }
 
-export function fillBindingsInformation(binding?: AppBinding) {
+// fillAndTrimBindingsInformation does:
+// - Build the location (e.g. channel_header/binding)
+// - Inherit app calls
+// - Inherit app ids
+// - Trim invalid bindings (do not have an app call or app id at the leaf)
+export function fillAndTrimBindingsInformation(binding?: AppBinding) {
     if (!binding) {
         return;
     }
@@ -37,7 +43,7 @@ export function fillBindingsInformation(binding?: AppBinding) {
             b.call = binding.call;
         }
 
-        fillBindingsInformation(b);
+        fillAndTrimBindingsInformation(b);
     });
 
     // Trim branches without app_id
@@ -59,4 +65,67 @@ export function fillBindingsInformation(binding?: AppBinding) {
     if (binding.bindings?.length && !binding.call) {
         binding.call = binding.bindings[0].call;
     }
+}
+
+export function validateBindings(binding?: AppBinding) {
+    filterInvalidChannelHeaderBindings(binding);
+    filterInvalidCommands(binding);
+    filterInvalidPostMenuBindings(binding);
+    binding?.bindings?.forEach(fillAndTrimBindingsInformation);
+}
+
+// filterInvalidCommands remove commands without a label
+function filterInvalidCommands(binding?: AppBinding) {
+    if (!binding) {
+        return;
+    }
+
+    const isValidCommand = (b: AppBinding): boolean => {
+        return Boolean(b.label);
+    };
+
+    const validateCommand = (b: AppBinding) => {
+        b.bindings = b.bindings?.filter(isValidCommand);
+        b.bindings?.forEach(validateCommand);
+    };
+
+    binding.bindings?.filter((b) => b.location === AppBindingLocations.COMMAND).forEach(validateCommand);
+}
+
+// filterInvalidChannelHeaderBindings remove bindings
+// without a label.
+function filterInvalidChannelHeaderBindings(binding?: AppBinding) {
+    if (!binding) {
+        return;
+    }
+
+    const isValidChannelHeaderBindings = (b: AppBinding): boolean => {
+        return Boolean(b.label);
+    };
+
+    const validateChannelHeaderBinding = (b: AppBinding) => {
+        b.bindings = b.bindings?.filter(isValidChannelHeaderBindings);
+        b.bindings?.forEach(validateChannelHeaderBinding);
+    };
+
+    binding.bindings?.filter((b) => b.location === AppBindingLocations.CHANNEL_HEADER_ICON).forEach(validateChannelHeaderBinding);
+}
+
+// filterInvalidPostMenuBindings remove bindings
+// without a label.
+function filterInvalidPostMenuBindings(binding?: AppBinding) {
+    if (!binding) {
+        return;
+    }
+
+    const isValidPostMenuBinding = (b: AppBinding): boolean => {
+        return Boolean(b.label);
+    };
+
+    const validatePostMenuBinding = (b: AppBinding) => {
+        b.bindings = b.bindings?.filter(isValidPostMenuBinding);
+        b.bindings?.forEach(validatePostMenuBinding);
+    };
+
+    binding.bindings?.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM).forEach(validatePostMenuBinding);
 }
