@@ -855,7 +855,7 @@ def submit_to_testflight(ipa_path)
       api_key_path = "#{ENV['IOS_API_KEY_ID']}.p8"
       File.open("../#{api_key_path}", 'w') do |f|
         key_string = ENV['IOS_API_KEY']
-        p8_array = key_string.split("\n")
+        p8_array = key_string.split('\n')
         p8_array.each_with_index do |value, index|
           f.write(value)
           f.write("\n") unless index == p8_array.length - 1
@@ -870,7 +870,6 @@ def submit_to_testflight(ipa_path)
       )
     
       File.delete("../#{api_key_path}")
-      UI.success("Uploading with API Key")
       pilot(
         ipa: ipa,
         api_key: api_key
