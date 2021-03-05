@@ -21,12 +21,6 @@ interface Timezone {
     useAutomaticTimezone: true;
 }
 
-interface PostEmbed {
-    type: PostEmbedType;
-    url: string;
-    data: Record<string, any>;
-}
-
 interface FileInfo {
     id: string;
     user_id: string;

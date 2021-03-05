@@ -18,6 +18,7 @@ import {
     RawEmbed,
     PostImage,
     RawPostMetadata,
+    RawDraft,
 } from '@typings/database/database';
 import File from '@typings/database/file';
 import Post from '@typings/database/post';
@@ -31,16 +32,17 @@ import DatabaseManager from '../database_manager';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
+    operateDraftRecord,
     operateFileRecord,
     operateGlobalRecord,
     operatePostInThreadRecord,
+    operatePostMetadataRecord,
     operatePostRecord,
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
-    operatePostMetadataRecord,
 } from './operators';
 import { addPrevPostId, sanitizeReactions } from './utils';
 
@@ -60,7 +62,7 @@ export enum IsolatedEntities {
     TERMS_OF_SERVICE = 'TermsOfService',
 }
 
-const { CUSTOM_EMOJI, FILE, POST, POST_METADATA, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
+const { CUSTOM_EMOJI, DRAFT, FILE, POST, POST_METADATA, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
 
 class DataOperator {
     private defaultDatabase: DatabaseInstance;
@@ -118,7 +120,14 @@ class DataOperator {
     };
 
     // TODO : draft should be a separate handler : handleDraft ( post body, draft info )
-    // handleDraftData = ({ post, draft }) => null;
+    handleDraftData = async (drafts: RawDraft[]) => {
+        await this.handleBase({
+            optType: OperationType.CREATE,
+            values: drafts,
+            tableName: DRAFT,
+            recordOperator: operateDraftRecord,
+        });
+    };
 
     handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
         const database = await this.getDatabase(POSTS_IN_THREAD);
@@ -234,14 +243,6 @@ class DataOperator {
         return null;
     };
 
-    /*
-    *               if (meta?.images) {
-                        images.push({ images: meta?.images, postId: post.id });
-                    }
-                    if (meta?.embeds) {
-                        embeds.push({ embed: meta?.embeds, postId: post.id });
-                    }
-                    * */
     handlePostMetadata = async ({
         embeds,
         images,
@@ -258,7 +259,7 @@ class DataOperator {
             images.forEach((image) => {
                 const imageEntry = Object.entries(images);
                 metadata.push({
-                    data: { url2: imageEntry[0], ...imageEntry[1] },
+                    data: { ...imageEntry[1], url: imageEntry[0] },
                     type: 'images',
                     postId: image.postId,
                 });
@@ -267,7 +268,7 @@ class DataOperator {
             embeds.forEach((postEmbed) => {
                 postEmbed.embed.forEach((embed: RawEmbed) => {
                     metadata.push({
-                        data: { ...embed.data, url: embed.url },
+                        data: { ...embed.data },
                         type: embed.type,
                         postId: postEmbed.postId,
                     });

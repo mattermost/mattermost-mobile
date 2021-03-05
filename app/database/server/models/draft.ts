@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json} from '@nozbe/watermelondb/decorators';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
+import { field, json } from '@nozbe/watermelondb/decorators';
 
-import {MM_TABLES} from '@constants/database';
+import { MM_TABLES } from '@constants/database';
 
-const {CHANNEL, DRAFT, POST} = MM_TABLES.SERVER;
+const { CHANNEL, DRAFT, POST } = MM_TABLES.SERVER;
 
 /**
  * The Draft model represents  the draft state of messages in Direct/Group messages and in channels
@@ -17,12 +17,11 @@ export default class Draft extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-
         /** A DRAFT can belong to only one CHANNEL  */
-        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: { type: 'belongs_to', key: 'channel_id' },
 
         /** A DRAFT is associated to only one POST */
-        [POST]: {type: 'belongs_to', key: 'root_id'},
+        [POST]: { type: 'belongs_to', key: 'root_id' },
     };
 
     /** channel_id : The foreign key pointing to the channel in which the draft was made */

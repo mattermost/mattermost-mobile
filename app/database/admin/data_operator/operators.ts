@@ -11,6 +11,7 @@ import {
     DataFactory,
     RawApp,
     RawCustomEmoji,
+    RawDraft,
     RawFile,
     RawGlobal,
     RawPost,
@@ -22,6 +23,7 @@ import {
     RawSystem,
     RawTermsOfService,
 } from '@typings/database/database';
+import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Post from '@typings/database/post';
@@ -37,6 +39,7 @@ import { OperationType } from './index';
 const { APP, GLOBAL, SERVERS } = MM_TABLES.DEFAULT;
 const {
     CUSTOM_EMOJI,
+    DRAFT,
     FILE,
     POST,
     POST_METADATA,
@@ -273,12 +276,27 @@ export const operatePostMetadataRecord = async ({ database, optType, value }: Da
 
     const generator = (postMeta: PostMetadata) => {
         postMeta._raw.id = postMeta.id;
-        postMeta.data = JSON.stringify(record.data);
+        postMeta.data = record.data;
         postMeta.postId = record.postId;
         postMeta.type = record.type;
     };
 
     return operateBaseRecord({ database, optType, tableName: POST_METADATA, value, generator });
+};
+
+export const operateDraftRecord = async ({ database, optType, value }: DataFactory) => {
+    const record = value as RawDraft;
+    const emptyFileInfo: FileInfo[] = [];
+
+    const generator = (draft: Draft) => {
+        draft._raw.id = record?.id ?? draft.id;
+        draft.rootId = record?.root_id ?? '';
+        draft.message = record?.message ?? '';
+        draft.channelId = record?.channel_id ?? '';
+        draft.files = record?.files ?? emptyFileInfo;
+    };
+
+    return operateBaseRecord({ database, optType, tableName: DRAFT, value, generator });
 };
 
 /**

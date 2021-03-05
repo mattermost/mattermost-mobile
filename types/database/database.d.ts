@@ -88,8 +88,27 @@ export type RawTermsOfService = {
     acceptedAt: number;
 };
 
+export type RawDraft = {
+    id?: string;
+    channel_id: string;
+    files?: FileInfo[];
+    message?: string;
+    root_id?: string;
+};
+
 export type RawEmbed = { data: {}; type: string; url: string };
-export type RawPostMetadata = { data: {}; type: string; postId: string; id?: string };
+
+export type RawPostMetadata = {
+    data: any;
+    type: string;
+    postId: string;
+    id?: string;
+};
+
+interface PostMetadataTypes {
+    embeds: PostEmbed;
+    images: Dictionary<PostImage>;
+}
 
 export type RawFile = {
     create_at: number;
@@ -119,6 +138,12 @@ export type RawReaction = {
     user_id: string;
 };
 
+interface PostEmbed {
+    type: PostEmbedType;
+    url: string;
+    data: Record<string, any>;
+}
+
 interface PostImage {
     height: number;
     width: number;
@@ -126,12 +151,12 @@ interface PostImage {
     frame_count?: number;
 }
 
-interface PostMetadataTypes {
-    embeds: PostEmbed;
-    images: Dictionary<PostImage>;
+interface PostImageMetadata extends PostImage {
+    url: string;
 }
 
-export type PostMetadataData = PostEmbed | PostImage;
+export type PostMetadataData = Record<string, any> | PostImageMetadata;
+
 export type PostMetadataType = 'images' | 'embeds';
 
 // The RawPost describes the shape of the object received from a getPosts request
@@ -215,6 +240,7 @@ export type RawPostsInThread = {
 export type RecordValue =
     | RawApp
     | RawCustomEmoji
+    | RawDraft
     | RawFile
     | RawGlobal
     | RawPost
