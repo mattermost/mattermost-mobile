@@ -8,10 +8,11 @@ import {
     configureStore,
     Client4,
     AppBinding,
+    checkForExecuteSuggestion,
 } from './app_command_parser_test_dependencies';
 
 import {
-    getExecuteSuggestionDescription,
+    AutocompleteSuggestion,
 } from './app_command_parser_dependencies';
 
 import {
@@ -599,14 +600,22 @@ describe('AppCommandParser', () => {
 
         test('create flags just after subcommand', async () => {
             const suggestions = await parser.getSuggestions('/jira issue create ');
+
+            let executeCommand: AutocompleteSuggestion[] = [];
+            if (checkForExecuteSuggestion) {
+                executeCommand = [
+                    {
+                        Complete: 'jira issue create _execute_current_command',
+                        Description: 'Select this option or use Ctrl+Enter to execute the current command.',
+                        Hint: '',
+                        IconData: '_execute_current_command',
+                        Suggestion: 'Execute Current Command',
+                    },
+                ];
+            }
+
             expect(suggestions).toEqual([
-                {
-                    Complete: 'jira issue create _execute_current_command',
-                    Description: getExecuteSuggestionDescription(),
-                    Hint: '',
-                    IconData: '_execute_current_command',
-                    Suggestion: 'Execute Current Command',
-                },
+                ...executeCommand,
                 {
                     Complete: 'jira issue create --project',
                     Description: 'The Jira project description',
@@ -640,14 +649,22 @@ describe('AppCommandParser', () => {
 
         test('used flags do not appear', async () => {
             const suggestions = await parser.getSuggestions('/jira issue create --project KT ');
+
+            let executeCommand: AutocompleteSuggestion[] = [];
+            if (checkForExecuteSuggestion) {
+                executeCommand = [
+                    {
+                        Complete: 'jira issue create --project KT _execute_current_command',
+                        Description: 'Select this option or use Ctrl+Enter to execute the current command.',
+                        Hint: '',
+                        IconData: '_execute_current_command',
+                        Suggestion: 'Execute Current Command',
+                    },
+                ];
+            }
+
             expect(suggestions).toEqual([
-                {
-                    Complete: 'jira issue create --project KT _execute_current_command',
-                    Description: getExecuteSuggestionDescription(),
-                    Hint: '',
-                    IconData: '_execute_current_command',
-                    Suggestion: 'Execute Current Command',
-                },
+                ...executeCommand,
                 {
                     Complete: 'jira issue create --project KT --summary',
                     Description: 'The Jira issue summary',
@@ -815,11 +832,17 @@ describe('AppCommandParser', () => {
 
         test('filled out form shows execute', async () => {
             const suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic epicvalue --verbose true ');
+
+            if (!checkForExecuteSuggestion) {
+                expect(suggestions).toEqual([]);
+                return;
+            }
+
             expect(suggestions).toEqual([
                 {
                     Complete: 'jira issue create --project KT --summary "great feature" --epic epicvalue --verbose true _execute_current_command',
                     Suggestion: 'Execute Current Command',
-                    Description: getExecuteSuggestionDescription(),
+                    Description: 'Select this option or use Ctrl+Enter to execute the current command.',
                     IconData: '_execute_current_command',
                     Hint: '',
                 },

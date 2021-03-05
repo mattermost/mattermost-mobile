@@ -80,6 +80,14 @@ const SlashSuggestionItem = (props: Props) => {
         suggestionText = suggestionText.substring(1);
     }
 
+    if (hint) {
+        if (suggestionText.length) {
+            suggestionText += ` ${hint}`;
+        } else {
+            suggestionText = hint;
+        }
+    }
+
     return (
         <TouchableWithFeedback
             onPress={completeSuggestion}
@@ -97,7 +105,7 @@ const SlashSuggestionItem = (props: Props) => {
                     />
                 </View>
                 <View style={style.suggestionContainer}>
-                    <Text style={style.suggestionName}>{`${suggestionText} ${hint}`}</Text>
+                    <Text style={style.suggestionName}>{`${suggestionText}`}</Text>
                     <Text
                         ellipsizeMode='tail'
                         numberOfLines={1}

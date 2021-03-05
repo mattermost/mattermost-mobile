@@ -10,3 +10,5 @@ export {Client4} from '@mm-redux/client';
 
 export type {AppBinding, AppForm} from '@mm-redux/types/apps';
 export {AppFieldTypes} from '@mm-redux/constants/apps';
+
+export const checkForExecuteSuggestion = false;

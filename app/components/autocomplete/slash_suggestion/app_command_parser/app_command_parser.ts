@@ -30,7 +30,7 @@ import {
     doAppCall,
     getStore,
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
-    getExecuteSuggestionDescription,
+    getExecuteSuggestion,
     displayError,
 } from './app_command_parser_dependencies';
 
@@ -592,8 +592,10 @@ export class AppCommandParser {
         const hasValue = (parsed.state !== ParseState.EndValue || (parsed.field && parsed.values[parsed.field.name] !== undefined));
 
         if (executableStates.includes(parsed.state) && call && hasRequired && hasValue) {
-            const execute = this.getExecuteSuggestion(parsed);
-            suggestions = [execute, ...suggestions];
+            const execute = getExecuteSuggestion(parsed);
+            if (execute) {
+                suggestions = [execute, ...suggestions];
+            }
         }
 
         return suggestions.map((suggestion) => this.decorateSuggestionComplete(parsed, suggestion));
@@ -804,17 +806,6 @@ export class AppCommandParser {
         return [];
     }
 
-    // getExecuteSuggestion returns the "Execute Current Command" suggestion
-    getExecuteSuggestion = (parsed: ParsedCommand): AutocompleteSuggestion => {
-        return {
-            Complete: parsed.command.substring(1) + EXECUTE_CURRENT_COMMAND_ITEM_ID,
-            Suggestion: 'Execute Current Command',
-            Hint: '',
-            Description: getExecuteSuggestionDescription(parsed),
-            IconData: EXECUTE_CURRENT_COMMAND_ITEM_ID,
-        };
-    }
-
     // getMissingFields collects the required fields that were not supplied in a submission
     getMissingFields = (parsed: ParsedCommand): AppField[] => {
         const form = parsed.form;
@@ -866,7 +857,7 @@ export class AppCommandParser {
             });
         }
 
-        return [{Suggestion: 'Could not find any suggestions'} as AutocompleteSuggestion];
+        return [];
     }
 
     // getSuggestionsForField gets suggestions for a positional or flag field value
@@ -941,12 +932,21 @@ export class AppCommandParser {
         try {
             res = await this.store.dispatch(doAppCall<ResponseType>(payload, null));
         } catch (e) {
-            return [{Suggestion: `Error: ${e.message}`} as AutocompleteSuggestion];
+            this.displayError(e.message);
+            return [];
         }
 
-        const items = res?.data?.data?.items;
+        const callResponse = res.data;
+
+        if (callResponse?.type === AppCallResponseTypes.ERROR) {
+            const errorMessage = callResponse.error || 'Unknown error.';
+            this.displayError(errorMessage);
+            return [];
+        }
+
+        const items = callResponse?.data?.items;
         if (!items) {
-            return [{Suggestion: 'Received no data for dynamic suggestions'} as AutocompleteSuggestion];
+            return [];
         }
 
         return items.map((s): AutocompleteSuggestion => ({
