@@ -18,6 +18,7 @@ import {TextInput} from 'react-native-gesture-handler';
 import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {mergeNavigationOptions, dismissModal} from '@actions/navigation';
+import ClearButton from '@components/custom_status/clear_button';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -40,7 +41,7 @@ interface Props extends NavigationComponentProps {
     recentCustomStatuses: UserCustomStatus[];
     actions: {
         setCustomStatus: (customStatus: UserCustomStatus) => void;
-        unsetCustomStatus : () => void;
+        unsetCustomStatus: () => void;
         removeRecentCustomStatus: (customStatus: UserCustomStatus) => void;
     };
 }
@@ -232,6 +233,12 @@ class CustomStatusModal extends PureComponent<Props, State> {
                     secureTextEntry={false}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 />
+                <View style={style.clearButton}>
+                    <ClearButton
+                        handlePress={this.clearHandle}
+                        theme={theme}
+                    />
+                </View>
             </View>
         );
 
@@ -310,6 +317,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginBottom: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginLeft: 16,
+        },
+        clearButton: {
+            position: 'absolute',
+            top: 12,
+            right: 14,
         },
     };
 });

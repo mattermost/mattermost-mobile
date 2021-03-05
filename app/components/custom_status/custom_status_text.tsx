@@ -4,10 +4,9 @@ import React from 'react';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import type {Theme} from '@mm-redux/types/preferences';
 import {Text} from 'react-native';
-import FormattedText from '@components/formatted_text';
 
 interface ComponentProps {
-    text?: string;
+    text: string;
     theme: Theme;
 }
 
@@ -15,16 +14,11 @@ const CustomStatusLabel = (props: ComponentProps) => {
     const {text, theme} = props;
     const style = getStyleSheet(theme);
 
-    return text === undefined ?
-        <FormattedText
-            id={'sidebar_right_menu.set_status'}
-            defaultMessage={'Set a Status'}
-            style={style.label}
-        /> :
-        <Text
-            numberOfLines={1}
-            style={style.label}
-        >{text}</Text>;
+    return (
+        <Text style={style.label}>
+            {text}
+        </Text>
+    );
 };
 
 export default CustomStatusLabel;
