@@ -47,7 +47,7 @@ const CustomStatusSuggestion = (props: Props) => {
                 <View style={style.iconContainer}>
                     <Emoji
                         emojiName={emoji}
-                        size={24}
+                        size={20}
                     />
                 </View>
                 <View style={style.wrapper}>

@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React, {PureComponent} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {NavigationComponentProps} from 'react-native-navigation';
+import {Navigation, NavigationComponentProps} from 'react-native-navigation';
 
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
@@ -14,10 +14,9 @@ import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {Theme} from '@mm-redux/types/preferences';
-import {TextInput} from 'react-native-gesture-handler';
 import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {mergeNavigationOptions, dismissModal} from '@actions/navigation';
+import {mergeNavigationOptions, dismissModal, showModalOverCurrentContext} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
 
 type DefaultUserCustomStatus = {
@@ -87,17 +86,30 @@ class CustomStatusModal extends PureComponent<Props, State> {
         };
     }
 
+    componentDidMount() {
+        Navigation.events().bindComponent(this);
+    }
+
     navigationButtonPressed() {
         this.handleSetStatus();
     }
 
     handleSetStatus = () => {
         const {emoji, text} = this.state;
-        const customStatus = {
-            emoji: emoji || 'speech_balloon',
-            text: text.trim(),
-        };
-        this.props.actions.setCustomStatus(customStatus);
+        const isStatusSet = emoji || text;
+        if (isStatusSet) {
+            const {customStatus} = this.props;
+            const isStatusSame = customStatus.emoji === emoji && customStatus.text === text;
+            if (!isStatusSame) {
+                const status = {
+                    emoji: emoji || 'speech_balloon',
+                    text: text.trim(),
+                };
+                this.props.actions.setCustomStatus(status);
+            }
+        } else {
+            this.props.actions.unsetCustomStatus();
+        }
         dismissModal();
     };
 
@@ -194,29 +206,50 @@ class CustomStatusModal extends PureComponent<Props, State> {
         );
     };
 
+    openEmojiPicker = () => {
+        const screen = 'AddReaction';
+        const passProps = {
+            onEmojiPress: this.handleEmojiClick,
+        };
+
+        requestAnimationFrame(() => {
+            showModalOverCurrentContext(screen, passProps);
+        });
+    }
+
+    handleEmojiClick = (emoji: string) => {
+        dismissModal();
+        this.setState({emoji});
+    }
+
     render() {
         const {emoji, text} = this.state;
         const {theme} = this.props;
 
+        const isStatusSet = emoji || text;
         const style = getStyleSheet(theme);
-        const customStatusEmoji = emoji || text ? (
-            <View style={style.emoji}>
-                <Emoji
-                    emojiName={emoji || 'speech_balloon'}
-                    size={24}
-                />
-            </View>
-        ) : (
-            <CompassIcon
-                name='emoticon-happy-outline'
-                size={24}
-                style={style.icon}
-            />
+        const customStatusEmoji = (
+            <TouchableOpacity
+                onPress={this.openEmojiPicker}
+                style={style.emoji}
+            >
+                {isStatusSet ? (
+                    <Emoji
+                        emojiName={emoji || 'speech_balloon'}
+                        size={20}
+                    />
+                ) : (
+                    <CompassIcon
+                        name='emoticon-happy-outline'
+                        size={24}
+                        style={style.icon}
+                    />
+                )}
+            </TouchableOpacity>
         );
 
         const customStatusInput = (
             <View style={style.inputContainer}>
-                {customStatusEmoji}
                 <TextInput
                     value={text}
                     placeholder={this.props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'})}
@@ -233,12 +266,15 @@ class CustomStatusModal extends PureComponent<Props, State> {
                     secureTextEntry={false}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 />
-                <View style={style.clearButton}>
-                    <ClearButton
-                        handlePress={this.clearHandle}
-                        theme={theme}
-                    />
-                </View>
+                {customStatusEmoji}
+                {isStatusSet ? (
+                    <View style={style.clearButton}>
+                        <ClearButton
+                            handlePress={this.clearHandle}
+                            theme={theme}
+                        />
+                    </View>
+                ) : null}
             </View>
         );
 
@@ -265,12 +301,6 @@ class CustomStatusModal extends PureComponent<Props, State> {
 export default injectIntl(CustomStatusModal);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    const emojiStyle = {
-        position: 'absolute',
-        left: 14,
-        top: 12,
-    };
-
     return {
         container: {
             flex: 1,
@@ -297,11 +327,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 48,
         },
         icon: {
-            ...emojiStyle,
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         emoji: {
-            ...emojiStyle,
+            position: 'absolute',
+            left: 14,
+            top: 12,
         },
         separator: {
             marginTop: 32,

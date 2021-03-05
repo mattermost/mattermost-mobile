@@ -221,7 +221,7 @@ export default class SettingsSidebarBase extends PureComponent {
             (
                 <Emoji
                     emojiName={customStatus.emoji}
-                    size={22}
+                    size={20}
                 />
             ) :
             (
