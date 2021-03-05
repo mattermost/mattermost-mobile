@@ -36,6 +36,7 @@ export type Props = {
     suggestions: AutocompleteSuggestion[];
     rootId?: string;
     channelId: string;
+    appsEnabled: boolean;
 };
 
 type State = {
@@ -106,7 +107,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             this.showBaseCommands(nextValue, nextCommands, prevProps.channelId, prevProps.rootId);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
             // If this is an app command, then hand it off to the app command parser.
-            if (this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
+            if (this.props.appsEnabled && this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
                 this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
             } else if (nextSuggestions === prevProps.suggestions) {
                 const args = {
@@ -116,15 +117,9 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
             } else {
                 const matches: AutocompleteSuggestion[] = [];
-                nextSuggestions.forEach((sug: AutocompleteSuggestion) => {
-                    if (!this.contains(matches, '/' + sug.Complete)) {
-                        matches.push({
-                            Complete: sug.Complete,
-                            Suggestion: sug.Suggestion,
-                            Hint: sug.Hint,
-                            Description: sug.Description,
-                            IconData: '',
-                        });
+                nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
+                    if (!this.contains(matches, '/' + suggestion.Complete)) {
+                        matches.push(suggestion);
                     }
                 });
                 this.updateSuggestions(matches);
@@ -135,9 +130,17 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
     }
 
     showBaseCommands = (text: string, commands: Command[], channelID: string, rootID?: string) => {
-        let matches = this.getAppBaseCommandSuggestions(text, channelID, rootID);
-        matches = matches.concat(this.filterSlashSuggestions(text.substring(1), commands));
+        let matches: AutocompleteSuggestion[] = [];
+
+        if (this.props.appsEnabled) {
+            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, rootID)
+            matches = matches.concat(appCommands);
+        }
+
+        matches = matches.concat(this.filterCommands(text.substring(1), commands));
+
         matches.sort((match1, match2) => {
+            if (match1.Suggestion === match2.Suggestion) return 0;
             return match1.Suggestion > match2.Suggestion ? 1 : -1;
         });
 
@@ -169,7 +172,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         this.props.onResultCountChange(matches.length);
     }
 
-    filterSlashSuggestions = (matchTerm: string, commands: Command[]): AutocompleteSuggestion[] => {
+    filterCommands = (matchTerm: string, commands: Command[]): AutocompleteSuggestion[] => {
         const data = commands.filter((command) => {
             if (!command.auto_complete) {
                 return false;
@@ -185,7 +188,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 Suggestion: '/' + item.trigger,
                 Hint: item.auto_complete_hint,
                 Description: item.auto_complete_desc,
-                IconData: '',
+                IconData: item.icon_url,
             };
         });
     }

@@ -177,7 +177,7 @@ export const createCommand: AppBinding = {
     } as AppForm,
 };
 
-export const definitions: AppBinding[] = [{
+export const testBindings: AppBinding[] = [{
     app_id: '',
     label: '',
     location: AppBindingLocations.COMMAND,

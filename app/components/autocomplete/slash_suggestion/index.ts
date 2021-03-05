@@ -11,6 +11,8 @@ import {getAutocompleteCommandsList, getCommandAutocompleteSuggestionsList} from
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
+import {appsEnabled} from '@utils/apps';
+
 import SlashSuggestion from './slash_suggestion';
 
 // TODO: Remove when all below commands have been implemented
@@ -32,6 +34,7 @@ function mapStateToProps(state: GlobalState) {
         currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
         suggestions: getCommandAutocompleteSuggestionsList(state),
+        appsEnabled: appsEnabled(state),
     };
 }
 

@@ -2,13 +2,59 @@
 
 exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
 <FlatList
-  data={Array []}
+  data={
+    Array [
+      Object {
+        "Complete": "jira",
+        "Description": "",
+        "Hint": "",
+        "IconData": "",
+        "Suggestion": "/jira",
+      },
+      Object {
+        "Complete": "jitsi",
+        "Description": "The Jitsi Description",
+        "Hint": "The Jitsi Hint",
+        "IconData": "Jitsi icon",
+        "Suggestion": "/jitsi",
+      },
+      Object {
+        "Complete": "other",
+        "Description": "",
+        "Hint": "",
+        "IconData": "",
+        "Suggestion": "/other",
+      },
+    ]
+  }
   disableVirtualization={false}
   extraData={
     Object {
       "active": true,
-      "dataSource": Array [],
-      "lastCommandRequest": 0,
+      "dataSource": Array [
+        Object {
+          "Complete": "jira",
+          "Description": "",
+          "Hint": "",
+          "IconData": "",
+          "Suggestion": "/jira",
+        },
+        Object {
+          "Complete": "jitsi",
+          "Description": "The Jitsi Description",
+          "Hint": "The Jitsi Hint",
+          "IconData": "Jitsi icon",
+          "Suggestion": "/jitsi",
+        },
+        Object {
+          "Complete": "other",
+          "Description": "",
+          "Hint": "",
+          "IconData": "",
+          "Suggestion": "/other",
+        },
+      ],
+      "lastCommandRequest": 1614984439033,
     }
   }
   horizontal={false}

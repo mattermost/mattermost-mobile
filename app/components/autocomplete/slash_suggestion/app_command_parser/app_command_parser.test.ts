@@ -24,7 +24,7 @@ import {
 
 import {
     reduxTestState,
-    definitions,
+    testBindings,
 } from './test_data';
 
 const mockStore = configureStore([thunk]);
@@ -45,7 +45,7 @@ describe('AppCommandParser', () => {
 
     let parser: AppCommandParser;
     beforeEach(async () => {
-        const store = await makeStore(definitions);
+        const store = await makeStore(testBindings);
         parser = new AppCommandParser(store as any, '');
     });
 
@@ -218,7 +218,7 @@ describe('AppCommandParser', () => {
 
         table.forEach((tc) => {
             test(tc.title, async () => {
-                let bindings = definitions[0].bindings as AppBinding[];
+                let bindings = testBindings[0].bindings as AppBinding[];
                 bindings = groupBindingsByApp(bindings);
 
                 let a = new ParsedCommand(tc.command, parser);
@@ -421,7 +421,7 @@ describe('AppCommandParser', () => {
 
         table.forEach((tc) => {
             test(tc.title, async () => {
-                let bindings = definitions[0].bindings as AppBinding[];
+                let bindings = testBindings[0].bindings as AppBinding[];
                 bindings = groupBindingsByApp(bindings);
 
                 let a = new ParsedCommand(tc.command, parser);
