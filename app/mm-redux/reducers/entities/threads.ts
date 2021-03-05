@@ -49,7 +49,7 @@ export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, 
 
         return {
             ...state,
-            [action.data.team_id]: [...nextSet],
+            [action.data.team_id]: Array.from(nextSet),
         };
     }
     case ThreadTypes.RECEIVED_THREAD: {
@@ -63,7 +63,7 @@ export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, 
 
         return {
             ...state,
-            [action.data.team_id]: [...nextSet],
+            [action.data.team_id]: Array.from(nextSet),
         };
     }
     case TeamTypes.LEAVE_TEAM: {
