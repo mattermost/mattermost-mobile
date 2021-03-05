@@ -1,12 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {AppBindingLocations} from '@mm-redux/constants/apps';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {AppBinding} from '@mm-redux/types/apps';
+import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
 export function appsEnabled(state: GlobalState) { // eslint-disable-line @typescript-eslint/no-unused-vars
-    // TODO: Add feature branch and/or proxy state check
-    return true;
+    const enabled = getConfig(state)?.['FeatureFlagAppsEnabled' as keyof Partial<Config>];
+    if (enabled === 'true') {
+        return true;
+    }
+    return false;
 }
 
 export function copyAndFillBindings(binding?: AppBinding): AppBinding | undefined {
