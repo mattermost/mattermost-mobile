@@ -18,7 +18,12 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
         const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, call?.context.channel_id, call?.context.root_id));
         try {
             if (!call.type) {
-                call.type = AppCallTypes.SUBMIT;
+                return {
+                    data: {
+                        type: AppCallResponseTypes.ERROR,
+                        error: 'No call type provided',
+                    },
+                };
             }
 
             const res = await Client4.executeAppCall(call) as AppCallResponse<Res>;
