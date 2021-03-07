@@ -44,9 +44,8 @@ export function executeCommand(message, channelId, rootId) {
             const res = await dispatch(doAppCall(call));
             if (res?.data?.error) {
                 return {error: {message: res.data.error}};
-            } else {
-                return res;
             }
+            return res;
         }
 
         const {data, error} = await dispatch(executeCommandService(msg, args));

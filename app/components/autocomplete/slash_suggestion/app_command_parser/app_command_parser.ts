@@ -712,9 +712,8 @@ export class AppCommandParser {
             },
         };
 
-        let callResponse: AppCallResponse | undefined;
         const res = await this.store.dispatch(doAppCall(payload, null)) as {data?: AppCallResponse};
-        callResponse = res.data;
+        const callResponse: AppCallResponse | undefined = res.data;
         if (callResponse?.type === AppCallResponseTypes.ERROR) {
             const errorMessage = callResponse.error || 'Unknown error.';
             this.displayError(errorMessage);
