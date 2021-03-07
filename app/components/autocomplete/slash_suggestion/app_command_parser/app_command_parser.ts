@@ -889,7 +889,7 @@ export class AppCommandParser {
             Complete: complete,
             Suggestion: parsed.incomplete,
             Description: f.description || '',
-            Hint: f.hint || '',
+            Hint: '',
             IconData: parsed.binding?.icon || '',
         }];
     }
