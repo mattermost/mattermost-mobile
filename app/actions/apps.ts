@@ -63,7 +63,13 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
         } catch (err) {
             const msg = err.message || 'We found an unexpected error.';
             ephemeral(msg);
-            return {error: msg};
+
+            return {
+                data: {
+                    type: AppCallResponseTypes.ERROR,
+                    error: {message: msg},
+                },
+            };
         }
     };
 }

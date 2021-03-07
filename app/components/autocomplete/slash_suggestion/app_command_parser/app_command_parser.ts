@@ -713,20 +713,11 @@ export class AppCommandParser {
         };
 
         let callResponse: AppCallResponse | undefined;
-        try {
-            const res = await this.store.dispatch(doAppCall(payload, null)) as {data?: AppCallResponse; error?: Error};
-            if (res.error) {
-                this.displayError(res.error);
-                return undefined;
-            }
-            callResponse = res.data;
-            if (callResponse?.type === AppCallResponseTypes.ERROR) {
-                const errorMessage = callResponse.error || 'Unknown error.';
-                this.displayError(errorMessage);
-                return undefined;
-            }
-        } catch (e) {
-            this.displayError(e);
+        const res = await this.store.dispatch(doAppCall(payload, null)) as {data?: AppCallResponse};
+        callResponse = res.data;
+        if (callResponse?.type === AppCallResponseTypes.ERROR) {
+            const errorMessage = callResponse.error || 'Unknown error.';
+            this.displayError(errorMessage);
             return undefined;
         }
 
@@ -928,14 +919,7 @@ export class AppCommandParser {
         payload.values = values;
 
         type ResponseType = {items: AppSelectOption[]};
-        let res: {data?: AppCallResponse<ResponseType>; error?: any};
-        try {
-            res = await this.store.dispatch(doAppCall<ResponseType>(payload, null));
-        } catch (e) {
-            this.displayError(e.message);
-            return [];
-        }
-
+        const res: {data?: AppCallResponse<ResponseType>} = await this.store.dispatch(doAppCall<ResponseType>(payload, null));
         const callResponse = res.data;
 
         if (callResponse?.type === AppCallResponseTypes.ERROR) {

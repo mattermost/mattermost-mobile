@@ -37,11 +37,16 @@ export function executeCommand(message, channelId, rootId) {
         if (parser.isAppCommand(msg)) {
             const call = await parser.composeCallFromCommand(message);
             if (!call) {
-                return {error: new Error('Error submitting command')};
+                return {error: {message: 'Error submitting command'}};
             }
 
             call.type = AppCallTypes.SUBMIT;
-            return dispatch(doAppCall(call));
+            const res = await dispatch(doAppCall(call));
+            if (res?.data?.error) {
+                return {error: {message: res.data.error}};
+            } else {
+                return res;
+            }
         }
 
         const {data, error} = await dispatch(executeCommandService(msg, args));

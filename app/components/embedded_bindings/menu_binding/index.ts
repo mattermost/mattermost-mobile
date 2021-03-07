@@ -4,13 +4,14 @@
 import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 
-import MenuBinding from './menu_binding';
 import {GlobalState} from '@mm-redux/types/store';
 import {doAppCall} from '@actions/apps';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {AppCall} from '@mm-redux/types/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
+
+import MenuBinding from './menu_binding';
 
 type OwnProps = {
     postId: string;
