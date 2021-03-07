@@ -567,7 +567,7 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue view',
                     Description: 'The Jira issue key',
-                    Hint: 'MM-11343',
+                    Hint: '',
                     IconData: '',
                     Suggestion: '',
                 },
@@ -719,7 +719,7 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue create --project KT --summary',
                     Description: 'The Jira issue summary',
-                    Hint: 'The thing is working great!',
+                    Hint: '',
                     IconData: '',
                     Suggestion: '',
                 },
@@ -732,7 +732,7 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue create --project KT --summary Sum',
                     Description: 'The Jira issue summary',
-                    Hint: 'The thing is working great!',
+                    Hint: '',
                     IconData: '',
                     Suggestion: 'Sum',
                 },
@@ -745,7 +745,7 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue create --project KT --summary "Sum"',
                     Description: 'The Jira issue summary',
-                    Hint: 'The thing is working great!',
+                    Hint: '',
                     IconData: '',
                     Suggestion: 'Sum',
                 },
@@ -758,7 +758,7 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue create --project KT --summary `Sum`',
                     Description: 'The Jira issue summary',
-                    Hint: 'The thing is working great!',
+                    Hint: '',
                     IconData: '',
                     Suggestion: 'Sum',
                 },
@@ -771,7 +771,7 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue create --summary',
                     Description: 'The Jira issue summary',
-                    Hint: 'The thing is working great!',
+                    Hint: '',
                     IconData: '',
                     Suggestion: '',
                 },
