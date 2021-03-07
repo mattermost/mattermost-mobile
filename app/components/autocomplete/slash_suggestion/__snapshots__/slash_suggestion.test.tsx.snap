@@ -5,25 +5,11 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
   data={
     Array [
       Object {
-        "Complete": "jira",
-        "Description": "",
-        "Hint": "",
-        "IconData": "",
-        "Suggestion": "/jira",
-      },
-      Object {
-        "Complete": "jitsi",
-        "Description": "The Jitsi Description",
-        "Hint": "The Jitsi Hint",
-        "IconData": "Jitsi icon",
-        "Suggestion": "/jitsi",
-      },
-      Object {
-        "Complete": "other",
-        "Description": "",
-        "Hint": "",
-        "IconData": "",
-        "Suggestion": "/other",
+        "Complete": "thetrigger",
+        "Description": "The Description",
+        "Hint": "The Hint",
+        "IconData": "iconurl.com",
+        "Suggestion": "/thetrigger",
       },
     ]
   }
@@ -33,28 +19,14 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
       "active": true,
       "dataSource": Array [
         Object {
-          "Complete": "jira",
-          "Description": "",
-          "Hint": "",
-          "IconData": "",
-          "Suggestion": "/jira",
-        },
-        Object {
-          "Complete": "jitsi",
-          "Description": "The Jitsi Description",
-          "Hint": "The Jitsi Hint",
-          "IconData": "Jitsi icon",
-          "Suggestion": "/jitsi",
-        },
-        Object {
-          "Complete": "other",
-          "Description": "",
-          "Hint": "",
-          "IconData": "",
-          "Suggestion": "/other",
+          "Complete": "thetrigger",
+          "Description": "The Description",
+          "Hint": "The Hint",
+          "IconData": "iconurl.com",
+          "Suggestion": "/thetrigger",
         },
       ],
-      "lastCommandRequest": 1614984439033,
+      "lastCommandRequest": 1234,
     }
   }
   horizontal={false}

@@ -133,14 +133,16 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         let matches: AutocompleteSuggestion[] = [];
 
         if (this.props.appsEnabled) {
-            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, rootID)
+            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, rootID);
             matches = matches.concat(appCommands);
         }
 
         matches = matches.concat(this.filterCommands(text.substring(1), commands));
 
         matches.sort((match1, match2) => {
-            if (match1.Suggestion === match2.Suggestion) return 0;
+            if (match1.Suggestion === match2.Suggestion) {
+                return 0;
+            }
             return match1.Suggestion > match2.Suggestion ? 1 : -1;
         });
 

@@ -45,7 +45,7 @@ describe('components/autocomplete/slash_suggestion', () => {
         auto_complete_desc: 'The Jitsi Description',
         auto_complete_hint: 'The Jitsi Hint',
         display_name: 'The Jitsi Display Name',
-        icon_url: 'Jitsi icon'
+        icon_url: 'Jitsi icon',
     } as Command;
 
     const baseProps: Props = {
@@ -87,25 +87,34 @@ describe('components/autocomplete/slash_suggestion', () => {
         };
 
         const wrapper = shallow(<SlashSuggestion {...props}/>);
-        wrapper.setState({active: true});
-        wrapper.setProps({value: '/'});
+
+        const dataSource: AutocompleteSuggestion[] = [
+            {
+                Complete: 'thetrigger',
+                Description: 'The Description',
+                Hint: 'The Hint',
+                IconData: 'iconurl.com',
+                Suggestion: '/thetrigger',
+            },
+        ];
+        wrapper.setState({active: true, dataSource, lastCommandRequest: 1234});
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should show commands from props.commands', async () => {
-        const sampleCommand = {
+        const command = {
             trigger: 'thetrigger',
             auto_complete: true,
             auto_complete_desc: 'The Description',
             auto_complete_hint: 'The Hint',
             display_name: 'The Display Name',
-            icon_url: 'iconurl.com'
+            icon_url: 'iconurl.com',
         } as Command;
 
         const props: Props = {
             ...baseProps,
-            commands: [sampleCommand],
+            commands: [command],
         };
 
         const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
@@ -199,7 +208,7 @@ describe('components/autocomplete/slash_suggestion', () => {
         };
 
         const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
-        wrapper.setProps({value: '/jira i'});
+        wrapper.setProps({value: '/jira i', suggestions: []});
 
         const expected: AutocompleteSuggestion[] = [
             {
@@ -217,8 +226,8 @@ describe('components/autocomplete/slash_suggestion', () => {
         });
     });
 
-    test('should avoid using app commands when apps are disabled', async (done) => {
-        let props: Props = {
+    test('should avoid using app commands when apps are disabled', async () => {
+        const props: Props = {
             ...baseProps,
             appsEnabled: false,
         };
@@ -249,10 +258,6 @@ describe('components/autocomplete/slash_suggestion', () => {
         ]);
 
         wrapper.setProps({value: '/jira i', suggestions: []});
-
-        setTimeout(() => {
-            expect(wrapper.state('dataSource')).toEqual([]);
-            done();
-        });
+        expect(wrapper.state('dataSource')).toEqual([]);
     });
 });
