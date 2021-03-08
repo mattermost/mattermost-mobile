@@ -114,7 +114,7 @@ public class RealPathUtil {
 
         try {
             if (TextUtils.isEmpty(fileName)) {
-                fileName = uri.getLastPathSegment().toString().trim();
+                fileName = sanitizeFilename(uri.getLastPathSegment().toString().trim());
             }
 
 
