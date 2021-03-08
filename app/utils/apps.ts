@@ -8,10 +8,7 @@ import {GlobalState} from '@mm-redux/types/store';
 
 export function appsEnabled(state: GlobalState) { // eslint-disable-line @typescript-eslint/no-unused-vars
     const enabled = getConfig(state)?.['FeatureFlagAppsEnabled' as keyof Partial<Config>];
-    if (enabled === 'true') {
-        return true;
-    }
-    return false;
+    return enabled === 'true';
 }
 
 export function copyAndFillBindings(binding?: AppBinding): AppBinding | undefined {
