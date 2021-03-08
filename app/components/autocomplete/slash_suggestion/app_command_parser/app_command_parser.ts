@@ -57,26 +57,6 @@ export const ParseState = keyMirror({
     Error: null,
 });
 
-// This will go away once each App's base command is defined separately
-export const groupBindingsByApp = (bindings: AppBinding[]): AppBinding[] => {
-    const grouped: {[appID: string]: AppBinding} = {};
-
-    for (const b of bindings) {
-        grouped[b.app_id] = grouped[b.app_id] || {
-            app_id: b.app_id,
-            label: b.app_id,
-            location: AppBindingLocations.COMMAND,
-            bindings: [],
-        };
-
-        const group = grouped[b.app_id];
-        group.bindings = group.bindings || [];
-        group.bindings.push(b);
-    }
-
-    return Object.values(grouped);
-};
-
 interface FormsCache {
     getForm: (location: string, binding: AppBinding) => Promise<AppForm | undefined>;
 }
@@ -649,7 +629,7 @@ export class AppCommandParser {
     // They are grouped by app id since each app has one base command
     getCommandBindings = (): AppBinding[] => {
         const bindings = getAppsBindings(this.store.getState(), AppBindingLocations.COMMAND);
-        return groupBindingsByApp(bindings);
+        return bindings;
     }
 
     // getChannel gets the channel in which the user is typing the command
