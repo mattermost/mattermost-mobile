@@ -20,7 +20,8 @@ import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
 import Emoji from '@components/emoji';
-import CustomStatusLabel from './custom_status_label';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import ClearButton from '@components/custom_status/clear_button';
 import {changeOpacity} from '@utils/theme';
 
 export default class SettingsSidebarBase extends PureComponent {
@@ -210,17 +211,17 @@ export default class SettingsSidebarBase extends PureComponent {
             return null;
         }
         const isStatusSet = customStatus && (customStatus.text || customStatus.emoji);
-        const labelComponent = (
-            <CustomStatusLabel
-                text={customStatus?.text}
+        const labelComponent = isStatusSet ? (
+            <CustomStatusText
+                text={customStatus.text}
                 theme={theme}
             />
-        );
+        ) : null;
         const customStatusEmoji = isStatusSet ?
             (
                 <Emoji
                     emojiName={customStatus.emoji}
-                    size={24}
+                    size={20}
                 />
             ) :
             (
@@ -231,24 +232,20 @@ export default class SettingsSidebarBase extends PureComponent {
                 />
             );
 
-        const clearButton = isStatusSet &&
+        const clearButton = isStatusSet ?
             (
-                <CompassIcon
-                    onPress={this.props.actions.unsetCustomStatus}
-                    name='close'
-                    size={20}
-                    color={theme.centerChannelBg}
-                    style={{
-                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
-                        borderRadius: 1000,
-                    }}
+                <ClearButton
+                    handlePress={this.props.actions.unsetCustomStatus}
+                    theme={theme}
                 />
-            );
+            ) : null;
 
         return (
             <DrawerItem
                 testID='settings.sidebar.custom_status.action'
                 labelComponent={labelComponent}
+                i18nId='sidebar_right_menu.set_status'
+                defaultMessage='Set a Status'
                 leftComponent={customStatusEmoji}
                 separator={false}
                 onPress={this.goToCustomStatus}

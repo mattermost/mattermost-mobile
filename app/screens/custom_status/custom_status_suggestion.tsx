@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import Emoji from '@components/emoji';
-import CustomStatusLabel from '@components/sidebars/settings/custom_status_label';
+import CustomStatusText from '@components/custom_status/custom_status_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useCallback} from 'react';
 import {View} from 'react-native-animatable';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import ClearButton from '@components/custom_status/clear_button';
+import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     handleSuggestionClick: (status: UserCustomStatus) => void;
@@ -19,7 +21,7 @@ type Props = {
 };
 
 const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, theme, separator} = props;
+    const {handleSuggestionClick, emoji, text, theme, separator, handleClear} = props;
     const style = getStyleSheet(theme);
 
     const divider = separator ? <View style={style.divider}/> : null;
@@ -27,6 +29,14 @@ const CustomStatusSuggestion = (props: Props) => {
     const handleClick = useCallback(() => {
         handleSuggestionClick({emoji, text});
     }, [handleSuggestionClick, emoji, text]);
+
+    const clearButton = handleClear ?
+        (
+            <ClearButton
+                handlePress={preventDoubleTap(() => handleClear({emoji, text}))}
+                theme={theme}
+            />
+        ) : null;
 
     return (
         <TouchableOpacity
@@ -37,16 +47,21 @@ const CustomStatusSuggestion = (props: Props) => {
                 <View style={style.iconContainer}>
                     <Emoji
                         emojiName={emoji}
-                        size={24}
+                        size={20}
                     />
                 </View>
                 <View style={style.wrapper}>
                     <View style={style.textContainer}>
-                        <CustomStatusLabel
+                        <CustomStatusText
                             text={text}
                             theme={theme}
                         />
                     </View>
+                    {clearButton &&
+                        <View style={style.labelSiblingContainer}>
+                            {clearButton}
+                        </View>
+                    }
                     {divider}
                 </View>
             </View>
@@ -59,10 +74,9 @@ export default CustomStatusSuggestion;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            height: 50,
+            padding: 2,
         },
         iconContainer: {
             width: 45,
@@ -77,7 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         textContainer: {
             alignItems: 'center',
-            width: '90%',
+            width: '70%',
             flex: 1,
             flexDirection: 'row',
         },
