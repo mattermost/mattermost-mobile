@@ -8,7 +8,7 @@ import {intlShape, injectIntl} from 'react-intl';
 import Separator from '@screens/channel_info/separator';
 
 import ChannelInfoRow from '../channel_info_row';
-import {AppBinding, AppCall} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
 import {AppCallTypes, AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
@@ -23,7 +23,7 @@ type Props = {
     currentUser: UserProfile;
     appsEnabled: boolean;
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>
     }
 }
 
@@ -61,7 +61,7 @@ type OptionProps = {
     currentUser: UserProfile;
     intl: typeof intlShape;
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>
     },
 }
 
@@ -70,10 +70,8 @@ const Option = injectIntl((props: OptionProps) => {
         const channelId = props.currentChannel.id;
 
         const res = await props.actions.doAppCall({
+            ...props.binding.call,
             type: AppCallTypes.SUBMIT,
-            values: {
-                ...props.binding.call?.values,
-            },
             expand: {
                 channel: AppExpandLevels.EXPAND_ALL,
                 ...props.binding.call?.expand,

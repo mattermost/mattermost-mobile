@@ -8,7 +8,7 @@ import {intlShape, injectIntl} from 'react-intl';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostOption from '../post_option';
-import {AppBinding, AppCall} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
@@ -23,7 +23,7 @@ type Props = {
     closeWithAnimation: () => void,
     appsEnabled: boolean,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>,
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>,
     }
 }
 
@@ -67,7 +67,7 @@ type OptionProps = {
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>,
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>,
     },
 }
 
@@ -76,11 +76,9 @@ const Option = injectIntl((props: OptionProps) => {
         const {closeWithAnimation, post} = props;
 
         const res = await props.actions.doAppCall({
+            ...binding.call,
             type: AppCallTypes.SUBMIT,
             path: props.binding.call?.path || '',
-            values: {
-                ...props.binding.call?.values,
-            },
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
                 ...props.binding.call?.expand,

@@ -9,7 +9,7 @@ import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionResult, GenericAction, ActionFunc} from '@mm-redux/types/actions';
-import {AppCall} from '@mm-redux/types/apps';
+import {AppCallRequest} from '@mm-redux/types/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import {appsEnabled} from '@utils/apps';
@@ -32,7 +32,7 @@ function mapStateToProps(state: GlobalState) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {

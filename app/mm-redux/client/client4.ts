@@ -18,7 +18,7 @@ import {CustomEmoji} from '@mm-redux/types/emojis';
 import {Config} from '@mm-redux/types/config';
 import {Bot, BotPatch} from '@mm-redux/types/bots';
 import {SyncablePatch} from '@mm-redux/types/groups';
-import {AppCall} from '@mm-redux/types/apps';
+import {AppCallRequest} from '@mm-redux/types/apps';
 
 import fetch from './fetch_etag';
 import {General} from '../constants';
@@ -3050,7 +3050,7 @@ export default class Client4 {
         return `${this.url}/plugins/com.mattermost.apps`;
     }
 
-    executeAppCall = async (call: AppCall) => {
+    executeAppCall = async (call: AppCallRequest) => {
         call.context.user_agent = 'mobile';
         return this.doFetch(
             `${this.getAppsProxyRoute()}/api/v1/call`,

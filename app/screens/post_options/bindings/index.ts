@@ -7,7 +7,7 @@ import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
-import {AppCall} from '@mm-redux/types/apps';
+import {AppCallRequest} from '@mm-redux/types/apps';
 import {ActionResult, GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
@@ -32,7 +32,7 @@ function mapStateToProps(state: GlobalState) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
