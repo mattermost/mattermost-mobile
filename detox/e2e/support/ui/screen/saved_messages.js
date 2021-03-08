@@ -16,8 +16,8 @@ class SavedMessagesScreen {
     savedMessagesScreen = element(by.id(this.testID.savedMessagesScreen));
     closeSettingsButton = element(by.id(this.testID.closeSettingsButton));
 
-    getSearchResultPostItem = (postId, text) => {
-        return SearchResultPostScreen.getPost(postId, text);
+    getSearchResultPostItem = (postId, text, postProfileOptions = {}) => {
+        return SearchResultPostScreen.getPost(postId, text, postProfileOptions);
     }
 
     toBeVisible = async () => {

@@ -39,7 +39,7 @@ describe('Channels', () => {
         await expect(element(by.text('No more channels to join'))).toBeVisible();
 
         // # Tap to create new channel
-        await MoreChannelsScreen.publicChannelCreateButton.tap();
+        await MoreChannelsScreen.createButton.tap();
 
         // * Expect a new screen to create a new public channel
         const createChannelScreen = await CreateChannelScreen.toBeVisible();

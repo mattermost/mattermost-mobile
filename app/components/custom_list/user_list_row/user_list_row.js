@@ -63,6 +63,10 @@ export default class UserListRow extends React.PureComponent {
 
         const teammateDisplay = displayUsername(user, teammateNameDisplay);
         const showTeammateDisplay = teammateDisplay !== username;
+        const testID = this.props.testID;
+        const itemTestID = `${testID}.${id}`;
+        const displayUsernameTestID = `${testID}.display_username`;
+        const profilePictureTestID = `${itemTestID}.profile_picture`;
 
         return (
             <View style={style.container}>
@@ -72,22 +76,27 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
-                    testID={this.props.testID}
+                    testID={testID}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture
                             userId={id}
                             size={32}
                             iconSize={24}
+                            testID={profilePictureTestID}
                         />
                     </View>
-                    <View style={style.textContainer}>
+                    <View
+                        style={style.textContainer}
+                        testID={itemTestID}
+                    >
                         <View>
                             <View style={style.indicatorContainer}>
                                 <Text
                                     style={style.username}
                                     ellipsizeMode='tail'
                                     numberOfLines={1}
+                                    testID={displayUsernameTestID}
                                 >
                                     {usernameDisplay}
                                 </Text>

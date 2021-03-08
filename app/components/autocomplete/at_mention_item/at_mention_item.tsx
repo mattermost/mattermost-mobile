@@ -115,6 +115,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         size={24}
                         status={null}
                         showStatus={false}
+                        testID={`${testID}.profile_picture`}
                     />
                 </View>
                 <BotTag
@@ -137,12 +138,12 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                     style={style.rowUsername}
                     numberOfLines={1}
                 >
-                    {` @${username}`}
                     {isCurrentUser &&
                     <FormattedText
                         id='suggestion.mention.you'
                         defaultMessage='(you)'
                     />}
+                    {` @${username}`}
                 </Text>
             </View>
         </TouchableWithFeedback>
