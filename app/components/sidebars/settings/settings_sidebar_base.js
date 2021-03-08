@@ -235,7 +235,7 @@ export default class SettingsSidebarBase extends PureComponent {
         const clearButton = isStatusSet ?
             (
                 <ClearButton
-                    handlePress={this.props.actions.unsetCustomStatus}
+                    handlePress={preventDoubleTap(this.props.actions.unsetCustomStatus)}
                     theme={theme}
                 />
             ) : null;

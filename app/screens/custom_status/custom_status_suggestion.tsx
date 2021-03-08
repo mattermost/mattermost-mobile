@@ -26,14 +26,14 @@ const CustomStatusSuggestion = (props: Props) => {
 
     const divider = separator ? <View style={style.divider}/> : null;
 
-    const handleClick = useCallback(() => {
+    const handleClick = useCallback(preventDoubleTap(() => {
         handleSuggestionClick({emoji, text});
-    }, [handleSuggestionClick, emoji, text]);
+    }), [handleSuggestionClick, emoji, text]);
 
     const clearButton = handleClear ?
         (
             <ClearButton
-                handlePress={preventDoubleTap(() => handleClear({emoji, text}))}
+                handlePress={() => handleClear({emoji, text})}
                 theme={theme}
             />
         ) : null;
@@ -57,11 +57,11 @@ const CustomStatusSuggestion = (props: Props) => {
                             theme={theme}
                         />
                     </View>
-                    {clearButton &&
+                    {clearButton && (
                         <View style={style.labelSiblingContainer}>
                             {clearButton}
                         </View>
-                    }
+                    )}
                     {divider}
                 </View>
             </View>

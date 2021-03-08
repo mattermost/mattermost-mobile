@@ -4,7 +4,7 @@ import React from 'react';
 import CompassIcon from '@components/compass_icon';
 import {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity} from '@utils/theme';
-import {GestureResponderEvent} from 'react-native';
+import {preventDoubleTap} from '@utils/tap';
 
 interface Props {
     handlePress: () => void;
@@ -14,14 +14,10 @@ interface Props {
 
 const ClearButton = (props: Props) => {
     const {handlePress, size, theme} = props;
-    const onPress = (event: GestureResponderEvent) => {
-        event.stopPropagation();
-        handlePress();
-    };
 
     return (
         <CompassIcon
-            onPress={onPress}
+            onPress={preventDoubleTap(handlePress)}
             name='close'
             size={size}
             color={theme.centerChannelBg}
@@ -34,7 +30,7 @@ const ClearButton = (props: Props) => {
 };
 
 ClearButton.defaultProps = {
-    size: 24,
+    size: 20,
 };
 
 export default ClearButton;

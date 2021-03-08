@@ -18,6 +18,7 @@ import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {mergeNavigationOptions, dismissModal, showModalOverCurrentContext} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
+import {preventDoubleTap} from '@utils/tap';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -97,8 +98,8 @@ class CustomStatusModal extends PureComponent<Props, State> {
     handleSetStatus = () => {
         const {emoji, text} = this.state;
         const isStatusSet = emoji || text;
+        const {customStatus} = this.props;
         if (isStatusSet) {
-            const {customStatus} = this.props;
             const isStatusSame = customStatus.emoji === emoji && customStatus.text === text;
             if (!isStatusSame) {
                 const status = {
@@ -107,7 +108,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 };
                 this.props.actions.setCustomStatus(status);
             }
-        } else {
+        } else if(customStatus && customStatus.emoji) {
             this.props.actions.unsetCustomStatus();
         }
         dismissModal();
@@ -126,14 +127,25 @@ class CustomStatusModal extends PureComponent<Props, State> {
         this.setState({emoji, text});
     };
 
-    renderRecentCustomStatuses = () => {
+    renderSuggestions = (type: 'recent' | 'suggestions') => {
         const {recentCustomStatuses, theme} = this.props;
         const style = getStyleSheet(theme);
-        const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
+        let arr = recentCustomStatuses;
+        if (type === 'suggestions') {
+            const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
+            arr = defaultCustomStatusSuggestions.
+                map((status) => ({
+                    emoji: status.emoji,
+                    text: status.messageDefault,
+                })).
+                filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text));
+        }
+
+        const suggestions = arr.map((status: UserCustomStatus, index: number) => (
             <CustomStatusSuggestion
                 key={status.text}
                 handleSuggestionClick={this.handleSuggestionClick}
-                handleClear={this.handleRecentCustomStatusClear}
+                handleClear={type === 'recent' ? this.handleRecentCustomStatusClear : undefined}
                 emoji={status.emoji}
                 text={status.text}
                 theme={theme}
@@ -141,50 +153,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
             />
         ));
 
-        if (recentStatuses.length <= 0) {
-            return null;
-        }
-
-        return (
-            <>
-                <View style={style.separator}/>
-                <View >
-                    <Text style={style.title}>
-                        {this.props.intl.formatMessage({
-                            id: 'custom_status.suggestions.recent_title',
-                            defaultMessage: 'RECENT',
-                        })}
-                    </Text>
-                    <View style={style.block}>
-                        {recentStatuses}
-                    </View>
-                </View >
-            </>
-        );
-    };
-
-    renderCustomStatusSuggestions = () => {
-        const {recentCustomStatuses, theme} = this.props;
-        const style = getStyleSheet(theme);
-        const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
-        const customStatusSuggestions = defaultCustomStatusSuggestions.
-            map((status) => ({
-                emoji: status.emoji,
-                text: status.messageDefault,
-            })).
-            filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
-            map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
-                <CustomStatusSuggestion
-                    key={status.text}
-                    handleSuggestionClick={this.handleSuggestionClick}
-                    emoji={status.emoji}
-                    text={status.text}
-                    theme={theme}
-                    separator={index !== arr.length - 1}
-                />
-            ));
-
-        if (customStatusSuggestions.length <= 0) {
+        if (suggestions.length <= 0) {
             return null;
         }
 
@@ -194,19 +163,19 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 <View>
                     <Text style={style.title}>
                         {this.props.intl.formatMessage({
-                            id: 'custom_status.suggestions.title',
-                            defaultMessage: 'SUGGESTIONS',
+                            id: `custom_status.suggestions.${type === 'recent' ? 'recent_' : ''}title`,
+                            defaultMessage: type.toUpperCase(),
                         })}
                     </Text>
                     <View style={style.block}>
-                        {customStatusSuggestions}
+                        {suggestions}
                     </View>
                 </View>
             </>
         );
-    };
+    }
 
-    openEmojiPicker = () => {
+    openEmojiPicker = preventDoubleTap(() => {
         const screen = 'AddReaction';
         const passProps = {
             onEmojiPress: this.handleEmojiClick,
@@ -215,7 +184,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
         requestAnimationFrame(() => {
             showModalOverCurrentContext(screen, passProps);
         });
-    }
+    });
 
     handleEmojiClick = (emoji: string) => {
         dismissModal();
@@ -289,8 +258,8 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 >
                     <View style={style.scrollView}>
                         {customStatusInput}
-                        {this.renderRecentCustomStatuses()}
-                        {this.renderCustomStatusSuggestions()}
+                        {this.renderSuggestions('recent')}
+                        {this.renderSuggestions('suggestions')}
                     </View>
                 </KeyboardAwareScrollView>
             </SafeAreaView>

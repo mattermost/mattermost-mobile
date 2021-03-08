@@ -25,6 +25,7 @@ import ProfilePicture from '@components/profile_picture';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {BotTag, GuestTag} from '@components/tag';
+import Emoji from '@components/emoji';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
@@ -52,6 +53,7 @@ export default class UserProfile extends PureComponent {
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
+        customStatus: PropTypes.object,
     };
 
     static contextTypes = {
@@ -169,6 +171,33 @@ export default class UserProfile extends PureComponent {
 
         return null;
     };
+
+    buildCustomStatusBlock = () => {
+        const {formatMessage} = this.context.intl;
+        const {customStatus, theme} = this.props;
+        const style = createStyleSheet(theme);
+        const isStatusSet = customStatus.emoji || customStatus.text;
+
+        if (!isStatusSet) {
+            return null;
+        }
+
+        const label = formatMessage({id: 'user.settings.general.status', defaultMessage: 'Status'});
+        return (
+            <View>
+                <Text style={style.header}>{label}</Text>
+                <View style={{flexDirection: 'row'}}>
+                    <View style={style.iconContainer}>
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                        />
+                    </View>
+                    <Text style={style.text}>{customStatus.text}</Text>
+                </View>
+            </View>
+        );
+    }
 
     buildTimezoneBlock = () => {
         const {theme, user, militaryTime} = this.props;
@@ -315,6 +344,7 @@ export default class UserProfile extends PureComponent {
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('first_name')}
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.props.config.EnableCustomUserStatuses === 'true' && this.buildCustomStatusBlock()}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
@@ -371,6 +401,14 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+        },
+        iconContainer: {
+
+            // width: 45,
+            // height: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 5,
         },
         content: {
             marginBottom: 25,

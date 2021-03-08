@@ -32,7 +32,7 @@ const CustomStatusEmoji = (props: ComponentProps) => {
 };
 
 CustomStatusEmoji.defaultProps = {
-    emojiSize: 20,
+    emojiSize: 16,
 };
 
 export default CustomStatusEmoji;

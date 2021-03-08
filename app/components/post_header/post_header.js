@@ -17,6 +17,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {emptyFunction} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
@@ -146,6 +147,7 @@ export default class PostHeader extends PureComponent {
             fromAutoResponder,
             overrideUsername,
             theme,
+            post,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -184,20 +186,25 @@ export default class PostHeader extends PureComponent {
             );
         } else if (displayName) {
             return (
-                <TouchableWithFeedback
-                    onPress={this.handleUsernamePress}
-                    style={displayNameStyle}
-                    type={'opacity'}
-                >
-                    <Text
-                        style={style.displayName}
-                        ellipsizeMode={'tail'}
-                        numberOfLines={1}
-                        testID='post_header.display_name'
+                <>
+                    <TouchableWithFeedback
+                        onPress={this.handleUsernamePress}
+                        style={displayNameStyle}
+                        type={'opacity'}
                     >
-                        {displayName}
-                    </Text>
-                </TouchableWithFeedback>
+                        <Text
+                            style={style.displayName}
+                            ellipsizeMode={'tail'}
+                            numberOfLines={1}
+                            testID='post_header.display_name'
+                        >
+                            {displayName}
+                        </Text>
+                    </TouchableWithFeedback>
+                    <CustomStatusEmoji
+                        userID={post.user_id}
+                    />
+                </>
             );
         }
 
@@ -246,7 +253,7 @@ export default class PostHeader extends PureComponent {
                         color={theme.linkColor}
                     />
                     {!isSearchResult &&
-                    <Text style={style.replyText}>{commentCount}</Text>
+                        <Text style={style.replyText}>{commentCount}</Text>
                     }
                 </TouchableWithFeedback>
             </View>

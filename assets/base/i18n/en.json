@@ -653,6 +653,7 @@
   "user.settings.general.lastName": "Last Name",
   "user.settings.general.nickname": "Nickname",
   "user.settings.general.position": "Position",
+  "user.settings.general.status": "Status",
   "user.settings.general.username": "Username",
   "user.settings.modal.display": "Display",
   "user.settings.modal.notifications": "Notifications",

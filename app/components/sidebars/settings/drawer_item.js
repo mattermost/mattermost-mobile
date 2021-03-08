@@ -89,20 +89,20 @@ export default class DrawerItem extends PureComponent {
                 onPress={onPress}
             >
                 <View style={style.container}>
-                    {icon &&
+                    {icon && (
                         <View style={style.iconContainer}>
                             {icon}
                         </View>
-                    }
+                    )}
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
                             {label}
                         </View>
-                        {labelSibling &&
+                        {labelSibling && (
                             <View style={style.labelSiblingContainer}>
                                 {labelSibling}
                             </View>
-                        }
+                        )}
                         {divider}
                     </View>
                 </View>
