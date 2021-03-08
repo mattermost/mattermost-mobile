@@ -873,7 +873,7 @@ export class AppCommandParser {
             Suggestion: opt.label,
             Hint: f.hint || '',
             Description: f.description || '',
-            IconData: parsed.binding?.icon || '',
+            IconData: opt.icon_data || parsed.binding?.icon || '',
         }));
     }
 
@@ -917,7 +917,7 @@ export class AppCommandParser {
             Description: s.label,
             Suggestion: s.value,
             Hint: '',
-            IconData: s.icon_data || '',
+            IconData: s.icon_data || parsed.binding?.icon || '',
         }));
     }
 

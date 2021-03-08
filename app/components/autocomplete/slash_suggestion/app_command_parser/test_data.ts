@@ -130,6 +130,8 @@ export const createCommand: AppBinding = {
     label: 'create',
     location: 'create',
     description: 'Create a new Jira issue',
+    icon: 'Create icon',
+    hint: 'Create hint',
     form: {
         call: {
             path: '/create-issue',
@@ -177,32 +179,51 @@ export const createCommand: AppBinding = {
     } as AppForm,
 };
 
-export const testBindings: AppBinding[] = [{
-    app_id: '',
-    label: '',
-    location: AppBindingLocations.COMMAND,
-    bindings: [
-        {
-            app_id: 'jira',
-            label: 'issue',
-            description: 'Interact with Jira issues',
-            bindings: [
-                viewCommand,
-                createCommand,
-            ],
-        },
-        {
-            app_id: 'other',
-            label: 'sub1',
-            description: 'Some Description',
-            form: {
-                fields: [{
-                    name: 'summary',
-                    label: 'summary',
-                    description: 'The Jira issue summary',
-                    type: AppFieldTypes.TEXT,
-                    hint: 'The thing is working great!',
+export const testBindings: AppBinding[] = [
+    {
+        app_id: '',
+        label: '',
+        location: AppBindingLocations.COMMAND,
+        bindings: [
+            {
+                app_id: 'jira',
+                label: 'jira',
+                description: 'Interact with your Jira instance',
+                icon: 'Jira icon',
+                hint: 'Jira hint',
+                bindings: [{
+                    app_id: 'jira',
+                    label: 'issue',
+                    description: 'Interact with Jira issues',
+                    icon: 'Issue icon',
+                    hint: 'Issue hint',
+                    bindings: [
+                        viewCommand,
+                        createCommand,
+                    ],
                 }],
             },
-        }],
-}];
+            {
+                app_id: 'other',
+                label: 'other',
+                description: 'Other description',
+                icon: 'Other icon',
+                hint: 'Other hint',
+                bindings: [{
+                    app_id: 'other',
+                    label: 'sub1',
+                    description: 'Some Description',
+                    form: {
+                        fields: [{
+                            name: 'fieldname',
+                            label: 'fieldlabel',
+                            description: 'field description',
+                            type: AppFieldTypes.TEXT,
+                            hint: 'field hint',
+                        }],
+                    },
+                }],
+            },
+        ],
+    },
+];

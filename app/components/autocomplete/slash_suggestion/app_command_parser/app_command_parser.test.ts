@@ -19,7 +19,6 @@ import {
     AppCommandParser,
     ParseState,
     ParsedCommand,
-    groupBindingsByApp,
 } from './app_command_parser';
 
 import {
@@ -218,8 +217,7 @@ describe('AppCommandParser', () => {
 
         table.forEach((tc) => {
             test(tc.title, async () => {
-                let bindings = testBindings[0].bindings as AppBinding[];
-                bindings = groupBindingsByApp(bindings);
+                const bindings = testBindings[0].bindings as AppBinding[];
 
                 let a = new ParsedCommand(tc.command, parser);
                 a = await a.matchBinding(bindings, true);
@@ -421,8 +419,7 @@ describe('AppCommandParser', () => {
 
         table.forEach((tc) => {
             test(tc.title, async () => {
-                let bindings = testBindings[0].bindings as AppBinding[];
-                bindings = groupBindingsByApp(bindings);
+                const bindings = testBindings[0].bindings as AppBinding[];
 
                 let a = new ParsedCommand(tc.command, parser);
                 a = await a.matchBinding(bindings, true);
@@ -449,8 +446,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'issue',
                     Complete: 'jira issue',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Issue hint',
+                    IconData: 'Issue icon',
                     Description: 'Interact with Jira issues',
                 },
             ]);
@@ -462,8 +459,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'issue',
                     Complete: 'JiRa issue',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Issue hint',
+                    IconData: 'Issue icon',
                     Description: 'Interact with Jira issues',
                 },
             ]);
@@ -475,8 +472,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'issue',
                     Complete: 'jira issue',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Issue hint',
+                    IconData: 'Issue icon',
                     Description: 'Interact with Jira issues',
                 },
             ]);
@@ -488,8 +485,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'issue',
                     Complete: 'JiRa issue',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Issue hint',
+                    IconData: 'Issue icon',
                     Description: 'Interact with Jira issues',
                 },
             ]);
@@ -508,8 +505,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'create',
                     Complete: 'jira issue create',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Create hint',
+                    IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
             ]);
@@ -528,8 +525,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'create',
                     Complete: 'JiRa IsSuE create',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Create hint',
+                    IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
             ]);
@@ -541,8 +538,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'create',
                     Complete: 'jira issue create',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Create hint',
+                    IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
             ]);
@@ -554,8 +551,8 @@ describe('AppCommandParser', () => {
                 {
                     Suggestion: 'create',
                     Complete: 'JiRa IsSuE create',
-                    Hint: '',
-                    IconData: '',
+                    Hint: 'Create hint',
+                    IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
             ]);
@@ -620,28 +617,28 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project',
                     Description: 'The Jira project description',
                     Hint: 'The Jira project hint',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--project',
                 },
                 {
                     Complete: 'jira issue create --summary',
                     Description: 'The Jira issue summary',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--summary',
                 },
                 {
                     Complete: 'jira issue create --verbose',
                     Description: 'display details',
                     Hint: 'yes or no!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--verbose',
                 },
                 {
                     Complete: 'jira issue create --epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--epic',
                 },
             ]);
@@ -669,21 +666,21 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary',
                     Description: 'The Jira issue summary',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--summary',
                 },
                 {
                     Complete: 'jira issue create --project KT --verbose',
                     Description: 'display details',
                     Hint: 'yes or no!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--verbose',
                 },
                 {
                     Complete: 'jira issue create --project KT --epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--epic',
                 },
             ]);
@@ -696,7 +693,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary',
                     Description: 'The Jira issue summary',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--summary',
                 },
             ]);
@@ -707,7 +704,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary',
                     Description: 'The Jira issue summary',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '--summary',
                 },
             ]);
@@ -720,7 +717,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary',
                     Description: 'The Jira issue summary',
                     Hint: '',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '',
                 },
             ]);
@@ -733,7 +730,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary Sum',
                     Description: 'The Jira issue summary',
                     Hint: '',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: 'Sum',
                 },
             ]);
@@ -746,7 +743,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary "Sum"',
                     Description: 'The Jira issue summary',
                     Hint: '',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: 'Sum',
                 },
             ]);
@@ -759,7 +756,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --project KT --summary `Sum`',
                     Description: 'The Jira issue summary',
                     Hint: '',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: 'Sum',
                 },
             ]);
@@ -772,7 +769,7 @@ describe('AppCommandParser', () => {
                     Complete: 'jira issue create --summary',
                     Description: 'The Jira issue summary',
                     Hint: '',
-                    IconData: '',
+                    IconData: 'Create icon',
                     Suggestion: '',
                 },
             ]);
@@ -791,7 +788,7 @@ describe('AppCommandParser', () => {
                     Suggestion: 'special-value',
                     Description: 'special-label',
                     Hint: '',
-                    IconData: '',
+                    IconData: 'Create icon',
                 },
             ]);
         });
@@ -804,14 +801,14 @@ describe('AppCommandParser', () => {
                     Suggestion: 'Dylan Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                 },
                 {
                     Complete: 'jira issue create --project KT --summary "great feature" --epic Michael Epic',
                     Suggestion: 'Michael Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                 },
             ]);
 
@@ -822,7 +819,7 @@ describe('AppCommandParser', () => {
                     Suggestion: 'Michael Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
-                    IconData: '',
+                    IconData: 'Create icon',
                 },
             ]);
 

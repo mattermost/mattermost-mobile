@@ -143,9 +143,9 @@ describe('components/autocomplete/slash_suggestion', () => {
         expect(wrapper.state('dataSource')).toEqual([
             {
                 Complete: 'jira',
-                Description: '',
-                Hint: '',
-                IconData: '',
+                Description: 'Interact with your Jira instance',
+                Hint: 'Jira hint',
+                IconData: 'Jira icon',
                 Suggestion: '/jira',
             },
         ]);
@@ -162,9 +162,9 @@ describe('components/autocomplete/slash_suggestion', () => {
         expect(wrapper.state('dataSource')).toEqual([
             {
                 Complete: 'jira',
-                Description: '',
-                Hint: '',
-                IconData: '',
+                Description: 'Interact with your Jira instance',
+                Hint: 'Jira hint',
+                IconData: 'Jira icon',
                 Suggestion: '/jira',
             },
             {
@@ -176,9 +176,9 @@ describe('components/autocomplete/slash_suggestion', () => {
             },
             {
                 Complete: 'other',
-                Description: '',
-                Hint: '',
-                IconData: '',
+                Description: 'Other description',
+                Hint: 'Other hint',
+                IconData: 'Other icon',
                 Suggestion: '/other',
             },
         ]);
@@ -187,9 +187,9 @@ describe('components/autocomplete/slash_suggestion', () => {
         expect(wrapper.state('dataSource')).toEqual([
             {
                 Complete: 'jira',
-                Description: '',
-                Hint: '',
-                IconData: '',
+                Description: 'Interact with your Jira instance',
+                Hint: 'Jira hint',
+                IconData: 'Jira icon',
                 Suggestion: '/jira',
             },
             {
@@ -214,8 +214,8 @@ describe('components/autocomplete/slash_suggestion', () => {
             {
                 Complete: 'jira issue',
                 Description: 'Interact with Jira issues',
-                Hint: '',
-                IconData: '',
+                Hint: 'Issue hint',
+                IconData: 'Issue icon',
                 Suggestion: 'issue',
             },
         ];
