@@ -244,7 +244,7 @@ export default class SettingsSidebarBase extends PureComponent {
             <DrawerItem
                 testID='settings.sidebar.custom_status.action'
                 labelComponent={labelComponent}
-                i18nId='sidebar_right_menu.set_status'
+                i18nId={'sidebar_right_menu.set_status'}
                 defaultMessage='Set a Status'
                 leftComponent={customStatusEmoji}
                 separator={false}
@@ -253,7 +253,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 labelSibling={clearButton}
             />
         );
-    }
+    };
 
     renderOptions = (style) => {
         const {currentUser, theme} = this.props;
