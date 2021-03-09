@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
+import React from 'react';
 import {View, Text, TouchableOpacity, TextInput} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {Navigation, NavigationComponentProps} from 'react-native-navigation';
+import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options} from 'react-native-navigation';
 
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
@@ -51,9 +51,8 @@ type State = {
     text: string;
 }
 
-class CustomStatusModal extends PureComponent<Props, State> {
-    // TODO: type for rightButton
-    rightButton: any = {
+class CustomStatusModal extends NavigationComponent<Props, State> {
+    rightButton: OptionsTopBarButton = {
         id: 'update-custom-status',
         enabled: true,
         showAsAction: 'always',
@@ -69,7 +68,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
             rightButtons: [this.rightButton],
         };
 
-        const options = {
+        const options: Options = {
             topBar: {
                 title: {
                     text: props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'}),
@@ -108,7 +107,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 };
                 this.props.actions.setCustomStatus(status);
             }
-        } else if(customStatus && customStatus.emoji) {
+        } else if (customStatus && customStatus.emoji) {
             this.props.actions.unsetCustomStatus();
         }
         dismissModal();
