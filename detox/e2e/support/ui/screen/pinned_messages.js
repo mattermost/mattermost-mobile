@@ -15,8 +15,8 @@ class PinnedMessagesScreen {
     pinnedMessagesScreen = element(by.id(this.testID.pinnedMessagesScreen));
     backButton = element(by.id(this.testID.backButton));
 
-    getSearchResultPostItem = (postId, text) => {
-        return SearchResultPostScreen.getPost(postId, text);
+    getSearchResultPostItem = (postId, text, postProfileOptions = {}) => {
+        return SearchResultPostScreen.getPost(postId, text, postProfileOptions);
     }
 
     toBeVisible = async () => {

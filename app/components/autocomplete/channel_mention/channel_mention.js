@@ -206,6 +206,7 @@ export default class ChannelMention extends PureComponent {
             <ChannelMentionItem
                 channelId={item}
                 onPress={this.completeMention}
+                testID={`autocomplete.channel_mention.item.${item}`}
             />
         );
     };

@@ -344,6 +344,7 @@ export default class UserProfile extends PureComponent {
                             iconSize={104}
                             statusBorderWidth={6}
                             statusSize={36}
+                            testID='user_profile.profile_picture'
                         />
                         {this.getDisplayName()}
                         <Text style={style.username}>{`@${user.username}`}</Text>
