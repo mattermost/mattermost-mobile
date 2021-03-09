@@ -58,7 +58,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         showAsAction: 'always',
     };
 
-    static options() {
+    static options(): Options {
         return {
             topBar: {
                 title: {
