@@ -6,7 +6,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useCallback} from 'react';
-import {View} from 'react-native-animatable';
+import {View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
@@ -97,7 +97,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         labelSiblingContainer: {
             position: 'absolute',
-            top: 14,
+            top: 3,
             right: 14,
         },
         divider: {

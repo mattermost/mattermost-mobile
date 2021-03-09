@@ -14,6 +14,7 @@ import {loadBot} from '@mm-redux/actions/bots';
 import {getBotAccounts} from '@mm-redux/selectors/entities/bots';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {makeGetCustomStatus} from '@selectors/custom_status';
+import {unsetCustomStatus} from '@actions/views/custom_status';
 
 import UserProfile from './user_profile';
 
@@ -35,7 +36,7 @@ function mapStateToProps(state, ownProps) {
         militaryTime,
         theme: getTheme(state),
         isMyUser: getCurrentUserId(state) === ownProps.userId,
-        customStatus: getCustomStatus(state, ownProps.userId),
+        customStatus: getCustomStatus(state, ownProps.userId) || {},
     };
 }
 
@@ -45,6 +46,7 @@ function mapDispatchToProps(dispatch) {
             makeDirectChannel,
             setChannelDisplayName,
             loadBot,
+            unsetCustomStatus,
         }, dispatch),
     };
 }

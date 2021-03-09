@@ -35,6 +35,7 @@ import {tryOpenURL} from '@utils/url';
 import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
+import ClearButton from '@components/custom_status/clear_button';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {
@@ -42,6 +43,7 @@ export default class UserProfile extends PureComponent {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -174,7 +176,7 @@ export default class UserProfile extends PureComponent {
 
     buildCustomStatusBlock = () => {
         const {formatMessage} = this.context.intl;
-        const {customStatus, theme} = this.props;
+        const {customStatus, theme, isMyUser} = this.props;
         const style = createStyleSheet(theme);
         const isStatusSet = customStatus.emoji || customStatus.text;
 
@@ -186,14 +188,22 @@ export default class UserProfile extends PureComponent {
         return (
             <View>
                 <Text style={style.header}>{label}</Text>
-                <View style={{flexDirection: 'row'}}>
+                <View style={style.customStatus}>
                     <View style={style.iconContainer}>
                         <Emoji
                             emojiName={customStatus.emoji}
                             size={20}
                         />
                     </View>
-                    <Text style={style.text}>{customStatus.text}</Text>
+                    <Text style={[style.text, style.customStatusText]}>{customStatus.text}</Text>
+                    {isMyUser && (
+                        <View style={style.clearButton}>
+                            <ClearButton
+                                theme={theme}
+                                handlePress={this.props.actions.unsetCustomStatus}
+                            />
+                        </View>
+                    )}
                 </View>
             </View>
         );
@@ -403,12 +413,20 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         iconContainer: {
-
-            // width: 45,
-            // height: 50,
+            marginRight: 5,
+        },
+        customStatus: {
+            position: 'relative',
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 5,
+        },
+        customStatusText: {
+            width: '80%',
+        },
+        clearButton: {
+            position: 'absolute',
+            top: 3,
+            right: 0,
         },
         content: {
             marginBottom: 25,

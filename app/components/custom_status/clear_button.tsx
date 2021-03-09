@@ -3,8 +3,9 @@
 import React from 'react';
 import CompassIcon from '@components/compass_icon';
 import {Theme} from '@mm-redux/types/preferences';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
+import {PanResponder, View} from 'react-native';
 
 interface Props {
     handlePress: () => void;
@@ -14,18 +15,26 @@ interface Props {
 
 const ClearButton = (props: Props) => {
     const {handlePress, size, theme} = props;
+    const style = getStyleSheet(theme);
+    const panResponder = React.useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onPanResponderGrant: preventDoubleTap(handlePress),
+        }),
+    ).current;
 
     return (
-        <CompassIcon
-            onPress={preventDoubleTap(handlePress)}
-            name='close'
-            size={size}
-            color={theme.centerChannelBg}
-            style={{
-                backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
-                borderRadius: 1000,
-            }}
-        />
+        <View
+            {...panResponder.panHandlers}
+            style={style.container}
+        >
+            <CompassIcon
+                name='close'
+                size={size}
+                color={theme.centerChannelBg}
+                style={style.button}
+            />
+        </View>
     );
 };
 
@@ -34,3 +43,19 @@ ClearButton.defaultProps = {
 };
 
 export default ClearButton;
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            height: 40,
+            width: 40,
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        button: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
+            borderRadius: 1000,
+        },
+    };
+});

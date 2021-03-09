@@ -5,7 +5,7 @@ import {View, Text, TouchableOpacity, TextInput} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {Navigation, NavigationComponentProps} from 'react-native-navigation';
+import {Navigation, NavigationComponentProps, OptionsTopBarButton} from 'react-native-navigation';
 
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
@@ -16,7 +16,7 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {mergeNavigationOptions, dismissModal, showModalOverCurrentContext} from '@actions/navigation';
+import {dismissModal, showModalOverCurrentContext, mergeNavigationOptions} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -52,12 +52,21 @@ type State = {
 }
 
 class CustomStatusModal extends PureComponent<Props, State> {
-    // TODO: type for rightButton
-    rightButton: any = {
+    rightButton: OptionsTopBarButton = {
         id: 'update-custom-status',
         enabled: true,
         showAsAction: 'always',
     };
+
+    static options() {
+        return {
+            topBar: {
+                title: {
+                    alignment: 'center',
+                },
+            },
+        };
+    }
 
     constructor(props: Props) {
         super(props);
@@ -65,22 +74,13 @@ class CustomStatusModal extends PureComponent<Props, State> {
         this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
 
-        const buttons = {
-            rightButtons: [this.rightButton],
-        };
-
         const options = {
             topBar: {
-                title: {
-                    text: props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'}),
-                    alignment: 'center',
-                },
-                ...buttons,
+                rightButtons: [this.rightButton],
             },
         };
 
         mergeNavigationOptions(props.componentId, options);
-
         this.state = {
             emoji: props.customStatus.emoji,
             text: props.customStatus.text || '',
@@ -108,7 +108,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 };
                 this.props.actions.setCustomStatus(status);
             }
-        } else if(customStatus && customStatus.emoji) {
+        } else if (customStatus && customStatus.emoji) {
             this.props.actions.unsetCustomStatus();
         }
         dismissModal();
@@ -130,10 +130,10 @@ class CustomStatusModal extends PureComponent<Props, State> {
     renderSuggestions = (type: 'recent' | 'suggestions') => {
         const {recentCustomStatuses, theme} = this.props;
         const style = getStyleSheet(theme);
-        let arr = recentCustomStatuses;
+        let suggestionsArray = recentCustomStatuses;
         if (type === 'suggestions') {
             const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
-            arr = defaultCustomStatusSuggestions.
+            suggestionsArray = defaultCustomStatusSuggestions.
                 map((status) => ({
                     emoji: status.emoji,
                     text: status.messageDefault,
@@ -141,7 +141,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text));
         }
 
-        const suggestions = arr.map((status: UserCustomStatus, index: number) => (
+        const suggestions = suggestionsArray.map((status: UserCustomStatus, index: number) => (
             <CustomStatusSuggestion
                 key={status.text}
                 handleSuggestionClick={this.handleSuggestionClick}
@@ -230,7 +230,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
                     maxLength={CustomStatus.CUSTOM_STATUS_TEXT_CHARACTER_LIMIT}
                     underlineColorAndroid='transparent'
                     disableFullscreenUI={true}
-                    multiline={false}
+                    multiline={true}
                     keyboardType={'default'}
                     secureTextEntry={false}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -293,7 +293,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontSize: 14,
             paddingHorizontal: 52,
-            height: 48,
+            textAlignVertical: 'center',
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -320,7 +320,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         clearButton: {
             position: 'absolute',
-            top: 12,
+            top: 3,
             right: 14,
         },
     };

@@ -141,7 +141,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         labelSiblingContainer: {
             position: 'absolute',
-            top: 14,
+            top: 3,
             right: 14,
         },
         centerLabel: {
