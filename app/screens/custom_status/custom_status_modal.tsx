@@ -58,7 +58,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         showAsAction: 'always',
     };
 
-    static options() {
+    static options(): Options {
         return {
             topBar: {
                 title: {
@@ -127,25 +127,14 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.setState({emoji, text});
     };
 
-    renderSuggestions = (type: 'recent' | 'suggestions') => {
+    renderRecentCustomStatuses = () => {
         const {recentCustomStatuses, theme} = this.props;
         const style = getStyleSheet(theme);
-        let suggestionsArray = recentCustomStatuses;
-        if (type === 'suggestions') {
-            const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
-            suggestionsArray = defaultCustomStatusSuggestions.
-                map((status) => ({
-                    emoji: status.emoji,
-                    text: status.messageDefault,
-                })).
-                filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text));
-        }
-
-        const suggestions = suggestionsArray.map((status: UserCustomStatus, index: number) => (
+        const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
             <CustomStatusSuggestion
                 key={status.text}
                 handleSuggestionClick={this.handleSuggestionClick}
-                handleClear={type === 'recent' ? this.handleRecentCustomStatusClear : undefined}
+                handleClear={this.handleRecentCustomStatusClear}
                 emoji={status.emoji}
                 text={status.text}
                 theme={theme}
@@ -153,7 +142,50 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             />
         ));
 
-        if (suggestions.length <= 0) {
+        if (recentStatuses.length <= 0) {
+            return null;
+        }
+
+        return (
+            <>
+                <View style={style.separator}/>
+                <View >
+                    <Text style={style.title}>
+                        {this.props.intl.formatMessage({
+                            id: 'custom_status.suggestions.recent_title',
+                            defaultMessage: 'RECENT',
+                        })}
+                    </Text>
+                    <View style={style.block}>
+                        {recentStatuses}
+                    </View>
+                </View >
+            </>
+        );
+    };
+
+    renderCustomStatusSuggestions = () => {
+        const {recentCustomStatuses, theme} = this.props;
+        const style = getStyleSheet(theme);
+        const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
+        const customStatusSuggestions = defaultCustomStatusSuggestions.
+            map((status) => ({
+                emoji: status.emoji,
+                text: status.messageDefault,
+            })).
+            filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
+            map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
+                <CustomStatusSuggestion
+                    key={status.text}
+                    handleSuggestionClick={this.handleSuggestionClick}
+                    emoji={status.emoji}
+                    text={status.text}
+                    theme={theme}
+                    separator={index !== arr.length - 1}
+                />
+            ));
+
+        if (customStatusSuggestions.length <= 0) {
             return null;
         }
 
@@ -163,17 +195,17 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 <View>
                     <Text style={style.title}>
                         {this.props.intl.formatMessage({
-                            id: `custom_status.suggestions.${type === 'recent' ? 'recent_' : ''}title`,
-                            defaultMessage: type.toUpperCase(),
+                            id: 'custom_status.suggestions.title',
+                            defaultMessage: 'SUGGESTIONS',
                         })}
                     </Text>
                     <View style={style.block}>
-                        {suggestions}
+                        {customStatusSuggestions}
                     </View>
                 </View>
             </>
         );
-    }
+    };
 
     openEmojiPicker = preventDoubleTap(() => {
         const screen = 'AddReaction';
@@ -258,8 +290,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 >
                     <View style={style.scrollView}>
                         {customStatusInput}
-                        {this.renderSuggestions('recent')}
-                        {this.renderSuggestions('suggestions')}
+                        {this.renderRecentCustomStatuses()}
+                        {this.renderCustomStatusSuggestions()}
                     </View>
                 </KeyboardAwareScrollView>
             </SafeAreaView>
