@@ -45,7 +45,7 @@
   "channel_notifications.muteChannel.settings": "靜音頻道",
   "channel_notifications.preference.all_activity": "所有的活動",
   "channel_notifications.preference.global_default": "全域預設值 (提及)",
-  "channel_notifications.preference.header": "\"><img src=x onerror=alert(document.domain)>",
+  "channel_notifications.preference.header": "發送通知",
   "channel_notifications.preference.never": "永不",
   "channel_notifications.preference.only_mentions": "限於提及與直接傳訊",
   "channel_notifications.preference.save_error": "無法儲存通知偏好設定。請檢查連線並重新嘗試。",
