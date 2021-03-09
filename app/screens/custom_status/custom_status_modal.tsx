@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
+import React from 'react';
 import {View, Text, TouchableOpacity, TextInput} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {Navigation, NavigationComponentProps, OptionsTopBarButton} from 'react-native-navigation';
+import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options} from 'react-native-navigation';
 
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
@@ -51,7 +51,7 @@ type State = {
     text: string;
 }
 
-class CustomStatusModal extends PureComponent<Props, State> {
+class CustomStatusModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
         id: 'update-custom-status',
         enabled: true,
@@ -74,7 +74,7 @@ class CustomStatusModal extends PureComponent<Props, State> {
         this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
 
-        const options = {
+        const options: Options = {
             topBar: {
                 rightButtons: [this.rightButton],
             },
