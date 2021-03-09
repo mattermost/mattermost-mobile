@@ -16,6 +16,7 @@ import Post from './post';
 import PostDraft from './post_draft';
 import PostList from './post_list';
 import PostOptions from './post_options';
+import ProfilePicture from './profile_picture';
 import RecentItem from './recent_item';
 import SearchBar from './search_bar';
 import SendButton from './send_button';
@@ -37,6 +38,7 @@ export {
     PostDraft,
     PostList,
     PostOptions,
+    ProfilePicture,
     RecentItem,
     SearchBar,
     SendButton,
