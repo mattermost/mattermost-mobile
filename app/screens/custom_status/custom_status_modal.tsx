@@ -16,7 +16,7 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {dismissModal, showModalOverCurrentContext, mergeNavigationOptions} from '@actions/navigation';
+import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -213,8 +213,14 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             onEmojiPress: this.handleEmojiClick,
         };
 
+        const options: Options = {
+            topBar: {
+                visible: false,
+            },
+        };
+
         requestAnimationFrame(() => {
-            showModalOverCurrentContext(screen, passProps);
+            showModal(screen, '', passProps, options);
         });
     });
 
@@ -326,6 +332,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 14,
             paddingHorizontal: 52,
             textAlignVertical: 'center',
+            minHeight: 40,
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
