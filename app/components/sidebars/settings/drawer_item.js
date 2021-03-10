@@ -18,6 +18,7 @@ export default class DrawerItem extends PureComponent {
         iconName: PropTypes.string,
         isDestructor: PropTypes.bool,
         labelComponent: PropTypes.node,
+        labelSibling: PropTypes.node,
         leftComponent: PropTypes.node,
         onPress: PropTypes.func,
         separator: PropTypes.bool,
@@ -43,6 +44,7 @@ export default class DrawerItem extends PureComponent {
             onPress,
             separator,
             theme,
+            labelSibling,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -88,14 +90,19 @@ export default class DrawerItem extends PureComponent {
             >
                 <View style={style.container}>
                     {icon &&
-                    <View style={style.iconContainer}>
-                        {icon}
-                    </View>
+                        <View style={style.iconContainer}>
+                            {icon}
+                        </View>
                     }
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
                             {label}
                         </View>
+                        {labelSibling &&
+                            <View style={style.labelSiblingContainer}>
+                                {labelSibling}
+                            </View>
+                        }
                         {divider}
                     </View>
                 </View>
@@ -107,10 +114,9 @@ export default class DrawerItem extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            height: 50,
+            padding: 3,
         },
         iconContainer: {
             width: 45,
@@ -125,11 +131,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             flex: 1,
+            position: 'relative',
         },
         labelContainer: {
             alignItems: 'center',
+            width: '70%',
             flex: 1,
             flexDirection: 'row',
+        },
+        labelSiblingContainer: {
+            position: 'absolute',
+            top: 14,
+            right: 14,
         },
         centerLabel: {
             textAlign: 'center',

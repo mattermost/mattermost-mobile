@@ -19,21 +19,29 @@ import {t} from '@utils/i18n';
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
+import Emoji from '@components/emoji';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import ClearButton from '@components/custom_status/clear_button';
+import {changeOpacity} from '@utils/theme';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
+        customStatus: PropTypes.object,
     };
 
     static defaultProps = {
         currentUser: {},
         status: 'offline',
+        customStatus: {},
     };
 
     componentDidMount() {
@@ -123,11 +131,23 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    goToCustomStatusScreen = (intl) => {
+        this.openCustomStatusModal(
+            'CustomStatus',
+            intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}),
+        );
+    }
+
     logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
         this.closeSettingsSidebar();
         logout();
     });
+
+    openCustomStatusModal = (screen, title, passProps = {}) => {
+        this.closeSettingsSidebar();
+        showModal(screen, title, passProps);
+    }
 
     openModal = async (screen, title, passProps = {}) => {
         this.closeSettingsSidebar();
@@ -185,6 +205,56 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    renderCustomStatus = () => {
+        const {isCustomStatusEnabled, customStatus, theme} = this.props;
+        if (!isCustomStatusEnabled) {
+            return null;
+        }
+        const isStatusSet = customStatus && (customStatus.text || customStatus.emoji);
+        const labelComponent = isStatusSet ? (
+            <CustomStatusText
+                text={customStatus.text}
+                theme={theme}
+            />
+        ) : null;
+        const customStatusEmoji = isStatusSet ?
+            (
+                <Emoji
+                    emojiName={customStatus.emoji}
+                    size={20}
+                />
+            ) :
+            (
+                <CompassIcon
+                    name='emoticon-happy-outline'
+                    size={24}
+                    style={{color: changeOpacity(theme.centerChannelColor, 0.64)}}
+                />
+            );
+
+        const clearButton = isStatusSet ?
+            (
+                <ClearButton
+                    handlePress={this.props.actions.unsetCustomStatus}
+                    theme={theme}
+                />
+            ) : null;
+
+        return (
+            <DrawerItem
+                testID='settings.sidebar.custom_status.action'
+                labelComponent={labelComponent}
+                i18nId='sidebar_right_menu.set_status'
+                defaultMessage='Set a Status'
+                leftComponent={customStatusEmoji}
+                separator={false}
+                onPress={this.goToCustomStatus}
+                theme={theme}
+                labelSibling={clearButton}
+            />
+        );
+    }
+
     renderOptions = (style) => {
         const {currentUser, theme} = this.props;
 
@@ -207,10 +277,11 @@ export default class SettingsSidebarBase extends PureComponent {
                             testID='settings.sidebar.status.action'
                             labelComponent={this.renderUserStatusLabel(currentUser.id)}
                             leftComponent={this.renderUserStatusIcon(currentUser.id)}
-                            separator={false}
+                            separator={this.props.isCustomStatusEnabled}
                             onPress={this.handleSetStatus}
                             theme={theme}
                         />
+                        {this.renderCustomStatus()}
                     </View>
                     <View style={style.separator}/>
                     <View style={style.block}>
