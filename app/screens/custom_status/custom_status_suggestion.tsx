@@ -58,7 +58,7 @@ const CustomStatusSuggestion = (props: Props) => {
                         />
                     </View>
                     {clearButton && (
-                        <View style={style.labelSiblingContainer}>
+                        <View style={style.clearButtonContainer}>
                             {clearButton}
                         </View>
                     )}
@@ -95,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             flexDirection: 'row',
         },
-        labelSiblingContainer: {
+        clearButtonContainer: {
             position: 'absolute',
             top: 3,
             right: 14,
