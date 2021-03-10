@@ -40,6 +40,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           "width": 50,
         }
       }
+      testID="search.recent_item.test.remove.button"
     >
       <CompassIcon
         color="rgba(61,60,64,0.6)"

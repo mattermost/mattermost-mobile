@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
-import {fillBindingsInformation} from './apps';
+import {fillAndTrimBindingsInformation} from './apps';
 
 describe('Apps Utils', () => {
-    describe('fillBindingsInformation', () => {
+    describe('fillAndTrimBindingsInformation', () => {
         test('Apps IDs, and Calls propagate down, and locations get formed', () => {
             const inBinding: AppBinding = {
                 app_id: 'id',
@@ -71,7 +71,7 @@ describe('Apps Utils', () => {
                 ],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
 
@@ -144,7 +144,7 @@ describe('Apps Utils', () => {
                 ],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
 
@@ -215,7 +215,7 @@ describe('Apps Utils', () => {
                 ],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
 
@@ -292,7 +292,7 @@ describe('Apps Utils', () => {
                 ],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
 
@@ -347,7 +347,7 @@ describe('Apps Utils', () => {
                 ],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
 
@@ -402,7 +402,7 @@ describe('Apps Utils', () => {
                 ],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
 
@@ -436,7 +436,7 @@ describe('Apps Utils', () => {
                 bindings: [] as AppBinding[],
             } as AppBinding;
 
-            fillBindingsInformation(inBinding);
+            fillAndTrimBindingsInformation(inBinding);
             expect(inBinding).toEqual(outBinding);
         });
     });

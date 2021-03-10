@@ -100,6 +100,7 @@ export default class DisplaySettings extends PureComponent {
                     onPress={this.goToTimezoneSettings}
                     separator={false}
                     showArrow={showArrow}
+                    testID='display_settings.timezone.action'
                     theme={theme}
                 />
             );
@@ -124,6 +125,7 @@ export default class DisplaySettings extends PureComponent {
             <SafeAreaView
                 edges={['left', 'right']}
                 style={style.container}
+                testID='display_settings.screen'
             >
                 <StatusBar/>
                 <View style={style.wrapper}>
@@ -137,6 +139,7 @@ export default class DisplaySettings extends PureComponent {
                             onPress={this.goToThemeSettings}
                             separator={true}
                             showArrow={showArrow}
+                            testID='display_settings.theme.action'
                             theme={theme}
                         />
                     )}
@@ -147,6 +150,7 @@ export default class DisplaySettings extends PureComponent {
                         onPress={this.goToClockDisplaySettings}
                         separator={disableClockDisplaySeparator}
                         showArrow={showArrow}
+                        testID='display_settings.clock_display.action'
                         theme={theme}
                     />
                     {timezoneOption}

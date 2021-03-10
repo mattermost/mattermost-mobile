@@ -15,6 +15,7 @@ export default class FormattedTime extends React.PureComponent {
         children: PropTypes.func,
         hour12: PropTypes.bool,
         style: CustomPropTypes.Style,
+        testID: PropTypes.string,
     };
 
     getFormattedTime = () => {
@@ -38,13 +39,20 @@ export default class FormattedTime extends React.PureComponent {
     };
 
     render() {
-        const {children, style} = this.props;
+        const {children, style, testID} = this.props;
         const formattedTime = this.getFormattedTime();
 
         if (typeof children === 'function') {
             return children(formattedTime);
         }
 
-        return <Text style={style}>{formattedTime}</Text>;
+        return (
+            <Text
+                style={style}
+                testID={testID}
+            >
+                {formattedTime}
+            </Text>
+        );
     }
 }

@@ -24,6 +24,7 @@ import {getResponseFromError} from './common';
  * See https://api.mattermost.com/#tag/users/paths/~1users~1login/post
  * @param {string} user.username - username of a user
  * @param {string} user.password - password of a user
+ * @return {Object} returns {user, status} on success or {error, status} on error
  */
 export const apiLogin = async (user) => {
     try {
@@ -49,6 +50,7 @@ export const apiLogin = async (user) => {
 
 /**
  * Login to Mattermost server as sysadmin.
+ * @return {Object} returns {user, status} on success or {error, status} on error
  */
 export const apiAdminLogin = () => {
     return apiLogin({
@@ -60,6 +62,7 @@ export const apiAdminLogin = () => {
 /**
  * Logout from the Mattermost server.
  * See https://api.mattermost.com/#tag/users/paths/~1users~1logout/post
+ * @return {Object} returns data on success
  */
 export const apiLogout = async () => {
     const response = await client.post('/api/v4/users/logout');
@@ -73,6 +76,7 @@ export const apiLogout = async () => {
  * Create a user.
  * See https://api.mattermost.com/#tag/users/paths/~1users/post
  * @param {Object} user - user object to be created
+ * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
     try {
@@ -91,6 +95,7 @@ export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
 
 /**
  * Get user from a current session.
+ * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiGetMe = () => {
     return apiGetUserById('me');
@@ -99,7 +104,8 @@ export const apiGetMe = () => {
 /**
  * Get a user by ID.
  * See https://api.mattermost.com/#tag/users/paths/~1users~1{user_id}/get
- * @param {string} userId
+ * @param {string} userId - the user ID
+ * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiGetUserById = async (userId) => {
     try {
@@ -114,11 +120,41 @@ export const apiGetUserById = async (userId) => {
 /**
  * Get a user by username.
  * See https://api.mattermost.com/#tag/users/paths/~1users~1username~1{username}/get
- * @param {string} username
+ * @param {string} username - the username
+ * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiGetUserByUsername = async (username) => {
     try {
         const response = await client.get(`/api/v4/users/username/${username}`);
+
+        return {user: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Patch user from a current session.
+ * @param {Object} userData - data to partially update a user
+ * @return {Object} returns {user} on success or {error, status} on error
+ */
+export const apiPatchMe = (userData) => {
+    return apiPatchUser('me', userData);
+};
+
+/**
+ * Patch a user.
+ * See https://api.mattermost.com/#tag/users/paths/~1users~1{user_id}~1patch/put
+ * @param {string} userId - the user ID
+ * @param {Object} userData - data to partially update a user
+ * @return {Object} returns {user} on success or {error, status} on error
+ */
+export const apiPatchUser = async (userId, userData) => {
+    try {
+        const response = await client.put(
+            `/api/v4/users/${userId}/patch`,
+            userData,
+        );
 
         return {user: response.data};
     } catch (err) {
@@ -147,6 +183,8 @@ export const User = {
     apiGetMe,
     apiGetUserById,
     apiGetUserByUsername,
+    apiPatchMe,
+    apiPatchUser,
 };
 
 export default User;
