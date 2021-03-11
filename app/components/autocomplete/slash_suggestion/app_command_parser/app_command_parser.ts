@@ -883,16 +883,17 @@ export class AppCommandParser {
             return [];
         }
 
-        const payload = this.composeCallFromParsed(parsed);
-        if (!payload) {
+        const call = this.composeCallFromParsed(parsed);
+        if (!call) {
             return [];
         }
-        payload.type = AppCallTypes.LOOKUP;
-        payload.selected_field = f.name;
-        payload.query = parsed.incomplete;
+        call.type = AppCallTypes.LOOKUP;
+        call.selected_field = f.name;
+        call.query = parsed.incomplete;
+        call.values = parsed.values;
 
         type ResponseType = {items: AppSelectOption[]};
-        const res: {data?: AppCallResponse<ResponseType>} = await this.store.dispatch(doAppCall<ResponseType>(payload, null));
+        const res: {data?: AppCallResponse<ResponseType>} = await this.store.dispatch(doAppCall<ResponseType>(call, null));
         const callResponse = res.data;
 
         if (callResponse?.type === AppCallResponseTypes.ERROR) {
