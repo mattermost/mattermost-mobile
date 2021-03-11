@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {AppBindingLocations} from '@mm-redux/constants/apps';
 
 import {
     AppBinding,
@@ -89,7 +88,7 @@ export const reduxTestState = {
         },
         general: {
             license: {IsLicensed: 'false'},
-            serverVersion: '5.4.0',
+            serverVersion: '5.25.0',
             config: {PostEditTimeLimit: -1},
         },
     },
@@ -183,7 +182,7 @@ export const testBindings: AppBinding[] = [
     {
         app_id: '',
         label: '',
-        location: AppBindingLocations.COMMAND,
+        location: '/command',
         bindings: [
             {
                 app_id: 'jira',

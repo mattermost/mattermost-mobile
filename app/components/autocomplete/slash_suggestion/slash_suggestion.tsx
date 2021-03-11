@@ -10,7 +10,7 @@ import {
 import {analytics} from '@init/analytics.ts';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {Command, AutocompleteSuggestion} from '@mm-redux/types/integrations';
+import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -22,7 +22,7 @@ const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 export type Props = {
     actions: {
         getAutocompleteCommands: (channelID: string) => void;
-        getCommandAutocompleteSuggestions: (value: string, teamID: string, args: {channel_id?: string, root_id?: string, parent_id?: string}) => void;
+        getCommandAutocompleteSuggestions: (value: string, teamID: string, args: CommandArgs) => void;
     };
     currentTeamId: string;
     commands: Command[];
