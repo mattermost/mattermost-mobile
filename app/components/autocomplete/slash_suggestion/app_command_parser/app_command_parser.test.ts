@@ -45,7 +45,7 @@ describe('AppCommandParser', () => {
     let parser: AppCommandParser;
     beforeEach(async () => {
         const store = await makeStore(testBindings);
-        parser = new AppCommandParser(store as any, '');
+        parser = new AppCommandParser(store as any, 'current_channel_id', 'root_id');
     });
 
     type Variant = {
@@ -844,6 +844,83 @@ describe('AppCommandParser', () => {
                     Hint: '',
                 },
             ]);
+        });
+    });
+
+    describe('composeCallFromCommand', () => {
+        const base = {
+            context: {
+                app_id: 'jira',
+                channel_id:'current_channel_id',
+                location: '/command',
+                root_id: 'root_id',
+                team_id: 'team_id',
+            },
+            path: '/create-issue',
+            type: 'submit',
+        };
+
+        test('empty form', async () => {
+            const cmd = '/jira issue create'
+            const values = {};
+
+            const call = await parser.composeCallFromCommand(cmd);
+            expect(call).toEqual({
+                ...base,
+                raw_command: cmd,
+                values,
+            });
+        });
+
+        test('full form', async () => {
+            const cmd = '/jira issue create --summary "Here it is" --epic epic1 --project'
+            const values = {};
+
+            const call = await parser.composeCallFromCommand(cmd);
+            expect(call).toEqual({
+                ...base,
+                raw_command: cmd,
+                values,
+            });
+        });
+
+        test('dynamic lookup test', async () => {
+            const f = Client4.executeAppCall;
+
+            const mockedExecute = jest.fn().mockResolvedValue(Promise.resolve({data: {items: [{label: 'special-label', value: 'special-value'}]}}));
+            Client4.executeAppCall = mockedExecute;
+
+            const suggestions = await parser.getSuggestions('/jira issue create --summary "The summary" --epic epic1 --project special');
+            Client4.executeAppCall = f;
+
+            expect(suggestions).toEqual([
+                {
+                    Complete: 'jira issue create --summary "The summary" --epic epic1 --project special-value',
+                    Suggestion: 'special-value',
+                    Description: 'special-label',
+                    Hint: '',
+                    IconData: 'Create icon',
+                },
+            ]);
+
+            expect(mockedExecute).toHaveBeenCalledWith({
+                context: {
+                    app_id: 'jira',
+                    channel_id: 'current_channel_id',
+                    location: '/command',
+                    root_id: 'root_id',
+                    team_id: 'team_id',
+                },
+                path: '/create-issue',
+                query: 'special',
+                raw_command: '/jira issue create --summary "The summary" --epic epic1 --project special',
+                selected_field: 'project',
+                type: 'lookup',
+                values: {
+                    summary: 'The summary',
+                    epic: 'epic1',
+                },
+            });
         });
     });
 });
