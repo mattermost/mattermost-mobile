@@ -17,13 +17,13 @@ import {dismissModal} from 'app/actions/navigation';
 
 import DialogIntroductionText from './dialog_introduction_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppCallResponse, AppField, AppForm, AppFormValues, AppSelectOption, FormResponseData, AppCallRequest} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
 
 export type Props = {
-    call: AppCall;
+    call: AppCallRequest;
     form: AppForm;
     actions: {
         submit: (submission: {
@@ -32,7 +32,7 @@ export type Props = {
             };
         }) => Promise<{data: AppCallResponse<FormResponseData>}>;
         performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<AppSelectOption[]>;
-        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<{data: AppCallResponse<any>}>;
+        refreshOnSelect: (field: AppField, values: AppFormValues) => Promise<{data: AppCallResponse<any>}>;
     };
     theme: Theme;
     componentId: string;
@@ -205,7 +205,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const values = {...this.state.values, [name]: value};
 
         if (field.refresh) {
-            this.props.actions.refreshOnSelect(field, values, value).then(({data}) => {
+            this.props.actions.refreshOnSelect(field, values).then(({data}) => {
                 if (data.type !== AppCallResponseTypes.ERROR) {
                     return;
                 }

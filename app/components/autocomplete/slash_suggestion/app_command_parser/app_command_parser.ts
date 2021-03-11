@@ -6,7 +6,7 @@
 import keyMirror from '@mm-redux/utils/key_mirror';
 
 import {
-    AppCall,
+    AppCallRequest,
     AppBinding,
     AppField,
     AppSelectOption,
@@ -15,7 +15,6 @@ import {
     AppForm,
     AutocompleteSuggestion,
     AutocompleteStaticSelect,
-    AppLookupCallValues,
     Channel,
     DispatchFunc,
     GlobalState,
@@ -484,7 +483,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromCommand creates the form submission call
-    public composeCallFromCommand = async (command: string): Promise<AppCall | null> => {
+    public composeCallFromCommand = async (command: string): Promise<AppCallRequest | null> => {
         let parsed = new ParsedCommand(command, this);
 
         const commandBindings = this.getCommandBindings();
@@ -582,7 +581,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromParsed creates the form submission call
-    composeCallFromParsed = (parsed: ParsedCommand): AppCall | null => {
+    composeCallFromParsed = (parsed: ParsedCommand): AppCallRequest | null => {
         if (!parsed.binding) {
             return null;
         }
@@ -683,7 +682,7 @@ export class AppCommandParser {
             return undefined;
         }
 
-        const payload: AppCall = {
+        const payload: AppCallRequest = {
             ...binding.call,
             type: AppCallTypes.FORM,
             context: {
@@ -882,21 +881,17 @@ export class AppCommandParser {
             return [];
         }
 
-        const values: AppLookupCallValues = {
-            name: f.name,
-            user_input: parsed.incomplete,
-            values: parsed.values,
-        };
-
-        const payload = this.composeCallFromParsed(parsed);
-        if (!payload) {
+        const call = this.composeCallFromParsed(parsed);
+        if (!call) {
             return [];
         }
-        payload.type = AppCallTypes.LOOKUP;
-        payload.values = values;
+        call.type = AppCallTypes.LOOKUP;
+        call.selected_field = f.name;
+        call.query = parsed.incomplete;
+        call.values = parsed.values;
 
         type ResponseType = {items: AppSelectOption[]};
-        const res: {data?: AppCallResponse<ResponseType>} = await this.store.dispatch(doAppCall<ResponseType>(payload, null));
+        const res: {data?: AppCallResponse<ResponseType>} = await this.store.dispatch(doAppCall<ResponseType>(call, null));
         const callResponse = res.data;
 
         if (callResponse?.type === AppCallResponseTypes.ERROR) {

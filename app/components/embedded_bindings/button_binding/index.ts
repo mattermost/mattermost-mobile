@@ -9,7 +9,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {AppCall} from '@mm-redux/types/apps';
+import {AppCallRequest} from '@mm-redux/types/apps';
 import {doAppCall} from '@actions/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
@@ -28,7 +28,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
