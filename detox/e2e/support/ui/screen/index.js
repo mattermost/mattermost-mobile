@@ -5,7 +5,9 @@ import AddReactionScreen from './add_reaction';
 import ChannelInfoScreen from './channel_info';
 import ChannelNotificationPreferenceScreen from './channel_notification_preference';
 import ChannelScreen from './channel';
+import ClockDisplaySettingsScreen from './clock_display_settings';
 import CreateChannelScreen from './create_channel';
+import DisplaySettingsScreen from './display_settings';
 import EditChannelScreen from './edit_channel';
 import EditPostScreen from './edit_post';
 import GeneralSettingsScreen from './general_settings';
@@ -32,7 +34,9 @@ export {
     ChannelInfoScreen,
     ChannelNotificationPreferenceScreen,
     ChannelScreen,
+    ClockDisplaySettingsScreen,
     CreateChannelScreen,
+    DisplaySettingsScreen,
     EditChannelScreen,
     EditPostScreen,
     GeneralSettingsScreen,

@@ -77,11 +77,11 @@ describe('Email Notifications', () => {
         await navigateBackToChannel();
 
         // # Post an at-mention message to mentioned user by other user
-        const message = `Mention @${testUser.username} by ${testOtherUser1.username}`;
+        const testMessage = `Mention @${testUser.username} by ${testOtherUser1.username}`;
         await User.apiLogin(testOtherUser1);
         await Post.apiCreatePost({
             channelId: testChannel.id,
-            message,
+            message: testMessage,
         });
 
         // * Verify mentioned user receives email notification
@@ -93,7 +93,7 @@ describe('Email Notifications', () => {
             testChannel.display_name,
             testUser,
             testOtherUser1,
-            message,
+            testMessage,
             testConfig.EmailSettings.FeedbackEmail,
             testConfig.SupportSettings.SupportEmail);
     });
@@ -108,17 +108,17 @@ describe('Email Notifications', () => {
         await navigateBackToChannel();
 
         // # Post an at-mention message to mentioned user by other user
-        const message = `Mention @${testUser.username} by ${testOtherUser2.username}`;
+        const testMessage = `Mention @${testUser.username} by ${testOtherUser2.username}`;
         await User.apiLogin(testOtherUser2);
         await Post.apiCreatePost({
             channelId: testChannel.id,
-            message,
+            message: testMessage,
         });
 
         // * Verify mentioned user does not receive email notification
         const {data} = await getRecentEmail(testUser.username);
         const bodyText = splitEmailBodyText(data.body.text);
-        jestExpect(bodyText[7]).not.toEqual(message);
+        jestExpect(bodyText[7]).not.toEqual(testMessage);
     });
 });
 

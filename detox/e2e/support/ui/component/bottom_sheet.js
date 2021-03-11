@@ -9,7 +9,11 @@ class BottomSheet {
 
     // bottom sheet options
     archivedChannelsOption = isAndroid() ? element(by.text('Archived Channels')) : element(by.label('Archived Channels')).atIndex(0);
+    awayOption = isAndroid() ? element(by.text('Away')) : element(by.label('Away')).atIndex(0);
     cancelOption = isAndroid() ? element(by.text('Cancel')) : element(by.label('Cancel')).atIndex(0);
+    doNotDisturbOption = isAndroid() ? element(by.text('Do Not Disturb')) : element(by.label('Do No Disturb')).atIndex(0);
+    offlineOption = isAndroid() ? element(by.text('Offline')) : element(by.label('Offline')).atIndex(0);
+    onlineOption = isAndroid() ? element(by.text('Online')) : element(by.label('Online')).atIndex(0);
     publicChannelsOption = isAndroid() ? element(by.text('Public Channels')) : element(by.label('Public Channels')).atIndex(0);
 }
 

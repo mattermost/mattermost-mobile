@@ -57,6 +57,7 @@ export default class ClockDisplay extends ClockDisplayBase {
             }),
             value: 'false',
             checked: newMilitaryTime === 'false',
+            testID: 'clock_display_settings.normal_clock.action',
         }, {
             label: intl.formatMessage({
                 id: 'user.settings.display.militaryClock',
@@ -64,6 +65,7 @@ export default class ClockDisplay extends ClockDisplayBase {
             }),
             value: 'true',
             checked: newMilitaryTime === 'true',
+            testID: 'clock_display_settings.military_clock.action',
         }];
 
         return (
@@ -73,7 +75,10 @@ export default class ClockDisplay extends ClockDisplayBase {
                 visible={showModal}
                 onRequestClose={this.closeModal}
             >
-                <View style={style.modalOverlay}>
+                <View
+                    style={style.modalOverlay}
+                    testID='clock_display_settings.clock.modal'
+                >
                     <View style={style.modal}>
                         <View style={style.modalBody}>
                             <View style={style.modalTitleContainer}>
@@ -105,6 +110,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                                         id='mobile.notification_settings.modal_cancel'
                                         defaultMessage='CANCEL'
                                         style={style.modalFooterOption}
+                                        testID='clock_display_settings.clock_modal_cancel.button'
                                     />
                                 </TouchableOpacity>
                                 <View style={style.modalFooterButtonSpacer}/>
@@ -116,6 +122,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                                         id='mobile.notification_settings.modal_save'
                                         defaultMessage='SAVE'
                                         style={style.modalFooterOption}
+                                        testID='clock_display_settings.clock_modal_save.button'
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -131,7 +138,10 @@ export default class ClockDisplay extends ClockDisplayBase {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID='clock_display_settings.screen'
+            >
                 <StatusBar/>
                 <View style={style.wrapper}>
                     {this.renderClockDisplayModal(style)}

@@ -525,6 +525,7 @@ export default class EditProfile extends PureComponent {
                 edit={!profilePictureDisabled}
                 imageUri={uri}
                 profileImageRemove={profileImageRemove}
+                testID='edit_profile.profile_picture'
             />
         );
 
