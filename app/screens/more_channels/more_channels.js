@@ -63,8 +63,10 @@ export default class MoreChannels extends PureComponent {
 
         this.searchTimeoutId = 0;
         this.publicPage = -1;
+        this.sharedPage = -1;
         this.archivedPage = -1;
         this.nextPublic = true;
+        this.nextShared = true;
         this.nextArchived = true;
         this.mounted = false;
 
@@ -186,6 +188,15 @@ export default class MoreChannels extends PureComponent {
                         ).then(this.loadedChannels);
                     }
                     break;
+                case 'shared':
+                    if (this.nextShared) {
+                        // actions.getSharedChannels(
+                        //     currentTeamId,
+                        //     this.sharedPage + 1,
+                        //     General.CHANNELS_CHUNK_SIZE,
+                        // ).then(this.loadedChannels);
+                    }
+                    break;
                 case 'archived':
                     if (canShowArchivedChannels && this.nextArchived) {
                         actions.getArchivedChannels(
@@ -226,8 +237,12 @@ export default class MoreChannels extends PureComponent {
         if (this.mounted) {
             const {typeOfChannels} = this.state;
             const isPublic = typeOfChannels === 'public';
+            const isShared = typeOfChannels === 'shared';
 
-            if (isPublic) {
+            if (isShared) {
+                this.publicPage += 1;
+                this.nextShared = data?.length > 0;
+            } else if (isPublic) {
                 this.publicPage += 1;
                 this.nextPublic = data?.length > 0;
             } else {
@@ -385,12 +400,13 @@ export default class MoreChannels extends PureComponent {
     handleDropdownClick = () => {
         const {formatMessage} = this.context.intl;
         const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
+        const sharedChannelsText = formatMessage({id: 'more_channels.sharedChannels', defaultMessage: 'Shared Channels'});
         const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
         const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
         const cancelText = 'Cancel';
         BottomSheet.showBottomSheetWithOptions({
-            options: [publicChannelsText, archivedChannelsText, cancelText],
-            cancelButtonIndex: 2,
+            options: [publicChannelsText, sharedChannelsText, archivedChannelsText, cancelText],
+            cancelButtonIndex: 3,
             title: titleText,
         }, (value) => {
             let typeOfChannels;
@@ -399,6 +415,9 @@ export default class MoreChannels extends PureComponent {
                 typeOfChannels = 'public';
                 break;
             case 1:
+                typeOfChannels = 'shared';
+                break;
+            case 2:
                 typeOfChannels = 'archived';
                 break;
             default:

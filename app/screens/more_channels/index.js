@@ -7,7 +7,7 @@ import {createSelector} from 'reselect';
 
 import {handleSelectChannel, setChannelDisplayName} from '@actions/views/channel';
 import {General} from '@mm-redux/constants';
-import {getArchivedChannels, getChannels, joinChannel, searchChannels} from '@mm-redux/actions/channels';
+import {getArchivedChannels, getChannels, getSharedChannels, joinChannel, searchChannels} from '@mm-redux/actions/channels';
 import {getChannelsInCurrentTeam, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -62,6 +62,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getArchivedChannels,
             getChannels,
+            getSharedChannels,
             handleSelectChannel,
             joinChannel,
             searchChannels,
