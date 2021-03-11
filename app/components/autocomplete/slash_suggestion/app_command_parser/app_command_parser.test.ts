@@ -873,8 +873,13 @@ describe('AppCommandParser', () => {
         });
 
         test('full form', async () => {
-            const cmd = '/jira issue create --summary "Here it is" --epic epic1 --project';
-            const values = {};
+            const cmd = '/jira issue create --summary "Here it is" --epic epic1 --verbose true --project';
+            const values = {
+                summary: 'Here it is',
+                epic: 'epic1',
+                verbose: 'true',
+                project: '',
+            };
 
             const call = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
