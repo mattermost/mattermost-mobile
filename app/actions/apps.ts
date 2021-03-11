@@ -31,7 +31,7 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                 }
                 return {data: res};
             case AppCallResponseTypes.ERROR:
-                return {data: res};
+                return {data: res, error: {message: res.error}};
             case AppCallResponseTypes.FORM: {
                 if (!res.form) {
                     const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `form`, but no form was included in response.';
@@ -60,16 +60,8 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
             }
 
             return {data: res};
-        } catch (err) {
-            const msg = err.message || 'We found an unexpected error.';
-            ephemeral(msg);
-
-            return {
-                data: {
-                    type: AppCallResponseTypes.ERROR,
-                    error: {message: msg},
-                },
-            };
+        } catch (error) {
+            return {error};
         }
     };
 }

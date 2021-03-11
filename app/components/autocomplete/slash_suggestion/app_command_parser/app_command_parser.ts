@@ -692,15 +692,13 @@ export class AppCommandParser {
             },
         };
 
-        const res = await this.store.dispatch(doAppCall(payload, null)) as {data?: AppCallResponse};
-        const callResponse: AppCallResponse | undefined = res.data;
-        if (callResponse?.type === AppCallResponseTypes.ERROR) {
-            const errorMessage = callResponse.error || 'Unknown error.';
-            this.displayError(errorMessage);
+        const res = await this.store.dispatch(doAppCall(payload, null)) as {data: AppCallResponse, error?: Error};
+        if (res.error) {
+            this.displayError(res.error.message);
             return undefined;
         }
 
-        return callResponse?.form;
+        return res.data.form;
     }
 
     getForm = async (location: string, binding: AppBinding): Promise<AppForm | undefined> => {

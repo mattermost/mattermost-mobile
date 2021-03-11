@@ -47,11 +47,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                 }
 
                 call.type = AppCallTypes.SUBMIT;
-                const res = await dispatch(doAppCall(call, intl));
-                if (res?.data?.error) {
-                    return {error: {message: res.data.error}};
-                }
-                return res;
+                return dispatch(doAppCall(call, intl));
             }
         }
 

@@ -94,8 +94,8 @@ const Option = injectIntl((props: OptionProps) => {
             },
         }, props.intl);
 
-        if (res?.data?.error) {
-            Alert.alert(res.data.error);
+        if (res.error) {
+            Alert.alert(res.error.message);
             return;
         }
 
