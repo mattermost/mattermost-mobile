@@ -3,6 +3,7 @@
 import React from 'react';
 import CompassIcon from '@components/compass_icon';
 import {Theme} from '@mm-redux/types/preferences';
+
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {PanResponder, View} from 'react-native';

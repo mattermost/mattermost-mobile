@@ -81,6 +81,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         };
 
         mergeNavigationOptions(props.componentId, options);
+
         this.state = {
             emoji: props.customStatus.emoji,
             text: props.customStatus.text || '',
