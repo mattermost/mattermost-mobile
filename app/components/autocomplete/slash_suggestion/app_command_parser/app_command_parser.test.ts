@@ -9,7 +9,7 @@ import {
     Client4,
     AppBinding,
     checkForExecuteSuggestion,
-} from './app_command_parser_test_dependencies';
+} from './tests/app_command_parser_test_dependencies';
 
 import {
     AutocompleteSuggestion,
@@ -24,7 +24,7 @@ import {
 import {
     reduxTestState,
     testBindings,
-} from './test_data';
+} from './tests/app_command_parser_test_data';
 
 const mockStore = configureStore([thunk]);
 

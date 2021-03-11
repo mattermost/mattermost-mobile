@@ -14,12 +14,12 @@ import {
     configureStore,
     Client4,
     AppBinding,
-} from './app_command_parser/app_command_parser_test_dependencies';
+} from './app_command_parser/tests/app_command_parser_test_dependencies';
 
 import {
     reduxTestState,
     testBindings,
-} from './app_command_parser/test_data';
+} from './app_command_parser/tests/app_command_parser_test_data';
 
 const mockStore = configureStore([thunk]);
 
