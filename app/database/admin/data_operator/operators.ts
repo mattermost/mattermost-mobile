@@ -321,6 +321,7 @@ const operateBaseRecord = async ({database, optType, tableName, value, generator
 
     const isPresent = appRecord.length > 0;
 
+    // FIXME : find a way to update only those records that have really needs updating
     if ((isPresent && optType === OperationType.CREATE) || (isPresent && optType === OperationType.UPDATE)) {
         // Two possible scenarios:
         // 1. We are dealing with either duplicates here and if so, we'll update instead of create
