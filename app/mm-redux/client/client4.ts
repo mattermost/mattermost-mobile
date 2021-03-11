@@ -4,7 +4,7 @@
 import {analytics} from '@init/analytics.ts';
 import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
-import {UserProfile, UserStatus} from '@mm-redux/types/users';
+import {UserCustomStatus, UserProfile, UserStatus} from '@mm-redux/types/users';
 import {Team} from '@mm-redux/types/teams';
 import {Channel, ChannelModerationPatch} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
@@ -828,6 +828,27 @@ export default class Client4 {
             {method: 'put', body: JSON.stringify(status)},
         );
     };
+
+    updateCustomStatus = (customStatus: UserCustomStatus) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom`,
+            {method: 'put', body: JSON.stringify(customStatus)},
+        );
+    };
+
+    unsetCustomStatus = () => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom`,
+            {method: 'delete'},
+        );
+    }
+
+    removeRecentCustomStatus = (customStatus: UserCustomStatus) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom/recent`,
+            {method: 'delete', body: JSON.stringify(customStatus)},
+        );
+    }
 
     switchEmailToOAuth = async (service: string, email: string, password: string, mfaCode = '') => {
         analytics.trackAPI('api_users_email_to_oauth');
