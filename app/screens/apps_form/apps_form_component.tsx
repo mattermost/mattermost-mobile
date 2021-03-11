@@ -17,13 +17,13 @@ import {dismissModal} from 'app/actions/navigation';
 
 import DialogIntroductionText from './dialog_introduction_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
 
 export type Props = {
-    call: AppCall;
+    call: AppCallRequest;
     form: AppForm;
     actions: {
         submit: (submission: {

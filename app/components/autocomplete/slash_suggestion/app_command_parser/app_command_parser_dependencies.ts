@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 export type {
-    AppCall,
+    AppCallRequest,
     AppBinding,
     AppField,
     AppSelectOption,
@@ -14,7 +14,6 @@ export type {
     AutocompleteStaticSelect,
     AutocompleteUserSelect,
     AutocompleteChannelSelect,
-    AppLookupCallValues,
 } from '@mm-redux/types/apps';
 
 import type {

@@ -8,7 +8,7 @@ import {GlobalState} from '@mm-redux/types/store';
 import {doAppCall} from '@actions/apps';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
-import {AppCall} from '@mm-redux/types/apps';
+import {AppCallRequest} from '@mm-redux/types/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import MenuBinding from './menu_binding';
@@ -25,7 +25,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCall) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
