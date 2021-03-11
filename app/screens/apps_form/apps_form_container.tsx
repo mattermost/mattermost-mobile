@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupCallValues, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupCallValues, FormResponseData} from '@mm-redux/types/apps';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import AppsFormComponent from './apps_form_component';
 
