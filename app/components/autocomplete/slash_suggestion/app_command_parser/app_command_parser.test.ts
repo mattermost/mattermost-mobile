@@ -851,7 +851,7 @@ describe('AppCommandParser', () => {
         const base = {
             context: {
                 app_id: 'jira',
-                channel_id:'current_channel_id',
+                channel_id: 'current_channel_id',
                 location: '/command',
                 root_id: 'root_id',
                 team_id: 'team_id',
@@ -861,7 +861,7 @@ describe('AppCommandParser', () => {
         };
 
         test('empty form', async () => {
-            const cmd = '/jira issue create'
+            const cmd = '/jira issue create';
             const values = {};
 
             const call = await parser.composeCallFromCommand(cmd);
@@ -873,7 +873,7 @@ describe('AppCommandParser', () => {
         });
 
         test('full form', async () => {
-            const cmd = '/jira issue create --summary "Here it is" --epic epic1 --project'
+            const cmd = '/jira issue create --summary "Here it is" --epic epic1 --project';
             const values = {};
 
             const call = await parser.composeCallFromCommand(cmd);
