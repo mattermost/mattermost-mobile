@@ -80,7 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         iconContainer: {
             width: 45,
-            height: 50,
+            height: 46,
             alignItems: 'center',
             justifyContent: 'center',
             marginLeft: 5,

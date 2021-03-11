@@ -56,6 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         button: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
             borderRadius: 1000,
+            overflow: 'hidden',
         },
     };
 });

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {View, Text, TouchableOpacity, TextInput} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput, Keyboard} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
@@ -111,6 +111,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         } else if (customStatus && customStatus.emoji) {
             this.props.actions.unsetCustomStatus();
         }
+        Keyboard.dismiss();
         dismissModal();
     };
 
@@ -268,7 +269,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     maxLength={CustomStatus.CUSTOM_STATUS_TEXT_CHARACTER_LIMIT}
                     underlineColorAndroid='transparent'
                     disableFullscreenUI={true}
-                    multiline={true}
                     keyboardType={'default'}
                     secureTextEntry={false}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -332,7 +332,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 14,
             paddingHorizontal: 52,
             textAlignVertical: 'center',
-            minHeight: 40,
+            height: 48,
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),

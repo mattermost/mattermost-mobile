@@ -846,7 +846,7 @@ export default class Client4 {
     removeRecentCustomStatus = (customStatus: UserCustomStatus) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/status/custom/recent`,
-            {method: 'PATCH', body: JSON.stringify(customStatus)},
+            {method: 'post', body: JSON.stringify(customStatus)},
         );
     }
 
