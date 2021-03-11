@@ -584,7 +584,7 @@ export default class Search extends PureComponent {
         }, {
             value: 'in:',
             testID: 'search.in_section',
-            modifier: `:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
+            modifier: `${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.in_modifier_description',
                 defaultMessage: 'to find posts in specific channels',
