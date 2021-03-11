@@ -9,7 +9,7 @@ import type {
     MigrationEvents,
     Models,
 } from '@typings/database/database';
-import { App, Global, Servers } from '../../default/models';
+import {App, Global, Servers} from '../../default/models';
 import {
     Channel,
     ChannelInfo,
@@ -40,20 +40,20 @@ import {
     TermsOfService,
     User,
 } from '../../server/models';
-import { Database, Q } from '@nozbe/watermelondb';
-import { DeviceEventEmitter, Platform } from 'react-native';
-import { MIGRATION_EVENTS, MM_TABLES } from '@constants/database';
-import { deleteIOSDatabase, getIOSAppGroupDetails } from '@utils/mattermost_managed';
+import {Database, Q} from '@nozbe/watermelondb';
+import {DeviceEventEmitter, Platform} from 'react-native';
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import DefaultMigration from '../../default/migration';
-import { FileSystem } from 'react-native-unimodules';
+import {FileSystem} from 'react-native-unimodules';
 import IServers from '@typings/database/servers';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import ServerMigration from '../../server/migration';
-import { defaultSchema } from '../../default/schema';
-import { serverSchema } from '../../server/schema';
+import {defaultSchema} from '../../default/schema';
+import {serverSchema} from '../../server/schema';
 
-const { SERVERS } = MM_TABLES.DEFAULT;
+const {SERVERS} = MM_TABLES.DEFAULT;
 
 // The only two types of databases in the app
 export enum DatabaseType {
@@ -141,10 +141,10 @@ class DatabaseManager {
 
             // Registers the new server connection into the DEFAULT database
             if (serverUrl && shouldAddToDefaultDatabase) {
-                await this.addServerToDefaultDatabase({ databaseFilePath, displayName: dbName, serverUrl });
+                await this.addServerToDefaultDatabase({databaseFilePath, displayName: dbName, serverUrl});
             }
 
-            return new Database({ adapter, actionsEnabled, modelClasses });
+            return new Database({adapter, actionsEnabled, modelClasses});
         } catch (e) {
             // console.log(e);
         }
@@ -159,7 +159,7 @@ class DatabaseManager {
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
-    setActiveServerDatabase = async ({ displayName, serverUrl }: ActiveServerDatabase) => {
+    setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
         const isServerPresent = await this.isServerPresent(serverUrl);
 
         this.activeDatabase = await this.createDatabaseConnection({
@@ -230,7 +230,7 @@ class DatabaseManager {
             // Creates server database instances
             if (servers.length) {
                 const databasePromises = servers.map(async (server: IServers) => {
-                    const { displayName, url } = server;
+                    const {displayName, url} = server;
                     const databaseConnection = {
                         actionsEnabled: true,
                         dbName: displayName,
@@ -244,7 +244,7 @@ class DatabaseManager {
                         shouldAddToDefaultDatabase: false,
                     });
 
-                    return { url, dbInstance };
+                    return {url, dbInstance};
                 });
 
                 const databaseInstances = await Promise.all(databasePromises);
@@ -267,10 +267,10 @@ class DatabaseManager {
             let server: IServers;
 
             if (defaultDB) {
-                const serversRecords = (await defaultDB.collections
-                    .get(SERVERS)
-                    .query(Q.where('url', serverUrl))
-                    .fetch()) as IServers[];
+                const serversRecords = (await defaultDB.collections.
+                    get(SERVERS).
+                    query(Q.where('url', serverUrl)).
+                    fetch()) as IServers[];
                 server = serversRecords?.[0] ?? undefined;
 
                 if (server) {
@@ -283,7 +283,7 @@ class DatabaseManager {
 
                     if (Platform.OS === 'ios') {
                         // On iOS, we'll delete the *.db file under the shared app-group/databases folder
-                        deleteIOSDatabase({ databaseName });
+                        deleteIOSDatabase({databaseName});
                         return true;
                     }
 
@@ -315,7 +315,7 @@ class DatabaseManager {
         try {
             //On iOS, we'll delete the databases folder under the shared AppGroup folder
             if (Platform.OS === 'ios') {
-                deleteIOSDatabase({ shouldRemoveDirectory });
+                deleteIOSDatabase({shouldRemoveDirectory});
                 return true;
             }
 
@@ -348,7 +348,7 @@ class DatabaseManager {
      */
     private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
-            databaseConnection: { dbName: 'default' },
+            databaseConnection: {dbName: 'default'},
             shouldAddToDefaultDatabase: false,
         });
         return this.defaultDatabase;
@@ -361,7 +361,7 @@ class DatabaseManager {
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
-    private addServerToDefaultDatabase = async ({ databaseFilePath, displayName, serverUrl }: DefaultNewServer) => {
+    private addServerToDefaultDatabase = async ({databaseFilePath, displayName, serverUrl}: DefaultNewServer) => {
         try {
             const defaultDatabase = await this.getDefaultDatabase();
             const isServerPresent = await this.isServerPresent(serverUrl);
@@ -393,13 +393,13 @@ class DatabaseManager {
     private buildMigrationCallbacks = (dbName: string) => {
         const migrationEvents: MigrationEvents = {
             onSuccess: () => {
-                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, { dbName });
+                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {dbName});
             },
             onStarted: () => {
-                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, { dbName });
+                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {dbName});
             },
             onFailure: (error) => {
-                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, { dbName, error });
+                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {dbName, error});
             },
         };
 
@@ -417,9 +417,9 @@ class DatabaseManager {
      * @returns {string}
      */
     private getDatabaseDirectory = (dbName: string): string => {
-        return Platform.OS === 'ios'
-            ? `${this.iOSAppGroupDatabase}/${dbName}.db`
-            : `${FileSystem.documentDirectory}${dbName}.db`;
+        return Platform.OS === 'ios' ?
+            `${this.iOSAppGroupDatabase}/${dbName}.db` :
+            `${FileSystem.documentDirectory}${dbName}.db`;
     };
 }
 

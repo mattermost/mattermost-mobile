@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { Q } from '@nozbe/watermelondb';
+import {Q} from '@nozbe/watermelondb';
 
-import { MM_TABLES } from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import Model from '@nozbe/watermelondb/Model';
 import {
     BatchOperations,
@@ -44,7 +44,7 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import { addPrevPostId, sanitizeReactions } from './utils';
+import {addPrevPostId, sanitizeReactions} from './utils';
 
 export enum OperationType {
     CREATE = 'CREATE',
@@ -62,7 +62,7 @@ export enum IsolatedEntities {
     TERMS_OF_SERVICE = 'TermsOfService',
 }
 
-const { CUSTOM_EMOJI, DRAFT, FILE, POST, POST_METADATA, POSTS_IN_THREAD, REACTION } = MM_TABLES.SERVER;
+const {CUSTOM_EMOJI, DRAFT, FILE, POST, POST_METADATA, POSTS_IN_THREAD, REACTION} = MM_TABLES.SERVER;
 
 class DataOperator {
     private defaultDatabase: DatabaseInstance;
@@ -77,45 +77,45 @@ class DataOperator {
      * @param {Records} entityData.values
      * @returns {Promise<void>}
      */
-    handleIsolatedEntity = async ({ optType, tableName, values }: HandleIsolatedEntityData): Promise<void> => {
+    handleIsolatedEntity = async ({optType, tableName, values}: HandleIsolatedEntityData): Promise<void> => {
         let recordOperator;
 
         switch (tableName) {
-            case IsolatedEntities.APP: {
-                recordOperator = operateAppRecord;
-                break;
-            }
-            case IsolatedEntities.GLOBAL: {
-                recordOperator = operateGlobalRecord;
-                break;
-            }
-            case IsolatedEntities.SERVERS: {
-                recordOperator = operateServersRecord;
-                break;
-            }
-            case IsolatedEntities.CUSTOM_EMOJI: {
-                recordOperator = operateCustomEmojiRecord;
-                break;
-            }
-            case IsolatedEntities.ROLE: {
-                recordOperator = operateRoleRecord;
-                break;
-            }
-            case IsolatedEntities.SYSTEM: {
-                recordOperator = operateSystemRecord;
-                break;
-            }
-            case IsolatedEntities.TERMS_OF_SERVICE: {
-                recordOperator = operateTermsOfServiceRecord;
-                break;
-            }
-            default: {
-                recordOperator = null;
-                break;
-            }
+        case IsolatedEntities.APP: {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        case IsolatedEntities.GLOBAL: {
+            recordOperator = operateGlobalRecord;
+            break;
+        }
+        case IsolatedEntities.SERVERS: {
+            recordOperator = operateServersRecord;
+            break;
+        }
+        case IsolatedEntities.CUSTOM_EMOJI: {
+            recordOperator = operateCustomEmojiRecord;
+            break;
+        }
+        case IsolatedEntities.ROLE: {
+            recordOperator = operateRoleRecord;
+            break;
+        }
+        case IsolatedEntities.SYSTEM: {
+            recordOperator = operateSystemRecord;
+            break;
+        }
+        case IsolatedEntities.TERMS_OF_SERVICE: {
+            recordOperator = operateTermsOfServiceRecord;
+            break;
+        }
+        default: {
+            recordOperator = null;
+            break;
+        }
         }
         if (recordOperator) {
-            await this.handleBase({ optType, values, tableName, recordOperator });
+            await this.handleBase({optType, values, tableName, recordOperator});
         }
     };
 
@@ -134,10 +134,10 @@ class DataOperator {
         const postIds = postsInThreads.map((postThread) => postThread.post_id);
         const rawPostsInThreads: { latest: number; earliest: number; post_id: string }[] = [];
         if (database) {
-            const threads = (await database.collections
-                .get(POST)
-                .query(Q.where('id', Q.oneOf(postIds)))
-                .fetch()) as Post[];
+            const threads = (await database.collections.
+                get(POST).
+                query(Q.where('id', Q.oneOf(postIds))).
+                fetch()) as Post[];
 
             postsInThreads.forEach((rootPost) => {
                 // Creates a sub-array of threads relating to rootPost.post_id
@@ -151,7 +151,7 @@ class DataOperator {
                 }, 0);
 
                 // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
-                rawPostsInThreads.push({ ...rootPost, latest: maxCreateAt });
+                rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
             });
 
             const postInThreadRecords = ((await this.prepareBase({
@@ -163,7 +163,7 @@ class DataOperator {
             })) as unknown) as PostsInThread[];
 
             if (postInThreadRecords?.length) {
-                await this.batchOperations({ database, models: postInThreadRecords });
+                await this.batchOperations({database, models: postInThreadRecords});
             }
         } else {
             // TODO : throw error for we couldn't get a database connection
@@ -179,7 +179,7 @@ class DataOperator {
     }) => {
         const database = await this.getDatabase(REACTION);
         if (database) {
-            const { createReactions, createEmojis, deleteReactions } = await sanitizeReactions({
+            const {createReactions, createEmojis, deleteReactions} = await sanitizeReactions({
                 database,
                 post_id: reactions[0].post_id,
                 rawReactions: reactions,
@@ -219,7 +219,7 @@ class DataOperator {
         return null;
     };
 
-    handleFiles = async ({ files, prepareRowsOnly }: { files: RawFile[]; prepareRowsOnly: boolean }) => {
+    handleFiles = async ({files, prepareRowsOnly}: { files: RawFile[]; prepareRowsOnly: boolean }) => {
         const database = await this.getDatabase(FILE);
         if (database) {
             const postFiles = ((await this.prepareBase({
@@ -235,7 +235,7 @@ class DataOperator {
             }
 
             if (postFiles?.length) {
-                await this.batchOperations({ database, models: [...postFiles] });
+                await this.batchOperations({database, models: [...postFiles]});
             }
         } else {
             // TODO: throw no database exception
@@ -259,7 +259,7 @@ class DataOperator {
             images.forEach((image) => {
                 const imageEntry = Object.entries(images);
                 metadata.push({
-                    data: { ...imageEntry[1], url: imageEntry[0] },
+                    data: {...imageEntry[1], url: imageEntry[0]},
                     type: 'images',
                     postId: image.postId,
                 });
@@ -268,7 +268,7 @@ class DataOperator {
             embeds.forEach((postEmbed) => {
                 postEmbed.embed.forEach((embed: RawEmbed) => {
                     metadata.push({
-                        data: { ...embed.data },
+                        data: {...embed.data},
                         type: embed.type,
                         postId: postEmbed.postId,
                     });
@@ -288,7 +288,7 @@ class DataOperator {
             }
 
             if (postMetas?.length) {
-                await this.batchOperations({ database, models: [...postMetas] });
+                await this.batchOperations({database, models: [...postMetas]});
             }
         } else {
             // TODO: throw no database exception
@@ -324,7 +324,7 @@ class DataOperator {
         let augmentedRawPosts = values;
 
         if (orders?.length) {
-            augmentedRawPosts = addPrevPostId({ orders, values });
+            augmentedRawPosts = addPrevPostId({orders, values});
         }
 
         // Prepares records for batch processing onto the 'Post' entity for the server schema
@@ -341,6 +341,7 @@ class DataOperator {
 
         for (let i = 0; i < values.length; i++) {
             const post = values[i] as RawPost;
+
             // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
             if (post.id === post.root_id) {
                 postsInThread.push({
@@ -371,10 +372,10 @@ class DataOperator {
                 // Extracts images and embeds from post's metadata
                 if (meta) {
                     if (meta?.images) {
-                        images.push({ images: meta.images, postId: post.id });
+                        images.push({images: meta.images, postId: post.id});
                     }
                     if (meta?.embeds) {
-                        embeds.push({ embed: meta.embeds, postId: post.id });
+                        embeds.push({embed: meta.embeds, postId: post.id});
                     }
                 }
             }
@@ -383,11 +384,11 @@ class DataOperator {
         // // TODO : test with empty array for reactions <<<<<<<<<<<<<<
 
         // calls handler for Reactions
-        const postReactions = (await this.handleReactions({ reactions, prepareRowsOnly: true })) as Reaction[];
+        const postReactions = (await this.handleReactions({reactions, prepareRowsOnly: true})) as Reaction[];
         batch.concat(postReactions);
 
         // calls handler for Files
-        const postFiles = (await this.handleFiles({ files, prepareRowsOnly: true })) as File[];
+        const postFiles = (await this.handleFiles({files, prepareRowsOnly: true})) as File[];
         batch.concat(postFiles);
 
         // calls handler for postMetadata ( embeds and images )
@@ -399,7 +400,7 @@ class DataOperator {
         batch.concat(postMetadata);
 
         // // TODO: call batch operations
-        await this.batchOperations({ database: database!, models: batch });
+        await this.batchOperations({database: database!, models: batch});
 
         // LAST :: calls handler for CustomEmojis, PostsInThread
         await this.handleIsolatedEntity({
@@ -419,7 +420,7 @@ class DataOperator {
      * @param {Array} operation.models
      * @returns {Promise<void>}
      */
-    private batchOperations = async ({ database, models }: BatchOperations) => {
+    private batchOperations = async ({database, models}: BatchOperations) => {
         try {
             if (models.length > 0) {
                 await database.action(async () => {
@@ -433,10 +434,10 @@ class DataOperator {
         }
     };
 
-    private prepareBase = async ({ database, optType, tableName, values, recordOperator }: HandleBaseData) => {
+    private prepareBase = async ({database, optType, tableName, values, recordOperator}: HandleBaseData) => {
         if (Array.isArray(values) && values.length) {
             const recordPromises = await values.map(async (value) => {
-                const record = await recordOperator({ database: database!, optType, tableName, value });
+                const record = await recordOperator({database: database!, optType, tableName, value});
                 return record;
             });
 
@@ -455,16 +456,16 @@ class DataOperator {
      * @param {(recordOperator: DataFactory) => void} opsBase.recordOperator
      * @returns {Promise<void>}
      */
-    private handleBase = async ({ optType, tableName, values, recordOperator }: HandleBaseData) => {
+    private handleBase = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {
         const database = await this.getDatabase(tableName);
         if (!database) {
             return undefined;
         }
 
-        const results = await this.prepareBase({ database, optType, tableName, values, recordOperator });
+        const results = await this.prepareBase({database, optType, tableName, values, recordOperator});
 
         if (results) {
-            await this.batchOperations({ database, models: Array.isArray(results) ? results : Array(results) });
+            await this.batchOperations({database, models: Array.isArray(results) ? results : Array(results)});
         }
         return null;
     };

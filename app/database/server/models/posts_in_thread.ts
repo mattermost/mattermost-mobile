@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { Relation } from '@nozbe/watermelondb';
-import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
-import Model, { Associations } from '@nozbe/watermelondb/Model';
+import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import { MM_TABLES } from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import Post from '@typings/database/post';
 
-const { POST, POSTS_IN_THREAD } = MM_TABLES.SERVER;
+const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
 
 /**
  * PostsInThread model helps us to combine adjacent threads together without leaving
@@ -20,8 +20,9 @@ export default class PostsInThread extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
+
         /** A POST can have multiple POSTS_IN_THREAD.(relationship is 1:N)*/
-        [POST]: { type: 'belongs_to', key: 'post_id' },
+        [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
     /** earliest : Lower bound of a timestamp range */

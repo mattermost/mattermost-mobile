@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { Q } from '@nozbe/watermelondb';
+import {Q} from '@nozbe/watermelondb';
 
-import { MM_TABLES } from '@constants/database';
-import { DatabaseInstance, RawCustomEmoji, RawPost, RawReaction, RecordValue } from '@typings/database/database';
+import {MM_TABLES} from '@constants/database';
+import {DatabaseInstance, RawCustomEmoji, RawPost, RawReaction, RecordValue} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 import OperatorFieldException from './exceptions/operator_field_exception';
 
-const { REACTION } = MM_TABLES.SERVER;
+const {REACTION} = MM_TABLES.SERVER;
 
 type MissingFieldUtil = {
     fields: string[];
@@ -17,7 +17,7 @@ type MissingFieldUtil = {
     tableName: string;
 };
 
-export const checkForMissingFields = ({ fields, rawValue, tableName }: MissingFieldUtil) => {
+export const checkForMissingFields = ({fields, rawValue, tableName}: MissingFieldUtil) => {
     const missingFields = [];
     for (const rawField in Object.keys(rawValue)) {
         if (!fields.includes(rawField)) {
@@ -41,14 +41,14 @@ export const sanitizeReactions = async ({
     post_id: string;
     rawReactions: RawReaction[];
 }) => {
-    const reactions = (await database!.collections
-        .get(REACTION)
-        .query(Q.where('post_id', post_id))
-        .fetch()) as Reaction[];
+    const reactions = (await database!.collections.
+        get(REACTION).
+        query(Q.where('post_id', post_id)).
+        fetch()) as Reaction[];
 
     if (reactions?.length < 1) {
         // We do not have existing reactions bearing this post_id; thus we CREATE them.
-        return { createReactions: rawReactions, deleteReactions: [], createEmojis: [] };
+        return {createReactions: rawReactions, deleteReactions: [], createEmojis: []};
     }
 
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
@@ -80,14 +80,14 @@ export const sanitizeReactions = async ({
     }
 
     // finding out elements to delete using array subtract
-    const deleteReactions = reactions
-        .filter((reaction) => !similarObjects.includes(reaction))
-        .map((outCast) => outCast.prepareDestroyPermanently());
+    const deleteReactions = reactions.
+        filter((reaction) => !similarObjects.includes(reaction)).
+        map((outCast) => outCast.prepareDestroyPermanently());
 
-    return { createReactions, createEmojis, deleteReactions };
+    return {createReactions, createEmojis, deleteReactions};
 };
 
-export const addPrevPostId = ({ orders, values }: { orders: string[]; values: RawPost[] }) => {
+export const addPrevPostId = ({orders, values}: { orders: string[]; values: RawPost[] }) => {
     const posts: RawPost[] = [];
     values.forEach((post) => {
         const postId = post.id;
@@ -99,7 +99,7 @@ export const addPrevPostId = ({ orders, values }: { orders: string[]; values: Ra
             // shit happened here
         } else {
             const prevPostId = postIdx + 1 < orders.length ? orders[postIdx + 1] : '';
-            posts.push({ ...post, prev_post_id: prevPostId });
+            posts.push({...post, prev_post_id: prevPostId});
         }
     });
 
