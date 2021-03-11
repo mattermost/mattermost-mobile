@@ -51,6 +51,7 @@ const NotificationIcon = ({fromWebhook, overrideIconUrl, senderId, useUserIcon}:
                 userId={user.id}
                 size={IMAGE_SIZE}
                 iconSize={24}
+                testID='in_app_notification.profile_picture'
             />
         );
     } else {

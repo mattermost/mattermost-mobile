@@ -47,6 +47,7 @@ const ChannelMentionItem = (props) => {
         isGuest,
         name,
         onPress,
+        testID,
         theme,
         type,
     } = props;
@@ -78,6 +79,7 @@ const ChannelMentionItem = (props) => {
                 onPress={completeMention}
                 style={[style.row, margins]}
                 type={'opacity'}
+                testID={testID}
             >
                 <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
                 <BotTag
@@ -98,6 +100,7 @@ const ChannelMentionItem = (props) => {
                 style={margins}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                 type={'native'}
+                testID={testID}
             >
                 <View style={style.row}>
                     <CompassIcon

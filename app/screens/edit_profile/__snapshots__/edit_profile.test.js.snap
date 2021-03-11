@@ -17,6 +17,7 @@ exports[`edit_profile should match snapshot 1`] = `
     size={153}
     statusBorderWidth={6}
     statusSize={36}
+    testID="edit_profile.profile_picture"
   />
 </View>
 `;

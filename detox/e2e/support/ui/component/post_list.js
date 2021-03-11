@@ -10,19 +10,27 @@ class PostList {
         };
     }
 
-    getPost = (postId, postMessage) => {
+    getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemHeaderDateTime,
+            postItemHeaderDisplayName,
             postItemHeaderReply,
-            postItemPreHeaderText,
             postItemMessage,
-        } = Post.getPost(this.testID.postListPostItem, postId, postMessage);
+            postItemPreHeaderText,
+            postItemProfilePicture,
+            postItemProfilePictureUserStatus,
+        } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
 
         return {
             postListPostItem: postItem,
+            postListPostItemHeaderDateTime: postItemHeaderDateTime,
+            postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
             postListPostItemHeaderReply: postItemHeaderReply,
-            postListPostItemPreHeaderText: postItemPreHeaderText,
             postListPostItemMessage: postItemMessage,
+            postListPostItemPreHeaderText: postItemPreHeaderText,
+            postListPostItemProfilePicture: postItemProfilePicture,
+            postListPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
         };
     }
 
