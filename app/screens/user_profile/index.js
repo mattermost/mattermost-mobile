@@ -13,6 +13,8 @@ import Preferences from '@mm-redux/constants/preferences';
 import {loadBot} from '@mm-redux/actions/bots';
 import {getBotAccounts} from '@mm-redux/selectors/entities/bots';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {makeGetCustomStatus} from '@selectors/custom_status';
+import {unsetCustomStatus} from '@actions/views/custom_status';
 
 import UserProfile from './user_profile';
 
@@ -21,6 +23,7 @@ function mapStateToProps(state, ownProps) {
     const {createChannel: createChannelRequest} = state.requests.channels;
     const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
     const enableTimezone = isTimezoneEnabled(state);
+    const getCustomStatus = makeGetCustomStatus();
 
     return {
         config,
@@ -33,6 +36,7 @@ function mapStateToProps(state, ownProps) {
         militaryTime,
         theme: getTheme(state),
         isMyUser: getCurrentUserId(state) === ownProps.userId,
+        customStatus: getCustomStatus(state, ownProps.userId) || {},
     };
 }
 
@@ -42,6 +46,7 @@ function mapDispatchToProps(dispatch) {
             makeDirectChannel,
             setChannelDisplayName,
             loadBot,
+            unsetCustomStatus,
         }, dispatch),
     };
 }

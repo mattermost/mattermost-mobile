@@ -6,7 +6,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useCallback} from 'react';
-import {View} from 'react-native-animatable';
+import {View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
@@ -26,14 +26,14 @@ const CustomStatusSuggestion = (props: Props) => {
 
     const divider = separator ? <View style={style.divider}/> : null;
 
-    const handleClick = useCallback(() => {
+    const handleClick = useCallback(preventDoubleTap(() => {
         handleSuggestionClick({emoji, text});
-    }, [handleSuggestionClick, emoji, text]);
+    }), [handleSuggestionClick, emoji, text]);
 
     const clearButton = handleClear ?
         (
             <ClearButton
-                handlePress={preventDoubleTap(() => handleClear({emoji, text}))}
+                handlePress={() => handleClear({emoji, text})}
                 theme={theme}
             />
         ) : null;
@@ -57,11 +57,11 @@ const CustomStatusSuggestion = (props: Props) => {
                             theme={theme}
                         />
                     </View>
-                    {clearButton &&
-                        <View style={style.labelSiblingContainer}>
+                    {clearButton && (
+                        <View style={style.clearButtonContainer}>
                             {clearButton}
                         </View>
-                    }
+                    )}
                     {divider}
                 </View>
             </View>
@@ -80,7 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         iconContainer: {
             width: 45,
-            height: 50,
+            height: 46,
             alignItems: 'center',
             justifyContent: 'center',
             marginLeft: 5,
@@ -95,9 +95,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             flexDirection: 'row',
         },
-        labelSiblingContainer: {
+        clearButtonContainer: {
             position: 'absolute',
-            top: 14,
+            top: 3,
             right: 14,
         },
         divider: {

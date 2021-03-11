@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
-import {View, Text, TouchableOpacity, TextInput} from 'react-native';
+import React from 'react';
+import {View, Text, TouchableOpacity, TextInput, Keyboard} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {Navigation, NavigationComponentProps} from 'react-native-navigation';
+import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options} from 'react-native-navigation';
 
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
@@ -16,8 +16,9 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatus} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {mergeNavigationOptions, dismissModal, showModalOverCurrentContext} from '@actions/navigation';
+import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
+import {preventDoubleTap} from '@utils/tap';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -50,13 +51,22 @@ type State = {
     text: string;
 }
 
-class CustomStatusModal extends PureComponent<Props, State> {
-    // TODO: type for rightButton
-    rightButton: any = {
+class CustomStatusModal extends NavigationComponent<Props, State> {
+    rightButton: OptionsTopBarButton = {
         id: 'update-custom-status',
         enabled: true,
         showAsAction: 'always',
     };
+
+    static options(): Options {
+        return {
+            topBar: {
+                title: {
+                    alignment: 'center',
+                },
+            },
+        };
+    }
 
     constructor(props: Props) {
         super(props);
@@ -64,17 +74,9 @@ class CustomStatusModal extends PureComponent<Props, State> {
         this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
 
-        const buttons = {
-            rightButtons: [this.rightButton],
-        };
-
-        const options = {
+        const options: Options = {
             topBar: {
-                title: {
-                    text: props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'}),
-                    alignment: 'center',
-                },
-                ...buttons,
+                rightButtons: [this.rightButton],
             },
         };
 
@@ -97,8 +99,8 @@ class CustomStatusModal extends PureComponent<Props, State> {
     handleSetStatus = () => {
         const {emoji, text} = this.state;
         const isStatusSet = emoji || text;
+        const {customStatus} = this.props;
         if (isStatusSet) {
-            const {customStatus} = this.props;
             const isStatusSame = customStatus.emoji === emoji && customStatus.text === text;
             if (!isStatusSame) {
                 const status = {
@@ -107,9 +109,10 @@ class CustomStatusModal extends PureComponent<Props, State> {
                 };
                 this.props.actions.setCustomStatus(status);
             }
-        } else {
+        } else if (customStatus && customStatus.emoji) {
             this.props.actions.unsetCustomStatus();
         }
+        Keyboard.dismiss();
         dismissModal();
     };
 
@@ -206,16 +209,22 @@ class CustomStatusModal extends PureComponent<Props, State> {
         );
     };
 
-    openEmojiPicker = () => {
+    openEmojiPicker = preventDoubleTap(() => {
         const screen = 'AddReaction';
         const passProps = {
             onEmojiPress: this.handleEmojiClick,
         };
 
+        const options: Options = {
+            topBar: {
+                visible: false,
+            },
+        };
+
         requestAnimationFrame(() => {
-            showModalOverCurrentContext(screen, passProps);
+            showModal(screen, '', passProps, options);
         });
-    }
+    });
 
     handleEmojiClick = (emoji: string) => {
         dismissModal();
@@ -261,7 +270,6 @@ class CustomStatusModal extends PureComponent<Props, State> {
                     maxLength={CustomStatus.CUSTOM_STATUS_TEXT_CHARACTER_LIMIT}
                     underlineColorAndroid='transparent'
                     disableFullscreenUI={true}
-                    multiline={false}
                     keyboardType={'default'}
                     secureTextEntry={false}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -324,6 +332,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontSize: 14,
             paddingHorizontal: 52,
+            textAlignVertical: 'center',
             height: 48,
         },
         icon: {
@@ -351,7 +360,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         clearButton: {
             position: 'absolute',
-            top: 12,
+            top: 3,
             right: 14,
         },
     };

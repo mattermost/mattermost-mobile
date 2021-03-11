@@ -25,6 +25,7 @@ import ProfilePicture from '@components/profile_picture';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {BotTag, GuestTag} from '@components/tag';
+import Emoji from '@components/emoji';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
@@ -34,6 +35,7 @@ import {tryOpenURL} from '@utils/url';
 import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
+import ClearButton from '@components/custom_status/clear_button';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {
@@ -41,6 +43,7 @@ export default class UserProfile extends PureComponent {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -52,6 +55,7 @@ export default class UserProfile extends PureComponent {
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
+        customStatus: PropTypes.object,
     };
 
     static contextTypes = {
@@ -169,6 +173,41 @@ export default class UserProfile extends PureComponent {
 
         return null;
     };
+
+    buildCustomStatusBlock = () => {
+        const {formatMessage} = this.context.intl;
+        const {customStatus, theme, isMyUser} = this.props;
+        const style = createStyleSheet(theme);
+        const isStatusSet = customStatus.emoji || customStatus.text;
+
+        if (!isStatusSet) {
+            return null;
+        }
+
+        const label = formatMessage({id: 'user.settings.general.status', defaultMessage: 'Status'});
+        return (
+            <View>
+                <Text style={style.header}>{label}</Text>
+                <View style={style.customStatus}>
+                    <View style={style.iconContainer}>
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                        />
+                    </View>
+                    <Text style={[style.text, style.customStatusText]}>{customStatus.text}</Text>
+                    {isMyUser && (
+                        <View style={style.clearButton}>
+                            <ClearButton
+                                theme={theme}
+                                handlePress={this.props.actions.unsetCustomStatus}
+                            />
+                        </View>
+                    )}
+                </View>
+            </View>
+        );
+    }
 
     buildTimezoneBlock = () => {
         const {theme, user, militaryTime} = this.props;
@@ -315,6 +354,7 @@ export default class UserProfile extends PureComponent {
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('first_name')}
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.props.config.EnableCustomUserStatuses === 'true' && this.buildCustomStatusBlock()}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
@@ -371,6 +411,22 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+        },
+        iconContainer: {
+            marginRight: 5,
+        },
+        customStatus: {
+            position: 'relative',
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        customStatusText: {
+            width: '80%',
+        },
+        clearButton: {
+            position: 'absolute',
+            top: 3,
+            right: 0,
         },
         content: {
             marginBottom: 25,
