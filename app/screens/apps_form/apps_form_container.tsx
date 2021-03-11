@@ -12,7 +12,7 @@ export type Props = {
     form?: AppForm;
     call?: AppCall;
     actions: {
-        doAppCall: (call: AppCall) => Promise<{data: AppCallResponse<FormResponseData>}>;
+        doAppCall: (call: AppCall) => Promise<{data: AppCallResponse<FormResponseData>, error?: any}>;
     };
     theme: Theme;
     componentId: string;
@@ -56,7 +56,8 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
                 ...submission.values,
             },
         });
-        if (res.data.type === AppCallResponseTypes.FORM && res.data.form) {
+
+        if (res.data && res.data.type === AppCallResponseTypes.FORM && res.data.form) {
             this.setState({form: res.data.form});
         }
         return res;
@@ -92,16 +93,16 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             },
         });
 
-        if (res.data.type === AppCallResponseTypes.FORM && res.data.form) {
+        if (res.data && res.data.type === AppCallResponseTypes.FORM && res.data.form) {
             this.setState({form: res.data.form});
         }
         return res;
     };
 
-    performLookupCall = async (field: AppField, formValues: AppFormValues, userInput: string): Promise<AppSelectOption[]> => {
+    performLookupCall = async (field: AppField, formValues: AppFormValues, userInput: string): Promise<{data: AppCallResponse<any>}> => {
         const call = this.getCall();
         if (!call) {
-            return [];
+            return makeError('performLookupCall props.call is not defined');
         }
 
         const values: AppLookupCallValues = {
@@ -115,16 +116,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             values,
         });
 
-        if (res.data.type === AppCallResponseTypes.ERROR) {
-            return [];
-        }
-
-        const data = res.data.data as {items: AppSelectOption[]};
-        if (data.items && data.items.length) {
-            return data.items;
-        }
-
-        return [];
+        return res;
     }
 
     getCall = (): AppCall | null => {

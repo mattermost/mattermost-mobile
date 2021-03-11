@@ -200,3 +200,7 @@ export type FormResponseData = {
         [field: string]: string;
     };
 }
+
+export type AppLookupResponse = {
+    items: AppSelectOption[];
+}
