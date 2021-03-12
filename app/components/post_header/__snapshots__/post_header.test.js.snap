@@ -21,37 +21,42 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            null,
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              null,
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <FormattedTime
         hour12={true}
         style={
@@ -93,39 +98,44 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            Object {
-              "maxWidth": "80%",
-            },
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              Object {
+                "maxWidth": "80%",
+              },
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <FormattedTime
         hour12={true}
         style={
@@ -345,37 +355,42 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            null,
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              null,
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <FormattedTime
         hour12={true}
         style={
@@ -434,39 +449,44 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            Object {
-              "maxWidth": "50%",
-            },
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              Object {
+                "maxWidth": "50%",
+              },
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <BotTag
         style={
           Object {
@@ -589,39 +609,44 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            Object {
-              "maxWidth": "70%",
-            },
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              Object {
+                "maxWidth": "70%",
+              },
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <BotTag
         style={
           Object {
@@ -744,37 +769,42 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            null,
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              null,
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <FormattedTime
         hour12={true}
         style={
@@ -833,37 +863,42 @@ exports[`PostHeader should match snapshot when post should display reply button 
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "marginBottom": 3,
-              "marginRight": 5,
-              "maxWidth": "60%",
-            },
-            null,
-          ]
-        }
-        type="opacity"
-      >
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
+      <React.Fragment>
+        <TouchableWithFeedbackIOS
+          onPress={[Function]}
           style={
-            Object {
-              "color": "#3d3c40",
-              "flexGrow": 1,
-              "fontSize": 15,
-              "fontWeight": "600",
-              "paddingVertical": 2,
-            }
+            Array [
+              Object {
+                "marginBottom": 3,
+                "marginRight": 5,
+                "maxWidth": "60%",
+              },
+              null,
+            ]
           }
-          testID="post_header.display_name"
+          type="opacity"
         >
-          John Smith
-        </Text>
-      </TouchableWithFeedbackIOS>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "flexGrow": 1,
+                "fontSize": 15,
+                "fontWeight": "600",
+                "paddingVertical": 2,
+              }
+            }
+            testID="post_header.display_name"
+          >
+            John Smith
+          </Text>
+        </TouchableWithFeedbackIOS>
+        <CustomStatusEmoji
+          emojiSize={16}
+        />
+      </React.Fragment>
       <FormattedTime
         hour12={true}
         style={

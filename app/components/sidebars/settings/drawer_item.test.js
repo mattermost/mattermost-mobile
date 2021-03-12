@@ -7,6 +7,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import Preferences from '@mm-redux/constants/preferences';
 
 import DrawerItem from './drawer_item';
+import {Text} from 'react-native';
 
 describe('DrawerItem', () => {
     const baseProps = {
@@ -24,6 +25,22 @@ describe('DrawerItem', () => {
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <DrawerItem {...baseProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with label sibling element and centered and separator false', () => {
+        const labelSibling = (
+            <Text>{'Hey'}</Text>
+        );
+        const wrapper = shallowWithIntl(
+            <DrawerItem
+                {...baseProps}
+                centered={false}
+                separator={false}
+                labelSibling={labelSibling}
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

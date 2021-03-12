@@ -24,6 +24,7 @@ describe('user_profile', () => {
         setChannelDisplayName: jest.fn(),
         makeDirectChannel: jest.fn(),
         loadBot: jest.fn(),
+        unsetCustomStatus: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -49,11 +50,46 @@ describe('user_profile', () => {
         is_bot: false,
     };
 
+    const customStatus = {
+        emoji: 'calendar',
+        text: 'In a meeting',
+    };
+
+    const customStatusProps = {
+        ...baseProps,
+        customStatus,
+        config: {
+            EnableCustomUserStatuses: 'true',
+        },
+        user,
+    };
+
     test('should match snapshot', () => {
         const wrapper = shallow(
             <UserProfile
                 {...baseProps}
                 user={user}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with custom status', () => {
+        const wrapper = shallow(
+            <UserProfile
+                {...customStatusProps}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with custom status and isMyUser true', () => {
+        const wrapper = shallow(
+            <UserProfile
+                {...customStatusProps}
+                isMyUser={true}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );

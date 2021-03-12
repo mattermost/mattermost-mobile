@@ -8,10 +8,9 @@ exports[`DrawerItem should match snapshot 1`] = `
   <View
     style={
       Object {
-        "alignItems": "center",
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
-        "height": 50,
+        "padding": 3,
       }
     }
   >
@@ -45,6 +44,7 @@ exports[`DrawerItem should match snapshot 1`] = `
       style={
         Object {
           "flex": 1,
+          "position": "relative",
         }
       }
     >
@@ -54,6 +54,7 @@ exports[`DrawerItem should match snapshot 1`] = `
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
+            "width": "70%",
           }
         }
       >
@@ -88,6 +89,102 @@ exports[`DrawerItem should match snapshot 1`] = `
           }
         }
       />
+    </View>
+  </View>
+</ForwardRef>
+`;
+
+exports[`DrawerItem should match snapshot with label sibling element and centered and separator false 1`] = `
+<ForwardRef
+  onPress={[MockFunction]}
+  testID="test-id"
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "flexDirection": "row",
+        "padding": 3,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "height": 50,
+          "justifyContent": "center",
+          "marginLeft": 5,
+          "width": 45,
+        }
+      }
+    >
+      <CompassIcon
+        name="icon-name"
+        style={
+          Array [
+            Object {
+              "color": "rgba(61,60,64,0.64)",
+              "fontSize": 24,
+            },
+            Object {
+              "color": "#fd5960",
+            },
+          ]
+        }
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "position": "relative",
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "width": "70%",
+          }
+        }
+      >
+        <FormattedText
+          defaultMessage="default message"
+          id="i18-id"
+          style={
+            Array [
+              Object {
+                "color": "rgba(61,60,64,0.5)",
+                "flex": 1,
+                "fontSize": 17,
+                "includeFontPadding": false,
+                "textAlignVertical": "center",
+              },
+              Object {
+                "color": "#fd5960",
+              },
+              Object {},
+            ]
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "position": "absolute",
+            "right": 14,
+            "top": 3,
+          }
+        }
+      >
+        <Text>
+          Hey
+        </Text>
+      </View>
     </View>
   </View>
 </ForwardRef>

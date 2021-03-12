@@ -8,7 +8,7 @@ import {GlobalState} from '@mm-redux/types/store';
 import {getRecentCustomStatuses, makeGetCustomStatus} from '@selectors/custom_status';
 import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@actions/views/custom_status';
 
-import CustomStatusModal from './custom_status_modal';
+import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {GenericAction} from '@mm-redux/types/actions';
 
 function mapStateToProps(state: GlobalState) {

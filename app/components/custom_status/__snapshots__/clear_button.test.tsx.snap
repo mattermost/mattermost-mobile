@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/custom_status/custom_status_emoji should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "flex": 1,
+      "height": 40,
+      "justifyContent": "center",
+      "width": 40,
+    }
+  }
+>
+  <CompassIcon
+    color="#ffffff"
+    name="close"
+    onPress={[Function]}
+    size={20}
+    style={
+      Object {
+        "backgroundColor": "rgba(61,60,64,0.52)",
+        "borderRadius": 1000,
+        "overflow": "hidden",
+      }
+    }
+  />
+</View>
+`;
