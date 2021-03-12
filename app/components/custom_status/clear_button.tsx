@@ -6,7 +6,7 @@ import {Theme} from '@mm-redux/types/preferences';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-import {PanResponder, View} from 'react-native';
+import {View} from 'react-native';
 
 interface Props {
     handlePress: () => void;
@@ -17,19 +17,13 @@ interface Props {
 const ClearButton = (props: Props) => {
     const {handlePress, size, theme} = props;
     const style = getStyleSheet(theme);
-    const panResponder = React.useRef(
-        PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onPanResponderGrant: preventDoubleTap(handlePress),
-        }),
-    ).current;
 
     return (
         <View
-            {...panResponder.panHandlers}
             style={style.container}
         >
             <CompassIcon
+                onPress={preventDoubleTap(handlePress)}
                 name='close'
                 size={size}
                 color={theme.centerChannelBg}

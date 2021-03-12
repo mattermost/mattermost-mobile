@@ -6,8 +6,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useCallback} from 'react';
-import {View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {View, TouchableOpacity} from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
 
