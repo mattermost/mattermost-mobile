@@ -57,6 +57,9 @@ export default class Post extends Model {
     /** delete_at : The timestamp to when this post was last archived/deleted */
     @field('delete_at') deleteAt!: number;
 
+    /** update_at : The timestamp to when this post was last updated on the server */
+    @field('update_at') updateAt!: number;
+
     /** edit_at : The timestamp to when this post was last edited */
     @field('edit_at') editAt!: number;
 

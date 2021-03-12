@@ -214,6 +214,7 @@ export const operatePostRecord = async ({database, optType, value}: DataFactory)
         post.createAt = record?.create_at;
         post.deleteAt = record?.delete_at || record?.delete_at === 0 ? record?.delete_at : 0;
         post.editAt = record?.edit_at;
+        post.updateAt = record?.update_at;
         post.isPinned = record!.is_pinned!;
         post.message = Q.sanitizeLikeString(record?.message);
         post.userId = record?.user_id;
