@@ -6,12 +6,12 @@ import {connect} from 'react-redux';
 
 import {GlobalState} from '@mm-redux/types/store';
 import {doAppCall} from '@actions/apps';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
-import {AppCallRequest} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallType} from '@mm-redux/types/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import MenuBinding from './menu_binding';
+import {getChannel} from '@mm-redux/actions/channels';
 
 type OwnProps = {
     postId: string;
@@ -19,19 +19,20 @@ type OwnProps = {
 
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
-        userId: getCurrentUserId(state),
         post: getPost(state, ownProps.postId),
     };
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+    getChannel: (channelId: string) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
+            getChannel,
         }, dispatch),
     };
 }

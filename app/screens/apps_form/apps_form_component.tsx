@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
 import {ScrollView} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
@@ -60,6 +61,10 @@ const initFormValues = (form: AppForm): {[name: string]: string} => {
 export default class AppsFormComponent extends PureComponent<Props, State> {
     private scrollView: React.RefObject<ScrollView>;
     navigationEventListener?: EventSubscription;
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
 
     constructor(props: Props) {
         super(props);
@@ -183,23 +188,64 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     }
 
     performLookup = async (name: string, userInput: string): Promise<AppSelectOption[]> => {
+        const intl = this.context.intl;
         const field = this.props.form.fields.find((f) => f.name === name);
         if (!field) {
             return [];
         }
 
         const res = await this.props.actions.performLookupCall(field, this.state.values, userInput);
-        if (res.error) {
+        const callResp = res.data;
+        switch (callResp.type) {
+        case AppCallResponseTypes.OK:
+            return res.data.data?.items || [];
+        case AppCallResponseTypes.FORM:
+        case AppCallResponseTypes.NAVIGATE: {
+            const errMsg = intl.formatMessage({
+                id: 'apps.error.responses.unexpected_type',
+                defaultMessage: 'App response type was not expected. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            },
+            );
             this.setState({
                 fieldErrors: {
                     ...this.state.fieldErrors,
-                    [field.name]: res.error.message,
+                    [field.name]: errMsg,
                 },
             });
             return [];
         }
-
-        return res.data.data?.items || [];
+        case AppCallResponseTypes.ERROR: {
+            const errMsg = callResp.error || intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error.',
+            });
+            this.setState({
+                fieldErrors: {
+                    ...this.state.fieldErrors,
+                    [field.name]: errMsg,
+                },
+            });
+            return [];
+        }
+        default: {
+            const errMsg = intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            },
+            );
+            this.setState({
+                fieldErrors: {
+                    ...this.state.fieldErrors,
+                    [field.name]: errMsg,
+                },
+            });
+            return [];
+        }
+        }
     }
 
     handleHide = () => {

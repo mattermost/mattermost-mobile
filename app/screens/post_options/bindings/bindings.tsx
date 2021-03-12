@@ -8,22 +8,25 @@ import {intlShape, injectIntl} from 'react-intl';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostOption from '../post_option';
-import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
-import {AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
+import {createCallContext, createCallRequest} from '@utils/apps';
+import {sendEphemeralPost} from '@actions/views/post';
 
 type Props = {
     bindings: AppBinding[],
     theme: Theme,
     post: Post,
     currentUser: UserProfile,
+    teamID: string,
     closeWithAnimation: () => void,
     appsEnabled: boolean,
     actions: {
-        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>,
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>,
     }
 }
 
@@ -64,37 +67,67 @@ type OptionProps = {
     theme: Theme,
     post: Post,
     currentUser: UserProfile,
+    teamID: string,
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>,
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>,
     },
 }
 
 const Option = injectIntl((props: OptionProps) => {
     const onPress = async () => {
-        const {closeWithAnimation, post} = props;
+        const {closeWithAnimation, post, teamID} = props;
 
-        const res = await props.actions.doAppCall({
-            ...binding.call,
-            type: AppCallTypes.SUBMIT,
-            path: props.binding.call?.path || '',
-            expand: {
-                post: AppExpandLevels.EXPAND_ALL,
-                ...props.binding.call?.expand,
-            },
-            context: {
-                app_id: props.binding.app_id,
-                channel_id: post.channel_id,
-                post_id: post.id,
-                user_id: props.currentUser.id,
-                location: props.binding.location,
-            },
-        }, props.intl);
-
-        if (res.error) {
-            Alert.alert(res.error.message);
+        if (!binding.call) {
             return;
+        }
+        const context = createCallContext(
+            binding.app_id,
+            binding.location,
+            post.channel_id,
+            teamID,
+            post.id,
+            post.root_id,
+        );
+        const call = createCallRequest(
+            binding.call,
+            context,
+            {
+                post: AppExpandLevels.ALL,
+            },
+        );
+        const res = await props.actions?.doAppCall(call, AppCallTypes.SUBMIT, props.intl);
+
+        const callResp = (res as {data: AppCallResponse}).data;
+        const ephemeral = (message: string) => sendEphemeralPost(message, props.post.channel_id, props.post.root_id);
+        switch (callResp.type) {
+        case AppCallResponseTypes.OK:
+            if (callResp.markdown) {
+                ephemeral(callResp.markdown);
+            }
+            break;
+        case AppCallResponseTypes.ERROR: {
+            const errorMessage = callResp.error || props.intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error happenned',
+            });
+            Alert.alert(errorMessage);
+            break;
+        }
+        case AppCallResponseTypes.NAVIGATE:
+        case AppCallResponseTypes.FORM:
+            break;
+        default: {
+            const errMessage = props.intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            },
+            );
+            Alert.alert(errMessage);
+        }
         }
 
         closeWithAnimation();

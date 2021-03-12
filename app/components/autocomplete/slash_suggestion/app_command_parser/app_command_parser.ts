@@ -3,7 +3,9 @@
 
 /* eslint-disable max-lines */
 
+import {intlShape} from 'react-intl';
 import keyMirror from '@mm-redux/utils/key_mirror';
+import {createCallRequest} from '@utils/apps';
 
 import {
     AppCallRequest,
@@ -32,6 +34,12 @@ import {
     getExecuteSuggestion,
     displayError,
 } from './app_command_parser_dependencies';
+import {AppCallValues} from '@mm-redux/types/apps';
+import {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/entities/users';
+import {getUserByUsername} from '@mm-redux/actions/users';
+import {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
+import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import {getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
 
 export type Store = {
     dispatch: DispatchFunc;
@@ -473,13 +481,15 @@ export class AppCommandParser {
     private store: Store;
     private channelID: string;
     private rootPostID?: string;
+    private intl: typeof intlShape;
 
     forms: {[location: string]: AppForm} = {};
 
-    constructor(store: Store|null, channelID: string, rootPostID = '') {
+    constructor(store: Store|null, intl: typeof intlShape, channelID: string, rootPostID = '') {
         this.store = store || getStore() as Store;
         this.channelID = channelID;
         this.rootPostID = rootPostID;
+        this.intl = intl;
     }
 
     // composeCallFromCommand creates the form submission call
@@ -581,7 +591,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromParsed creates the form submission call
-    composeCallFromParsed = (parsed: ParsedCommand): AppCallRequest | null => {
+    composeCallFromParsed = async (parsed: ParsedCommand): Promise<AppCallRequest | null> => {
         if (!parsed.binding) {
             return null;
         }
@@ -591,16 +601,98 @@ export class AppCommandParser {
             return null;
         }
 
-        return {
-            ...call,
-            type: AppCallTypes.SUBMIT,
-            context: {
-                ...this.getAppContext(),
-                app_id: parsed.binding.app_id,
-            },
-            values: parsed.values,
-            raw_command: parsed.command,
-        };
+        const values: AppCallValues = parsed.values;
+        const ok = await this.expandOptions(parsed, values);
+
+        if (!ok) {
+            return null;
+        }
+
+        const context = this.getAppContext(parsed.binding.app_id);
+        return createCallRequest(call, context, {}, values, parsed.command);
+    }
+
+    expandOptions = async (parsed: ParsedCommand, values: AppCallValues) => {
+        if (!parsed.form) {
+            return true;
+        }
+
+        let ok = true;
+        await Promise.all(parsed.form.fields.map(async (f) => {
+            if (!values[f.name]) {
+                return;
+            }
+            switch (f.type) {
+            case AppFieldTypes.DYNAMIC_SELECT:
+                values[f.name] = {label: '', value: values[f.name]};
+                break;
+            case AppFieldTypes.STATIC_SELECT: {
+                const option = f.options?.find((o) => (o.value === values[f.name]));
+                if (!option) {
+                    ok = false;
+                    this.displayError(this.intl.formatMessage({
+                        id: 'apps.error.command.unknown_option',
+                        defaultMessage: 'Unknown option for field `{fieldName}`: `{option}`.',
+                    }, {
+                        fieldName: f.name,
+                        option: values[f.name],
+                    }));
+                    return;
+                }
+                values[f.name] = option;
+                break;
+            }
+            case AppFieldTypes.USER: {
+                let userName = values[f.name] as string;
+                if (userName[0] === '@') {
+                    userName = userName.substr(1);
+                }
+                let user = selectUserByUsername(this.store.getState(), userName);
+                if (!user) {
+                    const dispatchResult = await this.store.dispatch(getUserByUsername(userName) as any);
+                    if ('error' in dispatchResult) {
+                        ok = false;
+                        this.displayError(this.intl.formatMessage({
+                            id: 'apps.error.command.unknown_user',
+                            defaultMessage: 'Unknown user for field `{fieldName}`: `{option}`.',
+                        }, {
+                            fieldName: f.name,
+                            option: values[f.name],
+                        }));
+                        return;
+                    }
+                    user = dispatchResult.data;
+                }
+                values[f.name] = {label: user.username, value: user.id};
+                break;
+            }
+            case AppFieldTypes.CHANNEL: {
+                let channelName = values[f.name] as string;
+                if (channelName[0] === '~') {
+                    channelName = channelName.substr(1);
+                }
+                let channel = selectChannelByName(this.store.getState(), channelName);
+                if (!channel) {
+                    const dispatchResult = await this.store.dispatch(getChannelByNameAndTeamName(getCurrentTeam(this.store.getState()).name, channelName) as any);
+                    if ('error' in dispatchResult) {
+                        ok = false;
+                        this.displayError(this.intl.formatMessage({
+                            id: 'apps.error.command.unknown_channel',
+                            defaultMessage: 'Unknown channel for field `{fieldName}`: `{option}`.',
+                        }, {
+                            fieldName: f.name,
+                            option: values[f.name],
+                        }));
+                    }
+                    channel = dispatchResult.data;
+                }
+                values[f.name] = {label: channel?.display_name, value: channel?.id};
+                break;
+            }
+            }
+        }));
+
+        return ok;
     }
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
@@ -660,20 +752,22 @@ export class AppCommandParser {
     }
 
     // getAppContext collects post/channel/team info for performing calls
-    getAppContext = (): Partial<AppContext> | null => {
+    getAppContext = (appID: string): AppContext => {
+        const context: AppContext = {
+            app_id: appID,
+            location: AppBindingLocations.COMMAND,
+            root_id: this.rootPostID,
+        };
+
         const channel = this.getChannel();
         if (!channel) {
-            return null;
+            return context;
         }
 
-        const teamID = channel.team_id || getCurrentTeamId(this.store.getState());
+        context.channel_id = channel.id;
+        context.team_id = channel.team_id || getCurrentTeamId(this.store.getState());
 
-        return {
-            channel_id: channel.id,
-            team_id: teamID,
-            root_id: this.rootPostID,
-            location: AppBindingLocations.COMMAND,
-        };
+        return context;
     }
 
     // fetchForm unconditionaly retrieves the form for the given binding (subcommand)
@@ -682,18 +776,38 @@ export class AppCommandParser {
             return undefined;
         }
 
-        const payload: AppCallRequest = {
-            ...binding.call,
-            type: AppCallTypes.FORM,
-            context: {
-                ...this.getAppContext(),
-                app_id: binding.app_id,
-            },
-        };
+        const payload = createCallRequest(
+            binding.call,
+            this.getAppContext(binding.app_id),
+        );
 
-        const res = await this.store.dispatch(doAppCall(payload, null)) as {data: AppCallResponse, error?: Error};
-        if (res.error) {
-            this.displayError(res.error.message);
+        const res = await this.store.dispatch(doAppCall(payload, AppCallTypes.FORM, this.intl)) as {data: AppCallResponse};
+        const callResponse = res.data;
+        switch (callResponse.type) {
+        case AppCallResponseTypes.FORM:
+            break;
+        case AppCallResponseTypes.ERROR:
+            this.displayError(callResponse.error || this.intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error.',
+            }));
+            return undefined;
+        case AppCallResponseTypes.NAVIGATE:
+        case AppCallResponseTypes.OK:
+            this.displayError(this.intl.formatMessage({
+                id: 'apps.error.responses.unexpected_type',
+                defaultMessage: 'App response type was not expected. Response type: {type}',
+            }, {
+                type: callResponse.type,
+            }));
+            return undefined;
+        default:
+            this.displayError(this.intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResponse.type,
+            }));
             return undefined;
         }
 
@@ -881,23 +995,40 @@ export class AppCommandParser {
             return [];
         }
 
-        const call = this.composeCallFromParsed(parsed);
+        const call = await this.composeCallFromParsed(parsed);
         if (!call) {
             return [];
         }
-        call.type = AppCallTypes.LOOKUP;
         call.selected_field = f.name;
         call.query = parsed.incomplete;
-        call.values = parsed.values;
 
         type ResponseType = {items: AppSelectOption[]};
-        const res: {data?: AppCallResponse<ResponseType>} = await this.store.dispatch(doAppCall<ResponseType>(call, null));
+        const res = await this.store.dispatch(doAppCall<ResponseType>(call, AppCallTypes.LOOKUP, this.intl)) as {data: AppCallResponse<ResponseType>};
         const callResponse = res.data;
 
-        if (callResponse?.type === AppCallResponseTypes.ERROR) {
-            const errorMessage = callResponse.error || 'Unknown error.';
-            this.displayError(errorMessage);
-            return [];
+        switch (callResponse.type) {
+        case AppCallResponseTypes.OK:
+            break;
+        case AppCallResponseTypes.ERROR:
+            return this.makeSuggestionError(callResponse.error || this.intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error.',
+            }));
+        case AppCallResponseTypes.NAVIGATE:
+        case AppCallResponseTypes.FORM:
+            return this.makeSuggestionError(this.intl.formatMessage({
+                id: 'apps.error.responses.unexpected_type',
+                defaultMessage: 'App response type was not expected. Response type: {type}',
+            }, {
+                type: callResponse.type,
+            }));
+        default:
+            return this.makeSuggestionError(this.intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResponse.type,
+            }));
         }
 
         const items = callResponse?.data?.items;
@@ -912,6 +1043,22 @@ export class AppCommandParser {
             Hint: '',
             IconData: s.icon_data || parsed.binding?.icon || '',
         }));
+    }
+
+    makeSuggestionError = (message: string): AutocompleteSuggestion[] => {
+        const errMsg = this.intl.formatMessage({
+            id: 'apps.error',
+            defaultMessage: 'Error: {error}',
+        }, {
+            error: message,
+        });
+        return [{
+            Complete: '',
+            Description: '',
+            Hint: '',
+            IconData: '',
+            Suggestion: errMsg,
+        }];
     }
 
     // getUserSuggestions returns a suggestion with `@` if the user has not started typing

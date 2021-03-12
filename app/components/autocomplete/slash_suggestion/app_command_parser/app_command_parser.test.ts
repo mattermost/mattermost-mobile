@@ -12,6 +12,8 @@ import {
 } from './tests/app_command_parser_test_dependencies';
 
 import {
+    AppCallResponseTypes,
+    AppCallTypes,
     AutocompleteSuggestion,
 } from './app_command_parser_dependencies';
 
@@ -42,10 +44,16 @@ describe('AppCommandParser', () => {
         return testStore;
     };
 
+    const intl = {
+        formatMessage: (message: {id: string, defaultMessage: string}) => {
+            return message.defaultMessage;
+        },
+    };
+
     let parser: AppCommandParser;
     beforeEach(async () => {
         const store = await makeStore(testBindings);
-        parser = new AppCommandParser(store as any, 'current_channel_id', 'root_id');
+        parser = new AppCommandParser(store as any, intl, 'current_channel_id', 'root_id');
     });
 
     type Variant = {
@@ -777,7 +785,7 @@ describe('AppCommandParser', () => {
 
         test('create flag project dynamic select value', async () => {
             const f = Client4.executeAppCall;
-            Client4.executeAppCall = jest.fn().mockResolvedValue(Promise.resolve({data: {items: [{label: 'special-label', value: 'special-value'}]}}));
+            Client4.executeAppCall = jest.fn().mockResolvedValue(Promise.resolve({type: AppCallResponseTypes.OK, data: {items: [{label: 'special-label', value: 'special-value'}]}}));
 
             const suggestions = await parser.getSuggestions('/jira issue create --project ');
             Client4.executeAppCall = f;
@@ -857,7 +865,6 @@ describe('AppCommandParser', () => {
                 team_id: 'team_id',
             },
             path: '/create-issue',
-            type: 'submit',
         };
 
         test('empty form', async () => {
@@ -868,6 +875,9 @@ describe('AppCommandParser', () => {
             expect(call).toEqual({
                 ...base,
                 raw_command: cmd,
+                expand: {},
+                query: undefined,
+                selected_field: undefined,
                 values,
             });
         });
@@ -876,7 +886,10 @@ describe('AppCommandParser', () => {
             const cmd = '/jira issue create --summary "Here it is" --epic epic1 --verbose true --project';
             const values = {
                 summary: 'Here it is',
-                epic: 'epic1',
+                epic: {
+                    label: 'Dylan Epic',
+                    value: 'epic1',
+                },
                 verbose: 'true',
                 project: '',
             };
@@ -884,6 +897,9 @@ describe('AppCommandParser', () => {
             const call = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
+                expand: {},
+                selected_field: undefined,
+                query: undefined,
                 raw_command: cmd,
                 values,
             });
@@ -892,7 +908,7 @@ describe('AppCommandParser', () => {
         test('dynamic lookup test', async () => {
             const f = Client4.executeAppCall;
 
-            const mockedExecute = jest.fn().mockResolvedValue(Promise.resolve({data: {items: [{label: 'special-label', value: 'special-value'}]}}));
+            const mockedExecute = jest.fn().mockResolvedValue(Promise.resolve({type: AppCallResponseTypes.OK, data: {items: [{label: 'special-label', value: 'special-value'}]}}));
             Client4.executeAppCall = mockedExecute;
 
             const suggestions = await parser.getSuggestions('/jira issue create --summary "The summary" --epic epic1 --project special');
@@ -916,16 +932,19 @@ describe('AppCommandParser', () => {
                     root_id: 'root_id',
                     team_id: 'team_id',
                 },
+                expand: {},
                 path: '/create-issue',
                 query: 'special',
                 raw_command: '/jira issue create --summary "The summary" --epic epic1 --project special',
                 selected_field: 'project',
-                type: 'lookup',
                 values: {
                     summary: 'The summary',
-                    epic: 'epic1',
+                    epic: {
+                        label: 'Dylan Epic',
+                        value: 'epic1',
+                    },
                 },
-            });
+            }, AppCallTypes.LOOKUP);
         });
     });
 });

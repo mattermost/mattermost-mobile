@@ -8,12 +8,12 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {AppCallRequest} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallType} from '@mm-redux/types/apps';
 import {doAppCall} from '@actions/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import ButtonBinding from './button_binding';
+import {getChannel} from '@mm-redux/actions/channels';
 
 type OwnProps = {
     postId: string;
@@ -21,20 +21,21 @@ type OwnProps = {
 
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
-        userId: getCurrentUserId(state),
         theme: getTheme(state),
         post: getPost(state, ownProps.postId),
     };
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+    getChannel: (channelId: string) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
+            getChannel,
         }, dispatch),
     };
 }

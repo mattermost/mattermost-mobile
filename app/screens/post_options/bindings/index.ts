@@ -7,7 +7,7 @@ import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
-import {AppCallRequest} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallType} from '@mm-redux/types/apps';
 import {ActionResult, GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
@@ -17,6 +17,7 @@ import {doAppCall} from '@actions/apps';
 import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 function mapStateToProps(state: GlobalState) {
     const apps = appsEnabled(state);
@@ -27,12 +28,13 @@ function mapStateToProps(state: GlobalState) {
         theme: getTheme(state),
         bindings,
         currentUser,
+        teamID: getCurrentTeamId(state),
         appsEnabled: apps,
     };
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {

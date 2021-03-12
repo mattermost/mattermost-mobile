@@ -11,42 +11,88 @@ import {getStatusColors} from '@utils/message_attachment_colors';
 import ButtonBindingText from './button_binding_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {createCallContext, createCallRequest} from '@utils/apps';
+import {Channel} from '@mm-redux/types/channels';
+import {sendEphemeralPost} from '@actions/views/post';
 
 type Props = {
     actions: {
-        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+        getChannel: (channelId: string) => Promise<ActionResult>;
     };
     post: Post;
     binding: AppBinding;
     theme: Theme;
-    userId: string;
 }
 export default class ButtonBinding extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-    handleActionPress = preventDoubleTap(() => {
-        const {binding, post, userId} = this.props;
-        const call: AppCallRequest = {
-            ...binding.call,
-            type: AppCallTypes.SUBMIT,
-            path: binding.call?.path || '',
-            expand: {
-                post: AppExpandLevels.EXPAND_ALL,
-            },
-            context: {
-                acting_user_id: userId,
-                app_id: binding.app_id,
-                channel_id: post.channel_id,
-                location: AppBindingLocations.IN_POST + '/' + binding.location,
-                post_id: post.id,
-                user_id: userId,
-            },
-        };
-        this.props.actions.doAppCall(call, this.context.intl);
+    handleActionPress = preventDoubleTap(async () => {
+        const {binding, post} = this.props;
+        const intl = this.context.intl;
+        if (!binding.call) {
+            return;
+        }
+
+        let teamID = '';
+        const {data} = await this.props.actions.getChannel(post.channel_id) as {data?: any; error?: any};
+        if (data) {
+            const channel = data as Channel;
+            teamID = channel.team_id;
+        }
+
+        const context = createCallContext(
+            binding.app_id,
+            AppBindingLocations.IN_POST + binding.location,
+            post.channel_id,
+            teamID,
+            post.id,
+        );
+        const call = createCallRequest(
+            binding.call,
+            context,
+            {post: AppExpandLevels.EXPAND_ALL},
+        );
+        this.setState({executing: true});
+        const res = await this.props.actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
+
+        this.setState({executing: false});
+        const callResp = (res as {data: AppCallResponse}).data;
+        const ephemeral = (message: string) => sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
+        switch (callResp.type) {
+        case AppCallResponseTypes.OK:
+            if (callResp.markdown) {
+                ephemeral(callResp.markdown);
+            }
+            break;
+        case AppCallResponseTypes.ERROR: {
+            const errorMessage = callResp.error || intl.formatMessage(
+                {id: 'apps.error.unknown',
+                    defaultMessage: 'Unknown error happenned',
+                });
+            ephemeral(errorMessage);
+            break;
+        }
+        case AppCallResponseTypes.NAVIGATE:
+        case AppCallResponseTypes.FORM:
+            break;
+        default: {
+            const errorMessage = intl.formatMessage(
+                {
+                    id: 'apps.error.responses.unknown_type',
+                    defaultMessage: 'App response type not supported. Response type: {type}.',
+                },
+                {
+                    type: callResp.type,
+                },
+            );
+            ephemeral(errorMessage);
+        }
+        }
     }, 4000);
 
     render() {
