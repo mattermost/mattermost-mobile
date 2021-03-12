@@ -16,6 +16,7 @@ import {
     RawGlobal,
     RawPost,
     RawPostMetadata,
+    RawPostsInChannel,
     RawPostsInThread,
     RawReaction,
     RawRole,
@@ -28,6 +29,7 @@ import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
+import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
@@ -43,6 +45,7 @@ const {
     FILE,
     POST,
     POST_METADATA,
+    POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
     REACTION,
     ROLE,
@@ -297,6 +300,19 @@ export const operateDraftRecord = async ({database, optType, value}: DataFactory
     };
 
     return operateBaseRecord({database, optType, tableName: DRAFT, value, generator});
+};
+
+export const operatePostsInChannelRecord = async ({database, optType, value}: DataFactory) => {
+    const record = value as RawPostsInChannel;
+
+    const generator = (postsInChannel: PostsInChannel) => {
+        postsInChannel._raw.id = record?.id ?? postsInChannel.id;
+        postsInChannel.channelId = record.channel_id;
+        postsInChannel.earliest = record.earliest;
+        postsInChannel.latest = record.latest;
+    };
+
+    return operateBaseRecord({database, optType, tableName: POSTS_IN_CHANNEL, value, generator});
 };
 
 /**

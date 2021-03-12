@@ -4,7 +4,13 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {DatabaseInstance, RawCustomEmoji, RawPost, RawReaction, RecordValue} from '@typings/database/database';
+import {
+    DatabaseInstance,
+    RawCustomEmoji,
+    RawPost,
+    RawReaction,
+    RecordValue,
+} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 import OperatorFieldException from './exceptions/operator_field_exception';
@@ -12,12 +18,16 @@ import OperatorFieldException from './exceptions/operator_field_exception';
 const {REACTION} = MM_TABLES.SERVER;
 
 type MissingFieldUtil = {
-    fields: string[];
-    rawValue: RecordValue;
-    tableName: string;
+  fields: string[];
+  rawValue: RecordValue;
+  tableName: string;
 };
 
-export const checkForMissingFields = ({fields, rawValue, tableName}: MissingFieldUtil) => {
+export const checkForMissingFields = ({
+    fields,
+    rawValue,
+    tableName,
+}: MissingFieldUtil) => {
     const missingFields = [];
     for (const rawField in Object.keys(rawValue)) {
         if (!fields.includes(rawField)) {
@@ -37,9 +47,9 @@ export const sanitizeReactions = async ({
     post_id,
     rawReactions,
 }: {
-    database: DatabaseInstance;
-    post_id: string;
-    rawReactions: RawReaction[];
+  database: DatabaseInstance;
+  post_id: string;
+  rawReactions: RawReaction[];
 }) => {
     const reactions = (await database!.collections.
         get(REACTION).
@@ -47,8 +57,12 @@ export const sanitizeReactions = async ({
         fetch()) as Reaction[];
 
     if (reactions?.length < 1) {
-        // We do not have existing reactions bearing this post_id; thus we CREATE them.
-        return {createReactions: rawReactions, deleteReactions: [], createEmojis: []};
+    // We do not have existing reactions bearing this post_id; thus we CREATE them.
+        return {
+            createReactions: rawReactions,
+            deleteReactions: [],
+            createEmojis: [],
+        };
     }
 
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
@@ -62,7 +76,10 @@ export const sanitizeReactions = async ({
 
         // Do we have a similar value of rawReaction in the REACTION table?
         const idxPresent = reactions.findIndex((value) => {
-            return value.userId === rawReaction.user_id && value.emojiName === rawReaction.emoji_name;
+            return (
+                value.userId === rawReaction.user_id &&
+        value.emojiName === rawReaction.emoji_name
+            );
         });
 
         if (idxPresent === -1) {
@@ -87,7 +104,15 @@ export const sanitizeReactions = async ({
     return {createReactions, createEmojis, deleteReactions};
 };
 
-export const addPrevPostId = ({orders, values}: { orders: string[]; values: RawPost[] }) => {
+export const addPrevPostId = ({
+    orders,
+    values,
+    previousPostId = '',
+}: {
+  orders: string[];
+  values: RawPost[];
+    previousPostId: string;
+}) => {
     const posts: RawPost[] = [];
     values.forEach((post) => {
         const postId = post.id;
@@ -96,12 +121,31 @@ export const addPrevPostId = ({orders, values}: { orders: string[]; values: RawP
         });
 
         if (postIdx === -1) {
-            // shit happened here
+            // something bad happened here ?
         } else {
-            const prevPostId = postIdx + 1 < orders.length ? orders[postIdx + 1] : '';
+            const prevPostId =
+        postIdx + 1 < orders.length ? orders[postIdx + 1] : previousPostId;
             posts.push({...post, prev_post_id: prevPostId});
         }
     });
 
     return posts;
+};
+
+/**
+ * sanitizePosts: Creates an array of RawPosts whereby each member's post_id is also present in the order array
+ * @param {RawPost[]} posts
+ * @param {string[]} order
+ */
+export const sanitizePosts = ({
+    posts,
+    orders,
+}: {
+  posts: RawPost[];
+  orders: string[];
+}) => {
+    const sanitizedPosts = posts.filter((post) => {
+        return post?.id && orders.includes(post.id);
+    });
+    return sanitizedPosts;
 };

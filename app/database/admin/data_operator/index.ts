@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Model from '@nozbe/watermelondb/Model';
 import {
     BatchOperations,
     DatabaseInstance,
@@ -23,6 +23,7 @@ import {
 import File from '@typings/database/file';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
+import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 import CustomEmoji from '@typings/database/custom_emoji';
@@ -38,13 +39,14 @@ import {
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
+    operatePostsInChannelRecord,
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import {addPrevPostId, sanitizeReactions} from './utils';
+import {addPrevPostId, sanitizePosts, sanitizeReactions} from './utils';
 
 export enum OperationType {
   CREATE = 'CREATE',
@@ -69,8 +71,16 @@ const {
     POST,
     POST_METADATA,
     POSTS_IN_THREAD,
+    POSTS_IN_CHANNEL,
     REACTION,
 } = MM_TABLES.SERVER;
+
+// FIXME : Refactor the getDatabase code so that it only returns a Database Instance
+
+// FIXME : Performance improvements - For main entities, in each handler, do a 'select query' first to retrieve all
+//  matching ids ( e.g. post_id ).  In another array, filter only those records whose update_at value are different.
+//  Now, process this array in your handler.  On the operator level, do the select-query and update-at check for
+//  specific tables ( minor ones ) only.
 
 class DataOperator {
   private defaultDatabase: DatabaseInstance;
@@ -132,7 +142,6 @@ class DataOperator {
       }
   };
 
-  // TODO : draft should be a separate handler : handleDraft ( post body, draft info )
   handleDraftData = async (drafts: RawDraft[]) => {
       await this.handleBase({
           optType: OperationType.CREATE,
@@ -145,7 +154,11 @@ class DataOperator {
   handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
       const database = await this.getDatabase(POSTS_IN_THREAD);
       const postIds = postsInThreads.map((postThread) => postThread.post_id);
-      const rawPostsInThreads: { latest: number; earliest: number; post_id: string; }[] = [];
+      const rawPostsInThreads: {
+      latest: number;
+      earliest: number;
+      post_id: string;
+    }[] = [];
 
       if (database) {
           const threads = (await database.collections.
@@ -184,7 +197,13 @@ class DataOperator {
       }
   };
 
-  handleReactions = async ({reactions, prepareRowsOnly}: { reactions: RawReaction[]; prepareRowsOnly: boolean; }) => {
+  handleReactions = async ({
+      reactions,
+      prepareRowsOnly,
+  }: {
+    reactions: RawReaction[];
+    prepareRowsOnly: boolean;
+  }) => {
       const database = await this.getDatabase(REACTION);
       if (database) {
           const {
@@ -231,7 +250,13 @@ class DataOperator {
       return null;
   };
 
-  handleFiles = async ({files, prepareRowsOnly}: { files: RawFile[]; prepareRowsOnly: boolean; }) => {
+  handleFiles = async ({
+      files,
+      prepareRowsOnly,
+  }: {
+    files: RawFile[];
+    prepareRowsOnly: boolean;
+  }) => {
       const database = await this.getDatabase(FILE);
       if (database) {
           const postFiles = ((await this.prepareBase({
@@ -255,7 +280,15 @@ class DataOperator {
       return null;
   };
 
-  handlePostMetadata = async ({embeds, images, prepareRowsOnly}: { embeds: { embed: RawEmbed[]; postId: string }[]; images: { images: Dictionary<PostImage>; postId: string }[]; prepareRowsOnly: boolean; }) => {
+  handlePostMetadata = async ({
+      embeds,
+      images,
+      prepareRowsOnly,
+  }: {
+    embeds: { embed: RawEmbed[]; postId: string }[];
+    images: { images: Dictionary<PostImage>; postId: string }[];
+    prepareRowsOnly: boolean;
+  }) => {
       const database = await this.getDatabase(POST_METADATA);
       if (database) {
           const metadata: RawPostMetadata[] = [];
@@ -300,20 +333,124 @@ class DataOperator {
       return null;
   };
 
+  handlePostsInChannel = async (posts: RawPost[]) => {
+      // At this point, the 'posts' array is already a chain of posts
+      // We have to figure out how to plug it into existing chains in the PostsInChannel table
+
+      // Sort 'posts' array by create_at
+      const sortedPosts = [...posts].sort((a, b) => {
+          return a.create_at - b.create_at;
+      });
+
+      // The first element ( beginning of chain )
+      const tipOfChain: RawPost = sortedPosts[0];
+
+      // Channel Id for this chain of posts
+      const channelId = tipOfChain.channel_id;
+
+      // Find lowest 'create_at' value in chain
+      const earliest = tipOfChain.create_at;
+
+      // Find highest 'create_at' value in chain; -1 means we are dealing with one item in the posts array
+      const lastIndex = sortedPosts.length > 1 ? sortedPosts.length - 1 : -1;
+      const latest = lastIndex > 0 ? sortedPosts[lastIndex].create_at : earliest;
+
+      // Find the records in the PostsInChannel table that have a matching channel_id
+      const database = await this.getDatabase(POSTS_IN_CHANNEL);
+      const chunks = (await database!.collections.
+          get(POSTS_IN_CHANNEL).
+          query(Q.where('channel_id', channelId)).
+          fetch()) as PostsInChannel[];
+
+      const createPostsInChannelRecord = async () => {
+          await this.handleBase({
+              optType: OperationType.CREATE,
+              values: [
+                  {
+                      channel_id: channelId,
+                      earliest,
+                      latest,
+                  },
+              ],
+              tableName: POSTS_IN_CHANNEL,
+              recordOperator: operatePostsInChannelRecord,
+          });
+      };
+
+      // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
+      if (chunks.length === 0) {
+          return createPostsInChannelRecord();
+      }
+
+      // Sort chunks (in-place) by earliest field
+      chunks.sort((a, b) => {
+          return a.earliest - b.earliest;
+      });
+
+      let found = false;
+      let targetChunk: PostsInChannel;
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+      // find if we should plug the chain before
+          const chunk = chunks[chunkIndex];
+          if (earliest < chunk.earliest) {
+              found = true;
+              targetChunk = chunk;
+          }
+
+          if (found) {
+              break;
+          }
+      }
+
+      if (found) {
+      // We have a potential chunk to plug nearby
+          const potentialPosts = (await database!.collections.
+              get(POST).
+              query(Q.where('create_at', earliest)).
+              fetch()) as Post[];
+          if (potentialPosts?.length > 0) {
+              const targetPost = potentialPosts[0];
+
+              // now we decide if we need to operate on the targetChunk or just create a new chunk
+              const isChainable =
+          tipOfChain.prev_post_id === targetPost.previousPostId;
+
+              // FIXME : is previous_post_id is empty string ??
+              if (isChainable) {
+                  // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
+                  await database!.action(async () => {
+                      await targetChunk.update((postInChannel) => {
+                          postInChannel.earliest = earliest;
+                      });
+                  });
+              } else {
+                  return createPostsInChannelRecord();
+              }
+          }
+      } else {
+          return createPostsInChannelRecord();
+      }
+      return null;
+  };
+
   handlePosts = async ({
       optType,
       orders,
       values,
+      previousPostId,
   }: {
     optType: OperationType;
     orders?: string[];
     values: RawPost[];
+    previousPostId?: string;
   }) => {
       const tableName = POST;
 
-      //     // TODO []: heavily make use of this.prepareBase so as to call the batchMethod only once
-      //     // TODO []: postmetadata ( embeds, images )
-      //     // TODO []: draft, postsInThreads, postsInChannel
+      // We rely on the order array; if it is empty, we stop processing
+      if (!orders || orders?.length < 1) {
+      // // TODO: throw an exception here ?
+          return;
+      }
 
       const database = await this.getDatabase(tableName);
 
@@ -325,10 +462,20 @@ class DataOperator {
       const images: { images: Dictionary<PostImage>; postId: string }[] = [];
       const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
-      let augmentedRawPosts = values;
+      // We treat those posts who are present in the order array only
+      const sanitizedPosts: RawPost[] = sanitizePosts({posts: values, orders});
 
-      if (orders?.length) {
-          augmentedRawPosts = addPrevPostId({orders, values});
+      // FIXME : what happens to posts not in order array ???
+
+      // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
+      const augmentedRawPosts: RawPost[] = addPrevPostId({
+          orders,
+          previousPostId: previousPostId || '',
+          values: sanitizedPosts,
+      });
+
+      if (previousPostId) {
+          augmentedRawPosts[0].prev_post_id = previousPostId;
       }
 
       // Prepares records for batch processing onto the 'Post' entity for the server schema
@@ -343,6 +490,7 @@ class DataOperator {
       // Appends the processed records into the final batch array
       batch.concat(posts);
 
+      // Starts extracting information from each post to build up for related entities' data
       for (let i = 0; i < values.length; i++) {
           const post = values[i] as RawPost;
 
@@ -420,6 +568,7 @@ class DataOperator {
       });
 
       await this.handlePostsInThread(postsInThread);
+      await this.handlePostsInChannel(values);
   };
 
   /**

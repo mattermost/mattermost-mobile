@@ -139,6 +139,13 @@ export type RawReaction = {
   user_id: string;
 };
 
+export type RawPostsInChannel = {
+  id?: string;
+  channel_id: string;
+  earliest: number;
+  latest: number;
+};
+
 interface PostEmbed {
   type: PostEmbedType;
   url: string;
@@ -246,6 +253,7 @@ export type RecordValue =
   | RawGlobal
   | RawPost
   | RawPostMetadata
+  | RawPostsInChannel
   | RawPostsInThread
   | RawReaction
   | RawRole

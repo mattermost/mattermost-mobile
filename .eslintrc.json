@@ -47,7 +47,12 @@
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "no-underscore-dangle": "off",
-    "indent": [2, 4, {"SwitchCase": 1}]
+    "indent": [2, 4, {"SwitchCase": 1}],
+    "key-spacing": [2, {
+      "singleLine": {
+        "beforeColon": false,
+        "afterColon": true
+      }}]
   },
   "overrides": [
     {
