@@ -299,7 +299,7 @@
   "mobile.loading_posts": "Berichten aan het laden...",
   "mobile.login_options.choose_title": "Kies je loginmethode",
   "mobile.long_post_title": "{channelName} - Bericht",
-  "mobile.mailTo.error.text": "Kan het e-mailprogramme niet openen.",
+  "mobile.mailTo.error.text": "Kan het e-mailprogramma niet openen.",
   "mobile.mailTo.error.title": "Fout",
   "mobile.managed.blocked_by": "Geblokkeerd door {vendor}",
   "mobile.managed.exit": "Afsluiten",
