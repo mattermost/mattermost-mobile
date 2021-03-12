@@ -18,6 +18,7 @@ import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {sendEphemeralPost} from '@actions/views/post';
 
 function mapStateToProps(state: GlobalState) {
     const apps = appsEnabled(state);
@@ -35,12 +36,14 @@ function mapStateToProps(state: GlobalState) {
 
 type Actions = {
     doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+    sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
+            sendEphemeralPost,
         }, dispatch),
     };
 }

@@ -56,8 +56,3 @@ import type {ParsedCommand} from './app_command_parser';
 export const getExecuteSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => { // eslint-disable-line @typescript-eslint/no-unused-vars
     return null;
 };
-
-import {sendEphemeralPost} from '@actions/views/post';
-export const displayError = (err: string) => {
-    sendEphemeralPost(err);
-};

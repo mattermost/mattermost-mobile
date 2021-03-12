@@ -12,12 +12,12 @@ import {ActionResult} from '@mm-redux/types/actions';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {Channel} from '@mm-redux/types/channels';
 import {createCallContext, createCallRequest} from '@utils/apps';
-import {sendEphemeralPost} from '@actions/views/post';
 
 type Props = {
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
         getChannel: (channelId: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     };
     binding?: AppBinding;
     post: Post;
@@ -81,7 +81,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
 
         const res = await actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
+        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {

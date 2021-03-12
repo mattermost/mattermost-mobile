@@ -32,7 +32,6 @@ import {
     getStore,
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
     getExecuteSuggestion,
-    displayError,
 } from './app_command_parser_dependencies';
 import {AppCallValues} from '@mm-redux/types/apps';
 import {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/entities/users';
@@ -40,6 +39,7 @@ import {getUserByUsername} from '@mm-redux/actions/users';
 import {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
+import {sendEphemeralPost} from '@actions/views/post';
 
 export type Store = {
     dispatch: DispatchFunc;
@@ -681,7 +681,7 @@ export class AppCommandParser {
     }
 
     expandOptions = async (parsed: ParsedCommand, values: AppCallValues) => {
-        if (!parsed.form) {
+        if (!parsed.form || !parsed.form.fields) {
             return true;
         }
 
@@ -904,7 +904,7 @@ export class AppCommandParser {
         if (err.message) {
             errStr = err.message;
         }
-        displayError(errStr);
+        this.store.dispatch(sendEphemeralPost(errStr, this.channelID, this.rootPostID));
     }
 
     // getSuggestionsForSubCommands returns suggestions for a subcommand's name

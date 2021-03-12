@@ -15,6 +15,7 @@ import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
 import FastImage from 'react-native-fast-image';
+import {isValidUrl} from '@utils/url';
 
 export default class PostOption extends PureComponent {
     static propTypes = {
@@ -60,7 +61,7 @@ export default class PostOption extends PureComponent {
         if (typeof icon === 'object') {
             if (icon.uri) {
                 imageStyle.push({width: 24, height: 24});
-                image = (
+                image = isValidUrl(icon.uri) && (
                     <FastImage
                         source={icon}
                         style={imageStyle}

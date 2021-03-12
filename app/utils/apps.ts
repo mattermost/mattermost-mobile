@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppBinding, AppCall, AppCallRequest, AppCallValues, AppContext, AppExpand} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
 
@@ -173,7 +173,7 @@ export function createCallRequest(
 
 export const makeCallErrorResponse = (errMessage: string) => {
     return {
-        type: AppCallTypes.ERROR,
+        type: AppCallResponseTypes.ERROR,
         error: errMessage,
     };
 };

@@ -15,7 +15,6 @@ import {UserProfile} from '@mm-redux/types/users';
 import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {createCallContext, createCallRequest} from '@utils/apps';
-import {sendEphemeralPost} from '@actions/views/post';
 
 type Props = {
     bindings: AppBinding[],
@@ -27,6 +26,7 @@ type Props = {
     appsEnabled: boolean,
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>,
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     }
 }
 
@@ -72,6 +72,7 @@ type OptionProps = {
     intl: typeof intlShape,
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>,
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     },
 }
 
@@ -100,7 +101,7 @@ const Option = injectIntl((props: OptionProps) => {
         const res = await props.actions?.doAppCall(call, AppCallTypes.SUBMIT, props.intl);
 
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => sendEphemeralPost(message, props.post.channel_id, props.post.root_id);
+        const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.post.channel_id, props.post.root_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
@@ -134,6 +135,10 @@ const Option = injectIntl((props: OptionProps) => {
     };
 
     const {binding, theme} = props;
+    if (!binding.label) {
+        return null;
+    }
+
     return (
         <PostOption
             icon={{uri: binding.icon}}

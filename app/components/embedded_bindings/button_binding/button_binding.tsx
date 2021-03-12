@@ -16,12 +16,12 @@ import {Post} from '@mm-redux/types/posts';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {Channel} from '@mm-redux/types/channels';
-import {sendEphemeralPost} from '@actions/views/post';
 
 type Props = {
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
         getChannel: (channelId: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     };
     post: Post;
     binding: AppBinding;
@@ -62,7 +62,7 @@ export default class ButtonBinding extends PureComponent<Props> {
 
         this.setState({executing: false});
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
+        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {

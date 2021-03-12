@@ -8,14 +8,15 @@ import {Theme} from '@mm-redux/types/preferences';
 import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData, AppCallType} from '@mm-redux/types/apps';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import AppsFormComponent from './apps_form_component';
-import {sendEphemeralPost} from '@actions/views/post';
 import {makeCallErrorResponse} from '@utils/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 
 export type Props = {
     form?: AppForm;
     call?: AppCallRequest;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data: AppCallResponse<FormResponseData>, error?: any}>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     };
     theme: Theme;
     componentId: string;
@@ -66,7 +67,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                sendEphemeralPost(callResp.markdown);
+                this.props.actions.sendEphemeralPost(callResp.markdown);
             }
             break;
         case AppCallResponseTypes.FORM:
