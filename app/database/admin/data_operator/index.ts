@@ -46,6 +46,7 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
+import {HandleFiles, HandlePostMetadata, HandleReactions} from './types';
 import {addPrevPostId, sanitizePosts, sanitizeReactions} from './utils';
 
 export enum OperationType {
@@ -77,10 +78,7 @@ const {
 
 // FIXME : Refactor the getDatabase code so that it only returns a Database Instance
 
-// FIXME : Performance improvements - For main entities, in each handler, do a 'select query' first to retrieve all
-//  matching ids ( e.g. post_id ).  In another array, filter only those records whose update_at value are different.
-//  Now, process this array in your handler.  On the operator level, do the select-query and update-at check for
-//  specific tables ( minor ones ) only.
+// FIXME : Performance improvements - For main entities, in each handler, do a 'select query' first to retrieve all matching ids ( e.g. post_id ).  In another array, filter only those records whose update_at value are different.  Now, process this array in your handler.  On the operator level, do the select-query and update-at check for specific tables ( minor ones ) only.
 
 class DataOperator {
   private defaultDatabase: DatabaseInstance;
@@ -142,7 +140,7 @@ class DataOperator {
       }
   };
 
-  handleDraftData = async (drafts: RawDraft[]) => {
+  handleDraft = async (drafts: RawDraft[]) => {
       await this.handleBase({
           optType: OperationType.CREATE,
           values: drafts,
@@ -197,14 +195,9 @@ class DataOperator {
       }
   };
 
-  handleReactions = async ({
-      reactions,
-      prepareRowsOnly,
-  }: {
-    reactions: RawReaction[];
-    prepareRowsOnly: boolean;
-  }) => {
+  handleReactions = async ({reactions, prepareRowsOnly}: HandleReactions) => {
       const database = await this.getDatabase(REACTION);
+      console.log('reaction db ', database);
       if (database) {
           const {
               createReactions,
@@ -250,13 +243,7 @@ class DataOperator {
       return null;
   };
 
-  handleFiles = async ({
-      files,
-      prepareRowsOnly,
-  }: {
-    files: RawFile[];
-    prepareRowsOnly: boolean;
-  }) => {
+  handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
       const database = await this.getDatabase(FILE);
       if (database) {
           const postFiles = ((await this.prepareBase({
@@ -284,11 +271,7 @@ class DataOperator {
       embeds,
       images,
       prepareRowsOnly,
-  }: {
-    embeds: { embed: RawEmbed[]; postId: string }[];
-    images: { images: Dictionary<PostImage>; postId: string }[];
-    prepareRowsOnly: boolean;
-  }) => {
+  }: HandlePostMetadata) => {
       const database = await this.getDatabase(POST_METADATA);
       if (database) {
           const metadata: RawPostMetadata[] = [];
@@ -438,12 +421,7 @@ class DataOperator {
       orders,
       values,
       previousPostId,
-  }: {
-    optType: OperationType;
-    orders?: string[];
-    values: RawPost[];
-    previousPostId?: string;
-  }) => {
+  }: HandlePosts) => {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
@@ -688,6 +666,8 @@ class DataOperator {
    * @returns {Promise<DatabaseInstance>}
    */
   private getServerDatabase = async () => {
+      // NOTE: here we are getting the active server directly as in a multi-server support system, the current
+      // active server connection will already be set on application init
       this.serverDatabase = await DatabaseManager.getActiveServerDatabase();
       return this.serverDatabase;
   };
