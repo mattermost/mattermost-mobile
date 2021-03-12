@@ -184,10 +184,10 @@ describe('*** Data Operator tests ***', () => {
         });
 
         // Do a query and find out if the value has been registered in the App table of the default database
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const connection = await DatabaseManager.getDefaultDatabase();
+        expect(connection).toBeTruthy();
 
-        const records = (await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch()) as App[];
+        const records = (await connection!.collections.get(APP).query(Q.where('id', 'id-1')).fetch()) as App[];
 
         // We should expect to have a record returned as dictated by our query
         expect(records.length).toBe(1);
@@ -392,8 +392,17 @@ describe('*** Data Operator tests ***', () => {
     it('=> should use operateCustomEmojiRecord for CUSTOM_EMOJI entity in handleBase', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
@@ -416,8 +425,17 @@ describe('*** Data Operator tests ***', () => {
     it('=> should use operateRoleRecord for ROLE entity in handleBase', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
@@ -441,8 +459,17 @@ describe('*** Data Operator tests ***', () => {
     it('=> should use operateSystemRecord for SYSTEM entity in handleBase', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
@@ -459,9 +486,19 @@ describe('*** Data Operator tests ***', () => {
 
     it('=> should use operateTermsOfServiceRecord for TERMS_OF_SERVICE entity in handleBase', async () => {
         expect.assertions(2);
+        const database = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'https://appv2.mattermost.com',
+            },
+        });
+        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        expect(database).toBeTruthy();
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        //set active connection
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 

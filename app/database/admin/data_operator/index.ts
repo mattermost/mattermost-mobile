@@ -29,6 +29,7 @@ import Reaction from '@typings/database/reaction';
 import CustomEmoji from '@typings/database/custom_emoji';
 
 import DatabaseManager from '../database_manager';
+import DatabaseConnectionException from './exceptions/database_connection_exception';
 
 import {
     operateAppRecord,
@@ -46,7 +47,12 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import {HandleFiles, HandlePostMetadata, HandleReactions} from './types';
+import {
+    HandleFiles,
+    HandlePostMetadata,
+    HandlePosts,
+    HandleReactions,
+} from './types';
 import {addPrevPostId, sanitizePosts, sanitizeReactions} from './utils';
 
 export enum OperationType {
@@ -387,7 +393,7 @@ class DataOperator {
 
       if (found) {
       // We have a potential chunk to plug nearby
-          const potentialPosts = (await database!.collections.
+          const potentialPosts = (await database.collections.
               get(POST).
               query(Q.where('create_at', earliest)).
               fetch()) as Post[];
@@ -401,7 +407,7 @@ class DataOperator {
               // FIXME : is previous_post_id is empty string ??
               if (isChainable) {
                   // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
-                  await database!.action(async () => {
+                  await database.action(async () => {
                       await targetChunk.update((postInChannel) => {
                           postInChannel.earliest = earliest;
                       });
@@ -634,22 +640,24 @@ class DataOperator {
 
   /**
    * getDatabase: Based on the table's name, it will return a database instance either from the 'DEFAULT' database or
-   * the 'SERVER' database.
+   * the 'SERVER' database
    * @param {string} tableName
-   * @returns {Promise<DatabaseInstance>}
+   * @returns {Promise<void>}
    */
-  private getDatabase = async (
-      tableName: string,
-  ): Promise<DatabaseInstance> => {
-      const isInDefaultDB = Object.values(MM_TABLES.DEFAULT).some((tbName) => {
+  private getDatabase = async (tableName: string) => {
+      const isDefaultConnection = Object.values(MM_TABLES.DEFAULT).some((tbName) => {
           return tableName === tbName;
       });
 
-      if (isInDefaultDB) {
-          return this.defaultDatabase || this.getDefaultDatabase();
-      }
+      const promise = isDefaultConnection ? this.getDefaultDatabase : this.getServerDatabase;
+      const connection = await promise();
 
-      return this.serverDatabase || this.getServerDatabase();
+      if (connection === undefined) {
+          const dbType = isDefaultConnection ? 'default' : 'currently active server';
+          const message = `An error while trying to retrieve a connection to the ${dbType} database`;
+          throw new DatabaseConnectionException(message, tableName);
+      }
+      return connection;
   };
 
   /**
@@ -657,8 +665,12 @@ class DataOperator {
    * @returns {Promise<DatabaseInstance>}
    */
   private getDefaultDatabase = async () => {
-      this.defaultDatabase = await DatabaseManager.getDefaultDatabase();
-      return this.defaultDatabase;
+      try {
+          const connection = await DatabaseManager.getDefaultDatabase();
+          return connection;
+      } catch (e) {
+          throw new DatabaseConnectionException('An error occurred while retrieving the default database', '');
+      }
   };
 
   /**
@@ -668,8 +680,12 @@ class DataOperator {
   private getServerDatabase = async () => {
       // NOTE: here we are getting the active server directly as in a multi-server support system, the current
       // active server connection will already be set on application init
-      this.serverDatabase = await DatabaseManager.getActiveServerDatabase();
-      return this.serverDatabase;
+      try {
+          const connection = await DatabaseManager.getActiveServerDatabase();
+          return connection;
+      } catch (e) {
+          throw new DatabaseConnectionException('An error occurred while retrieving the server database', '');
+      }
   };
 }
 
