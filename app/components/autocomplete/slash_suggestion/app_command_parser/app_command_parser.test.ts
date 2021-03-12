@@ -144,13 +144,13 @@ describe('AppCommandParser', () => {
             {
                 title: 'incomplete top command',
                 command: '/jir',
-                autocomplete: {expectError: '"/jir": no match'},
-                submit: {expectError: '"/jir": no match'},
+                autocomplete: {expectError: '`{command}`: no match.'},
+                submit: {expectError: '`{command}`: no match.'},
             },
             {
                 title: 'no space after the top command',
                 command: '/jira',
-                autocomplete: {expectError: '"/jira": no match'},
+                autocomplete: {expectError: '`{command}`: no match.'},
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.Command);
                     expect(parsed.binding?.label).toBe('jira');
@@ -227,11 +227,11 @@ describe('AppCommandParser', () => {
             test(tc.title, async () => {
                 const bindings = testBindings[0].bindings as AppBinding[];
 
-                let a = new ParsedCommand(tc.command, parser);
+                let a = new ParsedCommand(tc.command, parser, intl);
                 a = await a.matchBinding(bindings, true);
                 checkResult(a, tc.autocomplete || tc.submit);
 
-                let s = new ParsedCommand(tc.command, parser);
+                let s = new ParsedCommand(tc.command, parser, intl);
                 s = await s.matchBinding(bindings, false);
                 checkResult(s, tc.submit);
             });
@@ -372,7 +372,7 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.project).toBe(undefined);
                     expect(parsed.values?.issue).toBe(undefined);
                 }},
-                submit: {expectError: 'matching tick quote expected before end of input'},
+                submit: {expectError: 'Matching tick quote expected before end of input.'},
             },
             {
                 title: 'error: unmatched quote',
@@ -386,13 +386,13 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.project).toBe(undefined);
                     expect(parsed.values?.issue).toBe(undefined);
                 }},
-                submit: {expectError: 'matching double quote expected before end of input'},
+                submit: {expectError: 'Matching double quote expected before end of input.'},
             },
             {
                 title: 'missing required fields not a problem for parseCommand',
                 command: '/jira issue view --project "P 1"',
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
-                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.state).toBe(ParseState.EndQuotedValue);
                     expect(parsed.binding?.label).toBe('view');
                     expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('P 1');
@@ -401,7 +401,7 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.issue).toBe(undefined);
                 }},
                 submit: {verify: (parsed: ParsedCommand): void => {
-                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.state).toBe(ParseState.EndQuotedValue);
                     expect(parsed.binding?.label).toBe('view');
                     expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.values?.project).toBe('P 1');
@@ -411,17 +411,17 @@ describe('AppCommandParser', () => {
             {
                 title: 'error: invalid flag',
                 command: '/jira issue view --wrong test',
-                submit: {expectError: 'command does not accept flag wrong'},
+                submit: {expectError: 'Command does not accept flag `{flagName}`.'},
             },
             {
                 title: 'error: unexpected positional',
                 command: '/jira issue create wrong',
-                submit: {expectError: 'command does not accept 1 positional arguments'},
+                submit: {expectError: 'Command does not accept {positionX} positional arguments.'},
             },
             {
                 title: 'error: multiple equal signs',
                 command: '/jira issue create --project == test',
-                submit: {expectError: 'multiple = signs are not allowed'},
+                submit: {expectError: 'Multiple `=` signs are not allowed.'},
             },
         ];
 
@@ -429,12 +429,12 @@ describe('AppCommandParser', () => {
             test(tc.title, async () => {
                 const bindings = testBindings[0].bindings as AppBinding[];
 
-                let a = new ParsedCommand(tc.command, parser);
+                let a = new ParsedCommand(tc.command, parser, intl);
                 a = await a.matchBinding(bindings, true);
                 a = a.parseForm(true);
                 checkResult(a, tc.autocomplete || tc.submit);
 
-                let s = new ParsedCommand(tc.command, parser);
+                let s = new ParsedCommand(tc.command, parser, intl);
                 s = await s.matchBinding(bindings, false);
                 s = s.parseForm(false);
                 checkResult(s, tc.submit);
@@ -805,14 +805,14 @@ describe('AppCommandParser', () => {
             let suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic ');
             expect(suggestions).toEqual([
                 {
-                    Complete: 'jira issue create --project KT --summary "great feature" --epic Dylan Epic',
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic epic1',
                     Suggestion: 'Dylan Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
                     IconData: 'Create icon',
                 },
                 {
-                    Complete: 'jira issue create --project KT --summary "great feature" --epic Michael Epic',
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic epic2',
                     Suggestion: 'Michael Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
@@ -823,7 +823,7 @@ describe('AppCommandParser', () => {
             suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic M');
             expect(suggestions).toEqual([
                 {
-                    Complete: 'jira issue create --project KT --summary "great feature" --epic Michael Epic',
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic epic2',
                     Suggestion: 'Michael Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',

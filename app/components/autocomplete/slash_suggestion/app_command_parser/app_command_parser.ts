@@ -61,6 +61,8 @@ export const ParseState = keyMirror({
     QuotedValue: null,
     TickValue: null,
     EndValue: null,
+    EndQuotedValue: null,
+    EndTickedValue: null,
     Error: null,
 });
 
@@ -82,10 +84,12 @@ export class ParsedCommand {
     values: {[name: string]: string} = {};
     location = '';
     error = '';
+    intl: typeof intlShape;
 
-    constructor(command: string, formsCache: FormsCache) {
+    constructor(command: string, formsCache: FormsCache, intl: any) {
         this.command = command;
         this.formsCache = formsCache || [];
+        this.intl = intl;
     }
 
     asError = (message: string): ParsedCommand => {
@@ -95,13 +99,23 @@ export class ParsedCommand {
     };
 
     errorMessage = (): string => {
-        return 'Parsing error: ' + this.error + '.\n```\n' + this.command + '\n' + ' '.repeat(this.i) + '^\n```';
+        return this.intl.formatMessage({
+            id: 'apps.error.parser',
+            defaultMessage: 'Parsing error: {error}.\n```\n{command}\n{space}^\n```',
+        }, {
+            error: this.error,
+            command: this.command,
+            space: ' '.repeat(this.i),
+        });
     }
 
     // matchBinding finds the closest matching command binding.
     matchBinding = async (commandBindings: AppBinding[], autocompleteMode = false): Promise<ParsedCommand> => {
         if (commandBindings.length === 0) {
-            return this.asError('no command bindings');
+            return this.asError(this.intl.formatMessage({
+                id: 'apps.error.parser.no_bindings',
+                defaultMessage: 'No command bindings.',
+            }));
         }
         let bindings = commandBindings;
 
@@ -115,7 +129,10 @@ export class ParsedCommand {
             switch (this.state) {
             case ParseState.Start: {
                 if (c !== '/') {
-                    return this.asError('command must start with a /');
+                    return this.asError(this.intl.formatMessage({
+                        id: 'apps.error.parser.no_slash_start',
+                        defaultMessage: 'Command must start with a `/`.',
+                    }));
                 }
                 this.i++;
                 this.incomplete = '';
@@ -174,8 +191,6 @@ export class ParsedCommand {
                     this.i++;
                     break;
                 }
-
-                case '':
                 default: {
                     this.incomplete = '';
                     this.incompleteStart = this.i;
@@ -187,13 +202,23 @@ export class ParsedCommand {
             }
 
             default: {
-                return this.asError('unreachable: unexpected state in matchBinding: ' + this.state);
+                return this.asError(this.intl.formatMessage({
+                    id: 'apps.error.parser.unexpected_state',
+                    defaultMessage: 'Unreachable: Unexpected state in matchBinding: `{state}`.',
+                }, {
+                    state: this.state,
+                }));
             }
             }
         }
 
         if (!this.binding) {
-            return this.asError('"' + this.command + '": no match');
+            return this.asError(this.intl.formatMessage({
+                id: 'apps.error.parser.no_match',
+                defaultMessage: '`{command}`: no match.',
+            }, {
+                command: this.command,
+            }));
         }
 
         this.form = this.binding.form;
@@ -244,7 +269,12 @@ export class ParsedCommand {
                     // eslint-disable-next-line no-loop-func
                     const field = fields.find((f: AppField) => f.position === this.position);
                     if (!field) {
-                        return this.asError('command does not accept ' + this.position + ' positional arguments');
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.no_argument_pos_x',
+                            defaultMessage: 'Command does not accept {positionX} positional arguments.',
+                        }, {
+                            positionX: this.position,
+                        }));
                     }
                     this.field = field;
                     this.state = ParseState.StartValue;
@@ -296,7 +326,12 @@ export class ParsedCommand {
                 case '=': {
                     const field = fields.find((f) => f.label === this.incomplete.toLowerCase());
                     if (!field) {
-                        return this.asError('command does not accept flag ' + this.incomplete);
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.unexpected_flag',
+                            defaultMessage: 'Command does not accept flag `{flagName}`.',
+                        }, {
+                            flagName: this.incomplete,
+                        }));
                     }
                     this.state = ParseState.FlagValueSeparator;
                     this.field = field;
@@ -329,7 +364,10 @@ export class ParsedCommand {
                 }
                 case '=': {
                     if (flagEqualsUsed) {
-                        return this.asError('multiple = signs are not allowed');
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.multiple_equal',
+                            defaultMessage: 'Multiple `=` signs are not allowed.',
+                        }));
                     }
                     flagEqualsUsed = true;
                     this.i++;
@@ -358,7 +396,10 @@ export class ParsedCommand {
                 }
                 case ' ':
                 case '\t':
-                    return this.asError('unreachable: unexpected whitespace');
+                    return this.asError(this.intl.formatMessage({
+                        id: 'apps.error.parser.unexpected_whitespace',
+                        defaultMessage: 'Unreachable: Unexpected whitespace.',
+                    }));
                 default: {
                     this.state = ParseState.NonspaceValue;
                     break;
@@ -388,16 +429,22 @@ export class ParsedCommand {
                 switch (c) {
                 case '': {
                     if (!autocompleteMode) {
-                        return this.asError('matching double quote expected before end of input');
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.missing_quote',
+                            defaultMessage: 'Matching double quote expected before end of input.',
+                        }));
                     }
                     return this;
                 }
                 case '"': {
                     if (this.incompleteStart === this.i - 1) {
-                        return this.asError('empty values are not allowed');
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.empty_value',
+                            defaultMessage: 'empty values are not allowed',
+                        }));
                     }
                     this.i++;
-                    this.state = ParseState.EndValue;
+                    this.state = ParseState.EndQuotedValue;
                     break;
                 }
                 case '\\': {
@@ -422,16 +469,22 @@ export class ParsedCommand {
                 switch (c) {
                 case '': {
                     if (!autocompleteMode) {
-                        return this.asError('matching tick quote expected before end of input');
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.missing_tick',
+                            defaultMessage: 'Matching tick quote expected before end of input.',
+                        }));
                     }
                     return this;
                 }
                 case '`': {
                     if (this.incompleteStart === this.i - 1) {
-                        return this.asError('empty values are not allowed');
+                        return this.asError(this.intl.formatMessage({
+                            id: 'apps.error.parser.empty_value',
+                            defaultMessage: 'empty values are not allowed',
+                        }));
                     }
                     this.i++;
-                    this.state = ParseState.EndValue;
+                    this.state = ParseState.EndTickedValue;
                     break;
                 }
                 default: {
@@ -443,9 +496,14 @@ export class ParsedCommand {
                 break;
             }
 
+            case ParseState.EndTickedValue:
+            case ParseState.EndQuotedValue:
             case ParseState.EndValue: {
                 if (!this.field) {
-                    return this.asError('field value expected');
+                    return this.asError(this.intl.formatMessage({
+                        id: 'apps.error.parser.missing_field_value',
+                        defaultMessage: 'Field value Expected.',
+                    }));
                 }
 
                 // special handling for optional BOOL values ('--boolflag true'
@@ -494,11 +552,14 @@ export class AppCommandParser {
 
     // composeCallFromCommand creates the form submission call
     public composeCallFromCommand = async (command: string): Promise<AppCallRequest | null> => {
-        let parsed = new ParsedCommand(command, this);
+        let parsed = new ParsedCommand(command, this, this.intl);
 
         const commandBindings = this.getCommandBindings();
         if (!commandBindings) {
-            this.displayError('no command bindings');
+            this.displayError(this.intl.formatMessage({
+                id: 'apps.error.command.no_bindings',
+                defaultMessage: 'No command bindings.',
+            }));
             return null;
         }
 
@@ -512,7 +573,12 @@ export class AppCommandParser {
         const missing = this.getMissingFields(parsed);
         if (missing.length > 0) {
             const missingStr = missing.map((f) => f.label).join(', ');
-            this.displayError('Required fields missing: ' + missingStr);
+            this.displayError(this.intl.formatMessage({
+                id: 'apps.error.command.field_missing',
+                defaultMessage: 'Required fields missing: `{fieldName}`.',
+            }, {
+                fieldName: missingStr,
+            }));
             return null;
         }
 
@@ -531,7 +597,9 @@ export class AppCommandParser {
                 continue;
             }
 
-            base = '/' + base;
+            if (base[0] !== '/') {
+                base = '/' + base;
+            }
             if (base.startsWith(command)) {
                 result.push({
                     Suggestion: base,
@@ -548,7 +616,7 @@ export class AppCommandParser {
 
     // getSuggestions returns suggestions for subcommands and/or form arguments
     public getSuggestions = async (pretext: string): Promise<AutocompleteSuggestion[]> => {
-        let parsed = new ParsedCommand(pretext, this);
+        let parsed = new ParsedCommand(pretext, this, this.intl);
 
         const commandBindings = this.getCommandBindings();
         if (!commandBindings) {
@@ -743,7 +811,10 @@ export class AppCommandParser {
                 continue;
             }
 
-            base = '/' + base;
+            if (base[0] !== '/') {
+                base = '/' + base;
+            }
+
             if (command.startsWith(base + ' ')) {
                 return true;
             }
@@ -879,8 +950,10 @@ export class AppCommandParser {
         case ParseState.FlagValueSeparator:
         case ParseState.NonspaceValue:
             return this.getValueSuggestions(parsed);
+        case ParseState.EndQuotedValue:
         case ParseState.QuotedValue:
             return this.getValueSuggestions(parsed, '"');
+        case ParseState.EndTickedValue:
         case ParseState.TickValue:
             return this.getValueSuggestions(parsed, '`');
         }
@@ -922,14 +995,8 @@ export class AppCommandParser {
         const applicable = parsed.form.fields.filter((field) => field.label && field.label.startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
         if (applicable) {
             return applicable.map((f) => {
-                let suffix = '';
-                if (f.type === AppFieldTypes.USER) {
-                    suffix = ' @';
-                } else if (f.type === AppFieldTypes.CHANNEL) {
-                    suffix = ' ~';
-                }
                 return {
-                    Complete: prefix + (f.label || f.name) + suffix,
+                    Complete: prefix + (f.label || f.name),
                     Suggestion: '--' + (f.label || f.name),
                     Description: f.description || '',
                     Hint: f.hint || '',
@@ -956,9 +1023,9 @@ export class AppCommandParser {
         case AppFieldTypes.BOOL:
             return this.getBooleanSuggestions(parsed);
         case AppFieldTypes.DYNAMIC_SELECT:
-            return this.getDynamicSelectSuggestions(parsed);
+            return this.getDynamicSelectSuggestions(parsed, delimiter);
         case AppFieldTypes.STATIC_SELECT:
-            return this.getStaticSelectSuggestions(parsed);
+            return this.getStaticSelectSuggestions(parsed, delimiter);
         }
 
         let complete = parsed.incomplete;
@@ -976,20 +1043,28 @@ export class AppCommandParser {
     }
 
     // getStaticSelectSuggestions returns suggestions specified in the field's options property
-    getStaticSelectSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
+    getStaticSelectSuggestions = (parsed: ParsedCommand, delimiter?: string): AutocompleteSuggestion[] => {
         const f = parsed.field as AutocompleteStaticSelect;
         const opts = f.options.filter((opt) => opt.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()));
-        return opts.map((opt) => ({
-            Complete: opt.label,
-            Suggestion: opt.label,
-            Hint: f.hint || '',
-            Description: f.description || '',
-            IconData: opt.icon_data || parsed.binding?.icon || '',
-        }));
+        return opts.map((opt) => {
+            let complete = opt.value;
+            if (delimiter) {
+                complete = delimiter + complete + delimiter;
+            } else if (isMultiword(opt.value)) {
+                complete = '`' + complete + '`';
+            }
+            return {
+                Complete: complete,
+                Suggestion: opt.label,
+                Hint: f.hint || '',
+                Description: f.description || '',
+                IconData: opt.icon_data || parsed.binding?.icon || '',
+            };
+        });
     }
 
     // getDynamicSelectSuggestions fetches and returns suggestions from the server
-    getDynamicSelectSuggestions = async (parsed: ParsedCommand): Promise<AutocompleteSuggestion[]> => {
+    getDynamicSelectSuggestions = async (parsed: ParsedCommand, delimiter?: string): Promise<AutocompleteSuggestion[]> => {
         const f = parsed.field;
         if (!f) {
             return [];
@@ -1036,13 +1111,21 @@ export class AppCommandParser {
             return [];
         }
 
-        return items.map((s): AutocompleteSuggestion => ({
-            Complete: s.value,
-            Description: s.label,
-            Suggestion: s.value,
-            Hint: '',
-            IconData: s.icon_data || parsed.binding?.icon || '',
-        }));
+        return items.map((s): AutocompleteSuggestion => {
+            let complete = s.value;
+            if (delimiter) {
+                complete = delimiter + complete + delimiter;
+            } else if (isMultiword(s.value)) {
+                complete = '`' + complete + '`';
+            }
+            return ({
+                Complete: complete,
+                Description: s.label,
+                Suggestion: s.value,
+                Hint: '',
+                IconData: s.icon_data || parsed.binding?.icon || '',
+            });
+        });
     }
 
     makeSuggestionError = (message: string): AutocompleteSuggestion[] => {
@@ -1065,10 +1148,10 @@ export class AppCommandParser {
     getUserSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
         if (parsed.incomplete.trim().length === 0) {
             return [{
-                Complete: ' @',
-                Suggestion: '@',
+                Complete: '',
+                Suggestion: '',
                 Description: parsed.field?.description || '',
-                Hint: parsed.field?.hint || '',
+                Hint: parsed.field?.hint || '@username',
                 IconData: parsed.binding?.icon || '',
             }];
         }
@@ -1080,10 +1163,10 @@ export class AppCommandParser {
     getChannelSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
         if (parsed.incomplete.trim().length === 0) {
             return [{
-                Complete: ' ~',
-                Suggestion: '~',
+                Complete: '',
+                Suggestion: '',
                 Description: parsed.field?.description || '',
-                Hint: parsed.field?.hint || '',
+                Hint: parsed.field?.hint || '~channelname',
                 IconData: parsed.binding?.icon || '',
             }];
         }
@@ -1115,4 +1198,16 @@ export class AppCommandParser {
         }
         return suggestions;
     }
+}
+
+function isMultiword(value: string) {
+    if (value.indexOf(' ') !== -1) {
+        return true;
+    }
+
+    if (value.indexOf('\t') !== -1) {
+        return true;
+    }
+
+    return false;
 }
