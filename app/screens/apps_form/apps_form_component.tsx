@@ -17,22 +17,22 @@ import {dismissModal} from 'app/actions/navigation';
 
 import DialogIntroductionText from './dialog_introduction_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
 
 export type Props = {
-    call: AppCall;
+    call: AppCallRequest;
     form: AppForm;
     actions: {
         submit: (submission: {
             values: {
                 [name: string]: string;
             };
-        }) => Promise<{data: AppCallResponse<FormResponseData>}>;
-        performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<AppSelectOption[]>;
-        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<{data: AppCallResponse<any>}>;
+        }) => Promise<{data: AppCallResponse<FormResponseData>, error?: Error}>;
+        performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<{data: AppCallResponse<AppLookupResponse>, error?: Error}>;
+        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<{data: AppCallResponse<FormResponseData>, error?: Error}>;
     };
     theme: Theme;
     componentId: string;
@@ -59,7 +59,7 @@ const initFormValues = (form: AppForm): {[name: string]: string} => {
 
 export default class AppsFormComponent extends PureComponent<Props, State> {
     private scrollView: React.RefObject<ScrollView>;
-    private navigationEventListener?: EventSubscription;
+    navigationEventListener?: EventSubscription;
 
     constructor(props: Props) {
         super(props);
@@ -144,16 +144,15 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             submission.values[this.props.form.submit_buttons] = button;
         }
 
-        const {data} = await this.props.actions.submit(submission);
-
+        const {data, error} = await this.props.actions.submit(submission);
         if (data?.type === AppCallResponseTypes.FORM && data.form) {
             return;
         }
 
         let hasErrors = false;
-
+        const errorMessage = error?.message;
         if (data && data.type === AppCallResponseTypes.ERROR) {
-            hasErrors = this.updateErrors(elements, data.data?.errors, data.error);
+            hasErrors = this.updateErrors(elements, data.data?.errors, errorMessage);
         }
 
         if (!hasErrors) {
@@ -189,7 +188,18 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             return [];
         }
 
-        return this.props.actions.performLookupCall(field, this.state.values, userInput);
+        const res = await this.props.actions.performLookupCall(field, this.state.values, userInput);
+        if (res.error) {
+            this.setState({
+                fieldErrors: {
+                    ...this.state.fieldErrors,
+                    [field.name]: res.error.message,
+                },
+            });
+            return [];
+        }
+
+        return res.data.data?.items || [];
     }
 
     handleHide = () => {
@@ -205,12 +215,15 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const values = {...this.state.values, [name]: value};
 
         if (field.refresh) {
-            this.props.actions.refreshOnSelect(field, values, value).then(({data}) => {
+            this.props.actions.refreshOnSelect(field, values, value).then(({data, error}) => {
                 if (data.type !== AppCallResponseTypes.ERROR) {
                     return;
                 }
+
+                const errorMsg = error?.message;
+                const errors = data.data?.errors;
                 const elements = fieldsAsElements(this.props.form.fields);
-                this.updateErrors(elements, data.data.errors, data.error);
+                this.updateErrors(elements, errors, errorMsg);
             });
         }
 

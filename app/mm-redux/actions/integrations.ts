@@ -13,7 +13,7 @@ import {analytics} from '@init/analytics.ts';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
-import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
+import {Command, CommandArgs, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
@@ -189,7 +189,7 @@ export function getAutocompleteCommands(teamId: string, page = 0, perPage: numbe
     });
 }
 
-export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: any): ActionFunc {
+export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: CommandArgs): ActionFunc {
     return async (dispatch: DispatchFunc) => {
         let data: any = null;
         try {
@@ -236,7 +236,7 @@ export function editCommand(command: Command): ActionFunc {
     });
 }
 
-export function executeCommand(command: Command, args: Array<string>): ActionFunc {
+export function executeCommand(command: string, args: CommandArgs): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.executeCommand,
         params: [

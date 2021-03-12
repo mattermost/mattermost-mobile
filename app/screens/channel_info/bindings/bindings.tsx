@@ -2,17 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Alert} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 
 import Separator from '@screens/channel_info/separator';
 
 import ChannelInfoRow from '../channel_info_row';
-import {AppBinding, AppCall} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
 import {AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
 import {dismissModal} from '@actions/navigation';
+import {ActionResult} from '@mm-redux/types/actions';
 
 type Props = {
     bindings: AppBinding[];
@@ -21,11 +23,11 @@ type Props = {
     currentUser: UserProfile;
     appsEnabled: boolean;
     actions: {
-        doAppCall: (call: AppCall, intl: any) => void
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>
     }
 }
 
-const Bindings = (props: Props) => {
+const Bindings: React.FC<Props> = (props: Props) => {
     if (!props.appsEnabled) {
         return null;
     }
@@ -59,20 +61,17 @@ type OptionProps = {
     currentUser: UserProfile;
     intl: typeof intlShape;
     actions: {
-        doAppCall: (call: AppCall, intl: any) => void,
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>
     },
 }
 
 const Option = injectIntl((props: OptionProps) => {
-    const onPress = () => {
+    const onPress = async () => {
         const channelId = props.currentChannel.id;
 
-        // TODO Consider handling result here
-        props.actions.doAppCall({
+        const res = await props.actions.doAppCall({
+            ...props.binding.call,
             type: AppCallTypes.SUBMIT,
-            values: {
-                ...props.binding.call?.values,
-            },
             expand: {
                 channel: AppExpandLevels.EXPAND_ALL,
                 ...props.binding.call?.expand,
@@ -85,6 +84,11 @@ const Option = injectIntl((props: OptionProps) => {
             },
             path: props.binding.call?.path || '',
         }, props.intl);
+
+        if (res.error) {
+            Alert.alert(res.error.message);
+            return;
+        }
 
         dismissModal();
     };

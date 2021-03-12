@@ -2,16 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Alert} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostOption from '../post_option';
-import {AppBinding, AppCall} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
 import {AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 
 type Props = {
     bindings: AppBinding[],
@@ -21,7 +23,7 @@ type Props = {
     closeWithAnimation: () => void,
     appsEnabled: boolean,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => void
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>,
     }
 }
 
@@ -65,20 +67,18 @@ type OptionProps = {
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall, intl: any) => void,
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>,
     },
 }
 
 const Option = injectIntl((props: OptionProps) => {
-    const onPress = () => {
+    const onPress = async () => {
         const {closeWithAnimation, post} = props;
 
-        props.actions.doAppCall({
+        const res = await props.actions.doAppCall({
+            ...binding.call,
             type: AppCallTypes.SUBMIT,
             path: props.binding.call?.path || '',
-            values: {
-                ...props.binding.call?.values,
-            },
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
                 ...props.binding.call?.expand,
@@ -91,6 +91,12 @@ const Option = injectIntl((props: OptionProps) => {
                 location: props.binding.location,
             },
         }, props.intl);
+
+        if (res.error) {
+            Alert.alert(res.error.message);
+            return;
+        }
+
         closeWithAnimation();
     };
 

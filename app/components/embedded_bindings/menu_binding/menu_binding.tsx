@@ -7,13 +7,13 @@ import AutocompleteSelector from 'app/components/autocomplete_selector';
 import {intlShape} from 'react-intl';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
 import {Post} from '@mm-redux/types/posts';
-import {AppBinding, AppCall} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
 
 type Props = {
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>;
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
     };
     binding?: AppBinding;
     post: Post;
@@ -52,13 +52,14 @@ export default class MenuBinding extends PureComponent<Props, State> {
             userId,
         } = this.props;
 
-        const call: AppCall = {
+        const call: AppCallRequest = {
+            ...binding.call,
+            type: AppCallTypes.SUBMIT,
             path: binding.call?.path || '',
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
             },
             context: {
-                ...binding.call?.context,
                 acting_user_id: userId,
                 app_id: binding.app_id,
                 channel_id: post.channel_id,

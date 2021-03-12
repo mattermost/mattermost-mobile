@@ -4,15 +4,15 @@
 import React, {PureComponent} from 'react';
 
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupCallValues, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData} from '@mm-redux/types/apps';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import AppsFormComponent from './apps_form_component';
 
 export type Props = {
     form?: AppForm;
-    call?: AppCall;
+    call?: AppCallRequest;
     actions: {
-        doAppCall: (call: AppCall) => Promise<{data: AppCallResponse}>;
+        doAppCall: (call: AppCallRequest) => Promise<{data: AppCallResponse<FormResponseData>, error?: any}>;
     };
     theme: Theme;
     componentId: string;
@@ -25,7 +25,7 @@ export type State = {
 const makeError = (errMessage: string): {data: AppCallResponse<FormResponseData>} => {
     return {
         data: {
-            type: 'error',
+            type: AppCallResponseTypes.ERROR,
             error: 'There has been an error submitting the modal. Contact the app developer. Details: ' + errMessage,
         },
     };
@@ -48,25 +48,22 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             return makeError('submitForm props.call is not defined');
         }
 
-        try {
-            const res = await this.props.actions.doAppCall({
-                ...call,
-                type: AppCallTypes.SUBMIT,
-                values: {
-                    ...call.values,
-                    ...submission.values,
-                },
-            });
-            if (res.data.type === AppCallResponseTypes.FORM && res.data.form) {
-                this.setState({form: res.data.form});
-            }
-            return res;
-        } catch (e) {
-            return makeError(e.message);
+        const res = await this.props.actions.doAppCall({
+            ...call,
+            type: AppCallTypes.SUBMIT,
+            values: {
+                ...call.values,
+                ...submission.values,
+            },
+        });
+
+        if (res.data && res.data.type === AppCallResponseTypes.FORM && res.data.form) {
+            this.setState({form: res.data.form});
         }
+        return res;
     }
 
-    refreshOnSelect = async (field: AppField, values: AppFormValues, value: AppFormValue): Promise<{data: AppCallResponse<any>}> => {
+    refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<{data: AppCallResponse<any>}> => {
         const {form} = this.state;
         if (!form) {
             return makeError('refreshOnSelect state.form is not defined');
@@ -86,57 +83,37 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             };
         }
 
-        try {
-            const res = await this.props.actions.doAppCall({
-                ...call,
-                type: AppCallTypes.FORM,
-                values: {
-                    name: field.name,
-                    values,
-                    value,
-                },
-            });
+        const res = await this.props.actions.doAppCall({
+            ...call,
+            type: AppCallTypes.FORM,
+            values,
+            selected_field: field.name,
+        });
 
-            if (res?.data?.form) {
-                this.setState({form: res.data.form});
-            }
-
-            return res;
-        } catch (e) {
-            return makeError(e.message);
+        if (res.data && res.data.type === AppCallResponseTypes.FORM && res.data.form) {
+            this.setState({form: res.data.form});
         }
+        return res;
     };
 
-    performLookupCall = async (field: AppField, formValues: AppFormValues, userInput: string): Promise<AppSelectOption[]> => {
+    performLookupCall = async (field: AppField, values: AppFormValues, userInput: string): Promise<{data: AppCallResponse<any>}> => {
         const call = this.getCall();
         if (!call) {
-            return [];
+            return makeError('performLookupCall props.call is not defined');
         }
 
-        const values: AppLookupCallValues = {
-            name: field.name,
-            user_input: userInput,
-            values: formValues,
-        };
         const res = await this.props.actions.doAppCall({
             ...call,
             type: AppCallTypes.LOOKUP,
             values,
+            selected_field: field.name,
+            query: userInput,
         });
 
-        if (res.data.type === AppCallResponseTypes.ERROR) {
-            return [];
-        }
-
-        const data = res.data.data as {items: AppSelectOption[]};
-        if (data.items && data.items.length) {
-            return data.items;
-        }
-
-        return [];
+        return res;
     }
 
-    getCall = (): AppCall | null => {
+    getCall = (): AppCallRequest | null => {
         const {form} = this.state;
 
         const {call} = this.props;
@@ -152,7 +129,6 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             },
             values: {
                 ...call.values,
-                ...form?.call?.values,
             },
         };
     }

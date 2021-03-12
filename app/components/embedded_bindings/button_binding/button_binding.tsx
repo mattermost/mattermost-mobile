@@ -11,13 +11,13 @@ import {getStatusColors} from '@utils/message_attachment_colors';
 import ButtonBindingText from './button_binding_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppBinding, AppCall} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {AppExpandLevels, AppBindingLocations} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
 
 type Props = {
     actions: {
-        doAppCall: (call: AppCall, intl: any) => Promise<ActionResult>;
+        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
     };
     post: Post;
     binding: AppBinding;
@@ -30,13 +30,14 @@ export default class ButtonBinding extends PureComponent<Props> {
     };
     handleActionPress = preventDoubleTap(() => {
         const {binding, post, userId} = this.props;
-        const call: AppCall = {
+        const call: AppCallRequest = {
+            ...binding.call,
+            type: AppCallTypes.SUBMIT,
             path: binding.call?.path || '',
             expand: {
                 post: AppExpandLevels.EXPAND_ALL,
             },
             context: {
-                ...binding.call?.context,
                 acting_user_id: userId,
                 app_id: binding.app_id,
                 channel_id: post.channel_id,

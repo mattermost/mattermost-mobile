@@ -3,7 +3,7 @@
 
 import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
-import {AppCallResponse, AppCall, AppForm} from '@mm-redux/types/apps';
+import {AppCallResponse, AppForm, AppCallRequest} from '@mm-redux/types/apps';
 import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {sendEphemeralPost} from './views/post';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
@@ -13,7 +13,7 @@ import CompassIcon from '@components/compass_icon';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 
-export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
+export function doAppCall<Res=unknown>(call: AppCallRequest, intl: any): ActionFunc {
     return async (dispatch, getState) => {
         const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, call?.context.channel_id, call?.context.root_id));
         try {
@@ -31,7 +31,7 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                 }
                 return {data: res};
             case AppCallResponseTypes.ERROR:
-                return {data: res};
+                return {data: res, error: {message: res.error}};
             case AppCallResponseTypes.FORM: {
                 if (!res.form) {
                     const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `form`, but no form was included in response.';
@@ -60,18 +60,13 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
             }
 
             return {data: res};
-        } catch (err) {
-            const msg = err.message || 'We found an unexpected error.';
-            ephemeral(msg);
-            return {
-                type: AppCallResponseTypes.ERROR,
-                error: msg,
-            };
+        } catch (error) {
+            return {error};
         }
     };
 }
 
-const showAppForm = async (form: AppForm, call: AppCall, theme: Theme) => {
+const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
     let submitButtons = [{

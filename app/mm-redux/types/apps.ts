@@ -11,7 +11,7 @@ export type AppManifest = {
 
 export type AppModalState = {
     form: AppForm;
-    call: AppCall;
+    call: AppCallRequest;
 }
 
 export type AppsState = {
@@ -59,16 +59,22 @@ export type AppCallType = string;
 
 export type AppCall = {
     path: string;
-    type?: AppCallType;
-    values?: AppCallValues;
-    context: AppContext;
-    raw_command?: string;
     expand?: AppExpand;
+    state?: any;
+};
+
+export type AppCallRequest = AppCall & {
+    type: AppCallType;
+    context: AppContext;
+    values?: AppCallValues;
+    raw_command?: string;
+    selected_field?: string;
+    query?: string;
 };
 
 export type AppCallResponseType = string;
 
-export type AppCallResponse<Res = {}> = {
+export type AppCallResponse<Res = unknown> = {
     type: AppCallResponseType;
     markdown?: string;
     data?: Res;
@@ -180,29 +186,21 @@ export type AutocompleteSuggestionWithComplete = AutocompleteSuggestion & {
 
 export type AutocompleteElement = AppField;
 export type AutocompleteStaticSelect = AutocompleteElement & {
-    options: Array<{
-        label: string;
-        value: string;
-        hint?: string;
-    }>;
+    options: AppSelectOption[];
 };
 
-export type AutocompleteDynamicSelect = AutocompleteElement & {
-    call: AppCall;
-};
+export type AutocompleteDynamicSelect = AutocompleteElement;
 
-export type AutocompleteUserSelect = AutocompleteElement & {}
+export type AutocompleteUserSelect = AutocompleteElement;
 
-export type AutocompleteChannelSelect = AutocompleteElement & {}
-
-export type AppLookupCallValues = {
-    user_input: string;
-    values: AppFormValues;
-    name: string;
-}
+export type AutocompleteChannelSelect = AutocompleteElement;
 
 export type FormResponseData = {
     errors?: {
         [field: string]: string;
     };
+}
+
+export type AppLookupResponse = {
+    items: AppSelectOption[];
 }
