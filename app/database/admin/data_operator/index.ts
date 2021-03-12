@@ -7,7 +7,6 @@ import Model from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {
     BatchOperations,
-    DatabaseInstance,
     HandleBaseData,
     HandleIsolatedEntityData,
     RawCustomEmoji,
@@ -30,6 +29,7 @@ import CustomEmoji from '@typings/database/custom_emoji';
 
 import DatabaseManager from '../database_manager';
 import DatabaseConnectionException from './exceptions/database_connection_exception';
+import DatabaseOperatorException from './exceptions/database_operator_exception';
 
 import {
     operateAppRecord,
@@ -82,14 +82,11 @@ const {
     REACTION,
 } = MM_TABLES.SERVER;
 
-// FIXME : Refactor the getDatabase code so that it only returns a Database Instance
+// FIXME : Refactor unordered post - see convo on MM app.
 
 // FIXME : Performance improvements - For main entities, in each handler, do a 'select query' first to retrieve all matching ids ( e.g. post_id ).  In another array, filter only those records whose update_at value are different.  Now, process this array in your handler.  On the operator level, do the select-query and update-at check for specific tables ( minor ones ) only.
 
 class DataOperator {
-  private defaultDatabase: DatabaseInstance;
-  private serverDatabase: DatabaseInstance;
-
   /**
    * handleIsolatedEntity: Operator that handles Create/Update operations on the isolated entities as
    * described by the IsolatedTables type
@@ -164,112 +161,102 @@ class DataOperator {
       post_id: string;
     }[] = [];
 
-      if (database) {
-          const threads = (await database.collections.
-              get(POST).
-              query(Q.where('id', Q.oneOf(postIds))).
-              fetch()) as Post[];
+      const threads = (await database.collections.
+          get(POST).
+          query(Q.where('id', Q.oneOf(postIds))).
+          fetch()) as Post[];
 
-          postsInThreads.forEach((rootPost) => {
-              // Creates a sub-array of threads relating to rootPost.post_id
-              const childPosts = threads.filter((thread) => {
-                  return rootPost.post_id === thread.id;
-              });
-
-              // Retrieves max create-at date of all posts whose root_id is rootPost.post_id
-              const maxCreateAt = childPosts.reduce((prev, current) => {
-                  return prev > current.createAt ? prev : current.createAt;
-              }, 0);
-
-              // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
-              rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
+      postsInThreads.forEach((rootPost) => {
+          // Creates a sub-array of threads relating to rootPost.post_id
+          const childPosts = threads.filter((thread) => {
+              return rootPost.post_id === thread.id;
           });
 
-          const postInThreadRecords = ((await this.prepareBase({
-              database,
-              optType: OperationType.CREATE,
-              recordOperator: operatePostInThreadRecord,
-              tableName: POSTS_IN_THREAD,
-              values: rawPostsInThreads,
-          })) as unknown) as PostsInThread[];
+          // Retrieves max create-at date of all posts whose root_id is rootPost.post_id
+          const maxCreateAt = childPosts.reduce((prev, current) => {
+              return prev > current.createAt ? prev : current.createAt;
+          }, 0);
 
-          if (postInThreadRecords?.length) {
-              await this.batchOperations({database, models: postInThreadRecords});
-          }
-      } else {
-      // TODO : throw error for we couldn't get a database connection
+          // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
+          rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
+      });
+
+      const postInThreadRecords = ((await this.prepareBase({
+          database,
+          optType: OperationType.CREATE,
+          recordOperator: operatePostInThreadRecord,
+          tableName: POSTS_IN_THREAD,
+          values: rawPostsInThreads,
+      })) as unknown) as PostsInThread[];
+
+      if (postInThreadRecords?.length) {
+          await this.batchOperations({database, models: postInThreadRecords});
       }
   };
 
   handleReactions = async ({reactions, prepareRowsOnly}: HandleReactions) => {
       const database = await this.getDatabase(REACTION);
-      console.log('reaction db ', database);
-      if (database) {
-          const {
-              createReactions,
-              createEmojis,
-              deleteReactions,
-          } = await sanitizeReactions({
-              database,
-              post_id: reactions[0].post_id,
-              rawReactions: reactions,
-          });
 
-          // Prepares record for model Reactions
-          const postReactions = ((await this.prepareBase({
-              database,
-              optType: OperationType.CREATE,
-              recordOperator: operateReactionRecord,
-              tableName: REACTION,
-              values: createReactions,
-          })) as unknown) as Reaction[];
+      const {
+          createReactions,
+          createEmojis,
+          deleteReactions,
+      } = await sanitizeReactions({
+          database,
+          post_id: reactions[0].post_id,
+          rawReactions: reactions,
+      });
 
-          // Prepares records for model CustomEmoji
-          const reactionEmojis = ((await this.prepareBase({
-              database,
-              optType: OperationType.CREATE,
-              recordOperator: operateCustomEmojiRecord,
-              tableName: CUSTOM_EMOJI,
-              values: createEmojis,
-          })) as unknown) as CustomEmoji[];
+      // Prepares record for model Reactions
+      const postReactions = ((await this.prepareBase({
+          database,
+          optType: OperationType.CREATE,
+          recordOperator: operateReactionRecord,
+          tableName: REACTION,
+          values: createReactions,
+      })) as unknown) as Reaction[];
 
-          if (prepareRowsOnly) {
-              return [...postReactions, ...deleteReactions, ...reactionEmojis];
-          }
+      // Prepares records for model CustomEmoji
+      const reactionEmojis = ((await this.prepareBase({
+          database,
+          optType: OperationType.CREATE,
+          recordOperator: operateCustomEmojiRecord,
+          tableName: CUSTOM_EMOJI,
+          values: createEmojis,
+      })) as unknown) as CustomEmoji[];
 
-          if (postReactions?.length) {
-              await this.batchOperations({
-                  database,
-                  models: [...postReactions, ...deleteReactions, ...reactionEmojis],
-              });
-          }
-      } else {
-      // TODO: throw no database exception
+      if (prepareRowsOnly) {
+          return [...postReactions, ...deleteReactions, ...reactionEmojis];
       }
+
+      if (postReactions?.length) {
+          await this.batchOperations({
+              database,
+              models: [...postReactions, ...deleteReactions, ...reactionEmojis],
+          });
+      }
+
       return null;
   };
 
   handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
       const database = await this.getDatabase(FILE);
-      if (database) {
-          const postFiles = ((await this.prepareBase({
-              database,
-              optType: OperationType.CREATE,
-              recordOperator: operateFileRecord,
-              tableName: FILE,
-              values: files,
-          })) as unknown) as File[];
+      const postFiles = ((await this.prepareBase({
+          database,
+          optType: OperationType.CREATE,
+          recordOperator: operateFileRecord,
+          tableName: FILE,
+          values: files,
+      })) as unknown) as File[];
 
-          if (prepareRowsOnly) {
-              return postFiles;
-          }
-
-          if (postFiles?.length) {
-              await this.batchOperations({database, models: [...postFiles]});
-          }
-      } else {
-      // TODO: throw no database exception
+      if (prepareRowsOnly) {
+          return postFiles;
       }
+
+      if (postFiles?.length) {
+          await this.batchOperations({database, models: [...postFiles]});
+      }
+
       return null;
   };
 
@@ -279,46 +266,44 @@ class DataOperator {
       prepareRowsOnly,
   }: HandlePostMetadata) => {
       const database = await this.getDatabase(POST_METADATA);
-      if (database) {
-          const metadata: RawPostMetadata[] = [];
 
-          images.forEach((image) => {
-              const imageEntry = Object.entries(images);
+      const metadata: RawPostMetadata[] = [];
+
+      images.forEach((image) => {
+          const imageEntry = Object.entries(images);
+          metadata.push({
+              data: {...imageEntry[1], url: imageEntry[0]},
+              type: 'images',
+              postId: image.postId,
+          });
+      });
+
+      embeds.forEach((postEmbed) => {
+          postEmbed.embed.forEach((embed: RawEmbed) => {
               metadata.push({
-                  data: {...imageEntry[1], url: imageEntry[0]},
-                  type: 'images',
-                  postId: image.postId,
+                  data: {...embed.data},
+                  type: embed.type,
+                  postId: postEmbed.postId,
               });
           });
+      });
 
-          embeds.forEach((postEmbed) => {
-              postEmbed.embed.forEach((embed: RawEmbed) => {
-                  metadata.push({
-                      data: {...embed.data},
-                      type: embed.type,
-                      postId: postEmbed.postId,
-                  });
-              });
-          });
+      const postMetas = ((await this.prepareBase({
+          database,
+          optType: OperationType.CREATE,
+          recordOperator: operatePostMetadataRecord,
+          tableName: POST_METADATA,
+          values: metadata,
+      })) as unknown) as PostMetadata[];
 
-          const postMetas = ((await this.prepareBase({
-              database,
-              optType: OperationType.CREATE,
-              recordOperator: operatePostMetadataRecord,
-              tableName: POST_METADATA,
-              values: metadata,
-          })) as unknown) as PostMetadata[];
-
-          if (prepareRowsOnly) {
-              return postMetas;
-          }
-
-          if (postMetas?.length) {
-              await this.batchOperations({database, models: [...postMetas]});
-          }
-      } else {
-      // TODO: throw no database exception
+      if (prepareRowsOnly) {
+          return postMetas;
       }
+
+      if (postMetas?.length) {
+          await this.batchOperations({database, models: [...postMetas]});
+      }
+
       return null;
   };
 
@@ -346,7 +331,7 @@ class DataOperator {
 
       // Find the records in the PostsInChannel table that have a matching channel_id
       const database = await this.getDatabase(POSTS_IN_CHANNEL);
-      const chunks = (await database!.collections.
+      const chunks = (await database.collections.
           get(POSTS_IN_CHANNEL).
           query(Q.where('channel_id', channelId)).
           fetch()) as PostsInChannel[];
@@ -404,7 +389,6 @@ class DataOperator {
               const isChainable =
           tipOfChain.prev_post_id === targetPost.previousPostId;
 
-              // FIXME : is previous_post_id is empty string ??
               if (isChainable) {
                   // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
                   await database.action(async () => {
@@ -449,8 +433,6 @@ class DataOperator {
       // We treat those posts who are present in the order array only
       const sanitizedPosts: RawPost[] = sanitizePosts({posts: values, orders});
 
-      // FIXME : what happens to posts not in order array ???
-
       // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
       const augmentedRawPosts: RawPost[] = addPrevPostId({
           orders,
@@ -486,8 +468,6 @@ class DataOperator {
               });
           }
 
-          // // TODO:  call for metadata
-
           const meta = post?.metadata;
           if (meta) {
               // Extracts reaction from post's metadata
@@ -515,7 +495,7 @@ class DataOperator {
                   }
               }
           }
-      } // end of for loop
+      }
 
       // // TODO : test with empty array for reactions <<<<<<<<<<<<<<
 
@@ -534,15 +514,12 @@ class DataOperator {
       batch.concat(postFiles);
 
       // calls handler for postMetadata ( embeds and images )
-      const postMetadata = (await this.handlePostMetadata({
-          images,
-          embeds,
-          prepareRowsOnly: true,
-      })) as PostMetadata[];
+      const postMetadata = (await this.handlePostMetadata({images, embeds, prepareRowsOnly: true})) as PostMetadata[];
       batch.concat(postMetadata);
 
-      // // TODO: call batch operations
-      await this.batchOperations({database: database!, models: batch});
+      if (batch.length) {
+          await this.batchOperations({database, models: batch});
+      }
 
       // LAST :: calls handler for CustomEmojis, PostsInThread
       await this.handleIsolatedEntity({
@@ -570,10 +547,10 @@ class DataOperator {
                   await database.batch(...models);
               });
           } else {
-              // TODO : throw ??
+              throw new DatabaseOperatorException('batchOperations does not process empty model array');
           }
       } catch (e) {
-      // throw
+          throw new DatabaseOperatorException('batchOperations error ', e);
       }
   };
 
@@ -584,32 +561,32 @@ class DataOperator {
       values,
       recordOperator,
   }: HandleBaseData) => {
-      if (Array.isArray(values) && values.length) {
-          const recordPromises = await values.map(async (value) => {
-              const record = await recordOperator({
-                  database: database!,
-                  optType,
-                  tableName,
-                  value,
-              });
-              return record;
-          });
-
-          const results = await Promise.all(recordPromises);
-          return results;
+      if (!Array.isArray(values) || values.length < 1 || !database) {
+          throw new DatabaseOperatorException('prepareBase accepts only values of type RecordValue[] or valid database connection');
       }
-      return null;
+
+      const recordPromises = await values.map(async (value) => {
+          const record = await recordOperator({
+              database,
+              optType,
+              tableName,
+              value,
+          });
+          return record;
+      });
+
+      const results = await Promise.all(recordPromises);
+      return results;
   };
 
   /**
-   * handleBase: Handles the Create/Update operations on an entity.
-   * @param {HandleBaseData} opsBase
-   * @param {OperationType} opsBase.optType
-   * @param {string} opsBase.tableName
-   * @param {Records} opsBase.values
-   * @param {(recordOperator: DataFactory) => void} opsBase.recordOperator
-   * @returns {Promise<void>}
-   */
+     * handleBase: Handles the Create/Update operations on an entity.
+     * @param {OperationType} optType
+     * @param {string} tableName
+     * @param {RecordValue[]} values
+     * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
+     * @returns {Promise<void>}
+     */
   private handleBase = async ({
       optType,
       tableName,
@@ -617,25 +594,21 @@ class DataOperator {
       recordOperator,
   }: HandleBaseData) => {
       const database = await this.getDatabase(tableName);
-      if (!database) {
-          return undefined;
-      }
 
-      const results = await this.prepareBase({
+      const models = await this.prepareBase({
           database,
           optType,
           tableName,
           values,
           recordOperator,
-      });
+      }) as unknown as Model[];
 
-      if (results) {
+      if (models?.length > 0) {
           await this.batchOperations({
               database,
-              models: Array.isArray(results) ? results : Array(results),
+              models,
           });
       }
-      return null;
   };
 
   /**
