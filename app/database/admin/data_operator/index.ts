@@ -222,7 +222,7 @@ class DataOperator {
           optType: OperationType.CREATE,
           recordOperator: operateCustomEmojiRecord,
           tableName: CUSTOM_EMOJI,
-          values: createEmojis,
+          values: createEmojis as RawCustomEmoji[],
       })) as unknown) as CustomEmoji[];
 
       const batchRecords = [...postReactions, ...deleteReactions, ...reactionEmojis];
