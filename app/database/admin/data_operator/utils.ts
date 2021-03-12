@@ -4,30 +4,15 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {
-    DatabaseInstance,
-    RawCustomEmoji,
-    RawPost,
-    RawReaction,
-    RecordValue,
-} from '@typings/database/database';
+import {RawPost, RawReaction} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 import OperatorFieldException from './exceptions/operator_field_exception';
+import {AddPreviousPostId, MissingField, SanitizePosts, SanitizeReactions} from './types';
 
 const {REACTION} = MM_TABLES.SERVER;
 
-type MissingFieldUtil = {
-  fields: string[];
-  rawValue: RecordValue;
-  tableName: string;
-};
-
-export const checkForMissingFields = ({
-    fields,
-    rawValue,
-    tableName,
-}: MissingFieldUtil) => {
+export const checkForMissingFields = ({fields, rawValue, tableName}: MissingField) => {
     const missingFields = [];
     for (const rawField in Object.keys(rawValue)) {
         if (!fields.includes(rawField)) {
@@ -42,34 +27,18 @@ export const checkForMissingFields = ({
     }
 };
 
-export const sanitizeReactions = async ({
-    database,
-    post_id,
-    rawReactions,
-}: {
-  database: DatabaseInstance;
-  post_id: string;
-  rawReactions: RawReaction[];
-}) => {
-    const reactions = (await database!.collections.
+export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactions) => {
+    const reactions = (await database.collections.
         get(REACTION).
         query(Q.where('post_id', post_id)).
         fetch()) as Reaction[];
-
-    if (reactions?.length < 1) {
-    // We do not have existing reactions bearing this post_id; thus we CREATE them.
-        return {
-            createReactions: rawReactions,
-            deleteReactions: [],
-            createEmojis: [],
-        };
-    }
 
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
     const similarObjects: Reaction[] = [];
 
     const createReactions: RawReaction[] = [];
-    const createEmojis: RawCustomEmoji[] = [];
+
+    const emojiSet = new Set();
 
     for (let i = 0; i < rawReactions.length; i++) {
         const rawReaction = rawReactions[i] as RawReaction;
@@ -86,10 +55,8 @@ export const sanitizeReactions = async ({
             // So, we don't have a similar Reaction object.  That one is new...so we'll create it
             createReactions.push(rawReaction);
 
-            // If that reaction is new, that implies that the emoji is also not in the database
-            createEmojis.push({
-                name: rawReaction.emoji_name,
-            });
+            // If that reaction is new, that implies that the emoji might also be new
+            emojiSet.add(rawReaction.emoji_name);
         } else {
             // we have a similar object in both reactions and rawReactions; we'll pop it out from both arrays
             similarObjects.push(reactions[idxPresent]);
@@ -101,18 +68,14 @@ export const sanitizeReactions = async ({
         filter((reaction) => !similarObjects.includes(reaction)).
         map((outCast) => outCast.prepareDestroyPermanently());
 
+    const createEmojis = Array.from(emojiSet).map((emoji) => {
+        return {name: emoji};
+    });
+
     return {createReactions, createEmojis, deleteReactions};
 };
 
-export const addPrevPostId = ({
-    orders,
-    values,
-    previousPostId = '',
-}: {
-  orders: string[];
-  values: RawPost[];
-    previousPostId: string;
-}) => {
+export const addPrevPostId = ({orders, values, previousPostId = ''}: AddPreviousPostId) => {
     const posts: RawPost[] = [];
     values.forEach((post) => {
         const postId = post.id;
@@ -137,13 +100,7 @@ export const addPrevPostId = ({
  * @param {RawPost[]} posts
  * @param {string[]} order
  */
-export const sanitizePosts = ({
-    posts,
-    orders,
-}: {
-  posts: RawPost[];
-  orders: string[];
-}) => {
+export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
     const sanitizedPosts = posts.filter((post) => {
         return post?.id && orders.includes(post.id);
     });

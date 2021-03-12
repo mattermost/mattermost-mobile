@@ -129,11 +129,17 @@ export const operateServersRecord = async ({database, optType, value}: DataFacto
  */
 export const operateCustomEmojiRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawCustomEmoji;
-
     const generator = (emoji: CustomEmoji) => {
         emoji._raw.id = record?.id ?? emoji.id;
-        emoji.name = record?.name ?? '';
+        emoji.name = record.name;
     };
+
+    const appRecord = (await database.collections.get(CUSTOM_EMOJI!).query(Q.where('name', record.name)).fetch()) as Model[];
+    const isPresent = appRecord.length > 0;
+
+    if (isPresent) {
+        return null;
+    }
 
     return operateBaseRecord({database, optType, tableName: CUSTOM_EMOJI, value, generator});
 };

@@ -198,8 +198,8 @@ class DataOperator {
       const database = await this.getDatabase(REACTION);
 
       const {
-          createReactions,
           createEmojis,
+          createReactions,
           deleteReactions,
       } = await sanitizeReactions({
           database,
@@ -225,14 +225,16 @@ class DataOperator {
           values: createEmojis,
       })) as unknown) as CustomEmoji[];
 
+      const batchRecords = [...postReactions, ...deleteReactions, ...reactionEmojis];
+
       if (prepareRowsOnly) {
-          return [...postReactions, ...deleteReactions, ...reactionEmojis];
+          return batchRecords;
       }
 
-      if (postReactions?.length) {
+      if (batchRecords?.length) {
           await this.batchOperations({
               database,
-              models: [...postReactions, ...deleteReactions, ...reactionEmojis],
+              models: batchRecords,
           });
       }
 
@@ -544,7 +546,7 @@ class DataOperator {
       try {
           if (models.length > 0) {
               await database.action(async () => {
-                  await database.batch(...models);
+                  database.batch(...models);
               });
           } else {
               throw new DatabaseOperatorException('batchOperations does not process empty model array');
@@ -561,22 +563,26 @@ class DataOperator {
       values,
       recordOperator,
   }: HandleBaseData) => {
-      if (!Array.isArray(values) || values.length < 1 || !database) {
+      if (!Array.isArray(values) || !database) {
           throw new DatabaseOperatorException('prepareBase accepts only values of type RecordValue[] or valid database connection');
       }
 
-      const recordPromises = await values.map(async (value) => {
-          const record = await recordOperator({
-              database,
-              optType,
-              tableName,
-              value,
+      if (values.length) {
+          const recordPromises = await values.map(async (value) => {
+              const record = await recordOperator({
+                  database,
+                  optType,
+                  tableName,
+                  value,
+              });
+              return record;
           });
-          return record;
-      });
 
-      const results = await Promise.all(recordPromises);
-      return results;
+          const results = await Promise.all(recordPromises);
+          return results;
+      }
+
+      return [];
   };
 
   /**
@@ -625,25 +631,21 @@ class DataOperator {
       const promise = isDefaultConnection ? this.getDefaultDatabase : this.getServerDatabase;
       const connection = await promise();
 
-      if (connection === undefined) {
-          const dbType = isDefaultConnection ? 'default' : 'currently active server';
-          const message = `An error while trying to retrieve a connection to the ${dbType} database`;
-          throw new DatabaseConnectionException(message, tableName);
-      }
       return connection;
   };
+
+  // FIXME :  those try-catch are invalid - improve them
 
   /**
    * getDefaultDatabase: Returns the default database
    * @returns {Promise<DatabaseInstance>}
    */
   private getDefaultDatabase = async () => {
-      try {
-          const connection = await DatabaseManager.getDefaultDatabase();
-          return connection;
-      } catch (e) {
+      const connection = await DatabaseManager.getDefaultDatabase();
+      if (connection === undefined) {
           throw new DatabaseConnectionException('An error occurred while retrieving the default database', '');
       }
+      return connection;
   };
 
   /**
@@ -653,12 +655,11 @@ class DataOperator {
   private getServerDatabase = async () => {
       // NOTE: here we are getting the active server directly as in a multi-server support system, the current
       // active server connection will already be set on application init
-      try {
-          const connection = await DatabaseManager.getActiveServerDatabase();
-          return connection;
-      } catch (e) {
+      const connection = await DatabaseManager.getActiveServerDatabase();
+      if (connection === undefined) {
           throw new DatabaseConnectionException('An error occurred while retrieving the server database', '');
       }
+      return connection;
   };
 }
 
