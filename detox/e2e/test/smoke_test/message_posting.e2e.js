@@ -36,6 +36,7 @@ describe('Message Posting', () => {
     });
 
     it('MM-T3217 should be able to post a long message', async () => {
+        // # Post a long message
         const message = 'The quick brown fox jumps over the lazy dog.'.repeat(30);
         await postMessage(message, {quickReplace: true});
 

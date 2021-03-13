@@ -165,7 +165,7 @@ describe('Search', () => {
         // # Post message and search on text
         await postMessageAndSearchText(testMessage, testPartialSearchTerm);
 
-        // * Verify message appears in saved messages
+        // * Verify add a reaction is not visible
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
         await SearchScreen.openPostOptionsFor(lastPost.post.id, testMessage);
         await expect(reactionPickerAction).not.toBeVisible();
