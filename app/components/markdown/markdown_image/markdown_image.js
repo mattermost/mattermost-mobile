@@ -239,7 +239,10 @@ export default class MarkdownImage extends ImageViewPort {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID='markdown_image'
+            >
                 {image}
             </View>
         );

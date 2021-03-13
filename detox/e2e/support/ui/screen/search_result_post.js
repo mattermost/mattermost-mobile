@@ -14,9 +14,12 @@ class SearchResultPostScreen {
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
             postItemHeaderReply,
+            postItemImage,
             postItemMessage,
             postItemProfilePicture,
             postItemProfilePictureUserStatus,
+            postItemShowLessButton,
+            postItemShowMoreButton,
         } = Post.getPost(this.testID.searchResultPostItem, postId, postMessage, postProfileOptions);
 
         return {
@@ -24,9 +27,12 @@ class SearchResultPostScreen {
             searchResultPostItemHeaderDateTime: postItemHeaderDateTime,
             searchResultPostItemHeaderDisplayName: postItemHeaderDisplayName,
             searchResultPostItemHeaderReply: postItemHeaderReply,
+            searchResultPostItemImage: postItemImage,
             searchResultPostItemMessage: postItemMessage,
             searchResultPostItemProfilePicture: postItemProfilePicture,
             searchResultPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
+            searchResultPostItemShowLessButton: postItemShowLessButton,
+            searchResultPostItemShowMoreButton: postItemShowMoreButton,
         };
     }
 
