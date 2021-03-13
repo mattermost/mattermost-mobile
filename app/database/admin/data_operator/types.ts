@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {PostImage, RawEmbed, RawFile, RawPost, RawReaction, RecordValue} from '@typings/database/database';
+import {PostImage, RawEmbed, RawFile, RawPost, RawReaction} from '@typings/database/database';
 import {OperationType} from './index';
 
 export type HandleReactions = {
@@ -33,12 +33,6 @@ export type SanitizeReactions = {
     post_id: string;
     rawReactions: RawReaction[];
 }
-
-export type MissingField = {
-    fields: string[];
-    rawValue: RecordValue;
-    tableName: string;
-};
 
 export type AddPreviousPostId = {
     orders: string[];

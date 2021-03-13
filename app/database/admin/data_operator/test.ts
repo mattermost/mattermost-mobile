@@ -597,4 +597,36 @@ describe('*** Data Operator tests ***', () => {
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
     });
+
+    it.only('=> handleReactions should write to both Reactions and CustomEmoji entities', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+
+        await DataOperator.handleReactions({
+            reactions: [
+                {
+                    create_at: 1608263728086,
+                    delete_at: 0,
+                    emoji_name: 'p4p1',
+                    post_id: '4r9jmr7eqt8dxq3f9woypzurry',
+                    update_at: 1608263728077,
+                    user_id: 'ooumoqgq3bfiijzwbn8badznwc',
+                },
+            ],
+            prepareRowsOnly: false,
+        });
+
+        // Called twice:  Once for Reaction record and once for CustomEmoji record
+        expect(spyOnPrepareBase).toHaveBeenCalledTimes(2);
+
+        // Only one batch operation for both entities
+        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    // TODO : test utils functions (  sanitizeReactions, addPrevPostId, sanitizePosts)
 });

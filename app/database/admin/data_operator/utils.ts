@@ -7,25 +7,9 @@ import {MM_TABLES} from '@constants/database';
 import {RawPost, RawReaction} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
-import OperatorFieldException from './exceptions/operator_field_exception';
-import {AddPreviousPostId, MissingField, SanitizePosts, SanitizeReactions} from './types';
+import {AddPreviousPostId, SanitizePosts, SanitizeReactions} from './types';
 
 const {REACTION} = MM_TABLES.SERVER;
-
-export const checkForMissingFields = ({fields, rawValue, tableName}: MissingField) => {
-    const missingFields = [];
-    for (const rawField in Object.keys(rawValue)) {
-        if (!fields.includes(rawField)) {
-            missingFields.push(rawField);
-        }
-    }
-    if (missingFields.length > 0) {
-        throw new OperatorFieldException(
-            `OperatorFieldException: The object for entity ${tableName} has some mandatory fields missing`,
-            missingFields,
-        );
-    }
-};
 
 export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactions) => {
     const reactions = (await database.collections.
