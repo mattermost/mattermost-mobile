@@ -22,6 +22,29 @@ jest.mock('../database_manager');
 const {APP} = MM_TABLES.DEFAULT;
 
 describe('*** Data Operator tests ***', () => {
+    const createConnection = async (setActive = false) => {
+        const dbName = 'server_schema_connection';
+        const serverUrl = 'https://appv2.mattermost.com';
+        const database = await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName,
+                dbType: DatabaseType.SERVER,
+                serverUrl,
+            },
+        });
+
+        if (setActive) {
+            await DatabaseManager.setActiveServerDatabase({
+                displayName: dbName,
+                serverUrl,
+            });
+        }
+
+        return database;
+    };
+
     it('=> should return an array of type App for operateAppRecord', async () => {
         expect.assertions(3);
 
@@ -31,7 +54,12 @@ describe('*** Data Operator tests ***', () => {
         const preparedRecords = await operateAppRecord({
             database: database!,
             optType: OperationType.CREATE,
-            value: {buildNumber: 'build-7', createdAt: 1, id: 'id-18', versionNumber: 'v-1'},
+            value: {
+                buildNumber: 'build-7',
+                createdAt: 1,
+                id: 'id-18',
+                versionNumber: 'v-1',
+            },
         });
 
         expect(preparedRecords).toBeTruthy();
@@ -80,15 +108,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type CustomEmoji for operateCustomEmojiRecord', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
+        const database = await createConnection();
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateCustomEmojiRecord({
@@ -104,15 +124,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type Role for operateRoleRecord', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
+        const database = await createConnection();
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateRoleRecord({
@@ -128,15 +140,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type System for operateSystemRecord', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
+        const database = await createConnection();
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateSystemRecord({
@@ -152,15 +156,7 @@ describe('*** Data Operator tests ***', () => {
     it('=> should return an array of type TermsOfService for operateTermsOfServiceRecord', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
+        const database = await createConnection();
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateTermsOfServiceRecord({
@@ -170,7 +166,9 @@ describe('*** Data Operator tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('TermsOfService');
+        expect(preparedRecords!.collection.modelClass.name).toMatch(
+            'TermsOfService',
+        );
     });
 
     it('=> should create a record in the App table in the default database', async () => {
@@ -180,14 +178,24 @@ describe('*** Data Operator tests ***', () => {
         await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
-            values: [{buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1'}],
+            values: [
+                {
+                    buildNumber: 'build-1',
+                    createdAt: 1,
+                    id: 'id-1',
+                    versionNumber: 'version-1',
+                },
+            ],
         });
 
         // Do a query and find out if the value has been registered in the App table of the default database
         const connection = await DatabaseManager.getDefaultDatabase();
         expect(connection).toBeTruthy();
 
-        const records = (await connection!.collections.get(APP).query(Q.where('id', 'id-1')).fetch()) as App[];
+        const records = (await connection!.collections.
+            get(APP).
+            query(Q.where('id', 'id-1')).
+            fetch()) as App[];
 
         // We should expect to have a record returned as dictated by our query
         expect(records.length).toBe(1);
@@ -201,10 +209,30 @@ describe('*** Data Operator tests ***', () => {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
-                {buildNumber: 'build-10', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
-                {buildNumber: 'build-11', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
-                {buildNumber: 'build-12', createdAt: 1, id: 'id-12', versionNumber: 'version-12'},
-                {buildNumber: 'build-13', createdAt: 1, id: 'id-13', versionNumber: 'version-13'},
+                {
+                    buildNumber: 'build-10',
+                    createdAt: 1,
+                    id: 'id-10',
+                    versionNumber: 'version-10',
+                },
+                {
+                    buildNumber: 'build-11',
+                    createdAt: 1,
+                    id: 'id-11',
+                    versionNumber: 'version-11',
+                },
+                {
+                    buildNumber: 'build-12',
+                    createdAt: 1,
+                    id: 'id-12',
+                    versionNumber: 'version-12',
+                },
+                {
+                    buildNumber: 'build-13',
+                    createdAt: 1,
+                    id: 'id-13',
+                    versionNumber: 'version-13',
+                },
             ],
         });
 
@@ -231,10 +259,20 @@ describe('*** Data Operator tests ***', () => {
         await DataOperator.handleIsolatedEntity({
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
-            values: [{buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1'}],
+            values: [
+                {
+                    buildNumber: 'build-13-13',
+                    createdAt: 1,
+                    id: 'id-1',
+                    versionNumber: 'version-1',
+                },
+            ],
         });
 
-        const records = (await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch()) as App[];
+        const records = (await defaultDB!.collections.
+            get(APP).
+            query(Q.where('id', 'id-1')).
+            fetch()) as App[];
         expect(records.length).toBeGreaterThan(0);
 
         // Verify if the buildNumber for this record has been updated
@@ -252,8 +290,18 @@ describe('*** Data Operator tests ***', () => {
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
-                {buildNumber: 'build-11y', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
+                {
+                    buildNumber: 'build-10x',
+                    createdAt: 1,
+                    id: 'id-10',
+                    versionNumber: 'version-10',
+                },
+                {
+                    buildNumber: 'build-11y',
+                    createdAt: 1,
+                    id: 'id-11',
+                    versionNumber: 'version-11',
+                },
             ],
         });
 
@@ -279,8 +327,18 @@ describe('*** Data Operator tests ***', () => {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
-                {buildNumber: 'build-11x', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
+                {
+                    buildNumber: 'build-10x',
+                    createdAt: 1,
+                    id: 'id-10',
+                    versionNumber: 'version-10',
+                },
+                {
+                    buildNumber: 'build-11x',
+                    createdAt: 1,
+                    id: 'id-11',
+                    versionNumber: 'version-11',
+                },
             ],
         });
 
@@ -305,8 +363,18 @@ describe('*** Data Operator tests ***', () => {
             optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-15', versionNumber: 'version-10'},
-                {buildNumber: 'build-11x', createdAt: 1, id: 'id-16', versionNumber: 'version-11'},
+                {
+                    buildNumber: 'build-10x',
+                    createdAt: 1,
+                    id: 'id-15',
+                    versionNumber: 'version-10',
+                },
+                {
+                    buildNumber: 'build-11x',
+                    createdAt: 1,
+                    id: 'id-16',
+                    versionNumber: 'version-11',
+                },
             ],
         });
 
@@ -332,14 +400,27 @@ describe('*** Data Operator tests ***', () => {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-21', versionNumber: 'version-10'},
-                {buildNumber: 'build-11y', createdAt: 1, id: 'id-22', versionNumber: 'version-11'},
+                {
+                    buildNumber: 'build-10x',
+                    createdAt: 1,
+                    id: 'id-21',
+                    versionNumber: 'version-10',
+                },
+                {
+                    buildNumber: 'build-11y',
+                    createdAt: 1,
+                    id: 'id-22',
+                    versionNumber: 'version-11',
+                },
             ],
         };
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateAppRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateAppRecord,
+        });
     });
 
     it('=> should use operateGlobalRecord for GLOBAL entity in handleBase', async () => {
@@ -353,12 +434,17 @@ describe('*** Data Operator tests ***', () => {
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.GLOBAL,
-            values: [{id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'}],
+            values: [
+                {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
+            ],
         };
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateGlobalRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateGlobalRecord,
+        });
     });
 
     it('=> should use operateServersRecord for SERVERS entity in handleBase', async () => {
@@ -386,22 +472,16 @@ describe('*** Data Operator tests ***', () => {
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateServersRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateServersRecord,
+        });
     });
 
     it('=> should use operateCustomEmojiRecord for CUSTOM_EMOJI entity in handleBase', async () => {
         expect.assertions(2);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        const database = await createConnection(true);
         expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
@@ -419,22 +499,16 @@ describe('*** Data Operator tests ***', () => {
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateCustomEmojiRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateCustomEmojiRecord,
+        });
     });
 
     it('=> should use operateRoleRecord for ROLE entity in handleBase', async () => {
         expect.assertions(2);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        const database = await createConnection(true);
         expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
@@ -453,22 +527,16 @@ describe('*** Data Operator tests ***', () => {
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateRoleRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateRoleRecord,
+        });
     });
 
     it('=> should use operateSystemRecord for SYSTEM entity in handleBase', async () => {
         expect.assertions(2);
 
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
+        const database = await createConnection(true);
         expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
@@ -481,24 +549,17 @@ describe('*** Data Operator tests ***', () => {
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateSystemRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateSystemRecord,
+        });
     });
 
     it('=> should use operateTermsOfServiceRecord for TERMS_OF_SERVICE entity in handleBase', async () => {
         expect.assertions(2);
-        const database = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        await DatabaseManager.setActiveServerDatabase({displayName: 'community mattermost', serverUrl: 'https://appv2.mattermost.com'});
-        expect(database).toBeTruthy();
 
-        //set active connection
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
@@ -510,7 +571,10 @@ describe('*** Data Operator tests ***', () => {
 
         await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateTermsOfServiceRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateTermsOfServiceRecord,
+        });
     });
 
     it('=> should not call handleBase if tableName is invalid', async () => {
