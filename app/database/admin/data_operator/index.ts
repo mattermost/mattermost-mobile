@@ -268,27 +268,30 @@ class DataOperator {
       prepareRowsOnly,
   }: HandlePostMetadata) => {
       const database = await this.getDatabase(POST_METADATA);
-
       const metadata: RawPostMetadata[] = [];
 
-      images.forEach((image) => {
-          const imageEntry = Object.entries(images);
-          metadata.push({
-              data: {...imageEntry[1], url: imageEntry[0]},
-              type: 'images',
-              postId: image.postId,
-          });
-      });
-
-      embeds.forEach((postEmbed) => {
-          postEmbed.embed.forEach((embed: RawEmbed) => {
+      if (images?.length) {
+          images.forEach((image) => {
+              const imageEntry = Object.entries(image.images);
               metadata.push({
-                  data: {...embed.data},
-                  type: embed.type,
-                  postId: postEmbed.postId,
+                  data: {...imageEntry?.[0]?.[1], url: imageEntry?.[0]?.[0]},
+                  type: 'images',
+                  postId: image.postId,
               });
           });
-      });
+      }
+
+      if (embeds?.length) {
+          embeds.forEach((postEmbed) => {
+              postEmbed.embed.forEach((embed: RawEmbed) => {
+                  metadata.push({
+                      data: {...embed.data},
+                      type: embed.type,
+                      postId: postEmbed.postId,
+                  });
+              });
+          });
+      }
 
       const postMetas = ((await this.prepareBase({
           database,
@@ -498,8 +501,6 @@ class DataOperator {
               }
           }
       }
-
-      // // TODO : test with empty array for reactions <<<<<<<<<<<<<<
 
       // calls handler for Reactions
       const postReactions = (await this.handleReactions({

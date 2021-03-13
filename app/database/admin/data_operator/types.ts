@@ -2,45 +2,51 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {PostImage, RawEmbed, RawFile, RawPost, RawReaction} from '@typings/database/database';
+import {
+    PostImage,
+    RawEmbed,
+    RawFile,
+    RawPost,
+    RawReaction,
+} from '@typings/database/database';
 import {OperationType} from './index';
 
 export type HandleReactions = {
-    reactions: RawReaction[];
-    prepareRowsOnly: boolean;
+  reactions: RawReaction[];
+  prepareRowsOnly: boolean;
 };
 
 export type HandleFiles = {
-    files: RawFile[];
-    prepareRowsOnly: boolean;
+  files: RawFile[];
+  prepareRowsOnly: boolean;
 };
 
 export type HandlePostMetadata = {
-    embeds: { embed: RawEmbed[]; postId: string }[];
-    images: { images: Dictionary<PostImage>; postId: string }[];
-    prepareRowsOnly: boolean;
+  embeds?: { embed: RawEmbed[]; postId: string }[];
+  images?: { images: Dictionary<PostImage>; postId: string }[];
+  prepareRowsOnly: boolean;
 };
 
 export type HandlePosts = {
-    optType: OperationType;
-    orders?: string[];
-    values: RawPost[];
-    previousPostId?: string;
+  optType: OperationType;
+  orders?: string[];
+  values: RawPost[];
+  previousPostId?: string;
 };
 
 export type SanitizeReactions = {
-    database: Database;
-    post_id: string;
-    rawReactions: RawReaction[];
-}
+  database: Database;
+  post_id: string;
+  rawReactions: RawReaction[];
+};
 
 export type AddPreviousPostId = {
-    orders: string[];
-    values: RawPost[];
-    previousPostId: string;
-}
+  orders: string[];
+  values: RawPost[];
+  previousPostId: string;
+};
 
 export type SanitizePosts = {
-    posts: RawPost[];
-    orders: string[];
-}
+  posts: RawPost[];
+  orders: string[];
+};
