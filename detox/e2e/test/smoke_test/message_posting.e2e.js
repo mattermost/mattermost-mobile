@@ -46,14 +46,14 @@ describe('Message Posting', () => {
             postListPostItem,
             postListPostItemShowMoreButton,
         } = await getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
-        await expect(postListPostItemShowMoreButton).toBeVisible();
+        await expect(postListPostItem).toExist();
+        await expect(postListPostItemShowMoreButton).toExist();
     });
 
     it('MM-T3269 should be able to post a markdown image', async () => {
         // # Post a markdown image
         const message = '![alt text that displays if loading fails](https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png)';
-        await postMessage(message);
+        await postMessage(message, {quickReplace: true});
 
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
