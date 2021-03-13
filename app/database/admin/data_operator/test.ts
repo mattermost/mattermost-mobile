@@ -630,7 +630,7 @@ describe('*** Data Operator tests ***', () => {
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
-    it('=> handleDraft should write to write to the Draft entity', async () => {
+    it('=> handleDraft should write to the Draft entity', async () => {
         expect.assertions(2);
 
         const database = await createConnection(true);
@@ -696,6 +696,67 @@ describe('*** Data Operator tests ***', () => {
             }],
             prepareRowsOnly: false,
         });
+
+        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
+        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> handlePostMetadata should write to PostMetadata entity', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+
+        const data = {
+            images: {
+                'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
+                    width: 400,
+                    height: 400,
+                    format: 'png',
+                    frame_count: 0,
+                },
+
+            },
+            embeds: [
+                {
+                    type: 'opengraph',
+                    url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                    data: {
+                        type: 'object',
+                        url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                        title: 'mickmister/mattermost-plugin-default-theme',
+                        description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                        determiner: '',
+                        site_name: 'GitHub',
+                        locale: '',
+                        locales_alternate: null,
+                        images: [
+                            {
+                                url: '',
+                                secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                type: '',
+                                width: 0,
+                                height: 0,
+                            },
+                        ],
+                        audios: null,
+                        videos: null,
+                    },
+                },
+            ],
+        };
+
+        await DataOperator.handlePostMetadata({
+            embeds: [{
+                embed: data.embeds, postId: 'post-1',
+            }],
+            images: [{
+                images: data.images, postId: 'post-1',
+            }],
+            prepareRowsOnly: false});
 
         expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
