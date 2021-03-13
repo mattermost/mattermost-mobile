@@ -10,6 +10,7 @@ import DataOperator, {IsolatedEntities, OperationType} from './index';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
+    operateDraftRecord,
     operateGlobalRecord,
     operateRoleRecord,
     operateServersRecord,
@@ -20,6 +21,7 @@ import {
 jest.mock('../database_manager');
 
 const {APP} = MM_TABLES.DEFAULT;
+const {DRAFT} = MM_TABLES.SERVER;
 
 describe('*** Data Operator tests ***', () => {
     const createConnection = async (setActive = false) => {
@@ -598,7 +600,7 @@ describe('*** Data Operator tests ***', () => {
         expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
     });
 
-    it.only('=> handleReactions should write to both Reactions and CustomEmoji entities', async () => {
+    it('=> handleReactions should write to both Reactions and CustomEmoji entities', async () => {
         expect.assertions(3);
 
         const database = await createConnection(true);
@@ -626,6 +628,46 @@ describe('*** Data Operator tests ***', () => {
 
         // Only one batch operation for both entities
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> handleDraft should write to write to the Draft entity', async () => {
+        expect.assertions(2);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const data = [
+            {
+                channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
+                files: [{
+                    user_id: 'user_id',
+                    post_id: 'post_id',
+                    create_at: 123,
+                    update_at: 456,
+                    delete_at: 789,
+                    name: 'an_image',
+                    extension: 'jpg',
+                    size: 10,
+                    mime_type: 'image',
+                    width: 10,
+                    height: 10,
+                    has_preview_image: false,
+                    clientId: 'clientId',
+                }],
+                message: 'test draft message for post',
+                root_id: '',
+            },
+        ];
+        await DataOperator.handleDraft(data);
+
+        // Only one batch operation for both entities
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            optType: OperationType.CREATE,
+            tableName: DRAFT,
+            values: data,
+            recordOperator: operateDraftRecord,
+        });
     });
 
     // TODO : test utils functions (  sanitizeReactions, addPrevPostId, sanitizePosts)
