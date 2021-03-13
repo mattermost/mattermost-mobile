@@ -670,5 +670,36 @@ describe('*** Data Operator tests ***', () => {
         });
     });
 
+    it('=> handleFiles should write to File entity', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+
+        await DataOperator.handleFiles({
+            files: [{
+                user_id: 'user_id',
+                post_id: 'post_id',
+                create_at: 12345,
+                update_at: 456,
+                delete_at: 789,
+                name: 'an_image',
+                extension: 'jpg',
+                size: 10,
+                mime_type: 'image',
+                width: 10,
+                height: 10,
+                has_preview_image: false,
+            }],
+            prepareRowsOnly: false,
+        });
+
+        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
+        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
     // TODO : test utils functions (  sanitizeReactions, addPrevPostId, sanitizePosts)
 });
