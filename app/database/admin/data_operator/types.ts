@@ -40,9 +40,9 @@ export type SanitizeReactions = {
   rawReactions: RawReaction[];
 };
 
-export type AddPreviousPostId = {
+export type ChainPosts = {
   orders: string[];
-  values: RawPost[];
+  rawPosts: RawPost[];
   previousPostId: string;
 };
 

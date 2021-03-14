@@ -53,7 +53,7 @@ import {
     HandlePosts,
     HandleReactions,
 } from './types';
-import {addPrevPostId, sanitizePosts, sanitizeReactions} from './utils';
+import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 
 export enum OperationType {
   CREATE = 'CREATE',
@@ -421,8 +421,7 @@ class DataOperator {
 
       // We rely on the order array; if it is empty, we stop processing
       if (!orders || orders?.length < 1) {
-      // // TODO: throw an exception here ?
-          return;
+          throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
       }
 
       const database = await this.getDatabase(tableName);
@@ -436,25 +435,25 @@ class DataOperator {
       const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
       // We treat those posts who are present in the order array only
-      const sanitizedPosts: RawPost[] = sanitizePosts({posts: values, orders});
+      const {orderedPosts, unOrderedPosts} = sanitizePosts({posts: values, orders});
 
       // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
-      const augmentedRawPosts: RawPost[] = addPrevPostId({
+      const augmentedRawPosts: RawPost[] = createPostsChain({
           orders,
           previousPostId: previousPostId || '',
-          values: sanitizedPosts,
+          rawPosts: orderedPosts,
       });
 
-      if (previousPostId) {
-          augmentedRawPosts[0].prev_post_id = previousPostId;
-      }
+      // if (previousPostId) {
+      //     augmentedRawPosts[0].prev_post_id = previousPostId;
+      // }
 
       // Prepares records for batch processing onto the 'Post' entity for the server schema
       const posts = ((await this.prepareBase({
           database,
           optType,
           tableName,
-          values: augmentedRawPosts,
+          values: [...augmentedRawPosts, ...unOrderedPosts],
           recordOperator: operatePostRecord,
       })) as unknown) as Post[];
 
@@ -462,8 +461,8 @@ class DataOperator {
       batch.concat(posts);
 
       // Starts extracting information from each post to build up for related entities' data
-      for (let i = 0; i < values.length; i++) {
-          const post = values[i] as RawPost;
+      for (let i = 0; i < orderedPosts.length; i++) {
+          const post = orderedPosts[i] as RawPost;
 
           // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
           if (post.id === post.root_id) {
@@ -524,7 +523,7 @@ class DataOperator {
           await this.batchOperations({database, models: batch});
       }
 
-      // LAST :: calls handler for CustomEmojis, PostsInThread
+      // LAST :: calls handler for CustomEmojis, PostsInThread, PostsInChannel
       await this.handleIsolatedEntity({
           optType: OperationType.CREATE,
           tableName: IsolatedEntities.CUSTOM_EMOJI,
@@ -532,12 +531,12 @@ class DataOperator {
       });
 
       await this.handlePostsInThread(postsInThread);
-      await this.handlePostsInChannel(values);
+      await this.handlePostsInChannel(orderedPosts);
   };
 
   /**
    * batchOperations: Accepts an instance of Database (either Default or Server) and an array of
-   * prepareCreate/prepareUpdate values and executes the actions on the database.
+   * prepareCreate/prepareUpdate 'models' and executes the actions on the database.
    * @param {BatchOperations} operation
    * @param {Database} operation.database
    * @param {Array} operation.models
@@ -565,7 +564,7 @@ class DataOperator {
       recordOperator,
   }: HandleBaseData) => {
       if (!Array.isArray(values) || !database) {
-          throw new DatabaseOperatorException('prepareBase accepts only values of type RecordValue[] or valid database connection');
+          throw new DatabaseOperatorException('prepareBase accepts only rawPosts of type RecordValue[] or valid database connection');
       }
 
       if (values.length) {
@@ -634,8 +633,6 @@ class DataOperator {
 
       return connection;
   };
-
-  // FIXME :  those try-catch are invalid - improve them
 
   /**
    * getDefaultDatabase: Returns the default database

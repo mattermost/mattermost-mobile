@@ -762,5 +762,5 @@ describe('*** Data Operator tests ***', () => {
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
-    // TODO : test utils functions (  sanitizeReactions, addPrevPostId, sanitizePosts)
+    // TODO : test utils functions (  sanitizeReactions, createPostsChain, sanitizePosts)
 });

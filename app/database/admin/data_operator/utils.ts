@@ -7,10 +7,74 @@ import {MM_TABLES} from '@constants/database';
 import {RawPost, RawReaction} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
-import {AddPreviousPostId, SanitizePosts, SanitizeReactions} from './types';
+import {ChainPosts, SanitizePosts, SanitizeReactions} from './types';
 
 const {REACTION} = MM_TABLES.SERVER;
 
+/**
+ * sanitizePosts: Creates an arrays of ordered and unordered posts.  Unordered posts are those posts that are not
+ * present in the orders array
+ * @param {SanitizePosts} sanitizePosts
+ * @param {RawPost[]} sanitizePosts.posts
+ * @param {string[]} sanitizePosts.orders
+ */
+export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
+    const orderedPosts:RawPost[] = [];
+    const unOrderedPosts:RawPost[] = [];
+
+    posts.forEach((post) => {
+        if (post?.id && orders.includes(post.id)) {
+            orderedPosts.push(post);
+        } else {
+            unOrderedPosts.push(post);
+        }
+    });
+
+    return {
+        orderedPosts,
+        unOrderedPosts,
+    };
+};
+
+/**
+ * createPostsChain: Basically creates the 'chain of posts' using the 'orders' array; each post is linked to the other
+ * by the previous_post_id field.
+ * @param {ChainPosts} chainPosts
+ * @param {string[]} chainPosts.orders
+ * @param {RawPost[]} chainPosts.rawPosts
+ * @param {string} chainPosts.previousPostId
+ * @returns {RawPost[]}
+ */
+export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPosts) => {
+    const posts: RawPost[] = [];
+    rawPosts.forEach((post) => {
+        const postId = post.id;
+        const postIdx = orders.findIndex((order) => {
+            return order === postId;
+        });
+
+        if (postIdx === -1) {
+            // This case will not occur as we are using 'ordered' posts for this step.  However, if this happens, that
+            // implies that we might be dealing with an unordered post and in which case we do not action on it.
+        } else {
+            const prevPostId = postIdx + 1 < orders.length ? orders[postIdx + 1] : previousPostId;
+            posts.push({...post, prev_post_id: prevPostId});
+        }
+    });
+
+    return posts;
+};
+
+/**
+ * sanitizeReactions: Treats reactions happening on a Post.  For example, a user can add/remove an emoji.  Hence, this function
+ * tell us which reactions to create/delete in the Reaction table and which custom-emoji to create in our database.
+ * For more information, please have a look at https://community.mattermost.com/core/pl/rq9e8jnonpyrmnyxpuzyc4d6ko
+ * @param {SanitizeReactions} sanitizeReactions
+ * @param {Database} sanitizeReactions.database
+ * @param {string} sanitizeReactions.post_id
+ * @param {RawReaction[]} sanitizeReactions.rawReactions
+ * @returns {Promise<{createReactions: RawReaction[], createEmojis: {name: string}[], deleteReactions: Reaction[]}>}
+ */
 export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactions) => {
     const reactions = (await database.collections.
         get(REACTION).
@@ -31,7 +95,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
         const idxPresent = reactions.findIndex((value) => {
             return (
                 value.userId === rawReaction.user_id &&
-        value.emojiName === rawReaction.emoji_name
+                value.emojiName === rawReaction.emoji_name
             );
         });
 
@@ -57,36 +121,4 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
     });
 
     return {createReactions, createEmojis, deleteReactions};
-};
-
-export const addPrevPostId = ({orders, values, previousPostId = ''}: AddPreviousPostId) => {
-    const posts: RawPost[] = [];
-    values.forEach((post) => {
-        const postId = post.id;
-        const postIdx = orders.findIndex((order) => {
-            return order === postId;
-        });
-
-        if (postIdx === -1) {
-            // something bad happened here ?
-        } else {
-            const prevPostId =
-        postIdx + 1 < orders.length ? orders[postIdx + 1] : previousPostId;
-            posts.push({...post, prev_post_id: prevPostId});
-        }
-    });
-
-    return posts;
-};
-
-/**
- * sanitizePosts: Creates an array of RawPosts whereby each member's post_id is also present in the order array
- * @param {RawPost[]} posts
- * @param {string[]} order
- */
-export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
-    const sanitizedPosts = posts.filter((post) => {
-        return post?.id && orders.includes(post.id);
-    });
-    return sanitizedPosts;
 };
