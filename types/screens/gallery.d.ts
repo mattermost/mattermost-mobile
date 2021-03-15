@@ -1,12 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import React from 'react';
 import {intlShape} from 'react-intl';
 import {StyleProp, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import type {FileInfo} from '@mm-redux/types/files';
 import type {Theme} from '@mm-redux/types/preferences';
+
+export interface CallbackFunctionWithoutArguments {
+    (): void;
+}
 
 export interface ActionCallback {
     (callback: CallbackFunctionWithoutArguments): void;
@@ -29,10 +34,6 @@ export interface ActionsProps {
 export interface AvatarProps {
     avatarUri?: string;
     theme: Theme;
-}
-
-export interface CallbackFunctionWithoutArguments {
-    (): void;
 }
 
 export interface DetailsProps {
@@ -110,7 +111,7 @@ export interface ToastRef {
 }
 
 export interface ToastState {
-    animation?: CompositeAnimation,
+    animation?: Animated.CompositeAnimation,
     duration?: number;
     callback?: () => void;
 }

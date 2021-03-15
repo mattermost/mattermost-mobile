@@ -13,7 +13,6 @@ module.exports = {
     clearMocks: true,
     setupFilesAfterEnv: [
         '<rootDir>/test/setup.ts',
-        '<rootDir>/node_modules/jest-enzyme/lib/index.js',
     ],
     collectCoverageFrom: [
         'app/**/*.{js,jsx,ts,tsx}',
@@ -29,6 +28,6 @@ module.exports = {
         'assets/images/video_player/(.*).png': '<rootDir>/dist/assets/images/video_player/$1@2x.png',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll|react-clone-referenced-element|@react-native-community|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|sentry-expo|native-base|unimodules-permissions-interface)',
+        'node_modules/(?!(@react-native|react-native)|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll|react-clone-referenced-element|@react-native-community|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|sentry-expo|native-base|unimodules-permissions-interface)',
     ],
 };
