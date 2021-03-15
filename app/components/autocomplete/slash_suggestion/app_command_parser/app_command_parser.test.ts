@@ -832,7 +832,15 @@ describe('AppCommandParser', () => {
             ]);
 
             suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic Nope');
-            expect(suggestions).toEqual([]);
+            expect(suggestions).toEqual([
+                {
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic',
+                    Suggestion: '',
+                    Description: 'No matching options.',
+                    Hint: '',
+                    IconData: '',
+                }
+            ]);
         });
 
         test('filled out form shows execute', async () => {
