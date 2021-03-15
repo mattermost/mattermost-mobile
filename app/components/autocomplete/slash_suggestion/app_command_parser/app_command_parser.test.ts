@@ -839,7 +839,7 @@ describe('AppCommandParser', () => {
                     Description: 'No matching options.',
                     Hint: '',
                     IconData: '',
-                }
+                },
             ]);
         });
 
