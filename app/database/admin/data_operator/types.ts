@@ -51,17 +51,17 @@ export type SanitizePosts = {
 };
 
 export enum OperationType {
-    CREATE = 'CREATE',
-    UPDATE = 'UPDATE',
-    DELETE = 'DELETE',
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
 }
 
 export enum IsolatedEntities {
-    APP = 'app',
-    GLOBAL = 'global',
-    SERVERS = 'servers',
-    CUSTOM_EMOJI = 'CustomEmoji',
-    ROLE = 'Role',
-    SYSTEM = 'System',
-    TERMS_OF_SERVICE = 'TermsOfService',
+  APP = 'app',
+  GLOBAL = 'global',
+  SERVERS = 'servers',
+  CUSTOM_EMOJI = 'CustomEmoji',
+  ROLE = 'Role',
+  SYSTEM = 'System',
+  TERMS_OF_SERVICE = 'TermsOfService',
 }

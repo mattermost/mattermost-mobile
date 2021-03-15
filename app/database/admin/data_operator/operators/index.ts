@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -36,6 +36,7 @@ import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
+
 import {OperationType} from '../types';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;

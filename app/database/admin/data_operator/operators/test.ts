@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {Q} from '@nozbe/watermelondb';
 import App from '@typings/database/app';
 
 import DatabaseManager, {DatabaseType} from '../../database_manager';
@@ -389,6 +389,5 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(records[1].buildNumber).toMatch('build-11x');
     });
 
-    // TODO : test utils functions (  sanitizeReactions, createPostsChain, sanitizePosts)
     // TODO :  new operators
 });

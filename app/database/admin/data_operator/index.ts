@@ -28,6 +28,7 @@ import Reaction from '@typings/database/reaction';
 import CustomEmoji from '@typings/database/custom_emoji';
 
 import DatabaseManager from '../database_manager';
+
 import DatabaseConnectionException from './exceptions/database_connection_exception';
 import DatabaseOperatorException from './exceptions/database_operator_exception';
 
@@ -55,7 +56,7 @@ import {
     IsolatedEntities,
     OperationType,
 } from './types';
-import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils/utils';
+import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 
 const {
     CUSTOM_EMOJI,
@@ -552,7 +553,7 @@ class DataOperator {
       try {
           if (models.length > 0) {
               await database.action(async () => {
-                  database.batch(...models);
+                  await database.batch(...models);
               });
           } else {
               throw new DatabaseOperatorException('batchOperations does not process empty model array');

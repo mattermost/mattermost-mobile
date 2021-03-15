@@ -206,4 +206,5 @@ export const mockedReactions = [
         create_at: 1601558413496,
         update_at: 1601558413496,
         delete_at: 0,
-    }];
+    },
+];

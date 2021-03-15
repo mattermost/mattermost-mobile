@@ -242,20 +242,16 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
-        const data = {
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
             tableName: 'INVALID_TABLE_NAME',
             values: [{id: 'tos-1', acceptedAt: 1}],
-        };
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        await DataOperator.handleIsolatedEntity(data);
+        });
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
     });
 
-    it('=> handleReactions: should write to both Reactions and CustomEmoji entities', async () => {
+    it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
         expect.assertions(3);
 
         const database = await createConnection(true);
@@ -285,7 +281,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
-    it('=> handleDraft: should write to the Draft entity', async () => {
+    it('=> HandleDraft: should write to the Draft entity', async () => {
         expect.assertions(2);
 
         const database = await createConnection(true);
@@ -325,7 +321,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
     });
 
-    it('=> handleFiles: should write to File entity', async () => {
+    it('=> HandleFiles: should write to File entity', async () => {
         expect.assertions(3);
 
         const database = await createConnection(true);
@@ -356,7 +352,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
-    it('=> handlePostMetadata: should write to PostMetadata entity', async () => {
+    it('=> HandlePostMetadata: should write to PostMetadata entity', async () => {
         expect.assertions(3);
 
         const database = await createConnection(true);
@@ -416,6 +412,4 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
-
-    // TODO : test utils functions (  sanitizeReactions, createPostsChain, sanitizePosts)
 });
