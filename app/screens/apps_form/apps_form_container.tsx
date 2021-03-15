@@ -104,7 +104,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
 
     refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<{data?: AppCallResponse<FormResponseData>, error?: AppCallResponse<FormResponseData>}> => {
         const intl = this.context.intl;
-        const makeErrMsg = (message: string) => intl.formatMessage(
+        const makeErrorMsg = (message: string) => intl.formatMessage(
             {
                 id: 'apps.error.form.refresh',
                 defaultMessage: 'There has been an error updating the modal. Contact the app developer. Details: {details}',
@@ -113,7 +113,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         );
         const {form} = this.state;
         if (!form) {
-            return {error: makeCallErrorResponse(makeErrMsg(intl.formatMessage({
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
                 id: 'apps.error.form.no_form',
                 defaultMessage: '`form` is not defined.',
             })))};
@@ -121,7 +121,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
 
         const call = this.getCall();
         if (!call) {
-            return {error: makeCallErrorResponse(makeErrMsg(intl.formatMessage({
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
                 id: 'apps.error.form.no_call',
                 defaultMessage: '`call` is not defined.',
             })))};
@@ -129,7 +129,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
 
         if (!field.refresh) {
             // Should never happen
-            return {error: makeCallErrorResponse(makeErrMsg(intl.formatMessage({
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
                 id: 'apps.error.form.refresh_no_refresh',
                 defaultMessage: 'Called refresh on no refresh field.',
             })))};
@@ -152,7 +152,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             break;
         case AppCallResponseTypes.OK:
         case AppCallResponseTypes.NAVIGATE:
-            return {data: makeCallErrorResponse(makeErrMsg(intl.formatMessage({
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
                 id: 'apps.error.responses.unexpected_type',
                 defaultMessage: 'App response type was not expected. Response type: {type}.',
             }, {
@@ -160,7 +160,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             },
             )))};
         default:
-            return {data: makeCallErrorResponse(makeErrMsg(intl.formatMessage({
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
             }, {
@@ -173,7 +173,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
 
     performLookupCall = async (field: AppField, values: AppFormValues, userInput: string): Promise<{data?: AppCallResponse<AppLookupResponse>, error?: AppCallResponse<AppLookupResponse>}> => {
         const intl = this.context.intl;
-        const makeErrMsg = (message: string) => intl.formatMessage(
+        const makeErrorMsg = (message: string) => intl.formatMessage(
             {
                 id: 'apps.error.form.refresh',
                 defaultMessage: 'There has been an error fetching the select fields. Contact the app developer. Details: {details}',
@@ -182,7 +182,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         );
         const call = this.getCall();
         if (!call) {
-            return makeErrMsg(intl.formatMessage({id: 'apps.error.form.no_lookup_call', defaultMessage: 'performLookupCall props.call is not defined'}));
+            return makeErrorMsg(intl.formatMessage({id: 'apps.error.form.no_lookup_call', defaultMessage: 'performLookupCall props.call is not defined'}));
         }
 
         return this.props.actions.doAppCall({
