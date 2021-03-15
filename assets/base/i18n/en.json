@@ -315,6 +315,7 @@
   "mobile.flagged_posts.empty_description": "Saved messages are only visible to you. Mark messages for follow-up or save something for later by long-pressing a message and choosing Save from the menu.",
   "mobile.flagged_posts.empty_title": "No Saved messages yet",
   "mobile.gallery.title": "{index} of {total}",
+  "mobile.general.error.title": "Error",
   "mobile.help.title": "Help",
   "mobile.intro_messages.default_message": "This is the first channel teammates see when they sign up - use it for posting updates everyone needs to know.",
   "mobile.intro_messages.default_welcome": "Welcome to {name}!",

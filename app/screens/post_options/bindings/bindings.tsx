@@ -109,25 +109,32 @@ const Option = injectIntl((props: OptionProps) => {
             }
             break;
         case AppCallResponseTypes.ERROR: {
+            const title = props.intl.formatMessage({
+                id: 'mobile.general.error.title',
+                defaultMessage: 'Error',
+            });
             const errorMessage = callResp.error || props.intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error happenned',
             });
-            Alert.alert(errorMessage);
+            Alert.alert(title, errorMessage);
             break;
         }
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.FORM:
             break;
         default: {
+            const title = props.intl.formatMessage({
+                id: 'mobile.general.error.title',
+                defaultMessage: 'Error',
+            });
             const errMessage = props.intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
             }, {
                 type: callResp.type,
-            },
-            );
-            Alert.alert(errMessage);
+            });
+            Alert.alert(title, errMessage);
         }
         }
 

@@ -49,7 +49,10 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                 };
 
                 if (!call) {
-                    return {error: {message: 'Error submitting command'}};
+                    return createErrorMessage(intl.formatMessage({
+                        id: 'mobile.commands.error_title',
+                        defaultMessage: 'Error Executing Command',
+                    }));
                 }
 
                 const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl)) as {data: AppCallResponse};

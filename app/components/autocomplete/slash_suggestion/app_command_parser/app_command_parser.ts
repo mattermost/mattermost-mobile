@@ -4,8 +4,6 @@
 /* eslint-disable max-lines */
 
 import {intlShape} from 'react-intl';
-import keyMirror from '@mm-redux/utils/key_mirror';
-import {createCallRequest} from '@utils/apps';
 
 import {
     AppCallRequest,
@@ -13,6 +11,7 @@ import {
     AppField,
     AppSelectOption,
     AppCallResponse,
+    AppCallValues,
     AppContext,
     AppForm,
     AutocompleteSuggestion,
@@ -32,14 +31,15 @@ import {
     getStore,
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
     getExecuteSuggestion,
+    keyMirror,
+    createCallRequest,
+    displayError,
+    selectChannelByName,
+    selectUserByUsername,
+    getUserByUsername,
+    getChannelByNameAndTeamName,
+    getCurrentTeam,
 } from './app_command_parser_dependencies';
-import {AppCallValues} from '@mm-redux/types/apps';
-import {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/entities/users';
-import {getUserByUsername} from '@mm-redux/actions/users';
-import {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
-import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-import {getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
-import {sendEphemeralPost} from '@actions/views/post';
 
 export type Store = {
     dispatch: DispatchFunc;
@@ -904,7 +904,8 @@ export class AppCommandParser {
         if (err.message) {
             errStr = err.message;
         }
-        this.store.dispatch(sendEphemeralPost(errStr, this.channelID, this.rootPostID));
+
+        displayError(this.intl, errStr);
     }
 
     // getSuggestionsForSubCommands returns suggestions for a subcommand's name
