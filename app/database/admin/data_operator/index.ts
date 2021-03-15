@@ -148,23 +148,19 @@ class DataOperator {
           return [];
       }
 
-      const database = await this.getDatabase(POSTS_IN_THREAD);
       const postIds = postsInThreads.map((postThread) => postThread.post_id);
-      const rawPostsInThreads: {
-      latest: number;
-      earliest: number;
-      post_id: string;
-    }[] = [];
+      const rawPostsInThreads: RawPostsInThread[] = [];
 
+      const database = await this.getDatabase(POSTS_IN_THREAD);
       const threads = (await database.collections.
           get(POST).
-          query(Q.where('id', Q.oneOf(postIds))).
+          query(Q.where('root_id', Q.oneOf(postIds))).
           fetch()) as Post[];
 
       postsInThreads.forEach((rootPost) => {
           // Creates a sub-array of threads relating to rootPost.post_id
           const childPosts = threads.filter((thread) => {
-              return rootPost.post_id === thread.id;
+              return rootPost.post_id === thread.rootId;
           });
 
           // Retrieves max create-at date of all posts whose root_id is rootPost.post_id
@@ -268,11 +264,7 @@ class DataOperator {
       return [];
   };
 
-  handlePostMetadata = async ({
-      embeds,
-      images,
-      prepareRowsOnly,
-  }: HandlePostMetadata) => {
+  handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadata) => {
       const metadata: RawPostMetadata[] = [];
 
       if (images?.length) {
@@ -331,12 +323,12 @@ class DataOperator {
           return [];
       }
 
-      // Sort 'posts' array by create_at
+      // Sort a clone of 'posts' array by create_at
       const sortedPosts = [...posts].sort((a, b) => {
           return a.create_at - b.create_at;
       });
 
-      // The first element ( beginning of chain )
+      // The first element (beginning of chain)
       const tipOfChain: RawPost = sortedPosts[0];
 
       // Channel Id for this chain of posts
@@ -368,7 +360,8 @@ class DataOperator {
 
       // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
       if (chunks.length === 0) {
-          return createPostsInChannelRecord();
+          await createPostsInChannelRecord();
+          return [];
       }
 
       // Sort chunks (in-place) by earliest field
@@ -412,22 +405,19 @@ class DataOperator {
                       });
                   });
               } else {
-                  return createPostsInChannelRecord();
+                  await createPostsInChannelRecord();
+                  return [];
               }
           }
       } else {
-          return createPostsInChannelRecord();
+          await createPostsInChannelRecord();
+          return [];
       }
 
       return [];
   };
 
-  handlePosts = async ({
-      optType,
-      orders,
-      values,
-      previousPostId,
-  }: HandlePosts) => {
+  handlePosts = async ({optType, orders, values, previousPostId}: HandlePosts) => {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
@@ -435,7 +425,7 @@ class DataOperator {
           throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
       }
 
-      const batch: Model[] = [];
+      let batch: Model[] = [];
       const files: RawFile[] = [];
       const postsInThread = [];
       const reactions: RawReaction[] = [];
@@ -446,8 +436,10 @@ class DataOperator {
       // We treat those posts who are present in the order array only
       const {orderedPosts, unOrderedPosts} = sanitizePosts({posts: values, orders});
 
+      // console.log('sanitized posts => ', {orderedPosts, unOrderedPosts});
+
       // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
-      const augmentedRawPosts: RawPost[] = createPostsChain({
+      const linkedRawPosts: RawPost[] = createPostsChain({
           orders,
           previousPostId: previousPostId || '',
           rawPosts: orderedPosts,
@@ -460,12 +452,12 @@ class DataOperator {
           database,
           optType,
           tableName,
-          values: [...augmentedRawPosts, ...unOrderedPosts],
+          values: [...linkedRawPosts, ...unOrderedPosts],
           recordOperator: operatePostRecord,
       })) as unknown) as Post[];
 
       // Appends the processed records into the final batch array
-      batch.concat(posts);
+      batch = batch.concat(posts);
 
       // Starts extracting information from each post to build up for related entities' data
       for (let i = 0; i < orderedPosts.length; i++) {
@@ -509,14 +501,14 @@ class DataOperator {
           reactions,
           prepareRowsOnly: true,
       })) as Reaction[];
-      batch.concat(postReactions);
+      batch = batch.concat(postReactions);
 
       // calls handler for Files
       const postFiles = (await this.handleFiles({
           files,
           prepareRowsOnly: true,
       })) as File[];
-      batch.concat(postFiles);
+      batch = batch.concat(postFiles);
 
       // calls handler for postMetadata ( embeds and images )
       const postMetadata = (await this.handlePostMetadata({
@@ -524,7 +516,7 @@ class DataOperator {
           embeds,
           prepareRowsOnly: true,
       })) as PostMetadata[];
-      batch.concat(postMetadata);
+      batch = batch.concat(postMetadata);
 
       if (batch.length) {
           await this.batchOperations({database, models: batch});
@@ -536,7 +528,6 @@ class DataOperator {
           tableName: IsolatedEntities.CUSTOM_EMOJI,
           values: emojis,
       });
-
       await this.handlePostsInThread(postsInThread);
       await this.handlePostsInChannel(orderedPosts);
   };
@@ -563,13 +554,7 @@ class DataOperator {
       }
   };
 
-  private prepareBase = async ({
-      database,
-      optType,
-      tableName,
-      values,
-      recordOperator,
-  }: HandleBaseData) => {
+  private prepareBase = async ({database, optType, tableName, values, recordOperator}: HandleBaseData) => {
       if (!Array.isArray(values) || !database) {
           throw new DatabaseOperatorException('prepareBase accepts only rawPosts of type RecordValue[] or valid database connection');
       }
@@ -600,12 +585,7 @@ class DataOperator {
      * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
      * @returns {Promise<void>}
      */
-  private handleBase = async ({
-      optType,
-      tableName,
-      values,
-      recordOperator,
-  }: HandleBaseData) => {
+  private handleBase = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {
       const database = await this.getDatabase(tableName);
 
       const models = await this.prepareBase({

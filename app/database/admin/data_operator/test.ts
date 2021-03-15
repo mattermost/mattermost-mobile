@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-
 import DatabaseManager, {DatabaseType} from '../database_manager';
 import DataOperator from './index';
 import {
@@ -411,5 +410,99 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandlePostsInThread: should write to PostsInThread entity', async () => {
+        expect.assertions(2);
+
+        const posts = [
+            {
+                id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                create_at: 1596032651747,
+                update_at: 1596032651747,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                original_id: '',
+                message: "I'll second these kudos!  Thanks m!",
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '8fcnk3p1jt8mmkaprgajoxz115a',
+                create_at: 1596104683748,
+                update_at: 1596104683748,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: '',
+                original_id: '',
+                message: 'a added to the channel by j.',
+                type: 'system_add_to_channel',
+                props: {
+                    addedUserId: 'z89qsntet7bimd3xddfu7u9ncdaxc',
+                    addedUsername: 'a',
+                    userId: 'hy5sdfdfq51sebfh58ktrce5ijtcwy',
+                    username: 'j',
+                },
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 0,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '3y3w3a6gkbg73bnj3xund9o5ic',
+                create_at: 1596277483749,
+                update_at: 1596277483749,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
+                original_id: '',
+                message: 'Great work M!',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+        ];
+        const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
+
+        await createConnection(true);
+        await DataOperator.handlePosts({
+            optType: OperationType.CREATE,
+            orders: [
+                '8swgtrrdiff89jnsiwiip3y1eoe',
+                '8fcnk3p1jt8mmkaprgajoxz115a',
+                '3y3w3a6gkbg73bnj3xund9o5ic',
+                '4btbnmticjgw7ewd3qopmpiwqw',
+            ],
+            values: posts,
+            previousPostId: '',
+        });
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
     });
 });

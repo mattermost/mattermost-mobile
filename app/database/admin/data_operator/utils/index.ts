@@ -53,8 +53,6 @@ export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainP
             return order === postId;
         });
 
-        console.log(`orderIndex ${orderIndex} for postId ${postId}`);
-
         if (orderIndex === -1) {
             // This case will not occur as we are using 'ordered' posts for this step.  However, if this happens, that
             // implies that we might be dealing with an unordered post and in which case we do not action on it.
