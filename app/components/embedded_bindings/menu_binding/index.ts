@@ -13,6 +13,7 @@ import {getPost} from '@mm-redux/selectors/entities/posts';
 import MenuBinding from './menu_binding';
 import {getChannel} from '@mm-redux/actions/channels';
 import {sendEphemeralPost} from '@actions/views/post';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 type OwnProps = {
     postId: string;
@@ -21,6 +22,7 @@ type OwnProps = {
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
         post: getPost(state, ownProps.postId),
+        currentTeamID: getCurrentTeamId(state),
     };
 }
 

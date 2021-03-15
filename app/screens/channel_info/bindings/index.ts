@@ -16,6 +16,7 @@ import {doAppCall} from '@actions/apps';
 
 import Bindings from './bindings';
 import {sendEphemeralPost} from '@actions/views/post';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 function mapStateToProps(state: GlobalState) {
     const apps = appsEnabled(state);
@@ -26,6 +27,7 @@ function mapStateToProps(state: GlobalState) {
         bindings,
         currentChannel,
         appsEnabled: apps,
+        currentTeamId: getCurrentTeamId(state),
     };
 }
 

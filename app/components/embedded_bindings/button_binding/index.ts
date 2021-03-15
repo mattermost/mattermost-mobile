@@ -15,6 +15,7 @@ import {getPost} from '@mm-redux/selectors/entities/posts';
 import ButtonBinding from './button_binding';
 import {getChannel} from '@mm-redux/actions/channels';
 import {sendEphemeralPost} from '@actions/views/post';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 type OwnProps = {
     postId: string;
@@ -24,6 +25,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
         theme: getTheme(state),
         post: getPost(state, ownProps.postId),
+        currentTeamID: getCurrentTeamId(state),
     };
 }
 

@@ -21,6 +21,7 @@ type Props = {
     theme: Theme;
     currentChannel: Channel;
     appsEnabled: boolean;
+    currentTeamId: string;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
@@ -59,6 +60,7 @@ type OptionProps = {
     theme: Theme;
     currentChannel: Channel;
     intl: typeof intlShape;
+    currentTeamId: string;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
@@ -74,7 +76,7 @@ const Option = injectIntl((props: OptionProps) => {
             binding.app_id,
             binding.location,
             props.currentChannel.id,
-            props.currentChannel.team_id,
+            props.currentChannel.team_id || props.currentTeamId,
         );
         const call = createCallRequest(
             binding.call,

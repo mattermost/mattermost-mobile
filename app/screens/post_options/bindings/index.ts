@@ -19,17 +19,24 @@ import {appsEnabled} from '@utils/apps';
 import Bindings from './bindings';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {sendEphemeralPost} from '@actions/views/post';
+import {Post} from '@mm-redux/types/posts';
+import {getChannel} from '@mm-redux/selectors/entities/channels';
 
-function mapStateToProps(state: GlobalState) {
+type OwnProps = {
+    post: Post;
+}
+
+function mapStateToProps(state: GlobalState, props: OwnProps) {
     const apps = appsEnabled(state);
     const bindings = apps ? getAppsBindings(state, AppBindingLocations.POST_MENU_ITEM) : [];
     const currentUser = getCurrentUser(state);
+    const teamID = getChannel(state, props.post.channel_id)?.team_id || getCurrentTeamId(state);
 
     return {
         theme: getTheme(state),
         bindings,
         currentUser,
-        teamID: getCurrentTeamId(state),
+        teamID,
         appsEnabled: apps,
     };
 }

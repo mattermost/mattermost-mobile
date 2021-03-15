@@ -26,6 +26,7 @@ type Props = {
     post: Post;
     binding: AppBinding;
     theme: Theme;
+    currentTeamID: string;
 }
 export default class ButtonBinding extends PureComponent<Props> {
     static contextTypes = {
@@ -34,7 +35,11 @@ export default class ButtonBinding extends PureComponent<Props> {
     handleActionPress = preventDoubleTap(async () => {
         const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
 
-        const {binding, post} = this.props;
+        const {
+            binding,
+            post,
+            currentTeamID,
+        } = this.props;
         const intl = this.context.intl;
         if (!binding.call) {
             return;
@@ -51,7 +56,7 @@ export default class ButtonBinding extends PureComponent<Props> {
             binding.app_id,
             AppBindingLocations.IN_POST + binding.location,
             post.channel_id,
-            teamID,
+            teamID || currentTeamID,
             post.id,
         );
         const call = createCallRequest(

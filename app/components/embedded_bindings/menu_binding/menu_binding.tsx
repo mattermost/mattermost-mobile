@@ -21,6 +21,7 @@ type Props = {
     };
     binding?: AppBinding;
     post: Post;
+    currentTeamID: string;
 }
 
 type State = {
@@ -57,6 +58,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
         const {
             actions,
             post,
+            currentTeamID,
         } = this.props;
         const intl = this.context.intl;
 
@@ -71,7 +73,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
             binding.app_id,
             AppBindingLocations.IN_POST + binding.location,
             post.channel_id,
-            teamID,
+            teamID || currentTeamID,
             post.id,
         );
         const call = createCallRequest(
