@@ -118,6 +118,22 @@ export const apiGetUserById = async (userId) => {
 };
 
 /**
+ * Demote a user to a guest.
+ * See https://api.mattermost.com/#tag/users/paths/~1users~1{user_id}~1demote/post
+ * @param {string} userId - the user ID
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiDemoteUserToGuest = async (userId) => {
+    try {
+        const response = await client.post(`/api/v4/users/${userId}/demote`);
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get a user by username.
  * See https://api.mattermost.com/#tag/users/paths/~1users~1username~1{username}/get
  * @param {string} username - the username
@@ -177,6 +193,7 @@ function generateRandomUser(prefix) {
 
 export const User = {
     apiAdminLogin,
+    apiDemoteUserToGuest,
     apiLogin,
     apiLogout,
     apiCreateUser,

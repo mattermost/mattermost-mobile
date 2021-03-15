@@ -150,7 +150,7 @@ describe('Messaging', () => {
 });
 
 async function createPrivateChannel(channelName) {
-    // # Open Mainside bar and press on private channels more button
+    // # Open create private channel screen
     await ChannelScreen.openMainSidebar();
     await MainSidebar.openCreatePrivateChannelButton.tap();
 
