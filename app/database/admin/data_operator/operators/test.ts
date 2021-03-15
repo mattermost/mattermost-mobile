@@ -11,7 +11,14 @@ import {IsolatedEntities, OperationType} from '../types';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
+    operateDraftRecord,
+    operateFileRecord,
     operateGlobalRecord,
+    operatePostInThreadRecord,
+    operatePostMetadataRecord,
+    operatePostRecord,
+    operatePostsInChannelRecord,
+    operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
@@ -46,7 +53,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         return database;
     };
 
-    it('=> operateAppRecord: should return an array of type App ', async () => {
+    it('=> operateAppRecord: should return an array of type App', async () => {
         expect.assertions(3);
 
         const database = await DatabaseManager.getDefaultDatabase();
@@ -122,7 +129,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
     });
 
-    it('=> operateRoleRecord: should return an array of type Role ', async () => {
+    it('=> operateRoleRecord: should return an array of type Role', async () => {
         expect.assertions(3);
 
         const database = await createConnection();
@@ -154,7 +161,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toMatch('System');
     });
 
-    it('=> operateTermsOfServiceRecord: should return an array of type TermsOfService ', async () => {
+    it('=> operateTermsOfServiceRecord: should return an array of type TermsOfService', async () => {
         expect.assertions(3);
 
         const database = await createConnection();
@@ -389,5 +396,170 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(records[1].buildNumber).toMatch('build-11x');
     });
 
-    // TODO :  new operators
+    it('=> operatePostRecord: should return an array of type Post', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operatePostRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                create_at: 1596032651748,
+                update_at: 1596032651748,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: 'ps81iqbesfby8jayz7owg4yypoo',
+                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                original_id: '',
+                message: 'Testing operator post',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Post');
+    });
+
+    it('=> operatePostInThreadRecord: should return an array of type PostsInThread', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operatePostInThreadRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                earliest: 1596032651748,
+                latest: 1597032651748,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('PostsInThread');
+    });
+
+    it('=> operateReactionRecord: should return an array of type Reaction', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateReactionRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                emoji_name: 'thumbsup',
+                create_at: 1596032651748,
+                update_at: 1608253011321,
+                delete_at: 0,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Reaction');
+    });
+
+    it('=> operateFileRecord: should return an array of type File', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateFileRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                name: 'test_file',
+                extension: '.jpg',
+                size: 1000,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('File');
+    });
+
+    it('=> operatePostMetadataRecord: should return an array of type PostMetadata', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operatePostMetadataRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                id: 'ps81i4yypoo',
+                data: {},
+                postId: 'ps81iqbddesfby8jayz7owg4yypoo',
+                type: 'opengraph',
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('PostMetadata');
+    });
+
+    it('=> operateDraftRecord: should return an array of type Draft', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateDraftRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                id: 'ps81i4yypoo',
+                root_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                message: 'draft message',
+                channel_id: 'channel_idp23232e',
+                files: [],
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Draft');
+    });
+
+    it('=> operatePostsInChannelRecord: should return an array of type PostsInChannel', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operatePostsInChannelRecord({
+            database: database!,
+            optType: OperationType.CREATE,
+            value: {
+                id: 'ps81i4yypoo',
+                channel_id: 'channel_idp23232e',
+                earliest: 1608253011321,
+                latest: 1609253011321,
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('PostsInChannel');
+    });
 });
