@@ -42,6 +42,7 @@ export default class Tag extends PureComponent {
         inTitle: PropTypes.bool,
         show: PropTypes.bool,
         style: ViewPropTypes.style,
+        testID: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
@@ -61,6 +62,7 @@ export default class Tag extends PureComponent {
                     id={this.props.id}
                     defaultMessage={this.props.defaultMessage}
                     style={[style.text, this.props.inTitle ? style.title : null]}
+                    testID={this.props.testID}
                 />
             </View>
         );
