@@ -173,8 +173,8 @@ export type RawPost = {
   create_at: number;
   delete_at: number;
   edit_at: number;
-  file_ids: string[];
-  filenames: string[];
+  file_ids?: string[];
+  filenames?: string[];
   hashtags: string;
   id: string;
   is_pinned?: boolean;
@@ -186,17 +186,17 @@ export type RawPost = {
   pending_post_id: string;
   prev_post_id?: string; // taken from getPosts API call; outside of post object
   props: object;
-  reply_count?: 0;
+  reply_count?: number;
   root_id: string;
   type: string;
   update_at: number;
   user_id: string;
-  metadata: {
-    embeds: RawEmbed[];
-    emojis: RawCustomEmoji[];
-    files: RawFile[];
-    images: Dictionary<PostImage>;
-    reactions: RawReaction[];
+  metadata?: {
+    embeds?: RawEmbed[];
+    emojis?: RawCustomEmoji[];
+    files?: RawFile[];
+    images?: Dictionary<PostImage>;
+    reactions?: RawReaction[];
   };
 };
 

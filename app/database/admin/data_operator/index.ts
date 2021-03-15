@@ -52,24 +52,10 @@ import {
     HandlePostMetadata,
     HandlePosts,
     HandleReactions,
+    IsolatedEntities,
+    OperationType,
 } from './types';
-import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
-
-export enum OperationType {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-}
-
-export enum IsolatedEntities {
-  APP = 'app',
-  GLOBAL = 'global',
-  SERVERS = 'servers',
-  CUSTOM_EMOJI = 'CustomEmoji',
-  ROLE = 'Role',
-  SYSTEM = 'System',
-  TERMS_OF_SERVICE = 'TermsOfService',
-}
+import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils/utils';
 
 const {
     CUSTOM_EMOJI,
@@ -81,8 +67,6 @@ const {
     POSTS_IN_CHANNEL,
     REACTION,
 } = MM_TABLES.SERVER;
-
-// FIXME : Refactor unordered post - see convo on MM app.
 
 // FIXME : Performance improvements - For main entities, in each handler, do a 'select query' first to retrieve all matching ids ( e.g. post_id ).  In another array, filter only those records whose update_at value are different.  Now, process this array in your handler.  On the operator level, do the select-query and update-at check for specific tables ( minor ones ) only.
 
@@ -144,15 +128,25 @@ class DataOperator {
   };
 
   handleDraft = async (drafts: RawDraft[]) => {
+      if (!drafts.length) {
+          return [];
+      }
+
       await this.handleBase({
           optType: OperationType.CREATE,
           values: drafts,
           tableName: DRAFT,
           recordOperator: operateDraftRecord,
       });
+
+      return [];
   };
 
   handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
+      if (!postsInThreads.length) {
+          return [];
+      }
+
       const database = await this.getDatabase(POSTS_IN_THREAD);
       const postIds = postsInThreads.map((postThread) => postThread.post_id);
       const rawPostsInThreads: {
@@ -192,9 +186,15 @@ class DataOperator {
       if (postInThreadRecords?.length) {
           await this.batchOperations({database, models: postInThreadRecords});
       }
+
+      return [];
   };
 
   handleReactions = async ({reactions, prepareRowsOnly}: HandleReactions) => {
+      if (!reactions.length) {
+          return [];
+      }
+
       const database = await this.getDatabase(REACTION);
 
       const {
@@ -238,11 +238,16 @@ class DataOperator {
           });
       }
 
-      return null;
+      return [];
   };
 
   handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
+      if (!files.length) {
+          return [];
+      }
+
       const database = await this.getDatabase(FILE);
+
       const postFiles = ((await this.prepareBase({
           database,
           optType: OperationType.CREATE,
@@ -259,7 +264,7 @@ class DataOperator {
           await this.batchOperations({database, models: [...postFiles]});
       }
 
-      return null;
+      return [];
   };
 
   handlePostMetadata = async ({
@@ -267,7 +272,6 @@ class DataOperator {
       images,
       prepareRowsOnly,
   }: HandlePostMetadata) => {
-      const database = await this.getDatabase(POST_METADATA);
       const metadata: RawPostMetadata[] = [];
 
       if (images?.length) {
@@ -293,6 +297,12 @@ class DataOperator {
           });
       }
 
+      if (!metadata.length) {
+          return [];
+      }
+
+      const database = await this.getDatabase(POST_METADATA);
+
       const postMetas = ((await this.prepareBase({
           database,
           optType: OperationType.CREATE,
@@ -309,12 +319,16 @@ class DataOperator {
           await this.batchOperations({database, models: [...postMetas]});
       }
 
-      return null;
+      return [];
   };
 
   handlePostsInChannel = async (posts: RawPost[]) => {
       // At this point, the 'posts' array is already a chain of posts
       // We have to figure out how to plug it into existing chains in the PostsInChannel table
+
+      if (!posts.length) {
+          return [];
+      }
 
       // Sort 'posts' array by create_at
       const sortedPosts = [...posts].sort((a, b) => {
@@ -334,8 +348,9 @@ class DataOperator {
       const lastIndex = sortedPosts.length > 1 ? sortedPosts.length - 1 : -1;
       const latest = lastIndex > 0 ? sortedPosts[lastIndex].create_at : earliest;
 
-      // Find the records in the PostsInChannel table that have a matching channel_id
       const database = await this.getDatabase(POSTS_IN_CHANNEL);
+
+      // Find the records in the PostsInChannel table that have a matching channel_id
       const chunks = (await database.collections.
           get(POSTS_IN_CHANNEL).
           query(Q.where('channel_id', channelId)).
@@ -344,13 +359,7 @@ class DataOperator {
       const createPostsInChannelRecord = async () => {
           await this.handleBase({
               optType: OperationType.CREATE,
-              values: [
-                  {
-                      channel_id: channelId,
-                      earliest,
-                      latest,
-                  },
-              ],
+              values: [{channel_id: channelId, earliest, latest}],
               tableName: POSTS_IN_CHANNEL,
               recordOperator: operatePostsInChannelRecord,
           });
@@ -387,12 +396,12 @@ class DataOperator {
               get(POST).
               query(Q.where('create_at', earliest)).
               fetch()) as Post[];
+
           if (potentialPosts?.length > 0) {
               const targetPost = potentialPosts[0];
 
               // now we decide if we need to operate on the targetChunk or just create a new chunk
-              const isChainable =
-          tipOfChain.prev_post_id === targetPost.previousPostId;
+              const isChainable = tipOfChain.prev_post_id === targetPost.previousPostId;
 
               if (isChainable) {
                   // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
@@ -408,7 +417,8 @@ class DataOperator {
       } else {
           return createPostsInChannelRecord();
       }
-      return null;
+
+      return [];
   };
 
   handlePosts = async ({
@@ -420,11 +430,9 @@ class DataOperator {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
-      if (!orders || orders?.length < 1) {
+      if (!orders?.length) {
           throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
       }
-
-      const database = await this.getDatabase(tableName);
 
       const batch: Model[] = [];
       const files: RawFile[] = [];
@@ -444,9 +452,7 @@ class DataOperator {
           rawPosts: orderedPosts,
       });
 
-      // if (previousPostId) {
-      //     augmentedRawPosts[0].prev_post_id = previousPostId;
-      // }
+      const database = await this.getDatabase(tableName);
 
       // Prepares records for batch processing onto the 'Post' entity for the server schema
       const posts = ((await this.prepareBase({
@@ -472,31 +478,27 @@ class DataOperator {
               });
           }
 
-          const meta = post?.metadata;
-          if (meta) {
+          const hasMetadata = post?.metadata && Object.keys(post?.metadata).length > 0;
+
+          if (hasMetadata) {
+              const metadata = post.metadata;
+
               // Extracts reaction from post's metadata
-              if (meta?.reactions?.length > 0) {
-                  reactions.concat(meta.reactions);
-              }
+              reactions.concat(metadata?.reactions ?? []);
 
               // Extracts emojis from post's metadata
-              if (meta?.emojis?.length > 0) {
-                  emojis.concat(meta.emojis);
-              }
+              emojis.concat(metadata?.emojis ?? []);
 
               // Extracts files from post's metadata
-              if (meta?.files?.length > 0) {
-                  files.concat(meta.files);
-              }
+              files.concat(metadata?.files ?? []);
 
               // Extracts images and embeds from post's metadata
-              if (meta) {
-                  if (meta?.images) {
-                      images.push({images: meta.images, postId: post.id});
-                  }
-                  if (meta?.embeds) {
-                      embeds.push({embed: meta.embeds, postId: post.id});
-                  }
+              if (metadata?.images) {
+                  images.push({images: metadata.images, postId: post.id});
+              }
+
+              if (metadata?.embeds) {
+                  embeds.push({embed: metadata.embeds, postId: post.id});
               }
           }
       }
@@ -516,7 +518,11 @@ class DataOperator {
       batch.concat(postFiles);
 
       // calls handler for postMetadata ( embeds and images )
-      const postMetadata = (await this.handlePostMetadata({images, embeds, prepareRowsOnly: true})) as PostMetadata[];
+      const postMetadata = (await this.handlePostMetadata({
+          images,
+          embeds,
+          prepareRowsOnly: true,
+      })) as PostMetadata[];
       batch.concat(postMetadata);
 
       if (batch.length) {

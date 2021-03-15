@@ -7,7 +7,7 @@ import {MM_TABLES} from '@constants/database';
 import {RawPost, RawReaction} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
-import {ChainPosts, SanitizePosts, SanitizeReactions} from './types';
+import {ChainPosts, SanitizePosts, SanitizeReactions} from '../types';
 
 const {REACTION} = MM_TABLES.SERVER;
 
@@ -49,16 +49,19 @@ export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainP
     const posts: RawPost[] = [];
     rawPosts.forEach((post) => {
         const postId = post.id;
-        const postIdx = orders.findIndex((order) => {
+        const orderIndex = orders.findIndex((order) => {
             return order === postId;
         });
 
-        if (postIdx === -1) {
+        console.log(`orderIndex ${orderIndex} for postId ${postId}`);
+
+        if (orderIndex === -1) {
             // This case will not occur as we are using 'ordered' posts for this step.  However, if this happens, that
             // implies that we might be dealing with an unordered post and in which case we do not action on it.
+        } else if (orderIndex === 0) {
+            posts.push({...post, prev_post_id: previousPostId});
         } else {
-            const prevPostId = postIdx + 1 < orders.length ? orders[postIdx + 1] : previousPostId;
-            posts.push({...post, prev_post_id: prevPostId});
+            posts.push({...post, prev_post_id: orders[orderIndex - 1]});
         }
     });
 

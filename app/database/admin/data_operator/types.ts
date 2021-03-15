@@ -9,7 +9,6 @@ import {
     RawPost,
     RawReaction,
 } from '@typings/database/database';
-import {OperationType} from './index';
 
 export type HandleReactions = {
   reactions: RawReaction[];
@@ -29,7 +28,7 @@ export type HandlePostMetadata = {
 
 export type HandlePosts = {
   optType: OperationType;
-  orders?: string[];
+  orders: string[];
   values: RawPost[];
   previousPostId?: string;
 };
@@ -50,3 +49,19 @@ export type SanitizePosts = {
   posts: RawPost[];
   orders: string[];
 };
+
+export enum OperationType {
+    CREATE = 'CREATE',
+    UPDATE = 'UPDATE',
+    DELETE = 'DELETE',
+}
+
+export enum IsolatedEntities {
+    APP = 'app',
+    GLOBAL = 'global',
+    SERVERS = 'servers',
+    CUSTOM_EMOJI = 'CustomEmoji',
+    ROLE = 'Role',
+    SYSTEM = 'System',
+    TERMS_OF_SERVICE = 'TermsOfService',
+}

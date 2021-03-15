@@ -36,7 +36,7 @@ import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
-import {OperationType} from './index';
+import {OperationType} from '../types';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
