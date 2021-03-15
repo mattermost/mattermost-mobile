@@ -23,14 +23,14 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
             case AppCallResponseTypes.OK:
                 return {data: res};
             case AppCallResponseTypes.ERROR:
-                return {data: res};
+                return {error: res};
             case AppCallResponseTypes.FORM: {
                 if (!res.form) {
                     const errMsg = intl.formatMessage({
                         id: 'apps.error.responses.form.no_form',
                         defaultMessage: 'Response type is `form`, but no form was included in response.',
                     });
-                    return {data: makeCallErrorResponse(errMsg)};
+                    return {error: makeCallErrorResponse(errMsg)};
                 }
 
                 const screen = EphemeralStore.getNavigationTopComponentId();
@@ -46,7 +46,7 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                         id: 'apps.error.responses.navigate.no_url',
                         defaultMessage: 'Response type is `navigate`, but no url was included in response.',
                     });
-                    return {data: makeCallErrorResponse(errMsg)};
+                    return {error: makeCallErrorResponse(errMsg)};
                 }
 
                 if (type !== AppCallTypes.SUBMIT) {
@@ -54,7 +54,7 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                         id: 'apps.error.responses.navigate.no_submit',
                         defaultMessage: 'Response type is `navigate`, but the call was not a submission.',
                     });
-                    return {data: makeCallErrorResponse(errMsg)};
+                    return {error: makeCallErrorResponse(errMsg)};
                 }
 
                 dispatch(handleGotoLocation(res.navigate_to_url, intl));
@@ -67,7 +67,7 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                 }, {
                     type: responseType,
                 });
-                return {data: makeCallErrorResponse(errMsg)};
+                return {error: makeCallErrorResponse(errMsg)};
             }
             }
         } catch (error) {
@@ -75,7 +75,7 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                 id: 'apps.error.responses.unexpected_error',
                 defaultMessage: 'Received an unexpected error.',
             });
-            return {data: makeCallErrorResponse(errMsg)};
+            return {error: makeCallErrorResponse(errMsg)};
         }
     };
 }

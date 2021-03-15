@@ -55,19 +55,21 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                     }));
                 }
 
-                const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl)) as {data: AppCallResponse};
-                const callResp = res.data;
+                const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));
+                if (res.error) {
+                    const errorResponse = res.error as AppCallResponse;
+                    return createErrorMessage(errorResponse.error || intl.formatMessage({
+                        id: 'apps.error.unknown',
+                        defaultMessage: 'Unknown error.',
+                    }));
+                }
+                const callResp = res.data as AppCallResponse;
                 switch (callResp.type) {
                 case AppCallResponseTypes.OK:
                     if (callResp.markdown) {
                         dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id));
                     }
                     return {data: {}};
-                case AppCallResponseTypes.ERROR:
-                    return createErrorMessage(callResp.error || intl.formatMessage({
-                        id: 'apps.error.unknown',
-                        defaultMessage: 'Unknown error.',
-                    }));
                 case AppCallResponseTypes.FORM:
                 case AppCallResponseTypes.NAVIGATE:
                     return {data: {}};

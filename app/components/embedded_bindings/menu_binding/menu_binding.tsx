@@ -15,7 +15,7 @@ import {createCallContext, createCallRequest} from '@utils/apps';
 
 type Props = {
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         getChannel: (channelId: string) => Promise<ActionResult>;
         sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     };
@@ -41,6 +41,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
         if (!selected) {
             return;
         }
+        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
 
         this.setState({selected});
         const binding = this.props.binding?.bindings?.find((b) => b.location === selected.value);
@@ -80,25 +81,26 @@ export default class MenuBinding extends PureComponent<Props, State> {
         );
 
         const res = await actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
-        const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
+        if (res.error) {
+            const errorResponse = res.error;
+            const errorMessage = errorResponse.error || intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error happenned',
+            });
+            ephemeral(errorMessage);
+            return;
+        }
+
+        const callResp = res.data!;
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
                 ephemeral(callResp.markdown);
             }
-            break;
-        case AppCallResponseTypes.ERROR: {
-            const errorMessage = callResp.error || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error happenned',
-            });
-            ephemeral(errorMessage);
-            break;
-        }
+            return;
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.FORM:
-            break;
+            return;
         default: {
             const errorMessage = intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',

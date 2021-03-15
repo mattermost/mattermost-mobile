@@ -22,7 +22,7 @@ type Props = {
     currentChannel: Channel;
     appsEnabled: boolean;
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     }
 }
@@ -60,7 +60,7 @@ type OptionProps = {
     currentChannel: Channel;
     intl: typeof intlShape;
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     },
 }
@@ -82,8 +82,22 @@ const Option = injectIntl((props: OptionProps) => {
         );
 
         const res = await props.actions.doAppCall(call, AppCallTypes.SUBMIT, props.intl);
+        if (res.error) {
+            const errorResponse = res.error;
+            const title = props.intl.formatMessage({
+                id: 'mobile.general.error.title',
+                defaultMessage: 'Error',
+            });
+            const errorMessage = errorResponse.error || props.intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error happenned',
+            });
+            Alert.alert(title, errorMessage);
+            dismissModal();
+            return;
+        }
 
-        const callResp = (res as {data: AppCallResponse}).data;
+        const callResp = res.data!;
         const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.currentChannel.id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
@@ -91,18 +105,6 @@ const Option = injectIntl((props: OptionProps) => {
                 ephemeral(callResp.markdown);
             }
             break;
-        case AppCallResponseTypes.ERROR: {
-            const title = props.intl.formatMessage({
-                id: 'mobile.general.error.title',
-                defaultMessage: 'Error',
-            });
-            const errorMessage = callResp.error || props.intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error happenned',
-            });
-            Alert.alert(title, errorMessage);
-            break;
-        }
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.FORM:
             break;

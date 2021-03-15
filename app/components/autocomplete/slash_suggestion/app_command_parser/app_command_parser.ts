@@ -852,17 +852,20 @@ export class AppCommandParser {
             this.getAppContext(binding.app_id),
         );
 
-        const res = await this.store.dispatch(doAppCall(payload, AppCallTypes.FORM, this.intl)) as {data: AppCallResponse};
-        const callResponse = res.data;
-        switch (callResponse.type) {
-        case AppCallResponseTypes.FORM:
-            break;
-        case AppCallResponseTypes.ERROR:
-            this.displayError(callResponse.error || this.intl.formatMessage({
+        const res = await this.store.dispatch(doAppCall(payload, AppCallTypes.FORM, this.intl));
+        if (res.error) {
+            const errorResponse = res.error as AppCallResponse;
+            this.displayError(errorResponse.error || this.intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error.',
             }));
             return undefined;
+        }
+
+        const callResponse = res.data as AppCallResponse;
+        switch (callResponse.type) {
+        case AppCallResponseTypes.FORM:
+            break;
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.OK:
             this.displayError(this.intl.formatMessage({
@@ -1095,17 +1098,19 @@ export class AppCommandParser {
         call.query = parsed.incomplete;
 
         type ResponseType = {items: AppSelectOption[]};
-        const res = await this.store.dispatch(doAppCall<ResponseType>(call, AppCallTypes.LOOKUP, this.intl)) as {data: AppCallResponse<ResponseType>};
-        const callResponse = res.data;
-
-        switch (callResponse.type) {
-        case AppCallResponseTypes.OK:
-            break;
-        case AppCallResponseTypes.ERROR:
-            return this.makeSuggestionError(callResponse.error || this.intl.formatMessage({
+        const res = await this.store.dispatch(doAppCall<ResponseType>(call, AppCallTypes.LOOKUP, this.intl));
+        if (res.error) {
+            const errorResponse = res.error as AppCallResponse;
+            return this.makeSuggestionError(errorResponse.error || this.intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error.',
             }));
+        }
+
+        const callResponse = res.data as AppCallResponse<ResponseType>;
+        switch (callResponse.type) {
+        case AppCallResponseTypes.OK:
+            break;
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.FORM:
             return this.makeSuggestionError(this.intl.formatMessage({

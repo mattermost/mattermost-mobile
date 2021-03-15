@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {GlobalState} from '@mm-redux/types/store';
 import {doAppCall} from '@actions/apps';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
-import {AppCallRequest, AppCallType} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import MenuBinding from './menu_binding';
@@ -25,7 +25,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
     getChannel: (channelId: string) => Promise<ActionResult>;
     sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
 }

@@ -15,7 +15,7 @@ import AppsFormContainer from './apps_form_container';
 import {sendEphemeralPost} from '@actions/views/post';
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data: AppCallResponse}>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
     sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
 };
 

@@ -31,9 +31,9 @@ export type Props = {
             values: {
                 [name: string]: string;
             };
-        }) => Promise<{data: AppCallResponse<FormResponseData>, error?: Error}>;
-        performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<{data: AppCallResponse<AppLookupResponse>, error?: Error}>;
-        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<{data: AppCallResponse<FormResponseData>, error?: Error}>;
+        }) => Promise<{data?: AppCallResponse<FormResponseData>, error?: AppCallResponse<FormResponseData>}>;
+        performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<{data?: AppCallResponse<AppLookupResponse>, error?: AppCallResponse<AppLookupResponse>}>;
+        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<{data?: AppCallResponse<FormResponseData>, error?: AppCallResponse<FormResponseData>}>;
     };
     theme: Theme;
     componentId: string;
@@ -149,19 +149,32 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             submission.values[this.props.form.submit_buttons] = button;
         }
 
-        const {data, error} = await this.props.actions.submit(submission);
-        if (data?.type === AppCallResponseTypes.FORM && data.form) {
+        const res = await this.props.actions.submit(submission);
+        if (res.error) {
+            const errorResponse = res.error;
+            const errorMessage = errorResponse.error;
+            const hasErrors = this.updateErrors(elements, errorResponse.data?.errors, errorMessage);
+            if (!hasErrors) {
+                this.handleHide();
+            }
             return;
         }
 
-        let hasErrors = false;
-        const errorMessage = error?.message;
-        if (data && data.type === AppCallResponseTypes.ERROR) {
-            hasErrors = this.updateErrors(elements, data.data?.errors, errorMessage);
-        }
-
-        if (!hasErrors) {
+        const callResponse = res.data!;
+        switch (callResponse.type) {
+        case AppCallResponseTypes.OK:
+        case AppCallResponseTypes.NAVIGATE:
             this.handleHide();
+            return;
+        case AppCallResponseTypes.FORM:
+            return;
+        default:
+            this.updateErrors([], undefined, this.context.intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResponse.type,
+            }));
         }
     }
 
@@ -195,10 +208,25 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         }
 
         const res = await this.props.actions.performLookupCall(field, this.state.values, userInput);
-        const callResp = res.data;
+        if (res.error) {
+            const errorResponse = res.error;
+            const errMsg = errorResponse.error || intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error.',
+            });
+            this.setState({
+                fieldErrors: {
+                    ...this.state.fieldErrors,
+                    [field.name]: errMsg,
+                },
+            });
+            return [];
+        }
+
+        const callResp = res.data!;
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
-            return res.data.data?.items || [];
+            return callResp.data?.items || [];
         case AppCallResponseTypes.FORM:
         case AppCallResponseTypes.NAVIGATE: {
             const errMsg = intl.formatMessage({
@@ -208,19 +236,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 type: callResp.type,
             },
             );
-            this.setState({
-                fieldErrors: {
-                    ...this.state.fieldErrors,
-                    [field.name]: errMsg,
-                },
-            });
-            return [];
-        }
-        case AppCallResponseTypes.ERROR: {
-            const errMsg = callResp.error || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error.',
-            });
             this.setState({
                 fieldErrors: {
                     ...this.state.fieldErrors,
@@ -261,15 +276,37 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const values = {...this.state.values, [name]: value};
 
         if (field.refresh) {
-            this.props.actions.refreshOnSelect(field, values, value).then(({data, error}) => {
-                if (data.type !== AppCallResponseTypes.ERROR) {
+            this.props.actions.refreshOnSelect(field, values, value).then((res) => {
+                if (res.error) {
+                    const errorResponse = res.error;
+                    const errorMsg = errorResponse.error;
+                    const errors = errorResponse.data?.errors;
+                    const elements = fieldsAsElements(this.props.form.fields);
+                    this.updateErrors(elements, errors, errorMsg);
                     return;
                 }
 
-                const errorMsg = error?.message;
-                const errors = data.data?.errors;
-                const elements = fieldsAsElements(this.props.form.fields);
-                this.updateErrors(elements, errors, errorMsg);
+                const callResponse = res.data!;
+                switch (callResponse.type) {
+                case AppCallResponseTypes.FORM:
+                    return;
+                case AppCallResponseTypes.OK:
+                case AppCallResponseTypes.NAVIGATE:
+                    this.updateErrors([], undefined, this.context.intl.formatMessage({
+                        id: 'apps.error.responses.unexpected_type',
+                        defaultMessage: 'App response type was not expected. Response type: {type}.',
+                    }, {
+                        type: callResponse.type,
+                    }));
+                    return;
+                default:
+                    this.updateErrors([], undefined, this.context.intl.formatMessage({
+                        id: 'apps.error.responses.unknown_type',
+                        defaultMessage: 'App response type not supported. Response type: {type}.',
+                    }, {
+                        type: callResponse.type,
+                    }));
+                }
             });
         }
 

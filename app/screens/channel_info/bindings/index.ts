@@ -9,7 +9,7 @@ import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionResult, GenericAction, ActionFunc} from '@mm-redux/types/actions';
-import {AppCallRequest, AppCallType} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 
 import {appsEnabled} from '@utils/apps';
 import {doAppCall} from '@actions/apps';
@@ -30,7 +30,7 @@ function mapStateToProps(state: GlobalState) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
     sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
 }
 
