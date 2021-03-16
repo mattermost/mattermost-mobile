@@ -23,6 +23,7 @@ import {
     RawPostsInThread,
     RawReaction,
 } from '@typings/database/database';
+import {IsolatedEntities, OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
@@ -52,11 +53,7 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import {
 
-    IsolatedEntities,
-    OperationType,
-} from './types';
 import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 
 const {

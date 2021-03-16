@@ -4,10 +4,11 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
+import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
 
-import DatabaseManager, {DatabaseType} from '../../database_manager';
+import DatabaseManager from '../../database_manager';
 import DataOperator from '../index';
-import {IsolatedEntities, OperationType} from '../types';
+
 import {
     operateAppRecord,
     operateCustomEmojiRecord,

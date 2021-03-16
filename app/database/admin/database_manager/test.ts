@@ -4,11 +4,11 @@
 import {Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-
 import {DatabaseInstance} from '@typings/database/database';
+import {DatabaseType} from '@typings/database/enums';
 import IServers from '@typings/database/servers';
 
-import DatabaseManager, {DatabaseType} from './index';
+import DatabaseManager from './index';
 
 jest.mock('./index');
 

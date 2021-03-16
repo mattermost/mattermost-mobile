@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DatabaseManager, {DatabaseType} from '../database_manager';
+import DatabaseManager from '../database_manager';
+
+import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
 import DataOperator from './index';
 import {
     operateAppRecord,
@@ -14,7 +16,6 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import {OperationType, IsolatedEntities} from './types';
 
 jest.mock('../database_manager');
 
@@ -243,6 +244,9 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             tableName: 'INVALID_TABLE_NAME',
             values: [{id: 'tos-1', acceptedAt: 1}],
         });

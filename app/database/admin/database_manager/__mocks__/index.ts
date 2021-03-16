@@ -1,7 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Model, Q} from '@nozbe/watermelondb';
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import {Class} from '@nozbe/watermelondb/utils/common';
+
+import {MM_TABLES} from '@constants/database';
+import type {DatabaseInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
+import {DatabaseType} from '@typings/database/enums';
+import IServers from '@typings/database/servers';
+
+import DefaultMigration from '../../../default/migration';
 import {App, Global, Servers} from '../../../default/models';
+import {defaultSchema} from '../../../default/schema';
+import ServerMigration from '../../../server/migration';
 import {
     Channel,
     ChannelInfo,
@@ -32,16 +44,6 @@ import {
     TermsOfService,
     User,
 } from '../../../server/models';
-import {Database, Model, Q} from '@nozbe/watermelondb';
-import type {DatabaseInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
-
-import {Class} from '@nozbe/watermelondb/utils/common';
-import DefaultMigration from '../../../default/migration';
-import IServers from '@typings/database/servers';
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
-import {MM_TABLES} from '@constants/database';
-import ServerMigration from '../../../server/migration';
-import {defaultSchema} from '../../../default/schema';
 import {serverSchema} from '../../../server/schema';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
@@ -56,12 +58,6 @@ type DatabaseConnection = {
 
 // The elements required to switch to another active server database
 type ActiveServerDatabase = { displayName: string; serverUrl: string };
-
-// The only two types of databases in the app
-export enum DatabaseType {
-    DEFAULT,
-    SERVER,
-}
 
 class DatabaseManager {
     private activeDatabase: DatabaseInstance;

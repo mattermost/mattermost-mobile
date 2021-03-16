@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DatabaseManager, {DatabaseType} from '../../database_manager';
+import {DatabaseType} from '@typings/database/enums';
+
+import DatabaseManager from '../../database_manager';
 
 import DataOperator from '../index';
 
-import {mockedPosts, mockedReactions} from './mock';
 import {createPostsChain, sanitizePosts, sanitizeReactions} from './index';
+import {mockedPosts, mockedReactions} from './mock';
 
 jest.mock('../../database_manager');
 

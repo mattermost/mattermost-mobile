@@ -26,6 +26,7 @@ import {
     RawTermsOfService,
 } from '@typings/database/database';
 import Draft from '@typings/database/draft';
+import {OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Post from '@typings/database/post';
@@ -38,7 +39,6 @@ import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
 
-import {OperationType} from '../types';
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
     CUSTOM_EMOJI,
