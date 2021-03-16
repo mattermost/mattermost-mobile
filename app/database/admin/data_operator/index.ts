@@ -68,19 +68,15 @@ const {
 
 class DataOperator {
   /**
-   * handleIsolatedEntity: Operator that handles Create/Update operations on the isolated entities as
-   * described by the IsolatedTables type
+   * handleIsolatedEntity: Handler responsible for the Create/Update operations on the isolated entities as described
+   * by the IsolatedEntities enum
    * @param {HandleIsolatedEntityData} entityData
    * @param {OperationType} entityData.optType
    * @param {IsolatedEntities} entityData.tableName
    * @param {Records} entityData.values
    * @returns {Promise<void>}
    */
-  handleIsolatedEntity = async ({
-      optType,
-      tableName,
-      values,
-  }: HandleIsolatedEntityData): Promise<void> => {
+  handleIsolatedEntity = async ({optType, tableName, values}: HandleIsolatedEntityData) => {
       let recordOperator;
 
       switch (tableName) {
@@ -123,6 +119,11 @@ class DataOperator {
       }
   };
 
+  /**
+   * handleDraft: Handler responsible for the Create/Update operations occurring the Draft entity from the 'Server' schema
+   * @param {RawDraft[]} drafts
+   * @returns {Promise<any[]>}
+   */
   handleDraft = async (drafts: RawDraft[]) => {
       if (!drafts.length) {
           return [];
@@ -138,6 +139,11 @@ class DataOperator {
       return [];
   };
 
+  /**
+   * handlePostsInThread: Handler responsible for the Create/Update operations occurring the PostsInThread entity from the 'Server' schema
+   * @param {RawPostsInThread[]} postsInThreads
+   * @returns {Promise<any[]>}
+   */
   handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
       if (!postsInThreads.length) {
           return [];
@@ -182,6 +188,13 @@ class DataOperator {
       return [];
   };
 
+  /**
+   * handleReactions: Handler responsible for the Create/Update operations occurring the Reaction entity from the 'Server' schema
+   * @param {HandleReactions} handleReactions
+   * @param {RawReaction[]} handleReactions.reactions
+   * @param {boolean} handleReactions.prepareRowsOnly
+   * @returns {Promise<any[] | (Reaction | CustomEmoji)[]>}
+   */
   handleReactions = async ({reactions, prepareRowsOnly}: HandleReactions) => {
       if (!reactions.length) {
           return [];
@@ -237,6 +250,13 @@ class DataOperator {
       return [];
   };
 
+  /**
+   * handleFiles: Handler responsible for the Create/Update operations occurring the File entity from the 'Server' schema
+   * @param {HandleFiles} handleFiles
+   * @param {RawFile[]} handleFiles.files
+   * @param {boolean} handleFiles.prepareRowsOnly
+   * @returns {Promise<File[] | any[]>}
+   */
   handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
       if (!files.length) {
           return [];
@@ -263,11 +283,15 @@ class DataOperator {
       return [];
   };
 
-  handlePostMetadata = async ({
-      embeds,
-      images,
-      prepareRowsOnly,
-  }: HandlePostMetadata) => {
+  /**
+   * handlePostMetadata: Handler responsible for the Create/Update operations occurring the PostMetadata entity from the 'Server' schema
+   * @param {HandlePostMetadata} handlePostMetadata
+   * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
+   * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
+   * @param {boolean} handlePostMetadata.prepareRowsOnly
+   * @returns {Promise<any[] | PostMetadata[]>}
+   */
+  handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadata) => {
       const metadata: RawPostMetadata[] = [];
 
       if (images?.length) {
@@ -318,6 +342,11 @@ class DataOperator {
       return [];
   };
 
+  /**
+   * handlePostsInChannel: Handler responsible for the Create/Update operations occurring the PostsInChannel entity from the 'Server' schema
+   * @param {RawPost[]} posts
+   * @returns {Promise<any[]>}
+   */
   handlePostsInChannel = async (posts: RawPost[]) => {
       // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
       // into existing chains in the PostsInChannel table
@@ -375,7 +404,7 @@ class DataOperator {
       let found = false;
       let targetChunk: PostsInChannel;
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
-      // find if we should plug the chain before
+          // find if we should plug the chain before
           const chunk = chunks[chunkIndex];
           if (earliest < chunk.earliest) {
               found = true;
@@ -388,7 +417,7 @@ class DataOperator {
       }
 
       if (found) {
-          // We have a potential chunk to plug nearby
+      // We have a potential chunk to plug nearby
           const potentialPosts = (await database.collections.
               get(POST).
               query(Q.where('create_at', earliest)).
@@ -398,8 +427,7 @@ class DataOperator {
               const targetPost = potentialPosts[0];
 
               // now we decide if we need to operate on the targetChunk or just create a new chunk
-              const isChainable =
-          tipOfChain.prev_post_id === targetPost.previousPostId;
+              const isChainable = tipOfChain.prev_post_id === targetPost.previousPostId;
 
               if (isChainable) {
                   // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
@@ -421,19 +449,21 @@ class DataOperator {
       return [];
   };
 
-  handlePosts = async ({
-      optType,
-      orders,
-      values,
-      previousPostId,
-  }: HandlePosts) => {
+  /**
+   * handlePosts: Handler responsible for the Create/Update operations occurring the Post entity from the 'Server' schema
+   * @param {HandlePosts} handlePosts
+   * @param {OperationType} optType
+   * @param {string[]} orders
+   * @param {RawPost[]} values
+   * @param {string | undefined} previousPostId
+   * @returns {Promise<void>}
+   */
+  handlePosts = async ({optType, orders, values, previousPostId}: HandlePosts) => {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
       if (!orders?.length) {
-          throw new DatabaseOperatorException(
-              'An empty "order" array has been passed to the HandlePosts method',
-          );
+          throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
       }
 
       let batch: Model[] = [];
@@ -515,11 +545,18 @@ class DataOperator {
       batch = batch.concat(postReactions);
 
       // calls handler for Files
-      const postFiles = (await this.handleFiles({files, prepareRowsOnly: true})) as File[];
+      const postFiles = (await this.handleFiles({
+          files,
+          prepareRowsOnly: true,
+      })) as File[];
       batch = batch.concat(postFiles);
 
       // calls handler for postMetadata ( embeds and images )
-      const postMetadata = (await this.handlePostMetadata({images, embeds, prepareRowsOnly: true})) as PostMetadata[];
+      const postMetadata = (await this.handlePostMetadata({
+          images,
+          embeds,
+          prepareRowsOnly: true,
+      })) as PostMetadata[];
       batch = batch.concat(postMetadata);
 
       if (batch.length) {
@@ -560,6 +597,15 @@ class DataOperator {
       }
   };
 
+  /**
+   * prepareBase: Utility method that actually calls the operators for the handlers
+   * @param {Database} database
+   * @param {OperationType} optType
+   * @param {string} tableName
+   * @param {RecordValue[]} values
+   * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
+   * @returns {Promise<unknown[] | any[]>}
+   */
   private prepareBase = async ({
       database,
       optType,
