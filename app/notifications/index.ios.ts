@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import {Notifications} from 'react-native-notifications';
 
+/* eslint-disable */
 export default {
     getDeliveredNotifications: Notifications.ios.getDeliveredNotifications,
     getPreferences: async () => null,
