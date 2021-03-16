@@ -15,9 +15,12 @@ class LongPostScreen {
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
             postItemHeaderReply,
+            postItemImage,
             postItemMessage,
             postItemProfilePicture,
             postItemProfilePictureUserStatus,
+            postItemShowLessButton,
+            postItemShowMoreButton,
         } = Post.getPost(this.testID.longPostItem, postId, postMessage, postProfileOptions);
 
         return {
@@ -26,9 +29,12 @@ class LongPostScreen {
             longPostItemHeaderDisplayName: postItemHeaderDisplayName,
             longPostItemHeaderGuestTag: postItemHeaderGuestTag,
             longPostItemHeaderReply: postItemHeaderReply,
+            longPostItemImage: postItemImage,
             longPostItemMessage: postItemMessage,
             longPostItemProfilePicture: postItemProfilePicture,
             longPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
+            longPostItemShowLessButton: postItemShowLessButton,
+            longPostItemShowMoreButton: postItemShowMoreButton,
         };
     }
 

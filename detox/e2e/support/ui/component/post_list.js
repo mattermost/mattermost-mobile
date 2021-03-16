@@ -17,10 +17,13 @@ class PostList {
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
             postItemHeaderReply,
+            postItemImage,
             postItemMessage,
             postItemPreHeaderText,
             postItemProfilePicture,
             postItemProfilePictureUserStatus,
+            postItemShowLessButton,
+            postItemShowMoreButton,
         } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
 
         return {
@@ -29,10 +32,13 @@ class PostList {
             postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
             postListPostItemHeaderGuestTag: postItemHeaderGuestTag,
             postListPostItemHeaderReply: postItemHeaderReply,
+            postListPostItemImage: postItemImage,
             postListPostItemMessage: postItemMessage,
             postListPostItemPreHeaderText: postItemPreHeaderText,
             postListPostItemProfilePicture: postItemProfilePicture,
             postListPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
+            postListPostItemShowLessButton: postItemShowLessButton,
+            postListPostItemShowMoreButton: postItemShowMoreButton,
         };
     }
 

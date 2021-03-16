@@ -23,6 +23,17 @@ import {getRandomId} from '@support/utils';
 
 describe('Direct Messages', () => {
     const searchTerm = getRandomId();
+    const {
+        channelNavBarTitle,
+        closeMainSidebar,
+        openMainSidebar,
+    } = ChannelScreen;
+    const {
+        getUserAtIndex,
+        searchInput,
+        startButton,
+    } = MoreDirectMessagesScreen;
+    const {getChannelByDisplayName} = MainSidebar;
     let testUser;
     let testOtherUser;
     let townSquareChannel;
@@ -45,18 +56,6 @@ describe('Direct Messages', () => {
     });
 
     it('MM-T3215 should be able to close direct message', async () => {
-        const {
-            channelNavBarTitle,
-            closeMainSidebar,
-            openMainSidebar,
-        } = ChannelScreen;
-        const {
-            getUserAtIndex,
-            searchInput,
-            startButton,
-        } = MoreDirectMessagesScreen;
-        const {getChannelByDisplayName} = MainSidebar;
-
         // # Create a DM with the other user
         await openMainSidebar();
         await MoreDirectMessagesScreen.open();
@@ -80,5 +79,16 @@ describe('Direct Messages', () => {
         await openMainSidebar();
         await expect(getChannelByDisplayName(testOtherUser.username)).not.toBeVisible();
         await closeMainSidebar();
+    });
+
+    it('MM-T3216 should be able to open direct message with self', async () => {
+        // # Open a DM with self
+        await openMainSidebar();
+        await MoreDirectMessagesScreen.open();
+        await searchInput.typeText(testUser.username);
+        await getUserAtIndex(0).tap();
+
+        // * Verify DM channel with self is displayed
+        await expect(channelNavBarTitle).toHaveText(`${testUser.username} (you) `);
     });
 });
