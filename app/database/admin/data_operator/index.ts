@@ -436,8 +436,6 @@ class DataOperator {
       // We treat those posts who are present in the order array only
       const {orderedPosts, unOrderedPosts} = sanitizePosts({posts: values, orders});
 
-      // console.log('sanitized posts => ', {orderedPosts, unOrderedPosts});
-
       // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
       const linkedRawPosts: RawPost[] = createPostsChain({
           orders,
