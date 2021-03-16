@@ -3,65 +3,79 @@
 
 import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
-import {AppCallResponse, AppForm, AppCallRequest} from '@mm-redux/types/apps';
+import {AppCallResponse, AppForm, AppCallRequest, AppCallType} from '@mm-redux/types/apps';
 import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
-import {sendEphemeralPost} from './views/post';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {showModal} from './navigation';
 import {Theme} from '@mm-redux/types/preferences';
 import CompassIcon from '@components/compass_icon';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EphemeralStore from '@store/ephemeral_store';
+import {makeCallErrorResponse} from '@utils/apps';
 
-export function doAppCall<Res=unknown>(call: AppCallRequest, intl: any): ActionFunc {
+export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, intl: any): ActionFunc {
     return async (dispatch, getState) => {
-        const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, call?.context.channel_id, call?.context.root_id));
         try {
-            const res = await Client4.executeAppCall(call) as AppCallResponse<Res>;
+            const res = await Client4.executeAppCall(call, type) as AppCallResponse<Res>;
             const responseType = res.type || AppCallResponseTypes.OK;
 
             switch (responseType) {
             case AppCallResponseTypes.OK:
-                if (res.markdown) {
-                    if (!call.context.channel_id) {
-                        return {data: res};
-                    }
-
-                    ephemeral(res.markdown);
-                }
                 return {data: res};
             case AppCallResponseTypes.ERROR:
-                return {data: res, error: {message: res.error}};
+                return {error: res};
             case AppCallResponseTypes.FORM: {
                 if (!res.form) {
-                    const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `form`, but no form was included in response.';
-
-                    ephemeral(errMsg);
-                    return {data: res};
+                    const errMsg = intl.formatMessage({
+                        id: 'apps.error.responses.form.no_form',
+                        defaultMessage: 'Response type is `form`, but no form was included in response.',
+                    });
+                    return {error: makeCallErrorResponse(errMsg)};
                 }
 
                 const screen = EphemeralStore.getNavigationTopComponentId();
-                if (call.type === AppCallTypes.SUBMIT && screen !== 'AppForm') {
+                if (type === AppCallTypes.SUBMIT && screen !== 'AppForm') {
                     showAppForm(res.form, call, getTheme(getState()));
                 }
 
                 return {data: res};
             }
             case AppCallResponseTypes.NAVIGATE:
-                if (!res.url) {
-                    const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `navigate`, but no url was included in response.';
-
-                    ephemeral(errMsg);
-                    return {data: res};
+                if (!res.navigate_to_url) {
+                    const errMsg = intl.formatMessage({
+                        id: 'apps.error.responses.navigate.no_url',
+                        defaultMessage: 'Response type is `navigate`, but no url was included in response.',
+                    });
+                    return {error: makeCallErrorResponse(errMsg)};
                 }
-                dispatch(handleGotoLocation(res.url, intl));
+
+                if (type !== AppCallTypes.SUBMIT) {
+                    const errMsg = intl.formatMessage({
+                        id: 'apps.error.responses.navigate.no_submit',
+                        defaultMessage: 'Response type is `navigate`, but the call was not a submission.',
+                    });
+                    return {error: makeCallErrorResponse(errMsg)};
+                }
+
+                dispatch(handleGotoLocation(res.navigate_to_url, intl));
 
                 return {data: res};
+            default: {
+                const errMsg = intl.formatMessage({
+                    id: 'apps.error.responses.unknown_type',
+                    defaultMessage: 'App response type not supported. Response type: {type}.',
+                }, {
+                    type: responseType,
+                });
+                return {error: makeCallErrorResponse(errMsg)};
             }
-
-            return {data: res};
+            }
         } catch (error) {
-            return {error};
+            const errMsg = error.message || intl.formatMessage({
+                id: 'apps.error.responses.unexpected_error',
+                defaultMessage: 'Received an unexpected error.',
+            });
+            return {error: makeCallErrorResponse(errMsg)};
         }
     };
 }

@@ -64,7 +64,6 @@ export type AppCall = {
 };
 
 export type AppCallRequest = AppCall & {
-    type: AppCallType;
     context: AppContext;
     values?: AppCallValues;
     raw_command?: string;
@@ -79,7 +78,7 @@ export type AppCallResponse<Res = unknown> = {
     markdown?: string;
     data?: Res;
     error?: string;
-    url?: string;
+    navigate_to_url?: string;
     use_external_browser?: boolean;
     call?: AppCall;
     form?: AppForm;

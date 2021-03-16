@@ -7,6 +7,7 @@ export type {
     AppField,
     AppSelectOption,
     AppCallResponse,
+    AppCallValues,
     AppContext,
     AppForm,
     AutocompleteElement,
@@ -42,13 +43,22 @@ export {
 
 export {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 export {getPost} from '@mm-redux/selectors/entities/posts';
-export {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
-export {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+export {getChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
+export {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+export {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/entities/users';
+
+export {getUserByUsername} from '@mm-redux/actions/users';
+export {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
+export {sendEphemeralPost} from '@actions/views/post';
 
 export {doAppCall} from '@actions/apps';
+export {createCallRequest} from '@utils/apps';
 
 import Store from '@store/store';
 export const getStore = () => Store.redux;
+
+import keyMirror from '@mm-redux/utils/key_mirror';
+export {keyMirror};
 
 export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
 
@@ -57,7 +67,12 @@ export const getExecuteSuggestion = (_: ParsedCommand): AutocompleteSuggestion |
     return null;
 };
 
-import {sendEphemeralPost} from '@actions/views/post';
-export const displayError = (err: string) => {
-    sendEphemeralPost(err);
+import {Alert} from 'react-native';
+import {intlShape} from 'react-intl';
+export const displayError = (intl: typeof intlShape, body: string) => {
+    const title = intl.formatMessage({
+        id: 'mobile.general.error.title',
+        defaultMessage: 'Error',
+    });
+    Alert.alert(title, body);
 };

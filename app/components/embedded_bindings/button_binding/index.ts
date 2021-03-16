@@ -8,12 +8,14 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {AppCallRequest} from '@mm-redux/types/apps';
+import {AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 import {doAppCall} from '@actions/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import ButtonBinding from './button_binding';
+import {getChannel} from '@mm-redux/actions/channels';
+import {sendEphemeralPost} from '@actions/views/post';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 type OwnProps = {
     postId: string;
@@ -21,20 +23,24 @@ type OwnProps = {
 
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
-        userId: getCurrentUserId(state),
         theme: getTheme(state),
         post: getPost(state, ownProps.postId),
+        currentTeamID: getCurrentTeamId(state),
     };
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
+    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
+    getChannel: (channelId: string) => Promise<ActionResult>;
+    sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
+            getChannel,
+            sendEphemeralPost,
         }, dispatch),
     };
 }

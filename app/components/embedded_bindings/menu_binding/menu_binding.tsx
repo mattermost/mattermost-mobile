@@ -7,17 +7,21 @@ import AutocompleteSelector from 'app/components/autocomplete_selector';
 import {intlShape} from 'react-intl';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
 import {Post} from '@mm-redux/types/posts';
-import {AppBinding, AppCallRequest} from '@mm-redux/types/apps';
+import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes} from '@mm-redux/constants/apps';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {Channel} from '@mm-redux/types/channels';
+import {createCallContext, createCallRequest} from '@utils/apps';
 
 type Props = {
     actions: {
-        doAppCall: (call: AppCallRequest, intl: any) => Promise<ActionResult>;
+        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
+        getChannel: (channelId: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
     };
     binding?: AppBinding;
     post: Post;
-    userId: string;
+    currentTeamID: string;
 }
 
 type State = {
@@ -34,10 +38,11 @@ export default class MenuBinding extends PureComponent<Props, State> {
         this.state = {};
     }
 
-    handleSelect = (selected?: PostActionOption) => {
+    handleSelect = async (selected?: PostActionOption) => {
         if (!selected) {
             return;
         }
+        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
 
         this.setState({selected});
         const binding = this.props.binding?.bindings?.find((b) => b.location === selected.value);
@@ -46,30 +51,68 @@ export default class MenuBinding extends PureComponent<Props, State> {
             return;
         }
 
+        if (!binding.call) {
+            return;
+        }
+
         const {
             actions,
             post,
-            userId,
+            currentTeamID,
         } = this.props;
+        const intl = this.context.intl;
 
-        const call: AppCallRequest = {
-            ...binding.call,
-            type: AppCallTypes.SUBMIT,
-            path: binding.call?.path || '',
-            expand: {
-                post: AppExpandLevels.EXPAND_ALL,
-            },
-            context: {
-                acting_user_id: userId,
-                app_id: binding.app_id,
-                channel_id: post.channel_id,
-                location: AppBindingLocations.IN_POST + '/' + binding.location,
-                post_id: post.id,
-                user_id: userId,
-            },
-        };
+        let teamID = '';
+        const {data} = await this.props.actions.getChannel(post.channel_id) as {data?: any; error?: any};
+        if (data) {
+            const channel = data as Channel;
+            teamID = channel.team_id;
+        }
 
-        actions.doAppCall(call, this.context.intl);
+        const context = createCallContext(
+            binding.app_id,
+            AppBindingLocations.IN_POST + binding.location,
+            post.channel_id,
+            teamID || currentTeamID,
+            post.id,
+        );
+        const call = createCallRequest(
+            binding.call,
+            context,
+            {post: AppExpandLevels.EXPAND_ALL},
+        );
+
+        const res = await actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
+        if (res.error) {
+            const errorResponse = res.error;
+            const errorMessage = errorResponse.error || intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error occurred.',
+            });
+            ephemeral(errorMessage);
+            return;
+        }
+
+        const callResp = res.data!;
+        switch (callResp.type) {
+        case AppCallResponseTypes.OK:
+            if (callResp.markdown) {
+                ephemeral(callResp.markdown);
+            }
+            return;
+        case AppCallResponseTypes.NAVIGATE:
+        case AppCallResponseTypes.FORM:
+            return;
+        default: {
+            const errorMessage = intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            });
+            ephemeral(errorMessage);
+        }
+        }
     };
 
     render() {

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {AppBindingLocations} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {AppBinding, AppCall, AppCallRequest, AppCallValues, AppContext, AppExpand} from '@mm-redux/types/apps';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {AppBinding} from '@mm-redux/types/apps';
 import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
@@ -131,3 +131,51 @@ function filterInvalidPostMenuBindings(binding?: AppBinding) {
 
     binding.bindings?.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM).forEach(validatePostMenuBinding);
 }
+
+export function createCallContext(
+    appID: string,
+    location?: string,
+    channelID?: string,
+    teamID?: string,
+    postID?: string,
+    rootID?: string,
+): AppContext {
+    return {
+        app_id: appID,
+        location,
+        channel_id: channelID,
+        team_id: teamID,
+        post_id: postID,
+        root_id: rootID,
+    };
+}
+
+export function createCallRequest(
+    call: AppCall,
+    context: AppContext,
+    defaultExpand: AppExpand = {},
+    values?: AppCallValues,
+    rawCommand?: string,
+    query?: string,
+    selectedField?: string,
+): AppCallRequest {
+    return {
+        ...call,
+        context,
+        values,
+        expand: {
+            ...defaultExpand,
+            ...call.expand,
+        },
+        raw_command: rawCommand,
+        query,
+        selected_field: selectedField,
+    };
+}
+
+export const makeCallErrorResponse = (errMessage: string) => {
+    return {
+        type: AppCallResponseTypes.ERROR,
+        error: errMessage,
+    };
+};

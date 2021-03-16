@@ -457,7 +457,7 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
                 break;
             }
         } else {
-            const {formatMessage} = this.context.intl;
+            const {formatMessage} = intl;
             const onError = () => Alert.alert(
                 formatMessage({
                     id: 'mobile.server_link.error.title',

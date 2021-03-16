@@ -12,6 +12,8 @@ import {
 } from './tests/app_command_parser_test_dependencies';
 
 import {
+    AppCallResponseTypes,
+    AppCallTypes,
     AutocompleteSuggestion,
 } from './app_command_parser_dependencies';
 
@@ -42,10 +44,16 @@ describe('AppCommandParser', () => {
         return testStore;
     };
 
+    const intl = {
+        formatMessage: (message: {id: string, defaultMessage: string}) => {
+            return message.defaultMessage;
+        },
+    };
+
     let parser: AppCommandParser;
     beforeEach(async () => {
         const store = await makeStore(testBindings);
-        parser = new AppCommandParser(store as any, 'current_channel_id', 'root_id');
+        parser = new AppCommandParser(store as any, intl, 'current_channel_id', 'root_id');
     });
 
     type Variant = {
@@ -136,13 +144,13 @@ describe('AppCommandParser', () => {
             {
                 title: 'incomplete top command',
                 command: '/jir',
-                autocomplete: {expectError: '"/jir": no match'},
-                submit: {expectError: '"/jir": no match'},
+                autocomplete: {expectError: '`{command}`: No matching command found in this workspace.'},
+                submit: {expectError: '`{command}`: No matching command found in this workspace.'},
             },
             {
                 title: 'no space after the top command',
                 command: '/jira',
-                autocomplete: {expectError: '"/jira": no match'},
+                autocomplete: {expectError: '`{command}`: No matching command found in this workspace.'},
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.Command);
                     expect(parsed.binding?.label).toBe('jira');
@@ -219,11 +227,11 @@ describe('AppCommandParser', () => {
             test(tc.title, async () => {
                 const bindings = testBindings[0].bindings as AppBinding[];
 
-                let a = new ParsedCommand(tc.command, parser);
+                let a = new ParsedCommand(tc.command, parser, intl);
                 a = await a.matchBinding(bindings, true);
                 checkResult(a, tc.autocomplete || tc.submit);
 
-                let s = new ParsedCommand(tc.command, parser);
+                let s = new ParsedCommand(tc.command, parser, intl);
                 s = await s.matchBinding(bindings, false);
                 checkResult(s, tc.submit);
             });
@@ -364,7 +372,7 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.project).toBe(undefined);
                     expect(parsed.values?.issue).toBe(undefined);
                 }},
-                submit: {expectError: 'matching tick quote expected before end of input'},
+                submit: {expectError: 'Matching tick quote expected before end of input.'},
             },
             {
                 title: 'error: unmatched quote',
@@ -378,13 +386,13 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.project).toBe(undefined);
                     expect(parsed.values?.issue).toBe(undefined);
                 }},
-                submit: {expectError: 'matching double quote expected before end of input'},
+                submit: {expectError: 'Matching double quote expected before end of input.'},
             },
             {
                 title: 'missing required fields not a problem for parseCommand',
                 command: '/jira issue view --project "P 1"',
                 autocomplete: {verify: (parsed: ParsedCommand): void => {
-                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.state).toBe(ParseState.EndQuotedValue);
                     expect(parsed.binding?.label).toBe('view');
                     expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.incomplete).toBe('P 1');
@@ -393,7 +401,7 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.issue).toBe(undefined);
                 }},
                 submit: {verify: (parsed: ParsedCommand): void => {
-                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.state).toBe(ParseState.EndQuotedValue);
                     expect(parsed.binding?.label).toBe('view');
                     expect(parsed.form?.call?.path).toBe('/view-issue');
                     expect(parsed.values?.project).toBe('P 1');
@@ -403,17 +411,17 @@ describe('AppCommandParser', () => {
             {
                 title: 'error: invalid flag',
                 command: '/jira issue view --wrong test',
-                submit: {expectError: 'command does not accept flag wrong'},
+                submit: {expectError: 'Command does not accept flag `{flagName}`.'},
             },
             {
                 title: 'error: unexpected positional',
                 command: '/jira issue create wrong',
-                submit: {expectError: 'command does not accept 1 positional arguments'},
+                submit: {expectError: 'Command does not accept {positionX} positional arguments.'},
             },
             {
                 title: 'error: multiple equal signs',
                 command: '/jira issue create --project == test',
-                submit: {expectError: 'multiple = signs are not allowed'},
+                submit: {expectError: 'Multiple `=` signs are not allowed.'},
             },
         ];
 
@@ -421,12 +429,12 @@ describe('AppCommandParser', () => {
             test(tc.title, async () => {
                 const bindings = testBindings[0].bindings as AppBinding[];
 
-                let a = new ParsedCommand(tc.command, parser);
+                let a = new ParsedCommand(tc.command, parser, intl);
                 a = await a.matchBinding(bindings, true);
                 a = a.parseForm(true);
                 checkResult(a, tc.autocomplete || tc.submit);
 
-                let s = new ParsedCommand(tc.command, parser);
+                let s = new ParsedCommand(tc.command, parser, intl);
                 s = await s.matchBinding(bindings, false);
                 s = s.parseForm(false);
                 checkResult(s, tc.submit);
@@ -777,7 +785,7 @@ describe('AppCommandParser', () => {
 
         test('create flag project dynamic select value', async () => {
             const f = Client4.executeAppCall;
-            Client4.executeAppCall = jest.fn().mockResolvedValue(Promise.resolve({data: {items: [{label: 'special-label', value: 'special-value'}]}}));
+            Client4.executeAppCall = jest.fn().mockResolvedValue(Promise.resolve({type: AppCallResponseTypes.OK, data: {items: [{label: 'special-label', value: 'special-value'}]}}));
 
             const suggestions = await parser.getSuggestions('/jira issue create --project ');
             Client4.executeAppCall = f;
@@ -797,14 +805,14 @@ describe('AppCommandParser', () => {
             let suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic ');
             expect(suggestions).toEqual([
                 {
-                    Complete: 'jira issue create --project KT --summary "great feature" --epic Dylan Epic',
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic epic1',
                     Suggestion: 'Dylan Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
                     IconData: 'Create icon',
                 },
                 {
-                    Complete: 'jira issue create --project KT --summary "great feature" --epic Michael Epic',
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic epic2',
                     Suggestion: 'Michael Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
@@ -815,7 +823,7 @@ describe('AppCommandParser', () => {
             suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic M');
             expect(suggestions).toEqual([
                 {
-                    Complete: 'jira issue create --project KT --summary "great feature" --epic Michael Epic',
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic epic2',
                     Suggestion: 'Michael Epic',
                     Description: 'The Jira epic',
                     Hint: 'The thing is working great!',
@@ -824,7 +832,15 @@ describe('AppCommandParser', () => {
             ]);
 
             suggestions = await parser.getSuggestions('/jira issue create --project KT --summary "great feature" --epic Nope');
-            expect(suggestions).toEqual([]);
+            expect(suggestions).toEqual([
+                {
+                    Complete: 'jira issue create --project KT --summary "great feature" --epic',
+                    Suggestion: '',
+                    Description: 'No matching options.',
+                    Hint: '',
+                    IconData: '',
+                },
+            ]);
         });
 
         test('filled out form shows execute', async () => {
@@ -857,7 +873,6 @@ describe('AppCommandParser', () => {
                 team_id: 'team_id',
             },
             path: '/create-issue',
-            type: 'submit',
         };
 
         test('empty form', async () => {
@@ -868,6 +883,9 @@ describe('AppCommandParser', () => {
             expect(call).toEqual({
                 ...base,
                 raw_command: cmd,
+                expand: {},
+                query: undefined,
+                selected_field: undefined,
                 values,
             });
         });
@@ -876,7 +894,10 @@ describe('AppCommandParser', () => {
             const cmd = '/jira issue create --summary "Here it is" --epic epic1 --verbose true --project';
             const values = {
                 summary: 'Here it is',
-                epic: 'epic1',
+                epic: {
+                    label: 'Dylan Epic',
+                    value: 'epic1',
+                },
                 verbose: 'true',
                 project: '',
             };
@@ -884,6 +905,9 @@ describe('AppCommandParser', () => {
             const call = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
+                expand: {},
+                selected_field: undefined,
+                query: undefined,
                 raw_command: cmd,
                 values,
             });
@@ -892,7 +916,7 @@ describe('AppCommandParser', () => {
         test('dynamic lookup test', async () => {
             const f = Client4.executeAppCall;
 
-            const mockedExecute = jest.fn().mockResolvedValue(Promise.resolve({data: {items: [{label: 'special-label', value: 'special-value'}]}}));
+            const mockedExecute = jest.fn().mockResolvedValue(Promise.resolve({type: AppCallResponseTypes.OK, data: {items: [{label: 'special-label', value: 'special-value'}]}}));
             Client4.executeAppCall = mockedExecute;
 
             const suggestions = await parser.getSuggestions('/jira issue create --summary "The summary" --epic epic1 --project special');
@@ -916,16 +940,19 @@ describe('AppCommandParser', () => {
                     root_id: 'root_id',
                     team_id: 'team_id',
                 },
+                expand: {},
                 path: '/create-issue',
                 query: 'special',
                 raw_command: '/jira issue create --summary "The summary" --epic epic1 --project special',
                 selected_field: 'project',
-                type: 'lookup',
                 values: {
                     summary: 'The summary',
-                    epic: 'epic1',
+                    epic: {
+                        label: 'Dylan Epic',
+                        value: 'epic1',
+                    },
                 },
-            });
+            }, AppCallTypes.LOOKUP);
         });
     });
 });

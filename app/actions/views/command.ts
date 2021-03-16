@@ -6,13 +6,15 @@ import {intlShape} from 'react-intl';
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {AppCallTypes} from '@mm-redux/constants/apps';
+import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
 import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 
 import {doAppCall} from '@actions/apps';
 import {appsEnabled} from '@utils/apps';
+import {AppCallResponse} from '@mm-redux/types/apps';
+import {sendEphemeralPost} from './post';
 
 export function executeCommand(message: string, channelId: string, rootId: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -39,15 +41,46 @@ export function executeCommand(message: string, channelId: string, rootId: strin
 
         const appsAreEnabled = appsEnabled(state);
         if (appsAreEnabled) {
-            const parser = new AppCommandParser({dispatch, getState}, args.channel_id, args.root_id);
+            const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.root_id);
             if (parser.isAppCommand(msg)) {
                 const call = await parser.composeCallFromCommand(message);
+                const createErrorMessage = (errMessage: string) => {
+                    return {error: {message: errMessage}};
+                };
+
                 if (!call) {
-                    return {error: {message: 'Error submitting command'}};
+                    return createErrorMessage(intl.formatMessage({
+                        id: 'mobile.commands.error_title',
+                        defaultMessage: 'Error Executing Command',
+                    }));
                 }
 
-                call.type = AppCallTypes.SUBMIT;
-                return dispatch(doAppCall(call, intl));
+                const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));
+                if (res.error) {
+                    const errorResponse = res.error as AppCallResponse;
+                    return createErrorMessage(errorResponse.error || intl.formatMessage({
+                        id: 'apps.error.unknown',
+                        defaultMessage: 'Unknown error.',
+                    }));
+                }
+                const callResp = res.data as AppCallResponse;
+                switch (callResp.type) {
+                case AppCallResponseTypes.OK:
+                    if (callResp.markdown) {
+                        dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id));
+                    }
+                    return {data: {}};
+                case AppCallResponseTypes.FORM:
+                case AppCallResponseTypes.NAVIGATE:
+                    return {data: {}};
+                default:
+                    return createErrorMessage(intl.formatMessage({
+                        id: 'apps.error.responses.unknown_type',
+                        defaultMessage: 'App response type not supported. Response type: {type}.',
+                    }, {
+                        type: callResp.type,
+                    }));
+                }
             }
         }
 

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
 import {
     FlatList,
@@ -51,6 +52,10 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         value: '',
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     appCommandParser: AppCommandParser;
 
     state = {
@@ -59,9 +64,9 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         lastCommandRequest: 0,
     };
 
-    constructor(props: Props) {
+    constructor(props: Props, context: any) {
         super(props);
-        this.appCommandParser = new AppCommandParser(null, props.channelId, props.rootId);
+        this.appCommandParser = new AppCommandParser(null, context.intl, props.channelId, props.rootId);
     }
 
     setActive(active: boolean) {
