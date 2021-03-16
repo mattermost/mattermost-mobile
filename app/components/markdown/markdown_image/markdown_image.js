@@ -50,7 +50,7 @@ export default class MarkdownImage extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        const metadata = props.imagesMetadata?.[props.source];
+        const metadata = props.imagesMetadata?.[props.source] || Object.values(props.imagesMetadata || {})[0];
         this.fileId = generateId();
         this.state = {
             originalHeight: metadata?.height || 0,

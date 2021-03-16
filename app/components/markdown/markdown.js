@@ -288,6 +288,7 @@ export default class Markdown extends PureComponent {
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
+
         return (
             <View style={blockStyle}>
                 <Text>

@@ -9,6 +9,7 @@ class Post {
         message: 'markdown_text',
         postHeaderDateTime: 'post_header.date_time',
         postHeaderDisplayName: 'post_header.display_name',
+        postHeaderGuestTag: 'post_header.guest_tag',
         postHeaderReply: 'post_header.reply',
         postPreHeaderText: 'post_pre_header.text',
     }
@@ -30,11 +31,13 @@ class Post {
     getPostHeader = (postItemMatcher) => {
         const postItemHeaderDateTimeMatcher = by.id(this.testID.postHeaderDateTime).withAncestor(postItemMatcher);
         const postItemHeaderDisplayNameMatcher = by.id(this.testID.postHeaderDisplayName).withAncestor(postItemMatcher);
+        const postItemHeaderGuestTagMatcher = by.id(this.testID.postHeaderGuestTag).withAncestor(postItemMatcher);
         const postItemHeaderReplyMatcher = by.id(this.testID.postHeaderReply).withAncestor(postItemMatcher);
 
         return {
             postItemHeaderDateTime: element(postItemHeaderDateTimeMatcher),
             postItemHeaderDisplayName: element(postItemHeaderDisplayNameMatcher),
+            postItemHeaderGuestTag: element(postItemHeaderGuestTagMatcher),
             postItemHeaderReply: element(postItemHeaderReplyMatcher),
         };
     }
