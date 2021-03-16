@@ -15,6 +15,7 @@ import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
@@ -37,6 +38,7 @@ export default class ChannelItem extends PureComponent {
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
+        teammateId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -174,6 +176,17 @@ export default class ChannelItem extends PureComponent {
         const itemTestID = `${testID}.${channelId}`;
         const displayNameTestID = `${testID}.display_name`;
 
+        const customStatus = this.props.teammateId ?
+            (
+                <Text
+                    style={[{color: changeOpacity(theme.sidebarText, 0.6)}, extraTextStyle]}
+                >
+                    <CustomStatusEmoji
+                        userID={this.props.teammateId}
+                    />
+                </Text>
+            ) : null;
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
@@ -189,14 +202,19 @@ export default class ChannelItem extends PureComponent {
                         style={[style.item, extraItemStyle]}
                     >
                         {icon}
-                        <Text
-                            testID={displayNameTestID}
-                            style={[style.text, extraTextStyle]}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
+                        <View
+                            style={style.textWrapper}
                         >
-                            {channelDisplayName}
-                        </Text>
+                            <Text
+                                testID={displayNameTestID}
+                                style={[style.text, extraTextStyle]}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {channelDisplayName}
+                            </Text>
+                            {customStatus}
+                        </View>
                         {badge}
                     </View>
                 </View>
@@ -226,13 +244,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
             paddingLeft: 11,
         },
+        textWrapper: {
+            flex: 1,
+            flexDirection: 'row',
+        },
         text: {
             color: changeOpacity(theme.sidebarText, 0.6),
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
-            maxWidth: '80%',
-            flex: 1,
+            maxWidth: '75%',
             alignSelf: 'center',
             fontFamily: 'Open Sans',
         },

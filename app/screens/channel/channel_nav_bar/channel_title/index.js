@@ -21,8 +21,9 @@ function mapStateToProps(state) {
 
     let isTeammateGuest = false;
     let isSelfDMChannel = false;
+    let teammateId;
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
-        const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
+        teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
         isTeammateGuest = isGuest(teammate);
         isSelfDMChannel = currentUserId === currentChannel.teammate_id;
@@ -38,6 +39,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         isGuest: isTeammateGuest,
         hasGuests: stats.guest_count > 0,
+        teammateId,
     };
 }
 

@@ -33,9 +33,10 @@ function makeMapStateToProps() {
         let isBot = false;
         let isGuest = false;
         let isArchived = channel.delete_at > 0;
+        let teammateId;
 
         if (channel.type === General.DM_CHANNEL) {
-            const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+            teammateId = getUserIdFromChannelName(currentUserId, channel.name);
             const teammate = getUser(state, teammateId);
 
             isBot = Boolean(ownProps.isSearchResult ? channel.isBot : teammate?.is_bot); //eslint-disable-line camelcase
@@ -87,6 +88,7 @@ function makeMapStateToProps() {
             showUnreadForMsgs,
             theme: getTheme(state),
             unreadMsgs,
+            teammateId,
         };
     };
 }

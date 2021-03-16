@@ -24,6 +24,7 @@ import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown'
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {popToRoot} from 'app/actions/navigation';
+import Emoji from '@components/emoji';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -44,6 +45,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isGroupConstrained: PropTypes.bool,
         testID: PropTypes.string,
         timeZone: PropTypes.string,
+        customStatus: PropTypes.object,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -143,6 +146,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isGroupConstrained,
             testID,
             timeZone,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -175,6 +180,23 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
+                {isCustomStatusEnabled && type === General.DM_CHANNEL &&
+                    <View style={[style.row, style.customStatusContainer]}>
+                        <View style={style.iconContainer}>
+                            <Emoji
+                                emojiName={customStatus.emoji}
+                                size={20}
+                            />
+                        </View>
+                        <Text
+                            style={[style.channelName, style.customStatusText]}
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                        >
+                            {customStatus.text}
+                        </Text>
+                    </View>
+                }
                 {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
                     <View style={style.section}>
@@ -264,6 +286,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             fontWeight: '600',
             color: theme.centerChannelColor,
+        },
+        iconContainer: {
+            marginRight: 8,
+        },
+        customStatusContainer: {
+            position: 'relative',
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 10,
+        },
+        customStatusText: {
+            width: '80%',
         },
         channelNameContainer: {
             flexDirection: 'row',

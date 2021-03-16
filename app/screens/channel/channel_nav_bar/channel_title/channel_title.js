@@ -16,6 +16,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
@@ -30,6 +31,7 @@ export default class ChannelTitle extends PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         canHaveSubtitle: PropTypes.bool.isRequired,
         isSelfDMChannel: PropTypes.bool.isRequired,
+        teammateId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -150,6 +152,16 @@ export default class ChannelTitle extends PureComponent {
             );
         }
 
+        const customStatus = this.props.channelType === General.DM_CHANNEL ?
+            (
+                <Text style={[style.icon, style.emoji]}>
+                    <CustomStatusEmoji
+                        userID={this.props.teammateId}
+                        emojiSize={18}
+                    />
+                </Text>
+            ) : null;
+
         return (
             <TouchableOpacity
                 testID={'channel.title.button'}
@@ -167,6 +179,7 @@ export default class ChannelTitle extends PureComponent {
                         {channelDisplayName}
                     </Text>
                     {icon}
+                    {customStatus}
                     {mutedIcon}
                 </View>
                 {hasGuestsText}
@@ -187,11 +200,14 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            width: '90%',
+            width: '70%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
             marginHorizontal: 1,
+        },
+        emoji: {
+            marginHorizontal: 5,
         },
         text: {
             color: theme.sidebarHeaderTextColor,
