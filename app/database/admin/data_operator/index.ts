@@ -158,7 +158,7 @@ class DataOperator {
           fetch()) as Post[];
 
       postsInThreads.forEach((rootPost) => {
-          // Creates a sub-array of threads relating to rootPost.post_id
+      // Creates a sub-array of threads relating to rootPost.post_id
           const childPosts = threads.filter((thread) => {
               return rootPost.post_id === thread.rootId;
           });
@@ -222,7 +222,11 @@ class DataOperator {
           values: createEmojis as RawCustomEmoji[],
       })) as unknown) as CustomEmoji[];
 
-      const batchRecords = [...postReactions, ...deleteReactions, ...reactionEmojis];
+      const batchRecords = [
+          ...postReactions,
+          ...deleteReactions,
+          ...reactionEmojis,
+      ];
 
       if (prepareRowsOnly) {
           return batchRecords;
@@ -264,7 +268,11 @@ class DataOperator {
       return [];
   };
 
-  handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadata) => {
+  handlePostMetadata = async ({
+      embeds,
+      images,
+      prepareRowsOnly,
+  }: HandlePostMetadata) => {
       const metadata: RawPostMetadata[] = [];
 
       if (images?.length) {
@@ -316,8 +324,8 @@ class DataOperator {
   };
 
   handlePostsInChannel = async (posts: RawPost[]) => {
-      // At this point, the 'posts' array is already a chain of posts
-      // We have to figure out how to plug it into existing chains in the PostsInChannel table
+      // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
+      // into existing chains in the PostsInChannel table
 
       if (!posts.length) {
           return [];
@@ -334,7 +342,7 @@ class DataOperator {
       // Channel Id for this chain of posts
       const channelId = tipOfChain.channel_id;
 
-      // Find lowest 'create_at' value in chain
+      // Find smallest 'create_at' value in chain
       const earliest = tipOfChain.create_at;
 
       // Find highest 'create_at' value in chain; -1 means we are dealing with one item in the posts array
@@ -385,7 +393,7 @@ class DataOperator {
       }
 
       if (found) {
-      // We have a potential chunk to plug nearby
+          // We have a potential chunk to plug nearby
           const potentialPosts = (await database.collections.
               get(POST).
               query(Q.where('create_at', earliest)).
@@ -395,7 +403,8 @@ class DataOperator {
               const targetPost = potentialPosts[0];
 
               // now we decide if we need to operate on the targetChunk or just create a new chunk
-              const isChainable = tipOfChain.prev_post_id === targetPost.previousPostId;
+              const isChainable =
+          tipOfChain.prev_post_id === targetPost.previousPostId;
 
               if (isChainable) {
                   // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
@@ -417,12 +426,19 @@ class DataOperator {
       return [];
   };
 
-  handlePosts = async ({optType, orders, values, previousPostId}: HandlePosts) => {
+  handlePosts = async ({
+      optType,
+      orders,
+      values,
+      previousPostId,
+  }: HandlePosts) => {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
       if (!orders?.length) {
-          throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
+          throw new DatabaseOperatorException(
+              'An empty "order" array has been passed to the HandlePosts method',
+          );
       }
 
       let batch: Model[] = [];
@@ -434,7 +450,10 @@ class DataOperator {
       const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
       // We treat those posts who are present in the order array only
-      const {orderedPosts, unOrderedPosts} = sanitizePosts({posts: values, orders});
+      const {orderedPosts, unOrderedPosts} = sanitizePosts({
+          posts: values,
+          orders,
+      });
 
       // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
       const linkedRawPosts: RawPost[] = createPostsChain({
@@ -469,7 +488,8 @@ class DataOperator {
               });
           }
 
-          const hasMetadata = post?.metadata && Object.keys(post?.metadata).length > 0;
+          const hasMetadata =
+        post?.metadata && Object.keys(post?.metadata).length > 0;
 
           if (hasMetadata) {
               const metadata = post.metadata;
@@ -502,25 +522,18 @@ class DataOperator {
       batch = batch.concat(postReactions);
 
       // calls handler for Files
-      const postFiles = (await this.handleFiles({
-          files,
-          prepareRowsOnly: true,
-      })) as File[];
+      const postFiles = (await this.handleFiles({files, prepareRowsOnly: true})) as File[];
       batch = batch.concat(postFiles);
 
       // calls handler for postMetadata ( embeds and images )
-      const postMetadata = (await this.handlePostMetadata({
-          images,
-          embeds,
-          prepareRowsOnly: true,
-      })) as PostMetadata[];
+      const postMetadata = (await this.handlePostMetadata({images, embeds, prepareRowsOnly: true})) as PostMetadata[];
       batch = batch.concat(postMetadata);
 
       if (batch.length) {
           await this.batchOperations({database, models: batch});
       }
 
-      // LAST :: calls handler for CustomEmojis, PostsInThread, PostsInChannel
+      // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
       await this.handleIsolatedEntity({
           optType: OperationType.CREATE,
           tableName: IsolatedEntities.CUSTOM_EMOJI,
@@ -545,16 +558,26 @@ class DataOperator {
                   await database.batch(...models);
               });
           } else {
-              throw new DatabaseOperatorException('batchOperations does not process empty model array');
+              throw new DatabaseOperatorException(
+                  'batchOperations does not process empty model array',
+              );
           }
       } catch (e) {
           throw new DatabaseOperatorException('batchOperations error ', e);
       }
   };
 
-  private prepareBase = async ({database, optType, tableName, values, recordOperator}: HandleBaseData) => {
+  private prepareBase = async ({
+      database,
+      optType,
+      tableName,
+      values,
+      recordOperator,
+  }: HandleBaseData) => {
       if (!Array.isArray(values) || !database) {
-          throw new DatabaseOperatorException('prepareBase accepts only rawPosts of type RecordValue[] or valid database connection');
+          throw new DatabaseOperatorException(
+              'prepareBase accepts only rawPosts of type RecordValue[] or valid database connection',
+          );
       }
 
       if (values.length) {
@@ -576,23 +599,28 @@ class DataOperator {
   };
 
   /**
-     * handleBase: Handles the Create/Update operations on an entity.
-     * @param {OperationType} optType
-     * @param {string} tableName
-     * @param {RecordValue[]} values
-     * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
-     * @returns {Promise<void>}
-     */
-  private handleBase = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {
+   * handleBase: Handles the Create/Update operations on an entity.
+   * @param {OperationType} optType
+   * @param {string} tableName
+   * @param {RecordValue[]} values
+   * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
+   * @returns {Promise<void>}
+   */
+  private handleBase = async ({
+      optType,
+      tableName,
+      values,
+      recordOperator,
+  }: HandleBaseData) => {
       const database = await this.getDatabase(tableName);
 
-      const models = await this.prepareBase({
+      const models = ((await this.prepareBase({
           database,
           optType,
           tableName,
           values,
           recordOperator,
-      }) as unknown as Model[];
+      })) as unknown) as Model[];
 
       if (models?.length > 0) {
           await this.batchOperations({
@@ -609,9 +637,11 @@ class DataOperator {
    * @returns {Promise<void>}
    */
   private getDatabase = async (tableName: string) => {
-      const isDefaultConnection = Object.values(MM_TABLES.DEFAULT).some((tbName) => {
-          return tableName === tbName;
-      });
+      const isDefaultConnection = Object.values(MM_TABLES.DEFAULT).some(
+          (tbName) => {
+              return tableName === tbName;
+          },
+      );
 
       const promise = isDefaultConnection ? this.getDefaultDatabase : this.getServerDatabase;
       const connection = await promise();
@@ -626,7 +656,10 @@ class DataOperator {
   private getDefaultDatabase = async () => {
       const connection = await DatabaseManager.getDefaultDatabase();
       if (connection === undefined) {
-          throw new DatabaseConnectionException('An error occurred while retrieving the default database', '');
+          throw new DatabaseConnectionException(
+              'An error occurred while retrieving the default database',
+              '',
+          );
       }
       return connection;
   };
@@ -640,7 +673,10 @@ class DataOperator {
       // active server connection will already be set on application init
       const connection = await DatabaseManager.getActiveServerDatabase();
       if (connection === undefined) {
-          throw new DatabaseConnectionException('An error occurred while retrieving the server database', '');
+          throw new DatabaseConnectionException(
+              'An error occurred while retrieving the server database',
+              '',
+          );
       }
       return connection;
   };
