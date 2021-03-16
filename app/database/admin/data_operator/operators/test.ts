@@ -25,7 +25,7 @@ import {
     operateTermsOfServiceRecord,
 } from './index';
 
-jest.mock('../../database_manager');
+jest.mock('@database/admin/database_manager');
 
 const {APP} = MM_TABLES.DEFAULT;
 
