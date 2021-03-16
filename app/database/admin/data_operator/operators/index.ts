@@ -9,6 +9,8 @@ import App from '@typings/database/app';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactory,
+    IdenticalRecord,
+    OperationType,
     RawApp,
     RawCustomEmoji,
     RawDraft,
@@ -37,8 +39,6 @@ import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
 
-import {IdenticalRecord, OperationType} from '../types';
-
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
     CUSTOM_EMOJI,
@@ -54,7 +54,6 @@ const {
     TERMS_OF_SERVICE,
 } = MM_TABLES.SERVER;
 
-// FIXME : review all default values in the field mappings; they should make sense for mandatory fields
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactory} operator
@@ -68,9 +67,9 @@ export const operateAppRecord = async ({database, optType, value}: DataFactory) 
 
     const generator = (app: App) => {
         app._raw.id = record?.id ?? app.id;
-        app.buildNumber = record?.buildNumber ?? '';
-        app.createdAt = record?.createdAt ?? 0;
-        app.versionNumber = record?.versionNumber ?? '';
+        app.buildNumber = record?.buildNumber;
+        app.createdAt = record?.createdAt;
+        app.versionNumber = record?.versionNumber;
     };
 
     return operateBaseRecord({
@@ -95,8 +94,8 @@ export const operateGlobalRecord = async ({database, optType, value}: DataFactor
 
     const generator = (global: Global) => {
         global._raw.id = record?.id ?? global.id;
-        global.name = record?.name ?? '';
-        global.value = record?.value ?? 0;
+        global.name = record?.name;
+        global.value = record?.value;
     };
 
     return operateBaseRecord({
@@ -121,11 +120,11 @@ export const operateServersRecord = async ({database, optType, value}: DataFacto
 
     const generator = (servers: Servers) => {
         servers._raw.id = record?.id ?? servers.id;
-        servers.dbPath = record?.dbPath ?? '';
-        servers.displayName = record?.displayName ?? 0;
-        servers.mentionCount = record?.mentionCount ?? 0;
-        servers.unreadCount = record?.unreadCount ?? 0;
-        servers.url = record?.url ?? 0;
+        servers.dbPath = record?.dbPath;
+        servers.displayName = record?.displayName;
+        servers.mentionCount = record?.mentionCount;
+        servers.unreadCount = record?.unreadCount;
+        servers.url = record?.url;
     };
 
     return operateBaseRecord({
@@ -184,8 +183,8 @@ export const operateRoleRecord = async ({database, optType, value}: DataFactory)
 
     const generator = (role: Role) => {
         role._raw.id = record?.id ?? role.id;
-        role.name = record?.name ?? '';
-        role.permissions = record?.permissions ?? [];
+        role.name = record?.name;
+        role.permissions = record?.permissions;
     };
 
     return operateBaseRecord({
@@ -210,8 +209,8 @@ export const operateSystemRecord = async ({database, optType, value}: DataFactor
 
     const generator = (system: System) => {
         system._raw.id = record?.id ?? system.id;
-        system.name = record?.name ?? '';
-        system.value = record?.value ?? '';
+        system.name = record?.name;
+        system.value = record?.value;
     };
 
     return operateBaseRecord({
@@ -236,7 +235,7 @@ export const operateTermsOfServiceRecord = async ({database, optType, value}: Da
 
     const generator = (tos: TermsOfService) => {
         tos._raw.id = record?.id ?? tos.id;
-        tos.acceptedAt = record?.acceptedAt ?? 0;
+        tos.acceptedAt = record?.acceptedAt;
     };
 
     return operateBaseRecord({
@@ -286,6 +285,14 @@ export const operatePostRecord = async ({database, optType, value}: DataFactory)
     });
 };
 
+/**
+ * operatePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
 export const operatePostInThreadRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawPostsInThread;
 
@@ -305,6 +312,14 @@ export const operatePostInThreadRecord = async ({database, optType, value}: Data
     });
 };
 
+/**
+ * operateReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
 export const operateReactionRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawReaction;
 
@@ -325,6 +340,14 @@ export const operateReactionRecord = async ({database, optType, value}: DataFact
     });
 };
 
+/**
+ * operateFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
 export const operateFileRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawFile;
 
@@ -350,6 +373,14 @@ export const operateFileRecord = async ({database, optType, value}: DataFactory)
     });
 };
 
+/**
+ * operatePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
 export const operatePostMetadataRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawPostMetadata;
 
@@ -369,6 +400,14 @@ export const operatePostMetadataRecord = async ({database, optType, value}: Data
     });
 };
 
+/**
+ * operateDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
 export const operateDraftRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawDraft;
     const emptyFileInfo: FileInfo[] = [];
@@ -390,6 +429,14 @@ export const operateDraftRecord = async ({database, optType, value}: DataFactory
     });
 };
 
+/**
+ * operatePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {OperationType} operator.optType
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
 export const operatePostsInChannelRecord = async ({database, optType, value}: DataFactory) => {
     const record = value as RawPostsInChannel;
 
@@ -413,9 +460,12 @@ export const operatePostsInChannelRecord = async ({database, optType, value}: Da
  * operateBaseRecord:  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
  * encounters an existing record during a CREATE operation, it silently fails the operation.
  *
- * In our case, we check to see if we have an existing 'id' and if so, we'll update the record with the data.
- * For an UPDATE operation, we fetch the existing record using the 'id' value and then we do the update operation;
- * if no record is found for that 'id', we'll create it a new record.
+ * This operator decides to go through an UPDATE action if we have an existing record in the table bearing the same id.
+ * If not, it will go for a CREATE operation.
+ *
+ * However, if the tableName points to a major entity ( like Post, User or Channel, etc.), it verifies first if the
+ * update_at value of the existing record is different from the parameter 'value' own update_at.  Only if they differ,
+ * that it prepares the record for update.
  *
  * @param {DataFactory} operatorBase
  * @param {Database} operatorBase.database
@@ -470,6 +520,14 @@ const operateBaseRecord = async ({
     return null;
 };
 
+/**
+ * checkForIdenticalRecord:
+ * @param {IdenticalRecord} identicalRecord
+ * @param {string} identicalRecord.tableName
+ * @param {RecordValue} identicalRecord.newValue
+ * @param {Model} identicalRecord.existingRecord
+ * @returns {boolean}
+ */
 const checkForIdenticalRecord = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
     const guardTables = [POST];
     if (guardTables.includes(tableName)) {
