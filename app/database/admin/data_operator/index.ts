@@ -5,6 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/admin/database_manager';
 import {
     BatchOperations,
     HandleBaseData,
@@ -31,8 +32,6 @@ import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 import CustomEmoji from '@typings/database/custom_emoji';
-
-import DatabaseManager from '../database_manager';
 
 import DatabaseConnectionException from './exceptions/database_connection_exception';
 import DatabaseOperatorException from './exceptions/database_operator_exception';

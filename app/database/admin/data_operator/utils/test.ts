@@ -3,9 +3,8 @@
 
 import {DatabaseType} from '@typings/database/enums';
 
-import DatabaseManager from '../../database_manager';
-
-import DataOperator from '../index';
+import DatabaseManager from '@database/admin/database_manager';
+import DataOperator from '@database/admin/data_operator';
 
 import {createPostsChain, sanitizePosts, sanitizeReactions} from './index';
 import {mockedPosts, mockedReactions} from './mock';

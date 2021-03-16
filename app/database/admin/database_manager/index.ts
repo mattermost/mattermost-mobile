@@ -7,22 +7,10 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import type {
-    ActiveServerDatabase,
-    DatabaseConnection,
-    DatabaseInstance,
-    DefaultNewServer,
-    MigrationEvents,
-    Models,
-} from '@typings/database/database';
-import {DatabaseType} from '@typings/database/enums';
-import IServers from '@typings/database/servers';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-
-import DefaultMigration from '../../default/migration';
-import {App, Global, Servers} from '../../default/models';
-import {defaultSchema} from '../../default/schema';
-import ServerMigration from '../../server/migration';
+import DefaultMigration from '@database/default/migration';
+import {App, Global, Servers} from '@database/default/models';
+import {defaultSchema} from '@database/default/schema';
+import ServerMigration from '@database/server/migration';
 import {
     Channel,
     ChannelInfo,
@@ -52,8 +40,19 @@ import {
     TeamSearchHistory,
     TermsOfService,
     User,
-} from '../../server/models';
-import {serverSchema} from '../../server/schema';
+} from '@database/server/models';
+import {serverSchema} from '@database/server/schema';
+import type {
+    ActiveServerDatabase,
+    DatabaseConnection,
+    DatabaseInstance,
+    DefaultNewServer,
+    MigrationEvents,
+    Models,
+} from '@typings/database/database';
+import {DatabaseType} from '@typings/database/enums';
+import IServers from '@typings/database/servers';
+import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
 

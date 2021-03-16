@@ -23,6 +23,7 @@ module.exports = {
                 '@assets': './dist/assets',
                 '@components': './app/components',
                 '@constants': './app/constants',
+                '@database': './app/database',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
                 '@notifications': './app/notifications',

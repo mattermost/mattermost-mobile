@@ -3,11 +3,10 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/admin/database_manager';
+import DataOperator from '@database/admin/data_operator/index';
 import App from '@typings/database/app';
 import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
-
-import DatabaseManager from '../../database_manager';
-import DataOperator from '../index';
 
 import {
     operateAppRecord,

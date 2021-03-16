@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '../database_manager';
+import DatabaseManager from '@database/admin/database_manager';
 
 import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
+
 import DataOperator from './index';
 import {
     operateAppRecord,
@@ -17,7 +18,7 @@ import {
     operateTermsOfServiceRecord,
 } from './operators';
 
-jest.mock('../database_manager');
+jest.mock('@database/admin/database_manager');
 
 const {DRAFT} = MM_TABLES.SERVER;
 
