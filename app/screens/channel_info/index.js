@@ -18,8 +18,10 @@ import {isLandscape} from '@selectors/device';
 import {isGuest} from '@utils/users';
 
 import ChannelInfo from './channel_info';
+import {makeGetCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
 
 function mapStateToProps(state) {
+    const getCustomStatus = makeGetCustomStatus();
     const currentChannel = getCurrentChannel(state) || {};
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
@@ -32,6 +34,7 @@ function mapStateToProps(state) {
     let status;
     let isBot = false;
     let isTeammateGuest = false;
+    let customStatus;
     const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
     if (isDirectMessage) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
@@ -44,6 +47,7 @@ function mapStateToProps(state) {
             isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
+        customStatus = getCustomStatus(state, teammateId) || {};
     }
 
     if (currentChannel.type === General.GM_CHANNEL) {
@@ -62,6 +66,8 @@ function mapStateToProps(state) {
         isDirectMessage,
         status,
         theme: getTheme(state),
+        customStatus,
+        isCustomStatusEnabled: isCustomStatusEnabled(state),
     };
 }
 
