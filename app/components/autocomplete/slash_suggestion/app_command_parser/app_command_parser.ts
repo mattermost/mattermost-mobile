@@ -215,7 +215,7 @@ export class ParsedCommand {
         if (!this.binding) {
             return this.asError(this.intl.formatMessage({
                 id: 'apps.error.parser.no_match',
-                defaultMessage: '`{command}`: no match.',
+                defaultMessage: '`{command}`: No matching command found in this workspace.',
             }, {
                 command: this.command,
             }));
@@ -502,7 +502,7 @@ export class ParsedCommand {
                 if (!this.field) {
                     return this.asError(this.intl.formatMessage({
                         id: 'apps.error.parser.missing_field_value',
-                        defaultMessage: 'Field value Expected.',
+                        defaultMessage: 'Field value is missing.',
                     }));
                 }
 
@@ -1084,14 +1084,17 @@ export class AppCommandParser {
         const f = parsed.field;
         if (!f) {
             // Should never happen
-            return this.makeSuggestionError('Unexpected error');
+            return this.makeSuggestionError(this.intl.formatMessage({
+                id: 'apps.error.parser.unexpected_error',
+                defaultMessage: 'Unexpected error.',
+            }));
         }
 
         const call = await this.composeCallFromParsed(parsed);
         if (!call) {
             return this.makeSuggestionError(this.intl.formatMessage({
-                id: 'apps.error.lookup.cannot_compose',
-                defaultMessage: 'Cannot compose lookup call.',
+                id: 'apps.error.lookup.error_preparing_request',
+                defaultMessage: 'Error preparing lookup request.',
             }));
         }
         call.selected_field = f.name;
@@ -1137,7 +1140,7 @@ export class AppCommandParser {
                 IconData: '',
                 Description: this.intl.formatMessage({
                     id: 'apps.suggestion.no_dynamic',
-                    defaultMessage: 'Received no data for dynamic suggestions',
+                    defaultMessage: 'No data was returned for dynamic suggestions',
                 }),
             }];
         }

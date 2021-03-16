@@ -87,7 +87,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage({
                 id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error happenned',
+                defaultMessage: 'Unknown error occurred.',
             });
             ephemeral(errorMessage);
             return;

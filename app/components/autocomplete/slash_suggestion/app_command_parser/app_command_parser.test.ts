@@ -144,13 +144,13 @@ describe('AppCommandParser', () => {
             {
                 title: 'incomplete top command',
                 command: '/jir',
-                autocomplete: {expectError: '`{command}`: no match.'},
-                submit: {expectError: '`{command}`: no match.'},
+                autocomplete: {expectError: '`{command}`: No matching command found in this workspace.'},
+                submit: {expectError: '`{command}`: No matching command found in this workspace.'},
             },
             {
                 title: 'no space after the top command',
                 command: '/jira',
-                autocomplete: {expectError: '`{command}`: no match.'},
+                autocomplete: {expectError: '`{command}`: No matching command found in this workspace.'},
                 submit: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.Command);
                     expect(parsed.binding?.label).toBe('jira');

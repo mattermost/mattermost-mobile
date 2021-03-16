@@ -72,7 +72,7 @@ export default class ButtonBinding extends PureComponent<Props> {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage(
                 {id: 'apps.error.unknown',
-                    defaultMessage: 'Unknown error happenned',
+                    defaultMessage: 'Unknown error occurred.',
                 });
             ephemeral(errorMessage);
             return;

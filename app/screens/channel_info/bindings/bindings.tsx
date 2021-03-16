@@ -92,7 +92,7 @@ const Option = injectIntl((props: OptionProps) => {
             });
             const errorMessage = errorResponse.error || props.intl.formatMessage({
                 id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error happenned',
+                defaultMessage: 'Unknown error occurred.',
             });
             Alert.alert(title, errorMessage);
             dismissModal();
