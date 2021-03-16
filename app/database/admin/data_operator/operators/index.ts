@@ -449,6 +449,7 @@ const operateBaseRecord = async ({
             newValue: value,
             existingRecord: record,
         });
+
         if (isRecordIdentical) {
             return null;
         }

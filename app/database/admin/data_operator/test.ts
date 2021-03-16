@@ -647,4 +647,133 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
     });
+
+    it('=> HandlePosts: should write to Post and its sub-child entities', async () => {
+        expect.assertions(6);
+
+        const posts = [
+            {
+                id: 'a7ebyw883trm884p1qcgt8yw4a',
+                create_at: 1596032651747,
+                update_at: 1596032651747,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                original_id: '',
+                message: "I'll second these kudos!  Thanks m!",
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {
+                    images: {
+                        'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
+                            width: 400,
+                            height: 400,
+                            format: 'png',
+                            frame_count: 0,
+                        },
+                    },
+                    reactions: [
+                        {
+                            user_id: 'njic1w1k5inefp848jwk6oukio',
+                            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                            emoji_name: 'clap',
+                            create_at: 1608252965442,
+                            update_at: 1608252965442,
+                            delete_at: 0,
+                        },
+                    ],
+                    embeds: [
+                        {
+                            type: 'opengraph',
+                            url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                            data: {
+                                type: 'object',
+                                url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                                title: 'mickmister/mattermost-plugin-default-theme',
+                                description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                                determiner: '',
+                                site_name: 'GitHub',
+                                locale: '',
+                                locales_alternate: null,
+                                images: [
+                                    {
+                                        url: '',
+                                        secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                        type: '',
+                                        width: 0,
+                                        height: 0,
+                                    },
+                                ],
+                                audios: null,
+                                videos: null,
+                            },
+                        },
+                    ],
+                    emojis: [
+                        {
+                            id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                            create_at: 1502389307432,
+                            update_at: 1502389307432,
+                            delete_at: 0,
+                            creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                            name: 'thanks',
+                        },
+                    ],
+                    files: [
+                        {
+                            id: 'f1oxe5rtepfs7n3zifb4sso7po',
+                            user_id: '89ertha8xpfsumpucqppy5knao',
+                            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                            create_at: 1608270920357,
+                            update_at: 1608270920357,
+                            delete_at: 0,
+                            name: '4qtwrg.jpg',
+                            extension: 'jpg',
+                            size: 89208,
+                            mime_type: 'image/jpeg',
+                            width: 500,
+                            height: 656,
+                            has_preview_image: true,
+                            mini_preview: '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                        },
+                    ],
+                },
+            },
+        ];
+
+        const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
+        const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
+        const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
+        const spyOnHandleIsolatedEntity = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
+        const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
+        const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
+
+        await createConnection(true);
+
+        // handlePosts will in turn call handlePostsInThread
+        await DataOperator.handlePosts({
+            optType: OperationType.CREATE,
+            orders: [
+                'a7ebyw883trm884p1qcgt8yw4a',
+            ],
+            values: posts,
+            previousPostId: '',
+        });
+
+        expect(spyOnHandleReactions).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
+    });
 });
