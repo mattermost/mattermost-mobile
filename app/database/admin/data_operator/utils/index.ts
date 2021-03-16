@@ -4,10 +4,8 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {RawPost, RawReaction} from '@typings/database/database';
+import {ChainPosts, SanitizePosts, SanitizeReactions, RawPost, RawReaction} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
-
-import {ChainPosts, SanitizePosts, SanitizeReactions} from '../types';
 
 const {REACTION} = MM_TABLES.SERVER;
 

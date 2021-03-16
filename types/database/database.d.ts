@@ -300,3 +300,49 @@ export type DatabaseConnection = {
 
 // The elements required to switch to another active server database
 export type ActiveServerDatabase = { displayName: string; serverUrl: string };
+
+export type HandleReactions = {
+  reactions: RawReaction[];
+  prepareRowsOnly: boolean;
+};
+
+export type HandleFiles = {
+  files: RawFile[];
+  prepareRowsOnly: boolean;
+};
+
+export type HandlePostMetadata = {
+  embeds?: { embed: RawEmbed[]; postId: string }[];
+  images?: { images: Dictionary<PostImage>; postId: string }[];
+  prepareRowsOnly: boolean;
+};
+
+export type HandlePosts = {
+  optType: OperationType;
+  orders: string[];
+  values: RawPost[];
+  previousPostId?: string;
+};
+
+export type SanitizeReactions = {
+  database: Database;
+  post_id: string;
+  rawReactions: RawReaction[];
+};
+
+export type ChainPosts = {
+  orders: string[];
+  rawPosts: RawPost[];
+  previousPostId: string;
+};
+
+export type SanitizePosts = {
+  posts: RawPost[];
+  orders: string[];
+};
+
+export type IdenticalRecord = {
+  existingRecord: Model;
+  newValue: RecordValue;
+  tableName: string;
+}

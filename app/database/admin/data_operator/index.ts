@@ -8,16 +8,20 @@ import {MM_TABLES} from '@constants/database';
 import {
     BatchOperations,
     HandleBaseData,
+    HandleFiles,
     HandleIsolatedEntityData,
+    HandlePostMetadata,
+    HandlePosts,
+    HandleReactions,
+    PostImage,
     RawCustomEmoji,
+    RawDraft,
+    RawEmbed,
     RawFile,
     RawPost,
+    RawPostMetadata,
     RawPostsInThread,
     RawReaction,
-    RawEmbed,
-    PostImage,
-    RawPostMetadata,
-    RawDraft,
 } from '@typings/database/database';
 import File from '@typings/database/file';
 import Post from '@typings/database/post';
@@ -49,10 +53,7 @@ import {
     operateTermsOfServiceRecord,
 } from './operators';
 import {
-    HandleFiles,
-    HandlePostMetadata,
-    HandlePosts,
-    HandleReactions,
+
     IsolatedEntities,
     OperationType,
 } from './types';

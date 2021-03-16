@@ -10,7 +10,6 @@ import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactory,
     IdenticalRecord,
-    OperationType,
     RawApp,
     RawCustomEmoji,
     RawDraft,
@@ -39,6 +38,7 @@ import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
 
+import {OperationType} from '../types';
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
     CUSTOM_EMOJI,
