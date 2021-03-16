@@ -11,7 +11,7 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import {Screens} from '@constants';
 
 // TODO: Remove this and uncomment screens as they get added
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable */
 
 const withGestures = (screen: React.ComponentType<any>, styles: StyleProp<ViewStyle>) => {
     if (Platform.OS === 'android') {
