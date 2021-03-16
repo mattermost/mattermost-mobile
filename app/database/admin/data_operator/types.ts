@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
 import {
     PostImage,
     RawEmbed,
     RawFile,
     RawPost,
     RawReaction,
+    RecordValue,
 } from '@typings/database/database';
 
 export type HandleReactions = {
@@ -64,4 +66,10 @@ export enum IsolatedEntities {
   ROLE = 'Role',
   SYSTEM = 'System',
   TERMS_OF_SERVICE = 'TermsOfService',
+}
+
+export type IdenticalRecord = {
+  existingRecord: Model;
+  newValue: RecordValue;
+  tableName: string;
 }

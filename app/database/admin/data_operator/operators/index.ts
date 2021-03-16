@@ -37,7 +37,7 @@ import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
 import TermsOfService from '@typings/database/terms_of_service';
 
-import {OperationType} from '../types';
+import {IdenticalRecord, OperationType} from '../types';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
@@ -55,7 +55,6 @@ const {
 } = MM_TABLES.SERVER;
 
 // FIXME : review all default values in the field mappings; they should make sense for mandatory fields
-// FIXME : review all table names
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactory} operator
@@ -74,7 +73,13 @@ export const operateAppRecord = async ({database, optType, value}: DataFactory) 
         app.versionNumber = record?.versionNumber ?? '';
     };
 
-    return operateBaseRecord({database, optType, tableName: APP, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: APP,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -94,7 +99,13 @@ export const operateGlobalRecord = async ({database, optType, value}: DataFactor
         global.value = record?.value ?? 0;
     };
 
-    return operateBaseRecord({database, optType, tableName: GLOBAL, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: GLOBAL,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -117,7 +128,13 @@ export const operateServersRecord = async ({database, optType, value}: DataFacto
         servers.url = record?.url ?? 0;
     };
 
-    return operateBaseRecord({database, optType, tableName: SERVERS, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: SERVERS,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -135,14 +152,23 @@ export const operateCustomEmojiRecord = async ({database, optType, value}: DataF
         emoji.name = record.name;
     };
 
-    const appRecord = (await database.collections.get(CUSTOM_EMOJI!).query(Q.where('name', record.name)).fetch()) as Model[];
+    const appRecord = (await database.collections.
+        get(CUSTOM_EMOJI!).
+        query(Q.where('name', record.name)).
+        fetch()) as Model[];
     const isPresent = appRecord.length > 0;
 
     if (isPresent) {
         return null;
     }
 
-    return operateBaseRecord({database, optType, tableName: CUSTOM_EMOJI, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: CUSTOM_EMOJI,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -162,7 +188,13 @@ export const operateRoleRecord = async ({database, optType, value}: DataFactory)
         role.permissions = record?.permissions ?? [];
     };
 
-    return operateBaseRecord({database, optType, tableName: ROLE, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: ROLE,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -182,7 +214,13 @@ export const operateSystemRecord = async ({database, optType, value}: DataFactor
         system.value = record?.value ?? '';
     };
 
-    return operateBaseRecord({database, optType, tableName: SYSTEM, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: SYSTEM,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -201,7 +239,13 @@ export const operateTermsOfServiceRecord = async ({database, optType, value}: Da
         tos.acceptedAt = record?.acceptedAt ?? 0;
     };
 
-    return operateBaseRecord({database, optType, tableName: TERMS_OF_SERVICE, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: TERMS_OF_SERVICE,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -233,7 +277,13 @@ export const operatePostRecord = async ({database, optType, value}: DataFactory)
         post.props = record?.props ?? {};
     };
 
-    return operateBaseRecord({database, optType, tableName: POST, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: POST,
+        value,
+        generator,
+    });
 };
 
 export const operatePostInThreadRecord = async ({database, optType, value}: DataFactory) => {
@@ -246,7 +296,13 @@ export const operatePostInThreadRecord = async ({database, optType, value}: Data
         postsInThread.latest = record.latest!;
     };
 
-    return operateBaseRecord({database, optType, tableName: POSTS_IN_THREAD, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: POSTS_IN_THREAD,
+        value,
+        generator,
+    });
 };
 
 export const operateReactionRecord = async ({database, optType, value}: DataFactory) => {
@@ -260,7 +316,13 @@ export const operateReactionRecord = async ({database, optType, value}: DataFact
         reaction.createAt = record.create_at;
     };
 
-    return operateBaseRecord({database, optType, tableName: REACTION, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: REACTION,
+        value,
+        generator,
+    });
 };
 
 export const operateFileRecord = async ({database, optType, value}: DataFactory) => {
@@ -279,7 +341,13 @@ export const operateFileRecord = async ({database, optType, value}: DataFactory)
         file.localPath = record?.localPath ?? '';
     };
 
-    return operateBaseRecord({database, optType, tableName: FILE, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: FILE,
+        value,
+        generator,
+    });
 };
 
 export const operatePostMetadataRecord = async ({database, optType, value}: DataFactory) => {
@@ -292,7 +360,13 @@ export const operatePostMetadataRecord = async ({database, optType, value}: Data
         postMeta.type = record.type;
     };
 
-    return operateBaseRecord({database, optType, tableName: POST_METADATA, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: POST_METADATA,
+        value,
+        generator,
+    });
 };
 
 export const operateDraftRecord = async ({database, optType, value}: DataFactory) => {
@@ -307,7 +381,13 @@ export const operateDraftRecord = async ({database, optType, value}: DataFactory
         draft.files = record?.files ?? emptyFileInfo;
     };
 
-    return operateBaseRecord({database, optType, tableName: DRAFT, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: DRAFT,
+        value,
+        generator,
+    });
 };
 
 export const operatePostsInChannelRecord = async ({database, optType, value}: DataFactory) => {
@@ -320,7 +400,13 @@ export const operatePostsInChannelRecord = async ({database, optType, value}: Da
         postsInChannel.latest = record.latest;
     };
 
-    return operateBaseRecord({database, optType, tableName: POSTS_IN_CHANNEL, value, generator});
+    return operateBaseRecord({
+        database,
+        optType,
+        tableName: POSTS_IN_CHANNEL,
+        value,
+        generator,
+    });
 };
 
 /**
@@ -339,18 +425,37 @@ export const operatePostsInChannelRecord = async ({database, optType, value}: Da
  * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */
-const operateBaseRecord = async ({database, optType, tableName, value, generator}: DataFactory) => {
+const operateBaseRecord = async ({
+    database,
+    optType,
+    tableName,
+    value,
+    generator,
+}: DataFactory) => {
     // We query first to see if we have a record on that entity with the current value.id
-    const appRecord = (await database.collections.get(tableName!).query(Q.where('id', value.id!)).fetch()) as Model[];
+    const appRecord = (await database.collections.
+        get(tableName!).
+        query(Q.where('id', value.id!)).
+        fetch()) as Model[];
 
     const isPresent = appRecord.length > 0;
 
-    // FIXME : find a way to update only those records that have really needs updating
     if ((isPresent && optType === OperationType.CREATE) || (isPresent && optType === OperationType.UPDATE)) {
+        const record = appRecord[0];
+
+        // We avoid unnecessary updates if we already have a record with the same update_at value for this model/entity
+        const isRecordIdentical = checkForIdenticalRecord({
+            tableName: tableName!,
+            newValue: value,
+            existingRecord: record,
+        });
+        if (isRecordIdentical) {
+            return null;
+        }
+
         // Two possible scenarios:
         // 1. We are dealing with either duplicates here and if so, we'll update instead of create
         // 2. This is just a normal update operation
-        const record = appRecord[0];
         return record.prepareUpdate(() => generator!(record));
     }
 
@@ -362,4 +467,21 @@ const operateBaseRecord = async ({database, optType, tableName, value, generator
     }
 
     return null;
+};
+
+const checkForIdenticalRecord = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
+    const guardTables = [POST];
+    if (guardTables.includes(tableName)) {
+        switch (tableName) {
+            case POST: {
+                const tempPost = newValue as RawPost;
+                const currentRecord = (existingRecord as unknown) as Post;
+                return tempPost.update_at === currentRecord.updateAt;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+    return false;
 };

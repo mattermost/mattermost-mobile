@@ -69,8 +69,6 @@ const {
     REACTION,
 } = MM_TABLES.SERVER;
 
-// FIXME : Performance improvements - For main entities, in each handler, do a 'select query' first to retrieve all matching ids ( e.g. post_id ).  In another array, filter only those records whose update_at value are different.  Now, process this array in your handler.  On the operator level, do the select-query and update-at check for specific tables ( minor ones ) only.
-
 class DataOperator {
   /**
    * handleIsolatedEntity: Operator that handles Create/Update operations on the isolated entities as
@@ -442,10 +440,10 @@ class DataOperator {
       }
 
       let batch: Model[] = [];
-      const files: RawFile[] = [];
+      let files: RawFile[] = [];
       const postsInThread = [];
-      const reactions: RawReaction[] = [];
-      const emojis: RawCustomEmoji[] = [];
+      let reactions: RawReaction[] = [];
+      let emojis: RawCustomEmoji[] = [];
       const images: { images: Dictionary<PostImage>; postId: string }[] = [];
       const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
@@ -488,20 +486,18 @@ class DataOperator {
               });
           }
 
-          const hasMetadata =
-        post?.metadata && Object.keys(post?.metadata).length > 0;
-
+          const hasMetadata = post?.metadata && Object.keys(post?.metadata).length > 0;
           if (hasMetadata) {
               const metadata = post.metadata;
 
               // Extracts reaction from post's metadata
-              reactions.concat(metadata?.reactions ?? []);
+              reactions = reactions.concat(metadata?.reactions ?? []);
 
               // Extracts emojis from post's metadata
-              emojis.concat(metadata?.emojis ?? []);
+              emojis = emojis.concat(metadata?.emojis ?? []);
 
               // Extracts files from post's metadata
-              files.concat(metadata?.files ?? []);
+              files = files.concat(metadata?.files ?? []);
 
               // Extracts images and embeds from post's metadata
               if (metadata?.images) {
