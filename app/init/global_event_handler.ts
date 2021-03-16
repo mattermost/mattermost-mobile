@@ -81,38 +81,38 @@ class GlobalEventHandler {
 
         // TODO: Only execute this if there are no more servers
         switch (Platform.OS) {
-        case 'ios': {
-            const mainPath = FileSystem.documentDirectory?.split('/').slice(0, -1).join('/');
-            const libraryDir = `${mainPath}/Library`;
-            const cookiesDir = `${libraryDir}/Cookies`;
-            const cookies = await FileSystem.getInfoAsync(cookiesDir);
-            const webkitDir = `${libraryDir}/WebKit`;
-            const webkit = await FileSystem.getInfoAsync(webkitDir);
+            case 'ios': {
+                const mainPath = FileSystem.documentDirectory?.split('/').slice(0, -1).join('/');
+                const libraryDir = `${mainPath}/Library`;
+                const cookiesDir = `${libraryDir}/Cookies`;
+                const cookies = await FileSystem.getInfoAsync(cookiesDir);
+                const webkitDir = `${libraryDir}/WebKit`;
+                const webkit = await FileSystem.getInfoAsync(webkitDir);
 
-            if (cookies.exists) {
-                FileSystem.deleteAsync(cookiesDir);
+                if (cookies.exists) {
+                    FileSystem.deleteAsync(cookiesDir);
+                }
+
+                if (webkit.exists) {
+                    FileSystem.deleteAsync(webkitDir);
+                }
+                break;
             }
 
-            if (webkit.exists) {
-                FileSystem.deleteAsync(webkitDir);
-            }
-            break;
-        }
+            case 'android': {
+                const cacheDir = FileSystem.cacheDirectory;
+                const mainPath = cacheDir?.split('/').slice(0, -1).join('/');
+                const cookies = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies`);
+                const cookiesJ = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies-journal`);
+                if (cookies.exists) {
+                    FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies`);
+                }
 
-        case 'android': {
-            const cacheDir = FileSystem.cacheDirectory;
-            const mainPath = cacheDir?.split('/').slice(0, -1).join('/');
-            const cookies = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies`);
-            const cookiesJ = await FileSystem.getInfoAsync(`${mainPath}/app_webview/Cookies-journal`);
-            if (cookies.exists) {
-                FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies`);
+                if (cookiesJ.exists) {
+                    FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies-journal`);
+                }
+                break;
             }
-
-            if (cookiesJ.exists) {
-                FileSystem.deleteAsync(`${mainPath}/app_webview/Cookies-journal`);
-            }
-            break;
-        }
         }
     };
 
