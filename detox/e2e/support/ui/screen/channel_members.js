@@ -76,6 +76,7 @@ class ChannelMembersScreen {
         displayUsernameList.forEach(async (displayUsername) => {
             await this.getUserByDisplayUsername(`@${displayUsername}`).tap();
         });
+        await wait(timeouts.ONE_SEC);
         await this.removeButton.tap();
         const {
             removeMembersTitle,
