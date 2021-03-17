@@ -1,13 +1,13 @@
 {
   "extends": [
-    "plugin:mattermost/react",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:mattermost/react"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
-    "mattermost",
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "mattermost"
   ],
   "settings": {
     "react": {
@@ -46,7 +46,13 @@
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "indent": [2, 4, {"SwitchCase": 1}],
+    "key-spacing": [2, {
+      "singleLine": {
+        "beforeColon": false,
+        "afterColon": true
+      }}]
   },
   "overrides": [
     {

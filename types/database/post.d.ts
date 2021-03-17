@@ -31,6 +31,9 @@ export default class Post extends Model {
     /** delete_at : The timestamp to when this post was last archived/deleted */
     deleteAt: number;
 
+    /** update_at : The timestamp to when this post was last updated on the server */
+    updateAt!: number;
+
     /** edit_at : The timestamp to when this post was last edited */
     editAt: number;
 
@@ -59,7 +62,7 @@ export default class Post extends Model {
     userId: string;
 
     /** props : Additional attributes for this props */
-    props: string;
+    props: object;
 
     /** drafts  : Every drafts associated with this Post */
     drafts: Draft;

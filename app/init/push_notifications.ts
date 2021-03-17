@@ -111,33 +111,33 @@ class PushNotifications {
 
         if (payload) {
             switch (payload.type) {
-            case NOTIFICATION_TYPE.CLEAR:
+                case NOTIFICATION_TYPE.CLEAR:
                 // Mark the channel as read
-                break;
-            case NOTIFICATION_TYPE.MESSAGE:
+                    break;
+                case NOTIFICATION_TYPE.MESSAGE:
                 // fetch the posts for the channel
 
-                if (foreground) {
+                    if (foreground) {
                     // Show the in-app notification
-                } else if (userInteraction && !payload.userInfo?.local) {
+                    } else if (userInteraction && !payload.userInfo?.local) {
                     // Swith to the server / team / channel that matches the notification
 
-                    const componentId = EphemeralStore.getNavigationTopComponentId();
-                    if (componentId) {
+                        const componentId = EphemeralStore.getNavigationTopComponentId();
+                        if (componentId) {
                         // Emit events to close the sidebars
 
-                        await dismissAllModals();
-                        await popToRoot();
+                            await dismissAllModals();
+                            await popToRoot();
+                        }
                     }
-                }
-                break;
-            case NOTIFICATION_TYPE.SESSION:
+                    break;
+                case NOTIFICATION_TYPE.SESSION:
                 // eslint-disable-next-line no-console
-                console.log('Session expired notification');
+                    console.log('Session expired notification');
 
-                // Logout the user from the server that matches the notification
+                    // Logout the user from the server that matches the notification
 
-                break;
+                    break;
             }
         }
     };

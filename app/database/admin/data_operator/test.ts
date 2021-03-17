@@ -2,14 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {Q} from '@nozbe/watermelondb';
-import App from '@typings/database/app';
+import DatabaseManager from '@database/admin/database_manager';
 
-import DatabaseManager, {DatabaseType} from '../database_manager';
-import DataOperator, {IsolatedEntities, OperationType} from './index';
+import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
+
+import DataOperator from './index';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
+    operateDraftRecord,
     operateGlobalRecord,
     operateRoleRecord,
     operateServersRecord,
@@ -17,465 +18,767 @@ import {
     operateTermsOfServiceRecord,
 } from './operators';
 
-jest.mock('../database_manager');
+jest.mock('@database/admin/database_manager');
 
-const {APP} = MM_TABLES.DEFAULT;
+const {DRAFT} = MM_TABLES.SERVER;
 
-describe('*** Data Operator tests ***', () => {
-    it('=> should return an array of type App for operateAppRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.getDefaultDatabase();
-        expect(db).toBeTruthy();
-
-        const preparedRecords = await operateAppRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {buildNumber: 'build-7', createdAt: 1, id: 'id-18', versionNumber: 'v-1'},
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('App');
-    });
-
-    it('=> should return an array of type Global for operateGlobalRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.getDefaultDatabase();
-        expect(db).toBeTruthy();
-
-        const preparedRecords = await operateGlobalRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Global');
-    });
-
-    it('=> should return an array of type Servers for operateServersRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.getDefaultDatabase();
-        expect(db).toBeTruthy();
-
-        const preparedRecords = await operateServersRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {
-                dbPath: 'mm-server',
-                displayName: 's-displayName',
-                id: 's-1',
-                mentionCount: 1,
-                unreadCount: 0,
-                url: 'https://community.mattermost.com',
-            },
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Servers');
-    });
-
-    it('=> should return an array of type CustomEmoji for operateCustomEmojiRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.createDatabaseConnection({
+describe('*** DataOperator: Handlers tests ***', () => {
+    const createConnection = async (setActive = false) => {
+        const dbName = 'server_schema_connection';
+        const serverUrl = 'https://appv2.mattermost.com';
+        const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             databaseConnection: {
                 actionsEnabled: true,
-                dbName: 'community mattermost',
+                dbName,
                 dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
+                serverUrl,
             },
         });
-        expect(db).toBeTruthy();
 
-        const preparedRecords = await operateCustomEmojiRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {id: 'emo-1', name: 'emoji'},
-        });
+        if (setActive) {
+            await DatabaseManager.setActiveServerDatabase({
+                displayName: dbName,
+                serverUrl,
+            });
+        }
 
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
-    });
+        return database;
+    };
 
-    it('=> should return an array of type Role for operateRoleRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        expect(db).toBeTruthy();
-
-        const preparedRecords = await operateRoleRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {id: 'role-1', name: 'role-name-1', permissions: []},
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Role');
-    });
-
-    it('=> should return an array of type System for operateSystemRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        expect(db).toBeTruthy();
-
-        const preparedRecords = await operateSystemRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {id: 'system-1', name: 'system-name-1', value: 'system'},
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('System');
-    });
-
-    it('=> should return an array of type TermsOfService for operateTermsOfServiceRecord', async () => {
-        expect.assertions(3);
-
-        const db = await DatabaseManager.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            databaseConnection: {
-                actionsEnabled: true,
-                dbName: 'community mattermost',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'https://appv2.mattermost.com',
-            },
-        });
-        expect(db).toBeTruthy();
-
-        const preparedRecords = await operateTermsOfServiceRecord({
-            db: db!,
-            optType: OperationType.CREATE,
-            value: {id: 'system-1', acceptedAt: 1},
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('TermsOfService');
-    });
-
-    it('=> should create a record in the App table in the default database', async () => {
-        expect.assertions(2);
-
-        // Creates a record in the App table
-        await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.CREATE,
-            tableName: IsolatedEntities.APP,
-            values: {buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
-        });
-
-        // Do a query and find out if the value has been registered in the App table of the default database
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
-
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch() as App[];
-
-        // We should expect to have a record returned as dictated by our query
-        expect(records.length).toBe(1);
-    });
-
-    it('=> should create several records in the App table in the default database', async () => {
-        expect.assertions(2);
-
-        // Creates a record in the App table
-        await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.CREATE,
-            tableName: IsolatedEntities.APP,
-            values: [
-                {buildNumber: 'build-10', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
-                {buildNumber: 'build-11', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
-                {buildNumber: 'build-12', createdAt: 1, id: 'id-12', versionNumber: 'version-12'},
-                {buildNumber: 'build-13', createdAt: 1, id: 'id-13', versionNumber: 'version-13'},
-            ],
-        });
-
-        // Do a query and find out if the value has been registered in the App table of the default database
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
-
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11', 'id-12', 'id-13']))).fetch() as App[];
-
-        // We should expect to have 4 records created
-        expect(records.length).toBe(4);
-    });
-
-    it('=> should update a record in the App table in the default database', async () => {
-        expect.assertions(3);
-
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
-
-        // Update record having id 'id-1'
-        await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.UPDATE,
-            tableName: IsolatedEntities.APP,
-            values: {buildNumber: 'build-13-13', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
-        });
-
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', 'id-1')).fetch() as App[];
-        expect(records.length).toBeGreaterThan(0);
-
-        // Verify if the buildNumber for this record has been updated
-        expect(records[0].buildNumber).toMatch('build-13-13');
-    });
-
-    it('=> should update several records in the App table in the default database', async () => {
-        expect.assertions(4);
-
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
-
-        // Update records having id 'id-10' and 'id-11'
-        await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.UPDATE,
-            tableName: IsolatedEntities.APP,
-            values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
-                {buildNumber: 'build-11y', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
-            ],
-        });
-
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11']))).fetch() as App[];
-        expect(records.length).toBe(2);
-
-        // Verify if the buildNumber for those two record has been updated
-        expect(records[0].buildNumber).toMatch('build-10x');
-        expect(records[1].buildNumber).toMatch('build-11y');
-    });
-
-    it('=> [EDGE CASE] should UPDATE instead of CREATE record for existing id', async () => {
-        expect.assertions(3);
-
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
-
-        // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the records instead of prepareCreate
-        await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.CREATE,
-            tableName: IsolatedEntities.APP,
-            values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-10', versionNumber: 'version-10'},
-                {buildNumber: 'build-11x', createdAt: 1, id: 'id-11', versionNumber: 'version-11'},
-            ],
-        });
-
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-10', 'id-11']))).fetch() as App[];
-
-        // Verify if the buildNumber for those two record has been updated
-        expect(records[0].buildNumber).toMatch('build-10x');
-        expect(records[1].buildNumber).toMatch('build-11x');
-    });
-
-    it('=> [EDGE CASE] should CREATE instead of UPDATE record for non-existing id', async () => {
-        expect.assertions(3);
-
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
-
-        // id-15 and id-16 do not exist but yet the optType is UPDATE.  The operator should then prepareCreate the records instead of prepareUpdate
-        await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.UPDATE,
-            tableName: IsolatedEntities.APP,
-            values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-15', versionNumber: 'version-10'},
-                {buildNumber: 'build-11x', createdAt: 1, id: 'id-16', versionNumber: 'version-11'},
-            ],
-        });
-
-        const records = await defaultDB!.collections.get(APP).query(Q.where('id', Q.oneOf(['id-15', 'id-16']))).fetch() as App[];
-
-        // Verify if the buildNumber for those two record has been created
-        expect(records[0].buildNumber).toMatch('build-10x');
-        expect(records[1].buildNumber).toMatch('build-11x');
-    });
-
-    it('=> should use operateAppRecord for APP entity in handleBaseData', async () => {
+    it('=> HandleApp: should write to APP entity', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
-                {buildNumber: 'build-10x', createdAt: 1, id: 'id-21', versionNumber: 'version-10'},
-                {buildNumber: 'build-11y', createdAt: 1, id: 'id-22', versionNumber: 'version-11'},
+                {
+                    buildNumber: 'build-10x',
+                    createdAt: 1,
+                    id: 'id-21',
+                    versionNumber: 'version-10',
+                },
+                {
+                    buildNumber: 'build-11y',
+                    createdAt: 1,
+                    id: 'id-22',
+                    versionNumber: 'version-11',
+                },
             ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateAppRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateAppRecord,
+        });
     });
 
-    it('=> should use operateGlobalRecord for GLOBAL entity in handleBaseData', async () => {
+    it('=> HandleGlobal: should write to GLOBAL entity', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.GLOBAL,
-            values: {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
+            values: [
+                {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
+            ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateGlobalRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateGlobalRecord,
+        });
     });
 
-    it('=> should use operateServersRecord for SERVERS entity in handleBaseData', async () => {
+    it('=> HandleServers: should write to SERVERS entity', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.SERVERS,
-            values: {
-                dbPath: 'server.db',
-                displayName: 'community',
-                id: 'server-id-1',
-                mentionCount: 0,
-                unreadCount: 0,
-                url: 'https://community.mattermost.com',
-            },
+            values: [
+                {
+                    dbPath: 'server.db',
+                    displayName: 'community',
+                    id: 'server-id-1',
+                    mentionCount: 0,
+                    unreadCount: 0,
+                    url: 'https://community.mattermost.com',
+                },
+            ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateServersRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateServersRecord,
+        });
     });
 
-    it('=> should use operateCustomEmojiRecord for CUSTOM_EMOJI entity in handleBaseData', async () => {
+    it('=> HandleCustomEmoji: should write to CUSTOM_EMOJI entity', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: {
-                id: 'custom-emoji-id-1',
-                name: 'custom-emoji-1',
-            },
+            values: [
+                {
+                    id: 'custom-emoji-id-1',
+                    name: 'custom-emoji-1',
+                },
+            ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateCustomEmojiRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateCustomEmojiRecord,
+        });
     });
 
-    it('=> should use operateRoleRecord for ROLE entity in handleBaseData', async () => {
+    it('=> HandleRole: should write to ROLE entity', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.ROLE,
-            values: {
-                id: 'custom-emoji-id-1',
-                name: 'custom-emoji-1',
-                permissions: ['custom-emoji-1'],
-            },
+            values: [
+                {
+                    id: 'custom-emoji-id-1',
+                    name: 'custom-emoji-1',
+                    permissions: ['custom-emoji-1'],
+                },
+            ],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateRoleRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateRoleRecord,
+        });
     });
 
-    it('=> should use operateSystemRecord for SYSTEM entity in handleBaseData', async () => {
+    it('=> HandleSystem: should write to SYSTEM entity', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.SYSTEM,
-            values: {id: 'system-id-1', name: 'system-1', value: 'system-1'},
+            values: [{id: 'system-id-1', name: 'system-1', value: 'system-1'}],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateSystemRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateSystemRecord,
+        });
     });
 
-    it('=> should use operateTermsOfServiceRecord for TERMS_OF_SERVICE entity in handleBaseData', async () => {
+    it('=> HandleTermsOfService: should write to TERMS_OF_SERVICE entity', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
             optType: OperationType.CREATE,
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
-            values: {id: 'tos-1', acceptedAt: 1},
+            values: [{id: 'tos-1', acceptedAt: 1}],
         };
 
-        await DataOperator.handleIsolatedEntityData(data);
+        await DataOperator.handleIsolatedEntity(data);
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({...data, recordOperator: operateTermsOfServiceRecord});
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            ...data,
+            recordOperator: operateTermsOfServiceRecord,
+        });
     });
 
-    it('=> should not call handleBaseData if tableName is invalid', async () => {
+    it('=> No table name: should not call handleBase if tableName is invalid', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBaseData');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
-        const data = {
+        await DataOperator.handleIsolatedEntity({
             optType: OperationType.CREATE,
-            tableName: 'INVALID_TABLE_NAME',
-            values: {id: 'tos-1', acceptedAt: 1},
-        };
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        await DataOperator.handleIsolatedEntityData(data);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            tableName: 'INVALID_TABLE_NAME',
+            values: [{id: 'tos-1', acceptedAt: 1}],
+        });
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
+    });
+
+    it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+
+        await DataOperator.handleReactions({
+            reactions: [
+                {
+                    create_at: 1608263728086,
+                    delete_at: 0,
+                    emoji_name: 'p4p1',
+                    post_id: '4r9jmr7eqt8dxq3f9woypzurry',
+                    update_at: 1608263728077,
+                    user_id: 'ooumoqgq3bfiijzwbn8badznwc',
+                },
+            ],
+            prepareRowsOnly: false,
+        });
+
+        // Called twice:  Once for Reaction record and once for CustomEmoji record
+        expect(spyOnPrepareBase).toHaveBeenCalledTimes(2);
+
+        // Only one batch operation for both entities
+        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleDraft: should write to the Draft entity', async () => {
+        expect.assertions(2);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const data = [
+            {
+                channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
+                files: [{
+                    user_id: 'user_id',
+                    post_id: 'post_id',
+                    create_at: 123,
+                    update_at: 456,
+                    delete_at: 789,
+                    name: 'an_image',
+                    extension: 'jpg',
+                    size: 10,
+                    mime_type: 'image',
+                    width: 10,
+                    height: 10,
+                    has_preview_image: false,
+                    clientId: 'clientId',
+                }],
+                message: 'test draft message for post',
+                root_id: '',
+            },
+        ];
+        await DataOperator.handleDraft(data);
+
+        // Only one batch operation for both entities
+        expect(spyOnHandleBase).toHaveBeenCalledWith({
+            optType: OperationType.CREATE,
+            tableName: DRAFT,
+            values: data,
+            recordOperator: operateDraftRecord,
+        });
+    });
+
+    it('=> HandleFiles: should write to File entity', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+
+        await DataOperator.handleFiles({
+            files: [{
+                user_id: 'user_id',
+                post_id: 'post_id',
+                create_at: 12345,
+                update_at: 456,
+                delete_at: 789,
+                name: 'an_image',
+                extension: 'jpg',
+                size: 10,
+                mime_type: 'image',
+                width: 10,
+                height: 10,
+                has_preview_image: false,
+            }],
+            prepareRowsOnly: false,
+        });
+
+        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
+        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandlePostMetadata: should write to PostMetadata entity', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection(true);
+        expect(database).toBeTruthy();
+
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+
+        const data = {
+            images: {
+                'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
+                    width: 400,
+                    height: 400,
+                    format: 'png',
+                    frame_count: 0,
+                },
+
+            },
+            embeds: [
+                {
+                    type: 'opengraph',
+                    url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                    data: {
+                        type: 'object',
+                        url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                        title: 'mickmister/mattermost-plugin-default-theme',
+                        description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                        determiner: '',
+                        site_name: 'GitHub',
+                        locale: '',
+                        locales_alternate: null,
+                        images: [
+                            {
+                                url: '',
+                                secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                type: '',
+                                width: 0,
+                                height: 0,
+                            },
+                        ],
+                        audios: null,
+                        videos: null,
+                    },
+                },
+            ],
+        };
+
+        await DataOperator.handlePostMetadata({
+            embeds: [{
+                embed: data.embeds, postId: 'post-1',
+            }],
+            images: [{
+                images: data.images, postId: 'post-1',
+            }],
+            prepareRowsOnly: false});
+
+        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
+        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandlePostsInThread: should write to PostsInThread entity', async () => {
+        expect.assertions(2);
+
+        const posts = [
+            {
+                id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                create_at: 1596032651747,
+                update_at: 1596032651747,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                original_id: '',
+                message: "I'll second these kudos!  Thanks m!",
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '8fcnk3p1jt8mmkaprgajoxz115a',
+                create_at: 1596104683748,
+                update_at: 1596104683748,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: '',
+                original_id: '',
+                message: 'a added to the channel by j.',
+                type: 'system_add_to_channel',
+                props: {
+                    addedUserId: 'z89qsntet7bimd3xddfu7u9ncdaxc',
+                    addedUsername: 'a',
+                    userId: 'hy5sdfdfq51sebfh58ktrce5ijtcwy',
+                    username: 'j',
+                },
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 0,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '3y3w3a6gkbg73bnj3xund9o5ic',
+                create_at: 1596277483749,
+                update_at: 1596277483749,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
+                original_id: '',
+                message: 'Great work M!',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '4btbnmticjgw7ewd3qopmpiwqw',
+                create_at: 1596277483749,
+                update_at: 1596277483749,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '',
+                parent_id: '',
+                original_id: '',
+                message: 'unordered post',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+        ];
+        const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
+
+        await createConnection(true);
+
+        // handlePosts will in turn call handlePostsInThread
+        await DataOperator.handlePosts({
+            optType: OperationType.CREATE,
+            orders: [
+                '8swgtrrdiff89jnsiwiip3y1eoe',
+                '8fcnk3p1jt8mmkaprgajoxz115a',
+                '3y3w3a6gkbg73bnj3xund9o5ic',
+            ],
+            values: posts,
+            previousPostId: '',
+        });
+
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
+    });
+
+    it('=> HandlePostsInChannel: should write to PostsInChannel entity', async () => {
+        expect.assertions(2);
+
+        const posts = [
+            {
+                id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                create_at: 1596032651747,
+                update_at: 1596032651747,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                original_id: '',
+                message: "I'll second these kudos!  Thanks m!",
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '8fcnk3p1jt8mmkaprgajoxz115a',
+                create_at: 1596104683748,
+                update_at: 1596104683748,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: '',
+                original_id: '',
+                message: 'a added to the channel by j.',
+                type: 'system_add_to_channel',
+                props: {
+                    addedUserId: 'z89qsntet7bimd3xddfu7u9ncdaxc',
+                    addedUsername: 'a',
+                    userId: 'hy5sdfdfq51sebfh58ktrce5ijtcwy',
+                    username: 'j',
+                },
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 0,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '3y3w3a6gkbg73bnj3xund9o5ic',
+                create_at: 1596277483749,
+                update_at: 1596277483749,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
+                original_id: '',
+                message: 'Great work M!',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '4btbnmticjgw7ewd3qopmpiwqw',
+                create_at: 1596277483749,
+                update_at: 1596277483749,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '',
+                parent_id: '',
+                original_id: '',
+                message: 'unordered post',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+        ];
+        const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
+
+        await createConnection(true);
+
+        // handlePosts will in turn call handlePostsInThread
+        await DataOperator.handlePosts({
+            optType: OperationType.CREATE,
+            orders: [
+                '8swgtrrdiff89jnsiwiip3y1eoe',
+                '8fcnk3p1jt8mmkaprgajoxz115a',
+                '3y3w3a6gkbg73bnj3xund9o5ic',
+            ],
+            values: posts,
+            previousPostId: '',
+        });
+
+        expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
+    });
+
+    it('=> HandlePosts: should write to Post and its sub-child entities', async () => {
+        expect.assertions(6);
+
+        const posts = [
+            {
+                id: 'a7ebyw883trm884p1qcgt8yw4a',
+                create_at: 1596032651747,
+                update_at: 1596032651747,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                original_id: '',
+                message: "I'll second these kudos!  Thanks m!",
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {
+                    images: {
+                        'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
+                            width: 400,
+                            height: 400,
+                            format: 'png',
+                            frame_count: 0,
+                        },
+                    },
+                    reactions: [
+                        {
+                            user_id: 'njic1w1k5inefp848jwk6oukio',
+                            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                            emoji_name: 'clap',
+                            create_at: 1608252965442,
+                            update_at: 1608252965442,
+                            delete_at: 0,
+                        },
+                    ],
+                    embeds: [
+                        {
+                            type: 'opengraph',
+                            url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                            data: {
+                                type: 'object',
+                                url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                                title: 'mickmister/mattermost-plugin-default-theme',
+                                description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                                determiner: '',
+                                site_name: 'GitHub',
+                                locale: '',
+                                locales_alternate: null,
+                                images: [
+                                    {
+                                        url: '',
+                                        secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                        type: '',
+                                        width: 0,
+                                        height: 0,
+                                    },
+                                ],
+                                audios: null,
+                                videos: null,
+                            },
+                        },
+                    ],
+                    emojis: [
+                        {
+                            id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                            create_at: 1502389307432,
+                            update_at: 1502389307432,
+                            delete_at: 0,
+                            creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                            name: 'thanks',
+                        },
+                    ],
+                    files: [
+                        {
+                            id: 'f1oxe5rtepfs7n3zifb4sso7po',
+                            user_id: '89ertha8xpfsumpucqppy5knao',
+                            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                            create_at: 1608270920357,
+                            update_at: 1608270920357,
+                            delete_at: 0,
+                            name: '4qtwrg.jpg',
+                            extension: 'jpg',
+                            size: 89208,
+                            mime_type: 'image/jpeg',
+                            width: 500,
+                            height: 656,
+                            has_preview_image: true,
+                            mini_preview: '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                        },
+                    ],
+                },
+            },
+        ];
+
+        const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
+        const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
+        const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
+        const spyOnHandleIsolatedEntity = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
+        const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
+        const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
+
+        await createConnection(true);
+
+        // handlePosts will in turn call handlePostsInThread
+        await DataOperator.handlePosts({
+            optType: OperationType.CREATE,
+            orders: [
+                'a7ebyw883trm884p1qcgt8yw4a',
+            ],
+            values: posts,
+            previousPostId: '',
+        });
+
+        expect(spyOnHandleReactions).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
     });
 });

@@ -3,9 +3,10 @@
 
 import {Platform} from 'react-native';
 
+import {DatabaseType} from '@typings/database/enums';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-import DBManager, {DatabaseType} from './index';
+import DBManager from './index';
 
 export default async () => {
     // Test: It should return the iOS App-Group shared directory
