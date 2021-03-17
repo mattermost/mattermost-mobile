@@ -159,15 +159,18 @@ class DataOperator {
           fetch()) as Post[];
 
       postsInThreads.forEach((rootPost) => {
-      // Creates a sub-array of threads relating to rootPost.post_id
-          const childPosts = threads.filter((thread) => {
-              return rootPost.post_id === thread.rootId;
-          });
+          const childPosts = [];
+          let maxCreateAt = 0;
+          for (let i = 0; i < threads.length; i++) {
+              const thread = threads[i];
+              if (thread?.rootId === rootPost.post_id) {
+                  // Creates a sub-array of threads relating to rootPost.post_id
+                  childPosts.push(thread);
+              }
 
-          // Retrieves max create-at date of all posts whose root_id is rootPost.post_id
-          const maxCreateAt = childPosts.reduce((prev, current) => {
-              return prev > current.createAt ? prev : current.createAt;
-          }, 0);
+              // Retrieves max createAt date of all posts whose root_id is rootPost.post_id
+              maxCreateAt = thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
+          }
 
           // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
           rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
@@ -370,8 +373,7 @@ class DataOperator {
       const earliest = tipOfChain.create_at;
 
       // Find highest 'create_at' value in chain; -1 means we are dealing with one item in the posts array
-      const lastIndex = sortedPosts.length > 1 ? sortedPosts.length - 1 : -1;
-      const latest = lastIndex > 0 ? sortedPosts[lastIndex].create_at : earliest;
+      const latest = sortedPosts[sortedPosts.length - 1].create_at;
 
       const database = await this.getDatabase(POSTS_IN_CHANNEL);
 
