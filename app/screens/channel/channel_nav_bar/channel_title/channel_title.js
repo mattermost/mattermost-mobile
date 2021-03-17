@@ -142,6 +142,7 @@ export default class ChannelTitle extends PureComponent {
         }
 
         let mutedIcon;
+        let wrapperWidth = 90;
         if (isChannelMuted) {
             mutedIcon = (
                 <CompassIcon
@@ -150,6 +151,7 @@ export default class ChannelTitle extends PureComponent {
                     name='bell-off-outline'
                 />
             );
+            wrapperWidth -= 10;
         }
 
         const customStatus = this.props.channelType === General.DM_CHANNEL ?
@@ -162,13 +164,17 @@ export default class ChannelTitle extends PureComponent {
                 </Text>
             ) : null;
 
+        if (customStatus) {
+            wrapperWidth -= 10;
+        }
+
         return (
             <TouchableOpacity
                 testID={'channel.title.button'}
                 style={style.container}
                 onPress={onPress}
             >
-                <View style={style.wrapper}>
+                <View style={[style.wrapper, {width: `${wrapperWidth}%`}]}>
                     {this.archiveIcon(style)}
                     <Text
                         ellipsizeMode='tail'
@@ -200,7 +206,6 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            width: '70%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,

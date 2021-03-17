@@ -202,19 +202,15 @@ export default class ChannelItem extends PureComponent {
                         style={[style.item, extraItemStyle]}
                     >
                         {icon}
-                        <View
-                            style={style.textWrapper}
+                        <Text
+                            testID={displayNameTestID}
+                            style={[style.text, extraTextStyle]}
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
                         >
-                            <Text
-                                testID={displayNameTestID}
-                                style={[style.text, extraTextStyle]}
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                            >
-                                {channelDisplayName}
-                            </Text>
-                            {customStatus}
-                        </View>
+                            {channelDisplayName}
+                        </Text>
+                        {customStatus}
                         {badge}
                     </View>
                 </View>
@@ -244,16 +240,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
             paddingLeft: 11,
         },
-        textWrapper: {
-            flex: 1,
-            flexDirection: 'row',
-        },
         text: {
             color: changeOpacity(theme.sidebarText, 0.6),
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
-            maxWidth: '75%',
+            maxWidth: '80%',
             alignSelf: 'center',
             fontFamily: 'Open Sans',
         },
@@ -263,6 +255,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         textUnread: {
             color: theme.sidebarUnreadText,
             fontWeight: '500',
+            maxWidth: '70%',
         },
         badge: {
             backgroundColor: theme.mentionBg,

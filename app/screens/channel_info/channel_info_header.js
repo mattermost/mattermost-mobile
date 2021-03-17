@@ -180,7 +180,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {isCustomStatusEnabled && type === General.DM_CHANNEL &&
+                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus.emoji &&
                     <View style={[style.row, style.customStatusContainer]}>
                         <View style={style.iconContainer}>
                             <Emoji
