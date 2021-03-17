@@ -6,6 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
+import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
     HandleBaseData,
@@ -31,11 +32,9 @@ import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
-import CustomEmoji from '@typings/database/custom_emoji';
 
 import DatabaseConnectionException from './exceptions/database_connection_exception';
 import DatabaseOperatorException from './exceptions/database_operator_exception';
-
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
@@ -52,7 +51,6 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-
 import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 
 const {
@@ -140,7 +138,7 @@ class DataOperator {
   };
 
   /**
-   * handlePostsInThread: Handler responsible for the Create/Update operations occurring the PostsInThread entity from the 'Server' schema
+   * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
    * @param {RawPostsInThread[]} postsInThreads
    * @returns {Promise<any[]>}
    */
@@ -192,7 +190,7 @@ class DataOperator {
   };
 
   /**
-   * handleReactions: Handler responsible for the Create/Update operations occurring the Reaction entity from the 'Server' schema
+   * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction entity from the 'Server' schema
    * @param {HandleReactions} handleReactions
    * @param {RawReaction[]} handleReactions.reactions
    * @param {boolean} handleReactions.prepareRowsOnly
@@ -254,7 +252,7 @@ class DataOperator {
   };
 
   /**
-   * handleFiles: Handler responsible for the Create/Update operations occurring the File entity from the 'Server' schema
+   * handleFiles: Handler responsible for the Create/Update operations occurring on the File entity from the 'Server' schema
    * @param {HandleFiles} handleFiles
    * @param {RawFile[]} handleFiles.files
    * @param {boolean} handleFiles.prepareRowsOnly
@@ -287,7 +285,7 @@ class DataOperator {
   };
 
   /**
-   * handlePostMetadata: Handler responsible for the Create/Update operations occurring the PostMetadata entity from the 'Server' schema
+   * handlePostMetadata: Handler responsible for the Create/Update operations occurring on the PostMetadata entity from the 'Server' schema
    * @param {HandlePostMetadata} handlePostMetadata
    * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
    * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
@@ -346,7 +344,7 @@ class DataOperator {
   };
 
   /**
-   * handlePostsInChannel: Handler responsible for the Create/Update operations occurring the PostsInChannel entity from the 'Server' schema
+   * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel entity from the 'Server' schema
    * @param {RawPost[]} posts
    * @returns {Promise<any[]>}
    */
@@ -406,7 +404,7 @@ class DataOperator {
       let found = false;
       let targetChunk: PostsInChannel;
       for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
-          // find if we should plug the chain before
+      // find if we should plug the chain before
           const chunk = chunks[chunkIndex];
           if (earliest < chunk.earliest) {
               found = true;
@@ -452,9 +450,9 @@ class DataOperator {
   };
 
   /**
-   * handlePosts: Handler responsible for the Create/Update operations occurring the Post entity from the 'Server' schema
+   * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
    * @param {HandlePosts} handlePosts
-   * @param {OperationType} optType
+   * @param {OperationType} handlePosts.optType
    * @param {string[]} orders
    * @param {RawPost[]} values
    * @param {string | undefined} previousPostId
@@ -602,7 +600,7 @@ class DataOperator {
   /**
    * prepareBase: Utility method that actually calls the operators for the handlers
    * @param {Database} database
-   * @param {OperationType} optType
+   * @param {OperationType} database.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
    * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
@@ -641,7 +639,8 @@ class DataOperator {
 
   /**
    * handleBase: Handles the Create/Update operations on an entity.
-   * @param {OperationType} optType
+   * @param {HandleBaseData} baseData
+   * @param {OperationType} baseData.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
    * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator

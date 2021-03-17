@@ -10,7 +10,7 @@ import Reaction from '@typings/database/reaction';
 const {REACTION} = MM_TABLES.SERVER;
 
 /**
- * sanitizePosts: Creates an arrays of ordered and unordered posts.  Unordered posts are those posts that are not
+ * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
  * present in the orders array
  * @param {SanitizePosts} sanitizePosts
  * @param {RawPost[]} sanitizePosts.posts
@@ -65,7 +65,7 @@ export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainP
 };
 
 /**
- * sanitizeReactions: Treats reactions happening on a Post.  For example, a user can add/remove an emoji.  Hence, this function
+ * sanitizeReactions: Treats reactions happening on a Post. For example, a user can add/remove an emoji.  Hence, this function
  * tell us which reactions to create/delete in the Reaction table and which custom-emoji to create in our database.
  * For more information, please have a look at https://community.mattermost.com/core/pl/rq9e8jnonpyrmnyxpuzyc4d6ko
  * @param {SanitizeReactions} sanitizeReactions
