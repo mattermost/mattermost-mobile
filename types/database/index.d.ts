@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 interface NotifyProps {
-    channel: true;
+    channel: boolean;
     desktop: string;
-    desktop_sound: true;
-    email: true;
-    first_name: true;
+    desktop_sound: boolean;
+    email: boolean;
+    first_name: boolean;
     mention_keys: string;
     push: string;
 }
@@ -18,7 +18,7 @@ interface UserProps {
 interface Timezone {
     automaticTimezone: string;
     manualTimezone: string;
-    useAutomaticTimezone: true;
+    useAutomaticTimezone: boolean;
 }
 
 interface FileInfo {

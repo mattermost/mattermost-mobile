@@ -24,6 +24,7 @@ import {
     RawPostMetadata,
     RawPostsInThread,
     RawReaction,
+    RawUser,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import File from '@typings/database/file';
@@ -50,6 +51,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
+    operateUserRecord,
 } from './operators';
 import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 
@@ -62,6 +64,7 @@ const {
     POSTS_IN_THREAD,
     POSTS_IN_CHANNEL,
     REACTION,
+    USER,
 } = MM_TABLES.SERVER;
 
 class DataOperator {
@@ -131,57 +134,6 @@ class DataOperator {
           tableName: DRAFT,
           recordOperator: operateDraftRecord,
       });
-
-      return [];
-  };
-
-  /**
-   * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
-   * @param {RawPostsInThread[]} postsInThreads
-   * @returns {Promise<any[]>}
-   */
-  handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
-      if (!postsInThreads.length) {
-          return [];
-      }
-
-      const postIds = postsInThreads.map((postThread) => postThread.post_id);
-      const rawPostsInThreads: RawPostsInThread[] = [];
-
-      const database = await this.getDatabase(POSTS_IN_THREAD);
-      const threads = (await database.collections.
-          get(POST).
-          query(Q.where('root_id', Q.oneOf(postIds))).
-          fetch()) as Post[];
-
-      postsInThreads.forEach((rootPost) => {
-          const childPosts = [];
-          let maxCreateAt = 0;
-          for (let i = 0; i < threads.length; i++) {
-              const thread = threads[i];
-              if (thread?.rootId === rootPost.post_id) {
-                  // Creates a sub-array of threads relating to rootPost.post_id
-                  childPosts.push(thread);
-              }
-
-              // Retrieves max createAt date of all posts whose root_id is rootPost.post_id
-              maxCreateAt = thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
-          }
-
-          // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
-          rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
-      });
-
-      const postInThreadRecords = ((await this.prepareBase({
-          database,
-          recordOperator: operatePostInThreadRecord,
-          tableName: POSTS_IN_THREAD,
-          values: rawPostsInThreads,
-      })) as unknown) as PostsInThread[];
-
-      if (postInThreadRecords?.length) {
-          await this.batchOperations({database, models: postInThreadRecords});
-      }
 
       return [];
   };
@@ -337,6 +289,58 @@ class DataOperator {
   };
 
   /**
+   * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
+   * @param {RawPostsInThread[]} postsInThreads
+   * @returns {Promise<any[]>}
+   */
+  handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
+      if (!postsInThreads.length) {
+          return [];
+      }
+
+      const postIds = postsInThreads.map((postThread) => postThread.post_id);
+      const rawPostsInThreads: RawPostsInThread[] = [];
+
+      const database = await this.getDatabase(POSTS_IN_THREAD);
+      const threads = (await database.collections.
+          get(POST).
+          query(Q.where('root_id', Q.oneOf(postIds))).
+          fetch()) as Post[];
+
+      postsInThreads.forEach((rootPost) => {
+          const childPosts = [];
+          let maxCreateAt = 0;
+          for (let i = 0; i < threads.length; i++) {
+              const thread = threads[i];
+              if (thread?.rootId === rootPost.post_id) {
+                  // Creates a sub-array of threads relating to rootPost.post_id
+                  childPosts.push(thread);
+              }
+
+              // Retrieves max createAt date of all posts whose root_id is rootPost.post_id
+              maxCreateAt =
+          thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
+          }
+
+          // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
+          rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
+      });
+
+      const postInThreadRecords = ((await this.prepareBase({
+          database,
+          recordOperator: operatePostInThreadRecord,
+          tableName: POSTS_IN_THREAD,
+          values: rawPostsInThreads,
+      })) as unknown) as PostsInThread[];
+
+      if (postInThreadRecords?.length) {
+          await this.batchOperations({database, models: postInThreadRecords});
+      }
+
+      return [];
+  };
+
+  /**
    * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel entity from the 'Server' schema
    * @param {RawPost[]} posts
    * @returns {Promise<any[]>}
@@ -453,7 +457,7 @@ class DataOperator {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
-      if (!orders?.length) {
+      if (!orders.length) {
           throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
       }
 
@@ -560,6 +564,25 @@ class DataOperator {
       });
       await this.handlePostsInThread(postsInThread);
       await this.handlePostsInChannel(orderedPosts);
+  };
+
+  /**
+   * handleUsers: Handler responsible for the Create/Update operations occurring on the User entity from the 'Server' schema
+   * @param {RawUser[]} users
+   * @returns {Promise<void>}
+   */
+  handleUsers = async (users: RawUser[]) => {
+      if (!users.length) {
+          return [];
+      }
+
+      const records = await this.handleBase({
+          tableName: USER,
+          values: users,
+          recordOperator: operateUserRecord,
+      });
+
+      return records;
   };
 
   /**

@@ -769,4 +769,62 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandlePosts: should write to Post and its sub-child entities', async () => {
+        expect.assertions(1);
+
+        const users = [
+            {
+                id: '9ciscaqbrpd6d8s68k76xb9bte',
+                create_at: 1599457495881,
+                update_at: 1607683720173,
+                delete_at: 0,
+                username: 'a.l',
+                auth_service: 'saml',
+                email: 'a.l@mattermost.com',
+                email_verified: true,
+                nickname: '',
+                first_name: 'A',
+                last_name: 'L',
+                position: 'Mobile Engineer',
+                roles: 'system_user',
+
+                // auth_data: '',
+                // allow_marketing: true,
+                props: {},
+                notify_props: {
+                    desktop: 'all',
+                    desktop_sound: true,
+                    email: true,
+                    first_name: true,
+                    mention_keys: '',
+                    push: 'mention',
+                    channel: true,
+
+                    // auto_responder_active: false,
+                    // auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
+                    // comments: 'never',
+                    // desktop_notification_sound: 'Hello',
+                    // push_status: 'online',
+                },
+                last_password_update: 1604323112537,
+                last_picture_update: 1604686302260,
+                locale: 'en',
+                timezone: {
+                    automaticTimezone: 'Indian/Mauritius',
+                    manualTimezone: '',
+                    useAutomaticTimezone: true,
+                },
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        // handlePosts will in turn call handlePostsInThread
+        await DataOperator.handleUsers(users);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
 });

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {User} from '@database/server/models';
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
@@ -24,6 +25,7 @@ import {
     RawServers,
     RawSystem,
     RawTermsOfService,
+    RawUser,
 } from '@typings/database/database';
 import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
@@ -51,6 +53,7 @@ const {
     ROLE,
     SYSTEM,
     TERMS_OF_SERVICE,
+    USER,
 } = MM_TABLES.SERVER;
 
 /**
@@ -436,6 +439,47 @@ export const operatePostsInChannelRecord = async ({database, value}: DataFactory
         database,
 
         tableName: POSTS_IN_CHANNEL,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateUserRecord = async ({database, value}: DataFactory) => {
+    const record = value as RawUser;
+
+    const generator = (user: User) => {
+        user._raw.id = record.id;
+        user.authService = record.auth_service;
+        user.deleteAt = record.delete_at;
+        user.updateAt = record.update_at;
+        user.email = record.email;
+        user.firstName = record.first_name;
+
+        // FIXME : find out about is_bot and is_guest
+        // user.is_bot = record.first_name;
+        // user.is_guest = record.first_name;
+        user.lastName = record.last_name;
+        user.lastPictureUpdate = record.last_picture_update;
+        user.locale = record.locale;
+        user.nickname = record.nickname;
+        user.position = record?.position ?? '';
+        user.roles = record.roles;
+        user.username = record.username;
+        user.notifyProps = record.notify_props;
+        user.props = record.props;
+        user.timezone = record.timezone;
+    };
+
+    return operateBaseRecord({
+        database,
+        tableName: USER,
         value,
         generator,
     });

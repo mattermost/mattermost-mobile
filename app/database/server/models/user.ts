@@ -60,6 +60,9 @@ export default class User extends Model {
     /** auth_service : The type of authentication service registered to that user */
     @field('auth_service') authService!: string;
 
+    /** update_at : The timestamp at which this user account has been updated */
+    @field('update_at') updateAt!: number;
+
     /** delete_at : The timestamp at which this user account has been archived/deleted */
     @field('delete_at') deleteAt!: number;
 
