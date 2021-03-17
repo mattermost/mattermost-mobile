@@ -6,7 +6,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperator from '@database/admin/data_operator/index';
 import App from '@typings/database/app';
-import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
+import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
     operateAppRecord,
@@ -61,7 +61,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateAppRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 buildNumber: 'build-7',
                 createdAt: 1,
@@ -82,7 +81,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateGlobalRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
         });
 
@@ -98,7 +96,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateServersRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 dbPath: 'mm-server',
                 displayName: 's-displayName',
@@ -121,7 +118,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateCustomEmojiRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {id: 'emo-1', name: 'emoji'},
         });
 
@@ -137,7 +133,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateRoleRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {id: 'role-1', name: 'role-name-1', permissions: []},
         });
 
@@ -153,7 +148,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateSystemRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {id: 'system-1', name: 'system-name-1', value: 'system'},
         });
 
@@ -169,7 +163,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateTermsOfServiceRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {id: 'system-1', acceptedAt: 1},
         });
 
@@ -184,7 +177,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         // Creates a record in the App table
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -214,7 +206,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         // Creates a record in the App table
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -265,7 +256,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         // Update record having id 'id-1'
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -295,7 +285,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         // Update records having id 'id-10' and 'id-11'
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -330,9 +319,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        // id-10 and id-11 exist but yet the optType is CREATE.  The operator should then prepareUpdate the records instead of prepareCreate
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -368,7 +355,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         // id-15 and id-16 do not exist but yet the optType is UPDATE.  The operator should then prepareCreate the records instead of prepareUpdate
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.UPDATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -404,7 +390,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operatePostRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 id: '8swgtrrdiff89jnsiwiip3y1eoe',
                 create_at: 1596032651748,
@@ -441,7 +426,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operatePostInThreadRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
@@ -462,7 +446,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateReactionRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
@@ -486,7 +469,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateFileRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 name: 'test_file',
@@ -507,7 +489,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operatePostMetadataRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 id: 'ps81i4yypoo',
                 data: {},
@@ -528,7 +509,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operateDraftRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 id: 'ps81i4yypoo',
                 root_id: 'ps81iqbddesfby8jayz7owg4yypoo',
@@ -550,7 +530,6 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         const preparedRecords = await operatePostsInChannelRecord({
             database: database!,
-            optType: OperationType.CREATE,
             value: {
                 id: 'ps81i4yypoo',
                 channel_id: 'channel_idp23232e',

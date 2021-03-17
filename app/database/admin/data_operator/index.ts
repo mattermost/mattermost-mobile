@@ -1,12 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
-import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/admin/database_manager';
-import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
     HandleBaseData,
@@ -25,16 +19,7 @@ import {
     RawPostsInThread,
     RawReaction,
 } from '@typings/database/database';
-import {IsolatedEntities, OperationType} from '@typings/database/enums';
-import File from '@typings/database/file';
-import Post from '@typings/database/post';
-import PostMetadata from '@typings/database/post_metadata';
-import PostsInChannel from '@typings/database/posts_in_channel';
-import PostsInThread from '@typings/database/posts_in_thread';
-import Reaction from '@typings/database/reaction';
-
-import DatabaseConnectionException from './exceptions/database_connection_exception';
-import DatabaseOperatorException from './exceptions/database_operator_exception';
+import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
@@ -51,7 +36,21 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
+
+import CustomEmoji from '@typings/database/custom_emoji';
+import DatabaseConnectionException from './exceptions/database_connection_exception';
+import DatabaseManager from '@database/admin/database_manager';
+import DatabaseOperatorException from './exceptions/database_operator_exception';
+import File from '@typings/database/file';
+import {IsolatedEntities} from '@typings/database/enums';
+import {MM_TABLES} from '@constants/database';
+import Model from '@nozbe/watermelondb/Model';
+import Post from '@typings/database/post';
+import PostMetadata from '@typings/database/post_metadata';
+import PostsInChannel from '@typings/database/posts_in_channel';
+import PostsInThread from '@typings/database/posts_in_thread';
+import {Q} from '@nozbe/watermelondb';
+import Reaction from '@typings/database/reaction';
 
 const {
     CUSTOM_EMOJI,
@@ -69,12 +68,11 @@ class DataOperator {
    * handleIsolatedEntity: Handler responsible for the Create/Update operations on the isolated entities as described
    * by the IsolatedEntities enum
    * @param {HandleIsolatedEntityData} entityData
-   * @param {OperationType} entityData.optType
    * @param {IsolatedEntities} entityData.tableName
    * @param {Records} entityData.values
    * @returns {Promise<void>}
    */
-  handleIsolatedEntity = async ({optType, tableName, values}: HandleIsolatedEntityData) => {
+  handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
       let recordOperator;
 
       switch (tableName) {
@@ -113,7 +111,7 @@ class DataOperator {
       }
 
       if (recordOperator) {
-          await this.handleBase({optType, values, tableName, recordOperator});
+          await this.handleBase({values, tableName, recordOperator});
       }
   };
 
@@ -128,7 +126,6 @@ class DataOperator {
       }
 
       await this.handleBase({
-          optType: OperationType.CREATE,
           values: drafts,
           tableName: DRAFT,
           recordOperator: operateDraftRecord,
@@ -176,7 +173,6 @@ class DataOperator {
 
       const postInThreadRecords = ((await this.prepareBase({
           database,
-          optType: OperationType.CREATE,
           recordOperator: operatePostInThreadRecord,
           tableName: POSTS_IN_THREAD,
           values: rawPostsInThreads,
@@ -216,7 +212,6 @@ class DataOperator {
       // Prepares record for model Reactions
       const postReactions = ((await this.prepareBase({
           database,
-          optType: OperationType.CREATE,
           recordOperator: operateReactionRecord,
           tableName: REACTION,
           values: createReactions,
@@ -225,7 +220,6 @@ class DataOperator {
       // Prepares records for model CustomEmoji
       const reactionEmojis = ((await this.prepareBase({
           database,
-          optType: OperationType.CREATE,
           recordOperator: operateCustomEmojiRecord,
           tableName: CUSTOM_EMOJI,
           values: createEmojis as RawCustomEmoji[],
@@ -267,7 +261,6 @@ class DataOperator {
 
       const postFiles = ((await this.prepareBase({
           database,
-          optType: OperationType.CREATE,
           recordOperator: operateFileRecord,
           tableName: FILE,
           values: files,
@@ -326,7 +319,6 @@ class DataOperator {
 
       const postMetas = ((await this.prepareBase({
           database,
-          optType: OperationType.CREATE,
           recordOperator: operatePostMetadataRecord,
           tableName: POST_METADATA,
           values: metadata,
@@ -383,7 +375,6 @@ class DataOperator {
 
       const createPostsInChannelRecord = async () => {
           await this.handleBase({
-              optType: OperationType.CREATE,
               values: [{channel_id: channelId, earliest, latest}],
               tableName: POSTS_IN_CHANNEL,
               recordOperator: operatePostsInChannelRecord,
@@ -452,13 +443,12 @@ class DataOperator {
   /**
    * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
    * @param {HandlePosts} handlePosts
-   * @param {OperationType} handlePosts.optType
    * @param {string[]} orders
    * @param {RawPost[]} values
    * @param {string | undefined} previousPostId
    * @returns {Promise<void>}
    */
-  handlePosts = async ({optType, orders, values, previousPostId}: HandlePosts) => {
+  handlePosts = async ({orders, values, previousPostId}: HandlePosts) => {
       const tableName = POST;
 
       // We rely on the order array; if it is empty, we stop processing
@@ -492,7 +482,6 @@ class DataOperator {
       // Prepares records for batch processing onto the 'Post' entity for the server schema
       const posts = ((await this.prepareBase({
           database,
-          optType,
           tableName,
           values: [...linkedRawPosts, ...unOrderedPosts],
           recordOperator: operatePostRecord,
@@ -565,7 +554,6 @@ class DataOperator {
 
       // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
       await this.handleIsolatedEntity({
-          optType: OperationType.CREATE,
           tableName: IsolatedEntities.CUSTOM_EMOJI,
           values: emojis,
       });
@@ -600,7 +588,6 @@ class DataOperator {
   /**
    * prepareBase: Utility method that actually calls the operators for the handlers
    * @param {Database} database
-   * @param {OperationType} database.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
    * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: Database , tableName: string}) => void} recordOperator
@@ -608,7 +595,6 @@ class DataOperator {
    */
   private prepareBase = async ({
       database,
-      optType,
       tableName,
       values,
       recordOperator,
@@ -621,12 +607,7 @@ class DataOperator {
 
       if (values.length) {
           const recordPromises = await values.map(async (value) => {
-              const record = await recordOperator({
-                  database,
-                  optType,
-                  tableName,
-                  value,
-              });
+              const record = await recordOperator({database, tableName, value});
               return record;
           });
 
@@ -640,14 +621,12 @@ class DataOperator {
   /**
    * handleBase: Handles the Create/Update operations on an entity.
    * @param {HandleBaseData} baseData
-   * @param {OperationType} baseData.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
-   * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
+   * @param {(recordOperator: {value: RecordValue, database: , tableName: string}) => void} recordOperator
    * @returns {Promise<void>}
    */
   private handleBase = async ({
-      optType,
       tableName,
       values,
       recordOperator,
@@ -656,7 +635,6 @@ class DataOperator {
 
       const models = ((await this.prepareBase({
           database,
-          optType,
           tableName,
           values,
           recordOperator,

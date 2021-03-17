@@ -4,7 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
 
-import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
+import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import DataOperator from './index';
 import {
@@ -55,7 +55,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -90,7 +89,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.GLOBAL,
             values: [
                 {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
@@ -114,7 +112,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.SERVERS,
             values: [
                 {
@@ -145,7 +142,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.CUSTOM_EMOJI,
             values: [
                 {
@@ -172,7 +168,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.ROLE,
             values: [
                 {
@@ -200,7 +195,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.SYSTEM,
             values: [{id: 'system-id-1', name: 'system-1', value: 'system-1'}],
         };
@@ -222,7 +216,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         const data = {
-            optType: OperationType.CREATE,
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
             values: [{id: 'tos-1', acceptedAt: 1}],
         };
@@ -244,7 +237,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
 
         await DataOperator.handleIsolatedEntity({
-            optType: OperationType.CREATE,
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
@@ -318,7 +310,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         // Only one batch operation for both entities
         expect(spyOnHandleBase).toHaveBeenCalledWith({
-            optType: OperationType.CREATE,
             tableName: DRAFT,
             values: data,
             recordOperator: operateDraftRecord,
@@ -521,7 +512,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         // handlePosts will in turn call handlePostsInThread
         await DataOperator.handlePosts({
-            optType: OperationType.CREATE,
             orders: [
                 '8swgtrrdiff89jnsiwiip3y1eoe',
                 '8fcnk3p1jt8mmkaprgajoxz115a',
@@ -639,7 +629,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         // handlePosts will in turn call handlePostsInThread
         await DataOperator.handlePosts({
-            optType: OperationType.CREATE,
             orders: [
                 '8swgtrrdiff89jnsiwiip3y1eoe',
                 '8fcnk3p1jt8mmkaprgajoxz115a',
@@ -766,7 +755,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         // handlePosts will in turn call handlePostsInThread
         await DataOperator.handlePosts({
-            optType: OperationType.CREATE,
             orders: [
                 'a7ebyw883trm884p1qcgt8yw4a',
             ],
