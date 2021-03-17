@@ -6,7 +6,10 @@ import {Post} from '@support/ui/component';
 class LongPostScreen {
     testID = {
         longPostItem: 'long_post.post',
+        closeLongPostButton: 'close.long_post.button',
     }
+
+    closeLongPostButton = element(by.id(this.testID.closeLongPostButton));
 
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {

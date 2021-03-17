@@ -26,6 +26,7 @@ describe('Direct Messages', () => {
     const {
         channelNavBarTitle,
         closeMainSidebar,
+        goToChannel,
         openMainSidebar,
     } = ChannelScreen;
     const {
@@ -67,8 +68,7 @@ describe('Direct Messages', () => {
         await ChannelInfoScreen.open();
         await expect(ChannelInfoScreen.headerDisplayName).toHaveText(testOtherUser.username);
         await ChannelInfoScreen.close();
-        await openMainSidebar();
-        await getChannelByDisplayName(testOtherUser.username).tap();
+        await goToChannel(testOtherUser.username);
 
         // # Close DM channel
         await ChannelInfoScreen.open();
@@ -78,6 +78,8 @@ describe('Direct Messages', () => {
         await expect(channelNavBarTitle).toHaveText(townSquareChannel.display_name);
         await openMainSidebar();
         await expect(getChannelByDisplayName(testOtherUser.username)).not.toBeVisible();
+
+        // # Close main sidebar
         await closeMainSidebar();
     });
 

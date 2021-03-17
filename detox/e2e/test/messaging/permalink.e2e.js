@@ -7,7 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
 import {ChannelScreen, PermalinkScreen} from '@support/ui/screen';
 import {User, Setup, Channel, Post} from '@support/server_api';
 
@@ -40,9 +39,7 @@ describe('Permalink', () => {
         });
 
         // # Go to test channel
-        await ChannelScreen.openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
-        await ChannelScreen.toBeVisible();
+        await ChannelScreen.goToChannel(testChannel.display_name);
 
         // # Tap the channel permalink
         await element(by.text(permalinkLabel)).tap({x: 5, y: 10});

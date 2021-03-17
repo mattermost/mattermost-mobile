@@ -7,7 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelScreen} from '@support/ui/screen';
+import {
+    ChannelScreen,
+    LongPostScreen,
+} from '@support/ui/screen';
 import {
     Channel,
     Post,
@@ -15,7 +18,9 @@ import {
 } from '@support/server_api';
 
 describe('Message Posting', () => {
+    const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(30);
     const {
+        getLongPostItem,
         getPostListPostItem,
         postMessage,
     } = ChannelScreen;
@@ -37,17 +42,30 @@ describe('Message Posting', () => {
 
     it('MM-T3217 should be able to post a long message', async () => {
         // # Post a long message
-        const message = 'The quick brown fox jumps over the lazy dog.'.repeat(30);
-        await postMessage(message, {quickReplace: true});
+        await postMessage(longMessage, {quickReplace: true});
 
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
         const {
             postListPostItem,
             postListPostItemShowMoreButton,
-        } = await getPostListPostItem(post.id, message);
+        } = await getPostListPostItem(post.id, longMessage);
         await expect(postListPostItem).toExist();
         await expect(postListPostItemShowMoreButton).toExist();
+    });
+
+    it('MM-T3229 should be able to open long post via show more', async () => {
+        // # Open long post via show more
+        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        const {postListPostItemShowMoreButton} = await getPostListPostItem(post.id, longMessage);
+        await postListPostItemShowMoreButton.tap();
+
+        // * Verify long post is displayed
+        const {longPostItem} = getLongPostItem(post.id, longMessage);
+        await expect(longPostItem).toExist();
+
+        // # Close long post screen
+        await LongPostScreen.closeLongPostButton.tap();
     });
 
     it('MM-T3269 should be able to post a markdown image', async () => {

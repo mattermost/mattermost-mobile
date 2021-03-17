@@ -139,6 +139,13 @@ class ChannelScreen {
         await this.toBeVisible();
     }
 
+    goToChannel = async (displayName) => {
+        await this.openMainSidebar();
+        const channelItem = MainSidebar.getChannelByDisplayName(displayName);
+        await channelItem.tap();
+        await expect(this.channelNavBarTitle).toHaveText(displayName);
+    }
+
     openMainSidebar = async () => {
         // # Open main sidebar
         await this.mainSidebarDrawerButton.tap();
