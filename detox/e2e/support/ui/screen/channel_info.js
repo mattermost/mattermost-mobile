@@ -12,6 +12,7 @@ class ChannelInfoScreen {
         closeChannelInfoButton: 'close.channel_info.button',
         headerChannelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
         headerDisplayName: 'channel_info.header.display_name',
+        headerCustomStatus: 'channel_info.header.custom_status',
         favoritePreferenceAction: 'channel_info.favorite.action',
         favoriteSwitchFalse: 'channel_info.favorite.action.switch.false',
         favoriteSwitchTrue: 'channel_info.favorite.action.switch.true',

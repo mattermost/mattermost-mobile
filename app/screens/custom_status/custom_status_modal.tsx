@@ -54,6 +54,7 @@ type State = {
 class CustomStatusModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
         id: 'update-custom-status',
+        testID: 'custom_status.done_button',
         enabled: true,
         showAsAction: 'always',
     };
@@ -151,7 +152,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         return (
             <>
                 <View style={style.separator}/>
-                <View >
+                <View testID='custom_status.recents'>
                     <Text style={style.title}>
                         {this.props.intl.formatMessage({
                             id: 'custom_status.suggestions.recent_title',
@@ -194,7 +195,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         return (
             <>
                 <View style={style.separator}/>
-                <View>
+                <View testID='custom_status.suggestions'>
                     <Text style={style.title}>
                         {this.props.intl.formatMessage({
                             id: 'custom_status.suggestions.title',
@@ -239,6 +240,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const style = getStyleSheet(theme);
         const customStatusEmoji = (
             <TouchableOpacity
+                testID={`custom_status.emoji.${isStatusSet ? (emoji || 'speech_balloon') : 'default'}`}
                 onPress={this.openEmojiPicker}
                 style={style.emoji}
             >
@@ -260,6 +262,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const customStatusInput = (
             <View style={style.inputContainer}>
                 <TextInput
+                    testID='custom_status.input'
                     value={text}
                     placeholder={this.props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -276,7 +279,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 />
                 {customStatusEmoji}
                 {isStatusSet ? (
-                    <View style={style.clearButton}>
+                    <View
+                        style={style.clearButton}
+                        testID='custom_status.clear_input'
+                    >
                         <ClearButton
                             handlePress={this.clearHandle}
                             theme={theme}

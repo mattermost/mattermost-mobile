@@ -34,12 +34,13 @@ const CustomStatusSuggestion = (props: Props) => {
             <ClearButton
                 handlePress={() => handleClear({emoji, text})}
                 theme={theme}
+                testID='custom_status_suggestion.clear_button'
             />
         ) : null;
 
     return (
         <TouchableOpacity
-            testID={'custom_status.status_suggestion'}
+            testID={`custom_status_suggestion.${text}`}
             onPress={handleClick}
         >
             <View style={style.container}>

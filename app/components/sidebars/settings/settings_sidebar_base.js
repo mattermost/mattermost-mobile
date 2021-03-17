@@ -217,26 +217,31 @@ export default class SettingsSidebarBase extends PureComponent {
                 theme={theme}
             />
         ) : null;
-        const customStatusEmoji = isStatusSet ?
-            (
-                <Emoji
-                    emojiName={customStatus.emoji}
-                    size={20}
-                />
-            ) :
-            (
-                <CompassIcon
-                    name='emoticon-happy-outline'
-                    size={24}
-                    style={{color: changeOpacity(theme.centerChannelColor, 0.64)}}
-                />
-            );
+        const customStatusEmoji = (
+            <View
+                testID={`custom_status.emoji.${isStatusSet ? customStatus.emoji : 'default'}`}
+            >
+                {isStatusSet ? (
+                    <Emoji
+                        emojiName={customStatus.emoji}
+                        size={20}
+                    />
+                ) : (
+                    <CompassIcon
+                        name='emoticon-happy-outline'
+                        size={24}
+                        style={{color: changeOpacity(theme.centerChannelColor, 0.64)}}
+                    />
+                )}
+            </View>
+        );
 
         const clearButton = isStatusSet ?
             (
                 <ClearButton
                     handlePress={preventDoubleTap(this.props.actions.unsetCustomStatus)}
                     theme={theme}
+                    testID='settings.sidebar.custom_status.action.clear'
                 />
             ) : null;
 

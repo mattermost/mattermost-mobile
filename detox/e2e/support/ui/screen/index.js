@@ -7,6 +7,7 @@ import ChannelNotificationPreferenceScreen from './channel_notification_preferen
 import ChannelScreen from './channel';
 import ClockDisplaySettingsScreen from './clock_display_settings';
 import CreateChannelScreen from './create_channel';
+import CustomStatusScreen from './custom_status';
 import DisplaySettingsScreen from './display_settings';
 import EditChannelScreen from './edit_channel';
 import EditPostScreen from './edit_post';
@@ -28,6 +29,7 @@ import SearchScreen from './search';
 import SelectServerScreen from './select_server';
 import SelectTeamScreen from './select_team';
 import ThreadScreen from './thread';
+import UserProfileScreen from './user_profile';
 
 export {
     AddReactionScreen,
@@ -36,6 +38,7 @@ export {
     ChannelScreen,
     ClockDisplaySettingsScreen,
     CreateChannelScreen,
+    CustomStatusScreen,
     DisplaySettingsScreen,
     EditChannelScreen,
     EditPostScreen,
@@ -57,4 +60,5 @@ export {
     SelectServerScreen,
     SelectTeamScreen,
     ThreadScreen,
+    UserProfileScreen,
 };

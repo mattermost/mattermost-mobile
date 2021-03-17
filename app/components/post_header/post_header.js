@@ -203,6 +203,7 @@ export default class PostHeader extends PureComponent {
                     </TouchableWithFeedback>
                     <CustomStatusEmoji
                         userID={post.user_id}
+                        style={{color: theme.centerChannelColor}}
                     />
                 </>
             );
@@ -331,7 +332,10 @@ export default class PostHeader extends PureComponent {
         return (
             <React.Fragment>
                 <View style={[style.container, (isPendingOrFailedPost && style.pendingPost)]}>
-                    <View style={style.wrapper}>
+                    <View
+                        style={style.wrapper}
+                        testID='post_header'
+                    >
                         {this.renderDisplayName()}
                         {this.renderTag()}
                         {dateComponent}

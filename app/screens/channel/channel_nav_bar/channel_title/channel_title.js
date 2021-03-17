@@ -156,12 +156,11 @@ export default class ChannelTitle extends PureComponent {
 
         const customStatus = this.props.channelType === General.DM_CHANNEL ?
             (
-                <Text style={[style.icon, style.emoji]}>
-                    <CustomStatusEmoji
-                        userID={this.props.teammateId}
-                        emojiSize={18}
-                    />
-                </Text>
+                <CustomStatusEmoji
+                    userID={this.props.teammateId}
+                    emojiSize={18}
+                    style={[style.icon, style.emoji]}
+                />
             ) : null;
 
         if (customStatus) {

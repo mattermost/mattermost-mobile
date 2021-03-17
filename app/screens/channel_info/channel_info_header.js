@@ -181,13 +181,19 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </Text>
                 </View>
                 {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus.emoji &&
-                    <View style={[style.row, style.customStatusContainer]}>
-                        <View style={style.iconContainer}>
+                    <View
+                        style={[style.row, style.customStatusContainer]}
+                        testID={`${testID}.custom_status`}
+                    >
+                        <Text
+                            style={style.iconContainer}
+                            testID={`custom_status.emoji.${customStatus.emoji}`}
+                        >
                             <Emoji
                                 emojiName={customStatus.emoji}
                                 size={20}
                             />
-                        </View>
+                        </Text>
                         <Text
                             style={[style.channelName, style.customStatusText]}
                             ellipsizeMode='tail'
@@ -289,6 +295,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         iconContainer: {
             marginRight: 8,
+            color: theme.centerChannelColor,
         },
         customStatusContainer: {
             position: 'relative',

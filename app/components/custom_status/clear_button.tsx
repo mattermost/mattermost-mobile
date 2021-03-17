@@ -12,15 +12,17 @@ interface Props {
     handlePress: () => void;
     size?: number;
     theme: Theme;
+    testID?: string;
 }
 
 const ClearButton = (props: Props) => {
-    const {handlePress, size, theme} = props;
+    const {handlePress, size, theme, testID} = props;
     const style = getStyleSheet(theme);
 
     return (
         <View
             style={style.container}
+            testID={testID}
         >
             <CompassIcon
                 onPress={preventDoubleTap(handlePress)}
