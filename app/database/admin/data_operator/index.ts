@@ -603,7 +603,7 @@ class DataOperator {
    * @param {OperationType} database.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
-   * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
+   * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: Database , tableName: string}) => void} recordOperator
    * @returns {Promise<unknown[] | any[]>}
    */
   private prepareBase = async ({
