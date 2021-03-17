@@ -140,7 +140,7 @@ class DataOperator {
   };
 
   /**
-   * handlePostsInThread: Handler responsible for the Create/Update operations occurring the PostsInThread entity from the 'Server' schema
+   * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
    * @param {RawPostsInThread[]} postsInThreads
    * @returns {Promise<any[]>}
    */
