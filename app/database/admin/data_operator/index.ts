@@ -159,7 +159,7 @@ class DataOperator {
           fetch()) as Post[];
 
       postsInThreads.forEach((rootPost) => {
-      // Creates a sub-array of threads relating to rootPost.post_id
+          // Creates a sub-array of threads relating to rootPost.post_id
           const childPosts = threads.filter((thread) => {
               return rootPost.post_id === thread.rootId;
           });
@@ -189,7 +189,7 @@ class DataOperator {
   };
 
   /**
-   * handleReactions: Handler responsible for the Create/Update operations occurring the Reaction entity from the 'Server' schema
+   * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction entity from the 'Server' schema
    * @param {HandleReactions} handleReactions
    * @param {RawReaction[]} handleReactions.reactions
    * @param {boolean} handleReactions.prepareRowsOnly
@@ -251,7 +251,7 @@ class DataOperator {
   };
 
   /**
-   * handleFiles: Handler responsible for the Create/Update operations occurring the File entity from the 'Server' schema
+   * handleFiles: Handler responsible for the Create/Update operations occurring on the File entity from the 'Server' schema
    * @param {HandleFiles} handleFiles
    * @param {RawFile[]} handleFiles.files
    * @param {boolean} handleFiles.prepareRowsOnly
@@ -284,7 +284,7 @@ class DataOperator {
   };
 
   /**
-   * handlePostMetadata: Handler responsible for the Create/Update operations occurring the PostMetadata entity from the 'Server' schema
+   * handlePostMetadata: Handler responsible for the Create/Update operations occurring on the PostMetadata entity from the 'Server' schema
    * @param {HandlePostMetadata} handlePostMetadata
    * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
    * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
@@ -343,7 +343,7 @@ class DataOperator {
   };
 
   /**
-   * handlePostsInChannel: Handler responsible for the Create/Update operations occurring the PostsInChannel entity from the 'Server' schema
+   * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel entity from the 'Server' schema
    * @param {RawPost[]} posts
    * @returns {Promise<any[]>}
    */
@@ -417,7 +417,7 @@ class DataOperator {
       }
 
       if (found) {
-      // We have a potential chunk to plug nearby
+          // We have a potential chunk to plug nearby
           const potentialPosts = (await database.collections.
               get(POST).
               query(Q.where('create_at', earliest)).
@@ -450,9 +450,9 @@ class DataOperator {
   };
 
   /**
-   * handlePosts: Handler responsible for the Create/Update operations occurring the Post entity from the 'Server' schema
+   * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
    * @param {HandlePosts} handlePosts
-   * @param {OperationType} optType
+   * @param {OperationType} handlePosts.optType
    * @param {string[]} orders
    * @param {RawPost[]} values
    * @param {string | undefined} previousPostId
@@ -600,7 +600,7 @@ class DataOperator {
   /**
    * prepareBase: Utility method that actually calls the operators for the handlers
    * @param {Database} database
-   * @param {OperationType} optType
+   * @param {OperationType} database.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
    * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
@@ -639,7 +639,8 @@ class DataOperator {
 
   /**
    * handleBase: Handles the Create/Update operations on an entity.
-   * @param {OperationType} optType
+   * @param {HandleBaseData} baseData
+   * @param {OperationType} baseData.optType
    * @param {string} tableName
    * @param {RecordValue[]} values
    * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: , tableName: string}) => void} recordOperator
