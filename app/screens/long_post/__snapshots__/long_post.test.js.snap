@@ -277,6 +277,7 @@ LongPost {
                     "width": 40,
                   }
                 }
+                testID="close.long_post.button"
               >
                 <CompassIcon
                   color="#3d3c40"

@@ -7,10 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    MainSidebar,
-    SettingsSidebar,
-} from '@support/ui/component';
+import {SettingsSidebar} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
 import {
     Channel,
@@ -52,7 +49,7 @@ describe('User Status', () => {
         const {
             closeSettingsSidebar,
             getPostListPostItem,
-            openMainSidebar,
+            goToChannel,
             openSettingsSidebar,
         } = ChannelScreen;
 
@@ -66,8 +63,7 @@ describe('User Status', () => {
         await ChannelScreen.open(testOtherUser);
 
         // * Verify user's profile has status away as seen by other user
-        await openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(testUser.username).tap();
+        await goToChannel(testUser.username);
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
         const {postListPostItemProfilePictureUserStatus} = await getPostListPostItem(post.id, testMessage, {userId: testUser.id, userStatus: 'away'});
         await expect(postListPostItemProfilePictureUserStatus).toBeVisible();

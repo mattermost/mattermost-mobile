@@ -67,6 +67,7 @@ export default class ChannelMembers extends PureComponent {
             enabled: false,
             id: 'remove-members',
             showAsAction: 'always',
+            testID: 'channel_members.remove.button',
             text: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
         };
 
@@ -391,6 +392,7 @@ export default class ChannelMembers extends PureComponent {
                         onLoadMore={this.getProfiles}
                         onRowPress={this.handleSelectProfile}
                         renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
+                        testID='channel_members.custom_list'
                         theme={theme}
                     />
                 </SafeAreaView>
