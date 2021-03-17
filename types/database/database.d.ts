@@ -6,11 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
 import {Class} from '@nozbe/watermelondb/utils/common';
 
-import {
-    DatabaseType,
-    IsolatedEntities,
-    OperationType,
-} from './enums';
+import {DatabaseType, IsolatedEntities} from './enums';
 
 export type MigrationEvents = {
     onSuccess: () => void;
@@ -264,19 +260,16 @@ export type RecordValue =
 export type DataFactory = {
     database: Database;
     generator?: (model: Model) => void;
-    optType?: OperationType;
     tableName?: string;
     value: RecordValue;
 };
 
 export type HandleBaseData = {
     database?: Database;
-    optType: OperationType;
     tableName: string;
     values: RecordValue[];
     recordOperator: (recordOperator: {
-        optType: OperationType;
-        value: RecordValue;
+            value: RecordValue;
         database: Database;
         tableName: string;
     }) => void;
@@ -285,7 +278,6 @@ export type HandleBaseData = {
 export type BatchOperations = { database: Database; models: Model[] };
 
 export type HandleIsolatedEntityData = {
-    optType: OperationType;
     tableName: IsolatedEntities;
     values: RecordValue[];
 };
@@ -318,7 +310,6 @@ export type HandlePostMetadata = {
 };
 
 export type HandlePosts = {
-    optType: OperationType;
     orders: string[];
     values: RawPost[];
     previousPostId?: string;
