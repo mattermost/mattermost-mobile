@@ -292,21 +292,34 @@ export type RawPreference = {
   value: string;
 };
 
+export type RawTeamMembership = {
+  delete_at: number;
+  explicit_roles: string;
+  id?: string;
+  roles: string;
+  scheme_admin: boolean;
+  scheme_guest: boolean;
+  scheme_user: boolean;
+  team_id: string;
+  user_id: string;
+};
+
 export type RecordValue =
   | RawApp
   | RawCustomEmoji
   | RawDraft
   | RawFile
   | RawGlobal
-  | RawPreference
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel
   | RawPostsInThread
+  | RawPreference
   | RawReaction
   | RawRole
   | RawServers
   | RawSystem
+  | RawTeamMembership
   | RawTermsOfService
   | RawUser;
 
@@ -389,4 +402,10 @@ export type IdenticalRecord = {
   existingRecord: Model;
   newValue: RecordValue;
   tableName: string;
+};
+
+export type MatchingRecords = {
+  database: Database;
+  tableName: string;
+  condition: any;
 };

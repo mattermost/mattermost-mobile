@@ -4,7 +4,15 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {ChainPosts, SanitizePosts, SanitizeReactions, RawPost, RawReaction} from '@typings/database/database';
+import Model from '@nozbe/watermelondb/Model';
+import {
+    ChainPosts,
+    SanitizePosts,
+    SanitizeReactions,
+    RawPost,
+    RawReaction,
+    MatchingRecords,
+} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 const {REACTION} = MM_TABLES.SERVER;
@@ -120,4 +128,17 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
     });
 
     return {createReactions, createEmojis, deleteReactions};
+};
+
+/**
+ * findMatchingRecords: This event will alert the DataOperator handler of the possibility of writing duplicates in the database.
+ * @param {MatchingRecords} matchingRecords
+ * @param {Database} matchingRecords.database
+ * @param {string} matchingRecords.tableName
+ * @param {any} matchingRecords.condition
+ * @returns {Promise<Model[]>}
+ */
+export const findMatchingRecords = async ({database, tableName, condition}: MatchingRecords) => {
+    const records = (await database.collections.get(tableName).query(condition).fetch()) as Model[];
+    return records;
 };

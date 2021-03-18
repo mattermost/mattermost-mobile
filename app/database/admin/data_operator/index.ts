@@ -25,6 +25,7 @@ import {
     RawPostsInThread,
     RawPreference,
     RawReaction,
+    RawTeamMembership,
     RawUser,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
@@ -34,6 +35,7 @@ import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
+import TeamMembership from '@typings/database/team_membership';
 
 import DatabaseConnectionException from './exceptions/database_connection_exception';
 import DatabaseOperatorException from './exceptions/database_operator_exception';
@@ -52,10 +54,11 @@ import {
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
+    operateTeamMembershipRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from './operators';
-import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
+import {createPostsChain, sanitizePosts, sanitizeReactions, findMatchingRecords} from './utils';
 
 const {
     CUSTOM_EMOJI,
@@ -67,6 +70,7 @@ const {
     POST_METADATA,
     PREFERENCE,
     REACTION,
+    TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -602,6 +606,55 @@ class DataOperator {
           tableName: PREFERENCE,
           values: preferences,
           recordOperator: operatePreferenceRecord,
+      });
+
+      return records;
+  };
+
+  /**
+   * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP entity from the 'Server' schema
+   * @param {RawTeamMembership[]} teamMemberships
+   * @returns {Promise<void>}
+   */
+  handleTeamMemberships = async (teamMemberships: RawTeamMembership[]) => {
+      if (!teamMemberships.length) {
+          return [];
+      }
+
+      const database = await this.getDatabase(TEAM_MEMBERSHIP);
+
+      const userIds: string[] = teamMemberships.reduce(
+          (ids, current: RawTeamMembership) => {
+              ids.push(current.user_id);
+              return ids;
+          },
+      [] as string[],
+      );
+
+      // NOTE: There is no 'id' field for team_membership response, hence, we need to find weed out any duplicates before sending the values to the operator
+      const currentTeamMembers = (await findMatchingRecords({
+          database,
+          tableName: TEAM_MEMBERSHIP,
+          condition: Q.where('user_id', Q.oneOf(userIds)),
+      })) as TeamMembership[];
+
+      let newTeamMembers = teamMemberships;
+
+      if (currentTeamMembers.length > 0) {
+          newTeamMembers = teamMemberships.filter((newTeamMember) => {
+              const found = currentTeamMembers.find((current) => {
+                  return (
+                      newTeamMember.team_id === current.teamId && newTeamMember.user_id === current.userId
+                  );
+              });
+              return found === undefined;
+          });
+      }
+
+      const records = await this.handleBase({
+          tableName: TEAM_MEMBERSHIP,
+          values: newTeamMembers,
+          recordOperator: operateTeamMembershipRecord,
       });
 
       return records;

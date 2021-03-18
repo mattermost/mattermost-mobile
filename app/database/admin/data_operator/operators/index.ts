@@ -25,6 +25,7 @@ import {
     RawRole,
     RawServers,
     RawSystem,
+    RawTeamMembership,
     RawTermsOfService,
     RawUser,
 } from '@typings/database/database';
@@ -40,6 +41,7 @@ import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
+import TeamMembership from '@typings/database/team_membership';
 import TermsOfService from '@typings/database/terms_of_service';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
@@ -48,13 +50,14 @@ const {
     DRAFT,
     FILE,
     POST,
-    POST_METADATA,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
+    POST_METADATA,
     PREFERENCE,
     REACTION,
     ROLE,
     SYSTEM,
+    TEAM_MEMBERSHIP,
     TERMS_OF_SERVICE,
     USER,
 } = MM_TABLES.SERVER;
@@ -526,6 +529,29 @@ export const operatePreferenceRecord = async ({database, value}: DataFactory) =>
 };
 
 /**
+ * operatePreferenceRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateTeamMembershipRecord = async ({database, value}: DataFactory) => {
+    const record = value as RawTeamMembership;
+
+    const generator = (teamMembership: TeamMembership) => {
+        teamMembership.teamId = record.team_id;
+        teamMembership.userId = record.user_id;
+    };
+
+    return operateBaseRecord({
+        database,
+        tableName: TEAM_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
  * operateBaseRecord:  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
  * encounters an existing record during a CREATE operation, it silently fails the operation.
  *
@@ -554,7 +580,7 @@ const operateBaseRecord = async ({
     if (value?.id) { // We query first to see if we have a record on that entity with the current value.id
         appRecord = (await database.collections.
             get(tableName!).
-            query(Q.where('id', value.id!)).
+            query(Q.where('id', value.id)).
             fetch()) as Model[];
     }
 
