@@ -861,4 +861,29 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+
+        const teamMembership = [
+            {
+                team_id: 'a',
+                user_id: 'ab',
+                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                delete_at: 0,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleTeamMemberships(teamMembership);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
 });

@@ -23,6 +23,7 @@ import {
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
+    operateTeamMembershipRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from './index';
@@ -614,5 +615,29 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('Preference');
+    });
+
+    it('=> operatePreferenceRecord: should return an array of type TEAM_MEMBERSHIP', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateTeamMembershipRecord({
+            database: database!,
+            value: {
+                team_id: 'a',
+                user_id: 'ab',
+                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                delete_at: 0,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('TeamMembership');
     });
 });
