@@ -73,13 +73,14 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
     };
 }
 
-export function setAutocompleteSelector(dataSource, onSelect, options) {
+export function setAutocompleteSelector(dataSource, onSelect, options, getDynamicOptions) {
     return {
         type: ViewTypes.SELECTED_ACTION_MENU,
         data: {
             dataSource,
             onSelect,
             options,
+            getDynamicOptions,
         },
     };
 }

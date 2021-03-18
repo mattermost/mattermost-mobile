@@ -8,10 +8,13 @@ import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import React from 'react';
 
-import AppFormSelector from './app_form_selector';
+import {AppFieldTypes} from '@mm-redux/constants/apps';
+import AutocompleteSelector from '@components/autocomplete_selector';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
+
+import {DialogOption} from '@mm-redux/types/integrations';
 
 export type Props = {
     field: AppField;
@@ -24,7 +27,43 @@ export type Props = {
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 }
 
-export default class AppsFormField extends React.PureComponent<Props> {
+type State = {
+    selected: DialogOption | null;
+}
+
+export default class AppsFormField extends React.PureComponent<Props, State> {
+    state = {
+        selected: null,
+    };
+
+    handleAutocompleteSelect = (selected: DialogOption) => {
+        if (!selected) {
+            return;
+        }
+        const {
+            field,
+        } = this.props;
+
+        this.setState({selected});
+
+        const selectedOption = {
+            label: selected.text,
+            value: selected.value,
+        };
+
+        this.props.onChange(field.name, selectedOption);
+    };
+
+    getDynamicOptions = async (userInput = ''): Promise<{data: DialogOption[]}> => {
+        const options = await this.props.performLookup(this.props.field.name, userInput);
+        return {
+            data: options.map((option) => ({
+                text: option.label,
+                value: option.value,
+            })),
+        };
+    };
+
     render() {
         const {
             field,
@@ -101,33 +140,44 @@ export default class AppsFormField extends React.PureComponent<Props> {
                     disabled={field.readonly}
                 />
             );
-        } else if (field.type === 'channel' || field.type === 'user' || field.type === 'dynamic_select' || field.type === 'static_select') {
-            let dataSource = ViewTypes.DATA_SOURCE_CHANNELS;
-            if (field.type === 'user') {
+        } else if ([AppFieldTypes.USER, AppFieldTypes.CHANNEL, AppFieldTypes.STATIC_SELECT, AppFieldTypes.DYNAMIC_SELECT].includes(field.type)) {
+            let dataSource = '';
+            let options: DialogOption[] = [];
+
+            switch (field.type) {
+            case AppFieldTypes.USER:
                 dataSource = ViewTypes.DATA_SOURCE_USERS;
+                break;
+            case AppFieldTypes.CHANNEL:
+                dataSource = ViewTypes.DATA_SOURCE_CHANNELS;
+                break;
+            case AppFieldTypes.DYNAMIC_SELECT:
+                dataSource = ViewTypes.DATA_SOURCE_DYNAMIC;
+                break;
+            case AppFieldTypes.STATIC_SELECT:
+                if (field.options) {
+                    options = field.options.map(({label, value}) => ({text: label, value}));
+                }
             }
-            if (field.type === 'dynamic_select') {
-                dataSource = 'app';
-            }
-            const option = value as AppSelectOption;
+
             return (
-                <AppFormSelector
+                <AutocompleteSelector
+                    id={name}
                     label={displayName}
-                    options={field.options}
                     dataSource={dataSource}
+                    options={options}
                     optional={!field.is_required}
-                    onSelected={(selected: AppSelectOption) => this.props.onChange(field.name, selected)}
+                    onSelected={this.handleAutocompleteSelect}
+                    getDynamicOptions={this.getDynamicOptions}
                     helpText={field.description}
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={option}
+                    selected={this.state.selected}
                     roundedBorders={false}
-                    disabled={field.readonly}
-                    performLookupCall={(term: string) => this.props.performLookup(field.name, term)}
                 />
             );
-        } else if (field.type === 'bool') {
+        } else if (field.type === AppFieldTypes.BOOL) {
             const boolValue = value as boolean;
             return (
                 <BoolSetting
