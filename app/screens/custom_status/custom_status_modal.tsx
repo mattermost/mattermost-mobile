@@ -242,13 +242,15 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             <TouchableOpacity
                 testID={`custom_status.emoji.${isStatusSet ? (emoji || 'speech_balloon') : 'default'}`}
                 onPress={this.openEmojiPicker}
-                style={style.emoji}
+                style={style.iconContainer}
             >
                 {isStatusSet ? (
-                    <Emoji
-                        emojiName={emoji || 'speech_balloon'}
-                        size={20}
-                    />
+                    <Text style={style.emoji}>
+                        <Emoji
+                            emojiName={emoji || 'speech_balloon'}
+                            size={20}
+                        />
+                    </Text>
                 ) : (
                     <CompassIcon
                         name='emoticon-happy-outline'
@@ -336,7 +338,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 14,
+            fontSize: 17,
             paddingHorizontal: 52,
             textAlignVertical: 'center',
             height: 48,
@@ -345,6 +347,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         emoji: {
+            color: theme.centerChannelColor,
+        },
+        iconContainer: {
             position: 'absolute',
             left: 14,
             top: 12,

@@ -6,7 +6,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useCallback} from 'react';
-import {View, TouchableOpacity} from 'react-native';
+import {View, TouchableOpacity, Text} from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -44,17 +44,18 @@ const CustomStatusSuggestion = (props: Props) => {
             onPress={handleClick}
         >
             <View style={style.container}>
-                <View style={style.iconContainer}>
+                <Text style={style.iconContainer}>
                     <Emoji
                         emojiName={emoji}
                         size={20}
                     />
-                </View>
+                </Text>
                 <View style={style.wrapper}>
                     <View style={style.textContainer}>
                         <CustomStatusText
                             text={text}
                             theme={theme}
+                            textStyle={{color: theme.centerChannelColor}}
                         />
                     </View>
                     {clearButton && (
@@ -81,9 +82,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         iconContainer: {
             width: 45,
             height: 46,
-            alignItems: 'center',
+            textAlignVertical: 'center',
             justifyContent: 'center',
             marginLeft: 5,
+            color: theme.centerChannelColor,
         },
         wrapper: {
             flex: 1,

@@ -3,19 +3,20 @@
 import React from 'react';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import type {Theme} from '@mm-redux/types/preferences';
-import {Text} from 'react-native';
+import {Text, TextStyle} from 'react-native';
 
 interface ComponentProps {
     text: string;
     theme: Theme;
+    textStyle?: TextStyle
 }
 
 const CustomStatusLabel = (props: ComponentProps) => {
-    const {text, theme} = props;
+    const {text, theme, textStyle} = props;
     const style = getStyleSheet(theme);
 
     return (
-        <Text style={style.label}>
+        <Text style={[style.label, textStyle]}>
             {text}
         </Text>
     );
