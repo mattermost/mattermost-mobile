@@ -14,13 +14,14 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
       }
     }
   >
-    <View
+    <Text
       style={
         Object {
-          "alignItems": "center",
+          "color": "#3d3c40",
           "height": 46,
           "justifyContent": "center",
           "marginLeft": 5,
+          "textAlignVertical": "center",
           "width": 45,
         }
       }
@@ -29,7 +30,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
         emojiName="calendar"
         size={20}
       />
-    </View>
+    </Text>
     <View
       style={
         Object {
@@ -50,6 +51,11 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
       >
         <CustomStatusLabel
           text="In a meeting"
+          textStyle={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -100,13 +106,14 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
       }
     }
   >
-    <View
+    <Text
       style={
         Object {
-          "alignItems": "center",
+          "color": "#3d3c40",
           "height": 46,
           "justifyContent": "center",
           "marginLeft": 5,
+          "textAlignVertical": "center",
           "width": 45,
         }
       }
@@ -115,7 +122,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
         emojiName="calendar"
         size={20}
       />
-    </View>
+    </Text>
     <View
       style={
         Object {
@@ -136,6 +143,11 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
       >
         <CustomStatusLabel
           text="In a meeting"
+          textStyle={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
           theme={
             Object {
               "awayIndicator": "#ffbc42",
