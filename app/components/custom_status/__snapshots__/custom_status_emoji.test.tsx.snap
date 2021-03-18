@@ -1,73 +1,39 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/custom_status/custom_status_emoji should match snapshot 1`] = `
-<Context.Provider
-  value={
-    Object {
-      "store": Object {
-        "@@observable": [Function],
-        "dispatch": [Function],
-        "getState": [Function],
-        "replaceReducer": [Function],
-        "subscribe": [Function],
-      },
-      "subscription": Subscription {
-        "handleChangeWrapper": [Function],
-        "listeners": Object {
-          "notify": [Function],
-        },
-        "onStateChange": [Function],
-        "parentSub": undefined,
-        "store": Object {
-          "@@observable": [Function],
-          "dispatch": [Function],
-          "getState": [Function],
-          "replaceReducer": [Function],
-          "subscribe": [Function],
-        },
-        "unsubscribe": null,
-      },
-    }
-  }
+<Text
+  testID="custom_status_emoji.calendar"
 >
-  <CustomStatusEmoji
-    emojiSize={16}
-  />
-</Context.Provider>
+  <Text
+    style={
+      Array [
+        undefined,
+        Object {
+          "fontSize": 16,
+        },
+      ]
+    }
+  >
+    📆
+  </Text>
+</Text>
 `;
 
 exports[`components/custom_status/custom_status_emoji should match snapshot with props 1`] = `
-<Context.Provider
-  value={
-    Object {
-      "store": Object {
-        "@@observable": [Function],
-        "dispatch": [Function],
-        "getState": [Function],
-        "replaceReducer": [Function],
-        "subscribe": [Function],
-      },
-      "subscription": Subscription {
-        "handleChangeWrapper": [Function],
-        "listeners": Object {
-          "notify": [Function],
-        },
-        "onStateChange": [Function],
-        "parentSub": undefined,
-        "store": Object {
-          "@@observable": [Function],
-          "dispatch": [Function],
-          "getState": [Function],
-          "replaceReducer": [Function],
-          "subscribe": [Function],
-        },
-        "unsubscribe": null,
-      },
-    }
-  }
+<Text
+  testID="custom_status_emoji.calendar"
 >
-  <CustomStatusEmoji
-    emojiSize={34}
-  />
-</Context.Provider>
+  <Text
+    style={
+      Array [
+        undefined,
+        Object {
+          "fontSize": 34,
+        },
+      ]
+    }
+  >
+    📆
+  </Text>
+</Text>
 `;

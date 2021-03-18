@@ -219,6 +219,18 @@ describe('ChannelItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should match snapshot with custom status emoji', () => {
+        const wrapper = shallow(
+            <ChannelItem
+                {...baseProps}
+                teammateId={baseProps.currentUserId}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('Should call onPress', () => {
         const onSelectChannel = jest.fn();
 

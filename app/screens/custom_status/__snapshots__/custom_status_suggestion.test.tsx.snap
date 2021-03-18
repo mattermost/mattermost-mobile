@@ -3,7 +3,7 @@
 exports[`screens/custom_status_suggestion should match snapshot 1`] = `
 <ForwardRef
   onPress={[Function]}
-  testID="custom_status.status_suggestion"
+  testID="custom_status_suggestion.In a meeting"
 >
   <View
     style={
@@ -89,7 +89,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
 exports[`screens/custom_status_suggestion should match snapshot with separator and clear button 1`] = `
 <ForwardRef
   onPress={[Function]}
-  testID="custom_status.status_suggestion"
+  testID="custom_status_suggestion.In a meeting"
 >
   <View
     style={
@@ -179,6 +179,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
         <ClearButton
           handlePress={[Function]}
           size={20}
+          testID="custom_status_suggestion.clear_button"
           theme={
             Object {
               "awayIndicator": "#ffbc42",

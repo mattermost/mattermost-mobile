@@ -20,6 +20,7 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -55,6 +56,11 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <FormattedTime
@@ -97,6 +103,7 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -134,6 +141,11 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <FormattedTime
@@ -176,6 +188,7 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <View
         style={
@@ -287,6 +300,7 @@ exports[`PostHeader should match snapshot when post is from system message 1`] =
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <View
         style={
@@ -354,6 +368,7 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -389,6 +404,11 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <FormattedTime
@@ -448,6 +468,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -485,6 +506,11 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <BotTag
@@ -608,6 +634,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -645,6 +672,11 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <BotTag
@@ -768,6 +800,7 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -803,6 +836,11 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <FormattedTime
@@ -862,6 +900,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
           "flexDirection": "row",
         }
       }
+      testID="post_header"
     >
       <React.Fragment>
         <TouchableWithFeedbackIOS
@@ -897,6 +936,11 @@ exports[`PostHeader should match snapshot when post should display reply button 
         </TouchableWithFeedbackIOS>
         <CustomStatusEmoji
           emojiSize={16}
+          style={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
         />
       </React.Fragment>
       <FormattedTime

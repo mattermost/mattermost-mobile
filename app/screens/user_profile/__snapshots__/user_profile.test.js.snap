@@ -7,6 +7,7 @@ exports[`user_profile should match snapshot 1`] = `
       "flex": 1,
     }
   }
+  testID="user_profile.screen"
 >
   <Connect(StatusBar) />
   <ScrollView
@@ -21,6 +22,7 @@ exports[`user_profile should match snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="user_profile.scroll_view"
   >
     <View
       style={
@@ -110,6 +112,7 @@ exports[`user_profile should match snapshot 1`] = `
       icon="send"
       iconColor="rgba(0, 0, 0, 0.7)"
       iconSize={24}
+      testID="user_profile.row.send_message"
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
@@ -154,6 +157,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       "flex": 1,
     }
   }
+  testID="user_profile.screen"
 >
   <Connect(StatusBar) />
   <ScrollView
@@ -168,6 +172,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
         "flex": 1,
       }
     }
+    testID="user_profile.scroll_view"
   >
     <View
       style={
@@ -216,7 +221,9 @@ exports[`user_profile should match snapshot with custom status 1`] = `
         }
       }
     >
-      <View>
+      <View
+        testID="user_profile.custom_status"
+      >
         <Text
           style={
             Object {
@@ -238,18 +245,20 @@ exports[`user_profile should match snapshot with custom status 1`] = `
             }
           }
         >
-          <View
+          <Text
             style={
               Object {
+                "color": "#3d3c40",
                 "marginRight": 5,
               }
             }
+            testID="custom_status.emoji.calendar"
           >
             <Connect(Emoji)
               emojiName="calendar"
               size={20}
             />
-          </View>
+          </Text>
           <Text
             style={
               Array [
@@ -308,6 +317,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       icon="send"
       iconColor="rgba(0, 0, 0, 0.7)"
       iconSize={24}
+      testID="user_profile.row.send_message"
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
@@ -352,6 +362,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       "flex": 1,
     }
   }
+  testID="user_profile.screen"
 >
   <Connect(StatusBar) />
   <ScrollView
@@ -366,6 +377,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
         "flex": 1,
       }
     }
+    testID="user_profile.scroll_view"
   >
     <View
       style={
@@ -414,7 +426,9 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
         }
       }
     >
-      <View>
+      <View
+        testID="user_profile.custom_status"
+      >
         <Text
           style={
             Object {
@@ -436,18 +450,20 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
             }
           }
         >
-          <View
+          <Text
             style={
               Object {
+                "color": "#3d3c40",
                 "marginRight": 5,
               }
             }
+            testID="custom_status.emoji.calendar"
           >
             <Connect(Emoji)
               emojiName="calendar"
               size={20}
             />
-          </View>
+          </Text>
           <Text
             style={
               Array [
@@ -549,6 +565,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       icon="send"
       iconColor="rgba(0, 0, 0, 0.7)"
       iconSize={24}
+      testID="user_profile.row.send_message"
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={

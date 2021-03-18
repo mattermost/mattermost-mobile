@@ -83,7 +83,6 @@ exports[`ChannelItem should match snapshot 1`] = `
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -93,6 +92,7 @@ exports[`ChannelItem should match snapshot 1`] = `
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
+              "maxWidth": "70%",
             },
           ]
         }
@@ -199,7 +199,6 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -314,7 +313,6 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -429,7 +427,6 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -533,7 +530,6 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -543,6 +539,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
+              "maxWidth": "70%",
             },
           ]
         }
@@ -638,7 +635,6 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -648,6 +644,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
+              "maxWidth": "70%",
             },
           ]
         }
@@ -743,7 +740,6 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -753,6 +749,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
+              "maxWidth": "70%",
             },
           ]
         }
@@ -768,6 +765,128 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
 exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
 
 exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
+
+exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
+<ForwardRef
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+      ]
+    }
+    testID="main.sidebar.channels_list.list.channel_item"
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "paddingLeft": 16,
+          },
+          undefined,
+        ]
+      }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
+    >
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        testID="main.sidebar.channels_list.list.channel_item.channel_icon"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="O"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
+        style={
+          Array [
+            Object {
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
+            },
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+              "maxWidth": "70%",
+            },
+          ]
+        }
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
+      >
+        display_name
+      </Text>
+      <CustomStatusEmoji
+        emojiSize={16}
+        style={
+          Array [
+            Object {
+              "color": "rgba(255,255,255,0.6)",
+            },
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+              "maxWidth": "70%",
+            },
+          ]
+        }
+        testID="display_name"
+        userID="currentUser"
+      />
+    </View>
+  </View>
+</ForwardRef>
+`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
 <ForwardRef
@@ -852,7 +971,6 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -862,6 +980,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
+              "maxWidth": "70%",
             },
           ]
         }
@@ -959,7 +1078,6 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             Object {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
-              "flex": 1,
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
@@ -969,6 +1087,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
+              "maxWidth": "70%",
             },
           ]
         }

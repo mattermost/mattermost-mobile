@@ -73,4 +73,15 @@ describe('ChannelTitle', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot with custom status emoji', () => {
+        const wrapper = shallow(
+            <ChannelTitle
+                {...baseProps}
+                channelType={General.DM_CHANNEL}
+            />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });
