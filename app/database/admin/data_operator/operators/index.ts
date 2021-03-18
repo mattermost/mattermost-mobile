@@ -150,10 +150,6 @@ export const operateServersRecord = async ({database, value}: DataFactory) => {
  */
 export const operateCustomEmojiRecord = async ({database, value}: DataFactory) => {
     const record = value as RawCustomEmoji;
-    const generator = (emoji: CustomEmoji) => {
-        emoji._raw.id = record?.id ?? emoji.id;
-        emoji.name = record.name;
-    };
 
     const appRecord = (await database.collections.
         get(CUSTOM_EMOJI!).
@@ -164,9 +160,13 @@ export const operateCustomEmojiRecord = async ({database, value}: DataFactory) =
         return null;
     }
 
+    const generator = (emoji: CustomEmoji) => {
+        emoji._raw.id = record?.id ?? emoji.id;
+        emoji.name = record.name;
+    };
+
     return operateBaseRecord({
         database,
-
         tableName: CUSTOM_EMOJI,
         value,
         generator,
@@ -498,20 +498,6 @@ export const operateUserRecord = async ({database, value}: DataFactory) => {
 export const operatePreferenceRecord = async ({database, value}: DataFactory) => {
     const record = value as RawPreference;
 
-    const appRecord = (await database.collections.
-        get(PREFERENCE!).
-        query(
-            Q.where('category', record.category),
-            Q.where('name', record.name),
-            Q.where('user_id', record.user_id),
-            Q.where('value', record.value),
-        ).
-        fetch()) as Model[];
-
-    if (appRecord.length > 0) {
-        return null;
-    }
-
     const generator = (preference: Preference) => {
         preference._raw.id = record?.id ?? preference.id;
         preference.category = record.category;
@@ -576,7 +562,6 @@ const operateBaseRecord = async ({
     generator,
 }: DataFactory) => {
     let appRecord = [] as Model[];
-
     if (value?.id) { // We query first to see if we have a record on that entity with the current value.id
         appRecord = (await database.collections.
             get(tableName!).
@@ -588,7 +573,7 @@ const operateBaseRecord = async ({
         const record = appRecord[0];
 
         // We avoid unnecessary updates if we already have a record with the same update_at value for this model/entity
-        const isRecordIdentical = checkForIdenticalRecord({
+        const isRecordIdentical = verifyUpdateAt({
             tableName: tableName!,
             newValue: value,
             existingRecord: record,
@@ -611,14 +596,14 @@ const operateBaseRecord = async ({
 };
 
 /**
- * checkForIdenticalRecord:
+ * verifyUpdateAt:
  * @param {IdenticalRecord} identicalRecord
  * @param {string} identicalRecord.tableName
  * @param {RecordValue} identicalRecord.newValue
  * @param {Model} identicalRecord.existingRecord
  * @returns {boolean}
  */
-const checkForIdenticalRecord = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
+const verifyUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
     const guardTables = [POST];
     if (guardTables.includes(tableName)) {
         switch (tableName) {

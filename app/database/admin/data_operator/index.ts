@@ -27,6 +27,7 @@ import {
     RawReaction,
     RawTeamMembership,
     RawUser,
+    RecordValue,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import File from '@typings/database/file';
@@ -34,6 +35,7 @@ import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
+import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import TeamMembership from '@typings/database/team_membership';
 
@@ -58,7 +60,12 @@ import {
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from './operators';
-import {createPostsChain, sanitizePosts, sanitizeReactions, findMatchingRecords} from './utils';
+import {
+    createPostsChain,
+    sanitizePosts,
+    sanitizeReactions,
+    findMatchingRecords,
+} from './utils';
 
 const {
     CUSTOM_EMOJI,
@@ -73,6 +80,15 @@ const {
     TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
+
+type RawWithNoId = RawPreference | RawTeamMembership | RawCustomEmoji;
+
+type DiscardDuplicates = {
+  rawValues: RawWithNoId[];
+  tableName: string;
+    oneOfField: string;
+  finder: (existing: Model, newElement: RecordValue) => boolean;
+};
 
 class DataOperator {
   /**
@@ -602,13 +618,30 @@ class DataOperator {
           return [];
       }
 
-      const records = await this.handleBase({
+      const newPreferences: RawPreference[] = (await this.discardDuplicates({
+          rawValues: preferences,
           tableName: PREFERENCE,
-          values: preferences,
-          recordOperator: operatePreferenceRecord,
-      });
+          finder: (existing: Preference, newElement: RawPreference) => {
+              return (
+                  newElement.category === existing.category &&
+                  newElement.name === existing.name &&
+                  newElement.user_id === existing.userId &&
+                  newElement.value === existing.value
+              );
+          },
+          oneOfField: 'user_id',
+      })) as RawPreference[];
 
-      return records;
+      if (newPreferences?.length) {
+          const records = await this.handleBase({
+              tableName: PREFERENCE,
+              values: newPreferences,
+              recordOperator: operatePreferenceRecord,
+          });
+          return records;
+      }
+
+      return null;
   };
 
   /**
@@ -621,43 +654,78 @@ class DataOperator {
           return [];
       }
 
-      const database = await this.getDatabase(TEAM_MEMBERSHIP);
-
-      const userIds: string[] = teamMemberships.reduce(
-          (ids, current: RawTeamMembership) => {
-              ids.push(current.user_id);
-              return ids;
-          },
-      [] as string[],
-      );
-
-      // NOTE: There is no 'id' field for team_membership response, hence, we need to find weed out any duplicates before sending the values to the operator
-      const currentTeamMembers = (await findMatchingRecords({
-          database,
+      const newTeamMembers: RawTeamMembership[] = (await this.discardDuplicates({
+          rawValues: teamMemberships,
           tableName: TEAM_MEMBERSHIP,
-          condition: Q.where('user_id', Q.oneOf(userIds)),
-      })) as TeamMembership[];
+          finder: (existing: TeamMembership, newElement: RawTeamMembership) => {
+              return (
+                  newElement.team_id === existing.teamId &&
+          newElement.user_id === existing.userId
+              );
+          },
+          oneOfField: 'user_id',
+      })) as RawTeamMembership[];
 
-      let newTeamMembers = teamMemberships;
+      if (newTeamMembers?.length) {
+          const records = await this.handleBase({
+              tableName: TEAM_MEMBERSHIP,
+              values: newTeamMembers,
+              recordOperator: operateTeamMembershipRecord,
+          });
+          return records;
+      }
 
-      if (currentTeamMembers.length > 0) {
-          newTeamMembers = teamMemberships.filter((newTeamMember) => {
-              const found = currentTeamMembers.find((current) => {
-                  return (
-                      newTeamMember.team_id === current.teamId && newTeamMember.user_id === current.userId
-                  );
+      return null;
+  };
+
+  // TODO : Add jest to discardDuplicates
+  /**
+   * discardDuplicates: This method weeds out duplicates entries.  It may happen that we do multiple inserts of the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
+   * @param {DiscardDuplicates} discardDuplicates
+   * @param {RawWithNoId[]} discardDuplicates.rawValues
+   * @param {string} discardDuplicates.tableName
+   * @param {string} discardDuplicates.oneOfField
+   * @param {(existing: Model, newElement: RecordValue) => boolean} discardDuplicates.finder
+   * @returns {Promise<RawWithNoId[]>}
+   */
+  private discardDuplicates = async ({
+      rawValues,
+      tableName,
+      finder,
+      oneOfField,
+  }: DiscardDuplicates) => {
+      const getOneOfs = (raws: RawWithNoId[]) => {
+          return raws.reduce((oneOfs, current: RawWithNoId) => {
+              const key = oneOfField as keyof typeof current;
+              const value: string = current[key] as string;
+              oneOfs.push(value);
+              return oneOfs;
+          }, [] as string[]);
+      };
+
+      const columnValues: string[] = getOneOfs(rawValues);
+
+      const database = await this.getDatabase(tableName);
+
+      // NOTE: There is no 'id' field in the response, hence, we need to  weed out any duplicates before sending the values to the operator
+      const existingRecords = (await findMatchingRecords({
+          database,
+          tableName,
+          condition: Q.where(oneOfField, Q.oneOf(columnValues)),
+      })) as Model[];
+
+      let newElements = rawValues;
+
+      if (existingRecords.length > 0) {
+          newElements = rawValues.filter((newElement) => {
+              const found = existingRecords.find((existing) => {
+                  return finder(existing, newElement);
               });
               return found === undefined;
           });
+          return newElements;
       }
-
-      const records = await this.handleBase({
-          tableName: TEAM_MEMBERSHIP,
-          values: newTeamMembers,
-          recordOperator: operateTeamMembershipRecord,
-      });
-
-      return records;
+      return newElements;
   };
 
   /**
