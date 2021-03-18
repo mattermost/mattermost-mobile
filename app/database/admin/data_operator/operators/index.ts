@@ -20,6 +20,7 @@ import {
     RawPostMetadata,
     RawPostsInChannel,
     RawPostsInThread,
+    RawPreference,
     RawReaction,
     RawRole,
     RawServers,
@@ -34,6 +35,7 @@ import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
+import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
@@ -49,6 +51,7 @@ const {
     POST_METADATA,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
+    PREFERENCE,
     REACTION,
     ROLE,
     SYSTEM,
@@ -153,9 +156,8 @@ export const operateCustomEmojiRecord = async ({database, value}: DataFactory) =
         get(CUSTOM_EMOJI!).
         query(Q.where('name', record.name)).
         fetch()) as Model[];
-    const isPresent = appRecord.length > 0;
 
-    if (isPresent) {
+    if (appRecord.length > 0) {
         return null;
     }
 
@@ -461,10 +463,7 @@ export const operateUserRecord = async ({database, value}: DataFactory) => {
         user.updateAt = record.update_at;
         user.email = record.email;
         user.firstName = record.first_name;
-
-        // FIXME : find out about is_bot and is_guest
-        // user.is_bot = record.first_name;
-        // user.is_guest = record.first_name;
+        user.isGuest = record.roles.includes('system_guest');
         user.lastName = record.last_name;
         user.lastPictureUpdate = record.last_picture_update;
         user.locale = record.locale;
@@ -475,11 +474,52 @@ export const operateUserRecord = async ({database, value}: DataFactory) => {
         user.notifyProps = record.notify_props;
         user.props = record.props;
         user.timezone = record.timezone;
+        user.isBot = record.roles.includes('system_manager'); // FIXME : confirm is_bot
     };
 
     return operateBaseRecord({
         database,
         tableName: USER,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operatePreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
+export const operatePreferenceRecord = async ({database, value}: DataFactory) => {
+    const record = value as RawPreference;
+
+    const appRecord = (await database.collections.
+        get(PREFERENCE!).
+        query(
+            Q.where('category', record.category),
+            Q.where('name', record.name),
+            Q.where('user_id', record.user_id),
+            Q.where('value', record.value),
+        ).
+        fetch()) as Model[];
+
+    if (appRecord.length > 0) {
+        return null;
+    }
+
+    const generator = (preference: Preference) => {
+        preference._raw.id = record?.id ?? preference.id;
+        preference.category = record.category;
+        preference.name = record.name;
+        preference.userId = record.user_id;
+        preference.value = record.value;
+    };
+
+    return operateBaseRecord({
+        database,
+        tableName: PREFERENCE,
         value,
         generator,
     });
@@ -505,20 +545,20 @@ export const operateUserRecord = async ({database, value}: DataFactory) => {
  */
 const operateBaseRecord = async ({
     database,
-
     tableName,
     value,
     generator,
 }: DataFactory) => {
-    // We query first to see if we have a record on that entity with the current value.id
-    const appRecord = (await database.collections.
-        get(tableName!).
-        query(Q.where('id', value.id!)).
-        fetch()) as Model[];
+    let appRecord = [] as Model[];
 
-    const isPresent = appRecord.length > 0;
+    if (value?.id) { // We query first to see if we have a record on that entity with the current value.id
+        appRecord = (await database.collections.
+            get(tableName!).
+            query(Q.where('id', value.id!)).
+            fetch()) as Model[];
+    }
 
-    if (isPresent) {
+    if (appRecord?.length > 0) {
         const record = appRecord[0];
 
         // We avoid unnecessary updates if we already have a record with the same update_at value for this model/entity
@@ -542,8 +582,6 @@ const operateBaseRecord = async ({
     // 1. We don't have a record yet to update; so we create it
     // 2. This is just a normal create operation
     return database.collections.get(tableName!).prepareCreate(generator);
-
-    // return null;
 };
 
 /**

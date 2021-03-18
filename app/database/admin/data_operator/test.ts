@@ -770,7 +770,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
     });
 
-    it('=> HandlePosts: should write to Post and its sub-child entities', async () => {
+    it('=> HandleUsers: should write to User entity', async () => {
         expect.assertions(1);
 
         const users = [
@@ -788,9 +788,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 last_name: 'L',
                 position: 'Mobile Engineer',
                 roles: 'system_user',
-
-                // auth_data: '',
-                // allow_marketing: true,
                 props: {},
                 notify_props: {
                     desktop: 'all',
@@ -800,12 +797,11 @@ describe('*** DataOperator: Handlers tests ***', () => {
                     mention_keys: '',
                     push: 'mention',
                     channel: true,
-
-                    // auto_responder_active: false,
-                    // auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
-                    // comments: 'never',
-                    // desktop_notification_sound: 'Hello',
-                    // push_status: 'online',
+                    auto_responder_active: false,
+                    auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
+                    comments: 'never',
+                    desktop_notification_sound: 'Hello',
+                    push_status: 'online',
                 },
                 last_password_update: 1604323112537,
                 last_picture_update: 1604686302260,
@@ -822,8 +818,46 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        // handlePosts will in turn call handlePostsInThread
         await DataOperator.handleUsers(users);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandlePreferences: should write to User entity', async () => {
+        expect.assertions(1);
+
+        const preferences = [
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'group_channel_show',
+                name: 'qj91hepgjfn6xr4acm5xzd8zoc',
+                value: 'true',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'notifications',
+                name: 'email_interval',
+                value: '30',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'theme',
+                name: '',
+                value: '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'tutorial_step',
+                name: '9ciscaqbrpd6d8s68k76xb9bte',
+                value: '2',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handlePreferences(preferences);
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });

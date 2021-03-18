@@ -18,6 +18,7 @@ import {
     operatePostMetadataRecord,
     operatePostRecord,
     operatePostsInChannelRecord,
+    operatePreferenceRecord,
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
@@ -569,9 +570,6 @@ describe('*** DataOperator: Operators tests ***', () => {
                 last_name: 'L',
                 position: 'Mobile Engineer',
                 roles: 'system_user',
-
-                // auth_data: '',
-                // allow_marketing: true,
                 props: {},
                 notify_props: {
                     desktop: 'all',
@@ -582,11 +580,11 @@ describe('*** DataOperator: Operators tests ***', () => {
                     push: 'mention',
                     channel: true,
 
-                    // auto_responder_active: false,
-                    // auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
-                    // comments: 'never',
-                    // desktop_notification_sound: 'Hello',
-                    // push_status: 'online',
+                    auto_responder_active: false,
+                    auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
+                    comments: 'never',
+                    desktop_notification_sound: 'Hello',
+                    push_status: 'online',
                 },
                 last_password_update: 1604323112537,
                 last_picture_update: 1604686302260,
@@ -601,5 +599,20 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('User');
+    });
+
+    it('=> operatePreferenceRecord: should return an array of type Preference', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operatePreferenceRecord({
+            database: database!,
+            value: {user_id: '9ciscaqbrpd6d8s68k76xb9bte', category: 'tutorial_step', name: '9ciscaqbrpd6d8s68k76xb9bte', value: '2'},
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Preference');
     });
 });

@@ -23,6 +23,7 @@ import {
     RawPost,
     RawPostMetadata,
     RawPostsInThread,
+    RawPreference,
     RawReaction,
     RawUser,
 } from '@typings/database/database';
@@ -46,6 +47,7 @@ import {
     operatePostMetadataRecord,
     operatePostRecord,
     operatePostsInChannelRecord,
+    operatePreferenceRecord,
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
@@ -60,9 +62,10 @@ const {
     DRAFT,
     FILE,
     POST,
-    POST_METADATA,
-    POSTS_IN_THREAD,
     POSTS_IN_CHANNEL,
+    POSTS_IN_THREAD,
+    POST_METADATA,
+    PREFERENCE,
     REACTION,
     USER,
 } = MM_TABLES.SERVER;
@@ -580,6 +583,25 @@ class DataOperator {
           tableName: USER,
           values: users,
           recordOperator: operateUserRecord,
+      });
+
+      return records;
+  };
+
+  /**
+   * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE entity from the 'Server' schema
+   * @param {RawPreference[]} preferences
+   * @returns {Promise<void>}
+   */
+  handlePreferences = async (preferences: RawPreference[]) => {
+      if (!preferences.length) {
+          return [];
+      }
+
+      const records = await this.handleBase({
+          tableName: PREFERENCE,
+          values: preferences,
+          recordOperator: operatePreferenceRecord,
       });
 
       return records;

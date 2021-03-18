@@ -263,13 +263,11 @@ export type RawUser = {
     mention_keys: string;
     channel: boolean;
     first_name: boolean;
-
-    // FIXME : confirm the below
-    //       auto_responder_active: false,
-    //       auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
-    //       comments: 'never',
-    //       desktop_notification_sound: 'Hello',
-    //       push_status: 'online',
+    auto_responder_active: boolean,
+    auto_responder_message: string,
+    comments:string,
+    push_status: string,
+    desktop_notification_sound: string, // Not in use by the mobile app
   };
   last_password_update: number;
   last_picture_update: number;
@@ -286,12 +284,21 @@ export type RawUser = {
   terms_of_service_create_at?: number;
 };
 
+export type RawPreference = {
+  id?: string;
+  user_id: string;
+  category: string;
+  name: string;
+  value: string;
+};
+
 export type RecordValue =
   | RawApp
   | RawCustomEmoji
   | RawDraft
   | RawFile
   | RawGlobal
+  | RawPreference
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel

@@ -93,7 +93,7 @@ export default class User extends Model {
     /** position : The user's position in the company */
     @field('position') position!: string;
 
-    /** roles : The associated roles that this user has */
+    /** roles : The associated roles that this user has. Multiple roles concatenated together with comma to form a single string. */
     @field('roles') roles!: string;
 
     /** status : The presence status for the user */
