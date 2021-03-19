@@ -9,7 +9,6 @@ import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 import DataOperator from './index';
 import {
     operateAppRecord,
-    operateCustomEmojiRecord,
     operateDraftRecord,
     operateGlobalRecord,
     operateRoleRecord,
@@ -130,32 +129,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleBase).toHaveBeenCalledWith({
             ...data,
             recordOperator: operateServersRecord,
-        });
-    });
-
-    it('=> HandleCustomEmoji: should write to CUSTOM_EMOJI entity', async () => {
-        expect.assertions(2);
-
-        const database = await createConnection(true);
-        expect(database).toBeTruthy();
-
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
-
-        const data = {
-            tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: [
-                {
-                    id: 'custom-emoji-id-1',
-                    name: 'custom-emoji-1',
-                },
-            ],
-        };
-
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateCustomEmojiRecord,
         });
     });
 
@@ -747,7 +720,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
         const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
-        const spyOnHandleIsolatedEntity = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
+        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleCustomEmojis');
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
 
@@ -765,7 +738,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleReactions).toHaveBeenCalledTimes(1);
         expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
     });
@@ -883,6 +856,28 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await createConnection(true);
 
         await DataOperator.handleTeamMemberships(teamMembership);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
+        expect.assertions(1);
+        const emojis = [
+            {
+                id: 'i',
+                create_at: 1580913641769,
+                update_at: 1580913641769,
+                delete_at: 0,
+                creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                name: 'boomI',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleCustomEmojis(emojis);
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });

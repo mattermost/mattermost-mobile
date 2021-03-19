@@ -11,7 +11,6 @@ export enum IsolatedEntities {
     APP = 'app',
     GLOBAL = 'global',
     SERVERS = 'servers',
-    CUSTOM_EMOJI = 'CustomEmoji',
     ROLE = 'Role',
     SYSTEM = 'System',
     TERMS_OF_SERVICE = 'TermsOfService',

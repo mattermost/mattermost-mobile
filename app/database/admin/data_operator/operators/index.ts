@@ -151,15 +151,6 @@ export const operateServersRecord = async ({database, value}: DataFactory) => {
 export const operateCustomEmojiRecord = async ({database, value}: DataFactory) => {
     const record = value as RawCustomEmoji;
 
-    const appRecord = (await database.collections.
-        get(CUSTOM_EMOJI!).
-        query(Q.where('name', record.name)).
-        fetch()) as Model[];
-
-    if (appRecord.length > 0) {
-        return null;
-    }
-
     const generator = (emoji: CustomEmoji) => {
         emoji._raw.id = record?.id ?? emoji.id;
         emoji.name = record.name;

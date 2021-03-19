@@ -115,10 +115,6 @@ class DataOperator {
               recordOperator = operateServersRecord;
               break;
           }
-          case IsolatedEntities.CUSTOM_EMOJI: {
-              recordOperator = operateCustomEmojiRecord;
-              break;
-          }
           case IsolatedEntities.ROLE: {
               recordOperator = operateRoleRecord;
               break;
@@ -581,10 +577,7 @@ class DataOperator {
       }
 
       // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
-      await this.handleIsolatedEntity({
-          tableName: IsolatedEntities.CUSTOM_EMOJI,
-          values: emojis,
-      });
+      await this.handleCustomEmojis(emojis);
       await this.handlePostsInThread(postsInThread);
       await this.handlePostsInChannel(orderedPosts);
   };
@@ -671,6 +664,39 @@ class DataOperator {
               tableName: TEAM_MEMBERSHIP,
               values: newTeamMembers,
               recordOperator: operateTeamMembershipRecord,
+          });
+          return records;
+      }
+
+      return null;
+  };
+
+  /**
+   * handleCustomEmojis: Handler responsible for the Create/Update operations occurring on the CUSTOM_EMOJI entity from the 'Server' schema
+   * @param {RawTeamMembership[]} teamMemberships
+   * @returns {Promise<void>}
+   */
+  handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
+      if (!customEmojis.length) {
+          return [];
+      }
+
+      const newCustomEmojis: RawCustomEmoji[] = (await this.discardDuplicates({
+          rawValues: customEmojis,
+          tableName: CUSTOM_EMOJI,
+          finder: (existing: CustomEmoji, newElement: RawCustomEmoji) => {
+              return (
+                  newElement.name === existing.name
+              );
+          },
+          oneOfField: 'name',
+      })) as RawCustomEmoji[];
+
+      if (newCustomEmojis?.length) {
+          const records = await this.handleBase({
+              tableName: CUSTOM_EMOJI,
+              values: newCustomEmojis,
+              recordOperator: operateCustomEmojiRecord,
           });
           return records;
       }
