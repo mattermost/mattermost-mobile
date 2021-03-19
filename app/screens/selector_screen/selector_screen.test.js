@@ -171,6 +171,7 @@ describe('SelectorScreen', () => {
         expect(wrapper.state().searchResults).toEqual([
             {text: 'With Query Text', value: 'with_query'},
         ]);
+
         customList = wrapper.find('CustomList');
         expect(customList.props().data).toEqual([
             {text: 'With Query Text', value: 'with_query'},

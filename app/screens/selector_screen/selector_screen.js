@@ -185,6 +185,7 @@ export default class SelectorScreen extends PureComponent {
         } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
             this.getChannels();
         }
+
         // dynamic options are not paged so are not reloaded on scroll
     };
 

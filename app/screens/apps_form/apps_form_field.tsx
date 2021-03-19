@@ -1,20 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BoolSetting from '@components/widgets/settings/bool_setting';
-import TextSetting from '@components/widgets/settings/text_setting';
-import {ViewTypes} from '@constants/index';
-import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
-import {Theme} from '@mm-redux/types/preferences';
 import React from 'react';
 
+import {Theme} from '@mm-redux/types/preferences';
+import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
 import {AppFieldTypes} from '@mm-redux/constants/apps';
+import {DialogOption} from '@mm-redux/types/integrations';
+
+import {ViewTypes} from '@constants/index';
+
+import BoolSetting from '@components/widgets/settings/bool_setting';
+import TextSetting from '@components/widgets/settings/text_setting';
 import AutocompleteSelector from '@components/autocomplete_selector';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
-
-import {DialogOption} from '@mm-redux/types/integrations';
 
 export type Props = {
     field: AppField;
@@ -156,7 +157,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                 break;
             case AppFieldTypes.STATIC_SELECT:
                 if (field.options) {
-                    options = field.options.map(({label, value}) => ({text: label, value}));
+                    options = field.options.map((option) => ({text: option.label, value: option.value}));
                 }
             }
 
@@ -175,6 +176,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
                     roundedBorders={false}
+                    disabled={field.readonly}
                 />
             );
         } else if (field.type === AppFieldTypes.BOOL) {
