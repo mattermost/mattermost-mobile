@@ -33,6 +33,7 @@ describe('Search', () => {
         getSearchResultPostItem,
         searchFromModifier,
         searchInModifier,
+        searchInput,
     } = SearchScreen;
     let testMessage;
     let testPartialSearchTerm;
@@ -170,6 +171,36 @@ describe('Search', () => {
         await SearchScreen.openPostOptionsFor(lastPost.post.id, testMessage);
         await expect(reactionPickerAction).not.toBeVisible();
         await postOptions.tap();
+
+        // # Go back to channel
+        await SearchScreen.cancel();
+    });
+
+    it('MM-T3239 should be able to scroll through long list of search results', async () => {
+        // # Post messages
+        const keyword = 'qa';
+        const firstMessage = `${Date.now().toString()} ${keyword} first`;
+        const firstPost = await Post.apiCreatePost({
+            channelId: testChannel.id,
+            message: firstMessage,
+        });
+        [...Array(50).keys()].forEach(async () => {
+            const message = `${Date.now().toString()} ${keyword}`;
+            await Post.apiCreatePost({
+                channelId: testChannel.id,
+                message,
+            });
+        });
+
+        // # Perform search on keyword
+        await SearchScreen.open();
+        await searchInput.clearText();
+        await searchInput.typeText(keyword);
+        await searchInput.tapReturnKey();
+
+        // * Verify user can scroll down multiple times until first matching post is seen
+        const {searchResultPostItem} = await getSearchResultPostItem(firstPost.post.id, firstMessage);
+        await waitFor(searchResultPostItem).toBeVisible().whileElement(by.id(SearchScreen.testID.searchResultsList)).scroll(1000, 'down');
 
         // # Go back to channel
         await SearchScreen.cancel();

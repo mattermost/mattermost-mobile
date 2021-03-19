@@ -6,6 +6,7 @@ import ProfilePicture from './profile_picture';
 class Post {
     testID = {
         postProfilePicturePrefix: 'post_profile_picture.profile_picture.',
+        emoji: 'markdown_emoji',
         image: 'markdown_image',
         message: 'markdown_text',
         postHeaderDateTime: 'post_header.date_time',
@@ -19,6 +20,7 @@ class Post {
 
     getPost = (postItemSourceTestID, postId, postMessage, postProfileOptions = {}) => {
         const postItemMatcher = this.getPostItemMatcher(postItemSourceTestID, postId, postMessage);
+        const postItemEmojiMatcher = by.id(this.testID.emoji).withAncestor(postItemMatcher);
         const postItemImageMatcher = by.id(this.testID.image).withAncestor(postItemMatcher);
         const postItemMessageMatcher = by.id(this.testID.message).withAncestor(postItemMatcher);
         const postItemPreHeaderTextMatch = by.id(this.testID.postPreHeaderText).withAncestor(postItemMatcher);
@@ -27,6 +29,7 @@ class Post {
 
         return {
             postItem: element(postItemMatcher),
+            postItemEmoji: element(postItemEmojiMatcher),
             postItemImage: element(postItemImageMatcher),
             postItemMessage: element(postItemMessageMatcher),
             postItemPreHeaderText: element(postItemPreHeaderTextMatch),

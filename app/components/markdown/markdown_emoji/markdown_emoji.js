@@ -59,6 +59,7 @@ export default class MarkdownEmoji extends PureComponent {
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
+                testID='markdown_emoji'
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
