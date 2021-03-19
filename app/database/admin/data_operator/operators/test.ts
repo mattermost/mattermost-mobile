@@ -10,6 +10,7 @@ import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
     operateAppRecord,
+    operateChannelMembershipRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -666,5 +667,39 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('GroupMembership');
+    });
+
+    it('=> operateChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateChannelMembershipRecord({
+            database: database!,
+            value: {
+                channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                last_viewed_at: 1613667352029,
+                msg_count: 3864,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'mention',
+                    push: 'default',
+                },
+                last_update_at: 1613667352029,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('ChannelMembership');
     });
 });

@@ -310,8 +310,31 @@ export type RawGroupMembership = {
   group_id: string;
 };
 
+export type RawChannelMembership = {
+  id?: string;
+  channel_id: string;
+  user_id: string;
+  roles: string;
+  last_viewed_at: number;
+  msg_count: number;
+  mention_count: number;
+  notify_props: {
+    desktop: string;
+    email: string;
+    ignore_channel_mentions: string;
+    mark_unread: string;
+    push: string;
+  };
+  last_update_at: number;
+  scheme_guest: boolean;
+  scheme_user: boolean;
+  scheme_admin: boolean;
+  explicit_roles: string;
+};
+
 export type RecordValue =
   | RawApp
+  | RawChannelMembership
   | RawCustomEmoji
   | RawDraft
   | RawFile
@@ -417,7 +440,7 @@ export type MatchingRecords = {
   condition: any;
 };
 
-export type RawWithNoId = RawPreference | RawTeamMembership | RawCustomEmoji | RawGroupMembership;
+export type RawWithNoId = RawPreference | RawTeamMembership | RawCustomEmoji | RawGroupMembership | RawChannelMembership;
 
 export type DiscardDuplicates = {
   rawValues: RawWithNoId[];

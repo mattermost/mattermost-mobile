@@ -7,11 +7,13 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
+import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactory,
     IdenticalRecord,
     RawApp,
+    RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
     RawFile,
@@ -48,6 +50,7 @@ import TermsOfService from '@typings/database/terms_of_service';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
+    CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
@@ -555,6 +558,29 @@ export const operateGroupMembershipRecord = async ({database, value}: DataFactor
 };
 
 /**
+ * operateChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateChannelMembershipRecord = async ({database, value}: DataFactory) => {
+    const record = value as RawChannelMembership;
+
+    const generator = (groupMembership: ChannelMembership) => {
+        groupMembership.channelId = record.channel_id;
+        groupMembership.userId = record.user_id;
+    };
+
+    return operateBaseRecord({
+        database,
+        tableName: CHANNEL_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
  * operateBaseRecord:  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
  * encounters an existing record during a CREATE operation, it silently fails the operation.
  *
@@ -578,6 +604,10 @@ const operateBaseRecord = async ({
     value,
     generator,
 }: DataFactory) => {
+    // FIXME : The handler should be doing a single 'big' select query instead of making this operator do a query per record.  Then, you can use a flag 'isPresent' to distinguish between the database actions
+
+    // FIXME : remove optional id field for all those Entities that are using type RawWithNoId
+
     let appRecord = [] as Model[];
     if (value?.id) { // We query first to see if we have a record on that entity with the current value.id
         appRecord = (await database.collections.

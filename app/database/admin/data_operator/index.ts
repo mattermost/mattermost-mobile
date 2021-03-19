@@ -6,6 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
+import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
@@ -17,6 +18,7 @@ import {
     HandlePosts,
     HandleReactions,
     PostImage,
+    RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
     RawEmbed,
@@ -29,7 +31,8 @@ import {
     RawReaction,
     RawTeamMembership,
     RawUser,
-    RawWithNoId,
+    RawWithNoId
+    ,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import File from '@typings/database/file';
@@ -46,6 +49,7 @@ import DatabaseConnectionException from './exceptions/database_connection_except
 import DatabaseOperatorException from './exceptions/database_operator_exception';
 import {
     operateAppRecord,
+    operateChannelMembershipRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -72,6 +76,7 @@ import {
 } from './utils';
 
 const {
+    CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
@@ -725,6 +730,36 @@ class DataOperator {
           tableName: GROUP_MEMBERSHIP,
           values: newGroupMemberships,
           recordOperator: operateGroupMembershipRecord,
+      });
+
+      return records;
+  };
+
+  /**
+   * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP entity from the 'Server' schema
+   * @param {RawChannelMembership[]} channelMemberships
+   * @returns {Promise<void>}
+   */
+  handleChannelMembership = async (channelMemberships: RawChannelMembership[]) => {
+      if (!channelMemberships.length) {
+          return [];
+      }
+
+      const newChannelMemberships: RawChannelMembership[] = (await this.discardDuplicates({
+          rawValues: channelMemberships,
+          tableName: CHANNEL_MEMBERSHIP,
+          finder: (existing: ChannelMembership, newElement: RawChannelMembership) => {
+              return (
+                  newElement.user_id === existing.userId && newElement.channel_id === existing.channelId
+              );
+          },
+          oneOfField: 'user_id',
+      })) as RawChannelMembership[];
+
+      const records = await this.handleBase({
+          tableName: CHANNEL_MEMBERSHIP,
+          values: newChannelMemberships,
+          recordOperator: operateChannelMembershipRecord,
       });
 
       return records;

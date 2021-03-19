@@ -900,4 +900,58 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleChannelMembership: should write to CHANNEL_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+        const channelMemberships = [
+            {
+                channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                last_viewed_at: 1613667352029,
+                msg_count: 3864,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'mention',
+                    push: 'default',
+                },
+                last_update_at: 1613667352029,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+            {
+                channel_id: '1yw6gxfr4bn1jbyp9nr7d53yew',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'channel_user',
+                last_viewed_at: 1615300540549,
+                msg_count: 16,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'all',
+                    push: 'default',
+                },
+                last_update_at: 1615300540549,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleChannelMembership(channelMemberships);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
 });
