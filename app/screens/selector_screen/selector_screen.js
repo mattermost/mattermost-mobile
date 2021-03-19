@@ -235,6 +235,10 @@ export default class SelectorScreen extends PureComponent {
     };
 
     searchDynamicOptions = (term = '') => {
+        if (!this.props.getDynamicOptions) {
+            return;
+        }
+
         this.setState({loading: true});
 
         this.props.getDynamicOptions(term.toLowerCase()).then((results) => {
