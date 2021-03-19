@@ -16,6 +16,7 @@ import {
     RawDraft,
     RawFile,
     RawGlobal,
+    RawGroupMembership,
     RawPost,
     RawPostMetadata,
     RawPostsInChannel,
@@ -32,6 +33,7 @@ import {
 import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
+import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -49,6 +51,7 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -523,6 +526,29 @@ export const operateTeamMembershipRecord = async ({database, value}: DataFactory
     return operateBaseRecord({
         database,
         tableName: TEAM_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {RecordValue} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateGroupMembershipRecord = async ({database, value}: DataFactory) => {
+    const record = value as RawGroupMembership;
+
+    const generator = (groupMembership: GroupMembership) => {
+        groupMembership.groupId = record.group_id;
+        groupMembership.userId = record.user_id;
+    };
+
+    return operateBaseRecord({
+        database,
+        tableName: GROUP_MEMBERSHIP,
         value,
         generator,
     });

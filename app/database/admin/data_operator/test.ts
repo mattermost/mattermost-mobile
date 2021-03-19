@@ -796,7 +796,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });
 
-    it('=> HandlePreferences: should write to User entity', async () => {
+    it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
         expect.assertions(1);
 
         const preferences = [
@@ -878,6 +878,25 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await createConnection(true);
 
         await DataOperator.handleCustomEmojis(emojis);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleGroupMembership: should write to GROUP_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+        const groupMemberships = [
+            {
+                user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
+                group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
+
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroupMembership(groupMemberships);
 
         expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });

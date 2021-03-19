@@ -9,6 +9,7 @@ import DatabaseManager from '@database/admin/database_manager';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
+    DiscardDuplicates,
     HandleBaseData,
     HandleFiles,
     HandleIsolatedEntityData,
@@ -20,6 +21,7 @@ import {
     RawDraft,
     RawEmbed,
     RawFile,
+    RawGroupMembership,
     RawPost,
     RawPostMetadata,
     RawPostsInThread,
@@ -27,10 +29,11 @@ import {
     RawReaction,
     RawTeamMembership,
     RawUser,
-    RecordValue,
+    RawWithNoId,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import File from '@typings/database/file';
+import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -47,6 +50,7 @@ import {
     operateDraftRecord,
     operateFileRecord,
     operateGlobalRecord,
+    operateGroupMembershipRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -71,6 +75,7 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -80,15 +85,6 @@ const {
     TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
-
-type RawWithNoId = RawPreference | RawTeamMembership | RawCustomEmoji;
-
-type DiscardDuplicates = {
-  rawValues: RawWithNoId[];
-  tableName: string;
-    oneOfField: string;
-  finder: (existing: Model, newElement: RecordValue) => boolean;
-};
 
 class DataOperator {
   /**
@@ -673,7 +669,7 @@ class DataOperator {
 
   /**
    * handleCustomEmojis: Handler responsible for the Create/Update operations occurring on the CUSTOM_EMOJI entity from the 'Server' schema
-   * @param {RawTeamMembership[]} teamMemberships
+   * @param {RawCustomEmoji[]} customEmojis
    * @returns {Promise<void>}
    */
   handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
@@ -702,6 +698,36 @@ class DataOperator {
       }
 
       return null;
+  };
+
+  /**
+   * handleGroupMembership: Handler responsible for the Create/Update operations occurring on the GROUP_MEMBERSHIP entity from the 'Server' schema
+   * @param {RawGroupMembership[]} groupMemberships
+   * @returns {Promise<void>}
+   */
+  handleGroupMembership = async (groupMemberships: RawGroupMembership[]) => {
+      if (!groupMemberships.length) {
+          return [];
+      }
+
+      const newGroupMemberships: RawGroupMembership[] = (await this.discardDuplicates({
+          rawValues: groupMemberships,
+          tableName: GROUP_MEMBERSHIP,
+          finder: (existing: GroupMembership, newElement: RawGroupMembership) => {
+              return (
+                  newElement.user_id === existing.userId && newElement.group_id === existing.groupId
+              );
+          },
+          oneOfField: 'user_id',
+      })) as RawGroupMembership[];
+
+      const records = await this.handleBase({
+          tableName: GROUP_MEMBERSHIP,
+          values: newGroupMemberships,
+          recordOperator: operateGroupMembershipRecord,
+      });
+
+      return records;
   };
 
   // TODO : Add jest to discardDuplicates

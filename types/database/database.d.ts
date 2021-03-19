@@ -304,12 +304,19 @@ export type RawTeamMembership = {
   user_id: string;
 };
 
+export type RawGroupMembership = {
+  id?: string;
+  user_id: string;
+  group_id: string;
+};
+
 export type RecordValue =
   | RawApp
   | RawCustomEmoji
   | RawDraft
   | RawFile
   | RawGlobal
+  | RawGroupMembership
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel
@@ -408,4 +415,13 @@ export type MatchingRecords = {
   database: Database;
   tableName: string;
   condition: any;
+};
+
+export type RawWithNoId = RawPreference | RawTeamMembership | RawCustomEmoji | RawGroupMembership;
+
+export type DiscardDuplicates = {
+  rawValues: RawWithNoId[];
+  tableName: string;
+  oneOfField: string;
+  finder: (existing: Model, newElement: RecordValue) => boolean;
 };

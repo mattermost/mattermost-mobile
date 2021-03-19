@@ -14,6 +14,7 @@ import {
     operateDraftRecord,
     operateFileRecord,
     operateGlobalRecord,
+    operateGroupMembershipRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -646,5 +647,24 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
+    });
+
+    it('=> operateGroupMembershipRecord: should return an array of type GroupMembership', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateGroupMembershipRecord({
+            database: database!,
+            value: {
+                user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
+                group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
+
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('GroupMembership');
     });
 });
