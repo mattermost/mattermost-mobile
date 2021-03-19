@@ -21,6 +21,7 @@ type Props = {
     theme: Theme;
     currentChannel: Channel;
     appsEnabled: boolean;
+    intl: typeof intlShape;
     currentTeamId: string;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
@@ -28,7 +29,7 @@ type Props = {
     }
 }
 
-const Bindings: React.FC<Props> = (props: Props) => {
+const Bindings: React.FC<Props> = injectIntl((props: Props) => {
     if (!props.appsEnabled) {
         return null;
     }
@@ -51,7 +52,7 @@ const Bindings: React.FC<Props> = (props: Props) => {
             {options}
         </>
     );
-};
+});
 
 export default Bindings;
 
@@ -67,40 +68,60 @@ type OptionProps = {
     },
 }
 
-const Option = injectIntl((props: OptionProps) => {
-    const onPress = async () => {
+type OptionState = {
+    submitting: boolean;
+}
+
+class Option extends React.PureComponent<OptionProps, OptionState> {
+    state = {
+        submitting: false,
+    };
+
+    onPress = async () => {
+        const {binding, currentChannel, currentTeamId, intl} = this.props;
+        const {doAppCall, sendEphemeralPost} = this.props.actions;
+
+        if (this.state.submitting) {
+            return;
+        }
+
         if (!binding.call) {
             return;
         }
+
         const context = createCallContext(
             binding.app_id,
             binding.location,
-            props.currentChannel.id,
-            props.currentChannel.team_id || props.currentTeamId,
+            currentChannel.id,
+            currentChannel.team_id || currentTeamId,
         );
         const call = createCallRequest(
             binding.call,
             context,
         );
 
-        const res = await props.actions.doAppCall(call, AppCallTypes.SUBMIT, props.intl);
+        this.setState({submitting: true});
+
+        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+
+        this.setState({submitting: false});
+
         if (res.error) {
             const errorResponse = res.error;
-            const title = props.intl.formatMessage({
+            const title = intl.formatMessage({
                 id: 'mobile.general.error.title',
                 defaultMessage: 'Error',
             });
-            const errorMessage = errorResponse.error || props.intl.formatMessage({
+            const errorMessage = errorResponse.error || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
             Alert.alert(title, errorMessage);
-            dismissModal();
             return;
         }
 
         const callResp = res.data!;
-        const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.currentChannel.id);
+        const ephemeral = (message: string) => sendEphemeralPost(message, currentChannel.id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
@@ -111,37 +132,40 @@ const Option = injectIntl((props: OptionProps) => {
         case AppCallResponseTypes.FORM:
             break;
         default: {
-            const title = props.intl.formatMessage({
+            const title = intl.formatMessage({
                 id: 'mobile.general.error.title',
                 defaultMessage: 'Error',
             });
-            const errMessage = props.intl.formatMessage({
+            const errMessage = intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
             }, {
                 type: callResp.type,
             });
             Alert.alert(title, errMessage);
+            return;
         }
         }
 
         dismissModal();
     };
 
-    const {binding, theme} = props;
-    if (!binding.label) {
-        return null;
+    render() {
+        const {binding, theme} = this.props;
+        if (!binding.label) {
+            return null;
+        }
+        return (
+            <>
+                <Separator theme={theme}/>
+                <ChannelInfoRow
+                    action={this.onPress}
+                    defaultMessage={binding.label}
+                    theme={theme}
+                    textId={binding.app_id + binding.location}
+                    image={binding.icon ? {uri: binding.icon} : null}
+                />
+            </>
+        );
     }
-    return (
-        <>
-            <Separator theme={theme}/>
-            <ChannelInfoRow
-                action={onPress}
-                defaultMessage={binding.label}
-                theme={theme}
-                textId={binding.app_id + binding.location}
-                image={binding.icon ? {uri: binding.icon} : null}
-            />
-        </>
-    );
-});
+}
