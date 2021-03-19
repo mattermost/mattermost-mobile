@@ -56,7 +56,6 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
-        let showAppOptions = true;
 
         let canPost = true;
         if (isMinimumServerVersion(serverVersion, 5, 22)) {
@@ -82,10 +81,6 @@ export function makeMapStateToProps() {
 
         if (ownProps.location === THREAD) {
             canReply = false;
-        }
-
-        if (ownProps.location !== CHANNEL) {
-            showAppOptions = false;
         }
 
         if (channelIsArchived || ownProps.channelIsReadOnly) {
@@ -144,7 +139,6 @@ export function makeMapStateToProps() {
             canMarkAsUnread,
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
-            showAppOptions,
             theme: getTheme(state),
         };
     };
