@@ -19,6 +19,7 @@ import * as search from './search';
 import * as teams from './teams';
 import * as timezone from './timezone';
 import * as users from './users';
+import * as remoteCluster from './remote_cluster';
 
 export {
     bots,
@@ -39,5 +40,6 @@ export {
     teams,
     timezone,
     users,
+    remoteCluster,
 };
 

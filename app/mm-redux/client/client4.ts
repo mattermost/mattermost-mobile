@@ -3043,6 +3043,18 @@ export default class Client4 {
         );
     };
 
+    // Remote - Shared Channel Routes
+    getRemoteClusterInfo = async (remote_id: string) => {
+        const response = await this.doFetch(
+            `${this.getBaseRoute()}/sharedchannels/remote_info/${remote_id}`,
+            {method: 'get'},
+        );
+        return {
+            ...response,
+            remote_id,
+        };
+    };
+
     // Client Helpers
 
     doFetch = async (url: string, options: Options) => {

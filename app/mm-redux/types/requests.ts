@@ -68,3 +68,7 @@ export type SearchRequestsStatuses = {
     flaggedPosts: RequestStatusType;
     pinnedPosts: RequestStatusType;
 };
+
+export type RemoteClusterRequestsStatuses = {
+    getRemoteClusterInfo: RequestStatusType;
+};
