@@ -20,6 +20,7 @@ import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-
 import {Channel, ChannelNotifyProps, ChannelMembership, ChannelModerationPatch} from '@mm-redux/types/channels';
 
 import {PreferenceType} from '@mm-redux/types/preferences';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
@@ -936,6 +937,59 @@ export function getArchivedChannels(teamId: string, page = 0, perPage: number = 
             teamId,
             data: channels,
         });
+
+        return {data: channels};
+    };
+}
+
+export function getSharedChannels(teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        dispatch({type: ChannelTypes.GET_CHANNELS_REQUEST, data: null});
+
+        let channels;
+        try {
+            channels = await Client4.getSharedChannels(teamId, page, perPage);
+
+            // Make the response compatible with our public/shared channels response
+            const renameFields: Dictionary<string> = {
+                channel_id: 'id',
+                share_displayname: 'display_name',
+                share_header: 'header',
+                share_name: 'name',
+                share_purpose: 'purpose',
+            };
+            channels = (channels || []).map((channel: Dictionary<string|boolean>) => {
+                for (const i in renameFields) {
+                    if (Object.prototype.hasOwnProperty.call(renameFields, i)) {
+                        const oldPropName = i;
+                        const newPropName = renameFields[i];
+                        channel[newPropName] = channel[oldPropName];
+                        delete channel[oldPropName];
+                    }
+                }
+                channel.type = General.OPEN_CHANNEL;
+                channel.shared = true;
+                return channel;
+            });
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.GET_CHANNELS_FAILURE, error},
+                logError(error),
+            ]));
+            return {error};
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_CHANNELS,
+                teamId,
+                data: channels,
+            },
+            {
+                type: ChannelTypes.GET_CHANNELS_SUCCESS,
+            },
+        ]));
 
         return {data: channels};
     };

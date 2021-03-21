@@ -29,6 +29,16 @@ const joinablePublicChannels = createSelector(
     },
 );
 
+const joinableSharedChannels = createSelector(
+    getChannelsInCurrentTeam,
+    getMyChannelMemberships,
+    (channels, myMembers) => {
+        return channels.filter((c) => {
+            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL && c.shared === true && c.delete_at === 0);
+        });
+    },
+);
+
 const teamArchivedChannels = createSelector(
     getChannelsInCurrentTeam,
     (channels) => {
@@ -41,6 +51,7 @@ function mapStateToProps(state) {
     const license = getLicense(state);
     const roles = getCurrentUserRoles(state);
     const channels = joinablePublicChannels(state);
+    const sharedChannels = joinableSharedChannels(state);
     const archivedChannels = teamArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
     const canShowArchivedChannels = config.ExperimentalViewArchivedChannels === 'true' &&
@@ -51,6 +62,7 @@ function mapStateToProps(state) {
         currentUserId: getCurrentUserId(state),
         currentTeamId,
         channels,
+        sharedChannels,
         archivedChannels,
         theme: getTheme(state),
         canShowArchivedChannels,
