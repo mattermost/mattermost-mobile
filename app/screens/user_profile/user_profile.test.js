@@ -75,7 +75,7 @@ describe('user_profile', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    it('should match snapshot with custom status', () => {
+    test('should match snapshot with custom status', () => {
         const wrapper = shallow(
             <UserProfile
                 {...customStatusProps}
@@ -85,7 +85,7 @@ describe('user_profile', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    it('should match snapshot with custom status and isMyUser true', () => {
+    test('should match snapshot with custom status and isMyUser true', () => {
         const wrapper = shallow(
             <UserProfile
                 {...customStatusProps}

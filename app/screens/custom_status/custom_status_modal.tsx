@@ -54,7 +54,7 @@ type State = {
 class CustomStatusModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
         id: 'update-custom-status',
-        testID: 'custom_status.done_button',
+        testID: 'custom_status.done.button',
         enabled: true,
         showAsAction: 'always',
     };
@@ -283,7 +283,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 {isStatusSet ? (
                     <View
                         style={style.clearButton}
-                        testID='custom_status.clear_input'
+                        testID='custom_status.input.clear.button'
                     >
                         <ClearButton
                             handlePress={this.clearHandle}

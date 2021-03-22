@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {SettingsSidebar} from '@support/ui/component';
 
 class CustomStatusScreen {
@@ -7,15 +8,15 @@ class CustomStatusScreen {
         customStatusScreen: 'custom_status.screen',
         input: 'custom_status.input',
         selectedEmojiPrefix: 'custom_status.emoji.',
-        clearInputButton: 'custom_status.clear_input',
-        doneButton: 'custom_status.done_button',
+        inputClearButton: 'custom_status.input.clear.button',
+        doneButton: 'custom_status.done.button',
         suggestionPrefix: 'custom_status_suggestion.',
-        suggestionClearButton: 'custom_status_suggestion.clear_button',
+        suggestionClearButton: 'custom_status_suggestion.clear.button',
     }
 
     customStatusScreen = element(by.id(this.testID.customStatusScreen));
     input = element(by.id(this.testID.input));
-    clearInputButton = element(by.id(this.testID.clearInputButton))
+    inputClearButton = element(by.id(this.testID.inputClearButton))
     doneButton = element(by.id(this.testID.doneButton))
 
     getCustomStatusSelectedEmoji = (emoji) => {

@@ -408,7 +408,7 @@ export default class UserProfile extends PureComponent {
                         iconSize={24}
                         textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
-                        testID='user_profile.row.send_message'
+                        testID='user_profile.send_message.action'
                     />
                     {this.renderAdditionalOptions()}
                 </ScrollView>
@@ -489,4 +489,3 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-

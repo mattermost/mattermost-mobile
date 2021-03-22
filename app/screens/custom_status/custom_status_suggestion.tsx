@@ -34,7 +34,7 @@ const CustomStatusSuggestion = (props: Props) => {
             <ClearButton
                 handlePress={() => handleClear({emoji, text})}
                 theme={theme}
-                testID='custom_status_suggestion.clear_button'
+                testID='custom_status_suggestion.clear.button'
             />
         ) : null;
 
