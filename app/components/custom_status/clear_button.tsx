@@ -58,7 +58,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                 },
                 android: {
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
-                    overflow: 'hidden',
                 },
             }),
         },
