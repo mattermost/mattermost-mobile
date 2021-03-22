@@ -20,7 +20,7 @@ import {
 } from '@support/server_api';
 import {getRandomId} from '@support/utils';
 
-describe('Manage Members', () => {
+describe('Channel Manage Members', () => {
     const searchTerm = getRandomId();
     const {
         removeMembers,

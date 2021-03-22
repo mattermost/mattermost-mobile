@@ -3,6 +3,7 @@
 
 import AddReactionScreen from './add_reaction';
 import ChannelInfoScreen from './channel_info';
+import ChannelAddMembersScreen from './channel_add_members';
 import ChannelMembersScreen from './channel_members';
 import ChannelNotificationPreferenceScreen from './channel_notification_preference';
 import ChannelScreen from './channel';
@@ -33,6 +34,7 @@ import ThreadScreen from './thread';
 export {
     AddReactionScreen,
     ChannelInfoScreen,
+    ChannelAddMembersScreen,
     ChannelMembersScreen,
     ChannelNotificationPreferenceScreen,
     ChannelScreen,
