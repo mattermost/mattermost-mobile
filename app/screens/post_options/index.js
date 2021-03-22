@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {addReaction} from '@actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
-import {THREAD, CHANNEL} from '@constants/screen';
+import {THREAD} from '@constants/screen';
 import {
     deletePost,
     flagPost,
