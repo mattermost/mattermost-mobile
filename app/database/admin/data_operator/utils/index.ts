@@ -11,11 +11,12 @@ import {
     SanitizeReactions,
     RawPost,
     RawReaction,
-    MatchingRecords,
+    MatchingRecords, IdenticalRecord, MatchExistingRecord,
 } from '@typings/database/database';
+import Post from '@typings/database/post';
 import Reaction from '@typings/database/reaction';
 
-const {REACTION} = MM_TABLES.SERVER;
+const {POST, REACTION} = MM_TABLES.SERVER;
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -52,7 +53,7 @@ export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
  * @returns {RawPost[]}
  */
 export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPosts) => {
-    const posts: RawPost[] = [];
+    const posts: MatchExistingRecord[] = [];
     rawPosts.forEach((post) => {
         const postId = post.id;
         const orderIndex = orders.findIndex((order) => {
@@ -63,9 +64,9 @@ export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainP
             // This case will not occur as we are using 'ordered' posts for this step.  However, if this happens, that
             // implies that we might be dealing with an unordered post and in which case we do not action on it.
         } else if (orderIndex === 0) {
-            posts.push({...post, prev_post_id: previousPostId});
+            posts.push({record: undefined, raw: {...post, prev_post_id: previousPostId}});
         } else {
-            posts.push({...post, prev_post_id: orders[orderIndex - 1]});
+            posts.push({record: undefined, raw: {...post, prev_post_id: orders[orderIndex - 1]}});
         }
     });
 
@@ -91,7 +92,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
     const similarObjects: Reaction[] = [];
 
-    const createReactions: RawReaction[] = [];
+    const createReactions: MatchExistingRecord[] = [];
 
     const emojiSet = new Set();
 
@@ -108,7 +109,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
 
         if (idxPresent === -1) {
             // So, we don't have a similar Reaction object.  That one is new...so we'll create it
-            createReactions.push(rawReaction);
+            createReactions.push({record: undefined, raw: rawReaction});
 
             // If that reaction is new, that implies that the emoji might also be new
             emojiSet.add(rawReaction.emoji_name);
@@ -141,4 +142,30 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
 export const findMatchingRecords = async ({database, tableName, condition}: MatchingRecords) => {
     const records = (await database.collections.get(tableName).query(condition).fetch()) as Model[];
     return records;
+};
+
+/**
+ * hasSimilarUpdateAt: Database Operations on some entities are expensive.  As such, we would like to operate if we are
+ * 100% sure that the records are actually different from what we already have in the database.
+ * @param {IdenticalRecord} identicalRecord
+ * @param {string} identicalRecord.tableName
+ * @param {RecordValue} identicalRecord.newValue
+ * @param {Model} identicalRecord.existingRecord
+ * @returns {boolean}
+ */
+export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
+    const guardTables = [POST];
+    if (guardTables.includes(tableName)) {
+        switch (tableName) {
+            case POST: {
+                const tempPost = newValue as RawPost;
+                const currentRecord = (existingRecord as unknown) as Post;
+                return tempPost.update_at === currentRecord.updateAt;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+    return false;
 };

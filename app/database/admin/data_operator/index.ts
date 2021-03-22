@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {App} from '@database/default/models';
+import {Role, User} from '@database/server/models';
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
@@ -16,7 +18,7 @@ import {
     HandleIsolatedEntityData,
     HandlePostMetadata,
     HandlePosts,
-    HandleRawWithNoId,
+    HandleEntityRecords,
     HandleReactions,
     PostImage,
     RawChannelMembership,
@@ -31,11 +33,13 @@ import {
     RawPreference,
     RawReaction,
     RawTeamMembership,
-    RawUser,
-    RawWithNoId,
+    RawUser, RawValue,
+    RawWithNoId, RawApp, RawGlobal, RawServers, RawRole, RawSystem, RawTermsOfService, MatchExistingRecord,
 } from '@typings/database/database';
-import {IsolatedEntities} from '@typings/database/enums';
+import Draft from '@typings/database/draft';
+import {IsolatedEntities, OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
+import Global from '@typings/database/global';
 import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
@@ -43,7 +47,10 @@ import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
+import Servers from '@typings/database/servers';
+import System from '@typings/database/system';
 import TeamMembership from '@typings/database/team_membership';
+import TermsOfService from '@typings/database/terms_of_service';
 
 import DatabaseConnectionException from './exceptions/database_connection_exception';
 import DatabaseOperatorException from './exceptions/database_operator_exception';
@@ -73,6 +80,7 @@ import {
     sanitizePosts,
     sanitizeReactions,
     findMatchingRecords,
+    hasSimilarUpdateAt,
 } from './utils';
 
 const {
@@ -97,34 +105,74 @@ class DataOperator {
    * by the IsolatedEntities enum
    * @param {HandleIsolatedEntityData} entityData
    * @param {IsolatedEntities} entityData.tableName
-   * @param {Records} entityData.values
+   * @param {RawValue[]} entityData.values
    * @returns {Promise<void>}
    */
   handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
       let recordOperator;
+      let finder;
+      let oneOfField;
 
       switch (tableName) {
           case IsolatedEntities.APP: {
+              finder = (existing: App, newElement: RawApp) => {
+                  return (
+                      newElement.buildNumber === existing.buildNumber &&
+                      newElement.createdAt === existing.createdAt &&
+                      newElement.versionNumber === existing.versionNumber
+                  );
+              };
+              oneOfField = 'version_number';
               recordOperator = operateAppRecord;
               break;
           }
           case IsolatedEntities.GLOBAL: {
+              finder = (existing: Global, newElement: RawGlobal) => {
+                  return (
+                      newElement.name === existing.name && newElement.value === existing.value
+                  );
+              };
+              oneOfField = 'name';
               recordOperator = operateGlobalRecord;
               break;
           }
           case IsolatedEntities.SERVERS: {
+              finder = (existing: Servers, newElement: RawServers) => {
+                  return (
+                      newElement.url === existing.url && newElement.dbPath === existing.dbPath
+                  );
+              };
+              oneOfField = 'db_path';
               recordOperator = operateServersRecord;
               break;
           }
           case IsolatedEntities.ROLE: {
+              finder = (existing: Role, newElement: RawRole) => {
+                  return (
+                      newElement.name === existing.name && newElement.permissions === existing.permissions
+                  );
+              };
+              oneOfField = 'name';
               recordOperator = operateRoleRecord;
               break;
           }
           case IsolatedEntities.SYSTEM: {
+              finder = (existing: System, newElement: RawSystem) => {
+                  return (
+                      newElement.name === existing.name && newElement.value === existing.value
+                  );
+              };
+              oneOfField = 'name';
               recordOperator = operateSystemRecord;
               break;
           }
           case IsolatedEntities.TERMS_OF_SERVICE: {
+              finder = (existing: TermsOfService, newElement: RawTermsOfService) => {
+                  return (
+                      newElement.acceptedAt === existing.acceptedAt
+                  );
+              };
+              oneOfField = 'accepted_at';
               recordOperator = operateTermsOfServiceRecord;
               break;
           }
@@ -134,8 +182,14 @@ class DataOperator {
           }
       }
 
-      if (recordOperator) {
-          await this.handleBase({values, tableName, recordOperator});
+      if (recordOperator && oneOfField && finder) {
+          await this.handleEntityRecords({
+              finder,
+              oneOfField,
+              operator: recordOperator,
+              rawValues: values,
+              tableName,
+          });
       }
   };
 
@@ -146,16 +200,21 @@ class DataOperator {
    */
   handleDraft = async (drafts: RawDraft[]) => {
       if (!drafts.length) {
-          return [];
+          return;
       }
 
-      await this.handleBase({
-          values: drafts,
+      await this.handleEntityRecords({
           tableName: DRAFT,
-          recordOperator: operateDraftRecord,
+          operator: operateDraftRecord,
+          rawValues: drafts,
+          oneOfField: 'channel_id',
+          finder: (existing: Draft, newElement: RawDraft) => {
+              return (
+                  newElement.channel_id === existing.channelId &&
+                  newElement.root_id === existing.rootId
+              );
+          },
       });
-
-      return [];
   };
 
   /**
@@ -187,7 +246,7 @@ class DataOperator {
           database,
           recordOperator: operateReactionRecord,
           tableName: REACTION,
-          values: createReactions,
+          createRaws: createReactions,
       })) as unknown) as Reaction[];
 
       // Prepares records for model CustomEmoji
@@ -195,14 +254,12 @@ class DataOperator {
           database,
           recordOperator: operateCustomEmojiRecord,
           tableName: CUSTOM_EMOJI,
-          values: createEmojis as RawCustomEmoji[],
+          createRaws: createEmojis.map((emoji) => {
+              return {record: undefined, raw: emoji};
+          }) as MatchExistingRecord[],
       })) as unknown) as CustomEmoji[];
 
-      const batchRecords = [
-          ...postReactions,
-          ...deleteReactions,
-          ...reactionEmojis,
-      ];
+      const batchRecords = [...postReactions, ...deleteReactions, ...reactionEmojis];
 
       if (prepareRowsOnly) {
           return batchRecords;
@@ -236,7 +293,9 @@ class DataOperator {
           database,
           recordOperator: operateFileRecord,
           tableName: FILE,
-          values: files,
+          createRaws: files.map((file) => {
+              return {record: undefined, raw: file};
+          }),
       })) as unknown) as File[];
 
       if (prepareRowsOnly) {
@@ -294,7 +353,9 @@ class DataOperator {
           database,
           recordOperator: operatePostMetadataRecord,
           tableName: POST_METADATA,
-          values: metadata,
+          createRaws: metadata.map((meta) => {
+              return {record: undefined, raw: meta};
+          }),
       })) as unknown) as PostMetadata[];
 
       if (prepareRowsOnly) {
@@ -350,7 +411,9 @@ class DataOperator {
           database,
           recordOperator: operatePostInThreadRecord,
           tableName: POSTS_IN_THREAD,
-          values: rawPostsInThreads,
+          createRaws: rawPostsInThreads.map((postInThread) => {
+              return {raw: postInThread, record: undefined};
+          }),
       })) as unknown) as PostsInThread[];
 
       if (postInThreadRecords?.length) {
@@ -399,8 +462,9 @@ class DataOperator {
           fetch()) as PostsInChannel[];
 
       const createPostsInChannelRecord = async () => {
+          const createPostsInChannel = {channel_id: channelId, earliest, latest};
           await this.handleBase({
-              values: [{channel_id: channelId, earliest, latest}],
+              createRaws: [{record: undefined, raw: createPostsInChannel}],
               tableName: POSTS_IN_CHANNEL,
               recordOperator: operatePostsInChannelRecord,
           });
@@ -498,7 +562,7 @@ class DataOperator {
       });
 
       // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
-      const linkedRawPosts: RawPost[] = createPostsChain({
+      const linkedRawPosts: MatchExistingRecord[] = createPostsChain({
           orders,
           previousPostId: previousPostId || '',
           rawPosts: orderedPosts,
@@ -510,7 +574,7 @@ class DataOperator {
       const posts = ((await this.prepareBase({
           database,
           tableName,
-          values: [...linkedRawPosts, ...unOrderedPosts],
+          createRaws: linkedRawPosts,
           recordOperator: operatePostRecord,
       })) as unknown) as Post[];
 
@@ -583,6 +647,16 @@ class DataOperator {
       await this.handleCustomEmojis(emojis);
       await this.handlePostsInThread(postsInThread);
       await this.handlePostsInChannel(orderedPosts);
+
+      await this.handleEntityRecords({
+          rawValues: unOrderedPosts,
+          oneOfField: 'id',
+          tableName: POST,
+          operator: operatePostRecord,
+          finder: (existing: Post, newElement: RawPost) => {
+              return existing.id === newElement.id;
+          },
+      });
   };
 
   /**
@@ -591,13 +665,17 @@ class DataOperator {
    * @returns {Promise<void>}
    */
   handleUsers = async (users: RawUser[]) => {
-      if (!users.length) {
-          return [];
-      }
-
-      const records = await this.handleBase({tableName: USER, values: users, recordOperator: operateUserRecord});
-
-      return records;
+      await this.handleEntityRecords({
+          tableName: USER,
+          rawValues: users,
+          operator: operateUserRecord,
+          oneOfField: 'id',
+          finder: (existing: User, newElement: RawUser) => {
+              return (
+                  newElement.id === existing.id
+              );
+          },
+      });
   };
 
   /**
@@ -606,7 +684,7 @@ class DataOperator {
    * @returns {Promise<null|void>}
    */
   handlePreferences = async (preferences: RawPreference[]) => {
-      return this.handleEntityWithNoId({
+      await this.handleEntityRecords({
           tableName: PREFERENCE,
           oneOfField: 'user_id',
           operator: operatePreferenceRecord,
@@ -628,7 +706,7 @@ class DataOperator {
    * @returns {Promise<null|void>}
    */
   handleTeamMemberships = async (teamMemberships: RawTeamMembership[]) => {
-      return this.handleEntityWithNoId({
+      await this.handleEntityRecords({
           tableName: TEAM_MEMBERSHIP,
           oneOfField: 'user_id',
           operator: operateTeamMembershipRecord,
@@ -647,7 +725,7 @@ class DataOperator {
    * @returns {Promise<null|void>}
    */
   handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
-      return this.handleEntityWithNoId({
+      await this.handleEntityRecords({
           tableName: CUSTOM_EMOJI,
           oneOfField: 'name',
           operator: operateCustomEmojiRecord,
@@ -664,7 +742,7 @@ class DataOperator {
    * @returns {Promise<void>}
    */
   handleGroupMembership = async (groupMemberships: RawGroupMembership[]) => {
-      return this.handleEntityWithNoId({
+      await this.handleEntityRecords({
           tableName: GROUP_MEMBERSHIP,
           oneOfField: 'user_id',
           operator: operateGroupMembershipRecord,
@@ -683,7 +761,7 @@ class DataOperator {
    * @returns {Promise<null|void>}
    */
   handleChannelMembership = async (channelMemberships: RawChannelMembership[]) => {
-      return this.handleEntityWithNoId({
+      await this.handleEntityRecords({
           tableName: CHANNEL_MEMBERSHIP,
           oneOfField: 'user_id',
           operator: operateChannelMembershipRecord,
@@ -697,27 +775,21 @@ class DataOperator {
   };
 
   /**
-   * handleEntityWithNoId : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
-   * @param {HandleRawWithNoId} handleRawWithNoId
-   * @param {(existing: Model, newElement: RecordValue) => boolean} handleRawWithNoId.finder
-   * @param {string} handleRawWithNoId.oneOfField
-   * @param {(DataFactory) => Promise<Model | null>} handleRawWithNoId.operator
-   * @param {RawWithNoId[]} handleRawWithNoId.rawValues
-   * @param {string} handleRawWithNoId.tableName
+   * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
+   * @param {HandleEntityRecords} handleEntityRecords
+   * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.finder
+   * @param {string} handleEntityRecords.oneOfField
+   * @param {(DataFactory) => Promise<Model | null>} handleEntityRecords.operator
+   * @param {RawWithNoId[]} handleEntityRecords.rawValues
+   * @param {string} handleEntityRecords.tableName
    * @returns {Promise<null | void>}
    */
-  private handleEntityWithNoId = async ({
-      finder,
-      oneOfField,
-      operator,
-      rawValues,
-      tableName,
-  }: HandleRawWithNoId) => {
+  private handleEntityRecords = async ({finder, oneOfField, operator, rawValues, tableName}: HandleEntityRecords) => {
       if (!rawValues.length) {
           return null;
       }
 
-      const values = await this.discardDuplicates({
+      const {createRaws, updateRaws} = await this.getCreateUpdateRecords({
           rawValues,
           tableName,
           finder,
@@ -727,29 +799,25 @@ class DataOperator {
       const records = await this.handleBase({
           recordOperator: operator,
           tableName,
-          values,
+          createRaws,
+          updateRaws,
       });
 
       return records;
   };
 
-  // TODO : Add jest to discardDuplicates
+  // TODO : Add jest to getCreateUpdateRecords
   /**
-   * discardDuplicates: This method weeds out duplicates entries.  It may happen that we do multiple inserts of the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-   * @param {DiscardDuplicates} discardDuplicates
-   * @param {RawWithNoId[]} discardDuplicates.rawValues
-   * @param {string} discardDuplicates.tableName
-   * @param {string} discardDuplicates.oneOfField
-   * @param {(existing: Model, newElement: RecordValue) => boolean} discardDuplicates.finder
+   * getCreateUpdateRecords: This method weeds out duplicates entries.  It may happen that we do multiple inserts for the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
+   * @param {DiscardDuplicates} getCreateUpdateRecords
+   * @param {RawWithNoId[]} getCreateUpdateRecords.rawValues
+   * @param {string} getCreateUpdateRecords.tableName
+   * @param {string} getCreateUpdateRecords.oneOfField
+   * @param {(existing: Model, newElement: RawValue) => boolean} getCreateUpdateRecords.finder
    * @returns {Promise<RawWithNoId[]>}
    */
-  private discardDuplicates = async ({
-      rawValues,
-      tableName,
-      finder,
-      oneOfField,
-  }: DiscardDuplicates) => {
-      const getOneOfs = (raws: RawWithNoId[]) => {
+  private getCreateUpdateRecords = async ({rawValues, tableName, finder, oneOfField}: DiscardDuplicates) => {
+      const getOneOfs = (raws: RawValue[]) => {
           return raws.reduce((oneOfs, current: RawWithNoId) => {
               const key = oneOfField as keyof typeof current;
               const value: string = current[key] as string;
@@ -769,18 +837,31 @@ class DataOperator {
           condition: Q.where(oneOfField, Q.oneOf(columnValues)),
       })) as Model[];
 
-      let newElements = rawValues;
+      const createRaws: MatchExistingRecord[] = [];
+      const updateRaws: MatchExistingRecord[] = [];
 
       if (existingRecords.length > 0) {
-          newElements = rawValues.filter((newElement) => {
-              const found = existingRecords.find((existing) => {
+          rawValues.map((newElement) => {
+              const findIndex = existingRecords.findIndex((existing) => {
                   return finder(existing, newElement);
               });
-              return found === undefined;
+
+              if (findIndex !== -1) {
+                  const existingRecord = existingRecords[findIndex];
+
+                  // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
+                  const isUpdateAtSimilar = hasSimilarUpdateAt({tableName, existingRecord, newValue: newElement});
+                  if (!isUpdateAtSimilar) {
+                      return updateRaws.push({record: existingRecord, raw: newElement});
+                  }
+              }
+
+              // This RawValue is not present in the database; hence, we need to create it
+              return createRaws.push({record: undefined, raw: newElement});
           });
-          return newElements;
+          return {createRaws, updateRaws};
       }
-      return newElements;
+      return {createRaws, updateRaws};
   };
 
   /**
@@ -811,54 +892,72 @@ class DataOperator {
    * prepareBase: Utility method that actually calls the operators for the handlers
    * @param {Database} database
    * @param {string} tableName
-   * @param {RecordValue[]} values
-   * @param {(recordOperator: { value: RecordValue, database: Database, tableName: string}) => void} recordOperator
+   * @param {RawValue[]} createRaws
+   * @param {RawValue[]} updateRaws
+   * @param {(recordOperator: { value: RawValue, database: Database, tableName: string, action: OperationType}) => void} recordOperator
    * @returns {Promise<unknown[] | any[]>}
    */
-  private prepareBase = async ({
-      database,
-      tableName,
-      values,
-      recordOperator,
-  }: HandleBaseData) => {
-      if (!Array.isArray(values) || !database) {
+  private prepareBase = async ({database, tableName, createRaws, updateRaws, recordOperator}: HandleBaseData) => {
+      if (!database) {
           throw new DatabaseOperatorException(
-              'prepareBase accepts only rawPosts of type RecordValue[] or valid database connection',
+              'prepareBase accepts only rawPosts of type RawValue[] or valid database connection',
           );
       }
+      let prepareCreate: Model[] = [];
+      let prepareUpdate: Model[] = [];
 
-      if (values.length) {
-          const recordPromises = await values.map(async (value) => {
-              const record = await recordOperator({database, tableName, value});
+      // create operation
+      if (createRaws?.length) {
+          const recordPromises = await createRaws.map(async (createRecord: MatchExistingRecord) => {
+              const record = await recordOperator({database, tableName, value: createRecord, action: OperationType.CREATE});
               return record;
           });
 
-          const results = await Promise.all(recordPromises);
-          return results;
+          const results = await Promise.all(recordPromises) as unknown as Model[];
+          prepareCreate = prepareCreate.concat(results);
       }
 
-      return [];
+      // update operation
+      if (updateRaws?.length) {
+          const recordPromises = await updateRaws.map(async (updateRecord: MatchExistingRecord) => {
+              const record = await recordOperator({
+                  database,
+                  tableName,
+                  value: updateRecord,
+                  action: OperationType.UPDATE,
+              });
+              return record;
+          });
+
+          const results = await Promise.all(recordPromises) as unknown as Model[];
+          prepareUpdate = prepareUpdate.concat(results);
+      }
+
+      return [...prepareCreate, ...prepareUpdate];
   };
 
   /**
    * handleBase: Handles the Create/Update operations on an entity.
-   * @param {HandleBaseData} baseData
-   * @param {string} tableName
-   * @param {RecordValue[]} values
-   * @param {(recordOperator: {value: RecordValue, database: , tableName: string}) => void} recordOperator
+   * @param {HandleBaseData} handleBase
+   * @param {string} handleBase.tableName
+   * @param {RecordValue[]} handleBase.createRaws
+   * @param {RecordValue[]} handleBase.updateRaws
+   * @param {(DataFactory) => void} handleBase.recordOperator
    * @returns {Promise<void>}
    */
   private handleBase = async ({
+      createRaws,
       recordOperator,
       tableName,
-      values,
+      updateRaws,
   }: HandleBaseData) => {
       const database = await this.getDatabase(tableName);
 
       const models = ((await this.prepareBase({
           database,
           tableName,
-          values,
+          createRaws,
+          updateRaws,
           recordOperator,
       })) as unknown) as Model[];
 

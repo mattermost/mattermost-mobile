@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Q} from '@nozbe/watermelondb';
-
 import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/admin/database_manager';
 import DataOperator from '@database/admin/data_operator/index';
+import DatabaseManager from '@database/admin/database_manager';
+
+// See LICENSE.txt for license information.
+import {Q} from '@nozbe/watermelondb';
 import App from '@typings/database/app';
-import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
+import {DatabaseType, IsolatedEntities, OperationType} from '@typings/database/enums';
 
 import {
     operateAppRecord,
@@ -65,6 +66,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateAppRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 buildNumber: 'build-7',
@@ -85,6 +87,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateGlobalRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
         });
@@ -100,6 +103,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateServersRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 dbPath: 'mm-server',
@@ -122,6 +126,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateRoleRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {id: 'role-1', name: 'role-name-1', permissions: []},
         });
@@ -137,6 +142,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateSystemRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {id: 'system-1', name: 'system-name-1', value: 'system'},
         });
@@ -152,6 +158,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateTermsOfServiceRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {id: 'system-1', acceptedAt: 1},
         });
@@ -379,6 +386,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operatePostRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: '8swgtrrdiff89jnsiwiip3y1eoe',
@@ -415,6 +423,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operatePostInThreadRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: 'ps81iqbddesfby8jayz7owg4yypoo',
@@ -437,6 +446,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateReactionRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: 'ps81iqbddesfby8jayz7owg4yypoo',
@@ -460,6 +470,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateFileRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
@@ -480,6 +491,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operatePostMetadataRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: 'ps81i4yypoo',
@@ -500,6 +512,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateDraftRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: 'ps81i4yypoo',
@@ -521,6 +534,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operatePostsInChannelRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: 'ps81i4yypoo',
@@ -543,6 +557,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateUserRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: '9ciscaqbrpd6d8s68k76xb9bte',
@@ -596,6 +611,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operatePreferenceRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {user_id: '9ciscaqbrpd6d8s68k76xb9bte', category: 'tutorial_step', name: '9ciscaqbrpd6d8s68k76xb9bte', value: '2'},
         });
@@ -611,6 +627,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateTeamMembershipRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 team_id: 'a',
@@ -635,6 +652,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateCustomEmojiRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 id: 'i',
@@ -657,6 +675,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateGroupMembershipRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
@@ -676,6 +695,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(database).toBeTruthy();
 
         const preparedRecords = await operateChannelMembershipRecord({
+            action: OperationType.CREATE,
             database: database!,
             value: {
                 channel_id: '17bfnb1uwb8epewp4q3x3rx9go',

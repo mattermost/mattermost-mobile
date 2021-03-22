@@ -6,7 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
 import {Class} from '@nozbe/watermelondb/utils/common';
 
-import {DatabaseType, IsolatedEntities} from './enums';
+import {DatabaseType, IsolatedEntities, OperationType} from './enums';
 
 export type MigrationEvents = {
   onSuccess: () => void;
@@ -332,7 +332,7 @@ export type RawChannelMembership = {
   explicit_roles: string;
 };
 
-export type RecordValue =
+export type RawValue =
   | RawApp
   | RawChannelMembership
   | RawCustomEmoji
@@ -353,29 +353,29 @@ export type RecordValue =
   | RawTermsOfService
   | RawUser;
 
+export type MatchExistingRecord = { record?: Model, raw: RawValue }
+
 export type DataFactory = {
   database: Database;
   generator?: (model: Model) => void;
   tableName?: string;
-  value: RecordValue;
+  value: MatchExistingRecord;
+  action: OperationType;
 };
 
 export type HandleBaseData = {
   database?: Database;
   tableName: string;
-  values: RecordValue[];
-  recordOperator: (recordOperator: {
-    value: RecordValue;
-    database: Database;
-    tableName: string;
-  }) => void;
+  createRaws?: MatchExistingRecord[],
+  updateRaws?: MatchExistingRecord[];
+  recordOperator: (DataFactory) => void;
 };
 
 export type BatchOperations = { database: Database; models: Model[] };
 
 export type HandleIsolatedEntityData = {
   tableName: IsolatedEntities;
-  values: RecordValue[];
+  values: RawValue[];
 };
 
 export type Models = Class<Model>[];
@@ -430,7 +430,7 @@ export type SanitizePosts = {
 
 export type IdenticalRecord = {
   existingRecord: Model;
-  newValue: RecordValue;
+  newValue: RawValue;
   tableName: string;
 };
 
@@ -448,16 +448,16 @@ export type RawWithNoId =
   | RawChannelMembership;
 
 export type DiscardDuplicates = {
-  rawValues: RawWithNoId[];
+  rawValues: RawValue[];
   tableName: string;
   oneOfField: string;
-  finder: (existing: Model, newElement: RecordValue) => boolean;
+  finder: (existing: Model, newElement: RawValue) => boolean;
 };
 
-export type HandleRawWithNoId = {
-  finder: (existing: Model, newElement: RecordValue) => boolean;
+export type HandleEntityRecords = {
+  finder: (existing: Model, newElement: RawValue) => boolean;
   oneOfField: string;
   operator: (DataFactory) => Promise<Model | null>;
-  rawValues: RawWithNoId[];
+  rawValues: RawValue[];
   tableName: string;
 };
