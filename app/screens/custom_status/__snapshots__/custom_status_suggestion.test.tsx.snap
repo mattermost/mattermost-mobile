@@ -191,7 +191,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
         <ClearButton
           handlePress={[Function]}
           size={20}
-          testID="custom_status_suggestion.clear_button"
+          testID="custom_status_suggestion.clear.button"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
