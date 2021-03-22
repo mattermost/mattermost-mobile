@@ -19,9 +19,8 @@ exports[`components/custom_status/custom_status_emoji should match snapshot 1`] 
     size={20}
     style={
       Object {
-        "backgroundColor": "rgba(61,60,64,0.52)",
         "borderRadius": 1000,
-        "overflow": "hidden",
+        "color": "rgba(61,60,64,0.52)",
       }
     }
   />

@@ -9,6 +9,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
     style={
       Object {
         "backgroundColor": "#ffffff",
+        "display": "flex",
         "flexDirection": "row",
         "padding": 2,
       }
@@ -19,9 +20,9 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
         Object {
           "color": "#3d3c40",
           "height": 46,
-          "justifyContent": "center",
-          "marginLeft": 5,
-          "textAlignVertical": "center",
+          "left": 14,
+          "marginRight": 6,
+          "top": 12,
           "width": 45,
         }
       }
@@ -101,6 +102,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
     style={
       Object {
         "backgroundColor": "#ffffff",
+        "display": "flex",
         "flexDirection": "row",
         "padding": 2,
       }
@@ -111,9 +113,9 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
         Object {
           "color": "#3d3c40",
           "height": 46,
-          "justifyContent": "center",
-          "marginLeft": 5,
-          "textAlignVertical": "center",
+          "left": 14,
+          "marginRight": 6,
+          "top": 12,
           "width": 45,
         }
       }
