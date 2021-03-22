@@ -8,7 +8,7 @@ import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, gr
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
 import {isImage, isVideo} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {GalleryProps} from 'types/screens/gallery';
 
@@ -147,6 +147,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 >
                     <GalleryImage
                         style={{
+                            backgroundColor: changeOpacity(props.theme.centerChannelColor, 0.08),
                             transform: [
                                 {translateX: cond(isActive, translate.x, 0)},
                                 {translateY: cond(isActive, translate.y, 0)},

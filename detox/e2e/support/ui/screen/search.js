@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
+    PostOptions,
     RecentItem,
     SearchBar,
 } from '@support/ui/component';
@@ -73,6 +74,15 @@ class SearchScreen {
     clear = async () => {
         await this.clearButton.tap();
         await expect(this.clearButton).not.toExist();
+    }
+
+    openPostOptionsFor = async (postId, text) => {
+        const {searchResultPostItem} = await this.getSearchResultPostItem(postId, text);
+        await expect(searchResultPostItem).toBeVisible();
+
+        // # Open post options
+        await searchResultPostItem.longPress();
+        await PostOptions.toBeVisible();
     }
 
     hasSearchResultPostMessageAtIndex = async (index, postMessage) => {

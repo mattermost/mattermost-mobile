@@ -7,7 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelNotificationPreferenceScreen,
@@ -30,8 +29,7 @@ describe('Channel Notification Preference', () => {
 
     beforeEach(async () => {
         // # Go to channel
-        await ChannelScreen.openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
+        await ChannelScreen.goToChannel(testChannel.display_name);
     });
 
     afterAll(async () => {
