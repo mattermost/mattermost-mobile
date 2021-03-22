@@ -16,6 +16,7 @@ import {
     HandleIsolatedEntityData,
     HandlePostMetadata,
     HandlePosts,
+    HandleRawWithNoId,
     HandleReactions,
     PostImage,
     RawChannelMembership,
@@ -31,8 +32,7 @@ import {
     RawReaction,
     RawTeamMembership,
     RawUser,
-    RawWithNoId
-    ,
+    RawWithNoId,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import File from '@typings/database/file';
@@ -478,7 +478,9 @@ class DataOperator {
 
       // We rely on the order array; if it is empty, we stop processing
       if (!orders.length) {
-          throw new DatabaseOperatorException('An empty "order" array has been passed to the HandlePosts method');
+          throw new DatabaseOperatorException(
+              'An empty "order" array has been passed to the HandlePosts method',
+          );
       }
 
       let batch: Model[] = [];
@@ -593,11 +595,7 @@ class DataOperator {
           return [];
       }
 
-      const records = await this.handleBase({
-          tableName: USER,
-          values: users,
-          recordOperator: operateUserRecord,
-      });
+      const records = await this.handleBase({tableName: USER, values: users, recordOperator: operateUserRecord});
 
       return records;
   };
@@ -605,16 +603,14 @@ class DataOperator {
   /**
    * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE entity from the 'Server' schema
    * @param {RawPreference[]} preferences
-   * @returns {Promise<void>}
+   * @returns {Promise<null|void>}
    */
   handlePreferences = async (preferences: RawPreference[]) => {
-      if (!preferences.length) {
-          return [];
-      }
-
-      const newPreferences: RawPreference[] = (await this.discardDuplicates({
-          rawValues: preferences,
+      return this.handleEntityWithNoId({
           tableName: PREFERENCE,
+          oneOfField: 'user_id',
+          operator: operatePreferenceRecord,
+          rawValues: preferences,
           finder: (existing: Preference, newElement: RawPreference) => {
               return (
                   newElement.category === existing.category &&
@@ -623,86 +619,43 @@ class DataOperator {
                   newElement.value === existing.value
               );
           },
-          oneOfField: 'user_id',
-      })) as RawPreference[];
-
-      if (newPreferences?.length) {
-          const records = await this.handleBase({
-              tableName: PREFERENCE,
-              values: newPreferences,
-              recordOperator: operatePreferenceRecord,
-          });
-          return records;
-      }
-
-      return null;
+      });
   };
 
   /**
    * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP entity from the 'Server' schema
    * @param {RawTeamMembership[]} teamMemberships
-   * @returns {Promise<void>}
+   * @returns {Promise<null|void>}
    */
   handleTeamMemberships = async (teamMemberships: RawTeamMembership[]) => {
-      if (!teamMemberships.length) {
-          return [];
-      }
-
-      const newTeamMembers: RawTeamMembership[] = (await this.discardDuplicates({
-          rawValues: teamMemberships,
+      return this.handleEntityWithNoId({
           tableName: TEAM_MEMBERSHIP,
+          oneOfField: 'user_id',
+          operator: operateTeamMembershipRecord,
+          rawValues: teamMemberships,
           finder: (existing: TeamMembership, newElement: RawTeamMembership) => {
               return (
-                  newElement.team_id === existing.teamId &&
-          newElement.user_id === existing.userId
+                  newElement.team_id === existing.teamId && newElement.user_id === existing.userId
               );
           },
-          oneOfField: 'user_id',
-      })) as RawTeamMembership[];
-
-      if (newTeamMembers?.length) {
-          const records = await this.handleBase({
-              tableName: TEAM_MEMBERSHIP,
-              values: newTeamMembers,
-              recordOperator: operateTeamMembershipRecord,
-          });
-          return records;
-      }
-
-      return null;
+      });
   };
 
   /**
    * handleCustomEmojis: Handler responsible for the Create/Update operations occurring on the CUSTOM_EMOJI entity from the 'Server' schema
    * @param {RawCustomEmoji[]} customEmojis
-   * @returns {Promise<void>}
+   * @returns {Promise<null|void>}
    */
   handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
-      if (!customEmojis.length) {
-          return [];
-      }
-
-      const newCustomEmojis: RawCustomEmoji[] = (await this.discardDuplicates({
-          rawValues: customEmojis,
+      return this.handleEntityWithNoId({
           tableName: CUSTOM_EMOJI,
-          finder: (existing: CustomEmoji, newElement: RawCustomEmoji) => {
-              return (
-                  newElement.name === existing.name
-              );
-          },
           oneOfField: 'name',
-      })) as RawCustomEmoji[];
-
-      if (newCustomEmojis?.length) {
-          const records = await this.handleBase({
-              tableName: CUSTOM_EMOJI,
-              values: newCustomEmojis,
-              recordOperator: operateCustomEmojiRecord,
-          });
-          return records;
-      }
-
-      return null;
+          operator: operateCustomEmojiRecord,
+          rawValues: customEmojis,
+          finder: (existing: CustomEmoji, newElement: RawCustomEmoji) => {
+              return newElement.name === existing.name;
+          },
+      });
   };
 
   /**
@@ -711,55 +664,70 @@ class DataOperator {
    * @returns {Promise<void>}
    */
   handleGroupMembership = async (groupMemberships: RawGroupMembership[]) => {
-      if (!groupMemberships.length) {
-          return [];
-      }
-
-      const newGroupMemberships: RawGroupMembership[] = (await this.discardDuplicates({
-          rawValues: groupMemberships,
+      return this.handleEntityWithNoId({
           tableName: GROUP_MEMBERSHIP,
+          oneOfField: 'user_id',
+          operator: operateGroupMembershipRecord,
+          rawValues: groupMemberships,
           finder: (existing: GroupMembership, newElement: RawGroupMembership) => {
               return (
                   newElement.user_id === existing.userId && newElement.group_id === existing.groupId
               );
           },
-          oneOfField: 'user_id',
-      })) as RawGroupMembership[];
-
-      const records = await this.handleBase({
-          tableName: GROUP_MEMBERSHIP,
-          values: newGroupMemberships,
-          recordOperator: operateGroupMembershipRecord,
       });
-
-      return records;
   };
 
   /**
    * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP entity from the 'Server' schema
    * @param {RawChannelMembership[]} channelMemberships
-   * @returns {Promise<void>}
+   * @returns {Promise<null|void>}
    */
   handleChannelMembership = async (channelMemberships: RawChannelMembership[]) => {
-      if (!channelMemberships.length) {
-          return [];
-      }
-
-      const newChannelMemberships: RawChannelMembership[] = (await this.discardDuplicates({
-          rawValues: channelMemberships,
+      return this.handleEntityWithNoId({
           tableName: CHANNEL_MEMBERSHIP,
+          oneOfField: 'user_id',
+          operator: operateChannelMembershipRecord,
+          rawValues: channelMemberships,
           finder: (existing: ChannelMembership, newElement: RawChannelMembership) => {
               return (
                   newElement.user_id === existing.userId && newElement.channel_id === existing.channelId
               );
           },
-          oneOfField: 'user_id',
-      })) as RawChannelMembership[];
+      });
+  };
+
+  /**
+   * handleEntityWithNoId : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
+   * @param {HandleRawWithNoId} handleRawWithNoId
+   * @param {(existing: Model, newElement: RecordValue) => boolean} handleRawWithNoId.finder
+   * @param {string} handleRawWithNoId.oneOfField
+   * @param {(DataFactory) => Promise<Model | null>} handleRawWithNoId.operator
+   * @param {RawWithNoId[]} handleRawWithNoId.rawValues
+   * @param {string} handleRawWithNoId.tableName
+   * @returns {Promise<null | void>}
+   */
+  private handleEntityWithNoId = async ({
+      finder,
+      oneOfField,
+      operator,
+      rawValues,
+      tableName,
+  }: HandleRawWithNoId) => {
+      if (!rawValues.length) {
+          return null;
+      }
+
+      const values = await this.discardDuplicates({
+          rawValues,
+          tableName,
+          finder,
+          oneOfField,
+      });
 
       const records = await this.handleBase({
-          tableName: CHANNEL_MEMBERSHIP,
-          values: newChannelMemberships,
-          recordOperator: operateChannelMembershipRecord,
+          recordOperator: operator,
+          tableName,
+          values,
       });
 
       return records;
@@ -881,9 +849,9 @@ class DataOperator {
    * @returns {Promise<void>}
    */
   private handleBase = async ({
+      recordOperator,
       tableName,
       values,
-      recordOperator,
   }: HandleBaseData) => {
       const database = await this.getDatabase(tableName);
 

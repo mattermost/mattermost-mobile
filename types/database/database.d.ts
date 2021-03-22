@@ -263,11 +263,11 @@ export type RawUser = {
     mention_keys: string;
     channel: boolean;
     first_name: boolean;
-    auto_responder_active: boolean,
-    auto_responder_message: string,
-    comments:string,
-    push_status: string,
-    desktop_notification_sound: string, // Not in use by the mobile app
+    auto_responder_active: boolean;
+    auto_responder_message: string;
+    comments: string;
+    push_status: string;
+    desktop_notification_sound: string; // Not in use by the mobile app
   };
   last_password_update: number;
   last_picture_update: number;
@@ -440,11 +440,24 @@ export type MatchingRecords = {
   condition: any;
 };
 
-export type RawWithNoId = RawPreference | RawTeamMembership | RawCustomEmoji | RawGroupMembership | RawChannelMembership;
+export type RawWithNoId =
+  | RawPreference
+  | RawTeamMembership
+  | RawCustomEmoji
+  | RawGroupMembership
+  | RawChannelMembership;
 
 export type DiscardDuplicates = {
   rawValues: RawWithNoId[];
   tableName: string;
   oneOfField: string;
   finder: (existing: Model, newElement: RecordValue) => boolean;
+};
+
+export type HandleRawWithNoId = {
+  finder: (existing: Model, newElement: RecordValue) => boolean;
+  oneOfField: string;
+  operator: (DataFactory) => Promise<Model | null>;
+  rawValues: RawWithNoId[];
+  tableName: string;
 };
