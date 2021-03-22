@@ -115,7 +115,7 @@ const Option = injectIntl((props: OptionProps) => {
         }
 
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.post.channel_id, props.post.root_id);
+        const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.post.channel_id, props.post.root_id || props.post.id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
