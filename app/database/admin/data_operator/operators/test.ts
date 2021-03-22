@@ -69,10 +69,13 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                buildNumber: 'build-7',
-                createdAt: 1,
-                id: 'id-18',
-                versionNumber: 'v-1',
+                record: undefined,
+                raw: {
+                    buildNumber: 'build-7',
+                    createdAt: 1,
+                    id: 'id-18',
+                    versionNumber: 'v-1',
+                },
             },
         });
 
@@ -89,7 +92,10 @@ describe('*** DataOperator: Operators tests ***', () => {
         const preparedRecords = await operateGlobalRecord({
             action: OperationType.CREATE,
             database: database!,
-            value: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
+            value: {
+                record: undefined,
+                raw: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
+            },
         });
 
         expect(preparedRecords).toBeTruthy();
@@ -106,12 +112,15 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                dbPath: 'mm-server',
-                displayName: 's-displayName',
-                id: 's-1',
-                mentionCount: 1,
-                unreadCount: 0,
-                url: 'https://community.mattermost.com',
+                record: undefined,
+                raw: {
+                    dbPath: 'mm-server',
+                    displayName: 's-displayName',
+                    id: 's-1',
+                    mentionCount: 1,
+                    unreadCount: 0,
+                    url: 'https://community.mattermost.com',
+                },
             },
         });
 
@@ -128,7 +137,10 @@ describe('*** DataOperator: Operators tests ***', () => {
         const preparedRecords = await operateRoleRecord({
             action: OperationType.CREATE,
             database: database!,
-            value: {id: 'role-1', name: 'role-name-1', permissions: []},
+            value: {
+                record: undefined,
+                raw: {id: 'role-1', name: 'role-name-1', permissions: []},
+            },
         });
 
         expect(preparedRecords).toBeTruthy();
@@ -144,7 +156,10 @@ describe('*** DataOperator: Operators tests ***', () => {
         const preparedRecords = await operateSystemRecord({
             action: OperationType.CREATE,
             database: database!,
-            value: {id: 'system-1', name: 'system-name-1', value: 'system'},
+            value: {
+                record: undefined,
+                raw: {id: 'system-1', name: 'system-name-1', value: 'system'},
+            },
         });
 
         expect(preparedRecords).toBeTruthy();
@@ -160,7 +175,10 @@ describe('*** DataOperator: Operators tests ***', () => {
         const preparedRecords = await operateTermsOfServiceRecord({
             action: OperationType.CREATE,
             database: database!,
-            value: {id: 'system-1', acceptedAt: 1},
+            value: {
+                record: undefined,
+                raw: {id: 'system-1', acceptedAt: 1},
+            },
         });
 
         expect(preparedRecords).toBeTruthy();
@@ -172,8 +190,12 @@ describe('*** DataOperator: Operators tests ***', () => {
     it('=> should create a record in the App table in the default database', async () => {
         expect.assertions(2);
 
+        // Do a query and find out if the value has been registered in the App table of the default database
+        const connection = await DatabaseManager.getDefaultDatabase();
+        expect(connection).toBeTruthy();
+
         // Creates a record in the App table
-        await DataOperator.handleIsolatedEntity({
+        const r = await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -185,9 +207,7 @@ describe('*** DataOperator: Operators tests ***', () => {
             ],
         });
 
-        // Do a query and find out if the value has been registered in the App table of the default database
-        const connection = await DatabaseManager.getDefaultDatabase();
-        expect(connection).toBeTruthy();
+        console.log('r >>>> ', r);
 
         const records = (await connection!.collections.
             get(APP).
@@ -389,26 +409,29 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                create_at: 1596032651748,
-                update_at: 1596032651748,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: 'ps81iqbesfby8jayz7owg4yypoo',
-                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                original_id: '',
-                message: 'Testing operator post',
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
+                record: undefined,
+                raw: {
+                    id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                    create_at: 1596032651748,
+                    update_at: 1596032651748,
+                    edit_at: 0,
+                    delete_at: 0,
+                    is_pinned: false,
+                    user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                    channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                    root_id: 'ps81iqbesfby8jayz7owg4yypoo',
+                    parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    original_id: '',
+                    message: 'Testing operator post',
+                    type: '',
+                    props: {},
+                    hashtags: '',
+                    pending_post_id: '',
+                    reply_count: 4,
+                    last_reply_at: 0,
+                    participants: null,
+                    metadata: {},
+                },
             },
         });
 
@@ -426,10 +449,13 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                earliest: 1596032651748,
-                latest: 1597032651748,
+                record: undefined,
+                raw: {
+                    id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                    earliest: 1596032651748,
+                    latest: 1597032651748,
+                },
             },
         });
 
@@ -449,13 +475,16 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
-                post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                emoji_name: 'thumbsup',
-                create_at: 1596032651748,
-                update_at: 1608253011321,
-                delete_at: 0,
+                record: undefined,
+                raw: {
+                    id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                    post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    emoji_name: 'thumbsup',
+                    create_at: 1596032651748,
+                    update_at: 1608253011321,
+                    delete_at: 0,
+                },
             },
         });
 
@@ -473,10 +502,13 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                name: 'test_file',
-                extension: '.jpg',
-                size: 1000,
+                record: undefined,
+                raw: {
+                    post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    name: 'test_file',
+                    extension: '.jpg',
+                    size: 1000,
+                },
             },
         });
 
@@ -494,10 +526,13 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: 'ps81i4yypoo',
-                data: {},
-                postId: 'ps81iqbddesfby8jayz7owg4yypoo',
-                type: 'opengraph',
+                record: undefined,
+                raw: {
+                    id: 'ps81i4yypoo',
+                    data: {},
+                    postId: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    type: 'opengraph',
+                },
             },
         });
 
@@ -515,11 +550,14 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: 'ps81i4yypoo',
-                root_id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                message: 'draft message',
-                channel_id: 'channel_idp23232e',
-                files: [],
+                record: undefined,
+                raw: {
+                    id: 'ps81i4yypoo',
+                    root_id: 'ps81iqbddesfby8jayz7owg4yypoo',
+                    message: 'draft message',
+                    channel_id: 'channel_idp23232e',
+                    files: [],
+                },
             },
         });
 
@@ -537,10 +575,13 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: 'ps81i4yypoo',
-                channel_id: 'channel_idp23232e',
-                earliest: 1608253011321,
-                latest: 1609253011321,
+                record: undefined,
+                raw: {
+                    id: 'ps81i4yypoo',
+                    channel_id: 'channel_idp23232e',
+                    earliest: 1608253011321,
+                    latest: 1609253011321,
+                },
             },
         });
 
@@ -560,42 +601,45 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: '9ciscaqbrpd6d8s68k76xb9bte',
-                create_at: 1599457495881,
-                update_at: 1607683720173,
-                delete_at: 0,
-                username: 'a.l',
-                auth_service: 'saml',
-                email: 'a.l@mattermost.com',
-                email_verified: true,
-                nickname: '',
-                first_name: 'A',
-                last_name: 'L',
-                position: 'Mobile Engineer',
-                roles: 'system_user',
-                props: {},
-                notify_props: {
-                    desktop: 'all',
-                    desktop_sound: true,
-                    email: true,
-                    first_name: true,
-                    mention_keys: '',
-                    push: 'mention',
-                    channel: true,
+                record: undefined,
+                raw: {
+                    id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    create_at: 1599457495881,
+                    update_at: 1607683720173,
+                    delete_at: 0,
+                    username: 'a.l',
+                    auth_service: 'saml',
+                    email: 'a.l@mattermost.com',
+                    email_verified: true,
+                    nickname: '',
+                    first_name: 'A',
+                    last_name: 'L',
+                    position: 'Mobile Engineer',
+                    roles: 'system_user',
+                    props: {},
+                    notify_props: {
+                        desktop: 'all',
+                        desktop_sound: true,
+                        email: true,
+                        first_name: true,
+                        mention_keys: '',
+                        push: 'mention',
+                        channel: true,
 
-                    auto_responder_active: false,
-                    auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
-                    comments: 'never',
-                    desktop_notification_sound: 'Hello',
-                    push_status: 'online',
-                },
-                last_password_update: 1604323112537,
-                last_picture_update: 1604686302260,
-                locale: 'en',
-                timezone: {
-                    automaticTimezone: 'Indian/Mauritius',
-                    manualTimezone: '',
-                    useAutomaticTimezone: true,
+                        auto_responder_active: false,
+                        auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
+                        comments: 'never',
+                        desktop_notification_sound: 'Hello',
+                        push_status: 'online',
+                    },
+                    last_password_update: 1604323112537,
+                    last_picture_update: 1604686302260,
+                    locale: 'en',
+                    timezone: {
+                        automaticTimezone: 'Indian/Mauritius',
+                        manualTimezone: '',
+                        useAutomaticTimezone: true,
+                    },
                 },
             },
         });
@@ -613,7 +657,10 @@ describe('*** DataOperator: Operators tests ***', () => {
         const preparedRecords = await operatePreferenceRecord({
             action: OperationType.CREATE,
             database: database!,
-            value: {user_id: '9ciscaqbrpd6d8s68k76xb9bte', category: 'tutorial_step', name: '9ciscaqbrpd6d8s68k76xb9bte', value: '2'},
+            value: {
+                record: undefined,
+                raw: {user_id: '9ciscaqbrpd6d8s68k76xb9bte', category: 'tutorial_step', name: '9ciscaqbrpd6d8s68k76xb9bte', value: '2'},
+            },
         });
 
         expect(preparedRecords).toBeTruthy();
@@ -630,14 +677,17 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                team_id: 'a',
-                user_id: 'ab',
-                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
-                delete_at: 0,
-                scheme_guest: false,
-                scheme_user: true,
-                scheme_admin: false,
-                explicit_roles: '',
+                record: undefined,
+                raw: {
+                    team_id: 'a',
+                    user_id: 'ab',
+                    roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                    delete_at: 0,
+                    scheme_guest: false,
+                    scheme_user: true,
+                    scheme_admin: false,
+                    explicit_roles: '',
+                },
             },
         });
 
@@ -655,12 +705,15 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                id: 'i',
-                create_at: 1580913641769,
-                update_at: 1580913641769,
-                delete_at: 0,
-                creator_id: '4cprpki7ri81mbx8efixcsb8jo',
-                name: 'boomI',
+                record: undefined,
+                raw: {
+                    id: 'i',
+                    create_at: 1580913641769,
+                    update_at: 1580913641769,
+                    delete_at: 0,
+                    creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                    name: 'boomI',
+                },
             },
         });
 
@@ -678,9 +731,12 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
-                group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
+                record: undefined,
+                raw: {
+                    user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
+                    group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
 
+                },
             },
         });
 
@@ -698,24 +754,27 @@ describe('*** DataOperator: Operators tests ***', () => {
             action: OperationType.CREATE,
             database: database!,
             value: {
-                channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
-                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
-                roles: 'wqyby5r5pinxxdqhoaomtacdhc',
-                last_viewed_at: 1613667352029,
-                msg_count: 3864,
-                mention_count: 0,
-                notify_props: {
-                    desktop: 'default',
-                    email: 'default',
-                    ignore_channel_mentions: 'default',
-                    mark_unread: 'mention',
-                    push: 'default',
+                record: undefined,
+                raw: {
+                    channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                    user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                    last_viewed_at: 1613667352029,
+                    msg_count: 3864,
+                    mention_count: 0,
+                    notify_props: {
+                        desktop: 'default',
+                        email: 'default',
+                        ignore_channel_mentions: 'default',
+                        mark_unread: 'mention',
+                        push: 'default',
+                    },
+                    last_update_at: 1613667352029,
+                    scheme_guest: false,
+                    scheme_user: true,
+                    scheme_admin: false,
+                    explicit_roles: '',
                 },
-                last_update_at: 1613667352029,
-                scheme_guest: false,
-                scheme_user: true,
-                scheme_admin: false,
-                explicit_roles: '',
             },
         });
 

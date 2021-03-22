@@ -788,7 +788,7 @@ class DataOperator {
       if (!rawValues.length) {
           return null;
       }
-
+      console.log('1....');
       const {createRaws, updateRaws} = await this.getCreateUpdateRecords({
           rawValues,
           tableName,
@@ -796,12 +796,16 @@ class DataOperator {
           oneOfField,
       });
 
+      console.log('2....', {createRaws, updateRaws});
+
       const records = await this.handleBase({
           recordOperator: operator,
           tableName,
           createRaws,
           updateRaws,
       });
+
+      console.log('3....');
 
       return records;
   };
@@ -828,6 +832,8 @@ class DataOperator {
 
       const columnValues: string[] = getOneOfs(rawValues);
 
+      console.log(' columnValues >>> ', columnValues);
+
       const database = await this.getDatabase(tableName);
 
       // NOTE: There is no 'id' field in the response, hence, we need to  weed out any duplicates before sending the values to the operator
@@ -836,6 +842,8 @@ class DataOperator {
           tableName,
           condition: Q.where(oneOfField, Q.oneOf(columnValues)),
       })) as Model[];
+
+      console.log(' existingRecords >>> ', existingRecords);
 
       const createRaws: MatchExistingRecord[] = [];
       const updateRaws: MatchExistingRecord[] = [];
@@ -861,7 +869,14 @@ class DataOperator {
           });
           return {createRaws, updateRaws};
       }
-      return {createRaws, updateRaws};
+
+      console.log('end >>> ', {createRaws, updateRaws});
+      return {
+          createRaws: rawValues.map((raw) => {
+              return {record: undefined, raw};
+          }),
+          updateRaws,
+      };
   };
 
   /**
@@ -960,6 +975,8 @@ class DataOperator {
           updateRaws,
           recordOperator,
       })) as unknown) as Model[];
+
+      console.log('models >>>> ', models);
 
       if (models?.length > 0) {
           await this.batchOperations({
