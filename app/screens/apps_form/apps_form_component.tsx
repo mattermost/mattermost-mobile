@@ -114,6 +114,10 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     }
 
     handleSubmit = async (button?: string) => {
+        if (this.state.submitting) {
+            return;
+        }
+
         const {fields} = this.props.form;
         const values = this.state.values;
         const fieldErrors: {[name: string]: React.ReactNode} = {};
@@ -149,7 +153,10 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             submission.values[this.props.form.submit_buttons] = button;
         }
 
+        this.setState({submitting: true});
         const res = await this.props.actions.submit(submission);
+        this.setState({submitting: false});
+
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error;
