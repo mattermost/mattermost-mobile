@@ -6,7 +6,7 @@ import {Theme} from '@mm-redux/types/preferences';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 interface Props {
     handlePress: () => void;
@@ -51,9 +51,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         button: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
             borderRadius: 1000,
-            overflow: 'hidden',
+            ...Platform.select({
+                ios: {
+                    color: changeOpacity(theme.centerChannelColor, 0.52),
+                },
+                android: {
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
+                    overflow: 'hidden',
+                },
+            }),
         },
     };
 });
