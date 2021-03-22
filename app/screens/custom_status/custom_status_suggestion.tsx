@@ -76,15 +76,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
+            display: 'flex',
             flexDirection: 'row',
             padding: 2,
         },
         iconContainer: {
             width: 45,
             height: 46,
-            textAlignVertical: 'center',
-            justifyContent: 'center',
-            marginLeft: 5,
+            left: 14,
+            top: 12,
+            marginRight: 6,
             color: theme.centerChannelColor,
         },
         wrapper: {
