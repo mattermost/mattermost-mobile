@@ -50,6 +50,7 @@ describe('PostOptions', () => {
         managedConfig: {},
         post,
         showAddReaction: true,
+        showAppOptions: true,
         theme: Preferences.THEMES.default,
     };
 

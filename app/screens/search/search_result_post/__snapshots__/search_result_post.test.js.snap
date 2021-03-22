@@ -4,6 +4,7 @@ exports[`SearchResultPost should match snapshot 1`] = `
 <Connect(Post)
   highlightPinnedOrFlagged={false}
   isSearchResult={true}
+  location="search"
   managedConfig={Object {}}
   onHashtagPress={[MockFunction]}
   onPermalinkPress={[MockFunction]}
