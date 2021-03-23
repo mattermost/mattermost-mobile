@@ -9,7 +9,6 @@
 
 import {MainSidebar} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
 import {Setup} from '@support/server_api';
 
 describe('Select channel', () => {
@@ -28,26 +27,19 @@ describe('Select channel', () => {
     });
 
     it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
-        const {channelNavBarTitle} = ChannelScreen;
+        const {
+            channelNavBarTitle,
+            goToChannel,
+        } = ChannelScreen;
 
-        // # Open main sidebar (with at least one unread channel)
-        await ChannelScreen.openMainSidebar();
+        // # Go to unread channel
+        await goToChannel(newChannel.display_name);
 
-        // # Tap a channel to view it
-        const channelItem = MainSidebar.getChannelByDisplayName(newChannel.display_name);
-        await channelItem.tap();
+        // # Go to the same channel again
+        await goToChannel(newChannel.display_name);
 
-        // * Selected channel should be visible
-        await expect(channelNavBarTitle).toHaveText(newChannel.display_name);
-
-        // # Open main sidebar again and select the same channel
-        await ChannelScreen.openMainSidebar();
-        await channelItem.tap();
-
-        // * Drawer should not be visible on Android
-        if (isAndroid()) {
-            await expect(MainSidebar.mainSidebar).not.toBeVisible();
-        }
+        // * Verify sidebar menu is not open
+        await expect(MainSidebar.mainSidebar).not.toBeVisible();
 
         // * Selected channel should remain the same
         await expect(channelNavBarTitle).toHaveText(newChannel.display_name);

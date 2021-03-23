@@ -113,6 +113,7 @@ export type DialogElement = {
     options: Array<DialogOption>;
 };
 export type InteractiveDialogConfig = {
+    app_id: string;
     trigger_id: string;
     url: string;
     dialog: {

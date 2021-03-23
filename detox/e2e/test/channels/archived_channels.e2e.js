@@ -7,7 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelInfoScreen,
@@ -41,7 +40,10 @@ describe('Archived Channels', () => {
     });
 
     it('MM-T3618 should display archived channels list', async () => {
-        const {openMainSidebar} = ChannelScreen;
+        const {
+            goToChannel,
+            openMainSidebar,
+        } = ChannelScreen;
         const {
             getChannelByDisplayName,
             hasChannelDisplayNameAtIndex,
@@ -51,8 +53,7 @@ describe('Archived Channels', () => {
         } = MoreChannelsScreen;
 
         // # Archive channel
-        await openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(archivedChannel.display_name).tap();
+        await goToChannel(archivedChannel.display_name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archiveChannel();
 
