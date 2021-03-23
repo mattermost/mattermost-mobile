@@ -40,6 +40,7 @@ export default class SelectorScreen extends PureComponent {
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
         }),
+        getDynamicOptions: PropTypes.func,
         currentTeamId: PropTypes.string.isRequired,
         data: PropTypes.arrayOf(PropTypes.object),
         dataSource: PropTypes.string,
@@ -56,7 +57,7 @@ export default class SelectorScreen extends PureComponent {
 
         this.searchTimeoutId = 0;
         this.page = -1;
-        this.next = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS;
+        this.next = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS || props.dataSource === ViewTypes.DATA_SOURCE_DYNAMIC;
 
         let data = [];
         if (!props.dataSource) {
@@ -78,6 +79,8 @@ export default class SelectorScreen extends PureComponent {
             this.getProfiles();
         } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
             this.getChannels();
+        } else if (dataSource === ViewTypes.DATA_SOURCE_DYNAMIC) {
+            this.getDynamicOptions();
         }
     }
 
@@ -147,6 +150,13 @@ export default class SelectorScreen extends PureComponent {
         }
     }, 100);
 
+    getDynamicOptions = debounce(() => {
+        const {loading, term} = this.state;
+        if (this.next && !loading && !term) {
+            this.searchDynamicOptions('');
+        }
+    }, 100);
+
     loadedChannels = ({data: channels}) => {
         const {data} = this.state;
         if (channels && !channels.length) {
@@ -175,6 +185,8 @@ export default class SelectorScreen extends PureComponent {
         } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
             this.getChannels();
         }
+
+        // dynamic options are not paged so are not reloaded on scroll
     };
 
     onSearch = (text) => {
@@ -193,6 +205,8 @@ export default class SelectorScreen extends PureComponent {
                     this.searchProfiles(text);
                 } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
                     this.searchChannels(text);
+                } else if (dataSource === ViewTypes.DATA_SOURCE_DYNAMIC) {
+                    this.searchDynamicOptions(text);
                 }
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
@@ -218,6 +232,27 @@ export default class SelectorScreen extends PureComponent {
                 data = results.data;
             }
             this.setState({searchResults: data, loading: false});
+        });
+    };
+
+    searchDynamicOptions = (term = '') => {
+        if (!this.props.getDynamicOptions) {
+            return;
+        }
+
+        this.setState({loading: true});
+
+        this.props.getDynamicOptions(term.toLowerCase()).then((results) => {
+            let data = [];
+            if (results.data) {
+                data = results.data;
+            }
+
+            if (term) {
+                this.setState({searchResults: data, loading: false});
+            } else {
+                this.setState({data, loading: false});
+            }
         });
     };
 
@@ -404,6 +439,8 @@ const filterSearchData = memoizeResult((dataSource, data, term) => {
         return filterProfilesMatchingTerm(data, lowerCasedTerm);
     } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
         return filterChannelsMatchingTerm(data, lowerCasedTerm);
+    } else if (dataSource === ViewTypes.DATA_SOURCE_DYNAMIC) {
+        return data;
     }
 
     return data.filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
