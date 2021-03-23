@@ -43,7 +43,6 @@ type State = {
     values: {[name: string]: string};
     formError: string | null;
     fieldErrors: {[name: string]: React.ReactNode};
-    submitting: boolean;
     form: AppForm;
 }
 
@@ -62,6 +61,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     private scrollView: React.RefObject<ScrollView>;
     navigationEventListener?: EventSubscription;
 
+    private submitting = false;
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -76,7 +76,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             values,
             formError: null,
             fieldErrors: {},
-            submitting: false,
             form,
         };
 
@@ -114,7 +113,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     }
 
     handleSubmit = async (button?: string) => {
-        if (this.state.submitting) {
+        if (this.submitting) {
             return;
         }
 
@@ -153,9 +152,9 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             submission.values[this.props.form.submit_buttons] = button;
         }
 
-        this.setState({submitting: true});
+        this.submitting = true;
         const res = await this.props.actions.submit(submission);
-        this.setState({submitting: false});
+        this.submitting = false;
 
         if (res.error) {
             const errorResponse = res.error;
