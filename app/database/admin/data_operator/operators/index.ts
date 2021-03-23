@@ -76,9 +76,11 @@ const {
  */
 export const operateAppRecord = async ({action, database, value}: DataFactory) => {
     const raw = value.raw as RawApp;
+    const record = value.record as App;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (app: App) => {
-        app._raw.id = raw?.id ?? app.id;
+        app._raw.id = isCreateAction ? app.id : record.id;
         app.buildNumber = raw?.buildNumber;
         app.createdAt = raw?.createdAt;
         app.versionNumber = raw?.versionNumber;
@@ -93,8 +95,6 @@ export const operateAppRecord = async ({action, database, value}: DataFactory) =
     });
 };
 
-// FIXME : if raw or record is undefined ?????
-
 /**
  * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
  * @param {DataFactory} operator
@@ -103,12 +103,14 @@ export const operateAppRecord = async ({action, database, value}: DataFactory) =
  * @returns {Promise<void>}
  */
 export const operateGlobalRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawGlobal;
+    const raw = value.raw as RawGlobal;
+    const record = value.record as Global;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (global: Global) => {
-        global._raw.id = record?.id ?? global.id;
-        global.name = record?.name;
-        global.value = record?.value;
+        global._raw.id = isCreateAction ? global.id : record.id;
+        global.name = raw?.name;
+        global.value = raw?.value;
     };
 
     return operateBaseRecord({
@@ -128,15 +130,17 @@ export const operateGlobalRecord = async ({action, database, value}: DataFactory
  * @returns {Promise<void>}
  */
 export const operateServersRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawServers;
+    const raw = value.raw as RawServers;
+    const record = value.record as Servers;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (servers: Servers) => {
-        servers._raw.id = record?.id ?? servers.id;
-        servers.dbPath = record?.dbPath;
-        servers.displayName = record?.displayName;
-        servers.mentionCount = record?.mentionCount;
-        servers.unreadCount = record?.unreadCount;
-        servers.url = record?.url;
+        servers._raw.id = isCreateAction ? servers.id : record.id;
+        servers.dbPath = raw?.dbPath;
+        servers.displayName = raw?.displayName;
+        servers.mentionCount = raw?.mentionCount;
+        servers.unreadCount = raw?.unreadCount;
+        servers.url = raw?.url;
     };
 
     return operateBaseRecord({
@@ -156,11 +160,14 @@ export const operateServersRecord = async ({action, database, value}: DataFactor
  * @returns {Promise<void>}
  */
 export const operateCustomEmojiRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawCustomEmoji;
+    const raw = value.raw as RawCustomEmoji;
+    const record = value.record as CustomEmoji;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of emoji comes from server response
     const generator = (emoji: CustomEmoji) => {
-        emoji._raw.id = record?.id ?? emoji.id;
-        emoji.name = record.name;
+        emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record.id;
+        emoji.name = raw.name;
     };
 
     return operateBaseRecord({
@@ -180,12 +187,15 @@ export const operateCustomEmojiRecord = async ({action, database, value}: DataFa
  * @returns {Promise<void>}
  */
 export const operateRoleRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawRole;
+    const raw = value.raw as RawRole;
+    const record = value.record as Role;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of role comes from server response
     const generator = (role: Role) => {
-        role._raw.id = record?.id ?? role.id;
-        role.name = record?.name;
-        role.permissions = record?.permissions;
+        role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record.id;
+        role.name = raw?.name;
+        role.permissions = raw?.permissions;
     };
 
     return operateBaseRecord({
@@ -205,12 +215,15 @@ export const operateRoleRecord = async ({action, database, value}: DataFactory) 
  * @returns {Promise<void>}
  */
 export const operateSystemRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawSystem;
+    const raw = value.raw as RawSystem;
+    const record = value.record as System;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of role comes from server response
     const generator = (system: System) => {
-        system._raw.id = record?.id ?? system.id;
-        system.name = record?.name;
-        system.value = record?.value;
+        system._raw.id = isCreateAction ? (record?.id ?? system.id) : raw?.id;
+        system.name = raw?.name;
+        system.value = raw?.value;
     };
 
     return operateBaseRecord({
@@ -355,19 +368,23 @@ export const operateFileRecord = async ({
     database,
     value,
 }: DataFactory) => {
-    const record = value.raw as RawFile;
+    const raw = value.raw as RawFile;
+    const record = value.record as File;
 
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of emoji comes from server response
     const generator = (file: File) => {
-        file._raw.id = record?.id ?? file.id;
-        file.postId = record.post_id;
-        file.name = record.name;
-        file.extension = record.extension;
-        file.size = record.size;
-        file.mimeType = record?.mime_type ?? '';
-        file.width = record?.width ?? 0;
-        file.height = record?.height ?? 0;
-        file.imageThumbnail = record?.mini_preview ?? '';
-        file.localPath = record?.localPath ?? '';
+        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record.id;
+        file.postId = raw.post_id;
+        file.name = raw.name;
+        file.extension = raw.extension;
+        file.size = raw.size;
+        file.mimeType = raw?.mime_type ?? '';
+        file.width = raw?.width ?? 0;
+        file.height = raw?.height ?? 0;
+        file.imageThumbnail = raw?.mini_preview ?? '';
+        file.localPath = raw?.localPath ?? '';
     };
 
     return operateBaseRecord({

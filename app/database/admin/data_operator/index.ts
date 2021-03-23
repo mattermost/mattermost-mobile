@@ -825,14 +825,16 @@ class DataOperator {
           return raws.reduce((oneOfs, current: RawWithNoId) => {
               const key = oneOfField as keyof typeof current;
               const value: string = current[key] as string;
-              oneOfs.push(value);
+              if (value) {
+                  oneOfs.push(value);
+              }
               return oneOfs;
           }, [] as string[]);
       };
 
       const columnValues: string[] = getOneOfs(rawValues);
 
-      console.log(' columnValues >>> ', columnValues);
+      console.log(' columnValues >>> ', columnValues, 'for oneOfs ', oneOfField);
 
       const database = await this.getDatabase(tableName);
 

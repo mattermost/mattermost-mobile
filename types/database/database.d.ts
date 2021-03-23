@@ -60,7 +60,7 @@ export type RawServers = {
 };
 
 export type RawCustomEmoji = {
-  id?: string;
+  id: string;
   name: string;
   create_at?: number;
   update_at?: number;
@@ -71,7 +71,10 @@ export type RawCustomEmoji = {
 export type RawRole = {
   id: string;
   name: string;
-  permissions: [];
+  display_name: string;
+  description: string;
+  permissions: string[];
+  scheme_managed: boolean;
 };
 
 export type RawSystem = {
@@ -81,8 +84,11 @@ export type RawSystem = {
 };
 
 export type RawTermsOfService = {
-  id: string;
+  id: string,
   acceptedAt: number;
+  create_at: number,
+  user_id: string,
+  text: string
 };
 
 export type RawDraft = {
