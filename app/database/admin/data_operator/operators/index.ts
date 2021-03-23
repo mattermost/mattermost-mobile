@@ -72,7 +72,6 @@ export const operateAppRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: APP,
         value,
         generator,
@@ -97,7 +96,6 @@ export const operateGlobalRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: GLOBAL,
         value,
         generator,
@@ -125,7 +123,6 @@ export const operateServersRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: SERVERS,
         value,
         generator,
@@ -158,7 +155,6 @@ export const operateCustomEmojiRecord = async ({database, value}: DataFactory) =
 
     return operateBaseRecord({
         database,
-
         tableName: CUSTOM_EMOJI,
         value,
         generator,
@@ -183,7 +179,6 @@ export const operateRoleRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: ROLE,
         value,
         generator,
@@ -208,7 +203,6 @@ export const operateSystemRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: SYSTEM,
         value,
         generator,
@@ -232,7 +226,6 @@ export const operateTermsOfServiceRecord = async ({database, value}: DataFactory
 
     return operateBaseRecord({
         database,
-
         tableName: TERMS_OF_SERVICE,
         value,
         generator,
@@ -269,7 +262,6 @@ export const operatePostRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: POST,
         value,
         generator,
@@ -295,7 +287,6 @@ export const operatePostInThreadRecord = async ({database, value}: DataFactory) 
 
     return operateBaseRecord({
         database,
-
         tableName: POSTS_IN_THREAD,
         value,
         generator,
@@ -322,7 +313,6 @@ export const operateReactionRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: REACTION,
         value,
         generator,
@@ -354,7 +344,6 @@ export const operateFileRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: FILE,
         value,
         generator,
@@ -380,7 +369,6 @@ export const operatePostMetadataRecord = async ({database, value}: DataFactory) 
 
     return operateBaseRecord({
         database,
-
         tableName: POST_METADATA,
         value,
         generator,
@@ -408,7 +396,6 @@ export const operateDraftRecord = async ({database, value}: DataFactory) => {
 
     return operateBaseRecord({
         database,
-
         tableName: DRAFT,
         value,
         generator,
@@ -434,7 +421,6 @@ export const operatePostsInChannelRecord = async ({database, value}: DataFactory
 
     return operateBaseRecord({
         database,
-
         tableName: POSTS_IN_CHANNEL,
         value,
         generator,
@@ -461,7 +447,6 @@ export const operatePostsInChannelRecord = async ({database, value}: DataFactory
  */
 const operateBaseRecord = async ({
     database,
-
     tableName,
     value,
     generator,

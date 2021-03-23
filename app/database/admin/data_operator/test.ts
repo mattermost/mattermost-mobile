@@ -421,7 +421,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 is_pinned: false,
                 user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
                 channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                root_id: '',
                 parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 original_id: '',
                 message: "I'll second these kudos!  Thanks m!",
@@ -483,28 +483,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 participants: null,
                 metadata: {},
             },
-            {
-                id: '4btbnmticjgw7ewd3qopmpiwqw',
-                create_at: 1596277483749,
-                update_at: 1596277483749,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '',
-                parent_id: '',
-                original_id: '',
-                message: 'unordered post',
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
         ];
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
 
@@ -522,7 +500,10 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
+
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
+            {earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'},
+        ]);
     });
 
     it('=> HandlePostsInChannel: should write to PostsInChannel entity', async () => {
