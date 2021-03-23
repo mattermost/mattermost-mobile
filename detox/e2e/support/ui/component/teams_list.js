@@ -3,7 +3,7 @@
 
 class TeamsList {
     testID = {
-        teamsList: 'main.sidebar.teams_list',
+        teamsList: 'main.sidebar.teams_list.flat_list',
         teamItem: 'main.sidebar.teams_list.flat_list.teams_list_item',
         teamItemBadge: 'main.sidebar.teams_list.flat_list.teams_list_item.badge',
         teamItemBadgeUnreadCount: 'main.sidebar.teams_list.flat_list.teams_list_item.badge.unread_count',

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
+    PostOptions,
     RecentItem,
     SearchBar,
 } from '@support/ui/component';
@@ -19,6 +20,7 @@ class SearchScreen {
         searchOnSection: 'search.on_section',
         searchAfterSection: 'search.after_section',
         searchBeforeSection: 'search.before_section',
+        searchResultsList: 'search.results_list',
     }
 
     searchScreen = element(by.id(this.testID.searchScreen));
@@ -27,6 +29,7 @@ class SearchScreen {
     searchOnSection = element(by.id(this.testID.searchOnSection));
     searchAfterSection = element(by.id(this.testID.searchAfterSection));
     searchBeforeSection = element(by.id(this.testID.searchBeforeSection));
+    searchResultsList = element(by.id(this.testID.searchResultsList));
 
     searchFromModifier = 'from:';
     searchInModifier = 'in:';
@@ -73,6 +76,15 @@ class SearchScreen {
     clear = async () => {
         await this.clearButton.tap();
         await expect(this.clearButton).not.toExist();
+    }
+
+    openPostOptionsFor = async (postId, text) => {
+        const {searchResultPostItem} = await this.getSearchResultPostItem(postId, text);
+        await expect(searchResultPostItem).toBeVisible();
+
+        // # Open post options
+        await searchResultPostItem.longPress();
+        await PostOptions.toBeVisible();
     }
 
     hasSearchResultPostMessageAtIndex = async (index, postMessage) => {

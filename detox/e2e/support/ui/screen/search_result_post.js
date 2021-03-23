@@ -11,24 +11,32 @@ class SearchResultPostScreen {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
             postItemHeaderReply,
+            postItemImage,
             postItemMessage,
             postItemProfilePicture,
             postItemProfilePictureUserStatus,
+            postItemShowLessButton,
+            postItemShowMoreButton,
         } = Post.getPost(this.testID.searchResultPostItem, postId, postMessage, postProfileOptions);
 
         return {
             searchResultPostItem: postItem,
+            searchResultPostItemEmoji: postItemEmoji,
             searchResultPostItemHeaderDateTime: postItemHeaderDateTime,
             searchResultPostItemHeaderDisplayName: postItemHeaderDisplayName,
             searchResultPostItemHeaderGuestTag: postItemHeaderGuestTag,
             searchResultPostItemHeaderReply: postItemHeaderReply,
+            searchResultPostItemImage: postItemImage,
             searchResultPostItemMessage: postItemMessage,
             searchResultPostItemProfilePicture: postItemProfilePicture,
             searchResultPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
+            searchResultPostItemShowLessButton: postItemShowLessButton,
+            searchResultPostItemShowMoreButton: postItemShowMoreButton,
         };
     }
 

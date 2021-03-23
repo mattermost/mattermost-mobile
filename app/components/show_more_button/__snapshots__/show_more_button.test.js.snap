@@ -3,6 +3,7 @@
 exports[`ShowMoreButton should match, button snapshot 1`] = `
 <View
   style={Object {}}
+  testID="show_more.button.plus"
 >
   <CompassIcon
     name="plus"
@@ -20,6 +21,7 @@ exports[`ShowMoreButton should match, button snapshot 1`] = `
 exports[`ShowMoreButton should match, button snapshot 2`] = `
 <View
   style={Object {}}
+  testID="show_more.button.minus"
 >
   <CompassIcon
     name="minus"
@@ -118,6 +120,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
             "flexDirection": "row",
           }
         }
+        testID="show_more.button.plus"
       >
         <CompassIcon
           name="plus"
