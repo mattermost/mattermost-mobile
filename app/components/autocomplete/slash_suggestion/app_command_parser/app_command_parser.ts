@@ -1052,7 +1052,6 @@ export class AppCommandParser {
     // getStaticSelectSuggestions returns suggestions specified in the field's options property
     getStaticSelectSuggestions = (parsed: ParsedCommand, delimiter?: string): AutocompleteSuggestion[] => {
         const f = parsed.field as AutocompleteStaticSelect;
-
         const opts = f.options?.filter((opt) => opt.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()));
         if (!opts?.length) {
             return [{
@@ -1066,7 +1065,6 @@ export class AppCommandParser {
                 IconData: '',
             }];
         }
-
         return opts.map((opt) => {
             let complete = opt.value;
             if (delimiter) {

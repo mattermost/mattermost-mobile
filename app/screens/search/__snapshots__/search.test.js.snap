@@ -156,6 +156,7 @@ exports[`Search should match snapshot 1`] = `
           "flex": 1,
         }
       }
+      testID="search.results_list"
       updateCellsBatchingPeriod={50}
       windowSize={21}
     />

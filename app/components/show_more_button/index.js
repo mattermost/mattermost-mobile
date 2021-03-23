@@ -35,7 +35,10 @@ export default class ShowMoreButton extends PureComponent {
         }
 
         return (
-            <View style={style.button}>
+            <View
+                style={style.button}
+                testID={`show_more.button.${iconName}`}
+            >
                 <CompassIcon
                     name={iconName}
                     size={18}
