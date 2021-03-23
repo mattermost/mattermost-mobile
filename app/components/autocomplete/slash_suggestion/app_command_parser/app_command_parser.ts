@@ -3,17 +3,15 @@
 
 /* eslint-disable max-lines */
 
-import {intlShape} from 'react-intl';
-
 import {
     AppCallRequest,
     AppBinding,
     AppField,
     AppSelectOption,
     AppCallResponse,
-    AppCallValues,
     AppContext,
     AppForm,
+    AppCallValues,
     AutocompleteSuggestion,
     AutocompleteStaticSelect,
     Channel,
@@ -31,14 +29,14 @@ import {
     getStore,
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
     getExecuteSuggestion,
+    displayError,
     keyMirror,
     createCallRequest,
-    displayError,
-    selectChannelByName,
     selectUserByUsername,
     getUserByUsername,
     getChannelByNameAndTeamName,
     getCurrentTeam,
+    selectChannelByName,
 } from './app_command_parser_dependencies';
 
 export type Store = {
@@ -70,6 +68,10 @@ interface FormsCache {
     getForm: (location: string, binding: AppBinding) => Promise<AppForm | undefined>;
 }
 
+interface Intl {
+    formatMessage(config: {id: string; defaultMessage: string}, values?: {[name: string]: any}): string;
+}
+
 export class ParsedCommand {
     state: string = ParseState.Start;
     command: string;
@@ -84,7 +86,7 @@ export class ParsedCommand {
     values: {[name: string]: string} = {};
     location = '';
     error = '';
-    intl: typeof intlShape;
+    intl: Intl;
 
     constructor(command: string, formsCache: FormsCache, intl: any) {
         this.command = command;
@@ -166,7 +168,7 @@ export class ParsedCommand {
             }
 
             case ParseState.EndCommand: {
-                const binding = bindings.find((b: AppBinding) => b.label === this.incomplete.toLowerCase());
+                const binding = bindings.find((b: AppBinding) => b.label.toLowerCase() === this.incomplete.toLowerCase());
                 if (!binding) {
                     // gone as far as we could, this token doesn't match a sub-command.
                     // return the state from the last matching binding
@@ -324,7 +326,7 @@ export class ParsedCommand {
                 case ' ':
                 case '\t':
                 case '=': {
-                    const field = fields.find((f) => f.label === this.incomplete.toLowerCase());
+                    const field = fields.find((f) => f.label?.toLowerCase() === this.incomplete.toLowerCase());
                     if (!field) {
                         return this.asError(this.intl.formatMessage({
                             id: 'apps.error.parser.unexpected_flag',
@@ -539,11 +541,11 @@ export class AppCommandParser {
     private store: Store;
     private channelID: string;
     private rootPostID?: string;
-    private intl: typeof intlShape;
+    private intl: Intl;
 
     forms: {[location: string]: AppForm} = {};
 
-    constructor(store: Store|null, intl: typeof intlShape, channelID: string, rootPostID = '') {
+    constructor(store: Store|null, intl: Intl, channelID: string, rootPostID = '') {
         this.store = store || getStore() as Store;
         this.channelID = channelID;
         this.rootPostID = rootPostID;
@@ -557,7 +559,7 @@ export class AppCommandParser {
         const commandBindings = this.getCommandBindings();
         if (!commandBindings) {
             this.displayError(this.intl.formatMessage({
-                id: 'apps.error.command.no_bindings',
+                id: 'apps.error.parser.no_bindings',
                 defaultMessage: 'No command bindings.',
             }));
             return null;
@@ -681,7 +683,7 @@ export class AppCommandParser {
     }
 
     expandOptions = async (parsed: ParsedCommand, values: AppCallValues) => {
-        if (!parsed.form || !parsed.form.fields) {
+        if (!parsed.form?.fields) {
             return true;
         }
 
@@ -751,6 +753,7 @@ export class AppCommandParser {
                             fieldName: f.name,
                             option: values[f.name],
                         }));
+                        return;
                     }
                     channel = dispatchResult.data;
                 }
@@ -885,7 +888,7 @@ export class AppCommandParser {
             return undefined;
         }
 
-        return res.data.form;
+        return callResponse.form;
     }
 
     getForm = async (location: string, binding: AppBinding): Promise<AppForm | undefined> => {
@@ -996,7 +999,7 @@ export class AppCommandParser {
             prefix = prefix.substring(1);
         }
 
-        const applicable = parsed.form.fields.filter((field) => field.label && field.label.startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
+        const applicable = parsed.form.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
         if (applicable) {
             return applicable.map((f) => {
                 return {
