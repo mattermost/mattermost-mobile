@@ -7,6 +7,7 @@ class ChannelsList {
     testID = {
         channelsListPrefix: 'main.sidebar.channels_list.',
         channelsList: 'main.sidebar.channels_list.list',
+        channelsListUnreadIndicator: 'channels_list.unread_indicator',
         channelItem: 'main.sidebar.channels_list.list.channel_item',
         channelItemDisplayName: 'main.sidebar.channels_list.list.channel_item.display_name',
         filteredChannelsList: 'main.sidebar.channels_list.filtered_list',
@@ -19,6 +20,7 @@ class ChannelsList {
     }
 
     channelsList = element(by.id(this.testID.channelsList));
+    channelsListUnreadIndicator = element(by.id(this.testID.channelsListUnreadIndicator));
     filteredChannelsList = element(by.id(this.testID.channelsList));
     switchTeamsButton = element(by.id(this.testID.switchTeamsButton));
     switchTeamsButtonBadge = element(by.id(this.testID.switchTeamsButtonBadge));

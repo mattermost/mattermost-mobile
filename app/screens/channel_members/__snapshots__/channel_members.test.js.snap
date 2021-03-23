@@ -78,6 +78,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
       renderItem={[Function]}
       shouldRenderSeparator={true}
       showNoResults={true}
+      testID="channel_members.custom_list"
       theme={
         Object {
           "awayIndicator": "#ffbc42",

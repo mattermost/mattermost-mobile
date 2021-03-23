@@ -39,6 +39,7 @@ export default class Emoji extends React.PureComponent {
         textStyle: CustomPropTypes.Style,
         unicode: PropTypes.string,
         customEmojiStyle: CustomPropTypes.Style,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -55,6 +56,7 @@ export default class Emoji extends React.PureComponent {
             imageUrl,
             literal,
             unicode,
+            testID,
             textStyle,
         } = this.props;
 
@@ -67,7 +69,13 @@ export default class Emoji extends React.PureComponent {
         }
 
         if (displayTextOnly) {
-            return <Text style={textStyle}>{literal}</Text>;
+            return (
+                <Text
+                    style={textStyle}
+                    testID={testID}
+                >
+                    {literal}
+                </Text>);
         }
 
         const width = size;
@@ -84,7 +92,10 @@ export default class Emoji extends React.PureComponent {
             }, '');
 
             return (
-                <Text style={[textStyle, {fontSize: size}]}>
+                <Text
+                    style={[textStyle, {fontSize: size}]}
+                    testID={testID}
+                >
                     {code}
                 </Text>
             );
@@ -101,6 +112,7 @@ export default class Emoji extends React.PureComponent {
                 source={{uri: imageUrl}}
                 onError={this.onError}
                 resizeMode={FastImage.resizeMode.contain}
+                testID={testID}
             />
         );
     }

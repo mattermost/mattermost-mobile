@@ -17,16 +17,14 @@ import {Setup} from '@support/server_api';
 describe('Favorite Channels', () => {
     const {
         closeMainSidebar,
+        goToChannel,
         openMainSidebar,
     } = ChannelScreen;
     const {
         favoriteSwitchFalse,
         favoriteSwitchTrue,
     } = ChannelInfoScreen;
-    const {
-        getChannelByDisplayName,
-        hasChannelDisplayNameAtIndex,
-    } = MainSidebar;
+    const {hasChannelDisplayNameAtIndex} = MainSidebar;
     let testChannel;
 
     beforeAll(async () => {
@@ -43,8 +41,7 @@ describe('Favorite Channels', () => {
 
     it('MM-T3191 should be able to favorite a channel', async () => {
         // # Open channel info screen
-        await openMainSidebar();
-        await getChannelByDisplayName(testChannel.display_name).tap();
+        await goToChannel(testChannel.display_name);
         await ChannelInfoScreen.open();
 
         // * Verify favorite switch is toggled off
@@ -70,8 +67,7 @@ describe('Favorite Channels', () => {
 
     it('MM-T3192 should be able to un-favorite a channel', async () => {
         // # Open channel info screen
-        await openMainSidebar();
-        await getChannelByDisplayName(testChannel.display_name).tap();
+        await goToChannel(testChannel.display_name);
         await ChannelInfoScreen.open();
 
         // * Verify favorite switch is toggled on
