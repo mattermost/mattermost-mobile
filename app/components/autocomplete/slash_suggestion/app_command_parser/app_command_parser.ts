@@ -37,6 +37,7 @@ import {
     getChannelByNameAndTeamName,
     getCurrentTeam,
     selectChannelByName,
+    errorMessage,
 } from './app_command_parser_dependencies';
 
 export type Store = {
@@ -99,17 +100,6 @@ export class ParsedCommand {
         this.error = message;
         return this;
     };
-
-    errorMessage = (): string => {
-        return this.intl.formatMessage({
-            id: 'apps.error.parser',
-            defaultMessage: 'Parsing error: {error}.\n```\n{command}\n{space}^\n```',
-        }, {
-            error: this.error,
-            command: this.command,
-            space: ' '.repeat(this.i),
-        });
-    }
 
     // matchBinding finds the closest matching command binding.
     matchBinding = async (commandBindings: AppBinding[], autocompleteMode = false): Promise<ParsedCommand> => {
@@ -568,7 +558,7 @@ export class AppCommandParser {
         parsed = await parsed.matchBinding(commandBindings, false);
         parsed = parsed.parseForm(false);
         if (parsed.state === ParseState.Error) {
-            this.displayError(parsed.errorMessage());
+            this.displayError(errorMessage(this.intl, parsed.error, parsed.command, parsed.i));
             return null;
         }
 
