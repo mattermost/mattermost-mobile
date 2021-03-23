@@ -157,7 +157,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
         this.submitting = true;
         const res = await this.props.actions.submit(submission);
-        this.submitting = false;
 
         if (res.error) {
             const errorResponse = res.error;
@@ -165,7 +164,9 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             const hasErrors = this.updateErrors(elements, errorResponse.data?.errors, errorMessage);
             if (!hasErrors) {
                 this.handleHide();
+                return;
             }
+            this.submitting = false;
             return;
         }
 
@@ -176,6 +177,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             this.handleHide();
             return;
         case AppCallResponseTypes.FORM:
+            this.submitting = false;
             return;
         default:
             this.updateErrors([], undefined, this.context.intl.formatMessage({
@@ -184,6 +186,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             }, {
                 type: callResponse.type,
             }));
+            this.submitting = false;
         }
     }
 
