@@ -22,6 +22,7 @@ import {AppCallRequest, AppCallResponse, AppField, AppForm, AppFormValue, AppFor
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
+import {preventDoubleTap} from '@utils/tap';
 
 export type Props = {
     call: AppCallRequest;
@@ -112,7 +113,9 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         }
     }
 
-    handleSubmit = async (button?: string) => {
+    handleSubmit = (button?: string) => preventDoubleTap(this.doSubmit(button));
+
+    doSubmit = async (button?: string) => {
         if (this.submitting) {
             return;
         }
