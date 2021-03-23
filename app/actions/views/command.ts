@@ -43,16 +43,13 @@ export function executeCommand(message: string, channelId: string, rootId: strin
         if (appsAreEnabled) {
             const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.root_id);
             if (parser.isAppCommand(msg)) {
-                const call = await parser.composeCallFromCommand(message);
+                const {call, errorMessage} = await parser.composeCallFromCommand(message);
                 const createErrorMessage = (errMessage: string) => {
                     return {error: {message: errMessage}};
                 };
 
                 if (!call) {
-                    return createErrorMessage(intl.formatMessage({
-                        id: 'mobile.commands.error_title',
-                        defaultMessage: 'Error Executing Command',
-                    }));
+                    return createErrorMessage(errorMessage!);
                 }
 
                 const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));

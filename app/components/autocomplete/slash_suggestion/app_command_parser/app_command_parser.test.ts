@@ -879,7 +879,7 @@ describe('AppCommandParser', () => {
             const cmd = '/jira issue create';
             const values = {};
 
-            const call = await parser.composeCallFromCommand(cmd);
+            const {call} = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
                 raw_command: cmd,
@@ -902,7 +902,7 @@ describe('AppCommandParser', () => {
                 project: '',
             };
 
-            const call = await parser.composeCallFromCommand(cmd);
+            const {call} = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
                 expand: {},
