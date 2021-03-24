@@ -48,6 +48,8 @@ export default class UserListRow extends React.PureComponent {
         return (
             <ChannelIcon
                 isActive={false}
+                isArchived={false}
+                isBot={false}
                 isUnread={true}
                 isInfo={true}
                 size={18}

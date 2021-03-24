@@ -950,7 +950,7 @@ export function getSharedChannels(teamId: string, page = 0, perPage: number = Ge
         try {
             channels = await Client4.getSharedChannels(teamId, page, perPage);
 
-            // Make the response compatible with our public/shared channels response
+            // Make the response compatible with our public/archived channels response
             const renameFields: Dictionary<string> = {
                 channel_id: 'id',
                 share_displayname: 'display_name',
