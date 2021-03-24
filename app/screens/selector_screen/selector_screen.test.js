@@ -123,4 +123,58 @@ describe('SelectorScreen', () => {
         wrapper.update();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should call getDynamicOptions if data source is dynamic', async () => {
+        const getDynamicOptions = jest.fn(async (term) => {
+            if (term) {
+                return {data: [{text: 'With Query Text', value: 'with_query'}]};
+            }
+
+            return {data: [{text: 'Without Query Text', value: 'without_query'}]};
+        });
+
+        const props = {
+            ...baseProps,
+            dataSource: 'dynamic',
+            getDynamicOptions,
+        };
+
+        const wrapper = shallow(
+            <SelectorScreen {...props}/>,
+            {context: {intl}},
+        );
+
+        jest.runAllTimers();
+        await (() => new Promise(setImmediate))();
+
+        expect(props.getDynamicOptions).toHaveBeenCalledWith('');
+        expect(wrapper.state().data).toEqual([
+            {text: 'Without Query Text', value: 'without_query'},
+        ]);
+        expect(wrapper.state().searchResults).toEqual([]);
+
+        let customList = wrapper.find('CustomList');
+        expect(customList.props().data).toEqual([
+            {text: 'Without Query Text', value: 'without_query'},
+        ]);
+
+        // Search for value
+        wrapper.instance().onSearch('mysearch');
+
+        jest.runAllTimers();
+        await (() => new Promise(setImmediate))();
+
+        expect(props.getDynamicOptions).toHaveBeenCalledWith('mysearch');
+        expect(wrapper.state().data).toEqual([
+            {text: 'Without Query Text', value: 'without_query'},
+        ]);
+        expect(wrapper.state().searchResults).toEqual([
+            {text: 'With Query Text', value: 'with_query'},
+        ]);
+
+        customList = wrapper.find('CustomList');
+        expect(customList.props().data).toEqual([
+            {text: 'With Query Text', value: 'with_query'},
+        ]);
+    });
 });

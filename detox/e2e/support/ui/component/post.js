@@ -6,22 +6,35 @@ import ProfilePicture from './profile_picture';
 class Post {
     testID = {
         postProfilePicturePrefix: 'post_profile_picture.profile_picture.',
+        emoji: 'markdown_emoji',
+        image: 'markdown_image',
         message: 'markdown_text',
         postHeaderDateTime: 'post_header.date_time',
         postHeaderDisplayName: 'post_header.display_name',
+        postHeaderGuestTag: 'post_header.guest_tag',
         postHeaderReply: 'post_header.reply',
         postPreHeaderText: 'post_pre_header.text',
+        showLessButton: 'show_more.button.minus',
+        showMoreButton: 'show_more.button.plus',
     }
 
     getPost = (postItemSourceTestID, postId, postMessage, postProfileOptions = {}) => {
         const postItemMatcher = this.getPostItemMatcher(postItemSourceTestID, postId, postMessage);
+        const postItemEmojiMatcher = by.id(this.testID.emoji).withAncestor(postItemMatcher);
+        const postItemImageMatcher = by.id(this.testID.image).withAncestor(postItemMatcher);
         const postItemMessageMatcher = by.id(this.testID.message).withAncestor(postItemMatcher);
         const postItemPreHeaderTextMatch = by.id(this.testID.postPreHeaderText).withAncestor(postItemMatcher);
+        const postItemShowLessButtonMatcher = by.id(this.testID.showLessButton).withAncestor(postItemMatcher);
+        const postItemShowMoreButtonMatcher = by.id(this.testID.showMoreButton).withAncestor(postItemMatcher);
 
         return {
             postItem: element(postItemMatcher),
+            postItemEmoji: element(postItemEmojiMatcher),
+            postItemImage: element(postItemImageMatcher),
             postItemMessage: element(postItemMessageMatcher),
             postItemPreHeaderText: element(postItemPreHeaderTextMatch),
+            postItemShowLessButton: element(postItemShowLessButtonMatcher),
+            postItemShowMoreButton: element(postItemShowMoreButtonMatcher),
             ...this.getPostHeader(postItemMatcher),
             ...this.getPostProfilePicture(postItemMatcher, postProfileOptions),
         };
@@ -30,11 +43,13 @@ class Post {
     getPostHeader = (postItemMatcher) => {
         const postItemHeaderDateTimeMatcher = by.id(this.testID.postHeaderDateTime).withAncestor(postItemMatcher);
         const postItemHeaderDisplayNameMatcher = by.id(this.testID.postHeaderDisplayName).withAncestor(postItemMatcher);
+        const postItemHeaderGuestTagMatcher = by.id(this.testID.postHeaderGuestTag).withAncestor(postItemMatcher);
         const postItemHeaderReplyMatcher = by.id(this.testID.postHeaderReply).withAncestor(postItemMatcher);
 
         return {
             postItemHeaderDateTime: element(postItemHeaderDateTimeMatcher),
             postItemHeaderDisplayName: element(postItemHeaderDisplayNameMatcher),
+            postItemHeaderGuestTag: element(postItemHeaderGuestTagMatcher),
             postItemHeaderReply: element(postItemHeaderReplyMatcher),
         };
     }
