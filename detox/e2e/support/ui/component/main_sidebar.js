@@ -23,6 +23,7 @@ class MainSidebar {
     cancelButton = ChannelsList.cancelButton;
     clearButton = ChannelsList.clearButton;
     channelsList = ChannelsList.channelsList;
+    channelsListUnreadIndicator = ChannelsList.channelsListUnreadIndicator;
     filteredChannelsList = ChannelsList.filteredChannelsList;
     switchTeamsButton = ChannelsList.switchTeamsButton;
     switchTeamsButtonBadge = ChannelsList.switchTeamsButtonBadge;

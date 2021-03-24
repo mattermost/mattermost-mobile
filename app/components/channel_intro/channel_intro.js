@@ -92,6 +92,7 @@ class ChannelIntro extends PureComponent {
                     iconSize={48}
                     statusBorderWidth={2}
                     statusSize={25}
+                    testID='channel_intro.profile_picture'
                 />
             </TouchableWithFeedback>
         ));

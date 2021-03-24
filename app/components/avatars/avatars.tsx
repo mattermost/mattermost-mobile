@@ -108,6 +108,7 @@ export default class Avatars extends PureComponent<AvatarsProps> {
                                 userId={userId}
                                 size={ViewTypes.AVATAR_LIST_PICTURE_SIZE}
                                 showStatus={false}
+                                testID='avatars.profile_picture'
                             />
                         </View>
                     ))}

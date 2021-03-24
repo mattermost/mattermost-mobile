@@ -47,6 +47,7 @@ export default class UserInfo extends PureComponent {
                         iconSize={28}
                         showStatus={false}
                         userId={user.id}
+                        testID={`${testID}.profile_picture`}
                     />
                     <View style={style.wrapper}>
                         <View>

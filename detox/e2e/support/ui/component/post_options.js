@@ -37,7 +37,7 @@ class PostOptions {
     slideUpPanel = element(by.id(this.testID.slideUpPanel));
 
     toBeVisible = async () => {
-        await expect(this.postOptions).toBeVisible();
+        await expect(this.postOptions).toExist();
 
         return postOptions;
     }

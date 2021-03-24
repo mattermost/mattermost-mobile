@@ -32,6 +32,7 @@ import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import {privateChannelJoinPrompt} from '@utils/channels';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {PERMALINK} from '@constants/screen';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -378,6 +379,7 @@ export default class Permalink extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}
+                    location={PERMALINK}
                 />
             );
         }

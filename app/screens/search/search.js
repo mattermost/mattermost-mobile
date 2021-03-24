@@ -757,6 +757,7 @@ export default class Search extends PureComponent {
                         scrollEventThrottle={60}
                         ListFooterComponent={this.renderFooter}
                         onViewableItemsChanged={this.onViewableItemsChanged}
+                        testID='search.results_list'
                     />
                 </SafeAreaView>
                 <Autocomplete

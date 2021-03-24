@@ -105,6 +105,7 @@ export default class PostProfilePicture extends PureComponent {
                 size={ViewTypes.PROFILE_PICTURE_SIZE}
                 iconSize={24}
                 showStatus={showProfileStatus}
+                testID='post_profile_picture.profile_picture'
             />
         );
 

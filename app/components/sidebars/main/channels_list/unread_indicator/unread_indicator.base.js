@@ -35,6 +35,7 @@ export default class UnreadIndicatorBase extends PureComponent {
             <View
                 style={[style.wrapper, this.props.style]}
                 pointerEvents={visible ? 'auto' : 'none'}
+                testID='channels_list.unread_indicator'
             >
                 <CompassIcon
                     name='arrow-up'

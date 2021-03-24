@@ -36,6 +36,7 @@ exports[`user_profile should match snapshot 1`] = `
         size={153}
         statusBorderWidth={6}
         statusSize={36}
+        testID="user_profile.profile_picture"
         userId="4hzdnk6mg7gepe7yze6m3domnc"
       />
       <Text

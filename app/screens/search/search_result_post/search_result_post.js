@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
 import Post from '@components/post';
+import {SEARCH} from '@constants/screen';
 
 export default class SearchResultPost extends PureComponent {
     static propTypes = {
@@ -50,6 +51,7 @@ export default class SearchResultPost extends PureComponent {
                 isSearchResult={true}
                 showAddReaction={false}
                 showFullDate={this.props.showFullDate}
+                location={SEARCH}
             />
         );
     }
