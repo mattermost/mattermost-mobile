@@ -12,6 +12,8 @@ class ChannelInfoScreen {
         closeChannelInfoButton: 'close.channel_info.button',
         headerChannelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
         headerDisplayName: 'channel_info.header.display_name',
+        headerHeader: 'channel_info.header.header',
+        headerPurpose: 'channel_info.header.purpose',
         favoritePreferenceAction: 'channel_info.favorite.action',
         favoriteSwitchFalse: 'channel_info.favorite.action.switch.false',
         favoriteSwitchTrue: 'channel_info.favorite.action.switch.true',
@@ -36,6 +38,8 @@ class ChannelInfoScreen {
     closeChannelInfoButton = element(by.id(this.testID.closeChannelInfoButton));
     headerChannelIconGMMemberCount = element(by.id(this.testID.headerChannelIconGMMemberCount));
     headerDisplayName = element(by.id(this.testID.headerDisplayName));
+    headerHeader = element(by.id('markdown_text').withAncestor(by.id(this.testID.headerHeader)));
+    headerPurpose = element(by.id(this.testID.headerPurpose));
     favoritePreferenceAction = element(by.id(this.testID.favoritePreferenceAction));
     favoriteSwitchFalse = element(by.id(this.testID.favoriteSwitchFalse));
     favoriteSwitchTrue = element(by.id(this.testID.favoriteSwitchTrue));

@@ -68,6 +68,7 @@ const AddReaction = (props) => {
             <EmojiPicker
                 deviceWidth={width}
                 onEmojiPress={handleEmojiPress}
+                testID='add_reaction.emoji_picker'
             />
         </View>
     );
