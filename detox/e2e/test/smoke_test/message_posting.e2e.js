@@ -82,11 +82,11 @@ describe('Message Posting', () => {
     it('MM-T3225 should be able to post a jumbo emoji', async () => {
         // # Post a jumbo emoji
         const message = ':fox_face:';
-        await postMessage(message, {quickReplace: true});
+        await postMessage(message);
 
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
-        const {postListPostItem} = await getPostListPostItem(post.id);
+        const {postListPostItem} = await getPostListPostItem(post.id, '🦊');
         await expect(postListPostItem).toBeVisible();
     });
 });

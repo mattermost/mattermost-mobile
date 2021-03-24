@@ -94,6 +94,10 @@ export type DialogSubmission = {
     };
     cancelled: boolean;
 };
+export type DialogOption = {
+    text: string;
+    value: string;
+};
 export type DialogElement = {
     display_name: string;
     name: string;
@@ -106,10 +110,7 @@ export type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
-    options: Array<{
-        text: string;
-        value: any;
-    }>;
+    options: Array<DialogOption>;
 };
 export type InteractiveDialogConfig = {
     app_id: string;

@@ -3,13 +3,11 @@
 
 import React from 'react';
 import {Alert} from 'react-native';
-import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
 import PostOptions from './post_options';
-
-jest.mock('react-intl');
 
 describe('PostOptions', () => {
     const actions = {
@@ -55,12 +53,11 @@ describe('PostOptions', () => {
     };
 
     function getWrapper(props = {}) {
-        return shallow(
+        return shallowWithIntl(
             <PostOptions
                 {...baseProps}
                 {...props}
             />,
-            {context: {intl: {formatMessage: ({defaultMessage}) => defaultMessage}}},
         );
     }
 
