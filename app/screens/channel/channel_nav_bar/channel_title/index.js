@@ -35,7 +35,7 @@ function mapStateToProps(state) {
         hasGuests: stats.guest_count > 0,
         isArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
         isChannelMuted: isChannelMuted(myChannelMember),
-        isChannelShared: currentChannel?.shared && currentChannel?.type !== General.DM_CHANNEL,
+        isChannelShared: currentChannel?.shared,
         isGuest: isTeammateGuest,
         isSelfDMChannel,
         theme: getTheme(state),

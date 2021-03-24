@@ -64,6 +64,10 @@ export function isChannelAdmin(roles: string): boolean {
     return rolesIncludePermission(roles, General.CHANNEL_ADMIN_ROLE);
 }
 
+export function isShared(user: UserProfile): boolean {
+    return Boolean(user.remote_id);
+}
+
 export function hasUserAccessTokenRole(roles: string): boolean {
     return rolesIncludePermission(roles, General.SYSTEM_USER_ACCESS_TOKEN_ROLE);
 }

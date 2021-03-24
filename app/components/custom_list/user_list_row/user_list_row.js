@@ -11,7 +11,7 @@ import {
 
 import ChannelIcon from '@components/channel_icon';
 import {General} from '@mm-redux/constants';
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import {displayUsername, isShared} from '@mm-redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
@@ -42,7 +42,7 @@ export default class UserListRow extends React.PureComponent {
 
     renderIcon = (style) => {
         const {theme, user} = this.props;
-        if (!user.remote_id) {
+        if (!isShared(user)) {
             return null;
         }
         return (
