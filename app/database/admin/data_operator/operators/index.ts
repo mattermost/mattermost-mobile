@@ -8,8 +8,9 @@ import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
-    DataFactory,
+    BaseOperator,
     IdenticalRecord,
+    Operator,
     RawApp,
     RawCustomEmoji,
     RawDraft,
@@ -55,12 +56,12 @@ const {
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateAppRecord = async ({database, value}: DataFactory) => {
+export const operateAppRecord = async ({database, value}: Operator) => {
     const record = value as RawApp;
 
     const generator = (app: App) => {
@@ -80,12 +81,12 @@ export const operateAppRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateGlobalRecord = async ({database, value}: DataFactory) => {
+export const operateGlobalRecord = async ({database, value}: Operator) => {
     const record = value as RawGlobal;
 
     const generator = (global: Global) => {
@@ -104,12 +105,12 @@ export const operateGlobalRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operateServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateServersRecord = async ({database, value}: DataFactory) => {
+export const operateServersRecord = async ({database, value}: Operator) => {
     const record = value as RawServers;
 
     const generator = (servers: Servers) => {
@@ -131,12 +132,12 @@ export const operateServersRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operateCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateCustomEmojiRecord = async ({database, value}: DataFactory) => {
+export const operateCustomEmojiRecord = async ({database, value}: Operator) => {
     const record = value as RawCustomEmoji;
     const generator = (emoji: CustomEmoji) => {
         emoji._raw.id = record?.id ?? emoji.id;
@@ -163,12 +164,12 @@ export const operateCustomEmojiRecord = async ({database, value}: DataFactory) =
 
 /**
  * operateRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateRoleRecord = async ({database, value}: DataFactory) => {
+export const operateRoleRecord = async ({database, value}: Operator) => {
     const record = value as RawRole;
 
     const generator = (role: Role) => {
@@ -187,12 +188,12 @@ export const operateRoleRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operateSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateSystemRecord = async ({database, value}: DataFactory) => {
+export const operateSystemRecord = async ({database, value}: Operator) => {
     const record = value as RawSystem;
 
     const generator = (system: System) => {
@@ -211,12 +212,12 @@ export const operateSystemRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operateTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateTermsOfServiceRecord = async ({database, value}: DataFactory) => {
+export const operateTermsOfServiceRecord = async ({database, value}: Operator) => {
     const record = value as RawTermsOfService;
 
     const generator = (tos: TermsOfService) => {
@@ -234,12 +235,12 @@ export const operateTermsOfServiceRecord = async ({database, value}: DataFactory
 
 /**
  * operatePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operatePostRecord = async ({database, value}: DataFactory) => {
+export const operatePostRecord = async ({database, value}: Operator) => {
     const record = value as RawPost;
 
     const generator = (post: Post) => {
@@ -270,12 +271,12 @@ export const operatePostRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operatePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operatePostInThreadRecord = async ({database, value}: DataFactory) => {
+export const operatePostInThreadRecord = async ({database, value}: Operator) => {
     const record = value as RawPostsInThread;
 
     const generator = (postsInThread: PostsInThread) => {
@@ -295,12 +296,12 @@ export const operatePostInThreadRecord = async ({database, value}: DataFactory) 
 
 /**
  * operateReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateReactionRecord = async ({database, value}: DataFactory) => {
+export const operateReactionRecord = async ({database, value}: Operator) => {
     const record = value as RawReaction;
 
     const generator = (reaction: Reaction) => {
@@ -321,12 +322,12 @@ export const operateReactionRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operateFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateFileRecord = async ({database, value}: DataFactory) => {
+export const operateFileRecord = async ({database, value}: Operator) => {
     const record = value as RawFile;
 
     const generator = (file: File) => {
@@ -352,12 +353,12 @@ export const operateFileRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operatePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operatePostMetadataRecord = async ({database, value}: DataFactory) => {
+export const operatePostMetadataRecord = async ({database, value}: Operator) => {
     const record = value as RawPostMetadata;
 
     const generator = (postMeta: PostMetadata) => {
@@ -377,12 +378,12 @@ export const operatePostMetadataRecord = async ({database, value}: DataFactory) 
 
 /**
  * operateDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateDraftRecord = async ({database, value}: DataFactory) => {
+export const operateDraftRecord = async ({database, value}: Operator) => {
     const record = value as RawDraft;
     const emptyFileInfo: FileInfo[] = [];
 
@@ -404,12 +405,12 @@ export const operateDraftRecord = async ({database, value}: DataFactory) => {
 
 /**
  * operatePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {Operator} operator
  * @param {Database} operator.database
  * @param {RecordValue} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operatePostsInChannelRecord = async ({database, value}: DataFactory) => {
+export const operatePostsInChannelRecord = async ({database, value}: Operator) => {
     const record = value as RawPostsInChannel;
 
     const generator = (postsInChannel: PostsInChannel) => {
@@ -438,19 +439,14 @@ export const operatePostsInChannelRecord = async ({database, value}: DataFactory
  * update_at value of the existing record is different from the parameter 'value' own update_at.  Only if they differ,
  * that it prepares the record for update.
  *
- * @param {DataFactory} operatorBase
+ * @param {Operator} operatorBase
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
  * @param {RecordValue} operatorBase.value
  * @param {((model: Model) => void)} operatorBase.generator
- * @returns {Promise<any>}
+ * @returns {Promise<Model>}
  */
-const operateBaseRecord = async ({
-    database,
-    tableName,
-    value,
-    generator,
-}: DataFactory) => {
+const operateBaseRecord = async ({database, tableName, value, generator}: BaseOperator) => {
     // We query first to see if we have a record on that entity with the current value.id
     const appRecord = (await database.collections.
         get(tableName!).
@@ -483,8 +479,6 @@ const operateBaseRecord = async ({
     // 1. We don't have a record yet to update; so we create it
     // 2. This is just a normal create operation
     return database.collections.get(tableName!).prepareCreate(generator);
-
-    // return null;
 };
 
 /**

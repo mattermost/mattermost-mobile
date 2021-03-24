@@ -1,15 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/admin/database_manager';
 import {
     BatchOperations,
-    HandleBaseData,
+    ExecuteRecords,
     HandleFiles,
     HandleIsolatedEntityData,
     HandlePostMetadata,
     HandlePosts,
     HandleReactions,
     PostImage,
+    PrepareRecords,
     RawCustomEmoji,
     RawDraft,
     RawEmbed,
@@ -19,7 +25,17 @@ import {
     RawPostsInThread,
     RawReaction,
 } from '@typings/database/database';
-import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
+import File from '@typings/database/file';
+import CustomEmoji from '@typings/database/custom_emoji';
+import {IsolatedEntities} from '@typings/database/enums';
+import Post from '@typings/database/post';
+import PostMetadata from '@typings/database/post_metadata';
+import PostsInChannel from '@typings/database/posts_in_channel';
+import PostsInThread from '@typings/database/posts_in_thread';
+import Reaction from '@typings/database/reaction';
+
+import DatabaseConnectionException from './exceptions/database_connection_exception';
+import DatabaseOperatorException from './exceptions/database_operator_exception';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
@@ -36,21 +52,7 @@ import {
     operateSystemRecord,
     operateTermsOfServiceRecord,
 } from './operators';
-
-import CustomEmoji from '@typings/database/custom_emoji';
-import DatabaseConnectionException from './exceptions/database_connection_exception';
-import DatabaseManager from '@database/admin/database_manager';
-import DatabaseOperatorException from './exceptions/database_operator_exception';
-import File from '@typings/database/file';
-import {IsolatedEntities} from '@typings/database/enums';
-import {MM_TABLES} from '@constants/database';
-import Model from '@nozbe/watermelondb/Model';
-import Post from '@typings/database/post';
-import PostMetadata from '@typings/database/post_metadata';
-import PostsInChannel from '@typings/database/posts_in_channel';
-import PostsInThread from '@typings/database/posts_in_thread';
-import {Q} from '@nozbe/watermelondb';
-import Reaction from '@typings/database/reaction';
+import {createPostsChain, sanitizePosts, sanitizeReactions} from './utils';
 
 const {
     CUSTOM_EMOJI,
@@ -74,6 +76,12 @@ class DataOperator {
    */
   handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
       let recordOperator;
+
+      if (!values.length) {
+          throw new DatabaseOperatorException(
+              'An empty "values" array has been passed to the handleIsolatedEntity method',
+          );
+      }
 
       switch (tableName) {
           case IsolatedEntities.APP: {
@@ -111,27 +119,27 @@ class DataOperator {
       }
 
       if (recordOperator) {
-          await this.handleBase({values, tableName, recordOperator});
+          await this.executeInDatabase({values, tableName, recordOperator});
       }
   };
 
   /**
    * handleDraft: Handler responsible for the Create/Update operations occurring the Draft entity from the 'Server' schema
    * @param {RawDraft[]} drafts
-   * @returns {Promise<any[]>}
+   * @returns {Promise<void>}
    */
   handleDraft = async (drafts: RawDraft[]) => {
       if (!drafts.length) {
-          return [];
+          throw new DatabaseOperatorException(
+              'An empty "drafts" array has been passed to the handleReactions method',
+          );
       }
 
-      await this.handleBase({
+      await this.executeInDatabase({
           values: drafts,
           tableName: DRAFT,
           recordOperator: operateDraftRecord,
       });
-
-      return [];
   };
 
   /**
@@ -139,11 +147,13 @@ class DataOperator {
    * @param {HandleReactions} handleReactions
    * @param {RawReaction[]} handleReactions.reactions
    * @param {boolean} handleReactions.prepareRowsOnly
-   * @returns {Promise<any[] | (Reaction | CustomEmoji)[]>}
+   * @returns {Promise<[] | (Reaction | CustomEmoji)[]>}
    */
   handleReactions = async ({reactions, prepareRowsOnly}: HandleReactions) => {
       if (!reactions.length) {
-          return [];
+          throw new DatabaseOperatorException(
+              'An empty "reactions" array has been passed to the handleReactions method',
+          );
       }
 
       const database = await this.getDatabase(REACTION);
@@ -158,27 +168,31 @@ class DataOperator {
           rawReactions: reactions,
       });
 
+      let batchRecords: Model[] = [];
+
       // Prepares record for model Reactions
-      const postReactions = ((await this.prepareBase({
-          database,
-          recordOperator: operateReactionRecord,
-          tableName: REACTION,
-          values: createReactions,
-      })) as unknown) as Reaction[];
+      if (createReactions.length) {
+          const reactionsRecords = ((await this.prepareRecords({
+              database,
+              recordOperator: operateReactionRecord,
+              tableName: REACTION,
+              values: createReactions,
+          })) as unknown) as Reaction[];
+          batchRecords = batchRecords.concat(reactionsRecords);
+      }
 
       // Prepares records for model CustomEmoji
-      const reactionEmojis = ((await this.prepareBase({
-          database,
-          recordOperator: operateCustomEmojiRecord,
-          tableName: CUSTOM_EMOJI,
-          values: createEmojis as RawCustomEmoji[],
-      })) as unknown) as CustomEmoji[];
+      if (createEmojis.length) {
+          const emojiRecords = ((await this.prepareRecords({
+              database,
+              recordOperator: operateCustomEmojiRecord,
+              tableName: CUSTOM_EMOJI,
+              values: createEmojis as RawCustomEmoji[],
+          })) as unknown) as CustomEmoji[];
+          batchRecords = batchRecords.concat(emojiRecords);
+      }
 
-      const batchRecords = [
-          ...postReactions,
-          ...deleteReactions,
-          ...reactionEmojis,
-      ];
+      batchRecords = batchRecords.concat(deleteReactions);
 
       if (prepareRowsOnly) {
           return batchRecords;
@@ -195,20 +209,156 @@ class DataOperator {
   };
 
   /**
+   * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
+   * @param {HandlePosts} handlePosts
+   * @param {string[]} handlePosts.orders
+   * @param {RawPost[]} handlePosts.values
+   * @param {string | undefined} handlePosts.previousPostId
+   * @returns {Promise<void>}
+   */
+  handlePosts = async ({orders, values, previousPostId}: HandlePosts) => {
+      const tableName = POST;
+
+      // We rely on the order array; if it is empty, we stop processing
+      if (!orders.length) {
+          throw new DatabaseOperatorException(
+              'An empty "order" array has been passed to the HandlePosts method',
+          );
+      }
+
+      let batch: Model[] = [];
+      let files: RawFile[] = [];
+      const postsInThread = [];
+      let reactions: RawReaction[] = [];
+      let emojis: RawCustomEmoji[] = [];
+      const images: { images: Dictionary<PostImage>; postId: string }[] = [];
+      const embeds: { embed: RawEmbed[]; postId: string }[] = [];
+
+      // We treat those posts who are present in the order array only
+      const {orderedPosts, unOrderedPosts} = sanitizePosts({
+          posts: values,
+          orders,
+      });
+
+      // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
+      const linkedRawPosts: RawPost[] = createPostsChain({
+          orders,
+          previousPostId: previousPostId || '',
+          rawPosts: orderedPosts,
+      });
+
+      const database = await this.getDatabase(tableName);
+
+      // Prepares records for batch processing onto the 'Post' entity for the server schema
+      const posts = ((await this.prepareRecords({
+          database,
+          tableName,
+          values: [...linkedRawPosts, ...unOrderedPosts],
+          recordOperator: operatePostRecord,
+      })) as unknown) as Post[];
+
+      // Appends the processed records into the final batch array
+      batch = batch.concat(posts);
+
+      // Starts extracting information from each post to build up for related entities' data
+      for (let i = 0; i < orderedPosts.length; i++) {
+          const post = orderedPosts[i] as RawPost;
+
+          // PostsInChannel - a root post has an empty root_id value
+          if (!post.root_id) {
+              postsInThread.push({
+                  earliest: post.create_at,
+                  post_id: post.id,
+              });
+          }
+
+          if (post?.metadata && Object.keys(post?.metadata).length > 0) {
+              const metadata = post.metadata;
+
+              // Extracts reaction from post's metadata
+              reactions = reactions.concat(metadata?.reactions ?? []);
+
+              // Extracts emojis from post's metadata
+              emojis = emojis.concat(metadata?.emojis ?? []);
+
+              // Extracts files from post's metadata
+              files = files.concat(metadata?.files ?? []);
+
+              // Extracts images and embeds from post's metadata
+              if (metadata?.images) {
+                  images.push({images: metadata.images, postId: post.id});
+              }
+
+              if (metadata?.embeds) {
+                  embeds.push({embed: metadata.embeds, postId: post.id});
+              }
+          }
+      }
+
+      if (reactions.length) {
+          // calls handler for Reactions
+          const postReactions = (await this.handleReactions({
+              reactions,
+              prepareRowsOnly: true,
+          })) as Reaction[];
+          batch = batch.concat(postReactions);
+      }
+
+      if (files.length) {
+          // calls handler for Files
+          const postFiles = (await this.handleFiles({
+              files,
+              prepareRowsOnly: true,
+          })) as File[];
+          batch = batch.concat(postFiles);
+      }
+
+      if (images.length || embeds.length) {
+          // calls handler for postMetadata ( embeds and images )
+          const postMetadata = (await this.handlePostMetadata({
+              images,
+              embeds,
+              prepareRowsOnly: true,
+          })) as PostMetadata[];
+          batch = batch.concat(postMetadata);
+      }
+
+      if (batch.length) {
+          await this.batchOperations({database, models: batch});
+      }
+
+      // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
+      await this.handleIsolatedEntity({
+          tableName: IsolatedEntities.CUSTOM_EMOJI,
+          values: emojis,
+      });
+
+      if (postsInThread.length) {
+          await this.handlePostsInThread(postsInThread);
+      }
+
+      if (orderedPosts.length) {
+          await this.handlePostsInChannel(orderedPosts);
+      }
+  };
+
+  /**
    * handleFiles: Handler responsible for the Create/Update operations occurring on the File entity from the 'Server' schema
    * @param {HandleFiles} handleFiles
    * @param {RawFile[]} handleFiles.files
    * @param {boolean} handleFiles.prepareRowsOnly
    * @returns {Promise<File[] | any[]>}
    */
-  handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
+  private handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
       if (!files.length) {
-          return [];
+          throw new DatabaseOperatorException(
+              'An empty "files" array has been passed to the handleFiles method',
+          );
       }
 
       const database = await this.getDatabase(FILE);
 
-      const postFiles = ((await this.prepareBase({
+      const postFiles = ((await this.prepareRecords({
           database,
           recordOperator: operateFileRecord,
           tableName: FILE,
@@ -234,7 +384,7 @@ class DataOperator {
    * @param {boolean} handlePostMetadata.prepareRowsOnly
    * @returns {Promise<any[] | PostMetadata[]>}
    */
-  handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadata) => {
+  private handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadata) => {
       const metadata: RawPostMetadata[] = [];
 
       if (images?.length) {
@@ -266,7 +416,7 @@ class DataOperator {
 
       const database = await this.getDatabase(POST_METADATA);
 
-      const postMetas = ((await this.prepareBase({
+      const postMetas = ((await this.prepareRecords({
           database,
           recordOperator: operatePostMetadataRecord,
           tableName: POST_METADATA,
@@ -284,131 +434,16 @@ class DataOperator {
       return [];
   };
 
-    /**
-     * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
-     * @param {HandlePosts} handlePosts
-     * @param {string[]} orders
-     * @param {RawPost[]} values
-     * @param {string | undefined} previousPostId
-     * @returns {Promise<void>}
-     */
-    handlePosts = async ({orders, values, previousPostId}: HandlePosts) => {
-        const tableName = POST;
-
-        // We rely on the order array; if it is empty, we stop processing
-        if (!orders?.length) {
-            throw new DatabaseOperatorException(
-                'An empty "order" array has been passed to the HandlePosts method',
-            );
-        }
-
-        let batch: Model[] = [];
-        let files: RawFile[] = [];
-        const postsInThread = [];
-        let reactions: RawReaction[] = [];
-        let emojis: RawCustomEmoji[] = [];
-        const images: { images: Dictionary<PostImage>; postId: string }[] = [];
-        const embeds: { embed: RawEmbed[]; postId: string }[] = [];
-
-        // We treat those posts who are present in the order array only
-        const {orderedPosts, unOrderedPosts} = sanitizePosts({
-            posts: values,
-            orders,
-        });
-
-        // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
-        const linkedRawPosts: RawPost[] = createPostsChain({
-            orders,
-            previousPostId: previousPostId || '',
-            rawPosts: orderedPosts,
-        });
-
-        const database = await this.getDatabase(tableName);
-
-        // Prepares records for batch processing onto the 'Post' entity for the server schema
-        const posts = ((await this.prepareBase({
-            database,
-            tableName,
-            values: [...linkedRawPosts, ...unOrderedPosts],
-            recordOperator: operatePostRecord,
-        })) as unknown) as Post[];
-
-        // Appends the processed records into the final batch array
-        batch = batch.concat(posts);
-
-        // Starts extracting information from each post to build up for related entities' data
-        for (let i = 0; i < orderedPosts.length; i++) {
-            const post = orderedPosts[i] as RawPost;
-
-            // PostsInChannel - a root post has an empty root_id value
-            if (!post.root_id) {
-                postsInThread.push({
-                    earliest: post.create_at,
-                    post_id: post.id,
-                });
-            }
-
-            const hasMetadata = post?.metadata && Object.keys(post?.metadata).length > 0;
-            if (hasMetadata) {
-                const metadata = post.metadata;
-
-                // Extracts reaction from post's metadata
-                reactions = reactions.concat(metadata?.reactions ?? []);
-
-                // Extracts emojis from post's metadata
-                emojis = emojis.concat(metadata?.emojis ?? []);
-
-                // Extracts files from post's metadata
-                files = files.concat(metadata?.files ?? []);
-
-                // Extracts images and embeds from post's metadata
-                if (metadata?.images) {
-                    images.push({images: metadata.images, postId: post.id});
-                }
-
-                if (metadata?.embeds) {
-                    embeds.push({embed: metadata.embeds, postId: post.id});
-                }
-            }
-        }
-
-        // calls handler for Reactions
-        const postReactions = (await this.handleReactions({reactions, prepareRowsOnly: true})) as Reaction[];
-        batch = batch.concat(postReactions);
-
-        // calls handler for Files
-        const postFiles = (await this.handleFiles({files, prepareRowsOnly: true})) as File[];
-        batch = batch.concat(postFiles);
-
-        // calls handler for postMetadata ( embeds and images )
-        const postMetadata = (await this.handlePostMetadata({
-            images,
-            embeds,
-            prepareRowsOnly: true,
-        })) as PostMetadata[];
-        batch = batch.concat(postMetadata);
-
-        if (batch.length) {
-            await this.batchOperations({database, models: batch});
-        }
-
-        // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
-        await this.handleIsolatedEntity({
-            tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: emojis,
-        });
-        await this.handlePostsInThread(postsInThread);
-        await this.handlePostsInChannel(orderedPosts);
-    };
-
   /**
    * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
    * @param {RawPostsInThread[]} rootPosts
-   * @returns {Promise<any[]>}
+   * @returns {Promise<void>}
    */
   private handlePostsInThread = async (rootPosts: RawPostsInThread[]) => {
       if (!rootPosts.length) {
-          return [];
+          throw new DatabaseOperatorException(
+              'An empty "rootPosts" array has been passed to the handlePostsInThread method',
+          );
       }
 
       // Creates an array of post ids
@@ -443,31 +478,32 @@ class DataOperator {
           rawPostsInThreads.push({...rootPost, latest: maxCreateAt});
       });
 
-      const postInThreadRecords = ((await this.prepareBase({
-          database,
-          recordOperator: operatePostInThreadRecord,
-          tableName: POSTS_IN_THREAD,
-          values: rawPostsInThreads,
-      })) as unknown) as PostsInThread[];
+      if (rawPostsInThreads.length) {
+          const postInThreadRecords = ((await this.prepareRecords({
+              database,
+              recordOperator: operatePostInThreadRecord,
+              tableName: POSTS_IN_THREAD,
+              values: rawPostsInThreads,
+          })) as unknown) as PostsInThread[];
 
-      if (postInThreadRecords?.length) {
-          await this.batchOperations({database, models: postInThreadRecords});
+          if (postInThreadRecords?.length) {
+              await this.batchOperations({database, models: postInThreadRecords});
+          }
       }
-
-      return [];
   };
 
   /**
    * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel entity from the 'Server' schema
    * @param {RawPost[]} posts
-   * @returns {Promise<any[]>}
+   * @returns {Promise<void>}
    */
   private handlePostsInChannel = async (posts: RawPost[]) => {
       // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
       // into existing chains in the PostsInChannel table
-
       if (!posts.length) {
-          return [];
+          throw new DatabaseOperatorException(
+              'An empty "posts" array has been passed to the handlePostsInChannel method',
+          );
       }
 
       // Sort a clone of 'posts' array by create_at  ( oldest to newest )
@@ -496,7 +532,7 @@ class DataOperator {
           fetch()) as PostsInChannel[];
 
       const createPostsInChannelRecord = async () => {
-          await this.handleBase({
+          await this.executeInDatabase({
               values: [{channel_id: channelId, earliest, latest}],
               tableName: POSTS_IN_CHANNEL,
               recordOperator: operatePostsInChannelRecord,
@@ -506,7 +542,7 @@ class DataOperator {
       // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
       if (chunks.length === 0) {
           await createPostsInChannelRecord();
-          return [];
+          return;
       }
 
       // Sort chunks (in-place) by earliest field  ( oldest to newest )
@@ -551,15 +587,11 @@ class DataOperator {
                   });
               } else {
                   await createPostsInChannelRecord();
-                  return [];
               }
           }
       } else {
           await createPostsInChannelRecord();
-          return [];
       }
-
-      return [];
   };
 
   /**
@@ -587,49 +619,55 @@ class DataOperator {
   };
 
   /**
-   * prepareBase: Utility method that actually calls the operators for the handlers
-   * @param {Database} database
-   * @param {string} tableName
-   * @param {RecordValue[]} values
-   * @param {(recordOperator: {optType: OperationType, value: RecordValue, database: Database , tableName: string}) => void} recordOperator
-   * @returns {Promise<unknown[] | any[]>}
+   * prepareRecords: This method loops over the raw data, onto which it calls the assigned operator finally produce an array of prepareUpdate/prepareCreate objects
+   * @param {PrepareRecords} prepareRecords
+   * @param {Database} prepareRecords.database
+   * @param {RecordValue[]} prepareRecords.values
+   * @param {RecordOperator} prepareRecords.recordOperator
+   * @returns {Promise<Model[]>}
    */
-  private prepareBase = async ({database, tableName, values, recordOperator}: HandleBaseData) => {
-      if (!Array.isArray(values) || !database) {
+  private prepareRecords = async ({database, values, recordOperator}: PrepareRecords) => {
+      if (!values.length) {
+          return [];
+      }
+
+      if (!Array.isArray(values) || !values?.length || !database) {
           throw new DatabaseOperatorException(
-              'prepareBase accepts only rawPosts of type RecordValue[] or valid database connection',
+              'prepareRecords accepts only values of type RecordValue[] or valid database connection',
           );
       }
 
-      if (values.length) {
-          const recordPromises = await values.map(async (value) => {
-              const record = await recordOperator({database, tableName, value});
-              return record;
-          });
+      const recordPromises = await values.map(async (value) => {
+          const record = await recordOperator({database, value});
+          return record;
+      });
 
-          const results = await Promise.all(recordPromises);
-          return results;
-      }
-
-      return [];
+      const results = await Promise.all(recordPromises);
+      return results;
   };
 
   /**
-   * handleBase: Handles the Create/Update operations on an entity.
-   * @param {HandleBaseData} baseData
-   * @param {string} tableName
-   * @param {RecordValue[]} values
-   * @param {(recordOperator: {value: RecordValue, database: , tableName: string}) => void} recordOperator
+   * executeInDatabase: This method uses the prepare records from the 'prepareRecords' method and send them as one transaction to the database.
+   * @param {ExecuteRecords} executor
+   * @param {RecordOperator} executor.recordOperator
+   * @param {string} executor.tableName
+   * @param {RecordValue[]} executor.values
    * @returns {Promise<void>}
    */
-  private handleBase = async ({tableName, values, recordOperator}: HandleBaseData) => {
+  private executeInDatabase = async ({recordOperator, tableName, values}: ExecuteRecords) => {
+      if (!values.length) {
+          throw new DatabaseOperatorException(
+              'An empty "values" array has been passed to the executeInDatabase method',
+          );
+      }
+
       const database = await this.getDatabase(tableName);
 
-      const models = ((await this.prepareBase({
+      const models = ((await this.prepareRecords({
           database,
+          recordOperator,
           tableName,
           values,
-          recordOperator,
       })) as unknown) as Model[];
 
       if (models?.length > 0) {
@@ -641,7 +679,7 @@ class DataOperator {
    * getDatabase: Based on the table's name, it will return a database instance either from the 'DEFAULT' database or
    * the 'SERVER' database
    * @param {string} tableName
-   * @returns {Promise<void>}
+   * @returns {Promise<Database>}
    */
   private getDatabase = async (tableName: string) => {
       const isDefaultConnection = Object.values(MM_TABLES.DEFAULT).some(
@@ -658,7 +696,7 @@ class DataOperator {
 
   /**
    * getDefaultDatabase: Returns the default database
-   * @returns {Promise<DatabaseInstance>}
+   * @returns {Promise<Database>}
    */
   private getDefaultDatabase = async () => {
       const connection = await DatabaseManager.getDefaultDatabase();
@@ -673,7 +711,7 @@ class DataOperator {
 
   /**
    * getServerDatabase: Returns the current active server database (multi-server support)
-   * @returns {Promise<DatabaseInstance>}
+   * @returns {Promise<Database>}
    */
   private getServerDatabase = async () => {
       // NOTE: here we are getting the active server directly as in a multi-server support system, the current

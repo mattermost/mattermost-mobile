@@ -3,7 +3,6 @@
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
-
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import DataOperator from './index';
@@ -52,7 +51,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.APP,
@@ -86,7 +85,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.GLOBAL,
@@ -109,7 +108,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.SERVERS,
@@ -139,7 +138,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.CUSTOM_EMOJI,
@@ -165,7 +164,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.ROLE,
@@ -192,7 +191,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.SYSTEM,
@@ -213,7 +212,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         const data = {
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
@@ -228,16 +227,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
     });
 
-    it('=> No table name: should not call handleBase if tableName is invalid', async () => {
+    it('=> No table name: should not call executeInDatabase if tableName is invalid', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await DataOperator.handleIsolatedEntity({
-
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             tableName: 'INVALID_TABLE_NAME',
@@ -253,7 +251,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
 
         await DataOperator.handleReactions({
@@ -283,25 +281,28 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
         const data = [
             {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
-                files: [{
-                    user_id: 'user_id',
-                    post_id: 'post_id',
-                    create_at: 123,
-                    update_at: 456,
-                    delete_at: 789,
-                    name: 'an_image',
-                    extension: 'jpg',
-                    size: 10,
-                    mime_type: 'image',
-                    width: 10,
-                    height: 10,
-                    has_preview_image: false,
-                    clientId: 'clientId',
-                }],
+                files: [
+                    {
+                        user_id: 'user_id',
+                        post_id: 'post_id',
+                        create_at: 123,
+                        update_at: 456,
+                        delete_at: 789,
+                        name: 'an_image',
+                        extension: 'jpg',
+                        size: 10,
+                        mime_type: 'image',
+                        width: 10,
+                        height: 10,
+                        has_preview_image: false,
+                        clientId: 'clientId',
+                    },
+                ],
                 message: 'test draft message for post',
                 root_id: '',
             },
@@ -322,24 +323,28 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         await DataOperator.handleFiles({
-            files: [{
-                user_id: 'user_id',
-                post_id: 'post_id',
-                create_at: 12345,
-                update_at: 456,
-                delete_at: 789,
-                name: 'an_image',
-                extension: 'jpg',
-                size: 10,
-                mime_type: 'image',
-                width: 10,
-                height: 10,
-                has_preview_image: false,
-            }],
+            files: [
+                {
+                    user_id: 'user_id',
+                    post_id: 'post_id',
+                    create_at: 12345,
+                    update_at: 456,
+                    delete_at: 789,
+                    name: 'an_image',
+                    extension: 'jpg',
+                    size: 10,
+                    mime_type: 'image',
+                    width: 10,
+                    height: 10,
+                    has_preview_image: false,
+                },
+            ],
             prepareRowsOnly: false,
         });
 
@@ -347,288 +352,12 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
-    it('=> HandlePostMetadata: should write to PostMetadata entity', async () => {
-        expect.assertions(3);
-
-        const database = await createConnection(true);
-        expect(database).toBeTruthy();
-
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
-        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
-
-        const data = {
-            images: {
-                'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
-                    width: 400,
-                    height: 400,
-                    format: 'png',
-                    frame_count: 0,
-                },
-
-            },
-            embeds: [
-                {
-                    type: 'opengraph',
-                    url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
-                    data: {
-                        type: 'object',
-                        url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
-                        title: 'mickmister/mattermost-plugin-default-theme',
-                        description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
-                        determiner: '',
-                        site_name: 'GitHub',
-                        locale: '',
-                        locales_alternate: null,
-                        images: [
-                            {
-                                url: '',
-                                secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
-                                type: '',
-                                width: 0,
-                                height: 0,
-                            },
-                        ],
-                        audios: null,
-                        videos: null,
-                    },
-                },
-            ],
-        };
-
-        await DataOperator.handlePostMetadata({
-            embeds: [{
-                embed: data.embeds, postId: 'post-1',
-            }],
-            images: [{
-                images: data.images, postId: 'post-1',
-            }],
-            prepareRowsOnly: false});
-
-        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
-        expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
-    });
-
-    it('=> HandlePostsInThread: should write to PostsInThread entity', async () => {
-        expect.assertions(2);
-
-        const posts = [
-            {
-                id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                create_at: 1596032651747,
-                update_at: 1596032651747,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '',
-                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                original_id: '',
-                message: "I'll second these kudos!  Thanks m!",
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-            {
-                id: '8fcnk3p1jt8mmkaprgajoxz115a',
-                create_at: 1596104683748,
-                update_at: 1596104683748,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: '',
-                original_id: '',
-                message: 'a added to the channel by j.',
-                type: 'system_add_to_channel',
-                props: {
-                    addedUserId: 'z89qsntet7bimd3xddfu7u9ncdaxc',
-                    addedUsername: 'a',
-                    userId: 'hy5sdfdfq51sebfh58ktrce5ijtcwy',
-                    username: 'j',
-                },
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 0,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-            {
-                id: '3y3w3a6gkbg73bnj3xund9o5ic',
-                create_at: 1596277483749,
-                update_at: 1596277483749,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
-                original_id: '',
-                message: 'Great work M!',
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-        ];
-        const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
-
-        await createConnection(true);
-
-        // handlePosts will in turn call handlePostsInThread
-        await DataOperator.handlePosts({
-            orders: [
-                '8swgtrrdiff89jnsiwiip3y1eoe',
-                '8fcnk3p1jt8mmkaprgajoxz115a',
-                '3y3w3a6gkbg73bnj3xund9o5ic',
-            ],
-            values: posts,
-            previousPostId: '',
-        });
-
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
-
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
-            {earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'},
-        ]);
-    });
-
-    it('=> HandlePostsInChannel: should write to PostsInChannel entity', async () => {
-        expect.assertions(2);
-
-        const posts = [
-            {
-                id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                create_at: 1596032651747,
-                update_at: 1596032651747,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                original_id: '',
-                message: "I'll second these kudos!  Thanks m!",
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-            {
-                id: '8fcnk3p1jt8mmkaprgajoxz115a',
-                create_at: 1596104683748,
-                update_at: 1596104683748,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: '',
-                original_id: '',
-                message: 'a added to the channel by j.',
-                type: 'system_add_to_channel',
-                props: {
-                    addedUserId: 'z89qsntet7bimd3xddfu7u9ncdaxc',
-                    addedUsername: 'a',
-                    userId: 'hy5sdfdfq51sebfh58ktrce5ijtcwy',
-                    username: 'j',
-                },
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 0,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-            {
-                id: '3y3w3a6gkbg73bnj3xund9o5ic',
-                create_at: 1596277483749,
-                update_at: 1596277483749,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
-                original_id: '',
-                message: 'Great work M!',
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-            {
-                id: '4btbnmticjgw7ewd3qopmpiwqw',
-                create_at: 1596277483749,
-                update_at: 1596277483749,
-                edit_at: 0,
-                delete_at: 0,
-                is_pinned: false,
-                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
-                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: '',
-                parent_id: '',
-                original_id: '',
-                message: 'unordered post',
-                type: '',
-                props: {},
-                hashtags: '',
-                pending_post_id: '',
-                reply_count: 4,
-                last_reply_at: 0,
-                participants: null,
-                metadata: {},
-            },
-        ];
-        const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
-
-        await createConnection(true);
-
-        // handlePosts will in turn call handlePostsInThread
-        await DataOperator.handlePosts({
-            orders: [
-                '8swgtrrdiff89jnsiwiip3y1eoe',
-                '8fcnk3p1jt8mmkaprgajoxz115a',
-                '3y3w3a6gkbg73bnj3xund9o5ic',
-            ],
-            values: posts,
-            previousPostId: '',
-        });
-
-        expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
-    });
-
     it('=> HandlePosts: should write to Post and its sub-child entities', async () => {
-        expect.assertions(6);
+        expect.assertions(12);
 
         const posts = [
             {
-                id: 'a7ebyw883trm884p1qcgt8yw4a',
+                id: '8swgtrrdiff89jnsiwiip3y1eoe',
                 create_at: 1596032651747,
                 update_at: 1596032651747,
                 edit_at: 0,
@@ -636,7 +365,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 is_pinned: false,
                 user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
                 channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
-                root_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                root_id: '',
                 parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 original_id: '',
                 message: "I'll second these kudos!  Thanks m!",
@@ -669,12 +398,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
                     embeds: [
                         {
                             type: 'opengraph',
-                            url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                            url:
+                'https://github.com/mickmister/mattermost-plugin-default-theme',
                             data: {
                                 type: 'object',
-                                url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                                url:
+                  'https://github.com/mickmister/mattermost-plugin-default-theme',
                                 title: 'mickmister/mattermost-plugin-default-theme',
-                                description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                                description:
+                  'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
                                 determiner: '',
                                 site_name: 'GitHub',
                                 locale: '',
@@ -682,7 +414,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
                                 images: [
                                     {
                                         url: '',
-                                        secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                        secure_url:
+                      'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
                                         type: '',
                                         width: 0,
                                         height: 0,
@@ -718,10 +451,60 @@ describe('*** DataOperator: Handlers tests ***', () => {
                             width: 500,
                             height: 656,
                             has_preview_image: true,
-                            mini_preview: '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                            mini_preview:
+                '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
                         },
                     ],
                 },
+            },
+            {
+                id: '8fcnk3p1jt8mmkaprgajoxz115a',
+                create_at: 1596104683748,
+                update_at: 1596104683748,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: '',
+                original_id: '',
+                message: 'a added to the channel by j.',
+                type: 'system_add_to_channel',
+                props: {
+                    addedUserId: 'z89qsntet7bimd3xddfu7u9ncdaxc',
+                    addedUsername: 'a',
+                    userId: 'hy5sdfdfq51sebfh58ktrce5ijtcwy',
+                    username: 'j',
+                },
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 0,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
+            },
+            {
+                id: '3y3w3a6gkbg73bnj3xund9o5ic',
+                create_at: 1596277483749,
+                update_at: 1596277483749,
+                edit_at: 0,
+                delete_at: 0,
+                is_pinned: false,
+                user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
+                channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
+                root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
+                original_id: '',
+                message: 'Great work M!',
+                type: '',
+                props: {},
+                hashtags: '',
+                pending_post_id: '',
+                reply_count: 4,
+                last_reply_at: 0,
+                participants: null,
+                metadata: {},
             },
         ];
 
@@ -737,17 +520,122 @@ describe('*** DataOperator: Handlers tests ***', () => {
         // handlePosts will in turn call handlePostsInThread
         await DataOperator.handlePosts({
             orders: [
-                'a7ebyw883trm884p1qcgt8yw4a',
+                '8swgtrrdiff89jnsiwiip3y1eoe',
+                '8fcnk3p1jt8mmkaprgajoxz115a',
+                '3y3w3a6gkbg73bnj3xund9o5ic',
             ],
             values: posts,
             previousPostId: '',
         });
 
         expect(spyOnHandleReactions).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleReactions).toHaveBeenCalledWith({
+            reactions: [
+                {
+                    user_id: 'njic1w1k5inefp848jwk6oukio',
+                    post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                    emoji_name: 'clap',
+                    create_at: 1608252965442,
+                    update_at: 1608252965442,
+                    delete_at: 0,
+                },
+            ],
+            prepareRowsOnly: true,
+        });
+
         expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleFiles).toHaveBeenCalledWith({
+            files: [
+                {
+                    id: 'f1oxe5rtepfs7n3zifb4sso7po',
+                    user_id: '89ertha8xpfsumpucqppy5knao',
+                    post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                    create_at: 1608270920357,
+                    update_at: 1608270920357,
+                    delete_at: 0,
+                    name: '4qtwrg.jpg',
+                    extension: 'jpg',
+                    size: 89208,
+                    mime_type: 'image/jpeg',
+                    width: 500,
+                    height: 656,
+                    has_preview_image: true,
+                    mini_preview:
+            '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                },
+            ],
+            prepareRowsOnly: true,
+        });
+
         expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostMetadata).toHaveBeenCalledWith({
+            embeds: [
+                {
+                    embed: [
+                        {
+                            type: 'opengraph',
+                            url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                            data: {
+                                type: 'object',
+                                url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                                title: 'mickmister/mattermost-plugin-default-theme',
+                                description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                                determiner: '',
+                                site_name: 'GitHub',
+                                locale: '',
+                                locales_alternate: null,
+                                images: [
+                                    {
+                                        url: '',
+                                        secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                        type: '',
+                                        width: 0,
+                                        height: 0,
+                                    },
+                                ],
+                                audios: null,
+                                videos: null,
+                            },
+                        },
+                    ],
+                    postId: '8swgtrrdiff89jnsiwiip3y1eoe',
+                },
+            ],
+            images: [
+                {
+                    images: {
+                        'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
+                            width: 400,
+                            height: 400,
+                            format: 'png',
+                            frame_count: 0,
+                        },
+                    },
+                    postId: '8swgtrrdiff89jnsiwiip3y1eoe',
+                },
+            ],
+            prepareRowsOnly: true,
+        });
+
         expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledWith({
+            tableName: 'CustomEmoji',
+            values: [
+                {
+                    id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                    create_at: 1502389307432,
+                    update_at: 1502389307432,
+                    delete_at: 0,
+                    creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                    name: 'thanks',
+                },
+            ],
+        });
+
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
+
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
+        expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
     });
 });

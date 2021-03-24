@@ -3,6 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
@@ -55,6 +56,13 @@ import IServers from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
+
+if (!__DEV__) {
+    // To prevent logs leaking in production environment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    logger.silence();
+}
 
 class DatabaseManager {
     private activeDatabase: DatabaseInstance;
