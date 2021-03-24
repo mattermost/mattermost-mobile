@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 import {shallow} from 'enzyme';
 import React from 'react';
+import {TouchableOpacity} from 'react-native';
 import Preferences from '@mm-redux/constants/preferences';
-import CompassIcon from '@components/compass_icon';
 import ClearButton from '@components/custom_status/clear_button';
 
-describe('components/custom_status/custom_status_emoji', () => {
+describe('components/custom_status/clear_button', () => {
     const baseProps = {
         theme: Preferences.THEMES.default,
         handlePress: jest.fn(),
@@ -29,7 +29,7 @@ describe('components/custom_status/custom_status_emoji', () => {
             />,
         );
 
-        wrapper.find(CompassIcon).simulate('press');
+        wrapper.find(TouchableOpacity).simulate('press');
         expect(baseProps.handlePress).toBeCalled();
     });
 });

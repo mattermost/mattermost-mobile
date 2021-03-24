@@ -2117,6 +2117,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -2179,6 +2180,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {
