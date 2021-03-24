@@ -67,16 +67,16 @@ class ChannelScreen {
 
     postList = new PostList(this.testID.channelScreenPrefix);
 
-    getLongPostItem = (postId, text) => {
-        return LongPostScreen.getPost(postId, text);
+    getLongPostItem = (postId, text, postProfileOptions = {}) => {
+        return LongPostScreen.getPost(postId, text, postProfileOptions);
     }
 
     getLongPostMessage = () => {
         return LongPostScreen.getPostMessage();
     }
 
-    getPostListPostItem = (postId, text) => {
-        return this.postList.getPost(postId, text);
+    getPostListPostItem = (postId, text, postProfileOptions = {}) => {
+        return this.postList.getPost(postId, text, postProfileOptions);
     }
 
     getPostMessageAtIndex = (index) => {
@@ -139,6 +139,13 @@ class ChannelScreen {
         await this.toBeVisible();
     }
 
+    goToChannel = async (displayName) => {
+        await this.openMainSidebar();
+        const channelItem = MainSidebar.getChannelByDisplayName(displayName);
+        await channelItem.tap();
+        await expect(this.channelNavBarTitle).toHaveText(displayName);
+    }
+
     openMainSidebar = async () => {
         // # Open main sidebar
         await this.mainSidebarDrawerButton.tap();
@@ -175,10 +182,14 @@ class ChannelScreen {
         await ThreadScreen.toBeVisible();
     }
 
-    postMessage = async (message) => {
+    postMessage = async (message, {quickReplace = false} = {}) => {
         // # Post message
         await this.postInput.tap();
-        await this.postInput.typeText(message);
+        if (quickReplace) {
+            await this.postInput.replaceText(message);
+        } else {
+            await this.postInput.typeText(message);
+        }
         await this.tapSendButton();
     }
 

@@ -28,6 +28,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
       <Connect(ProfilePicture)
         showStatus={false}
         size={24}
+        testID="avatars.profile_picture"
         userId="user1"
       />
     </View>
@@ -49,6 +50,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
       <Connect(ProfilePicture)
         showStatus={false}
         size={24}
+        testID="avatars.profile_picture"
         userId="user2"
       />
     </View>
@@ -70,6 +72,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
       <Connect(ProfilePicture)
         showStatus={false}
         size={24}
+        testID="avatars.profile_picture"
         userId="user3"
       />
     </View>
@@ -147,6 +150,7 @@ exports[`Avatars should match snapshot for single avatar 1`] = `
       <Connect(ProfilePicture)
         showStatus={false}
         size={24}
+        testID="avatars.profile_picture"
         userId="user1"
       />
     </View>

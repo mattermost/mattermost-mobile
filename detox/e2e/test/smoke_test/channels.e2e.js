@@ -31,10 +31,10 @@ describe('Channels', () => {
     const {
         channelNavBarTitle,
         closeMainSidebar,
+        goToChannel,
         openMainSidebar,
     } = ChannelScreen;
     const {
-        getChannelByDisplayName,
         getFilteredChannelByDisplayName,
         hasChannelDisplayNameAtIndex,
         hasFilteredChannelDisplayNameAtIndex,
@@ -63,6 +63,7 @@ describe('Channels', () => {
         ({channel: nonJoinedChannel} = await Channel.apiCreateChannel({type: 'O', prefix: '1-non-joined-channel', teamId: team.id}));
 
         ({user: dmOtherUser} = await User.apiCreateUser({prefix: 'testchannel-1'}));
+        await Team.apiAddUserToTeam(dmOtherUser.id, team.id);
         ({channel: directMessageChannel} = await Channel.apiCreateDirectChannel([user.id, dmOtherUser.id]));
         await Post.apiCreatePost({
             channelId: directMessageChannel.id,
@@ -94,18 +95,16 @@ describe('Channels', () => {
         await hasChannelDisplayNameAtIndex(6, 'Town Square');
         await expect(element(by.id(nonJoinedChannel.display_name))).not.toBeVisible();
         await expect(element(by.id(nonDmOtherUser.username))).not.toBeVisible();
+        await closeMainSidebar();
 
         // # Visit private, public, favorite, and direct message channels
-        await getChannelByDisplayName(privateChannel.display_name).tap();
-        await openMainSidebar();
-        await getChannelByDisplayName(publicChannel.display_name).tap();
-        await openMainSidebar();
-        await getChannelByDisplayName(favoriteChannel.display_name).tap();
-        await openMainSidebar();
-        await getChannelByDisplayName(dmOtherUser.username).tap();
-        await openMainSidebar();
+        await goToChannel(privateChannel.display_name);
+        await goToChannel(publicChannel.display_name);
+        await goToChannel(favoriteChannel.display_name);
+        await goToChannel(dmOtherUser.username);
 
         // * Verify order when all channels are read except for unread channel
+        await openMainSidebar();
         await hasChannelDisplayNameAtIndex(0, unreadChannel.display_name);
         await hasChannelDisplayNameAtIndex(1, favoriteChannel.display_name);
         await hasChannelDisplayNameAtIndex(2, publicChannel.display_name);

@@ -41,6 +41,7 @@ describe('Select Team', () => {
 
     it('MM-T3619 should be able to select a team', async () => {
         // # Tap on team to join
+        await waitFor(SelectTeamScreen.getTeamByDisplayName(testTeam.display_name)).toBeVisible().whileElement(by.id(SelectTeamScreen.testID.teamsList)).scroll(500, 'down');
         const team = await SelectTeamScreen.getTeamByDisplayName(testTeam.display_name);
         await team.tap();
 

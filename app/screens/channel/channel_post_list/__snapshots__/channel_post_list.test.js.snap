@@ -27,6 +27,7 @@ exports[`ChannelPostList should match snapshot 1`] = `
     indicateNewMessages={true}
     lastPostIndex={-1}
     loadMorePostsVisible={false}
+    location="channel"
     onLoadMoreUp={[Function]}
     onPostPress={[Function]}
     postIds={Array []}

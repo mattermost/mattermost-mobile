@@ -189,7 +189,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     id='channel_info.purpose'
                                     defaultMessage='Purpose'
                                 />
-                                <Text style={baseTextStyle}>
+                                <Text
+                                    style={baseTextStyle}
+                                    testID={`${testID}.purpose`}
+                                >
                                     {purpose}
                                 </Text>
                             </View>
@@ -217,6 +220,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     value={header}
                                     onChannelLinkPress={popToRoot}
                                     disableAtChannelMentionHighlight={true}
+                                    testID={`${testID}.header`}
                                 />
                             </View>
                         </TouchableHighlight>

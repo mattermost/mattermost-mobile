@@ -21,6 +21,7 @@ import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
 import {RemoteCluster} from './remote_cluster';
 import {Dictionary} from './utilities';
+import {AppsState} from './apps';
 
 export type GlobalState = {
     entities: {
@@ -58,6 +59,7 @@ export type GlobalState = {
                 [x: string]: RemoteCluster;
             };
         };
+        apps: AppsState;
     };
     errors: Array<any>;
     requests: {

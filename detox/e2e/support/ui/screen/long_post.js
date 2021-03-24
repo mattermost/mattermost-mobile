@@ -6,14 +6,40 @@ import {Post} from '@support/ui/component';
 class LongPostScreen {
     testID = {
         longPostItem: 'long_post.post',
+        closeLongPostButton: 'close.long_post.button',
     }
 
-    getPost = (postId, postMessage) => {
-        const {postItem, postItemHeaderReply, postItemMessage} = Post.getPost(this.testID.longPostItem, postId, postMessage);
+    closeLongPostButton = element(by.id(this.testID.closeLongPostButton));
+
+    getPost = (postId, postMessage, postProfileOptions = {}) => {
+        const {
+            postItem,
+            postItemEmoji,
+            postItemHeaderDateTime,
+            postItemHeaderDisplayName,
+            postItemHeaderGuestTag,
+            postItemHeaderReply,
+            postItemImage,
+            postItemMessage,
+            postItemProfilePicture,
+            postItemProfilePictureUserStatus,
+            postItemShowLessButton,
+            postItemShowMoreButton,
+        } = Post.getPost(this.testID.longPostItem, postId, postMessage, postProfileOptions);
+
         return {
             longPostItem: postItem,
+            longPostItemEmoji: postItemEmoji,
+            longPostItemHeaderDateTime: postItemHeaderDateTime,
+            longPostItemHeaderDisplayName: postItemHeaderDisplayName,
+            longPostItemHeaderGuestTag: postItemHeaderGuestTag,
             longPostItemHeaderReply: postItemHeaderReply,
+            longPostItemImage: postItemImage,
             longPostItemMessage: postItemMessage,
+            longPostItemProfilePicture: postItemProfilePicture,
+            longPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
+            longPostItemShowLessButton: postItemShowLessButton,
+            longPostItemShowMoreButton: postItemShowMoreButton,
         };
     }
 

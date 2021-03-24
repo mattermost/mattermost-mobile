@@ -120,6 +120,7 @@ exports[`channel_info_header should match snapshot 1`] = `
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -182,6 +183,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {
@@ -453,6 +455,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -515,6 +518,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {
@@ -758,6 +762,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -820,6 +825,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {
@@ -1091,6 +1097,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -1153,6 +1160,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {
@@ -1396,6 +1404,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -1458,6 +1467,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {
@@ -1750,6 +1760,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -1812,6 +1823,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
           onPermalinkPress={[MockFunction]}
+          testID="channel_info.header.header"
           textStyles={
             Object {
               "code": Object {

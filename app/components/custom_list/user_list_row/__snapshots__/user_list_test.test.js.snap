@@ -29,6 +29,7 @@ exports[`UserListRow should match snapshot 1`] = `
       <Connect(ProfilePicture)
         iconSize={24}
         size={32}
+        testID="custom_list.user_item.21345.profile_picture"
         userId="21345"
       />
     </View>
@@ -164,6 +165,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
       <Connect(ProfilePicture)
         iconSize={24}
         size={32}
+        testID="custom_list.user_item.21345.profile_picture"
         userId="21345"
       />
     </View>
@@ -297,6 +299,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
       <Connect(ProfilePicture)
         iconSize={24}
         size={32}
+        testID="custom_list.user_item.21345.profile_picture"
         userId="21345"
       />
     </View>
@@ -443,6 +446,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
       <Connect(ProfilePicture)
         iconSize={24}
         size={32}
+        testID="custom_list.user_item.21345.profile_picture"
         userId="21345"
       />
     </View>

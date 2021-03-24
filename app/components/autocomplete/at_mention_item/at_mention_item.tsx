@@ -123,6 +123,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         size={24}
                         status={null}
                         showStatus={false}
+                        testID={`${testID}.profile_picture`}
                     />
                 </View>
                 <View style={style.rowInfo}>
