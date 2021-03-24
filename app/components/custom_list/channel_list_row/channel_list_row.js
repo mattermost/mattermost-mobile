@@ -45,10 +45,12 @@ export default class ChannelListRow extends React.PureComponent {
         const itemTestID = `${testID}.${this.props.id}`;
         const channelDisplayNameTestID = `${testID}.display_name`;
         let icon = 'globe';
+        let iconStyle = style.icon;
         if (this.props.isArchived) {
             icon = 'archive-outline';
         } else if (this.props.channel?.shared) {
             icon = 'circle-multiple-outline';
+            iconStyle = [style.icon, style.sharedIcon];
         }
 
         return (
@@ -67,7 +69,7 @@ export default class ChannelListRow extends React.PureComponent {
                     <View style={style.titleContainer}>
                         <CompassIcon
                             name={icon}
-                            style={style.icon}
+                            style={iconStyle}
                         />
                         <Text
                             style={style.displayName}
@@ -97,6 +99,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         icon: {
             fontSize: 16,
             color: theme.centerChannelColor,
+        },
+        sharedIcon: {
+            top: 2,
         },
         container: {
             flex: 1,
