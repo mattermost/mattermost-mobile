@@ -582,6 +582,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
       <Connect(ProfilePicture)
         iconSize={24}
         size={32}
+        testID="custom_list.user_item.21345.profile_picture"
         userId="21345"
       />
     </View>
