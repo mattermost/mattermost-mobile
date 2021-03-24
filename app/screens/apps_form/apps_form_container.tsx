@@ -81,7 +81,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                this.props.actions.sendEphemeralPost(callResp.markdown);
+                this.props.actions.sendEphemeralPost(callResp.markdown, call.context.channel_id, call.context.root_id || call.context.post_id);
             }
             break;
         case AppCallResponseTypes.FORM:
