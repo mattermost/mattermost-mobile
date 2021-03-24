@@ -35,8 +35,8 @@ describe('Edit Channel', () => {
             saveButton,
         } = EditChannelScreen;
         const {
-            headerDisplayName,
-            headerPurpose,
+            channelDisplayName,
+            channelPurpose,
         } = ChannelInfoScreen;
 
         // # Open edit channel screen
@@ -55,8 +55,8 @@ describe('Edit Channel', () => {
         await saveButton.tap();
 
         // * Verify changes have been saved
-        await expect(headerDisplayName).toHaveText('Town Square name');
-        await expect(headerPurpose).toHaveText('purpose');
+        await expect(channelDisplayName).toHaveText('Town Square name');
+        await expect(channelPurpose).toHaveText('purpose');
         await expect(element(by.text('header1\nheader2'))).toBeVisible();
 
         // # Close channel info screen

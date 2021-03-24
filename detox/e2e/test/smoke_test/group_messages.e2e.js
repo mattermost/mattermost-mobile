@@ -79,7 +79,7 @@ describe('Group Messages', () => {
 
         // * Verify GM channel is created
         await ChannelInfoScreen.open();
-        await expect(ChannelInfoScreen.headerDisplayName).toHaveText(`${testOtherUser1.username}, ${testOtherUser2.username}`);
+        await expect(ChannelInfoScreen.channelDisplayName).toHaveText(`${testOtherUser1.username}, ${testOtherUser2.username}`);
         await ChannelInfoScreen.close();
 
         // * Verify current user can post message to GM channel
