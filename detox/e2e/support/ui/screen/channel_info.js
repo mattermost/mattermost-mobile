@@ -10,8 +10,10 @@ class ChannelInfoScreen {
         channelInfoScreen: 'channel_info.screen',
         channelInfoScrollView: 'channel_info.scroll_view',
         closeChannelInfoButton: 'close.channel_info.button',
-        headerChannelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
-        headerDisplayName: 'channel_info.header.display_name',
+        channelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
+        channelDisplayName: 'channel_info.header.display_name',
+        channelHeader: 'channel_info.header.header',
+        channelPurpose: 'channel_info.header.purpose',
         favoritePreferenceAction: 'channel_info.favorite.action',
         favoriteSwitchFalse: 'channel_info.favorite.action.switch.false',
         favoriteSwitchTrue: 'channel_info.favorite.action.switch.true',
@@ -34,8 +36,10 @@ class ChannelInfoScreen {
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
     channelInfoScrollView = element(by.id(this.testID.channelInfoScrollView));
     closeChannelInfoButton = element(by.id(this.testID.closeChannelInfoButton));
-    headerChannelIconGMMemberCount = element(by.id(this.testID.headerChannelIconGMMemberCount));
-    headerDisplayName = element(by.id(this.testID.headerDisplayName));
+    channelIconGMMemberCount = element(by.id(this.testID.channelIconGMMemberCount));
+    channelDisplayName = element(by.id(this.testID.channelDisplayName));
+    channelHeader = element(by.id('markdown_text').withAncestor(by.id(this.testID.channelHeader)));
+    channelPurpose = element(by.id(this.testID.channelPurpose));
     favoritePreferenceAction = element(by.id(this.testID.favoritePreferenceAction));
     favoriteSwitchFalse = element(by.id(this.testID.favoriteSwitchFalse));
     favoriteSwitchTrue = element(by.id(this.testID.favoriteSwitchTrue));

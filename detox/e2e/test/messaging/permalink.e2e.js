@@ -7,8 +7,20 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelScreen, PermalinkScreen} from '@support/ui/screen';
-import {User, Setup, Channel, Post} from '@support/server_api';
+import {
+    ChannelScreen,
+    PermalinkScreen,
+} from '@support/ui/screen';
+import {
+    timeouts,
+    wait,
+} from '@support/utils';
+import {
+    Channel,
+    Post,
+    Setup,
+    User,
+} from '@support/server_api';
 
 describe('Permalink', () => {
     let testUser;
@@ -43,6 +55,7 @@ describe('Permalink', () => {
 
         // # Tap the channel permalink
         await element(by.text(permalinkLabel)).tap({x: 5, y: 10});
+        await wait(timeouts.ONE_SEC);
 
         // * Verify permalink post list has the expected target message
         await PermalinkScreen.toBeVisible();
