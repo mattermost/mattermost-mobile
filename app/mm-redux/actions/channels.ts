@@ -958,7 +958,7 @@ export function getSharedChannels(teamId: string, page = 0, perPage: number = Ge
                 share_name: 'name',
                 share_purpose: 'purpose',
             };
-            channels = (channels || []).map((channel: Dictionary<string|boolean>) => {
+            channels = (channels || []).map((channel: Dictionary<string|boolean|number>) => {
                 for (const i in renameFields) {
                     if (Object.prototype.hasOwnProperty.call(renameFields, i)) {
                         const oldPropName = i;
@@ -966,6 +966,9 @@ export function getSharedChannels(teamId: string, page = 0, perPage: number = Ge
                         channel[newPropName] = channel[oldPropName];
                         delete channel[oldPropName];
                     }
+                }
+                if (channel.delete_at === undefined) {
+                    channel.delete_at = 0;
                 }
                 channel.type = General.OPEN_CHANNEL;
                 channel.shared = true;
