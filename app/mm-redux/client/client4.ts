@@ -286,7 +286,6 @@ export default class Client4 {
         return `${this.getBotsRoute()}/${botUserId}`;
     }
 
-
     getCSRFFromCookie() {
         // NOT NEEDED IN THE MOBILE APP
         // if (typeof document !== 'undefined' && typeof document.cookie !== 'undefined') {
