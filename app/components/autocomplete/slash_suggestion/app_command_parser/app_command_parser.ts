@@ -553,35 +553,34 @@ export class AppCommandParser {
     }
 
     // composeCallFromCommand creates the form submission call
-    public composeCallFromCommand = async (command: string): Promise<AppCallRequest | null> => {
+    public composeCallFromCommand = async (command: string): Promise<{call: AppCallRequest | null, errorMessage?: string}> => {
         let parsed = new ParsedCommand(command, this, this.intl);
 
         const commandBindings = this.getCommandBindings();
         if (!commandBindings) {
-            this.displayError(this.intl.formatMessage({
-                id: 'apps.error.parser.no_bindings',
-                defaultMessage: 'No command bindings.',
-            }));
-            return null;
+            return {call: null,
+                errorMessage: this.intl.formatMessage({
+                    id: 'apps.error.parser.no_bindings',
+                    defaultMessage: 'No command bindings.',
+                })};
         }
 
         parsed = await parsed.matchBinding(commandBindings, false);
         parsed = parsed.parseForm(false);
         if (parsed.state === ParseState.Error) {
-            this.displayError(parsed.errorMessage());
-            return null;
+            return {call: null, errorMessage: parsed.errorMessage()};
         }
 
         const missing = this.getMissingFields(parsed);
         if (missing.length > 0) {
             const missingStr = missing.map((f) => f.label).join(', ');
-            this.displayError(this.intl.formatMessage({
-                id: 'apps.error.command.field_missing',
-                defaultMessage: 'Required fields missing: `{fieldName}`.',
-            }, {
-                fieldName: missingStr,
-            }));
-            return null;
+            return {call: null,
+                errorMessage: this.intl.formatMessage({
+                    id: 'apps.error.command.field_missing',
+                    defaultMessage: 'Required fields missing: `{fieldName}`.',
+                }, {
+                    fieldName: missingStr,
+                })};
         }
 
         return this.composeCallFromParsed(parsed);
@@ -661,33 +660,41 @@ export class AppCommandParser {
     }
 
     // composeCallFromParsed creates the form submission call
-    composeCallFromParsed = async (parsed: ParsedCommand): Promise<AppCallRequest | null> => {
+    composeCallFromParsed = async (parsed: ParsedCommand): Promise<{call: AppCallRequest | null, errorMessage?: string}> => {
         if (!parsed.binding) {
-            return null;
+            return {call: null,
+                errorMessage: this.intl.formatMessage({
+                    id: 'apps.error.parser.missing_binding',
+                    defaultMessage: 'Missing command bindings.',
+                })};
         }
 
         const call = parsed.form?.call || parsed.binding.call;
         if (!call) {
-            return null;
+            return {call: null,
+                errorMessage: this.intl.formatMessage({
+                    id: 'apps.error.parser.missing_call',
+                    defaultMessage: 'Missing binding call.',
+                })};
         }
 
         const values: AppCallValues = parsed.values;
-        const ok = await this.expandOptions(parsed, values);
+        const {errorMessage} = await this.expandOptions(parsed, values);
 
-        if (!ok) {
-            return null;
+        if (errorMessage) {
+            return {call: null, errorMessage};
         }
 
         const context = this.getAppContext(parsed.binding.app_id);
-        return createCallRequest(call, context, {}, values, parsed.command);
+        return {call: createCallRequest(call, context, {}, values, parsed.command)};
     }
 
-    expandOptions = async (parsed: ParsedCommand, values: AppCallValues) => {
+    expandOptions = async (parsed: ParsedCommand, values: AppCallValues): Promise<{errorMessage?: string}> => {
         if (!parsed.form?.fields) {
-            return true;
+            return {};
         }
 
-        let ok = true;
+        const errors: {[key: string]: string} = {};
         await Promise.all(parsed.form.fields.map(async (f) => {
             if (!values[f.name]) {
                 return;
@@ -699,14 +706,13 @@ export class AppCommandParser {
             case AppFieldTypes.STATIC_SELECT: {
                 const option = f.options?.find((o) => (o.value === values[f.name]));
                 if (!option) {
-                    ok = false;
-                    this.displayError(this.intl.formatMessage({
+                    errors[f.name] = this.intl.formatMessage({
                         id: 'apps.error.command.unknown_option',
                         defaultMessage: 'Unknown option for field `{fieldName}`: `{option}`.',
                     }, {
                         fieldName: f.name,
                         option: values[f.name],
-                    }));
+                    });
                     return;
                 }
                 values[f.name] = option;
@@ -721,14 +727,13 @@ export class AppCommandParser {
                 if (!user) {
                     const dispatchResult = await this.store.dispatch(getUserByUsername(userName) as any);
                     if ('error' in dispatchResult) {
-                        ok = false;
-                        this.displayError(this.intl.formatMessage({
+                        errors[f.name] = this.intl.formatMessage({
                             id: 'apps.error.command.unknown_user',
                             defaultMessage: 'Unknown user for field `{fieldName}`: `{option}`.',
                         }, {
                             fieldName: f.name,
                             option: values[f.name],
-                        }));
+                        });
                         return;
                     }
                     user = dispatchResult.data;
@@ -745,14 +750,13 @@ export class AppCommandParser {
                 if (!channel) {
                     const dispatchResult = await this.store.dispatch(getChannelByNameAndTeamName(getCurrentTeam(this.store.getState()).name, channelName) as any);
                     if ('error' in dispatchResult) {
-                        ok = false;
-                        this.displayError(this.intl.formatMessage({
+                        errors[f.name] = this.intl.formatMessage({
                             id: 'apps.error.command.unknown_channel',
                             defaultMessage: 'Unknown channel for field `{fieldName}`: `{option}`.',
                         }, {
                             fieldName: f.name,
                             option: values[f.name],
-                        }));
+                        });
                         return;
                     }
                     channel = dispatchResult.data;
@@ -763,7 +767,15 @@ export class AppCommandParser {
             }
         }));
 
-        return ok;
+        if (Object.keys(errors).length === 0) {
+            return {};
+        }
+
+        let errorMessage = '';
+        Object.keys(errors).forEach((v) => {
+            errorMessage = errorMessage + errors[v] + '\n';
+        });
+        return {errorMessage};
     }
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
@@ -1093,11 +1105,13 @@ export class AppCommandParser {
             }));
         }
 
-        const call = await this.composeCallFromParsed(parsed);
+        const {call, errorMessage} = await this.composeCallFromParsed(parsed);
         if (!call) {
             return this.makeSuggestionError(this.intl.formatMessage({
                 id: 'apps.error.lookup.error_preparing_request',
-                defaultMessage: 'Error preparing lookup request.',
+                defaultMessage: 'Error preparing lookup request: {errorMessage}',
+            }, {
+                errorMessage,
             }));
         }
         call.selected_field = f.name;
