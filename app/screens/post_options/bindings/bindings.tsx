@@ -118,7 +118,7 @@ class Option extends React.PureComponent<OptionProps> {
         }
 
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.post.channel_id, props.post.root_id || props.post.id);
+        const ephemeral = (message: string) => sendEphemeralPost(message, post.channel_id, post.root_id || post.id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
