@@ -1,7 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/custom_status/custom_status_emoji should match snapshot 1`] = `
-<View
+<ForwardRef
+  onPress={[Function]}
   style={
     Object {
       "alignItems": "center",
@@ -13,9 +14,7 @@ exports[`components/custom_status/custom_status_emoji should match snapshot 1`] 
   }
 >
   <CompassIcon
-    color="#ffffff"
-    name="close"
-    onPress={[Function]}
+    name="close-circle"
     size={20}
     style={
       Object {
@@ -24,5 +23,5 @@ exports[`components/custom_status/custom_status_emoji should match snapshot 1`] 
       }
     }
   />
-</View>
+</ForwardRef>
 `;

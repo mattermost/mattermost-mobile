@@ -22,7 +22,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
           "height": 46,
           "left": 14,
           "marginRight": 6,
-          "top": 12,
+          "top": 8,
           "width": 45,
         }
       }
@@ -115,7 +115,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
           "height": 46,
           "left": 14,
           "marginRight": 6,
-          "top": 12,
+          "top": 8,
           "width": 45,
         }
       }
@@ -192,7 +192,8 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
       >
         <ClearButton
           handlePress={[Function]}
-          size={20}
+          iconName="close"
+          size={18}
           testID="custom_status_suggestion.clear.button"
           theme={
             Object {

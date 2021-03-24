@@ -484,12 +484,12 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               Object {
                 "position": "absolute",
                 "right": 0,
-                "top": 3,
               }
             }
           >
             <ClearButton
               handlePress={[MockFunction]}
+              iconName="close-circle"
               size={20}
               theme={
                 Object {

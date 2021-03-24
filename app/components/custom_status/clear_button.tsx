@@ -60,8 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                     color: changeOpacity(theme.centerChannelColor, 0.52),
                 },
                 android: {
-                    color: theme.centerChannelBg,
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
+                    color: changeOpacity(theme.centerChannelColor, 0.52),
                 },
             }),
         },
