@@ -14,6 +14,8 @@ import {
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import FastImage from 'react-native-fast-image';
+import {isValidUrl} from '@utils/url';
 
 function createTouchableComponent(children, action) {
     return (
@@ -39,6 +41,13 @@ function channelInfoRow(props) {
                 name={icon}
                 size={24}
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.64)}
+            />
+        );
+    } else if (image.uri) {
+        iconElement = isValidUrl(image.uri) && (
+            <FastImage
+                source={image}
+                style={{width: 24, height: 24}}
             />
         );
     } else {
@@ -104,7 +113,10 @@ channelInfoRow.propTypes = {
     ]),
     icon: PropTypes.string,
     iconColor: PropTypes.string,
-    image: PropTypes.number,
+    image: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.object,
+    ]),
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
     rightArrow: PropTypes.bool,

@@ -13,6 +13,7 @@ class PostList {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
@@ -28,6 +29,7 @@ class PostList {
 
         return {
             postListPostItem: postItem,
+            postListPostItemEmoji: postItemEmoji,
             postListPostItemHeaderDateTime: postItemHeaderDateTime,
             postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
             postListPostItemHeaderGuestTag: postItemHeaderGuestTag,

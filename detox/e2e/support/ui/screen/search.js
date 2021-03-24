@@ -20,6 +20,7 @@ class SearchScreen {
         searchOnSection: 'search.on_section',
         searchAfterSection: 'search.after_section',
         searchBeforeSection: 'search.before_section',
+        searchResultsList: 'search.results_list',
     }
 
     searchScreen = element(by.id(this.testID.searchScreen));
@@ -28,6 +29,7 @@ class SearchScreen {
     searchOnSection = element(by.id(this.testID.searchOnSection));
     searchAfterSection = element(by.id(this.testID.searchAfterSection));
     searchBeforeSection = element(by.id(this.testID.searchBeforeSection));
+    searchResultsList = element(by.id(this.testID.searchResultsList));
 
     searchFromModifier = 'from:';
     searchInModifier = 'in:';

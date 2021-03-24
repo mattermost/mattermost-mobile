@@ -14,6 +14,7 @@ class LongPostScreen {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
@@ -28,6 +29,7 @@ class LongPostScreen {
 
         return {
             longPostItem: postItem,
+            longPostItemEmoji: postItemEmoji,
             longPostItemHeaderDateTime: postItemHeaderDateTime,
             longPostItemHeaderDisplayName: postItemHeaderDisplayName,
             longPostItemHeaderGuestTag: postItemHeaderGuestTag,
