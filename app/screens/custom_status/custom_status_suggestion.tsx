@@ -34,6 +34,8 @@ const CustomStatusSuggestion = (props: Props) => {
             <ClearButton
                 handlePress={() => handleClear({emoji, text})}
                 theme={theme}
+                iconName='close'
+                size={18}
                 testID='custom_status_suggestion.clear.button'
             />
         ) : null;
@@ -89,6 +91,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
         },
         wrapper: {
+            display: 'flex',
+            flexDirection: 'row',
             flex: 1,
             position: 'relative',
         },
@@ -99,8 +103,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
         },
         clearButtonContainer: {
-            position: 'absolute',
-            top: 3,
             right: 14,
         },
         divider: {

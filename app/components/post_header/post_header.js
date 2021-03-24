@@ -201,10 +201,12 @@ export default class PostHeader extends PureComponent {
                             {displayName}
                         </Text>
                     </TouchableWithFeedback>
-                    <CustomStatusEmoji
-                        userID={post.user_id}
-                        style={{color: theme.centerChannelColor}}
-                    />
+                    <View style={style.customStatusEmojiContainer}>
+                        <CustomStatusEmoji
+                            userID={post.user_id}
+                            style={{color: theme.centerChannelColor}}
+                        />
+                    </View>
                 </>
             );
         }
@@ -419,6 +421,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         displayNameContainerLandscapeBotReplyWidth: {
             maxWidth: '70%',
         },
-
+        customStatusEmojiContainer: {
+            marginRight: 4,
+            marginTop: 1,
+        },
     };
 });

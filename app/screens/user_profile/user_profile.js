@@ -436,7 +436,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         clearButton: {
             position: 'absolute',
-            top: 3,
             right: 0,
         },
         content: {

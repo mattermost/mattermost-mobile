@@ -6,37 +6,40 @@ import {Theme} from '@mm-redux/types/preferences';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-import {Platform, View} from 'react-native';
+import {Platform, TouchableOpacity} from 'react-native';
 
 interface Props {
     handlePress: () => void;
     size?: number;
     theme: Theme;
     testID?: string;
+    iconName: string,
 }
 
 const ClearButton = (props: Props) => {
-    const {handlePress, size, theme, testID} = props;
+    // Note: We need a default iconName as the defaultProps
+    // don't get applied initially when the value is undefined
+    const {handlePress, iconName = 'close-circle', size, theme, testID} = props;
     const style = getStyleSheet(theme);
 
     return (
-        <View
+        <TouchableOpacity
+            onPress={preventDoubleTap(handlePress)}
             style={style.container}
             testID={testID}
         >
             <CompassIcon
-                onPress={preventDoubleTap(handlePress)}
-                name='close'
+                name={iconName}
                 size={size}
-                color={theme.centerChannelBg}
                 style={style.button}
             />
-        </View>
+        </TouchableOpacity>
     );
 };
 
 ClearButton.defaultProps = {
     size: 20,
+    iconName: 'close-circle',
 };
 
 export default ClearButton;
@@ -57,8 +60,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                     color: changeOpacity(theme.centerChannelColor, 0.52),
                 },
                 android: {
+                    color: theme.centerChannelBg,
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0.52),
-                    overflow: 'hidden',
                 },
             }),
         },
