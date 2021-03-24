@@ -503,7 +503,7 @@ exports[`channelInfo should match snapshot 1`] = `
             }
           }
         />
-        <Connect(Bindings)
+        <Connect(InjectIntl(Component))
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -1035,7 +1035,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
       }
     }
   />
-  <Connect(Bindings)
+  <Connect(InjectIntl(Component))
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1425,7 +1425,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
       }
     }
   />
-  <Connect(Bindings)
+  <Connect(InjectIntl(Component))
     theme={
       Object {
         "awayIndicator": "#ffbc42",
