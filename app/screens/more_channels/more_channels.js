@@ -373,7 +373,7 @@ export default class MoreChannels extends PureComponent {
     }
 
     searchChannels = (text) => {
-        const {actions, channels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
+        const {actions, channels, sharedChannels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
         const {typeOfChannels} = this.state;
 
         if (text) {
@@ -385,7 +385,7 @@ export default class MoreChannels extends PureComponent {
                 });
                 clearTimeout(this.searchTimeoutId);
             } else if (typeOfChannels === 'shared') {
-                const filtered = this.filterChannels(channels, text);
+                const filtered = this.filterChannels(sharedChannels, text);
                 this.setState({
                     sharedChannels: filtered,
                     term: text,
