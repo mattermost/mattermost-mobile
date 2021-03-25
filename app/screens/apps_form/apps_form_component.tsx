@@ -113,8 +113,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         }
     }
 
-    handleSubmit = (button?: string) => preventDoubleTap(this.doSubmit(button));
-
     doSubmit = async (button?: string) => {
         if (this.submitting) {
             return;
@@ -189,6 +187,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             this.submitting = false;
         }
     }
+
+    handleSubmit = preventDoubleTap(this.doSubmit);
 
     updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
