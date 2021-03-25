@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model, Q} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
-import {Class} from '@nozbe/watermelondb/utils/common';
 
 import {MM_TABLES} from '@constants/database';
-
 import DefaultMigration from '@database/default/migration';
 import {App, Global, Servers} from '@database/default/models';
 import {defaultSchema} from '@database/default/schema';
@@ -42,22 +40,16 @@ import {
     User,
 } from '@database/server/models';
 import {serverSchema} from '@database/server/schema';
-import type {DatabaseInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
+import logger from '@nozbe/watermelondb/utils/common/logger';
+import type {DatabaseInstance, DefaultNewServer, DatabaseConnection, Models, ActiveServerDatabase} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import IServers from '@typings/database/servers';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
 
-type Models = Class<Model>[];
-
-// The elements needed to create a new connection
-type DatabaseConnection = {
-    databaseConnection: MMDatabaseConnection;
-    shouldAddToDefaultDatabase: boolean;
-};
-
-// The elements required to switch to another active server database
-type ActiveServerDatabase = { displayName: string; serverUrl: string };
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+logger.silence();
 
 class DatabaseManager {
     private activeDatabase: DatabaseInstance;
@@ -107,13 +99,13 @@ class DatabaseManager {
     /**
      * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
      * if a database connection could not be created, it will return undefined.
-     * @param {MMDatabaseConnection} databaseConnection
+     * @param {DatabaseConfigs} databaseConnection
      * @param {boolean} shouldAddToDefaultDatabase
      *
      * @returns {Promise<DatabaseInstance>}
      */
     createDatabaseConnection = async ({
-        databaseConnection,
+        configs,
         shouldAddToDefaultDatabase = true,
     }: DatabaseConnection): Promise<DatabaseInstance> => {
         const {
@@ -121,7 +113,7 @@ class DatabaseManager {
             dbName = 'default',
             dbType = DatabaseType.DEFAULT,
             serverUrl = undefined,
-        } = databaseConnection;
+        } = configs;
 
         try {
             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
@@ -164,7 +156,7 @@ class DatabaseManager {
         const isServerPresent = await this.isServerPresent(serverUrl);
 
         this.activeDatabase = await this.createDatabaseConnection({
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName: displayName,
                 dbType: DatabaseType.SERVER,
@@ -230,16 +222,15 @@ class DatabaseManager {
             if (servers.length) {
                 const databasePromises = servers.map(async (server: IServers) => {
                     const {displayName, url} = server;
-                    const databaseConnection = {
-                        actionsEnabled: true,
-                        dbName: displayName,
-                        dbType: DatabaseType.SERVER,
-                        serverUrl: url,
-                    };
 
                     // Since we are retrieving existing URL ( and so database connections ) from the 'DEFAULT' database, shouldAddToDefaultDatabase is set to false
                     const dbInstance = await this.createDatabaseConnection({
-                        databaseConnection,
+                        configs: {
+                            actionsEnabled: true,
+                            dbName: displayName,
+                            dbType: DatabaseType.SERVER,
+                            serverUrl: url,
+                        },
                         shouldAddToDefaultDatabase: false,
                     });
 
@@ -296,9 +287,7 @@ class DatabaseManager {
     private getAllServers = async () => {
         // Retrieve all server records from the default db
         const defaultDatabase = await this.getDefaultDatabase();
-        const allServers =
-            defaultDatabase &&
-            ((await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch()) as IServers[]);
+        const allServers = defaultDatabase && ((await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch()) as IServers[]);
         return allServers;
     };
 
@@ -308,7 +297,7 @@ class DatabaseManager {
      */
     private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
-            databaseConnection: {dbName: 'default'},
+            configs: {dbName: 'default'},
             shouldAddToDefaultDatabase: false,
         });
         return this.defaultDatabase;

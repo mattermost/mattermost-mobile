@@ -36,7 +36,7 @@ describe('*** Database Manager tests ***', () => {
 
         const connection1 = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName: 'community mattermost',
                 dbType: DatabaseType.SERVER,
@@ -139,7 +139,7 @@ describe('*** Database Manager tests ***', () => {
         const serverUrl = 'https://appv3.mattermost.com';
         await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName: 'community mattermost',
                 dbType: DatabaseType.SERVER,
@@ -149,7 +149,7 @@ describe('*** Database Manager tests ***', () => {
 
         await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName: 'duplicate server',
                 dbType: DatabaseType.SERVER,

@@ -21,7 +21,7 @@ export type MMAdaptorOptions = {
   migrationEvents?: MigrationEvents;
 };
 
-export type MMDatabaseConnection = {
+export type DatabaseConfigs = {
   actionsEnabled?: boolean;
   dbName: string;
   dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER;
@@ -288,7 +288,7 @@ export type Models = Class<Model>[];
 
 // The elements needed to create a new connection
 export type DatabaseConnection = {
-  databaseConnection: MMDatabaseConnection;
+  configs: DatabaseConfigs;
   shouldAddToDefaultDatabase: boolean;
 };
 

@@ -4,7 +4,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
-import DataOperator from '@database/admin/data_operator/index';
+import DataOperator from '@database/admin/data_operator';
 import App from '@typings/database/app';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
@@ -35,7 +35,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         const serverUrl = 'https://appv2.mattermost.com';
         const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName,
                 dbType: DatabaseType.SERVER,

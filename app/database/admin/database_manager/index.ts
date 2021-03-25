@@ -118,7 +118,7 @@ class DatabaseManager {
      * @returns {Promise<DatabaseInstance>}
      */
     createDatabaseConnection = async ({
-        databaseConnection,
+        configs,
         shouldAddToDefaultDatabase = true,
     }: DatabaseConnection): Promise<DatabaseInstance> => {
         const {
@@ -126,7 +126,7 @@ class DatabaseManager {
             dbName = 'default',
             dbType = DatabaseType.DEFAULT,
             serverUrl = undefined,
-        } = databaseConnection;
+        } = configs;
 
         try {
             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
@@ -166,7 +166,7 @@ class DatabaseManager {
         const isServerPresent = await this.isServerPresent(serverUrl);
 
         this.activeDatabase = await this.createDatabaseConnection({
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName: displayName,
                 dbType: DatabaseType.SERVER,
@@ -234,16 +234,15 @@ class DatabaseManager {
             if (servers.length) {
                 const databasePromises = servers.map(async (server: IServers) => {
                     const {displayName, url} = server;
-                    const databaseConnection = {
-                        actionsEnabled: true,
-                        dbName: displayName,
-                        dbType: DatabaseType.SERVER,
-                        serverUrl: url,
-                    };
 
                     // Since we are retrieving existing URL ( and so database connections ) from the 'DEFAULT' database, shouldAddToDefaultDatabase is set to false
                     const dbInstance = await this.createDatabaseConnection({
-                        databaseConnection,
+                        configs: {
+                            actionsEnabled: true,
+                            dbName: displayName,
+                            dbType: DatabaseType.SERVER,
+                            serverUrl: url,
+                        },
                         shouldAddToDefaultDatabase: false,
                     });
 
@@ -351,7 +350,7 @@ class DatabaseManager {
      */
     private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
-            databaseConnection: {dbName: 'default'},
+            configs: {dbName: 'default'},
             shouldAddToDefaultDatabase: false,
         });
         return this.defaultDatabase;
@@ -420,10 +419,14 @@ class DatabaseManager {
      * @returns {string}
      */
     private getDatabaseDirectory = (dbName: string): string => {
-        return Platform.OS === 'ios' ?
-            `${this.iOSAppGroupDatabase}/${dbName}.db` :
-            `${FileSystem.documentDirectory}${dbName}.db`;
+        return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
     };
+}
+
+if (!__DEV__) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    logger.silence();
 }
 
 export default new DatabaseManager();

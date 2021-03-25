@@ -3,9 +3,9 @@
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
+import DataOperator from '@database/admin/data_operator';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
-import DataOperator from './index';
 import {
     operateAppRecord,
     operateCustomEmojiRecord,
@@ -15,7 +15,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
     operateTermsOfServiceRecord,
-} from './operators';
+} from '../operators';
 
 jest.mock('@database/admin/database_manager');
 
@@ -27,7 +27,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const serverUrl = 'https://appv2.mattermost.com';
         const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName,
                 dbType: DatabaseType.SERVER,

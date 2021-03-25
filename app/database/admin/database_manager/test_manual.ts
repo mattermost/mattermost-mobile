@@ -25,7 +25,7 @@ export default async () => {
     const testNewServerConnection = async () => {
         await DBManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName: 'community mattermost',
                 dbType: DatabaseType.SERVER,

@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DatabaseType} from '@typings/database/enums';
-
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperator from '@database/admin/data_operator';
+import {DatabaseType} from '@typings/database/enums';
 
 import {createPostsChain, sanitizePosts, sanitizeReactions} from './index';
 import {mockedPosts, mockedReactions} from './mock';
@@ -63,7 +62,7 @@ describe('DataOperator: Utils tests', () => {
         const serverUrl = 'https://appv2.mattermost.com';
         const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName,
                 dbType: DatabaseType.SERVER,
