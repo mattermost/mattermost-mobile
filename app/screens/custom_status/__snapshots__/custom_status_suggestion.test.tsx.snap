@@ -46,6 +46,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
+            "marginBottom": 2,
             "width": "70%",
           }
         }
@@ -139,6 +140,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
+            "marginBottom": 2,
             "width": "70%",
           }
         }
@@ -185,8 +187,8 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
         style={
           Object {
             "position": "absolute",
-            "right": 14,
-            "top": 3,
+            "right": 13,
+            "top": 0,
           }
         }
       >
