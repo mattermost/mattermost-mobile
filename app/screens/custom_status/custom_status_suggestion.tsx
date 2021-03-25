@@ -95,6 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'relative',
         },
         textContainer: {
+            marginBottom: 2,
             alignItems: 'center',
             width: '70%',
             flex: 1,
@@ -102,8 +103,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         clearButtonContainer: {
             position: 'absolute',
-            top: 3,
-            right: 14,
+            top: 0,
+            right: 13,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
