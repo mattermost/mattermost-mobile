@@ -156,16 +156,16 @@ export default class ChannelInfoHeader extends React.PureComponent {
             <View style={style.container}>
                 <View style={[style.channelNameContainer, style.row]}>
                     <ChannelIcon
+                        isArchived={isArchived}
+                        isBot={isBot}
                         isInfo={true}
                         membersCount={memberCount}
                         shared={shared}
                         size={24}
                         status={status}
+                        testID={`${testID}.channel_icon`}
                         theme={theme}
                         type={type}
-                        isArchived={isArchived}
-                        isBot={isBot}
-                        testID={`${testID}.channel_icon`}
                     />
                     <Text
                         ellipsizeMode='tail'

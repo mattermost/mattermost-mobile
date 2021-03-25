@@ -159,6 +159,8 @@ export default class ChannelTitle extends PureComponent {
             channelIcon = (
                 <ChannelIcon
                     isActive={true}
+                    isArchived={false}
+                    isBot={false}
                     size={18}
                     shared={isChannelShared}
                     style={style.channelIconContainer}

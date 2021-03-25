@@ -158,6 +158,8 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                 {isShared && (
                     <ChannelIcon
                         isActive={false}
+                        isArchived={false}
+                        isBot={false}
                         isInfo={true}
                         isUnread={true}
                         size={18}
