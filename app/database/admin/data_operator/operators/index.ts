@@ -219,9 +219,9 @@ export const operateSystemRecord = async ({action, database, value}: DataFactory
     const record = value.record as System;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of role comes from server response
+    // id of system comes from server response
     const generator = (system: System) => {
-        system._raw.id = isCreateAction ? (record?.id ?? system.id) : raw?.id;
+        system._raw.id = isCreateAction ? (raw?.id ?? system.id) : record?.id;
         system.name = raw?.name;
         system.value = raw?.value;
     };
@@ -243,11 +243,14 @@ export const operateSystemRecord = async ({action, database, value}: DataFactory
  * @returns {Promise<void>}
  */
 export const operateTermsOfServiceRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawTermsOfService;
+    const raw = value.raw as RawTermsOfService;
+    const record = value.record as TermsOfService;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of TOS comes from server response
     const generator = (tos: TermsOfService) => {
-        tos._raw.id = record?.id ?? tos.id;
-        tos.acceptedAt = record?.acceptedAt;
+        tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record?.id;
+        tos.acceptedAt = raw?.acceptedAt;
     };
 
     return operateBaseRecord({
@@ -266,29 +269,29 @@ export const operateTermsOfServiceRecord = async ({action, database, value}: Dat
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawPost;
+export const operatePostRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawPost;
+    const record = value.record as Post;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // TODO :  test this one again
+    // id of post comes from server response
     const generator = (post: Post) => {
-        post._raw.id = record?.id;
-        post.channelId = record?.channel_id;
-        post.createAt = record?.create_at;
-        post.deleteAt = record?.delete_at || record?.delete_at === 0 ? record?.delete_at : 0;
-        post.editAt = record?.edit_at;
-        post.updateAt = record?.update_at;
-        post.isPinned = record!.is_pinned!;
-        post.message = Q.sanitizeLikeString(record?.message);
-        post.userId = record?.user_id;
-        post.originalId = record?.original_id ?? '';
-        post.pendingPostId = record?.pending_post_id ?? '';
-        post.previousPostId = record?.prev_post_id ?? '';
-        post.rootId = record?.root_id ?? '';
-        post.type = record?.type ?? '';
-        post.props = record?.props ?? {};
+        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record?.id;
+        post.channelId = raw?.channel_id;
+        post.createAt = raw?.create_at;
+        post.deleteAt = raw?.delete_at || raw?.delete_at === 0 ? raw?.delete_at : 0;
+        post.editAt = raw?.edit_at;
+        post.updateAt = raw?.update_at;
+        post.isPinned = raw!.is_pinned!;
+        post.message = Q.sanitizeLikeString(raw?.message);
+        post.userId = raw?.user_id;
+        post.originalId = raw?.original_id ?? '';
+        post.pendingPostId = raw?.pending_post_id ?? '';
+        post.previousPostId = raw?.prev_post_id ?? '';
+        post.rootId = raw?.root_id ?? '';
+        post.type = raw?.type ?? '';
+        post.props = raw?.props ?? {};
     };
 
     return operateBaseRecord({
@@ -308,12 +311,14 @@ export const operatePostRecord = async ({
  * @returns {Promise<void>}
  */
 export const operatePostInThreadRecord = async ({action, database, value}: DataFactory) => {
-    const record = value.raw as RawPostsInThread;
+    const raw = value.raw as RawPostsInThread;
+    const record = value.record as PostsInThread;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (postsInThread: PostsInThread) => {
-        postsInThread.postId = record.post_id;
-        postsInThread.earliest = record.earliest;
-        postsInThread.latest = record.latest!;
+        postsInThread.postId = isCreateAction ? raw.post_id : record.id;
+        postsInThread.earliest = raw.earliest;
+        postsInThread.latest = raw.latest!;
     };
 
     return operateBaseRecord({
@@ -332,19 +337,18 @@ export const operatePostInThreadRecord = async ({action, database, value}: DataF
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateReactionRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawReaction;
+export const operateReactionRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawReaction;
+    const record = value.record as Reaction;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of reaction comes from server response
     const generator = (reaction: Reaction) => {
-        reaction._raw.id = reaction.id;
-        reaction.userId = record.user_id;
-        reaction.postId = record.post_id;
-        reaction.emojiName = record.emoji_name;
-        reaction.createAt = record.create_at;
+        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record?.id;
+        reaction.userId = raw.user_id;
+        reaction.postId = raw.post_id;
+        reaction.emojiName = raw.emoji_name;
+        reaction.createAt = raw.create_at;
     };
 
     return operateBaseRecord({
@@ -363,19 +367,14 @@ export const operateReactionRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateFileRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
+export const operateFileRecord = async ({action, database, value}: DataFactory) => {
     const raw = value.raw as RawFile;
     const record = value.record as File;
-
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of emoji comes from server response
+    // id of file comes from server response
     const generator = (file: File) => {
-        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record.id;
+        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record?.id;
         file.postId = raw.post_id;
         file.name = raw.name;
         file.extension = raw.extension;
@@ -403,18 +402,16 @@ export const operateFileRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostMetadataRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawPostMetadata;
+export const operatePostMetadataRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawPostMetadata;
+    const record = value.record as PostMetadata;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (postMeta: PostMetadata) => {
-        postMeta._raw.id = postMeta.id;
-        postMeta.data = record.data;
-        postMeta.postId = record.postId;
-        postMeta.type = record.type;
+        postMeta._raw.id = isCreateAction ? postMeta.id : record.id;
+        postMeta.data = raw.data;
+        postMeta.postId = raw.postId;
+        postMeta.type = raw.type;
     };
 
     return operateBaseRecord({
@@ -433,20 +430,17 @@ export const operatePostMetadataRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateDraftRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawDraft;
+export const operateDraftRecord = async ({action, database, value}: DataFactory) => {
     const emptyFileInfo: FileInfo[] = [];
+    const raw = value.raw as RawDraft;
 
+    // Draft is client side only; plus you would only be creating/deleting one
     const generator = (draft: Draft) => {
-        draft._raw.id = record?.id ?? draft.id;
-        draft.rootId = record?.root_id ?? '';
-        draft.message = record?.message ?? '';
-        draft.channelId = record?.channel_id ?? '';
-        draft.files = record?.files ?? emptyFileInfo;
+        draft._raw.id = draft.id;
+        draft.rootId = raw?.root_id ?? '';
+        draft.message = raw?.message ?? '';
+        draft.channelId = raw?.channel_id ?? '';
+        draft.files = raw?.files ?? emptyFileInfo;
     };
 
     return operateBaseRecord({
@@ -465,18 +459,14 @@ export const operateDraftRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostsInChannelRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawPostsInChannel;
+export const operatePostsInChannelRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawPostsInChannel;
 
     const generator = (postsInChannel: PostsInChannel) => {
-        postsInChannel._raw.id = record?.id ?? postsInChannel.id;
-        postsInChannel.channelId = record.channel_id;
-        postsInChannel.earliest = record.earliest;
-        postsInChannel.latest = record.latest;
+        postsInChannel._raw.id = raw?.id ?? postsInChannel.id;
+        postsInChannel.channelId = raw.channel_id;
+        postsInChannel.earliest = raw.earliest;
+        postsInChannel.latest = raw.latest;
     };
 
     return operateBaseRecord({
@@ -495,32 +485,31 @@ export const operatePostsInChannelRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateUserRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawUser;
+export const operateUserRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawUser;
+    const record = value.record as User;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of user comes from server response
     const generator = (user: User) => {
-        user._raw.id = record.id;
-        user.authService = record.auth_service;
-        user.deleteAt = record.delete_at;
-        user.updateAt = record.update_at;
-        user.email = record.email;
-        user.firstName = record.first_name;
-        user.isGuest = record.roles.includes('system_guest');
-        user.lastName = record.last_name;
-        user.lastPictureUpdate = record.last_picture_update;
-        user.locale = record.locale;
-        user.nickname = record.nickname;
-        user.position = record?.position ?? '';
-        user.roles = record.roles;
-        user.username = record.username;
-        user.notifyProps = record.notify_props;
-        user.props = record.props;
-        user.timezone = record.timezone;
-        user.isBot = record.roles.includes('system_manager'); // FIXME : confirm is_bot
+        user._raw.id = isCreateAction ? (raw?.id ?? user.id) : record?.id;
+        user.authService = raw.auth_service;
+        user.deleteAt = raw.delete_at;
+        user.updateAt = raw.update_at;
+        user.email = raw.email;
+        user.firstName = raw.first_name;
+        user.isGuest = raw.roles.includes('system_guest');
+        user.lastName = raw.last_name;
+        user.lastPictureUpdate = raw.last_picture_update;
+        user.locale = raw.locale;
+        user.nickname = raw.nickname;
+        user.position = raw?.position ?? '';
+        user.roles = raw.roles;
+        user.username = raw.username;
+        user.notifyProps = raw.notify_props;
+        user.props = raw.props;
+        user.timezone = raw.timezone;
+        user.isBot = raw.is_bot;
     };
 
     return operateBaseRecord({
@@ -539,19 +528,19 @@ export const operateUserRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePreferenceRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawPreference;
+export const operatePreferenceRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawPreference;
+    const record = value.record as Preference;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of preference comes from server response
     const generator = (preference: Preference) => {
-        preference._raw.id = record?.id ?? preference.id;
-        preference.category = record.category;
-        preference.name = record.name;
-        preference.userId = record.user_id;
-        preference.value = record.value;
+        preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record?.id;
+        preference._raw.id = raw?.id ?? preference.id;
+        preference.category = raw.category;
+        preference.name = raw.name;
+        preference.userId = raw.user_id;
+        preference.value = raw.value;
     };
 
     return operateBaseRecord({
@@ -570,16 +559,12 @@ export const operatePreferenceRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateTeamMembershipRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawTeamMembership;
+export const operateTeamMembershipRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawTeamMembership;
 
     const generator = (teamMembership: TeamMembership) => {
-        teamMembership.teamId = record.team_id;
-        teamMembership.userId = record.user_id;
+        teamMembership.teamId = raw.team_id;
+        teamMembership.userId = raw.user_id;
     };
 
     return operateBaseRecord({
@@ -598,16 +583,12 @@ export const operateTeamMembershipRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateGroupMembershipRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawGroupMembership;
+export const operateGroupMembershipRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawGroupMembership;
 
     const generator = (groupMembership: GroupMembership) => {
-        groupMembership.groupId = record.group_id;
-        groupMembership.userId = record.user_id;
+        groupMembership.groupId = raw.group_id;
+        groupMembership.userId = raw.user_id;
     };
 
     return operateBaseRecord({
@@ -626,16 +607,12 @@ export const operateGroupMembershipRecord = async ({
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateChannelMembershipRecord = async ({
-    action,
-    database,
-    value,
-}: DataFactory) => {
-    const record = value.raw as RawChannelMembership;
+export const operateChannelMembershipRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawChannelMembership;
 
     const generator = (groupMembership: ChannelMembership) => {
-        groupMembership.channelId = record.channel_id;
-        groupMembership.userId = record.user_id;
+        groupMembership.channelId = raw.channel_id;
+        groupMembership.userId = raw.user_id;
     };
 
     return operateBaseRecord({
@@ -648,15 +625,8 @@ export const operateChannelMembershipRecord = async ({
 };
 
 /**
- * operateBaseRecord:  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
- * encounters an existing record during a CREATE operation, it silently fails the operation.
- *
- * This operator decides to go through an UPDATE action if we have an existing record in the table bearing the same id.
- * If not, it will go for a CREATE operation.
- *
- * However, if the tableName points to a major entity ( like Post, User or Channel, etc.), it verifies first if the
- * update_at value of the existing record is different from the parameter 'value' own update_at.  Only if they differ,
- * that it prepares the record for update.
+ * operateBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
+ * existing record for UPDATE or prepare a collection for CREATE
  *
  * @param {DataFactory} operatorBase
  * @param {Database} operatorBase.database
@@ -665,13 +635,7 @@ export const operateChannelMembershipRecord = async ({
  * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */
-const operateBaseRecord = async ({
-    action,
-    database,
-    tableName,
-    value,
-    generator,
-}: DataFactory) => {
+const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactory) => {
     if (action === OperationType.UPDATE) {
     // Two possible scenarios:
     // 1. We are dealing with either duplicates here and if so, we'll update instead of create

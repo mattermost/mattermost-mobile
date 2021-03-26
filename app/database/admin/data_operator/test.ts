@@ -778,6 +778,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 auth_service: 'saml',
                 email: 'a.l@mattermost.com',
                 email_verified: true,
+                is_bot: false,
                 nickname: '',
                 first_name: 'A',
                 last_name: 'L',

@@ -92,7 +92,6 @@ export type RawTermsOfService = {
 };
 
 export type RawDraft = {
-  id?: string;
   channel_id: string;
   files?: FileInfo[];
   message?: string;
@@ -288,6 +287,7 @@ export type RawUser = {
   mfa_active?: boolean;
   terms_of_service_id?: string;
   terms_of_service_create_at?: number;
+  is_bot: boolean;
 };
 
 export type RawPreference = {

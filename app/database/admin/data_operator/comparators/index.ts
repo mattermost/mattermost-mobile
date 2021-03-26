@@ -67,15 +67,15 @@ export const compareTermsOfServiceRecord = (record: TermsOfService, raw: RawTerm
 };
 
 export const compareDraftRecord = (record: Draft, raw: RawDraft) => {
-    return raw.channel_id === record.channelId && raw.root_id === record.rootId;
+    return raw.channel_id === record.channelId;
 };
 
 export const comparePostRecord = (record: Post, raw: RawPost) => {
-    return record.updateAt === raw.update_at;
+    return raw.id === record.id && record.updateAt === raw.update_at;
 };
 
 export const compareUserRecord = (record: User, raw: RawUser) => {
-    return raw.id === record.id;
+    return raw.id === record.id && raw.update_at === record.updateAt;
 };
 
 export const comparePreferenceRecord = (record: Preference, raw: RawPreference) => {

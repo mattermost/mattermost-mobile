@@ -32,28 +32,32 @@ describe('DataOperator: Utils tests', () => {
 
         // eslint-disable-next-line max-nested-callbacks
         const post1 = chainedOfPosts.find((post) => {
-            return post.raw.id === '8swgtrrdiff89jnsiwiip3y1eoe';
+            const p = post.raw as RawPost;
+            return p.id === '8swgtrrdiff89jnsiwiip3y1eoe';
         })?.raw as RawPost;
         expect(post1).toBeTruthy();
         expect(post1?.prev_post_id).toBe(previousPostId);
 
         // eslint-disable-next-line max-nested-callbacks
         const post2 = chainedOfPosts.find((post) => {
-            return post.raw.id === '8fcnk3p1jt8mmkaprgajoxz115a';
+            const p = post.raw as RawPost;
+            return p.id === '8fcnk3p1jt8mmkaprgajoxz115a';
         })?.raw as RawPost;
         expect(post2).toBeTruthy();
         expect(post2!.prev_post_id).toBe('8swgtrrdiff89jnsiwiip3y1eoe');
 
         // eslint-disable-next-line max-nested-callbacks
         const post3 = chainedOfPosts.find((post) => {
-            return post.raw.id === '3y3w3a6gkbg73bnj3xund9o5ic';
+            const p = post.raw as RawPost;
+            return p.id === '3y3w3a6gkbg73bnj3xund9o5ic';
         })?.raw as RawPost;
         expect(post3).toBeTruthy();
         expect(post3?.prev_post_id).toBe('8fcnk3p1jt8mmkaprgajoxz115a');
 
         // eslint-disable-next-line max-nested-callbacks
         const post4 = chainedOfPosts.find((post) => {
-            return post.raw.id === '4btbnmticjgw7ewd3qopmpiwqw';
+            const p = post.raw as RawPost;
+            return p.id === '4btbnmticjgw7ewd3qopmpiwqw';
         })?.raw as RawPost;
         expect(post4).toBeTruthy();
         expect(post4!.prev_post_id).toBe('3y3w3a6gkbg73bnj3xund9o5ic');

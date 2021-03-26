@@ -397,6 +397,7 @@ describe('*** DataOperator: Operators tests ***', () => {
                 record: undefined,
                 raw: {
                     id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    is_bot: false,
                     create_at: 1599457495881,
                     update_at: 1607683720173,
                     delete_at: 0,
