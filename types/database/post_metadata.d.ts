@@ -3,6 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {PostMetadataTypes} from '@typings/database/database';
 
 import Post from '@typings/database/post';
 
@@ -23,7 +24,7 @@ export default class PostMetadata extends Model {
     type: string;
 
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
-    data: string;
+    data: PostMetadataTypes;
 
     /** post: The record representing the POST parent.  */
     post: Relation<Post>;

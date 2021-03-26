@@ -77,13 +77,13 @@ export function componentDidAppearListener({componentId}: ComponentDidAppearEven
     EphemeralStore.addNavigationComponentId(componentId);
 
     switch (componentId) {
-    case 'MainSidebar':
-        DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
-        DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
-        break;
-    case 'SettingsSidebar':
-        DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
-        break;
+        case 'MainSidebar':
+            DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+            DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
+            break;
+        case 'SettingsSidebar':
+            DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
+            break;
     }
 }
 

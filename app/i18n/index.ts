@@ -13,69 +13,69 @@ function loadTranslation(locale: string) {
         let translations;
         let momentData;
         switch (locale) {
-        case 'de':
-            translations = require('@assets/i18n/de.json');
-            momentData = require('moment/locale/de');
-            break;
-        case 'es':
-            translations = require('@assets/i18n/es.json');
-            momentData = require('moment/locale/es');
-            break;
-        case 'fr':
-            translations = require('@assets/i18n/fr.json');
-            momentData = require('moment/locale/fr');
-            break;
-        case 'it':
-            translations = require('@assets/i18n/it.json');
-            momentData = require('moment/locale/it');
-            break;
-        case 'ja':
-            translations = require('@assets/i18n/ja.json');
-            momentData = require('moment/locale/ja');
-            break;
-        case 'ko':
-            translations = require('@assets/i18n/ko.json');
-            momentData = require('moment/locale/ko');
-            break;
-        case 'nl':
-            translations = require('@assets/i18n/nl.json');
-            momentData = require('moment/locale/nl');
-            break;
-        case 'pl':
-            translations = require('@assets/i18n/pl.json');
-            momentData = require('moment/locale/pl');
-            break;
-        case 'pt-BR':
-            translations = require('@assets/i18n/pt-BR.json');
-            momentData = require('moment/locale/pt-br');
-            break;
-        case 'ro':
-            translations = require('@assets/i18n/ro.json');
-            momentData = require('moment/locale/ro');
-            break;
-        case 'ru':
-            translations = require('@assets/i18n/ru.json');
-            momentData = require('moment/locale/ru');
-            break;
-        case 'tr':
-            translations = require('@assets/i18n/tr.json');
-            momentData = require('moment/locale/tr');
-            break;
-        case 'uk':
-            translations = require('@assets/i18n/uk.json');
-            momentData = require('moment/locale/uk');
-            break;
-        case 'zh-CN':
-            translations = require('@assets/i18n/zh-CN.json');
-            momentData = require('moment/locale/zh-cn');
-            break;
-        case 'zh-TW':
-            translations = require('@assets/i18n/zh-TW.json');
-            momentData = require('moment/locale/zh-tw');
-            break;
-        default:
-            translations = en;
-            break;
+            case 'de':
+                translations = require('@assets/i18n/de.json');
+                momentData = require('moment/locale/de');
+                break;
+            case 'es':
+                translations = require('@assets/i18n/es.json');
+                momentData = require('moment/locale/es');
+                break;
+            case 'fr':
+                translations = require('@assets/i18n/fr.json');
+                momentData = require('moment/locale/fr');
+                break;
+            case 'it':
+                translations = require('@assets/i18n/it.json');
+                momentData = require('moment/locale/it');
+                break;
+            case 'ja':
+                translations = require('@assets/i18n/ja.json');
+                momentData = require('moment/locale/ja');
+                break;
+            case 'ko':
+                translations = require('@assets/i18n/ko.json');
+                momentData = require('moment/locale/ko');
+                break;
+            case 'nl':
+                translations = require('@assets/i18n/nl.json');
+                momentData = require('moment/locale/nl');
+                break;
+            case 'pl':
+                translations = require('@assets/i18n/pl.json');
+                momentData = require('moment/locale/pl');
+                break;
+            case 'pt-BR':
+                translations = require('@assets/i18n/pt-BR.json');
+                momentData = require('moment/locale/pt-br');
+                break;
+            case 'ro':
+                translations = require('@assets/i18n/ro.json');
+                momentData = require('moment/locale/ro');
+                break;
+            case 'ru':
+                translations = require('@assets/i18n/ru.json');
+                momentData = require('moment/locale/ru');
+                break;
+            case 'tr':
+                translations = require('@assets/i18n/tr.json');
+                momentData = require('moment/locale/tr');
+                break;
+            case 'uk':
+                translations = require('@assets/i18n/uk.json');
+                momentData = require('moment/locale/uk');
+                break;
+            case 'zh-CN':
+                translations = require('@assets/i18n/zh-CN.json');
+                momentData = require('moment/locale/zh-cn');
+                break;
+            case 'zh-TW':
+                translations = require('@assets/i18n/zh-TW.json');
+                momentData = require('moment/locale/zh-tw');
+                break;
+            default:
+                translations = en;
+                break;
         }
 
         if (momentData) {

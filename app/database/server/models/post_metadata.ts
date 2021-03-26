@@ -6,6 +6,7 @@ import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import {PostMetadataData, PostMetadataType} from '@typings/database/database';
 import Post from '@typings/database/post';
 
 const {POST, POST_METADATA} = MM_TABLES.SERVER;
@@ -28,10 +29,10 @@ export default class PostMetadata extends Model {
     @field('post_id') postId!: string;
 
     /** type : The type will work in tandem with the value present in the field 'data'.  One 'type' for each kind of 'data' */
-    @field('type') type!: PostType;
+    @field('type') type!: PostMetadataType;
 
-    /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
-    @json('data', (rawJson) => rawJson) data!: PostMetadataTypes;
+    /** data : Different types of data ranging from embeds to images. */
+    @json('data', (rawJson) => rawJson) data!: PostMetadataData;
 
     /** post: The record representing the POST parent.  */
     @immutableRelation(POST, 'post_id') post!: Relation<Post>;

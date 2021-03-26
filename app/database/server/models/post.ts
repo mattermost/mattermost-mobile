@@ -57,6 +57,9 @@ export default class Post extends Model {
     /** delete_at : The timestamp to when this post was last archived/deleted */
     @field('delete_at') deleteAt!: number;
 
+    /** update_at : The timestamp to when this post was last updated on the server */
+    @field('update_at') updateAt!: number;
+
     /** edit_at : The timestamp to when this post was last edited */
     @field('edit_at') editAt!: number;
 
@@ -79,19 +82,19 @@ export default class Post extends Model {
     @field('root_id') rootId!: string;
 
     /** type : Type of props (e.g. system message) */
-    @field('type') type!: string;
+    @field('type') type!: PostType;
 
     /** user_id : The foreign key of the User who authored this post. */
     @field('user_id') userId!: string;
 
     /** props : Additional attributes for this props */
-    @json('props', (rawJson) => rawJson) props!: string;
+    @json('props', (rawJson) => rawJson) props!: object;
 
     // A draft can be associated with this post for as long as this post is a parent post
-    @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<Draft>
+    @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<Draft>;
 
     /** postsInThread: The thread to which this post is associated */
-    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(Q.on(POST, 'id', this.id)) as Query<PostInThread>
+    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(Q.on(POST, 'id', this.id)) as Query<PostInThread>;
 
     /** files: All the files associated with this Post */
     @children(FILE) files!: File[];
