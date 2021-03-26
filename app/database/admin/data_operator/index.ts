@@ -515,108 +515,119 @@ class DataOperator {
           );
       }
 
-      let batch: Model[] = [];
-      let files: RawFile[] = [];
-      const postsInThread = [];
-      let reactions: RawReaction[] = [];
-      let emojis: RawCustomEmoji[] = [];
-      const images: { images: Dictionary<PostImage>; postId: string }[] = [];
-      const embeds: { embed: RawEmbed[]; postId: string }[] = [];
-
       // By sanitizing the values, we are separating 'posts' that needs updating ( i.e. un-ordered posts ) from those that need to be created in our database
       const {orderedPosts, unOrderedPosts} = sanitizePosts({
           posts: values,
           orders,
       });
 
-      // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
-      const linkedRawPosts: MatchExistingRecord[] = createPostsChain({
-          orders,
-          previousPostId: previousPostId || '',
-          rawPosts: orderedPosts,
+      // Here we verify in our database that the orderedPosts truly need 'CREATION'
+      const futureEntries = await this.getCreateUpdateRecords({
+          rawValues: orderedPosts,
+          tableName,
+          comparator: comparePostRecord,
+          oneOfField: 'id',
       });
 
-      const database = await this.getDatabase(tableName);
+      if (futureEntries.createRaws?.length) {
+          let batch: Model[] = [];
+          let files: RawFile[] = [];
+          const postsInThread = [];
+          let reactions: RawReaction[] = [];
+          let emojis: RawCustomEmoji[] = [];
+          const images: { images: Dictionary<PostImage>; postId: string }[] = [];
+          const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
-      // FIXME : should you not verify if post id is already present in DB ?
+          // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
+          const linkedRawPosts: MatchExistingRecord[] = createPostsChain({
+              orders,
+              previousPostId: previousPostId || '',
+              rawPosts: orderedPosts,
+          });
 
-      // Prepares records for batch processing onto the 'Post' entity for the server schema
-      const posts = ((await this.prepareBase({
-          database,
-          tableName,
-          createRaws: linkedRawPosts,
-          recordOperator: operatePostRecord,
-      })) as unknown) as Post[];
+          const database = await this.getDatabase(tableName);
 
-      // Appends the processed records into the final batch array
-      batch = batch.concat(posts);
+          // Prepares records for batch processing onto the 'Post' entity for the server schema
+          const posts = ((await this.prepareBase({
+              database,
+              tableName,
+              createRaws: linkedRawPosts,
+              recordOperator: operatePostRecord,
+          })) as unknown) as Post[];
 
-      // Starts extracting information from each post to build up for related entities' data
-      for (let i = 0; i < orderedPosts.length; i++) {
-          const post = orderedPosts[i] as RawPost;
+          // Appends the processed records into the final batch array
+          batch = batch.concat(posts);
 
-          // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
-          if (post.id === post.root_id) {
-              postsInThread.push({
-                  earliest: post.create_at,
-                  post_id: post.id,
-              });
-          }
+          // Starts extracting information from each post to build up for related entities' data
+          for (let i = 0; i < orderedPosts.length; i++) {
+              const post = orderedPosts[i] as RawPost;
 
-          const hasMetadata = post?.metadata && Object.keys(post?.metadata).length > 0;
-          if (hasMetadata) {
-              const metadata = post.metadata;
-
-              // Extracts reaction from post's metadata
-              reactions = reactions.concat(metadata?.reactions ?? []);
-
-              // Extracts emojis from post's metadata
-              emojis = emojis.concat(metadata?.emojis ?? []);
-
-              // Extracts files from post's metadata
-              files = files.concat(metadata?.files ?? []);
-
-              // Extracts images and embeds from post's metadata
-              if (metadata?.images) {
-                  images.push({images: metadata.images, postId: post.id});
+              // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
+              if (post.id === post.root_id) {
+                  postsInThread.push({
+                      earliest: post.create_at,
+                      post_id: post.id,
+                  });
               }
 
-              if (metadata?.embeds) {
-                  embeds.push({embed: metadata.embeds, postId: post.id});
+              const hasMetadata = post?.metadata && Object.keys(post?.metadata).length > 0;
+              if (hasMetadata) {
+                  const metadata = post.metadata;
+
+                  // Extracts reaction from post's metadata
+                  reactions = reactions.concat(metadata?.reactions ?? []);
+
+                  // Extracts emojis from post's metadata
+                  emojis = emojis.concat(metadata?.emojis ?? []);
+
+                  // Extracts files from post's metadata
+                  files = files.concat(metadata?.files ?? []);
+
+                  // Extracts images and embeds from post's metadata
+                  if (metadata?.images) {
+                      images.push({images: metadata.images, postId: post.id});
+                  }
+
+                  if (metadata?.embeds) {
+                      embeds.push({embed: metadata.embeds, postId: post.id});
+                  }
               }
           }
+
+          // calls handler for Reactions
+          const postReactions = (await this.handleReactions({
+              reactions,
+              prepareRowsOnly: true,
+          })) as Reaction[];
+
+          batch = batch.concat(postReactions);
+
+          // calls handler for Files
+          const postFiles = (await this.handleFiles({
+              files,
+              prepareRowsOnly: true,
+          })) as File[];
+
+          batch = batch.concat(postFiles);
+
+          // calls handler for postMetadata ( embeds and images )
+          const postMetadata = (await this.handlePostMetadata({
+              images,
+              embeds,
+              prepareRowsOnly: true,
+          })) as PostMetadata[];
+
+          batch = batch.concat(postMetadata);
+
+          if (batch.length) {
+              await this.batchOperations({database, models: batch});
+          }
+
+          // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
+          await this.handleCustomEmojis(emojis);
+          await this.handlePostsInThread(postsInThread);
+          await this.handlePostsInChannel(orderedPosts);
       }
-
-      // calls handler for Reactions
-      const postReactions = (await this.handleReactions({
-          reactions,
-          prepareRowsOnly: true,
-      })) as Reaction[];
-      batch = batch.concat(postReactions);
-
-      // calls handler for Files
-      const postFiles = (await this.handleFiles({
-          files,
-          prepareRowsOnly: true,
-      })) as File[];
-      batch = batch.concat(postFiles);
-
-      // calls handler for postMetadata ( embeds and images )
-      const postMetadata = (await this.handlePostMetadata({
-          images,
-          embeds,
-          prepareRowsOnly: true,
-      })) as PostMetadata[];
-      batch = batch.concat(postMetadata);
-
-      if (batch.length) {
-          await this.batchOperations({database, models: batch});
-      }
-
-      // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
-      await this.handleCustomEmojis(emojis);
-      await this.handlePostsInThread(postsInThread);
-      await this.handlePostsInChannel(orderedPosts);
 
       // Truly update those posts that have a different update_at value
       await this.handleEntityRecords({
@@ -785,6 +796,8 @@ class DataOperator {
 
       const createRaws: MatchExistingRecord[] = [];
       const updateRaws: MatchExistingRecord[] = [];
+      const createRawsOnly: RawValue[] = [];
+      const updateRawsOnly: RawValue[] = [];
 
       if (existingRecords.length > 0) {
           rawValues.map((newElement) => {
@@ -792,20 +805,29 @@ class DataOperator {
                   return comparator(existing, newElement);
               });
 
-              if (findIndex !== -1) {
+              if (findIndex > -1) {
                   const existingRecord = existingRecords[findIndex];
 
                   // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
                   const isUpdateAtSimilar = hasSimilarUpdateAt({tableName, existingRecord, newValue: newElement});
                   if (!isUpdateAtSimilar) {
+                      updateRawsOnly.push(newElement);
                       return updateRaws.push({record: existingRecord, raw: newElement});
                   }
-              }
+              } else {
+                  createRawsOnly.push(newElement);
 
-              // This RawValue is not present in the database; hence, we need to create it
-              return createRaws.push({record: undefined, raw: newElement});
+                  // This RawValue is not present in the database; hence, we need to create it
+                  return createRaws.push({record: undefined, raw: newElement});
+              }
+              return null;
           });
-          return {createRaws, updateRaws};
+          return {
+              createRaws,
+              updateRaws,
+              createRawsOnly,
+              updateRawsOnly,
+          };
       }
 
       return {
@@ -813,6 +835,8 @@ class DataOperator {
               return {record: undefined, raw};
           }),
           updateRaws,
+          createRawsOnly: rawValues,
+          updateRawsOnly,
       };
   };
 

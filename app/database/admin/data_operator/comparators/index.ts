@@ -71,11 +71,11 @@ export const compareDraftRecord = (record: Draft, raw: RawDraft) => {
 };
 
 export const comparePostRecord = (record: Post, raw: RawPost) => {
-    return raw.id === record.id && record.updateAt === raw.update_at;
+    return raw.id === record.id;
 };
 
 export const compareUserRecord = (record: User, raw: RawUser) => {
-    return raw.id === record.id && raw.update_at === record.updateAt;
+    return raw.id === record.id;
 };
 
 export const comparePreferenceRecord = (record: Preference, raw: RawPreference) => {
