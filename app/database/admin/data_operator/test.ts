@@ -1,10 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {
+    compareAppRecord,
+    compareDraftRecord,
+    compareGlobalRecord,
+    compareRoleRecord,
+    compareServerRecord,
+    compareSystemRecord,
+    compareTermsOfServiceRecord,
+} from '@database/admin/data_operator/comparators';
 import DataOperatorException from '@database/admin/data_operator/exceptions/data_operator_exception';
 import DatabaseManager from '@database/admin/database_manager';
-
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import DataOperator from './index';
@@ -19,8 +26,6 @@ import {
 } from './operators';
 
 jest.mock('@database/admin/database_manager');
-
-const {DRAFT} = MM_TABLES.SERVER;
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
@@ -54,31 +59,32 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const data = {
+        const values = [{
+            buildNumber: 'build-10x',
+            createdAt: 1,
+            id: 'id-21',
+            versionNumber: 'version-10',
+        },
+        {
+            buildNumber: 'build-11y',
+            createdAt: 1,
+            id: 'id-22',
+            versionNumber: 'version-11',
+        }];
+
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.APP,
-            values: [
-                {
-                    buildNumber: 'build-10x',
-                    createdAt: 1,
-                    id: 'id-21',
-                    versionNumber: 'version-10',
-                },
-                {
-                    buildNumber: 'build-11y',
-                    createdAt: 1,
-                    id: 'id-22',
-                    versionNumber: 'version-11',
-                },
-            ],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateAppRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            oneOfField: 'version_number',
+            operator: operateAppRecord,
+            comparator: compareAppRecord,
+            rawValues: values,
+            tableName: 'app',
         });
     });
 
@@ -88,20 +94,20 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [{id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'}];
 
-        const data = {
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.GLOBAL,
-            values: [
-                {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
-            ],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateGlobalRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: compareGlobalRecord,
+            oneOfField: 'name',
+            operator: operateGlobalRecord,
+            rawValues: values,
+            tableName: 'global',
         });
     });
 
@@ -111,27 +117,28 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
-
-        const data = {
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [
+            {
+                dbPath: 'server.db',
+                displayName: 'community',
+                id: 'server-id-1',
+                mentionCount: 0,
+                unreadCount: 0,
+                url: 'https://community.mattermost.com',
+            },
+        ];
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.SERVERS,
-            values: [
-                {
-                    dbPath: 'server.db',
-                    displayName: 'community',
-                    id: 'server-id-1',
-                    mentionCount: 0,
-                    unreadCount: 0,
-                    url: 'https://community.mattermost.com',
-                },
-            ],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateServersRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: compareServerRecord,
+            oneOfField: 'db_path',
+            operator: operateServersRecord,
+            rawValues: values,
+            tableName: 'servers',
         });
     });
 
@@ -141,24 +148,26 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [
+            {
+                id: 'custom-emoji-id-1',
+                name: 'custom-emoji-1',
+                permissions: ['custom-emoji-1'],
+            },
+        ];
 
-        const data = {
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.ROLE,
-            values: [
-                {
-                    id: 'custom-emoji-id-1',
-                    name: 'custom-emoji-1',
-                    permissions: ['custom-emoji-1'],
-                },
-            ],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateRoleRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: compareRoleRecord,
+            oneOfField: 'name',
+            operator: operateRoleRecord,
+            rawValues: values,
+            tableName: 'Role',
         });
     });
 
@@ -168,18 +177,19 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
-
-        const data = {
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [{id: 'system-id-1', name: 'system-1', value: 'system-1'}];
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
-            values: [{id: 'system-id-1', name: 'system-1', value: 'system-1'}],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateSystemRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: compareSystemRecord,
+            oneOfField: 'name',
+            operator: operateSystemRecord,
+            rawValues: values,
+            tableName: 'System',
         });
     });
 
@@ -189,24 +199,27 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const data = {
+        const values = [{
+            id: 'tos-1',
+            acceptedAt: 1,
+            create_at: 1613667352029,
+            user_id: 'user1613667352029',
+            text: '',
+        }];
+
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
-            values: [{
-                id: 'tos-1',
-                acceptedAt: 1,
-                create_at: 1613667352029,
-                user_id: 'user1613667352029',
-                text: '',
-            }],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateTermsOfServiceRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: compareTermsOfServiceRecord,
+            oneOfField: 'accepted_at',
+            operator: operateTermsOfServiceRecord,
+            rawValues: values,
+            tableName: 'TermsOfService',
         });
     });
 
@@ -263,8 +276,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
-        const data = [
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [
             {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
                 files: [{
@@ -286,13 +299,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 root_id: '',
             },
         ];
-        await DataOperator.handleDraft(data);
 
-        // Only one batch operation for both entities
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            tableName: DRAFT,
-            values: data,
-            recordOperator: operateDraftRecord,
+        await DataOperator.handleDraft(values);
+
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: compareDraftRecord,
+            oneOfField: 'channel_id',
+            operator: operateDraftRecord,
+            rawValues: values,
+            tableName: 'Draft',
         });
     });
 

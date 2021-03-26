@@ -1,25 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {App} from '@database/default/models';
-import {Role, User} from '@database/server/models';
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import {
+    compareAppRecord,
+    compareChannelMembershipRecord,
+    compareCustomEmojiRecord,
+    compareDraftRecord,
+    compareGlobalRecord,
+    compareGroupMembershipRecord,
+    comparePostRecord,
+    comparePreferenceRecord,
+    compareRoleRecord,
+    compareServerRecord,
+    compareSystemRecord,
+    compareTeamMembershipRecord,
+    compareTermsOfServiceRecord,
+    compareUserRecord,
+} from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
-import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
     DiscardDuplicates,
     HandleBaseData,
+    HandleEntityRecords,
     HandleFiles,
     HandleIsolatedEntityData,
     HandlePostMetadata,
     HandlePosts,
-    HandleEntityRecords,
     HandleReactions,
+    MatchExistingRecord,
     PostImage,
     RawChannelMembership,
     RawCustomEmoji,
@@ -33,27 +47,20 @@ import {
     RawPreference,
     RawReaction,
     RawTeamMembership,
-    RawUser, RawValue,
-    RawWithNoId, RawApp, RawGlobal, RawServers, RawRole, RawSystem, RawTermsOfService, MatchExistingRecord,
+    RawUser,
+    RawValue,
+    RawWithNoId,
 } from '@typings/database/database';
-import Draft from '@typings/database/draft';
 import {IsolatedEntities, OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
-import Global from '@typings/database/global';
-import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
-import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
-import Servers from '@typings/database/servers';
-import System from '@typings/database/system';
-import TeamMembership from '@typings/database/team_membership';
-import TermsOfService from '@typings/database/terms_of_service';
 
-import DatabaseConnectionException from './exceptions/database_connection_exception';
 import DataOperatorException from './exceptions/data_operator_exception';
+import DatabaseConnectionException from './exceptions/database_connection_exception';
 import {
     operateAppRecord,
     operateChannelMembershipRecord,
@@ -75,13 +82,7 @@ import {
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from './operators';
-import {
-    createPostsChain,
-    sanitizePosts,
-    sanitizeReactions,
-    findMatchingRecords,
-    hasSimilarUpdateAt,
-} from './utils';
+import {createPostsChain, findMatchingRecords, hasSimilarUpdateAt, sanitizePosts, sanitizeReactions} from './utils';
 
 const {
     CHANNEL_MEMBERSHIP,
@@ -110,68 +111,42 @@ class DataOperator {
    */
   handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
       let recordOperator;
-      let finder;
+      let comparator;
       let oneOfField;
 
       switch (tableName) {
           case IsolatedEntities.APP: {
-              finder = (existing: App, newElement: RawApp) => {
-                  return (
-                      newElement.buildNumber === existing.buildNumber &&
-                      newElement.createdAt === existing.createdAt &&
-                      newElement.versionNumber === existing.versionNumber
-                  );
-              };
+              comparator = compareAppRecord;
               oneOfField = 'version_number';
               recordOperator = operateAppRecord;
               break;
           }
           case IsolatedEntities.GLOBAL: {
-              finder = (existing: Global, newElement: RawGlobal) => {
-                  return (
-                      newElement.name === existing.name && newElement.value === existing.value
-                  );
-              };
+              comparator = compareGlobalRecord;
               oneOfField = 'name';
               recordOperator = operateGlobalRecord;
               break;
           }
           case IsolatedEntities.SERVERS: {
-              finder = (existing: Servers, newElement: RawServers) => {
-                  return (
-                      newElement.url === existing.url && newElement.dbPath === existing.dbPath
-                  );
-              };
+              comparator = compareServerRecord;
               oneOfField = 'db_path';
               recordOperator = operateServersRecord;
               break;
           }
           case IsolatedEntities.ROLE: {
-              finder = (existing: Role, newElement: RawRole) => {
-                  return (
-                      newElement.name === existing.name && newElement.permissions === existing.permissions
-                  );
-              };
+              comparator = compareRoleRecord;
               oneOfField = 'name';
               recordOperator = operateRoleRecord;
               break;
           }
           case IsolatedEntities.SYSTEM: {
-              finder = (existing: System, newElement: RawSystem) => {
-                  return (
-                      newElement.name === existing.name && newElement.value === existing.value
-                  );
-              };
+              comparator = compareSystemRecord;
               oneOfField = 'name';
               recordOperator = operateSystemRecord;
               break;
           }
           case IsolatedEntities.TERMS_OF_SERVICE: {
-              finder = (existing: TermsOfService, newElement: RawTermsOfService) => {
-                  return (
-                      newElement.acceptedAt === existing.acceptedAt
-                  );
-              };
+              comparator = compareTermsOfServiceRecord;
               oneOfField = 'accepted_at';
               recordOperator = operateTermsOfServiceRecord;
               break;
@@ -181,9 +156,9 @@ class DataOperator {
           }
       }
 
-      if (recordOperator && oneOfField && finder) {
+      if (recordOperator && oneOfField && comparator) {
           await this.handleEntityRecords({
-              finder,
+              comparator,
               oneOfField,
               operator: recordOperator,
               rawValues: values,
@@ -203,16 +178,11 @@ class DataOperator {
       }
 
       await this.handleEntityRecords({
-          tableName: DRAFT,
+          comparator: compareDraftRecord,
+          oneOfField: 'channel_id',
           operator: operateDraftRecord,
           rawValues: drafts,
-          oneOfField: 'channel_id',
-          finder: (existing: Draft, newElement: RawDraft) => {
-              return (
-                  newElement.channel_id === existing.channelId &&
-                  newElement.root_id === existing.rootId
-              );
-          },
+          tableName: DRAFT,
       });
   };
 
@@ -242,10 +212,10 @@ class DataOperator {
 
       // Prepares record for model Reactions
       const postReactions = ((await this.prepareBase({
+          createRaws: createReactions,
           database,
           recordOperator: operateReactionRecord,
           tableName: REACTION,
-          createRaws: createReactions,
       })) as unknown) as Reaction[];
 
       // Prepares records for model CustomEmoji
@@ -553,7 +523,7 @@ class DataOperator {
       const images: { images: Dictionary<PostImage>; postId: string }[] = [];
       const embeds: { embed: RawEmbed[]; postId: string }[] = [];
 
-      // We treat those posts who are present in the order array only
+      // By sanitizing the values, we are separating 'posts' that needs updating ( i.e. un-ordered posts ) from those that need to be created in our database
       const {orderedPosts, unOrderedPosts} = sanitizePosts({
           posts: values,
           orders,
@@ -567,6 +537,8 @@ class DataOperator {
       });
 
       const database = await this.getDatabase(tableName);
+
+      // FIXME : should you not verify if post id is already present in DB ?
 
       // Prepares records for batch processing onto the 'Post' entity for the server schema
       const posts = ((await this.prepareBase({
@@ -646,14 +618,13 @@ class DataOperator {
       await this.handlePostsInThread(postsInThread);
       await this.handlePostsInChannel(orderedPosts);
 
+      // Truly update those posts that have a different update_at value
       await this.handleEntityRecords({
-          rawValues: unOrderedPosts,
+          comparator: comparePostRecord,
           oneOfField: 'id',
-          tableName: POST,
           operator: operatePostRecord,
-          finder: (existing: Post, newElement: RawPost) => {
-              return existing.id === newElement.id;
-          },
+          rawValues: unOrderedPosts,
+          tableName: POST,
       });
   };
 
@@ -664,15 +635,11 @@ class DataOperator {
    */
   handleUsers = async (users: RawUser[]) => {
       await this.handleEntityRecords({
-          tableName: USER,
-          rawValues: users,
-          operator: operateUserRecord,
+          comparator: compareUserRecord,
           oneOfField: 'id',
-          finder: (existing: User, newElement: RawUser) => {
-              return (
-                  newElement.id === existing.id
-              );
-          },
+          operator: operateUserRecord,
+          rawValues: users,
+          tableName: USER,
       });
   };
 
@@ -683,18 +650,11 @@ class DataOperator {
    */
   handlePreferences = async (preferences: RawPreference[]) => {
       await this.handleEntityRecords({
-          tableName: PREFERENCE,
+          comparator: comparePreferenceRecord,
           oneOfField: 'user_id',
           operator: operatePreferenceRecord,
           rawValues: preferences,
-          finder: (existing: Preference, newElement: RawPreference) => {
-              return (
-                  newElement.category === existing.category &&
-                  newElement.name === existing.name &&
-                  newElement.user_id === existing.userId &&
-                  newElement.value === existing.value
-              );
-          },
+          tableName: PREFERENCE,
       });
   };
 
@@ -705,15 +665,11 @@ class DataOperator {
    */
   handleTeamMemberships = async (teamMemberships: RawTeamMembership[]) => {
       await this.handleEntityRecords({
-          tableName: TEAM_MEMBERSHIP,
+          comparator: compareTeamMembershipRecord,
           oneOfField: 'user_id',
           operator: operateTeamMembershipRecord,
           rawValues: teamMemberships,
-          finder: (existing: TeamMembership, newElement: RawTeamMembership) => {
-              return (
-                  newElement.team_id === existing.teamId && newElement.user_id === existing.userId
-              );
-          },
+          tableName: TEAM_MEMBERSHIP,
       });
   };
 
@@ -724,13 +680,11 @@ class DataOperator {
    */
   handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
       await this.handleEntityRecords({
-          tableName: CUSTOM_EMOJI,
+          comparator: compareCustomEmojiRecord,
           oneOfField: 'name',
           operator: operateCustomEmojiRecord,
           rawValues: customEmojis,
-          finder: (existing: CustomEmoji, newElement: RawCustomEmoji) => {
-              return newElement.name === existing.name;
-          },
+          tableName: CUSTOM_EMOJI,
       });
   };
 
@@ -741,15 +695,11 @@ class DataOperator {
    */
   handleGroupMembership = async (groupMemberships: RawGroupMembership[]) => {
       await this.handleEntityRecords({
-          tableName: GROUP_MEMBERSHIP,
+          comparator: compareGroupMembershipRecord,
           oneOfField: 'user_id',
           operator: operateGroupMembershipRecord,
           rawValues: groupMemberships,
-          finder: (existing: GroupMembership, newElement: RawGroupMembership) => {
-              return (
-                  newElement.user_id === existing.userId && newElement.group_id === existing.groupId
-              );
-          },
+          tableName: GROUP_MEMBERSHIP,
       });
   };
 
@@ -760,29 +710,25 @@ class DataOperator {
    */
   handleChannelMembership = async (channelMemberships: RawChannelMembership[]) => {
       await this.handleEntityRecords({
-          tableName: CHANNEL_MEMBERSHIP,
+          comparator: compareChannelMembershipRecord,
           oneOfField: 'user_id',
           operator: operateChannelMembershipRecord,
           rawValues: channelMemberships,
-          finder: (existing: ChannelMembership, newElement: RawChannelMembership) => {
-              return (
-                  newElement.user_id === existing.userId && newElement.channel_id === existing.channelId
-              );
-          },
+          tableName: CHANNEL_MEMBERSHIP,
       });
   };
 
   /**
    * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
    * @param {HandleEntityRecords} handleEntityRecords
-   * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.finder
+   * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
    * @param {string} handleEntityRecords.oneOfField
    * @param {(DataFactory) => Promise<Model | null>} handleEntityRecords.operator
    * @param {RawWithNoId[]} handleEntityRecords.rawValues
    * @param {string} handleEntityRecords.tableName
    * @returns {Promise<null | void>}
    */
-  private handleEntityRecords = async ({finder, oneOfField, operator, rawValues, tableName}: HandleEntityRecords) => {
+  private handleEntityRecords = async ({comparator, oneOfField, operator, rawValues, tableName}: HandleEntityRecords) => {
       if (!rawValues.length) {
           return null;
       }
@@ -790,7 +736,7 @@ class DataOperator {
       const {createRaws, updateRaws} = await this.getCreateUpdateRecords({
           rawValues,
           tableName,
-          finder,
+          comparator,
           oneOfField,
       });
 
@@ -806,15 +752,15 @@ class DataOperator {
 
   // TODO : Add jest to getCreateUpdateRecords
   /**
-   * getCreateUpdateRecords: This method weeds out duplicates entries.  It may happen that we do multiple inserts for the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-   * @param {DiscardDuplicates} getCreateUpdateRecords
-   * @param {RawWithNoId[]} getCreateUpdateRecords.rawValues
-   * @param {string} getCreateUpdateRecords.tableName
-   * @param {string} getCreateUpdateRecords.oneOfField
-   * @param {(existing: Model, newElement: RawValue) => boolean} getCreateUpdateRecords.finder
-   * @returns {Promise<RawWithNoId[]>}
+   * getCreateUpdateRecords: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
+   * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
+   * @param {DiscardDuplicates} prepareRecords
+   * @param {RawWithNoId[]} prepareRecords.rawValues
+   * @param {string} prepareRecords.tableName
+   * @param {string} prepareRecords.oneOfField
+   * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
    */
-  private getCreateUpdateRecords = async ({rawValues, tableName, finder, oneOfField}: DiscardDuplicates) => {
+  private getCreateUpdateRecords = async ({rawValues, tableName, comparator, oneOfField}: DiscardDuplicates) => {
       const getOneOfs = (raws: RawValue[]) => {
           return raws.reduce((oneOfs, current: RawWithNoId) => {
               const key = oneOfField as keyof typeof current;
@@ -843,7 +789,7 @@ class DataOperator {
       if (existingRecords.length > 0) {
           rawValues.map((newElement) => {
               const findIndex = existingRecords.findIndex((existing) => {
-                  return finder(existing, newElement);
+                  return comparator(existing, newElement);
               });
 
               if (findIndex !== -1) {

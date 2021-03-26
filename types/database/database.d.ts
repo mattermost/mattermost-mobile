@@ -457,11 +457,11 @@ export type DiscardDuplicates = {
   rawValues: RawValue[];
   tableName: string;
   oneOfField: string;
-  finder: (existing: Model, newElement: RawValue) => boolean;
+  comparator: (existing: Model, newElement: RawValue) => boolean;
 };
 
 export type HandleEntityRecords = {
-  finder: (existing: Model, newElement: RawValue) => boolean;
+  comparator: (existing: Model, newElement: RawValue) => boolean;
   oneOfField: string;
   operator: (DataFactory) => Promise<Model | null>;
   rawValues: RawValue[];
