@@ -274,6 +274,7 @@
   "mobile.create_channel.public": "New Public Channel",
   "mobile.create_post.read_only": "This channel is read-only",
   "mobile.custom_list.no_results": "No Results",
+  "mobile.custom_status.choose_emoji": "Choose an emoji",
   "mobile.custom_status.modal_confirm": "Done",
   "mobile.display_settings.sidebar": "Sidebar",
   "mobile.display_settings.theme": "Theme",

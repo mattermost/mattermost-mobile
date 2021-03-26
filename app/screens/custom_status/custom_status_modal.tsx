@@ -210,22 +210,19 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         );
     };
 
-    openEmojiPicker = preventDoubleTap(() => {
-        const screen = 'AddReaction';
-        const passProps = {
-            onEmojiPress: this.handleEmojiClick,
-        };
+    openEmojiPicker = () => {
+        const {theme, intl} = this.props;
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
+            const screen = 'AddReaction';
+            const title = intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'});
+            const passProps = {
+                closeButton: source,
+                onEmojiPress: this.handleEmojiClick,
+            };
 
-        const options: Options = {
-            topBar: {
-                visible: false,
-            },
-        };
-
-        requestAnimationFrame(() => {
-            showModal(screen, '', passProps, options);
+            requestAnimationFrame(() => showModal(screen, title, passProps));
         });
-    });
+    };
 
     handleEmojiClick = (emoji: string) => {
         dismissModal();
@@ -241,7 +238,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const customStatusEmoji = (
             <TouchableOpacity
                 testID={`custom_status.emoji.${isStatusSet ? (emoji || 'speech_balloon') : 'default'}`}
-                onPress={this.openEmojiPicker}
+                onPress={preventDoubleTap(this.openEmojiPicker)}
                 style={style.iconContainer}
             >
                 {isStatusSet ? (
