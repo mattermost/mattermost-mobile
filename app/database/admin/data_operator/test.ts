@@ -10,7 +10,7 @@ import {
     compareSystemRecord,
     compareTermsOfServiceRecord,
 } from '@database/admin/data_operator/comparators';
-import DataOperatorException from '@database/admin/data_operator/exceptions/data_operator_exception';
+import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
 import DatabaseManager from '@database/admin/database_manager';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 

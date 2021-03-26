@@ -59,8 +59,8 @@ import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 
-import DataOperatorException from './exceptions/data_operator_exception';
-import DatabaseConnectionException from './exceptions/database_connection_exception';
+import DataOperatorException from '../exceptions/data_operator_exception';
+import DatabaseConnectionException from '../exceptions/database_connection_exception';
 import {
     operateAppRecord,
     operateChannelMembershipRecord,
@@ -846,6 +846,7 @@ class DataOperator {
    * @param {BatchOperations} operation
    * @param {Database} operation.database
    * @param {Array} operation.models
+   * @throws {DataOperatorException}
    * @returns {Promise<void>}
    */
   private batchOperations = async ({database, models}: BatchOperations) => {
@@ -871,6 +872,7 @@ class DataOperator {
    * @param {RawValue[]} createRaws
    * @param {RawValue[]} updateRaws
    * @param {(recordOperator: { value: RawValue, database: Database, tableName: string, action: OperationType}) => void} recordOperator
+   * @throws {DataOperatorException}
    * @returns {Promise<unknown[] | any[]>}
    */
   private prepareBase = async ({database, tableName, createRaws, updateRaws, recordOperator}: HandleBaseData) => {
@@ -966,7 +968,8 @@ class DataOperator {
 
   /**
    * getDefaultDatabase: Returns the default database
-   * @returns {Promise<DatabaseInstance>}
+   * @throws {DatabaseConnectionException}
+   * @returns {Promise<Database>}
    */
   private getDefaultDatabase = async () => {
       const connection = await DatabaseManager.getDefaultDatabase();
@@ -981,7 +984,8 @@ class DataOperator {
 
   /**
    * getServerDatabase: Returns the current active server database (multi-server support)
-   * @returns {Promise<DatabaseInstance>}
+   * @throws {DatabaseConnectionException}
+   * @returns {Promise<Database>}
    */
   private getServerDatabase = async () => {
       // NOTE: here we are getting the active server directly as in a multi-server support system, the current
