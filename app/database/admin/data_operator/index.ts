@@ -53,7 +53,7 @@ import TeamMembership from '@typings/database/team_membership';
 import TermsOfService from '@typings/database/terms_of_service';
 
 import DatabaseConnectionException from './exceptions/database_connection_exception';
-import DatabaseOperatorException from './exceptions/database_operator_exception';
+import DataOperatorException from './exceptions/data_operator_exception';
 import {
     operateAppRecord,
     operateChannelMembershipRecord,
@@ -177,8 +177,7 @@ class DataOperator {
               break;
           }
           default: {
-              recordOperator = null;
-              break;
+              throw new DataOperatorException(`handleIsolatedEntity was called with an invalid table name ${tableName}`);
           }
       }
 
@@ -399,8 +398,7 @@ class DataOperator {
               }
 
               // Retrieves max createAt date of all posts whose root_id is rootPost.post_id
-              maxCreateAt =
-          thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
+              maxCreateAt = thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
           }
 
           // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
@@ -542,7 +540,7 @@ class DataOperator {
 
       // We rely on the order array; if it is empty, we stop processing
       if (!orders.length) {
-          throw new DatabaseOperatorException(
+          throw new DataOperatorException(
               'An empty "order" array has been passed to the HandlePosts method',
           );
       }
@@ -788,7 +786,7 @@ class DataOperator {
       if (!rawValues.length) {
           return null;
       }
-      console.log('1....');
+
       const {createRaws, updateRaws} = await this.getCreateUpdateRecords({
           rawValues,
           tableName,
@@ -796,16 +794,12 @@ class DataOperator {
           oneOfField,
       });
 
-      console.log('2....', {createRaws, updateRaws});
-
       const records = await this.handleBase({
           recordOperator: operator,
           tableName,
           createRaws,
           updateRaws,
       });
-
-      console.log('3....');
 
       return records;
   };
@@ -834,8 +828,6 @@ class DataOperator {
 
       const columnValues: string[] = getOneOfs(rawValues);
 
-      console.log(' columnValues >>> ', columnValues, 'for oneOfs ', oneOfField);
-
       const database = await this.getDatabase(tableName);
 
       // NOTE: There is no 'id' field in the response, hence, we need to  weed out any duplicates before sending the values to the operator
@@ -844,8 +836,6 @@ class DataOperator {
           tableName,
           condition: Q.where(oneOfField, Q.oneOf(columnValues)),
       })) as Model[];
-
-      console.log(' existingRecords >>> ', existingRecords);
 
       const createRaws: MatchExistingRecord[] = [];
       const updateRaws: MatchExistingRecord[] = [];
@@ -872,7 +862,6 @@ class DataOperator {
           return {createRaws, updateRaws};
       }
 
-      console.log('end >>> ', {createRaws, updateRaws});
       return {
           createRaws: rawValues.map((raw) => {
               return {record: undefined, raw};
@@ -896,12 +885,12 @@ class DataOperator {
                   await database.batch(...models);
               });
           } else {
-              throw new DatabaseOperatorException(
+              throw new DataOperatorException(
                   'batchOperations does not process empty model array',
               );
           }
       } catch (e) {
-          throw new DatabaseOperatorException('batchOperations error ', e);
+          throw new DataOperatorException('batchOperations error ', e);
       }
   };
 
@@ -916,7 +905,7 @@ class DataOperator {
    */
   private prepareBase = async ({database, tableName, createRaws, updateRaws, recordOperator}: HandleBaseData) => {
       if (!database) {
-          throw new DatabaseOperatorException(
+          throw new DataOperatorException(
               'prepareBase accepts only rawPosts of type RawValue[] or valid database connection',
           );
       }
@@ -977,8 +966,6 @@ class DataOperator {
           updateRaws,
           recordOperator,
       })) as unknown) as Model[];
-
-      console.log('models >>>> ', models);
 
       if (models?.length > 0) {
           await this.batchOperations({

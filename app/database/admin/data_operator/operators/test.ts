@@ -35,6 +35,8 @@ jest.mock('@database/admin/database_manager');
 
 const {APP} = MM_TABLES.DEFAULT;
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 describe('*** DataOperator: Operators tests ***', () => {
     const createConnection = async (setActive = false) => {
         const dbName = 'server_schema_connection';
@@ -177,7 +179,13 @@ describe('*** DataOperator: Operators tests ***', () => {
             database: database!,
             value: {
                 record: undefined,
-                raw: {id: 'system-1', acceptedAt: 1},
+                raw: {
+                    id: 'tos-1',
+                    acceptedAt: 1,
+                    create_at: 1613667352029,
+                    user_id: 'user1613667352029',
+                    text: '',
+                },
             },
         });
 
@@ -195,7 +203,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(connection).toBeTruthy();
 
         // Creates a record in the App table
-        const r = await DataOperator.handleIsolatedEntity({
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -206,8 +214,6 @@ describe('*** DataOperator: Operators tests ***', () => {
                 },
             ],
         });
-
-        console.log('r >>>> ', r);
 
         const records = (await connection!.collections.
             get(APP).
@@ -508,6 +514,11 @@ describe('*** DataOperator: Operators tests ***', () => {
                     name: 'test_file',
                     extension: '.jpg',
                     size: 1000,
+                    create_at: 1609253011321,
+                    delete_at: 1609253011321,
+                    height: 20,
+                    update_at: 1609253011321,
+                    user_id: 'wqyby5r5pinxxdqhoaomtacdhc',
                 },
             },
         });

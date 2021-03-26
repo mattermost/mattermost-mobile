@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 /**
- * DatabaseOperatorException: This exception can be used whenever an issue arises at the operator level.  For example, if a required field is missing.
+ * DataOperatorException: This exception can be used whenever an issue arises at the operator level.  For example, if a required field is missing.
  */
-class DatabaseOperatorException extends Error {
+class DataOperatorException extends Error {
     error : Error | undefined;
     constructor(message: string, error?: Error) {
         super(message);
@@ -12,4 +12,4 @@ class DatabaseOperatorException extends Error {
         this.error = error;
     }
 }
-export default DatabaseOperatorException;
+export default DataOperatorException;

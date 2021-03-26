@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RawPost} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 
 import DatabaseManager from '@database/admin/database_manager';
@@ -31,29 +32,29 @@ describe('DataOperator: Utils tests', () => {
 
         // eslint-disable-next-line max-nested-callbacks
         const post1 = chainedOfPosts.find((post) => {
-            return post.id === '8swgtrrdiff89jnsiwiip3y1eoe';
-        });
+            return post.raw.id === '8swgtrrdiff89jnsiwiip3y1eoe';
+        })?.raw as RawPost;
         expect(post1).toBeTruthy();
-        expect(post1!.prev_post_id).toBe(previousPostId);
+        expect(post1?.prev_post_id).toBe(previousPostId);
 
         // eslint-disable-next-line max-nested-callbacks
         const post2 = chainedOfPosts.find((post) => {
-            return post.id === '8fcnk3p1jt8mmkaprgajoxz115a';
-        });
+            return post.raw.id === '8fcnk3p1jt8mmkaprgajoxz115a';
+        })?.raw as RawPost;
         expect(post2).toBeTruthy();
         expect(post2!.prev_post_id).toBe('8swgtrrdiff89jnsiwiip3y1eoe');
 
         // eslint-disable-next-line max-nested-callbacks
         const post3 = chainedOfPosts.find((post) => {
-            return post.id === '3y3w3a6gkbg73bnj3xund9o5ic';
-        });
+            return post.raw.id === '3y3w3a6gkbg73bnj3xund9o5ic';
+        })?.raw as RawPost;
         expect(post3).toBeTruthy();
-        expect(post3!.prev_post_id).toBe('8fcnk3p1jt8mmkaprgajoxz115a');
+        expect(post3?.prev_post_id).toBe('8fcnk3p1jt8mmkaprgajoxz115a');
 
         // eslint-disable-next-line max-nested-callbacks
         const post4 = chainedOfPosts.find((post) => {
-            return post.id === '4btbnmticjgw7ewd3qopmpiwqw';
-        });
+            return post.raw.id === '4btbnmticjgw7ewd3qopmpiwqw';
+        })?.raw as RawPost;
         expect(post4).toBeTruthy();
         expect(post4!.prev_post_id).toBe('3y3w3a6gkbg73bnj3xund9o5ic');
     });

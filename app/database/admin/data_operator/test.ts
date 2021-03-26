@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
+import DataOperatorException from '@database/admin/data_operator/exceptions/data_operator_exception';
 import DatabaseManager from '@database/admin/database_manager';
 
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
@@ -20,6 +21,8 @@ import {
 jest.mock('@database/admin/database_manager');
 
 const {DRAFT} = MM_TABLES.SERVER;
+
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** DataOperator: Handlers tests ***', () => {
     const createConnection = async (setActive = false) => {
@@ -190,7 +193,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         const data = {
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
-            values: [{id: 'tos-1', acceptedAt: 1}],
+            values: [{
+                id: 'tos-1',
+                acceptedAt: 1,
+                create_at: 1613667352029,
+                user_id: 'user1613667352029',
+                text: '',
+            }],
         };
 
         await DataOperator.handleIsolatedEntity(data);
@@ -207,17 +216,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
-
-        await DataOperator.handleIsolatedEntity({
+        await expect(DataOperator.handleIsolatedEntity({
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             tableName: 'INVALID_TABLE_NAME',
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             values: [{id: 'tos-1', acceptedAt: 1}],
-        });
-
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
+        })).rejects.toThrow(DataOperatorException);
     });
 
     it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
