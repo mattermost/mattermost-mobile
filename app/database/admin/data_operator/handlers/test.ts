@@ -214,7 +214,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
     });
 
-    it('=> No table name: should not call handleBase if tableName is invalid', async () => {
+    it('=> No table name: should not call executeInDatabase if tableName is invalid', async () => {
         expect.assertions(2);
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
@@ -238,7 +238,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnPrepareRecords = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
 
         await DataOperator.handleReactions({
@@ -256,7 +256,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         // Called twice:  Once for Reaction record and once for CustomEmoji record
-        expect(spyOnPrepareBase).toHaveBeenCalledTimes(2);
+        expect(spyOnPrepareRecords).toHaveBeenCalledTimes(2);
 
         // Only one batch operation for both entities
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
@@ -311,7 +311,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareBase');
+        const spyOnPrepareRecords = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -336,7 +336,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             prepareRowsOnly: false,
         });
 
-        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
+        expect(spyOnPrepareRecords).toHaveBeenCalledTimes(1);
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
@@ -672,13 +672,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handleUsers(users);
 
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
@@ -712,13 +712,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handlePreferences(preferences);
 
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
@@ -737,13 +737,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handleTeamMemberships(teamMembership);
 
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
@@ -759,13 +759,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handleCustomEmojis(emojis);
 
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandleGroupMembership: should write to GROUP_MEMBERSHIP entity', async () => {
@@ -777,13 +777,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handleGroupMembership(groupMemberships);
 
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 
     it('=> HandleChannelMembership: should write to CHANNEL_MEMBERSHIP entity', async () => {
@@ -831,12 +831,12 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handleChannelMembership(channelMemberships);
 
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 });

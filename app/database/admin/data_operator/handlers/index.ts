@@ -3,7 +3,6 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
-import logger from '@nozbe/watermelondb/utils/common/logger';
 
 import {MM_TABLES} from '@constants/database';
 import {
@@ -28,7 +27,6 @@ import {
     BatchOperations,
     DatabaseInstance,
     DiscardDuplicates,
-    HandleBaseData,
     HandleEntityRecords,
     HandleFiles,
     HandleIsolatedEntityData,
@@ -37,6 +35,8 @@ import {
     HandleReactions,
     MatchExistingRecord,
     PostImage,
+    PrepareForDatabase,
+    PrepareRecords,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -107,12 +107,6 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
-if (!__DEV__) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    logger.silence();
-}
-
 class DataOperator {
     /**
      * serverDatabase : In a multi-server configuration, this connection will be used by WebSockets and other parties to update databases other than the active one.
@@ -129,7 +123,7 @@ class DataOperator {
      * by the IsolatedEntities enum
      * @param {HandleIsolatedEntityData} entityData
      * @param {IsolatedEntities} entityData.tableName
-     * @param {RawValue[]} entityData.values
+     * @param {Records} entityData.values
      * @returns {Promise<void>}
      */
     handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
@@ -244,7 +238,7 @@ class DataOperator {
 
         if (createReactions.length) {
             // Prepares record for model Reactions
-            const reactionsRecords = ((await this.prepareBase({
+            const reactionsRecords = ((await this.prepareRecords({
                 createRaws: createReactions,
                 database,
                 recordOperator: operateReactionRecord,
@@ -255,7 +249,7 @@ class DataOperator {
 
         if (createEmojis.length) {
             // Prepares records for model CustomEmoji
-            const emojiRecords = ((await this.prepareBase({
+            const emojiRecords = ((await this.prepareRecords({
                 database,
                 recordOperator: operateCustomEmojiRecord,
                 tableName: CUSTOM_EMOJI,
@@ -285,9 +279,9 @@ class DataOperator {
     /**
      * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
      * @param {HandlePosts} handlePosts
-     * @param {string[]} orders
-     * @param {RawPost[]} values
-     * @param {string | undefined} previousPostId
+     * @param {string[]} handlePosts.orders
+     * @param {RawPost[]} handlePosts.values
+     * @param {string | undefined} handlePosts.previousPostId
      * @returns {Promise<void>}
      */
     handlePosts = async ({orders, values, previousPostId}: HandlePosts) => {
@@ -333,7 +327,7 @@ class DataOperator {
             const database = await this.getDatabase(tableName);
 
             // Prepares records for batch processing onto the 'Post' entity for the server schema
-            const posts = ((await this.prepareBase({
+            const posts = ((await this.prepareRecords({
                 database,
                 tableName,
                 createRaws: linkedRawPosts,
@@ -455,7 +449,7 @@ class DataOperator {
 
         const database = await this.getDatabase(FILE);
 
-        const postFiles = ((await this.prepareBase({
+        const postFiles = ((await this.prepareRecords({
             database,
             recordOperator: operateFileRecord,
             tableName: FILE,
@@ -515,7 +509,7 @@ class DataOperator {
 
         const database = await this.getDatabase(POST_METADATA);
 
-        const postMetas = ((await this.prepareBase({
+        const postMetas = ((await this.prepareRecords({
             database,
             recordOperator: operatePostMetadataRecord,
             tableName: POST_METADATA,
@@ -537,15 +531,15 @@ class DataOperator {
 
     /**
      * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
-     * @param {RawPostsInThread[]} postsInThreads
+     * @param {RawPostsInThread[]} rootPosts
      * @returns {Promise<any[]>}
      */
-    private handlePostsInThread = async (postsInThreads: RawPostsInThread[]) => {
-        if (!postsInThreads.length) {
-            return [];
+    private handlePostsInThread = async (rootPosts: RawPostsInThread[]) => {
+        if (!rootPosts.length) {
+            return;
         }
 
-        const postIds = postsInThreads.map((postThread) => postThread.post_id);
+        const postIds = rootPosts.map((postThread) => postThread.post_id);
         const rawPostsInThreads: RawPostsInThread[] = [];
 
         const database = await this.getDatabase(POSTS_IN_THREAD);
@@ -557,7 +551,7 @@ class DataOperator {
             fetch()) as Post[];
 
         // The aim here is to find the last reply in that thread; hence the latest create_at value
-        postsInThreads.forEach((rootPost) => {
+        rootPosts.forEach((rootPost) => {
             const childPosts = [];
             let maxCreateAt = 0;
             for (let i = 0; i < threads.length; i++) {
@@ -577,7 +571,7 @@ class DataOperator {
         });
 
         if (rawPostsInThreads.length) {
-            const postInThreadRecords = ((await this.prepareBase({
+            const postInThreadRecords = ((await this.prepareRecords({
                 database,
                 recordOperator: operatePostInThreadRecord,
                 tableName: POSTS_IN_THREAD,
@@ -590,14 +584,12 @@ class DataOperator {
                 await this.batchOperations({database, models: postInThreadRecords});
             }
         }
-
-        return [];
     };
 
     /**
      * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel entity from the 'Server' schema
      * @param {RawPost[]} posts
-     * @returns {Promise<any[]>}
+     * @returns {Promise<void>}
      */
     private handlePostsInChannel = async (posts: RawPost[]) => {
         // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
@@ -627,14 +619,11 @@ class DataOperator {
         const database = await this.getDatabase(POSTS_IN_CHANNEL);
 
         // Find the records in the PostsInChannel table that have a matching channel_id
-        const chunks = (await database.collections.
-            get(POSTS_IN_CHANNEL).
-            query(Q.where('channel_id', channelId)).
-            fetch()) as PostsInChannel[];
+        const chunks = (await database.collections.get(POSTS_IN_CHANNEL).query(Q.where('channel_id', channelId)).fetch()) as PostsInChannel[];
 
         const createPostsInChannelRecord = async () => {
             const createPostsInChannel = {channel_id: channelId, earliest, latest};
-            await this.handleBase({
+            await this.executeInDatabase({
                 createRaws: [{record: undefined, raw: createPostsInChannel}],
                 tableName: POSTS_IN_CHANNEL,
                 recordOperator: operatePostsInChannelRecord,
@@ -669,10 +658,7 @@ class DataOperator {
 
         if (found) {
             // We have a potential chunk to plug nearby
-            const potentialPosts = (await database.collections.
-                get(POST).
-                query(Q.where('create_at', earliest)).
-                fetch()) as Post[];
+            const potentialPosts = (await database.collections.get(POST).query(Q.where('create_at', earliest)).fetch()) as Post[];
 
             if (potentialPosts?.length > 0) {
                 const targetPost = potentialPosts[0];
@@ -704,6 +690,7 @@ class DataOperator {
     /**
      * handleUsers: Handler responsible for the Create/Update operations occurring on the User entity from the 'Server' schema
      * @param {RawUser[]} users
+     * @throws DataOperatorException
      * @returns {Promise<void>}
      */
     handleUsers = async (users: RawUser[]) => {
@@ -724,6 +711,7 @@ class DataOperator {
     /**
      * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE entity from the 'Server' schema
      * @param {RawPreference[]} preferences
+     * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
     handlePreferences = async (preferences: RawPreference[]) => {
@@ -745,6 +733,7 @@ class DataOperator {
     /**
      * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP entity from the 'Server' schema
      * @param {RawTeamMembership[]} teamMemberships
+     * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
     handleTeamMemberships = async (teamMemberships: RawTeamMembership[]) => {
@@ -765,6 +754,7 @@ class DataOperator {
     /**
      * handleCustomEmojis: Handler responsible for the Create/Update operations occurring on the CUSTOM_EMOJI entity from the 'Server' schema
      * @param {RawCustomEmoji[]} customEmojis
+     * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
     handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
@@ -786,6 +776,7 @@ class DataOperator {
     /**
      * handleGroupMembership: Handler responsible for the Create/Update operations occurring on the GROUP_MEMBERSHIP entity from the 'Server' schema
      * @param {RawGroupMembership[]} groupMemberships
+     * @throws DataOperatorException
      * @returns {Promise<void>}
      */
     handleGroupMembership = async (groupMemberships: RawGroupMembership[]) => {
@@ -807,6 +798,7 @@ class DataOperator {
     /**
      * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP entity from the 'Server' schema
      * @param {RawChannelMembership[]} channelMemberships
+     * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
     handleChannelMembership = async (channelMemberships: RawChannelMembership[]) => {
@@ -847,7 +839,7 @@ class DataOperator {
             oneOfField,
         });
 
-        const records = await this.handleBase({
+        const records = await this.executeInDatabase({
             recordOperator: operator,
             tableName,
             createRaws,
@@ -962,19 +954,20 @@ class DataOperator {
     };
 
     /**
-     * prepareBase: Utility method that actually calls the operators for the handlers
-     * @param {Database} database
-     * @param {string} tableName
-     * @param {RawValue[]} createRaws
-     * @param {RawValue[]} updateRaws
-     * @param {(recordOperator: { value: RawValue, database: Database, tableName: string, action: OperationType}) => void} recordOperator
+     * prepareRecords: Utility method that actually calls the operators for the handlers
+     * @param {PrepareRecords} prepareRecord
+     * @param {Database} prepareRecord.database
+     * @param {string} prepareRecord.tableName
+     * @param {RawValue[]} prepareRecord.createRaws
+     * @param {RawValue[]} prepareRecord.updateRaws
+     * @param {(DataFactory) => void;} prepareRecord.recordOperator
      * @throws {DataOperatorException}
      * @returns {Promise<unknown[] | any[]>}
      */
-    private prepareBase = async ({database, tableName, createRaws, updateRaws, recordOperator}: HandleBaseData) => {
+    private prepareRecords = async ({database, tableName, createRaws, updateRaws, recordOperator}: PrepareRecords) => {
         if (!database) {
             throw new DataOperatorException(
-                'prepareBase accepts only rawPosts of type RawValue[] or valid database connection',
+                'prepareRecords accepts only rawPosts of type RawValue[] or valid database connection',
             );
         }
 
@@ -1023,18 +1016,18 @@ class DataOperator {
     };
 
     /**
-     * handleBase: Handles the Create/Update operations on an entity.
-     * @param {HandleBaseData} handleBase
-     * @param {string} handleBase.tableName
-     * @param {RecordValue[]} handleBase.createRaws
-     * @param {RecordValue[]} handleBase.updateRaws
-     * @param {(DataFactory) => void} handleBase.recordOperator
+     * executeInDatabase: Handles the Create/Update operations on an entity.
+     * @param {PrepareForDatabase} executeInDatabase
+     * @param {string} executeInDatabase.tableName
+     * @param {RecordValue[]} executeInDatabase.createRaws
+     * @param {RecordValue[]} executeInDatabase.updateRaws
+     * @param {(DataFactory) => void} executeInDatabase.recordOperator
      * @returns {Promise<void>}
      */
-    private handleBase = async ({createRaws, recordOperator, tableName, updateRaws}: HandleBaseData) => {
+    private executeInDatabase = async ({createRaws, recordOperator, tableName, updateRaws}: PrepareForDatabase) => {
         const database = await this.getDatabase(tableName);
 
-        const models = ((await this.prepareBase({
+        const models = ((await this.prepareRecords({
             database,
             tableName,
             createRaws,

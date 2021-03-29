@@ -371,13 +371,14 @@ export type DataFactory = {
   action: OperationType;
 };
 
-export type HandleBaseData = {
-  database?: Database;
+export type PrepareForDatabase = {
   tableName: string;
   createRaws?: MatchExistingRecord[];
   updateRaws?: MatchExistingRecord[];
   recordOperator: (DataFactory) => void;
 };
+
+export type PrepareRecords = PrepareForDatabase & { database: Database; };
 
 export type BatchOperations = { database: Database; models: Model[] };
 
