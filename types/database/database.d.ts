@@ -219,22 +219,20 @@ export type RawUser = {
   locale: string;
   mfa_active?: boolean;
   nickname: string;
-  notify_props: NotifyProps;
-
-  // notify_props: {
-  //   channel: boolean;
-  //   desktop: string;
-  //   desktop_sound: boolean;
-  //   email: boolean;
-  //   first_name: boolean;
-  //   mention_keys: string;
-  //   push: string;
-  //   auto_responder_active: boolean;
-  //   auto_responder_message: string;
-  //   desktop_notification_sound: string; // Not in use by the mobile app
-  //   push_status: string;
-  //   comments: string;
-  // };
+  notify_props: {
+    channel: boolean;
+    desktop: string;
+    desktop_sound: boolean;
+    email: boolean;
+    first_name: boolean;
+    mention_keys: string;
+    push: string;
+    auto_responder_active: boolean;
+    auto_responder_message: string;
+    desktop_notification_sound: string; // Not in use by the mobile app
+    push_status: string;
+    comments: string;
+  };
   position?: string;
   props: UserProps;
   roles: string;
