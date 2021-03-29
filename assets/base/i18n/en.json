@@ -24,7 +24,7 @@
   "apps.error.form.refresh_no_refresh": "Called refresh on no refresh field.",
   "apps.error.form.submit.pretext": "There has been an error submitting the modal. Contact the app developer. Details: {details}",
   "apps.error.lookup.error_preparing_request": "Error preparing lookup request: {errorMessage}",
-  "apps.error.parser": "Parsing error: {error}.\n```\n{command}\n{space}^\n```",
+  "apps.error.parser": "Parsing error: {error}",
   "apps.error.parser.empty_value": "empty values are not allowed",
   "apps.error.parser.missing_binding": "Missing command bindings.",
   "apps.error.parser.missing_call": "Missing binding call.",
