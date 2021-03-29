@@ -76,3 +76,12 @@ export const displayError = (intl: typeof intlShape, body: string) => {
     });
     Alert.alert(title, body);
 };
+
+export const errorMessage = (intl: typeof intlShape, error: string, _command: string, _position: number): string => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    return intl.formatMessage({
+        id: 'apps.error.parser',
+        defaultMessage: 'Parsing error: {error}',
+    }, {
+        error,
+    });
+};

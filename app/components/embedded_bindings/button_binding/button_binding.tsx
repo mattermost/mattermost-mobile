@@ -32,6 +32,9 @@ export default class ButtonBinding extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
+
+    private mounted = false;
+
     handleActionPress = preventDoubleTap(async () => {
         const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
 
@@ -66,7 +69,9 @@ export default class ButtonBinding extends PureComponent<Props> {
         );
         this.setState({executing: true});
         const res = await this.props.actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
-        this.setState({executing: false});
+        if (this.mounted) {
+            this.setState({executing: false});
+        }
 
         if (res.error) {
             const errorResponse = res.error;
@@ -103,6 +108,14 @@ export default class ButtonBinding extends PureComponent<Props> {
         }
         }
     }, 4000);
+
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
 
     render() {
         const {theme, binding} = this.props;

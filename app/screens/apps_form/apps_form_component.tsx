@@ -22,6 +22,7 @@ import {AppCallRequest, AppCallResponse, AppField, AppForm, AppFormValue, AppFor
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
+import {preventDoubleTap} from '@utils/tap';
 
 export type Props = {
     call: AppCallRequest;
@@ -43,7 +44,6 @@ type State = {
     values: {[name: string]: string};
     formError: string | null;
     fieldErrors: {[name: string]: React.ReactNode};
-    submitting: boolean;
     form: AppForm;
 }
 
@@ -62,6 +62,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     private scrollView: React.RefObject<ScrollView>;
     navigationEventListener?: EventSubscription;
 
+    private submitting = false;
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -76,7 +77,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             values,
             formError: null,
             fieldErrors: {},
-            submitting: false,
             form,
         };
 
@@ -113,7 +113,11 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         }
     }
 
-    handleSubmit = async (button?: string) => {
+    doSubmit = async (button?: string) => {
+        if (this.submitting) {
+            return;
+        }
+
         const {fields} = this.props.form;
         const values = this.state.values;
         const fieldErrors: {[name: string]: React.ReactNode} = {};
@@ -149,14 +153,18 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             submission.values[this.props.form.submit_buttons] = button;
         }
 
+        this.submitting = true;
         const res = await this.props.actions.submit(submission);
+
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error;
             const hasErrors = this.updateErrors(elements, errorResponse.data?.errors, errorMessage);
             if (!hasErrors) {
                 this.handleHide();
+                return;
             }
+            this.submitting = false;
             return;
         }
 
@@ -167,6 +175,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             this.handleHide();
             return;
         case AppCallResponseTypes.FORM:
+            this.submitting = false;
             return;
         default:
             this.updateErrors([], undefined, this.context.intl.formatMessage({
@@ -175,8 +184,11 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             }, {
                 type: callResponse.type,
             }));
+            this.submitting = false;
         }
     }
+
+    handleSubmit = preventDoubleTap(this.doSubmit);
 
     updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
