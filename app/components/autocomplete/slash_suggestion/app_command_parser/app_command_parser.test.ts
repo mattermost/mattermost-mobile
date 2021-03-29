@@ -443,11 +443,6 @@ describe('AppCommandParser', () => {
     });
 
     describe('getSuggestions', () => {
-        test('just the app command', async () => {
-            const suggestions = await parser.getSuggestions('/jira');
-            expect(suggestions).toEqual([]);
-        });
-
         test('subcommand 1', async () => {
             const suggestions = await parser.getSuggestions('/jira ');
             expect(suggestions).toEqual([
@@ -574,7 +569,7 @@ describe('AppCommandParser', () => {
                     Description: 'The Jira issue key',
                     Hint: '',
                     IconData: '',
-                    Suggestion: '',
+                    Suggestion: 'issue: ""',
                 },
             ]);
         });
@@ -726,7 +721,7 @@ describe('AppCommandParser', () => {
                     Description: 'The Jira issue summary',
                     Hint: '',
                     IconData: 'Create icon',
-                    Suggestion: '',
+                    Suggestion: 'summary: ""',
                 },
             ]);
         });
@@ -739,7 +734,7 @@ describe('AppCommandParser', () => {
                     Description: 'The Jira issue summary',
                     Hint: '',
                     IconData: 'Create icon',
-                    Suggestion: 'Sum',
+                    Suggestion: 'summary: "Sum"',
                 },
             ]);
         });
@@ -752,7 +747,7 @@ describe('AppCommandParser', () => {
                     Description: 'The Jira issue summary',
                     Hint: '',
                     IconData: 'Create icon',
-                    Suggestion: 'Sum',
+                    Suggestion: 'summary: "Sum"',
                 },
             ]);
         });
@@ -765,7 +760,7 @@ describe('AppCommandParser', () => {
                     Description: 'The Jira issue summary',
                     Hint: '',
                     IconData: 'Create icon',
-                    Suggestion: 'Sum',
+                    Suggestion: 'summary: `Sum`',
                 },
             ]);
         });
@@ -778,7 +773,7 @@ describe('AppCommandParser', () => {
                     Description: 'The Jira issue summary',
                     Hint: '',
                     IconData: 'Create icon',
-                    Suggestion: '',
+                    Suggestion: 'summary: ""',
                 },
             ]);
         });

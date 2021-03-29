@@ -49,6 +49,7 @@
   "apps.error.unknown": "Unknown error occurred.",
   "apps.suggestion.no_dynamic": "No data was returned for dynamic suggestions",
   "apps.suggestion.no_static": "No matching options.",
+  "apps.suggestion.no_suggestion": "No matching suggestions.",
   "archivedChannelMessage": "You are viewing an **archived channel**. New messages cannot be posted.",
   "center_panel.archived.closeChannel": "Close Channel",
   "channel_header.addMembers": "Add Members",

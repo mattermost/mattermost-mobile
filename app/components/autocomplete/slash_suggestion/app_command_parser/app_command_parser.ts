@@ -618,6 +618,7 @@ export class AppCommandParser {
     // getSuggestions returns suggestions for subcommands and/or form arguments
     public getSuggestions = async (pretext: string): Promise<AutocompleteSuggestion[]> => {
         let parsed = new ParsedCommand(pretext, this, this.intl);
+        let suggestions: AutocompleteSuggestion[] = [];
 
         const commandBindings = this.getCommandBindings();
         if (!commandBindings) {
@@ -625,13 +626,19 @@ export class AppCommandParser {
         }
 
         parsed = await parsed.matchBinding(commandBindings, true);
-        let suggestions: AutocompleteSuggestion[] = [];
+        if (parsed.state === ParseState.Error) {
+            suggestions = this.getErrorSuggestion(parsed);
+        }
+
         if (parsed.state === ParseState.Command) {
             suggestions = this.getCommandSuggestions(parsed);
         }
 
         if (parsed.form || parsed.incomplete) {
             parsed = parsed.parseForm(true);
+            if (parsed.state === ParseState.Error) {
+                suggestions = this.getErrorSuggestion(parsed);
+            }
             const argSuggestions = await this.getParameterSuggestions(parsed);
             suggestions = suggestions.concat(argSuggestions);
         }
@@ -654,9 +661,32 @@ export class AppCommandParser {
             if (execute) {
                 suggestions = [execute, ...suggestions];
             }
+        } else if (suggestions.length === 0 && (parsed.field?.type !== AppFieldTypes.USER && parsed.field?.type !== AppFieldTypes.CHANNEL)) {
+            suggestions = this.getNoMatchingSuggestion();
         }
-
         return suggestions.map((suggestion) => this.decorateSuggestionComplete(parsed, suggestion));
+    }
+
+    getNoMatchingSuggestion = () => {
+        return [{
+            Complete: '',
+            Suggestion: '',
+            Hint: '',
+            IconData: '',
+            Description: this.intl.formatMessage({
+                id: 'apps.suggestion.no_suggestion',
+                defaultMessage: 'No matching suggestions.',
+            }),
+        }];
+    }
+    getErrorSuggestion = (parsed: ParsedCommand) => {
+        return [{
+            Complete: '',
+            Suggestion: '',
+            Hint: '',
+            IconData: '',
+            Description: parsed.errorMessage(),
+        }];
     }
 
     // composeCallFromParsed creates the form submission call
@@ -789,7 +819,7 @@ export class AppCommandParser {
             goBackSpace = 1;
         }
         let complete = parsed.command.substring(0, parsed.incompleteStart - goBackSpace);
-        complete += choice.Complete || choice.Suggestion;
+        complete += choice.Complete === undefined ? choice.Suggestion : choice.Complete;
         choice.Hint = choice.Hint || '';
         complete = complete.substring(1);
 
@@ -1054,7 +1084,7 @@ export class AppCommandParser {
 
         return [{
             Complete: complete,
-            Suggestion: parsed.incomplete,
+            Suggestion: `${parsed.field.label || parsed.field.name}: ${delimiter || '"'}${parsed.incomplete}${delimiter || '"'}`,
             Description: f.description || '',
             Hint: '',
             IconData: parsed.binding?.icon || '',
