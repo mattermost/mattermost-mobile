@@ -8,6 +8,8 @@ import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/admin/database_manager');
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 describe('*** DataOperator Wrapper ***', () => {
     it('=> wrapper should return an instance of DataOperator ', async () => {
         expect.assertions(1);

@@ -18,6 +18,8 @@ const {SERVERS} = MM_TABLES.DEFAULT;
 // 1. Android/iOS file path
 // 2. Deletion of the 'databases' folder on those two platforms
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 describe('*** Database Manager tests ***', () => {
     it('=> should return a default database', async () => {
         expect.assertions(2);
@@ -49,7 +51,7 @@ describe('*** Database Manager tests ***', () => {
     });
 
     it('=> should switch between active server connections', async () => {
-        expect.assertions(7);
+        expect.assertions(5);
         let activeServer: DatabaseInstance;
         let adapter;
 
@@ -60,10 +62,7 @@ describe('*** Database Manager tests ***', () => {
 
         const setActiveServer = async ({displayName, serverUrl}:{displayName: string, serverUrl: string}) => {
             // now we set the active database
-            const server = await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
-
-            // setActiveServer should be undefined as the method  does not actually return anything
-            expect(server).toBeUndefined();
+            await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
         };
 
         await setActiveServer({displayName: 'community mattermost', serverUrl: 'https://appv1.mattermost.com'});
@@ -71,6 +70,7 @@ describe('*** Database Manager tests ***', () => {
         // let's verify if we now have a value for activeServer
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
+
         adapter = activeServer!.adapter as any;
         const currentDBName = adapter.underlyingAdapter._dbName;
         expect(currentDBName).toStrictEqual('community mattermost');
@@ -79,6 +79,7 @@ describe('*** Database Manager tests ***', () => {
         await setActiveServer({displayName: 'appv2', serverUrl: 'https://appv2.mattermost.com'});
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
+
         adapter = activeServer!.adapter as any;
         const newDBName = adapter.underlyingAdapter._dbName;
         expect(newDBName).toStrictEqual('appv2');

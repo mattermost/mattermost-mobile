@@ -773,6 +773,7 @@ class DataOperator {
                 'An empty "customEmojis" array has been passed to the handleCustomEmojis method',
             );
         }
+
         await this.handleEntityRecords({
             comparator: compareCustomEmojiRecord,
             oneOfField: 'name',

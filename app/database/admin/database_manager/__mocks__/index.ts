@@ -5,7 +5,6 @@ import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 
 import {MM_TABLES} from '@constants/database';
-import DatabaseConnectionException from '@database/admin/exceptions/database_connection_exception';
 import DefaultMigration from '@database/default/migration';
 import {App, Global, Servers} from '@database/default/models';
 import {defaultSchema} from '@database/default/schema';
@@ -41,6 +40,7 @@ import {
     User,
 } from '@database/server/models';
 import {serverSchema} from '@database/server/schema';
+import logger from '@nozbe/watermelondb/utils/common/logger';
 import type {
     ActiveServerDatabase,
     DatabaseConnection,
@@ -53,6 +53,12 @@ import {DatabaseType} from '@typings/database/enums';
 import IServers from '@typings/database/servers';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
+
+if (__DEV__) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    logger.silence();
+}
 
 class DatabaseManager {
   private activeDatabase: DatabaseInstance;
@@ -150,7 +156,6 @@ class DatabaseManager {
    * This method should be called when switching to another server.
    * @param {string} displayName
    * @param {string} serverUrl
-   * @throws DatabaseConnectionException
    * @returns {Promise<void>}
    */
   setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
@@ -165,11 +170,6 @@ class DatabaseManager {
           },
           shouldAddToDefaultDatabase: Boolean(!isServerPresent),
       });
-      if (this.activeDatabase === undefined) {
-          throw new DatabaseConnectionException(
-              'The active database cannot be set ',
-          );
-      }
   };
 
   /**
@@ -188,15 +188,9 @@ class DatabaseManager {
   /**
    * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
    * Use this getter method to retrieve the active database if it has been set in your code.
-   * @throws DatabaseConnectionException
    * @returns {DatabaseInstance}
    */
   getActiveServerDatabase = (): DatabaseInstance => {
-      if (this.activeDatabase === undefined) {
-          throw new DatabaseConnectionException(
-              'The active database has not been set ',
-          );
-      }
       return this.activeDatabase;
   };
 
@@ -300,7 +294,6 @@ class DatabaseManager {
 
   /**
    * setDefaultDatabase : Sets the default database.
-   * @throws DatabaseConnectionException
    * @returns {Promise<DatabaseInstance>}
    */
   private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
@@ -308,12 +301,6 @@ class DatabaseManager {
           configs: {dbName: 'default'},
           shouldAddToDefaultDatabase: false,
       });
-
-      if (this.defaultDatabase === undefined) {
-          throw new DatabaseConnectionException(
-              'Unable to set the default database',
-          );
-      }
 
       return this.defaultDatabase;
   };
