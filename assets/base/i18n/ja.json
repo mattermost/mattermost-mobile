@@ -284,6 +284,7 @@
   "mobile.flagged_posts.empty_description": "保存されたメッセージはあなただけが見ることができます。メッセージを長押しするかメニューから保存を選択し、後から確認できるようメッセージをマークしてください。",
   "mobile.flagged_posts.empty_title": "保存されたメッセージはありません",
   "mobile.gallery.title": "{index} / {total}",
+  "mobile.general.error.title": "エラー",
   "mobile.help.title": "ヘルプ",
   "mobile.intro_messages.DM": "{teammate}とのダイレクトメッセージの履歴の最初です。ダイレクトメッセージとそこで共有されているファイルは、この領域の外のユーザーからは見ることができません。",
   "mobile.intro_messages.default_message": "ここはチームメイトが利用登録した際に最初に見るチャンネルです - みんなが知るべき情報を投稿してください。",
