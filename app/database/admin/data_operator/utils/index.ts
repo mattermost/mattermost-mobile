@@ -2,21 +2,24 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Model from '@nozbe/watermelondb/Model';
 import {
     ChainPosts,
-    SanitizePosts,
-    SanitizeReactions,
+    IdenticalRecord,
+    MatchExistingRecord,
+    MatchingRecords,
     RawPost,
     RawReaction,
-    MatchingRecords, IdenticalRecord, MatchExistingRecord,
+    RawUser,
+    SanitizePosts,
+    SanitizeReactions,
 } from '@typings/database/database';
-import Post from '@typings/database/post';
 import Reaction from '@typings/database/reaction';
+import Post from '@typings/database/post';
 
-const {POST, REACTION} = MM_TABLES.SERVER;
+const {POST, USER, REACTION} = MM_TABLES.SERVER;
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -54,6 +57,7 @@ export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
  */
 export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPosts) => {
     const posts: MatchExistingRecord[] = [];
+
     rawPosts.forEach((post) => {
         const postId = post.id;
         const orderIndex = orders.findIndex((order) => {
@@ -158,9 +162,14 @@ export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: Identi
     if (guardTables.includes(tableName)) {
         switch (tableName) {
             case POST: {
-                const tempPost = newValue as RawPost;
+                const tempPost = newValue as unknown as RawPost;
                 const currentRecord = (existingRecord as unknown) as Post;
                 return tempPost.update_at === currentRecord.updateAt;
+            }
+            case USER: {
+                const tempUser = newValue as unknown as RawUser;
+                const currentRecord = (existingRecord as unknown) as Post;
+                return tempUser.update_at === currentRecord.updateAt;
             }
             default: {
                 return false;

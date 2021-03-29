@@ -21,7 +21,7 @@ export type MMAdaptorOptions = {
   migrationEvents?: MigrationEvents;
 };
 
-export type MMDatabaseConnection = {
+export type DatabaseConfigs = {
   actionsEnabled?: boolean;
   dbName: string;
   dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER;
@@ -84,11 +84,11 @@ export type RawSystem = {
 };
 
 export type RawTermsOfService = {
-  id: string,
+  id: string;
   acceptedAt: number;
-  create_at: number,
-  user_id: string,
-  text: string
+  create_at: number;
+  user_id: string;
+  text: string;
 };
 
 export type RawDraft = {
@@ -201,93 +201,52 @@ export type RawPost = {
   };
 };
 
-export type RawChannelMembers = {
-  channel_id: string;
-  explicit_roles: string;
-  last_update_at: number;
-  last_viewed_at: number;
-  mention_count: number;
-  msg_count: number;
-  notify_props: NotifyProps;
-  roles: string;
-  scheme_admin: boolean;
-  scheme_guest: boolean;
-  scheme_user: boolean;
-  user_id: string;
-};
-
 export type ChannelType = 'D' | 'O' | 'G' | 'P';
-
-export type RawChannel = {
-  create_at: number;
-  creator_id: string;
-  delete_at: number;
-  display_name: string;
-  extra_update_at: number;
-  group_constrained: boolean | null;
-  header: string;
-  id: string;
-  last_post_at: number;
-  name: string;
-  props: null;
-  purpose: string;
-  scheme_id: null;
-  shared: null;
-  team_id: string;
-  total_msg_count: number;
-  type: ChannelType;
-  update_at: number;
-};
-
-export type RawPostsInThread = {
-  id?: string;
-  earliest: number;
-  latest?: number;
-  post_id: string;
-};
 
 export type RawUser = {
   id: string;
+  auth_service: string;
   create_at: number;
-  update_at: number;
   delete_at: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-  nickname: string;
   email: string;
   email_verified: boolean;
-  auth_service: string;
-  roles: string;
-  locale: string;
-  notify_props: {
-    email: boolean;
-    push: string;
-    desktop: string;
-    desktop_sound: boolean;
-    mention_keys: string;
-    channel: boolean;
-    first_name: boolean;
-    auto_responder_active: boolean;
-    auto_responder_message: string;
-    comments: string;
-    push_status: string;
-    desktop_notification_sound: string; // Not in use by the mobile app
-  };
+  failed_attempts?: number;
+  first_name: string;
+  is_bot: boolean;
+  last_name: string;
   last_password_update: number;
   last_picture_update: number;
+  locale: string;
+  mfa_active?: boolean;
+  nickname: string;
+  notify_props: NotifyProps;
+
+  // notify_props: {
+  //   channel: boolean;
+  //   desktop: string;
+  //   desktop_sound: boolean;
+  //   email: boolean;
+  //   first_name: boolean;
+  //   mention_keys: string;
+  //   push: string;
+  //   auto_responder_active: boolean;
+  //   auto_responder_message: string;
+  //   desktop_notification_sound: string; // Not in use by the mobile app
+  //   push_status: string;
+  //   comments: string;
+  // };
+  position?: string;
+  props: UserProps;
+  roles: string;
   timezone: {
     useAutomaticTimezone: boolean;
     manualTimezone: string;
     automaticTimezone: string;
   };
-  props: UserProps;
-  position?: string;
-  failed_attempts?: number;
-  mfa_active?: boolean;
-  terms_of_service_id?: string;
   terms_of_service_create_at?: number;
-  is_bot: boolean;
+  terms_of_service_id?: string;
+  update_at: number;
+  username: string;
 };
 
 export type RawPreference = {
@@ -338,6 +297,49 @@ export type RawChannelMembership = {
   explicit_roles: string;
 };
 
+export type RawChannelMembers = {
+  channel_id: string;
+  explicit_roles: string;
+  last_update_at: number;
+  last_viewed_at: number;
+  mention_count: number;
+  msg_count: number;
+  notify_props: NotifyProps;
+  roles: string;
+  scheme_admin: boolean;
+  scheme_guest: boolean;
+  scheme_user: boolean;
+  user_id: string;
+};
+
+export type RawChannel = {
+  create_at: number;
+  creator_id: string;
+  delete_at: number;
+  display_name: string;
+  extra_update_at: number;
+  group_constrained: boolean | null;
+  header: string;
+  id: string;
+  last_post_at: number;
+  name: string;
+  props: null;
+  purpose: string;
+  scheme_id: null;
+  shared: null;
+  team_id: string;
+  total_msg_count: number;
+  type: ChannelType;
+  update_at: number;
+};
+
+export type RawPostsInThread = {
+  id?: string;
+  earliest: number;
+  latest?: number;
+  post_id: string;
+};
+
 export type RawValue =
   | RawApp
   | RawChannelMembership
@@ -359,7 +361,7 @@ export type RawValue =
   | RawTermsOfService
   | RawUser;
 
-export type MatchExistingRecord = { record?: Model, raw: RawValue }
+export type MatchExistingRecord = { record?: Model; raw: RawValue };
 
 export type DataFactory = {
   database: Database;
@@ -372,7 +374,7 @@ export type DataFactory = {
 export type HandleBaseData = {
   database?: Database;
   tableName: string;
-  createRaws?: MatchExistingRecord[],
+  createRaws?: MatchExistingRecord[];
   updateRaws?: MatchExistingRecord[];
   recordOperator: (DataFactory) => void;
 };
@@ -388,7 +390,7 @@ export type Models = Class<Model>[];
 
 // The elements needed to create a new connection
 export type DatabaseConnection = {
-  databaseConnection: MMDatabaseConnection;
+  configs: DatabaseConfigs;
   shouldAddToDefaultDatabase: boolean;
 };
 
@@ -446,13 +448,6 @@ export type MatchingRecords = {
   condition: any;
 };
 
-export type RawWithNoId =
-  | RawPreference
-  | RawTeamMembership
-  | RawCustomEmoji
-  | RawGroupMembership
-  | RawChannelMembership;
-
 export type DiscardDuplicates = {
   rawValues: RawValue[];
   tableName: string;
@@ -466,4 +461,9 @@ export type HandleEntityRecords = {
   operator: (DataFactory) => Promise<Model | null>;
   rawValues: RawValue[];
   tableName: string;
+};
+
+export type DatabaseInstances = {
+  url: string;
+  dbInstance: DatabaseInstance;
 };

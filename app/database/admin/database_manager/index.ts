@@ -3,6 +3,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
@@ -47,6 +48,7 @@ import type {
     ActiveServerDatabase,
     DatabaseConnection,
     DatabaseInstance,
+    DatabaseInstances,
     DefaultNewServer,
     MigrationEvents,
     Models,
@@ -110,13 +112,13 @@ class DatabaseManager {
    *
    * @returns {Promise<DatabaseInstance>}
    */
-  createDatabaseConnection = async ({databaseConnection, shouldAddToDefaultDatabase = true}: DatabaseConnection): Promise<DatabaseInstance> => {
+  createDatabaseConnection = async ({configs, shouldAddToDefaultDatabase = true}: DatabaseConnection): Promise<DatabaseInstance> => {
       const {
           actionsEnabled = true,
           dbName = 'default',
           dbType = DatabaseType.DEFAULT,
           serverUrl = undefined,
-      } = databaseConnection;
+      } = configs;
 
       try {
           const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
@@ -154,13 +156,14 @@ class DatabaseManager {
    * This method should be called when switching to another server.
    * @param {string} displayName
    * @param {string} serverUrl
+   * @throws DatabaseConnectionException
    * @returns {Promise<void>}
    */
   setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
       const isServerPresent = await this.isServerPresent(serverUrl);
 
       this.activeDatabase = await this.createDatabaseConnection({
-          databaseConnection: {
+          configs: {
               actionsEnabled: true,
               dbName: displayName,
               dbType: DatabaseType.SERVER,
@@ -219,9 +222,9 @@ class DatabaseManager {
    * @param {string[]} serverUrls
    * @returns {Promise<{url: string, dbInstance: DatabaseInstance}[] | null>}
    */
-  retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{ url: string; dbInstance: DatabaseInstance }[] | null> => {
+  retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<DatabaseInstances[] | null> => {
       if (serverUrls?.length) {
-      // Retrieve all server records from the default db
+          // Retrieve all server records from the default db
           const allServers = await this.getAllServers();
 
           // Filter only those servers that are present in the serverUrls array
@@ -233,16 +236,15 @@ class DatabaseManager {
           if (servers.length) {
               const databasePromises = await servers.map(async (server: IServers) => {
                   const {displayName, url} = server;
-                  const databaseConnection = {
-                      actionsEnabled: true,
-                      dbName: displayName,
-                      dbType: DatabaseType.SERVER,
-                      serverUrl: url,
-                  };
 
                   // Since we are retrieving existing URL ( and so database connections ) from the 'DEFAULT' database, shouldAddToDefaultDatabase is set to false
                   const dbInstance = await this.createDatabaseConnection({
-                      databaseConnection,
+                      configs: {
+                          actionsEnabled: true,
+                          dbName: displayName,
+                          dbType: DatabaseType.SERVER,
+                          serverUrl: url,
+                      },
                       shouldAddToDefaultDatabase: false,
                   });
 
@@ -338,12 +340,7 @@ class DatabaseManager {
   private getAllServers = async () => {
       // Retrieve all server records from the default db
       const defaultDatabase = await this.getDefaultDatabase();
-      const allServers =
-      defaultDatabase &&
-      ((await defaultDatabase.collections.
-          get(MM_TABLES.DEFAULT.SERVERS).
-          query().
-          fetch()) as IServers[]);
+      const allServers = defaultDatabase && ((await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch()) as IServers[]);
       return allServers;
   };
 
@@ -354,7 +351,7 @@ class DatabaseManager {
    */
   private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
       this.defaultDatabase = await this.createDatabaseConnection({
-          databaseConnection: {dbName: 'default'},
+          configs: {dbName: 'default'},
           shouldAddToDefaultDatabase: false,
       });
 
@@ -437,6 +434,12 @@ class DatabaseManager {
   private getDatabaseDirectory = (dbName: string): string => {
       return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
   };
+}
+
+if (!__DEV__) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    logger.silence();
 }
 
 export default new DatabaseManager();

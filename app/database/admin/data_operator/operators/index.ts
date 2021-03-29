@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
-import {User} from '@database/server/models';
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import {User} from '@database/server/models';
 import App from '@typings/database/app';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
@@ -274,7 +275,6 @@ export const operatePostRecord = async ({action, database, value}: DataFactory) 
     const record = value.record as Post;
     const isCreateAction = action === OperationType.CREATE;
 
-    // TODO :  test this one again
     // id of post comes from server response
     const generator = (post: Post) => {
         post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record?.id;

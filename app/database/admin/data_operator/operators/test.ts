@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import DatabaseManager from '@database/admin/database_manager';
 import {DatabaseType, OperationType} from '@typings/database/enums';
 
@@ -35,7 +36,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         const serverUrl = 'https://appv2.mattermost.com';
         const database = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
-            databaseConnection: {
+            configs: {
                 actionsEnabled: true,
                 dbName,
                 dbType: DatabaseType.SERVER,
@@ -120,6 +121,32 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('Servers');
+    });
+
+    it('=> operateCustomEmojiRecord: should return an array of type CustomEmoji', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateCustomEmojiRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'i',
+                    create_at: 1580913641769,
+                    update_at: 1580913641769,
+                    delete_at: 0,
+                    creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                    name: 'boomI',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
     });
 
     it('=> operateRoleRecord: should return an array of type Role', async () => {
@@ -420,11 +447,11 @@ describe('*** DataOperator: Operators tests ***', () => {
                         push: 'mention',
                         channel: true,
 
-                        auto_responder_active: false,
-                        auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
-                        comments: 'never',
-                        desktop_notification_sound: 'Hello',
-                        push_status: 'online',
+                        // auto_responder_active: false,
+                        // auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
+                        // comments: 'never',
+                        // desktop_notification_sound: 'Hello',
+                        // push_status: 'online',
                     },
                     last_password_update: 1604323112537,
                     last_picture_update: 1604686302260,
