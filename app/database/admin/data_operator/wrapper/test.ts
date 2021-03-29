@@ -221,13 +221,12 @@ describe('*** DataOperator Wrapper ***', () => {
                 serverUrl: 'https://appv1.mattermost.com',
             },
         });
-
         const dataOperator = await createDataOperator('https://appv1.mattermost.com');
 
         const spyOnHandleReactions = jest.spyOn(dataOperator as any, 'handleReactions');
         const spyOnHandleFiles = jest.spyOn(dataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(dataOperator as any, 'handlePostMetadata');
-        const spyOnHandleIsolatedEntity = jest.spyOn(dataOperator as any, 'handleIsolatedEntity');
+        const spyOnHandleCustomEmojis = jest.spyOn(dataOperator as any, 'handleCustomEmojis');
         const spyOnHandlePostsInThread = jest.spyOn(dataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(dataOperator as any, 'handlePostsInChannel');
 
@@ -331,23 +330,22 @@ describe('*** DataOperator Wrapper ***', () => {
             prepareRowsOnly: true,
         });
 
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledWith({
-            tableName: 'CustomEmoji',
-            values: [
-                {
-                    id: 'dgwyadacdbbwjc8t357h6hwsrh',
-                    create_at: 1502389307432,
-                    update_at: 1502389307432,
-                    delete_at: 0,
-                    creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
-                    name: 'thanks',
-                },
-            ],
-        });
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith([
+            {
+                id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                create_at: 1502389307432,
+                update_at: 1502389307432,
+                delete_at: 0,
+                creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                name: 'thanks',
+            },
+        ]);
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
+            {earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'},
+        ]);
 
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));

@@ -499,7 +499,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
         const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
-
         const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleCustomEmojis');
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
