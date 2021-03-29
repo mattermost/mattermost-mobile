@@ -675,7 +675,7 @@ export class AppCommandParser {
             Suggestion: '',
             Hint: '',
             IconData: '',
-            Description: parsed.errorMessage(),
+            Description: parserErrorMessage(this.intl, parsed.error, parsed.command, parsed.i),
         }];
     }
 
