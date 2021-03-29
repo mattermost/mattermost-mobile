@@ -1,14 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/admin/database_manager';
-import DataOperator from '@database/admin/data_operator';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
-
 import {
     operateAppRecord,
-    operateCustomEmojiRecord,
     operateDraftRecord,
     operateGlobalRecord,
     operateRoleRecord,
@@ -17,9 +12,15 @@ import {
     operateTermsOfServiceRecord,
 } from '../operators';
 
+import DataOperator from '@database/admin/data_operator';
+import DatabaseManager from '@database/admin/database_manager';
+import {MM_TABLES} from '@constants/database';
+
 jest.mock('@database/admin/database_manager');
 
 const {DRAFT} = MM_TABLES.SERVER;
+
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** DataOperator: Handlers tests ***', () => {
     const createConnection = async (setActive = false) => {
@@ -132,32 +133,6 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleCustomEmoji: should write to CUSTOM_EMOJI entity', async () => {
-        expect.assertions(2);
-
-        const database = await createConnection(true);
-        expect(database).toBeTruthy();
-
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
-
-        const data = {
-            tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: [
-                {
-                    id: 'custom-emoji-id-1',
-                    name: 'custom-emoji-1',
-                },
-            ],
-        };
-
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateCustomEmojiRecord,
-        });
-    });
-
     it('=> HandleRole: should write to ROLE entity', async () => {
         expect.assertions(2);
 
@@ -216,7 +191,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         const data = {
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
-            values: [{id: 'tos-1', acceptedAt: 1}],
+            values: [{
+                id: 'tos-1',
+                acceptedAt: 1,
+                create_at: 1613667352029,
+                user_id: 'user1613667352029',
+                text: '',
+            }],
         };
 
         await DataOperator.handleIsolatedEntity(data);
@@ -239,6 +220,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             tableName: 'INVALID_TABLE_NAME',
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             values: [{id: 'tos-1', acceptedAt: 1}],
         });
 
@@ -637,5 +620,218 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
+    });
+
+    it('=> HandleUsers: should write to User entity', async () => {
+        expect.assertions(1);
+
+        const users = [
+            {
+                id: '9ciscaqbrpd6d8s68k76xb9bte',
+                create_at: 1599457495881,
+                update_at: 1607683720173,
+                delete_at: 0,
+                username: 'a.l',
+                auth_service: 'saml',
+                email: 'a.l@mattermost.com',
+                email_verified: true,
+                is_bot: false,
+                nickname: '',
+                first_name: 'A',
+                last_name: 'L',
+                position: 'Mobile Engineer',
+                roles: 'system_user',
+                props: {},
+                notify_props: {
+                    desktop: 'all',
+                    desktop_sound: true,
+                    email: true,
+                    first_name: true,
+                    mention_keys: '',
+                    push: 'mention',
+                    channel: true,
+                    auto_responder_active: false,
+                    auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
+                    comments: 'never',
+                    desktop_notification_sound: 'Hello',
+                    push_status: 'online',
+                },
+                last_password_update: 1604323112537,
+                last_picture_update: 1604686302260,
+                locale: 'en',
+                timezone: {
+                    automaticTimezone: 'Indian/Mauritius',
+                    manualTimezone: '',
+                    useAutomaticTimezone: true,
+                },
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleUsers(users);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
+        expect.assertions(1);
+
+        const preferences = [
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'group_channel_show',
+                name: 'qj91hepgjfn6xr4acm5xzd8zoc',
+                value: 'true',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'notifications',
+                name: 'email_interval',
+                value: '30',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'theme',
+                name: '',
+                value: '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'tutorial_step',
+                name: '9ciscaqbrpd6d8s68k76xb9bte',
+                value: '2',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handlePreferences(preferences);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+
+        const teamMembership = [
+            {
+                team_id: 'a',
+                user_id: 'ab',
+                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                delete_at: 0,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleTeamMemberships(teamMembership);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
+        expect.assertions(1);
+        const emojis = [
+            {
+                id: 'i',
+                create_at: 1580913641769,
+                update_at: 1580913641769,
+                delete_at: 0,
+                creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                name: 'boomI',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleCustomEmojis(emojis);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleGroupMembership: should write to GROUP_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+        const groupMemberships = [
+            {
+                user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
+                group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
+
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroupMembership(groupMemberships);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleChannelMembership: should write to CHANNEL_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+        const channelMemberships = [
+            {
+                channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                last_viewed_at: 1613667352029,
+                msg_count: 3864,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'mention',
+                    push: 'default',
+                },
+                last_update_at: 1613667352029,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+            {
+                channel_id: '1yw6gxfr4bn1jbyp9nr7d53yew',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'channel_user',
+                last_viewed_at: 1615300540549,
+                msg_count: 16,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'all',
+                    push: 'default',
+                },
+                last_update_at: 1615300540549,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
+
+        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'handleBase');
+
+        await createConnection(true);
+
+        await DataOperator.handleChannelMembership(channelMemberships);
+
+        expect(spyOnHandleBase).toHaveBeenCalledTimes(1);
     });
 });
