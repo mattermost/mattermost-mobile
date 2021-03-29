@@ -396,7 +396,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         if (app_bindings && app_bindings.length) {
             return (
                 <EmbeddedBindings
-                    embed={app_bindings}
+                    embeds={app_bindings}
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}
                     deviceHeight={deviceHeight}
@@ -532,13 +532,13 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     render() {
         let {link} = this.props;
-        const {openGraphData, postProps, expandedLink} = this.props;
+        const {openGraphData, postProps, expandedLink, appsEnabled} = this.props;
         const {linkLoadError} = this.state;
         if (expandedLink) {
             link = expandedLink;
         }
 
-        const {attachments, app_bindings, appsEnabled} = postProps;
+        const {attachments, app_bindings} = postProps;
 
         if (!link && !attachments && !(appsEnabled && app_bindings)) {
             return null;
