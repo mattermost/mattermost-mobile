@@ -94,4 +94,4 @@ export function executeCommand(message: string, channelId: string, rootId: strin
 
 const filterEmDashForCommand = (command: string): string => {
     return command.replace(/\u2014/g, '--');
-}
+};
