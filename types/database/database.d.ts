@@ -65,16 +65,16 @@ export type RawCustomEmoji = {
   create_at?: number;
   update_at?: number;
   delete_at?: number;
-  creator_id?: string;
+  creator_id: string;
 };
 
 export type RawRole = {
   id: string;
   name: string;
-  display_name: string;
-  description: string;
+  display_name?: string;
+  description?: string;
   permissions: string[];
-  scheme_managed: boolean;
+  scheme_managed?: boolean;
 };
 
 export type RawSystem = {
@@ -95,7 +95,7 @@ export type RawDraft = {
   channel_id: string;
   files?: FileInfo[];
   message?: string;
-  root_id?: string;
+  root_id: string;
 };
 
 export type RawEmbed = { data: {}; type: string; url: string };
@@ -104,7 +104,6 @@ export type RawPostMetadata = {
   data: any;
   type: string;
   postId: string;
-  id?: string;
 };
 
 interface PostMetadataTypes {
@@ -131,7 +130,6 @@ export type RawFile = {
 };
 
 export type RawReaction = {
-  id?: string;
   create_at: number;
   delete_at: number;
   emoji_name: string;
@@ -141,7 +139,6 @@ export type RawReaction = {
 };
 
 export type RawPostsInChannel = {
-  id?: string;
   channel_id: string;
   earliest: number;
   latest: number;
@@ -248,17 +245,15 @@ export type RawUser = {
 };
 
 export type RawPreference = {
-  id?: string;
-  user_id: string;
   category: string;
   name: string;
+  user_id: string;
   value: string;
 };
 
 export type RawTeamMembership = {
   delete_at: number;
   explicit_roles: string;
-  id?: string;
   roles: string;
   scheme_admin: boolean;
   scheme_guest: boolean;
@@ -268,13 +263,11 @@ export type RawTeamMembership = {
 };
 
 export type RawGroupMembership = {
-  id?: string;
   user_id: string;
   group_id: string;
 };
 
 export type RawChannelMembership = {
-  id?: string;
   channel_id: string;
   user_id: string;
   roles: string;
@@ -332,33 +325,46 @@ export type RawChannel = {
 };
 
 export type RawPostsInThread = {
-  id?: string;
   earliest: number;
   latest?: number;
   post_id: string;
 };
 
 export type RawGroup = {
+  create_at: number,
+  delete_at: number,
+  description: string,
+  display_name: string,
+  has_syncables: boolean
   id: string,
   name: string,
-  display_name: string,
-  description: string,
-  source: string,
   remote_id: string,
-  create_at: number,
+  source: string,
   update_at: number,
-  delete_at: number,
-  has_syncables: boolean
 }
 
 export type RawGroupsInTeam = {
-  team_id: string,
-  team_display_name: string,
-  team_type: string,
-  group_id: string,
   auto_add: boolean,
   create_at: number,
   delete_at: number,
+  group_id: string,
+  team_display_name: string,
+  team_id: string,
+  team_type: string,
+  update_at: number
+}
+
+export type RawGroupsInChannel = {
+  auto_add: boolean,
+  channel_display_name: string,
+  channel_id: string,
+  channel_type: string,
+  create_at: number,
+  delete_at: number,
+  group_id: string,
+  team_display_name: string,
+  team_id: string,
+  team_type: string,
   update_at: number
 }
 
@@ -370,8 +376,9 @@ export type RawValue =
   | RawFile
   | RawGlobal
   | RawGroup
-  | RawGroupsInTeam
   | RawGroupMembership
+  | RawGroupsInChannel
+  | RawGroupsInTeam
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel
@@ -388,18 +395,18 @@ export type RawValue =
 export type MatchExistingRecord = { record?: Model; raw: RawValue };
 
 export type DataFactory = {
+  action: OperationType;
   database: Database;
   generator?: (model: Model) => void;
   tableName?: string;
   value: MatchExistingRecord;
-  action: OperationType;
 };
 
 export type PrepareForDatabase = {
-  tableName: string;
   createRaws?: MatchExistingRecord[];
-  updateRaws?: MatchExistingRecord[];
   recordOperator: (DataFactory) => void;
+  tableName: string;
+  updateRaws?: MatchExistingRecord[];
 };
 
 export type PrepareRecords = PrepareForDatabase & { database: Database; };
@@ -423,8 +430,8 @@ export type DatabaseConnection = {
 export type ActiveServerDatabase = { displayName: string; serverUrl: string };
 
 export type HandleReactions = {
-  reactions: RawReaction[];
   prepareRowsOnly: boolean;
+  reactions: RawReaction[];
 };
 
 export type HandleFiles = {
@@ -440,8 +447,8 @@ export type HandlePostMetadata = {
 
 export type HandlePosts = {
   orders: string[];
-  values: RawPost[];
   previousPostId?: string;
+  values: RawPost[];
 };
 
 export type SanitizeReactions = {
@@ -452,13 +459,13 @@ export type SanitizeReactions = {
 
 export type ChainPosts = {
   orders: string[];
-  rawPosts: RawPost[];
   previousPostId: string;
+  rawPosts: RawPost[];
 };
 
 export type SanitizePosts = {
-  posts: RawPost[];
   orders: string[];
+  posts: RawPost[];
 };
 
 export type IdenticalRecord = {
@@ -468,16 +475,16 @@ export type IdenticalRecord = {
 };
 
 export type MatchingRecords = {
+  condition: any;
   database: Database;
   tableName: string;
-  condition: any;
 };
 
 export type DiscardDuplicates = {
+  comparator: (existing: Model, newElement: RawValue) => boolean;
+  oneOfField: string;
   rawValues: RawValue[];
   tableName: string;
-  oneOfField: string;
-  comparator: (existing: Model, newElement: RawValue) => boolean;
 };
 
 export type HandleEntityRecords = {
@@ -489,6 +496,6 @@ export type HandleEntityRecords = {
 };
 
 export type DatabaseInstances = {
-  url: string;
   dbInstance: DatabaseInstance;
+  url: string;
 };

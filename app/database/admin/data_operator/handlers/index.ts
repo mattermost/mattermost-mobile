@@ -13,6 +13,7 @@ import {
     compareGlobalRecord,
     compareGroupMembershipRecord,
     compareGroupRecord,
+    compareGroupsInChannelRecord,
     compareGroupsInTeamRecord,
     comparePostRecord,
     comparePreferenceRecord,
@@ -46,6 +47,7 @@ import {
     RawFile,
     RawGroup,
     RawGroupMembership,
+    RawGroupsInChannel,
     RawGroupsInTeam,
     RawPost,
     RawPostMetadata,
@@ -75,6 +77,7 @@ import {
     operateGlobalRecord,
     operateGroupMembershipRecord,
     operateGroupRecord,
+    operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
@@ -103,6 +106,7 @@ const {
     DRAFT,
     FILE,
     GROUP,
+    GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
     POST,
@@ -866,6 +870,28 @@ class DataOperator {
             operator: operateGroupsInTeamRecord,
             rawValues: groupsInTeam,
             tableName: GROUPS_IN_TEAM,
+        });
+    };
+
+    /**
+     * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL entity from the 'Server' schema
+     * @param {RawGroupsInChannel[]} groupsInChannel
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleGroupsInChannel = async (groupsInChannel: RawGroupsInChannel[]) => {
+        if (!groupsInChannel.length) {
+            throw new DataOperatorException(
+                'An empty "groups" array has been passed to the handleGroupsInTeam method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            comparator: compareGroupsInChannelRecord,
+            oneOfField: 'group_id',
+            operator: operateGroupsInChannelRecord,
+            rawValues: groupsInChannel,
+            tableName: GROUPS_IN_CHANNEL,
         });
     };
 

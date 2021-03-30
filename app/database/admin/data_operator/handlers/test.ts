@@ -887,4 +887,30 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleGroupsInChannel: should write to GROUPS_IN_CHANNEL entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroupsInChannel([
+            {
+                auto_add: true,
+                channel_display_name: '',
+                channel_id: 'channelid',
+                channel_type: '',
+                create_at: 0,
+                delete_at: 0,
+                group_id: 'groupId',
+                team_display_name: '',
+                team_id: '',
+                team_type: '',
+                update_at: 0,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });

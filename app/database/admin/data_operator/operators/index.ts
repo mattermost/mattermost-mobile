@@ -20,6 +20,7 @@ import {
     RawGroup,
     RawGroupMembership,
     RawGroupsInTeam,
+    RawGroupsInChannel,
     RawPost,
     RawPostMetadata,
     RawPostsInChannel,
@@ -39,6 +40,7 @@ import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
+import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
@@ -60,6 +62,7 @@ const {
     FILE,
     GROUP,
     GROUPS_IN_TEAM,
+    GROUPS_IN_CHANNEL,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -350,7 +353,7 @@ export const operateReactionRecord = async ({action, database, value}: DataFacto
 
     // id of reaction comes from server response
     const generator = (reaction: Reaction) => {
-        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record?.id;
+        reaction._raw.id = isCreateAction ? reaction.id : record?.id;
         reaction.userId = raw.user_id;
         reaction.postId = raw.post_id;
         reaction.emojiName = raw.emoji_name;
@@ -467,9 +470,11 @@ export const operateDraftRecord = async ({action, database, value}: DataFactory)
  */
 export const operatePostsInChannelRecord = async ({action, database, value}: DataFactory) => {
     const raw = value.raw as RawPostsInChannel;
+    const record = value.record as PostsInChannel;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (postsInChannel: PostsInChannel) => {
-        postsInChannel._raw.id = raw?.id ?? postsInChannel.id;
+        postsInChannel._raw.id = isCreateAction ? postsInChannel.id : record.id;
         postsInChannel.channelId = raw.channel_id;
         postsInChannel.earliest = raw.earliest;
         postsInChannel.latest = raw.latest;
@@ -541,7 +546,7 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
 
     // id of preference comes from server response
     const generator = (preference: Preference) => {
-        preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record?.id;
+        preference._raw.id = isCreateAction ? preference.id : record?.id;
         preference.category = raw.category;
         preference.name = raw.name;
         preference.userId = raw.user_id;
@@ -571,7 +576,7 @@ export const operateTeamMembershipRecord = async ({action, database, value}: Dat
 
     // id of preference comes from server response
     const generator = (teamMembership: TeamMembership) => {
-        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record?.id;
+        teamMembership._raw.id = isCreateAction ? teamMembership.id : record?.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
     };
@@ -599,7 +604,7 @@ export const operateGroupMembershipRecord = async ({action, database, value}: Da
 
     // id of preference comes from server response
     const generator = (groupMember: GroupMembership) => {
-        groupMember._raw.id = isCreateAction ? (raw?.id ?? groupMember.id) : record?.id;
+        groupMember._raw.id = isCreateAction ? groupMember.id : record?.id;
         groupMember.groupId = raw.group_id;
         groupMember.userId = raw.user_id;
     };
@@ -627,7 +632,7 @@ export const operateChannelMembershipRecord = async ({action, database, value}: 
 
     // id of preference comes from server response
     const generator = (channelMember: ChannelMembership) => {
-        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record?.id;
+        channelMember._raw.id = isCreateAction ? channelMember.id : record?.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
     };
@@ -691,6 +696,33 @@ export const operateGroupsInTeamRecord = async ({action, database, value}: DataF
         action,
         database,
         tableName: GROUPS_IN_TEAM,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateGroupsInChannelRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawGroupsInChannel;
+    const record = value.record as GroupsInChannel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (groupsInChannel: GroupsInChannel) => {
+        groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record?.id;
+        groupsInChannel.channelId = raw.channel_id;
+        groupsInChannel.groupId = raw.group_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUPS_IN_CHANNEL,
         value,
         generator,
     });
