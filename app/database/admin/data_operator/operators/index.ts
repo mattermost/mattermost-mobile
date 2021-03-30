@@ -16,7 +16,7 @@ import {
     RawCustomEmoji,
     RawDraft,
     RawFile,
-    RawGlobal, RawGroup,
+    RawGlobal,
     RawGroupMembership,
     RawPost,
     RawPostMetadata,
@@ -35,7 +35,6 @@ import Draft from '@typings/database/draft';
 import {OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
-import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';

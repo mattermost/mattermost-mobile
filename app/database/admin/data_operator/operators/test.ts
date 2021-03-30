@@ -123,32 +123,6 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toMatch('Servers');
     });
 
-    it('=> operateCustomEmojiRecord: should return an array of type CustomEmoji', async () => {
-        expect.assertions(3);
-
-        const database = await createConnection();
-        expect(database).toBeTruthy();
-
-        const preparedRecords = await operateCustomEmojiRecord({
-            action: OperationType.CREATE,
-            database: database!,
-            value: {
-                record: undefined,
-                raw: {
-                    id: 'i',
-                    create_at: 1580913641769,
-                    update_at: 1580913641769,
-                    delete_at: 0,
-                    creator_id: '4cprpki7ri81mbx8efixcsb8jo',
-                    name: 'boomI',
-                },
-            },
-        });
-
-        expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
-    });
-
     it('=> operateRoleRecord: should return an array of type Role', async () => {
         expect.assertions(3);
 
