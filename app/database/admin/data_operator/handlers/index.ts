@@ -119,6 +119,8 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
+// TODO : We assume that we are receiving clean&correct data from the server.  Hence, we can never have two posts in an array with the same post_id. This should be confirmed.
+
 class DataOperator {
     /**
      * serverDatabase : In a multi-server configuration, this connection will be used by WebSockets and other parties to update databases other than the active one.
