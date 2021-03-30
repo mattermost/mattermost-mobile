@@ -21,7 +21,7 @@ type Props = {
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         getChannel: (channelId: string) => Promise<ActionResult>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
     };
     post: Post;
     binding: AppBinding;
@@ -36,8 +36,6 @@ export default class ButtonBinding extends PureComponent<Props> {
     private mounted = false;
 
     handleActionPress = preventDoubleTap(async () => {
-        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
-
         const {
             binding,
             post,
@@ -73,6 +71,7 @@ export default class ButtonBinding extends PureComponent<Props> {
             this.setState({executing: false});
         }
 
+        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id, res.data?.app_metadata?.bot_user_id);
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage(

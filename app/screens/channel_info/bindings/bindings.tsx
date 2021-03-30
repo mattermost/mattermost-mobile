@@ -25,7 +25,7 @@ type Props = {
     currentTeamId: string;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
     }
 }
 
@@ -64,7 +64,7 @@ type OptionProps = {
     currentTeamId: string;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
     },
 }
 
@@ -121,7 +121,7 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
         }
 
         const callResp = res.data!;
-        const ephemeral = (message: string) => sendEphemeralPost(message, currentChannel.id);
+        const ephemeral = (message: string) => sendEphemeralPost(message, currentChannel.id, '', callResp.app_metadata?.bot_user_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {

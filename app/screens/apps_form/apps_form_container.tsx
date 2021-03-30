@@ -16,7 +16,7 @@ export type Props = {
     call?: AppCallRequest;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse<any>, error?: AppCallResponse<any>}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
     };
     theme: Theme;
     componentId: string;
@@ -81,7 +81,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                this.props.actions.sendEphemeralPost(callResp.markdown, call.context.channel_id, call.context.root_id || call.context.post_id);
+                this.props.actions.sendEphemeralPost(callResp.markdown, call.context.channel_id, call.context.root_id || call.context.post_id, callResp.app_metadata?.bot_user_id);
             }
             break;
         case AppCallResponseTypes.FORM:
