@@ -16,8 +16,10 @@ import {
     RawCustomEmoji,
     RawDraft,
     RawFile,
-    RawGlobal, RawGroup,
+    RawGlobal,
+    RawGroup,
     RawGroupMembership,
+    RawGroupsInTeam,
     RawPost,
     RawPostMetadata,
     RawPostsInChannel,
@@ -37,6 +39,7 @@ import File from '@typings/database/file';
 import Global from '@typings/database/global';
 import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
+import GroupsInTeam from '@typings/database/groups_in_team';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -56,6 +59,7 @@ const {
     DRAFT,
     FILE,
     GROUP,
+    GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -660,6 +664,33 @@ export const operateGroupRecord = async ({action, database, value}: DataFactory)
         action,
         database,
         tableName: GROUP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateGroupsInTeamRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawGroupsInTeam;
+    const record = value.record as GroupsInTeam;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (groupsInTeam: GroupsInTeam) => {
+        groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record?.id;
+        groupsInTeam.teamId = raw.team_id;
+        groupsInTeam.groupId = raw.group_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUPS_IN_TEAM,
         value,
         generator,
     });

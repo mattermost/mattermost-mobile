@@ -13,6 +13,7 @@ import {
     RawGlobal,
     RawGroup,
     RawGroupMembership,
+    RawGroupsInTeam,
     RawPost,
     RawPreference,
     RawRole,
@@ -26,6 +27,7 @@ import Draft from '@typings/database/draft';
 import Global from '@typings/database/global';
 import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
+import GroupsInTeam from '@typings/database/groups_in_team';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Servers from '@typings/database/servers';
@@ -107,4 +109,8 @@ export const compareChannelMembershipRecord = (record: ChannelMembership, raw: R
 
 export const compareGroupRecord = (record: Group, raw: RawGroup) => {
     return raw.name === record.name && raw.display_name === record.displayName;
+};
+
+export const compareGroupsInTeamRecord = (record: GroupsInTeam, raw: RawGroupsInTeam) => {
+    return raw.team_id === record.teamId && raw.group_id === record.groupId;
 };

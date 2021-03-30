@@ -351,6 +351,17 @@ export type RawGroup = {
   has_syncables: boolean
 }
 
+export type RawGroupsInTeam = {
+  team_id: string,
+  team_display_name: string,
+  team_type: string,
+  group_id: string,
+  auto_add: boolean,
+  create_at: number,
+  delete_at: number,
+  update_at: number
+}
+
 export type RawValue =
   | RawApp
   | RawChannelMembership
@@ -359,6 +370,7 @@ export type RawValue =
   | RawFile
   | RawGlobal
   | RawGroup
+  | RawGroupsInTeam
   | RawGroupMembership
   | RawPost
   | RawPostMetadata
