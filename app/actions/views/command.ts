@@ -30,7 +30,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
         };
 
         let msg = message;
-        msg = filterEmDashFromCommand(msg);
+        msg = filterEmDashForCommand(msg);
 
         let cmdLength = msg.indexOf(' ');
         if (cmdLength < 0) {
@@ -92,6 +92,6 @@ export function executeCommand(message: string, channelId: string, rootId: strin
     };
 }
 
-const filterEmDashFromCommand = (command: string): string => {
-    return command.replace(/\u2014/g, "--");
+const filterEmDashForCommand = (command: string): string => {
+    return command.replace(/\u2014/g, '--');
 }
