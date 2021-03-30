@@ -16,7 +16,7 @@ import {
     RawCustomEmoji,
     RawDraft,
     RawFile,
-    RawGlobal,
+    RawGlobal, RawGroup,
     RawGroupMembership,
     RawPost,
     RawPostMetadata,
@@ -35,6 +35,7 @@ import Draft from '@typings/database/draft';
 import {OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
+import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
@@ -536,7 +537,6 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
     // id of preference comes from server response
     const generator = (preference: Preference) => {
         preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record?.id;
-        preference._raw.id = raw?.id ?? preference.id;
         preference.category = raw.category;
         preference.name = raw.name;
         preference.userId = raw.user_id;
@@ -561,8 +561,12 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
  */
 export const operateTeamMembershipRecord = async ({action, database, value}: DataFactory) => {
     const raw = value.raw as RawTeamMembership;
+    const record = value.record as TeamMembership;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of preference comes from server response
     const generator = (teamMembership: TeamMembership) => {
+        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record?.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
     };
@@ -585,10 +589,14 @@ export const operateTeamMembershipRecord = async ({action, database, value}: Dat
  */
 export const operateGroupMembershipRecord = async ({action, database, value}: DataFactory) => {
     const raw = value.raw as RawGroupMembership;
+    const record = value.record as GroupMembership;
+    const isCreateAction = action === OperationType.CREATE;
 
-    const generator = (groupMembership: GroupMembership) => {
-        groupMembership.groupId = raw.group_id;
-        groupMembership.userId = raw.user_id;
+    // id of preference comes from server response
+    const generator = (groupMember: GroupMembership) => {
+        groupMember._raw.id = isCreateAction ? (raw?.id ?? groupMember.id) : record?.id;
+        groupMember.groupId = raw.group_id;
+        groupMember.userId = raw.user_id;
     };
 
     return operateBaseRecord({
@@ -609,10 +617,14 @@ export const operateGroupMembershipRecord = async ({action, database, value}: Da
  */
 export const operateChannelMembershipRecord = async ({action, database, value}: DataFactory) => {
     const raw = value.raw as RawChannelMembership;
+    const record = value.record as ChannelMembership;
+    const isCreateAction = action === OperationType.CREATE;
 
-    const generator = (groupMembership: ChannelMembership) => {
-        groupMembership.channelId = raw.channel_id;
-        groupMembership.userId = raw.user_id;
+    // id of preference comes from server response
+    const generator = (channelMember: ChannelMembership) => {
+        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record?.id;
+        channelMember.channelId = raw.channel_id;
+        channelMember.userId = raw.user_id;
     };
 
     return operateBaseRecord({
