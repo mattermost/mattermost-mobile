@@ -18,6 +18,7 @@ import {
 } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 import Post from '@typings/database/post';
+import {User} from '@database/server/models';
 
 const {POST, USER, REACTION} = MM_TABLES.SERVER;
 
@@ -168,7 +169,7 @@ export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: Identi
             }
             case USER: {
                 const tempUser = newValue as unknown as RawUser;
-                const currentRecord = (existingRecord as unknown) as Post;
+                const currentRecord = (existingRecord as unknown) as User;
                 return tempUser.update_at === currentRecord.updateAt;
             }
             default: {

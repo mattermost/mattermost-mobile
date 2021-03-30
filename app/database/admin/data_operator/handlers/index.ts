@@ -978,19 +978,12 @@ class DataOperator {
         if (createRaws?.length) {
             const recordPromises = await createRaws.map(
                 async (createRecord: MatchExistingRecord) => {
-                    const record = await recordOperator({
-                        database,
-                        tableName,
-                        value: createRecord,
-                        action: OperationType.CREATE,
-                    });
+                    const record = await recordOperator({database, tableName, value: createRecord, action: OperationType.CREATE});
                     return record;
                 },
             );
 
-            const results = ((await Promise.all(
-                recordPromises,
-            )) as unknown) as Model[];
+            const results = ((await Promise.all(recordPromises)) as unknown) as Model[];
             prepareCreate = prepareCreate.concat(results);
         }
 
@@ -998,12 +991,7 @@ class DataOperator {
         if (updateRaws?.length) {
             const recordPromises = await updateRaws.map(
                 async (updateRecord: MatchExistingRecord) => {
-                    const record = await recordOperator({
-                        database,
-                        tableName,
-                        value: updateRecord,
-                        action: OperationType.UPDATE,
-                    });
+                    const record = await recordOperator({database, tableName, value: updateRecord, action: OperationType.UPDATE});
                     return record;
                 },
             );
@@ -1036,10 +1024,7 @@ class DataOperator {
         })) as unknown) as Model[];
 
         if (models?.length > 0) {
-            await this.batchOperations({
-                database,
-                models,
-            });
+            await this.batchOperations({database, models});
         }
     };
 
