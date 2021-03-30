@@ -338,6 +338,19 @@ export type RawPostsInThread = {
   post_id: string;
 };
 
+export type RawGroup = {
+  id: string,
+  name: string,
+  display_name: string,
+  description: string,
+  source: string,
+  remote_id: string,
+  create_at: number,
+  update_at: number,
+  delete_at: number,
+  has_syncables: boolean
+}
+
 export type RawValue =
   | RawApp
   | RawChannelMembership
@@ -345,6 +358,7 @@ export type RawValue =
   | RawDraft
   | RawFile
   | RawGlobal
+  | RawGroup
   | RawGroupMembership
   | RawPost
   | RawPostMetadata

@@ -55,6 +55,7 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -631,6 +632,34 @@ export const operateChannelMembershipRecord = async ({action, database, value}: 
         action,
         database,
         tableName: CHANNEL_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateGroupRecord = async ({action, database, value}: DataFactory) => {
+    const raw = value.raw as RawGroup;
+    const record = value.record as Group;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (group: Group) => {
+        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record?.id;
+        group.name = raw.name;
+        group.displayName = raw.display_name;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUP,
         value,
         generator,
     });

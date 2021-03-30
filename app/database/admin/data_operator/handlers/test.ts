@@ -839,4 +839,29 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleGroup: should write to GROUP entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroup([
+            {
+                id: 'id_groupdfjdlfkjdkfdsf',
+                name: 'mobile_team',
+                display_name: 'mobile team',
+                description: '',
+                source: '',
+                remote_id: '',
+                create_at: 0,
+                update_at: 0,
+                delete_at: 0,
+                has_syncables: true,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });

@@ -12,6 +12,7 @@ import {
     compareDraftRecord,
     compareGlobalRecord,
     compareGroupMembershipRecord,
+    compareGroupRecord,
     comparePostRecord,
     comparePreferenceRecord,
     compareRoleRecord,
@@ -42,6 +43,7 @@ import {
     RawDraft,
     RawEmbed,
     RawFile,
+    RawGroup,
     RawGroupMembership,
     RawPost,
     RawPostMetadata,
@@ -70,6 +72,7 @@ import {
     operateFileRecord,
     operateGlobalRecord,
     operateGroupMembershipRecord,
+    operateGroupRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -96,6 +99,7 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -818,6 +822,28 @@ class DataOperator {
     };
 
     /**
+     * handleGroup: Handler responsible for the Create/Update operations occurring on the GROUP entity from the 'Server' schema
+     * @param {RawGroup[]} groups
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleGroup = async (groups: RawGroup[]) => {
+        if (!groups.length) {
+            throw new DataOperatorException(
+                'An empty "groups" array has been passed to the handleGroup method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            comparator: compareGroupRecord,
+            oneOfField: 'name',
+            operator: operateGroupRecord,
+            rawValues: groups,
+            tableName: GROUP,
+        });
+    };
+
+    /**
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
      * @param {HandleEntityRecords} handleEntityRecords
      * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
@@ -865,13 +891,13 @@ class DataOperator {
                 const key = oneOfField as keyof typeof current;
                 const value: string = current[key] as string;
                 if (value) {
-                    oneOfs.push(value);
+                    oneOfs.add(value);
                 }
                 return oneOfs;
-            }, [] as string[]);
+            }, new Set<string>());
         };
 
-        const columnValues: string[] = getOneOfs(rawValues);
+        const columnValues: string[] = Array.from(getOneOfs(rawValues));
 
         const database = await this.getDatabase(tableName);
 

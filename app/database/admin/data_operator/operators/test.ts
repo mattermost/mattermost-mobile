@@ -12,6 +12,7 @@ import {
     operateFileRecord,
     operateGlobalRecord,
     operateGroupMembershipRecord,
+    operateGroupRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -600,5 +601,35 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('ChannelMembership');
+    });
+
+    it('=> operateGroupRecord: should return an array of type Group', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateGroupRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'id_groupdfjdlfkjdkfdsf',
+                    name: 'mobile_team',
+                    display_name: 'mobile team',
+                    description: '',
+                    source: '',
+                    remote_id: '',
+                    create_at: 0,
+                    update_at: 0,
+                    delete_at: 0,
+                    has_syncables: true,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Group');
     });
 });

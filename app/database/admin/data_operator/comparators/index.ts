@@ -11,6 +11,7 @@ import {
     RawCustomEmoji,
     RawDraft,
     RawGlobal,
+    RawGroup,
     RawGroupMembership,
     RawPost,
     RawPreference,
@@ -23,6 +24,7 @@ import {
 } from '@typings/database/database';
 import Draft from '@typings/database/draft';
 import Global from '@typings/database/global';
+import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
@@ -101,4 +103,8 @@ export const compareGroupMembershipRecord = (record: GroupMembership, raw: RawGr
 
 export const compareChannelMembershipRecord = (record: ChannelMembership, raw: RawChannelMembership) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
+};
+
+export const compareGroupRecord = (record: Group, raw: RawGroup) => {
+    return raw.name === record.name && raw.display_name === record.displayName;
 };
