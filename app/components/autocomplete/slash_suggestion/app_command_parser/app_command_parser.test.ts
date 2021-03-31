@@ -416,7 +416,7 @@ describe('AppCommandParser', () => {
             {
                 title: 'error: unexpected positional',
                 command: '/jira issue create wrong',
-                submit: {expectError: 'Command does not accept {positionX} positional arguments.'},
+                submit: {expectError: 'Unable to identify argument.'},
             },
             {
                 title: 'error: multiple equal signs',
@@ -831,9 +831,9 @@ describe('AppCommandParser', () => {
                 {
                     Complete: 'jira issue create --project KT --summary "great feature" --epic',
                     Suggestion: '',
-                    Description: 'No matching options.',
-                    Hint: '',
-                    IconData: '',
+                    Description: '',
+                    Hint: 'No matching options.',
+                    IconData: 'error',
                 },
             ]);
         });
