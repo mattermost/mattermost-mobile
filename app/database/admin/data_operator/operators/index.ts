@@ -77,6 +77,8 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
+// TODO : Include timezone_count and member_count when you have the information for the group section
+
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactory} operator
