@@ -49,7 +49,10 @@ export function cleanUpState(payload, keepCurrent = false) {
     const postIdsToKeep = [];
 
     // Keep the last 60 posts in each recently viewed channel
+    //console.log(JSON.stringify(payload.entities.posts?.postsInChannel));
     nextEntities.posts.postsInChannel = cleanUpPostsInChannel(payload.entities.posts?.postsInChannel, lastChannelForTeam, keepCurrent ? currentChannelId : '');
+
+    //console.log(JSON.stringify(nextEntities.posts.postsInChannel));
     postIdsToKeep.push(...getAllFromPostsInChannel(nextEntities.posts.postsInChannel));
 
     // Keep any posts that appear in search results

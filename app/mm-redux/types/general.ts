@@ -2,12 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {Config} from './config';
+import {ChannelDataRetentionPolicy, GlobalDataRetentionPolicy, TeamDataRetentionPolicy} from './data_retention';
 
 export type GeneralState = {
     appState: boolean;
     credentials: any;
     config: Partial<Config>;
-    dataRetentionPolicy: any;
+    dataRetentionPolicy: {
+        channelPolicies: ChannelDataRetentionPolicy[];
+        globalPolicy: GlobalDataRetentionPolicy;
+        teamPolicies: TeamDataRetentionPolicy[];
+    };
     deviceToken: string;
     license: any;
     serverVersion: string;

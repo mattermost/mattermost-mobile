@@ -2295,9 +2295,23 @@ export default class Client4 {
 
     // Data Retention
 
-    getDataRetentionPolicy = () => {
+    getGlobalDataRetentionPolicy = () => {
         return this.doFetch(
             `${this.getDataRetentionRoute()}/policy`,
+            {method: 'get'},
+        );
+    };
+
+    getTeamDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/users/${userId}/data_retention/team_policies${buildQueryString({page, per_page: perPage})}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/users/${userId}/data_retention/channel_policies${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
         );
     };
