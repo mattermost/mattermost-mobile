@@ -9,10 +9,10 @@ import {
     ChainPosts,
     IdenticalRecord,
     MatchExistingRecord,
-    MatchingRecords,
+    RetrieveRecords,
     RawPost,
     RawReaction,
-    RawUser,
+    RawUser, RawValue,
     SanitizePosts,
     SanitizeReactions,
 } from '@typings/database/database';
@@ -137,14 +137,14 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
 };
 
 /**
- * findMatchingRecords: This event will alert the DataOperator handler of the possibility of writing duplicates in the database.
- * @param {MatchingRecords} matchingRecords
- * @param {Database} matchingRecords.database
- * @param {string} matchingRecords.tableName
- * @param {any} matchingRecords.condition
+ * retrieveRecords: This event will alert the DataOperator handler of the possibility of writing duplicates in the database.
+ * @param {RetrieveRecords} records
+ * @param {Database} records.database
+ * @param {string} records.tableName
+ * @param {any} records.condition
  * @returns {Promise<Model[]>}
  */
-export const findMatchingRecords = async ({database, tableName, condition}: MatchingRecords) => {
+export const retrieveRecords = async ({database, tableName, condition}: RetrieveRecords) => {
     const records = (await database.collections.get(tableName).query(condition).fetch()) as Model[];
     return records;
 };
@@ -159,23 +159,36 @@ export const findMatchingRecords = async ({database, tableName, condition}: Matc
  * @returns {boolean}
  */
 export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
-    const guardTables = [POST];
+    const guardTables = [POST, USER];
+
     if (guardTables.includes(tableName)) {
-        switch (tableName) {
-            case POST: {
-                const tempPost = newValue as unknown as RawPost;
-                const currentRecord = (existingRecord as unknown) as Post;
-                return tempPost.update_at === currentRecord.updateAt;
-            }
-            case USER: {
-                const tempUser = newValue as unknown as RawUser;
-                const currentRecord = (existingRecord as unknown) as User;
-                return tempUser.update_at === currentRecord.updateAt;
-            }
-            default: {
-                return false;
-            }
-        }
+        type Raw = RawPost | RawUser
+        type ExistingRecord = Post | User
+
+        return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
     }
     return false;
+};
+
+/**
+ * This method extracts one particular field 'oneOfField' from the raw values and returns them as a string array
+ * @param {string} oneOfField
+ * @param {RawValue[]} raws
+ * @returns {string[]}
+ */
+export const getRangeOfValues = ({oneOfField, raws}: {raws: RawValue[], oneOfField: string}) => {
+    return raws.reduce((oneOfs, current: RawValue) => {
+        const key = oneOfField as keyof typeof current;
+        const value: string = current[key] as string;
+        if (value) {
+            oneOfs.push(value);
+        }
+        return oneOfs;
+    }, [] as string[]);
+};
+
+export const getRawRecordPairs = (raws: any[]) => {
+    return raws.map((raw) => {
+        return {raw, record: undefined};
+    });
 };

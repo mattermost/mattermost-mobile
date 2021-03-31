@@ -441,7 +441,7 @@ export type IdenticalRecord = {
   tableName: string;
 };
 
-export type MatchingRecords = {
+export type RetrieveRecords = {
   database: Database;
   tableName: string;
   condition: any;
