@@ -259,6 +259,7 @@ export default class Markdown extends PureComponent {
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
+                testID='markdown_emoji'
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
@@ -288,6 +289,7 @@ export default class Markdown extends PureComponent {
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
+
         return (
             <View style={blockStyle}>
                 <Text>

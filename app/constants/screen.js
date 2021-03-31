@@ -2,3 +2,6 @@
 // See LICENSE.txt for license information.
 
 export const THREAD = 'thread';
+export const PERMALINK = 'permalink';
+export const SEARCH = 'search';
+export const CHANNEL = 'channel';

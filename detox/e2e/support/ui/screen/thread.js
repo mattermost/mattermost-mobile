@@ -44,16 +44,16 @@ class ThreadScreen {
 
     postList = new PostList(this.testID.threadScreenPrefix);
 
-    getLongPostItem = (postId, text) => {
-        return LongPostScreen.getPost(postId, text);
+    getLongPostItem = (postId, text, postProfileOptions = {}) => {
+        return LongPostScreen.getPost(postId, text, postProfileOptions);
     }
 
     getLongPostMessage = () => {
         return LongPostScreen.getPostMessage();
     }
 
-    getPostListPostItem = (postId, text) => {
-        return this.postList.getPost(postId, text);
+    getPostListPostItem = (postId, text, postProfileOptions = {}) => {
+        return this.postList.getPost(postId, text, postProfileOptions);
     }
 
     getPostMessageAtIndex = (index) => {
@@ -93,10 +93,14 @@ class ThreadScreen {
         await PostOptions.toBeVisible();
     }
 
-    postMessage = async (message) => {
+    postMessage = async (message, {quickReplace = false} = {}) => {
         // # Post message
         await this.postInput.tap();
-        await this.postInput.typeText(message);
+        if (quickReplace) {
+            await this.postInput.replaceText(message);
+        } else {
+            await this.postInput.typeText(message);
+        }
         await this.tapSendButton();
     }
 

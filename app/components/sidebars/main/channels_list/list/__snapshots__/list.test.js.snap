@@ -3,7 +3,6 @@
 exports[`ChannelsList List should match snapshot 1`] = `
 <View
   onLayout={[Function]}
-  testID="main.sidebar.channels_list.list"
 >
   <SectionList
     contentContainerStyle={
@@ -27,6 +26,7 @@ exports[`ChannelsList List should match snapshot 1`] = `
     scrollEventThrottle={50}
     sections={Array []}
     stickySectionHeadersEnabled={true}
+    testID="main.sidebar.channels_list.list"
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
