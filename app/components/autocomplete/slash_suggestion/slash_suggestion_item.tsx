@@ -9,7 +9,9 @@ import {Theme} from '@mm-redux/types/preferences';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import FastImage from 'react-native-fast-image';
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
+const bangIcon = require('@assets/images/autocomplete/slash_command_error.png');
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -55,6 +57,7 @@ type Props = {
     hint: string;
     onPress: (complete: string) => void;
     suggestion: string;
+    icon: string;
     theme: Theme;
 }
 
@@ -88,6 +91,32 @@ const SlashSuggestionItem = (props: Props) => {
         }
     }
 
+    let image = (
+        <Image
+            style={style.iconColor}
+            width={10}
+            height={16}
+            source={slashIcon}
+        />
+    );
+    if (props.icon === 'error') {
+        image = (
+            <Image
+                style={style.iconColor}
+                width={10}
+                height={16}
+                source={bangIcon}
+            />
+        );
+    } else if (props.icon && props.icon.startsWith('http')) {
+        image = (
+            <FastImage
+                source={{uri: props.icon}}
+                style={{width: 16, height: 16}}
+            />
+        );
+    }
+
     return (
         <TouchableWithFeedback
             onPress={completeSuggestion}
@@ -97,12 +126,7 @@ const SlashSuggestionItem = (props: Props) => {
         >
             <View style={style.container}>
                 <View style={style.icon}>
-                    <Image
-                        style={style.iconColor}
-                        width={10}
-                        height={16}
-                        source={slashIcon}
-                    />
+                    {image}
                 </View>
                 <View style={style.suggestionContainer}>
                     <Text style={style.suggestionName}>{`${suggestionText}`}</Text>
