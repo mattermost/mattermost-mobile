@@ -57,7 +57,7 @@ exports[`PostList setting channel deep link 1`] = `
         tintColor="#3d3c40"
       />
     }
-    removeClippedSubviews={false}
+    removeClippedSubviews={true}
     renderItem={[Function]}
     scrollEventThrottle={60}
     style={
@@ -134,7 +134,7 @@ exports[`PostList setting permalink deep link 1`] = `
         tintColor="#3d3c40"
       />
     }
-    removeClippedSubviews={false}
+    removeClippedSubviews={true}
     renderItem={[Function]}
     scrollEventThrottle={60}
     style={
@@ -211,7 +211,7 @@ exports[`PostList should match snapshot 1`] = `
         tintColor="#3d3c40"
       />
     }
-    removeClippedSubviews={false}
+    removeClippedSubviews={true}
     renderItem={[Function]}
     scrollEventThrottle={60}
     style={

@@ -747,6 +747,7 @@ export default class Search extends PureComponent {
                     <SectionList
                         ref={this.setListRef}
                         style={style.sectionList}
+                        removeClippedSubviews={true}
                         renderSectionHeader={this.renderSectionHeader}
                         sections={sections}
                         keyboardShouldPersistTaps='always'
