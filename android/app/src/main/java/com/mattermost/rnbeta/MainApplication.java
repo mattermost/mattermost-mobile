@@ -10,6 +10,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+
+import com.mattermost.rnbeta.generated.BasePackageList;
 
 import com.mattermost.share.RealPathUtil;
 import com.mattermost.share.ShareModule;
@@ -41,6 +44,10 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.soloader.SoLoader;
 
+import org.unimodules.adapters.react.ModuleRegistryAdapter;
+import org.unimodules.adapters.react.ReactModuleRegistryProvider;
+import org.unimodules.core.interfaces.SingletonModule;
+
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
 
@@ -56,6 +63,8 @@ public class MainApplication extends NavigationApplication implements INotificat
 
   private Bundle mManagedConfig = null;
 
+  private final ReactModuleRegistryProvider mModuleRegistryProvider = new ReactModuleRegistryProvider(new BasePackageList().getPackageList(), null);
+
 private final ReactNativeHost mReactNativeHost =
   new ReactNativeHost(this) {
     @Override
@@ -69,6 +78,13 @@ private final ReactNativeHost mReactNativeHost =
       List<ReactPackage> packages = new PackageList(this).getPackages();
       // Packages that cannot be autolinked yet can be added manually here, for example:
       // packages.add(new MyReactNativePackage());
+
+      // Add unimodules
+      List<ReactPackage> unimodules = Arrays.<ReactPackage>asList(
+        new ModuleRegistryAdapter(mModuleRegistryProvider)
+      );
+
+      packages.addAll(unimodules);
       packages.add(new RNNotificationsPackage(MainApplication.this));
       packages.add(new RNPasteableTextInputPackage());
       packages.add(

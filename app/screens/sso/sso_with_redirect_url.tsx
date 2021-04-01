@@ -77,7 +77,6 @@ function SSOWithRedirectURL({
 
     const onURLChange = ({url}: { url: string }) => {
         if (url && url.startsWith(redirectUrl)) {
-            WebBrowser.dismissBrowser();
             Store?.redux?.dispatch(setDeepLinkURL(''));
             const parsedUrl = urlParse(url, true);
             if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
