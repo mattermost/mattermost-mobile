@@ -9,14 +9,14 @@ import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormR
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import AppsFormComponent from './apps_form_component';
 import {makeCallErrorResponse} from '@utils/apps';
-import {ActionResult} from '@mm-redux/types/actions';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 export type Props = {
     form?: AppForm;
     call?: AppCallRequest;
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse<any>, error?: AppCallResponse<any>}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     };
     theme: Theme;
     componentId: string;

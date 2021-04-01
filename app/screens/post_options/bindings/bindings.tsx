@@ -13,8 +13,8 @@ import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
 import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
-import {ActionResult} from '@mm-redux/types/actions';
 import {createCallContext, createCallRequest} from '@utils/apps';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 type Props = {
     bindings: AppBinding[],
@@ -27,7 +27,7 @@ type Props = {
     intl: typeof intlShape,
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     }
 }
 
@@ -73,7 +73,7 @@ type OptionProps = {
     intl: typeof intlShape,
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     },
 }
 

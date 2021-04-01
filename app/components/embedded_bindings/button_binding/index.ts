@@ -16,6 +16,7 @@ import ButtonBinding from './button_binding';
 import {getChannel} from '@mm-redux/actions/channels';
 import {sendEphemeralPost} from '@actions/views/post';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 type OwnProps = {
     postId: string;
@@ -32,7 +33,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 type Actions = {
     doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
     getChannel: (channelId: string) => Promise<ActionResult>;
-    sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+    sendEphemeralPost: SendEphemeralPost;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {

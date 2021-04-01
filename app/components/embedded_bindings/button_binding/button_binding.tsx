@@ -16,12 +16,13 @@ import {Post} from '@mm-redux/types/posts';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {Channel} from '@mm-redux/types/channels';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 type Props = {
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         getChannel: (channelId: string) => Promise<ActionResult>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string, userId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     };
     post: Post;
     binding: AppBinding;
