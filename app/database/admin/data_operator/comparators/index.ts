@@ -109,14 +109,14 @@ export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembership, r
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
 };
 
-export const compareGroupRecord = (record: Group, raw: RawGroup) => {
+export const isRecordGroupEqualToRaw = (record: Group, raw: RawGroup) => {
     return raw.name === record.name && raw.display_name === record.displayName;
 };
 
-export const compareGroupsInTeamRecord = (record: GroupsInTeam, raw: RawGroupsInTeam) => {
+export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeam, raw: RawGroupsInTeam) => {
     return raw.team_id === record.teamId && raw.group_id === record.groupId;
 };
 
-export const compareGroupsInChannelRecord = (record: GroupsInChannel, raw: RawGroupsInChannel) => {
+export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannel, raw: RawGroupsInChannel) => {
     return raw.channel_id === record.channelId && raw.group_id === record.groupId;
 };
