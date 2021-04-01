@@ -84,7 +84,7 @@ const {
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateAppRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawApp;
@@ -112,7 +112,7 @@ export const operateAppRecord = async ({action, database, value}: DataFactoryArg
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateGlobalRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGlobal;
@@ -139,7 +139,7 @@ export const operateGlobalRecord = async ({action, database, value}: DataFactory
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateServersRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawServers;
@@ -169,7 +169,7 @@ export const operateServersRecord = async ({action, database, value}: DataFactor
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateCustomEmojiRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawCustomEmoji;
@@ -196,7 +196,7 @@ export const operateCustomEmojiRecord = async ({action, database, value}: DataFa
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateRoleRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawRole;
@@ -224,7 +224,7 @@ export const operateRoleRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateSystemRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawSystem;
@@ -252,7 +252,7 @@ export const operateSystemRecord = async ({action, database, value}: DataFactory
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateTermsOfServiceRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTermsOfService;
@@ -279,7 +279,7 @@ export const operateTermsOfServiceRecord = async ({action, database, value}: Dat
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPost;
@@ -319,7 +319,7 @@ export const operatePostRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostInThreadRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInThread;
@@ -346,7 +346,7 @@ export const operatePostInThreadRecord = async ({action, database, value}: DataF
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateReactionRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawReaction;
@@ -376,7 +376,7 @@ export const operateReactionRecord = async ({action, database, value}: DataFacto
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateFileRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawFile;
@@ -411,7 +411,7 @@ export const operateFileRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostMetadataRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostMetadata;
@@ -439,7 +439,7 @@ export const operatePostMetadataRecord = async ({action, database, value}: DataF
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateDraftRecord = async ({action, database, value}: DataFactoryArgs) => {
     const emptyFileInfo: FileInfo[] = [];
@@ -468,7 +468,7 @@ export const operateDraftRecord = async ({action, database, value}: DataFactoryA
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostsInChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInChannel;
@@ -496,7 +496,7 @@ export const operatePostsInChannelRecord = async ({action, database, value}: Dat
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateUserRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawUser;
@@ -539,7 +539,7 @@ export const operateUserRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePreferenceRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPreference;
@@ -569,7 +569,7 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateTeamMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeamMembership;
@@ -597,7 +597,7 @@ export const operateTeamMembershipRecord = async ({action, database, value}: Dat
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateGroupMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupMembership;
@@ -625,7 +625,7 @@ export const operateGroupMembershipRecord = async ({action, database, value}: Da
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateChannelMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawChannelMembership;
@@ -653,9 +653,9 @@ export const operateChannelMembershipRecord = async ({action, database, value}: 
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateGroupRecord = async ({action, database, value}: DataFactory) => {
+export const operateGroupRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroup;
     const record = value.record as Group;
     const isCreateAction = action === OperationType.CREATE;
@@ -681,9 +681,9 @@ export const operateGroupRecord = async ({action, database, value}: DataFactory)
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateGroupsInTeamRecord = async ({action, database, value}: DataFactory) => {
+export const operateGroupsInTeamRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupsInTeam;
     const record = value.record as GroupsInTeam;
     const isCreateAction = action === OperationType.CREATE;
@@ -708,9 +708,9 @@ export const operateGroupsInTeamRecord = async ({action, database, value}: DataF
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
-export const operateGroupsInChannelRecord = async ({action, database, value}: DataFactory) => {
+export const operateGroupsInChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupsInChannel;
     const record = value.record as GroupsInChannel;
     const isCreateAction = action === OperationType.CREATE;
@@ -741,7 +741,7 @@ export const operateGroupsInChannelRecord = async ({action, database, value}: Da
  * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */
-const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs) => {
+const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs): Promise<Model> => {
     if (action === OperationType.UPDATE) {
     // Two possible scenarios:
     // 1. We are dealing with either duplicates here and if so, we'll update instead of create

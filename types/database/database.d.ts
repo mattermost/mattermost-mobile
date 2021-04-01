@@ -388,6 +388,7 @@ export type RawValue =
 export type MatchExistingRecord = { record?: Model; raw: RawValue };
 
 export type DataFactoryArgs = {
+  action: string;
   database: Database;
   generator?: (model: Model) => void;
   tableName?: string;
