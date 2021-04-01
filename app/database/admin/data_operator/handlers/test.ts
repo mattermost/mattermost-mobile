@@ -842,4 +842,78 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleGroup: should write to GROUP entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroup([
+            {
+                id: 'id_groupdfjdlfkjdkfdsf',
+                name: 'mobile_team',
+                display_name: 'mobile team',
+                description: '',
+                source: '',
+                remote_id: '',
+                create_at: 0,
+                update_at: 0,
+                delete_at: 0,
+                has_syncables: true,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleGroupsInTeam: should write to GROUPS_IN_TEAM entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroupsInTeam([
+            {
+                team_id: 'team_899',
+                team_display_name: '',
+                team_type: '',
+                group_id: 'group_id89',
+                auto_add: true,
+                create_at: 0,
+                delete_at: 0,
+                update_at: 0,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleGroupsInChannel: should write to GROUPS_IN_CHANNEL entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroupsInChannel([
+            {
+                auto_add: true,
+                channel_display_name: '',
+                channel_id: 'channelid',
+                channel_type: '',
+                create_at: 0,
+                delete_at: 0,
+                group_id: 'groupId',
+                team_display_name: '',
+                team_id: '',
+                team_type: '',
+                update_at: 0,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });

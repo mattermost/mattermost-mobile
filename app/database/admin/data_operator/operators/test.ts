@@ -12,6 +12,9 @@ import {
     operateFileRecord,
     operateGlobalRecord,
     operateGroupMembershipRecord,
+    operateGroupRecord,
+    operateGroupsInChannelRecord,
+    operateGroupsInTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -134,7 +137,11 @@ describe('*** DataOperator: Operators tests ***', () => {
             database: database!,
             value: {
                 record: undefined,
-                raw: {id: 'role-1', name: 'role-name-1', permissions: []},
+                raw: {
+                    id: 'role-1',
+                    name: 'role-name-1',
+                    permissions: [],
+                },
             },
         });
 
@@ -574,5 +581,94 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('ChannelMembership');
+    });
+
+    it('=> operateGroupRecord: should return an array of type Group', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateGroupRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'id_groupdfjdlfkjdkfdsf',
+                    name: 'mobile_team',
+                    display_name: 'mobile team',
+                    description: '',
+                    source: '',
+                    remote_id: '',
+                    create_at: 0,
+                    update_at: 0,
+                    delete_at: 0,
+                    has_syncables: true,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Group');
+    });
+
+    it('=> operateGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateGroupsInTeamRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    team_id: 'team_89',
+                    team_display_name: '',
+                    team_type: '',
+                    group_id: 'group_id89',
+                    auto_add: true,
+                    create_at: 0,
+                    delete_at: 0,
+                    update_at: 0,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('GroupsInTeam');
+    });
+
+    it('=> operateGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateGroupsInChannelRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    auto_add: true,
+                    channel_display_name: '',
+                    channel_id: 'channelid',
+                    channel_type: '',
+                    create_at: 0,
+                    delete_at: 0,
+                    group_id: 'groupId',
+                    team_display_name: '',
+                    team_id: '',
+                    team_type: '',
+                    update_at: 0,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('GroupsInChannel');
     });
 });

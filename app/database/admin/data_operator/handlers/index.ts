@@ -11,7 +11,10 @@ import {
     isRecordCustomEmojiEqualToRaw,
     isRecordDraftEqualToRaw,
     isRecordGlobalEqualToRaw,
+    isRecordGroupEqualToRaw,
     isRecordGroupMembershipEqualToRaw,
+    isRecordGroupsInChannelEqualToRaw,
+    isRecordGroupsInTeamEqualToRaw,
     isRecordPostEqualToRaw,
     isRecordPreferenceEqualToRaw,
     isRecordRoleEqualToRaw,
@@ -26,7 +29,6 @@ import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperationsArgs,
     DatabaseInstance,
-    ProcessInputsArgs,
     HandleEntityRecordsArgs,
     HandleFilesArgs,
     HandleIsolatedEntityArgs,
@@ -37,12 +39,16 @@ import {
     PostImage,
     PrepareForDatabaseArgs,
     PrepareRecordsArgs,
+    ProcessInputsArgs,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
     RawEmbed,
     RawFile,
+    RawGroup,
     RawGroupMembership,
+    RawGroupsInChannel,
+    RawGroupsInTeam,
     RawPost,
     RawPostMetadata,
     RawPostsInThread,
@@ -70,6 +76,9 @@ import {
     operateFileRecord,
     operateGlobalRecord,
     operateGroupMembershipRecord,
+    operateGroupRecord,
+    operateGroupsInChannelRecord,
+    operateGroupsInTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -98,6 +107,9 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP,
+    GROUPS_IN_CHANNEL,
+    GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -108,6 +120,8 @@ const {
     TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
+
+// TODO : We assume that we are receiving clean&correct data from the server.  Hence, we can never have two posts in an array with the same post_id. This should be confirmed.
 
 class DataOperator {
     /**
@@ -799,6 +813,72 @@ class DataOperator {
             operator: operateChannelMembershipRecord,
             rawValues: channelMemberships,
             tableName: CHANNEL_MEMBERSHIP,
+        });
+    };
+
+    /**
+     * handleGroup: Handler responsible for the Create/Update operations occurring on the GROUP entity from the 'Server' schema
+     * @param {RawGroup[]} groups
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleGroup = async (groups: RawGroup[]) => {
+        if (!groups.length) {
+            throw new DataOperatorException(
+                'An empty "groups" array has been passed to the handleGroup method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            comparator: isRecordGroupEqualToRaw,
+            fieldName: 'name',
+            operator: operateGroupRecord,
+            rawValues: groups,
+            tableName: GROUP,
+        });
+    };
+
+    /**
+     * handleGroupsInTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_TEAM entity from the 'Server' schema
+     * @param {RawGroupsInTeam[]} groupsInTeam
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleGroupsInTeam = async (groupsInTeam: RawGroupsInTeam[]) => {
+        if (!groupsInTeam.length) {
+            throw new DataOperatorException(
+                'An empty "groups" array has been passed to the handleGroupsInTeam method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            comparator: isRecordGroupsInTeamEqualToRaw,
+            fieldName: 'group_id',
+            operator: operateGroupsInTeamRecord,
+            rawValues: groupsInTeam,
+            tableName: GROUPS_IN_TEAM,
+        });
+    };
+
+    /**
+     * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL entity from the 'Server' schema
+     * @param {RawGroupsInChannel[]} groupsInChannel
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleGroupsInChannel = async (groupsInChannel: RawGroupsInChannel[]) => {
+        if (!groupsInChannel.length) {
+            throw new DataOperatorException(
+                'An empty "groups" array has been passed to the handleGroupsInTeam method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            comparator: isRecordGroupsInChannelEqualToRaw,
+            fieldName: 'group_id',
+            operator: operateGroupsInChannelRecord,
+            rawValues: groupsInChannel,
+            tableName: GROUPS_IN_CHANNEL,
         });
     };
 

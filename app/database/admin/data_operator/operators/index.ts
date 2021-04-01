@@ -17,7 +17,10 @@ import {
     RawDraft,
     RawFile,
     RawGlobal,
+    RawGroup,
     RawGroupMembership,
+    RawGroupsInChannel,
+    RawGroupsInTeam,
     RawPost,
     RawPostMetadata,
     RawPostsInChannel,
@@ -35,7 +38,10 @@ import Draft from '@typings/database/draft';
 import {OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
+import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
+import GroupsInChannel from '@typings/database/groups_in_channel';
+import GroupsInTeam from '@typings/database/groups_in_team';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -54,6 +60,9 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP,
+    GROUPS_IN_TEAM,
+    GROUPS_IN_CHANNEL,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -68,12 +77,14 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
+// TODO : Include timezone_count and member_count when you have the information for the group section
+
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateAppRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawApp;
@@ -101,7 +112,7 @@ export const operateAppRecord = async ({action, database, value}: DataFactoryArg
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateGlobalRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGlobal;
@@ -128,7 +139,7 @@ export const operateGlobalRecord = async ({action, database, value}: DataFactory
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateServersRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawServers;
@@ -158,7 +169,7 @@ export const operateServersRecord = async ({action, database, value}: DataFactor
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateCustomEmojiRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawCustomEmoji;
@@ -185,7 +196,7 @@ export const operateCustomEmojiRecord = async ({action, database, value}: DataFa
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateRoleRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawRole;
@@ -213,7 +224,7 @@ export const operateRoleRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateSystemRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawSystem;
@@ -241,7 +252,7 @@ export const operateSystemRecord = async ({action, database, value}: DataFactory
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateTermsOfServiceRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTermsOfService;
@@ -268,7 +279,7 @@ export const operateTermsOfServiceRecord = async ({action, database, value}: Dat
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPost;
@@ -308,7 +319,7 @@ export const operatePostRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostInThreadRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInThread;
@@ -335,7 +346,7 @@ export const operatePostInThreadRecord = async ({action, database, value}: DataF
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateReactionRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawReaction;
@@ -344,7 +355,7 @@ export const operateReactionRecord = async ({action, database, value}: DataFacto
 
     // id of reaction comes from server response
     const generator = (reaction: Reaction) => {
-        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record?.id;
+        reaction._raw.id = isCreateAction ? reaction.id : record?.id;
         reaction.userId = raw.user_id;
         reaction.postId = raw.post_id;
         reaction.emojiName = raw.emoji_name;
@@ -365,7 +376,7 @@ export const operateReactionRecord = async ({action, database, value}: DataFacto
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateFileRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawFile;
@@ -400,7 +411,7 @@ export const operateFileRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostMetadataRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostMetadata;
@@ -428,7 +439,7 @@ export const operatePostMetadataRecord = async ({action, database, value}: DataF
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateDraftRecord = async ({action, database, value}: DataFactoryArgs) => {
     const emptyFileInfo: FileInfo[] = [];
@@ -457,13 +468,15 @@ export const operateDraftRecord = async ({action, database, value}: DataFactoryA
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePostsInChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInChannel;
+    const record = value.record as PostsInChannel;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (postsInChannel: PostsInChannel) => {
-        postsInChannel._raw.id = raw?.id ?? postsInChannel.id;
+        postsInChannel._raw.id = isCreateAction ? postsInChannel.id : record.id;
         postsInChannel.channelId = raw.channel_id;
         postsInChannel.earliest = raw.earliest;
         postsInChannel.latest = raw.latest;
@@ -483,7 +496,7 @@ export const operatePostsInChannelRecord = async ({action, database, value}: Dat
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateUserRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawUser;
@@ -526,7 +539,7 @@ export const operateUserRecord = async ({action, database, value}: DataFactoryAr
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operatePreferenceRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPreference;
@@ -535,7 +548,7 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
 
     // id of preference comes from server response
     const generator = (preference: Preference) => {
-        preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record?.id;
+        preference._raw.id = isCreateAction ? preference.id : record?.id;
         preference.category = raw.category;
         preference.name = raw.name;
         preference.userId = raw.user_id;
@@ -556,7 +569,7 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateTeamMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeamMembership;
@@ -565,7 +578,7 @@ export const operateTeamMembershipRecord = async ({action, database, value}: Dat
 
     // id of preference comes from server response
     const generator = (teamMembership: TeamMembership) => {
-        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record?.id;
+        teamMembership._raw.id = isCreateAction ? teamMembership.id : record?.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
     };
@@ -584,7 +597,7 @@ export const operateTeamMembershipRecord = async ({action, database, value}: Dat
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateGroupMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupMembership;
@@ -593,7 +606,7 @@ export const operateGroupMembershipRecord = async ({action, database, value}: Da
 
     // id of preference comes from server response
     const generator = (groupMember: GroupMembership) => {
-        groupMember._raw.id = isCreateAction ? (raw?.id ?? groupMember.id) : record?.id;
+        groupMember._raw.id = isCreateAction ? groupMember.id : record?.id;
         groupMember.groupId = raw.group_id;
         groupMember.userId = raw.user_id;
     };
@@ -612,7 +625,7 @@ export const operateGroupMembershipRecord = async ({action, database, value}: Da
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
- * @returns {Promise<void>}
+ * @returns {Promise<Model>}
  */
 export const operateChannelMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawChannelMembership;
@@ -621,7 +634,7 @@ export const operateChannelMembershipRecord = async ({action, database, value}: 
 
     // id of preference comes from server response
     const generator = (channelMember: ChannelMembership) => {
-        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record?.id;
+        channelMember._raw.id = isCreateAction ? channelMember.id : record?.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
     };
@@ -636,6 +649,88 @@ export const operateChannelMembershipRecord = async ({action, database, value}: 
 };
 
 /**
+ * operateGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroup;
+    const record = value.record as Group;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (group: Group) => {
+        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record?.id;
+        group.name = raw.name;
+        group.displayName = raw.display_name;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupsInTeamRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroupsInTeam;
+    const record = value.record as GroupsInTeam;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (groupsInTeam: GroupsInTeam) => {
+        groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record?.id;
+        groupsInTeam.teamId = raw.team_id;
+        groupsInTeam.groupId = raw.group_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUPS_IN_TEAM,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupsInChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroupsInChannel;
+    const record = value.record as GroupsInChannel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (groupsInChannel: GroupsInChannel) => {
+        groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record?.id;
+        groupsInChannel.channelId = raw.channel_id;
+        groupsInChannel.groupId = raw.group_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUPS_IN_CHANNEL,
+        value,
+        generator,
+    });
+};
+
+/**
  * operateBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
  * existing record for UPDATE or prepare a collection for CREATE
  *
@@ -643,10 +738,10 @@ export const operateChannelMembershipRecord = async ({action, database, value}: 
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
  * @param {MatchExistingRecord} operatorBase.value
- * @param {((model: Model) => void)} operatorBase.generator
- * @returns {Promise<any>}
+ * @param {((DataFactoryArgs) => void)} operatorBase.generator
+ * @returns {Promise<Model>}
  */
-const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs) => {
+const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs): Promise<Model> => {
     if (action === OperationType.UPDATE) {
     // Two possible scenarios:
     // 1. We are dealing with either duplicates here and if so, we'll update instead of create

@@ -11,7 +11,10 @@ import {
     RawCustomEmoji,
     RawDraft,
     RawGlobal,
+    RawGroup,
     RawGroupMembership,
+    RawGroupsInTeam,
+    RawGroupsInChannel,
     RawPost,
     RawPreference,
     RawRole,
@@ -23,7 +26,10 @@ import {
 } from '@typings/database/database';
 import Draft from '@typings/database/draft';
 import Global from '@typings/database/global';
+import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
+import GroupsInChannel from '@typings/database/groups_in_channel';
+import GroupsInTeam from '@typings/database/groups_in_team';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Servers from '@typings/database/servers';
@@ -101,4 +107,16 @@ export const isRecordGroupMembershipEqualToRaw = (record: GroupMembership, raw: 
 
 export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembership, raw: RawChannelMembership) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
+};
+
+export const isRecordGroupEqualToRaw = (record: Group, raw: RawGroup) => {
+    return raw.name === record.name && raw.display_name === record.displayName;
+};
+
+export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeam, raw: RawGroupsInTeam) => {
+    return raw.team_id === record.teamId && raw.group_id === record.groupId;
+};
+
+export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannel, raw: RawGroupsInChannel) => {
+    return raw.channel_id === record.channelId && raw.group_id === record.groupId;
 };
