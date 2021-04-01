@@ -226,7 +226,7 @@ describe('*** DataOperator Wrapper ***', () => {
         const spyOnHandleReactions = jest.spyOn(dataOperator as any, 'handleReactions');
         const spyOnHandleFiles = jest.spyOn(dataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(dataOperator as any, 'handlePostMetadata');
-        const spyOnHandleCustomEmojis = jest.spyOn(dataOperator as any, 'handleCustomEmojis');
+        const spyOnHandleCustomEmojis = jest.spyOn(dataOperator as any, 'handleIsolatedEntity');
         const spyOnHandlePostsInThread = jest.spyOn(dataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(dataOperator as any, 'handlePostsInChannel');
 
@@ -331,16 +331,19 @@ describe('*** DataOperator Wrapper ***', () => {
         });
 
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith([
-            {
-                id: 'dgwyadacdbbwjc8t357h6hwsrh',
-                create_at: 1502389307432,
-                update_at: 1502389307432,
-                delete_at: 0,
-                creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
-                name: 'thanks',
-            },
-        ]);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
+            tableName: 'CustomEmoji',
+            values: [
+                {
+                    id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                    create_at: 1502389307432,
+                    update_at: 1502389307432,
+                    delete_at: 0,
+                    creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                    name: 'thanks',
+                },
+            ],
+        });
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([

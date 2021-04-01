@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
 import {MM_TABLES} from '@constants/database';
 import {
     isRecordAppEqualToRaw,
@@ -22,6 +19,8 @@ import {
     isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
+import {Database, Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
 
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -130,9 +129,9 @@ class DataOperator {
      * @returns {Promise<void>}
      */
     handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
-        let recordOperator;
         let comparator;
-        let oneOfField;
+        let fieldName;
+        let operator;
 
         if (!values.length) {
             throw new DataOperatorException(
@@ -143,38 +142,44 @@ class DataOperator {
         switch (tableName) {
             case IsolatedEntities.APP: {
                 comparator = isRecordAppEqualToRaw;
-                oneOfField = 'version_number';
-                recordOperator = operateAppRecord;
+                fieldName = 'version_number';
+                operator = operateAppRecord;
+                break;
+            }
+            case IsolatedEntities.CUSTOM_EMOJI: {
+                comparator = isRecordCustomEmojiEqualToRaw;
+                fieldName = 'name';
+                operator = operateCustomEmojiRecord;
                 break;
             }
             case IsolatedEntities.GLOBAL: {
                 comparator = isRecordGlobalEqualToRaw;
-                oneOfField = 'name';
-                recordOperator = operateGlobalRecord;
-                break;
-            }
-            case IsolatedEntities.SERVERS: {
-                comparator = isRecordServerEqualToRaw;
-                oneOfField = 'db_path';
-                recordOperator = operateServersRecord;
+                fieldName = 'name';
+                operator = operateGlobalRecord;
                 break;
             }
             case IsolatedEntities.ROLE: {
                 comparator = isRecordRoleEqualToRaw;
-                oneOfField = 'name';
-                recordOperator = operateRoleRecord;
+                fieldName = 'name';
+                operator = operateRoleRecord;
+                break;
+            }
+            case IsolatedEntities.SERVERS: {
+                comparator = isRecordServerEqualToRaw;
+                fieldName = 'db_path';
+                operator = operateServersRecord;
                 break;
             }
             case IsolatedEntities.SYSTEM: {
                 comparator = isRecordSystemEqualToRaw;
-                oneOfField = 'name';
-                recordOperator = operateSystemRecord;
+                fieldName = 'name';
+                operator = operateSystemRecord;
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
                 comparator = isRecordTermsOfServiceEqualToRaw;
-                oneOfField = 'accepted_at';
-                recordOperator = operateTermsOfServiceRecord;
+                fieldName = 'accepted_at';
+                operator = operateTermsOfServiceRecord;
                 break;
             }
             default: {
@@ -184,11 +189,11 @@ class DataOperator {
             }
         }
 
-        if (recordOperator && oneOfField && comparator) {
+        if (operator && fieldName && comparator) {
             await this.handleEntityRecords({
                 comparator,
-                fieldName: oneOfField,
-                operator: recordOperator,
+                fieldName,
+                operator,
                 rawValues: values,
                 tableName,
             });
@@ -416,7 +421,7 @@ class DataOperator {
 
             // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
             if (emojis.length) {
-                await this.handleCustomEmojis(emojis);
+                await this.handleIsolatedEntity({tableName: IsolatedEntities.CUSTOM_EMOJI, values: emojis});
             }
 
             if (postsInThread.length) {
@@ -750,28 +755,6 @@ class DataOperator {
             operator: operateTeamMembershipRecord,
             rawValues: teamMemberships,
             tableName: TEAM_MEMBERSHIP,
-        });
-    };
-
-    /**
-     * handleCustomEmojis: Handler responsible for the Create/Update operations occurring on the CUSTOM_EMOJI entity from the 'Server' schema
-     * @param {RawCustomEmoji[]} customEmojis
-     * @throws DataOperatorException
-     * @returns {Promise<null|void>}
-     */
-    handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
-        if (!customEmojis.length) {
-            throw new DataOperatorException(
-                'An empty "customEmojis" array has been passed to the handleCustomEmojis method',
-            );
-        }
-
-        await this.handleEntityRecords({
-            comparator: isRecordCustomEmojiEqualToRaw,
-            fieldName: 'name',
-            operator: operateCustomEmojiRecord,
-            rawValues: customEmojis,
-            tableName: CUSTOM_EMOJI,
         });
     };
 

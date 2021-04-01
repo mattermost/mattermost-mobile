@@ -499,7 +499,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
         const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
-        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleCustomEmojis');
+        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
 
@@ -606,16 +606,19 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith([
-            {
-                id: 'dgwyadacdbbwjc8t357h6hwsrh',
-                create_at: 1502389307432,
-                update_at: 1502389307432,
-                delete_at: 0,
-                creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
-                name: 'thanks',
-            },
-        ]);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
+            tableName: 'CustomEmoji',
+            values: [
+                {
+                    id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                    create_at: 1502389307432,
+                    update_at: 1502389307432,
+                    delete_at: 0,
+                    creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                    name: 'thanks',
+                },
+            ],
+        });
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
@@ -763,7 +766,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleCustomEmojis(emojis);
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.CUSTOM_EMOJI, values: emojis});
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
