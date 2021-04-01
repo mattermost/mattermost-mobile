@@ -6,7 +6,6 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
-import {NotifyProps, Timezone, UserProps} from '@typings/database/index';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
@@ -25,6 +24,9 @@ export default class User extends Model {
 
     /** auth_service : The type of authentication service registered to that user */
     authService: string;
+
+    /** update_at : The timestamp at which this user account has been updated */
+    updateAt!: number;
 
     /** delete_at : The timestamp at which this user account has been archived/deleted */
     deleteAt: number;

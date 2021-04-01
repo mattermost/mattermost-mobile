@@ -464,6 +464,7 @@ describe('*** Test schema for SERVER database ***', () => {
                     name: USER,
                     columns: {
                         auth_service: {name: 'auth_service', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
                         delete_at: {name: 'delete_at', type: 'number'},
                         email: {name: 'email', type: 'string'},
                         first_name: {name: 'first_name', type: 'string'},
@@ -484,6 +485,7 @@ describe('*** Test schema for SERVER database ***', () => {
                     },
                     columnArray: [
                         {name: 'auth_service', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                         {name: 'delete_at', type: 'number'},
                         {name: 'email', type: 'string'},
                         {name: 'first_name', type: 'string'},

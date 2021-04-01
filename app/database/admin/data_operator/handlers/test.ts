@@ -1,14 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperator from '@database/admin/data_operator';
+import {
+    isRecordAppEqualToRaw,
+    isRecordDraftEqualToRaw,
+    isRecordGlobalEqualToRaw,
+    isRecordRoleEqualToRaw,
+    isRecordServerEqualToRaw,
+    isRecordSystemEqualToRaw,
+    isRecordTermsOfServiceEqualToRaw,
+} from '@database/admin/data_operator/comparators';
+import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
-
 import {
     operateAppRecord,
-    operateCustomEmojiRecord,
     operateDraftRecord,
     operateGlobalRecord,
     operateRoleRecord,
@@ -19,7 +26,7 @@ import {
 
 jest.mock('@database/admin/database_manager');
 
-const {DRAFT} = MM_TABLES.SERVER;
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** DataOperator: Handlers tests ***', () => {
     const createConnection = async (setActive = false) => {
@@ -51,31 +58,31 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const data = {
-            tableName: IsolatedEntities.APP,
-            values: [
-                {
-                    buildNumber: 'build-10x',
-                    createdAt: 1,
-                    id: 'id-21',
-                    versionNumber: 'version-10',
-                },
-                {
-                    buildNumber: 'build-11y',
-                    createdAt: 1,
-                    id: 'id-22',
-                    versionNumber: 'version-11',
-                },
-            ],
-        };
+        const values = [
+            {
+                buildNumber: 'build-10x',
+                createdAt: 1,
+                id: 'id-21',
+                versionNumber: 'version-10',
+            },
+            {
+                buildNumber: 'build-11y',
+                createdAt: 1,
+                id: 'id-22',
+                versionNumber: 'version-11',
+            },
+        ];
 
-        await DataOperator.handleIsolatedEntity(data);
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.APP, values});
 
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateAppRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            fieldName: 'version_number',
+            operator: operateAppRecord,
+            comparator: isRecordAppEqualToRaw,
+            rawValues: values,
+            tableName: 'app',
         });
     });
 
@@ -85,20 +92,17 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [{id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'}];
 
-        const data = {
-            tableName: IsolatedEntities.GLOBAL,
-            values: [
-                {id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'},
-            ],
-        };
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.GLOBAL, values});
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateGlobalRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: isRecordGlobalEqualToRaw,
+            fieldName: 'name',
+            operator: operateGlobalRecord,
+            rawValues: values,
+            tableName: 'global',
         });
     });
 
@@ -108,53 +112,25 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [
+            {
+                dbPath: 'server.db',
+                displayName: 'community',
+                id: 'server-id-1',
+                mentionCount: 0,
+                unreadCount: 0,
+                url: 'https://community.mattermost.com',
+            },
+        ];
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SERVERS, values});
 
-        const data = {
-            tableName: IsolatedEntities.SERVERS,
-            values: [
-                {
-                    dbPath: 'server.db',
-                    displayName: 'community',
-                    id: 'server-id-1',
-                    mentionCount: 0,
-                    unreadCount: 0,
-                    url: 'https://community.mattermost.com',
-                },
-            ],
-        };
-
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateServersRecord,
-        });
-    });
-
-    it('=> HandleCustomEmoji: should write to CUSTOM_EMOJI entity', async () => {
-        expect.assertions(2);
-
-        const database = await createConnection(true);
-        expect(database).toBeTruthy();
-
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
-
-        const data = {
-            tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: [
-                {
-                    id: 'custom-emoji-id-1',
-                    name: 'custom-emoji-1',
-                },
-            ],
-        };
-
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateCustomEmojiRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: isRecordServerEqualToRaw,
+            fieldName: 'db_path',
+            operator: operateServersRecord,
+            rawValues: values,
+            tableName: 'servers',
         });
     });
 
@@ -164,24 +140,26 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [
+            {
+                id: 'custom-emoji-id-1',
+                name: 'custom-emoji-1',
+                permissions: ['custom-emoji-1'],
+            },
+        ];
 
-        const data = {
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.ROLE,
-            values: [
-                {
-                    id: 'custom-emoji-id-1',
-                    name: 'custom-emoji-1',
-                    permissions: ['custom-emoji-1'],
-                },
-            ],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateRoleRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: isRecordRoleEqualToRaw,
+            fieldName: 'name',
+            operator: operateRoleRecord,
+            rawValues: values,
+            tableName: 'Role',
         });
     });
 
@@ -191,18 +169,16 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [{id: 'system-id-1', name: 'system-1', value: 'system-1'}];
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values});
 
-        const data = {
-            tableName: IsolatedEntities.SYSTEM,
-            values: [{id: 'system-id-1', name: 'system-1', value: 'system-1'}],
-        };
-
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateSystemRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: isRecordSystemEqualToRaw,
+            fieldName: 'name',
+            operator: operateSystemRecord,
+            rawValues: values,
+            tableName: 'System',
         });
     });
 
@@ -212,18 +188,29 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const data = {
+        const values = [
+            {
+                id: 'tos-1',
+                acceptedAt: 1,
+                create_at: 1613667352029,
+                user_id: 'user1613667352029',
+                text: '',
+            },
+        ];
+
+        await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
-            values: [{id: 'tos-1', acceptedAt: 1}],
-        };
+            values,
+        });
 
-        await DataOperator.handleIsolatedEntity(data);
-
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            ...data,
-            recordOperator: operateTermsOfServiceRecord,
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: isRecordTermsOfServiceEqualToRaw,
+            fieldName: 'accepted_at',
+            operator: operateTermsOfServiceRecord,
+            rawValues: values,
+            tableName: 'TermsOfService',
         });
     });
 
@@ -233,16 +220,16 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
-
-        await DataOperator.handleIsolatedEntity({
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            tableName: 'INVALID_TABLE_NAME',
-            values: [{id: 'tos-1', acceptedAt: 1}],
-        });
-
-        expect(spyOnHandleBase).toHaveBeenCalledTimes(0);
+        await expect(
+            DataOperator.handleIsolatedEntity({
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                tableName: 'INVALID_TABLE_NAME',
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                values: [{id: 'tos-1', acceptedAt: 1}],
+            }),
+        ).rejects.toThrow(DataOperatorException);
     });
 
     it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
@@ -251,7 +238,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareRecords');
+        const spyOnPrepareRecords = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
 
         await DataOperator.handleReactions({
@@ -269,7 +256,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         // Called twice:  Once for Reaction record and once for CustomEmoji record
-        expect(spyOnPrepareBase).toHaveBeenCalledTimes(2);
+        expect(spyOnPrepareRecords).toHaveBeenCalledTimes(2);
 
         // Only one batch operation for both entities
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
@@ -281,9 +268,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnHandleBase = jest.spyOn(DataOperator as any, 'executeInDatabase');
-
-        const data = [
+        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const values = [
             {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
                 files: [
@@ -307,13 +293,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 root_id: '',
             },
         ];
-        await DataOperator.handleDraft(data);
 
-        // Only one batch operation for both entities
-        expect(spyOnHandleBase).toHaveBeenCalledWith({
-            tableName: DRAFT,
-            values: data,
-            recordOperator: operateDraftRecord,
+        await DataOperator.handleDraft(values);
+
+        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+            comparator: isRecordDraftEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateDraftRecord,
+            rawValues: values,
+            tableName: 'Draft',
         });
     });
 
@@ -323,7 +311,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const database = await createConnection(true);
         expect(database).toBeTruthy();
 
-        const spyOnPrepareBase = jest.spyOn(DataOperator as any, 'prepareRecords');
+        const spyOnPrepareRecords = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -348,7 +336,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             prepareRowsOnly: false,
         });
 
-        expect(spyOnPrepareBase).toHaveBeenCalledTimes(1);
+        expect(spyOnPrepareRecords).toHaveBeenCalledTimes(1);
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
@@ -508,10 +496,10 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
         const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
-        const spyOnHandleIsolatedEntity = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
+        const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
+        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
 
@@ -617,8 +605,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
             prepareRowsOnly: true,
         });
 
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledWith({
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
             tableName: 'CustomEmoji',
             values: [
                 {
@@ -633,9 +621,225 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
+            {earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'},
+        ]);
 
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
+    });
+
+    it('=> HandleUsers: should write to User entity', async () => {
+        expect.assertions(1);
+
+        const users = [
+            {
+                id: '9ciscaqbrpd6d8s68k76xb9bte',
+                create_at: 1599457495881,
+                update_at: 1607683720173,
+                delete_at: 0,
+                username: 'a.l',
+                auth_service: 'saml',
+                email: 'a.l@mattermost.com',
+                email_verified: true,
+                is_bot: false,
+                nickname: '',
+                first_name: 'A',
+                last_name: 'L',
+                position: 'Mobile Engineer',
+                roles: 'system_user',
+                props: {},
+                notify_props: {
+                    desktop: 'all',
+                    desktop_sound: true,
+                    email: true,
+                    first_name: true,
+                    mention_keys: '',
+                    push: 'mention',
+                    channel: true,
+                    auto_responder_active: false,
+                    auto_responder_message:
+            'Hello, I am out of office and unable to respond to messages.',
+                    comments: 'never',
+                    desktop_notification_sound: 'Hello',
+                    push_status: 'online',
+                },
+                last_password_update: 1604323112537,
+                last_picture_update: 1604686302260,
+                locale: 'en',
+                timezone: {
+                    automaticTimezone: 'Indian/Mauritius',
+                    manualTimezone: '',
+                    useAutomaticTimezone: true,
+                },
+            },
+        ];
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleUsers(users);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
+        expect.assertions(1);
+
+        const preferences = [
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'group_channel_show',
+                name: 'qj91hepgjfn6xr4acm5xzd8zoc',
+                value: 'true',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'notifications',
+                name: 'email_interval',
+                value: '30',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'theme',
+                name: '',
+                value:
+          '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
+            },
+            {
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                category: 'tutorial_step',
+                name: '9ciscaqbrpd6d8s68k76xb9bte',
+                value: '2',
+            },
+        ];
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handlePreferences(preferences);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+
+        const teamMembership = [
+            {
+                team_id: 'a',
+                user_id: 'ab',
+                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                delete_at: 0,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleTeamMemberships(teamMembership);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
+        expect.assertions(1);
+        const emojis = [
+            {
+                id: 'i',
+                create_at: 1580913641769,
+                update_at: 1580913641769,
+                delete_at: 0,
+                creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                name: 'boomI',
+            },
+        ];
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.CUSTOM_EMOJI, values: emojis});
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleGroupMembership: should write to GROUP_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+        const groupMemberships = [
+            {
+                user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
+                group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
+            },
+        ];
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleGroupMembership(groupMemberships);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
+
+    it('=> HandleChannelMembership: should write to CHANNEL_MEMBERSHIP entity', async () => {
+        expect.assertions(1);
+        const channelMemberships = [
+            {
+                channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                last_viewed_at: 1613667352029,
+                msg_count: 3864,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'mention',
+                    push: 'default',
+                },
+                last_update_at: 1613667352029,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+            {
+                channel_id: '1yw6gxfr4bn1jbyp9nr7d53yew',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'channel_user',
+                last_viewed_at: 1615300540549,
+                msg_count: 16,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'all',
+                    push: 'default',
+                },
+                last_update_at: 1615300540549,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleChannelMembership(channelMemberships);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
 });

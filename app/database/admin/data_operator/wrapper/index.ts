@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database} from '@nozbe/watermelondb';
+
 import DataOperator from '@database/admin/data_operator/handlers';
 import DatabaseManager from '@database/admin/database_manager';
 import DatabaseConnectionException from '@database/admin/exceptions/database_connection_exception';
-import {Database} from '@nozbe/watermelondb';
 
 export const createDataOperator = async (serverUrl: string) => {
     // Retrieves the connection matching serverUrl

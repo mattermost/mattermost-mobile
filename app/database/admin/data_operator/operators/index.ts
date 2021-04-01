@@ -5,124 +5,147 @@ import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import {User} from '@database/server/models';
 import App from '@typings/database/app';
+import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
-    BaseOperator,
-    IdenticalRecord,
-    Operator,
+    DataFactoryArgs,
     RawApp,
+    RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
     RawFile,
     RawGlobal,
+    RawGroupMembership,
     RawPost,
     RawPostMetadata,
     RawPostsInChannel,
     RawPostsInThread,
+    RawPreference,
     RawReaction,
     RawRole,
     RawServers,
     RawSystem,
+    RawTeamMembership,
     RawTermsOfService,
+    RawUser,
 } from '@typings/database/database';
 import Draft from '@typings/database/draft';
+import {OperationType} from '@typings/database/enums';
 import File from '@typings/database/file';
 import Global from '@typings/database/global';
+import GroupMembership from '@typings/database/group_membership';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
+import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
+import TeamMembership from '@typings/database/team_membership';
 import TermsOfService from '@typings/database/terms_of_service';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
+    CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP_MEMBERSHIP,
     POST,
-    POST_METADATA,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
+    POST_METADATA,
+    PREFERENCE,
     REACTION,
     ROLE,
     SYSTEM,
+    TEAM_MEMBERSHIP,
     TERMS_OF_SERVICE,
+    USER,
 } = MM_TABLES.SERVER;
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateAppRecord = async ({database, value}: Operator) => {
-    const record = value as RawApp;
+export const operateAppRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawApp;
+    const record = value.record as App;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (app: App) => {
-        app._raw.id = record?.id ?? app.id;
-        app.buildNumber = record?.buildNumber;
-        app.createdAt = record?.createdAt;
-        app.versionNumber = record?.versionNumber;
+        app._raw.id = isCreateAction ? app.id : record.id;
+        app.buildNumber = raw?.buildNumber;
+        app.createdAt = raw?.createdAt;
+        app.versionNumber = raw?.versionNumber;
     };
 
     return operateBaseRecord({
+        action,
         database,
+        generator,
         tableName: APP,
         value,
-        generator,
     });
 };
 
 /**
  * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateGlobalRecord = async ({database, value}: Operator) => {
-    const record = value as RawGlobal;
+export const operateGlobalRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGlobal;
+    const record = value.record as Global;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (global: Global) => {
-        global._raw.id = record?.id ?? global.id;
-        global.name = record?.name;
-        global.value = record?.value;
+        global._raw.id = isCreateAction ? global.id : record.id;
+        global.name = raw?.name;
+        global.value = raw?.value;
     };
 
     return operateBaseRecord({
+        action,
         database,
+        generator,
         tableName: GLOBAL,
         value,
-        generator,
     });
 };
 
 /**
  * operateServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateServersRecord = async ({database, value}: Operator) => {
-    const record = value as RawServers;
+export const operateServersRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawServers;
+    const record = value.record as Servers;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (servers: Servers) => {
-        servers._raw.id = record?.id ?? servers.id;
-        servers.dbPath = record?.dbPath;
-        servers.displayName = record?.displayName;
-        servers.mentionCount = record?.mentionCount;
-        servers.unreadCount = record?.unreadCount;
-        servers.url = record?.url;
+        servers._raw.id = isCreateAction ? servers.id : record.id;
+        servers.dbPath = raw?.dbPath;
+        servers.displayName = raw?.displayName;
+        servers.mentionCount = raw?.mentionCount;
+        servers.unreadCount = raw?.unreadCount;
+        servers.url = raw?.url;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: SERVERS,
         value,
@@ -132,29 +155,24 @@ export const operateServersRecord = async ({database, value}: Operator) => {
 
 /**
  * operateCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateCustomEmojiRecord = async ({database, value}: Operator) => {
-    const record = value as RawCustomEmoji;
+export const operateCustomEmojiRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawCustomEmoji;
+    const record = value.record as CustomEmoji;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of emoji comes from server response
     const generator = (emoji: CustomEmoji) => {
-        emoji._raw.id = record?.id ?? emoji.id;
-        emoji.name = record.name;
+        emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record.id;
+        emoji.name = raw.name;
     };
 
-    const appRecord = (await database.collections.
-        get(CUSTOM_EMOJI!).
-        query(Q.where('name', record.name)).
-        fetch()) as Model[];
-    const isPresent = appRecord.length > 0;
-
-    if (isPresent) {
-        return null;
-    }
-
     return operateBaseRecord({
+        action,
         database,
         tableName: CUSTOM_EMOJI,
         value,
@@ -164,21 +182,25 @@ export const operateCustomEmojiRecord = async ({database, value}: Operator) => {
 
 /**
  * operateRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateRoleRecord = async ({database, value}: Operator) => {
-    const record = value as RawRole;
+export const operateRoleRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawRole;
+    const record = value.record as Role;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of role comes from server response
     const generator = (role: Role) => {
-        role._raw.id = record?.id ?? role.id;
-        role.name = record?.name;
-        role.permissions = record?.permissions;
+        role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record.id;
+        role.name = raw?.name;
+        role.permissions = raw?.permissions;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: ROLE,
         value,
@@ -188,21 +210,25 @@ export const operateRoleRecord = async ({database, value}: Operator) => {
 
 /**
  * operateSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateSystemRecord = async ({database, value}: Operator) => {
-    const record = value as RawSystem;
+export const operateSystemRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawSystem;
+    const record = value.record as System;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of system comes from server response
     const generator = (system: System) => {
-        system._raw.id = record?.id ?? system.id;
-        system.name = record?.name;
-        system.value = record?.value;
+        system._raw.id = isCreateAction ? (raw?.id ?? system.id) : record?.id;
+        system.name = raw?.name;
+        system.value = raw?.value;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: SYSTEM,
         value,
@@ -212,20 +238,24 @@ export const operateSystemRecord = async ({database, value}: Operator) => {
 
 /**
  * operateTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateTermsOfServiceRecord = async ({database, value}: Operator) => {
-    const record = value as RawTermsOfService;
+export const operateTermsOfServiceRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawTermsOfService;
+    const record = value.record as TermsOfService;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of TOS comes from server response
     const generator = (tos: TermsOfService) => {
-        tos._raw.id = record?.id ?? tos.id;
-        tos.acceptedAt = record?.acceptedAt;
+        tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record?.id;
+        tos.acceptedAt = raw?.acceptedAt;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: TERMS_OF_SERVICE,
         value,
@@ -235,33 +265,37 @@ export const operateTermsOfServiceRecord = async ({database, value}: Operator) =
 
 /**
  * operatePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operatePostRecord = async ({database, value}: Operator) => {
-    const record = value as RawPost;
+export const operatePostRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawPost;
+    const record = value.record as Post;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of post comes from server response
     const generator = (post: Post) => {
-        post._raw.id = record?.id;
-        post.channelId = record?.channel_id;
-        post.createAt = record?.create_at;
-        post.deleteAt = record?.delete_at || record?.delete_at === 0 ? record?.delete_at : 0;
-        post.editAt = record?.edit_at;
-        post.updateAt = record?.update_at;
-        post.isPinned = record!.is_pinned!;
-        post.message = Q.sanitizeLikeString(record?.message);
-        post.userId = record?.user_id;
-        post.originalId = record?.original_id ?? '';
-        post.pendingPostId = record?.pending_post_id ?? '';
-        post.previousPostId = record?.prev_post_id ?? '';
-        post.rootId = record?.root_id ?? '';
-        post.type = record?.type ?? '';
-        post.props = record?.props ?? {};
+        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record?.id;
+        post.channelId = raw?.channel_id;
+        post.createAt = raw?.create_at;
+        post.deleteAt = raw?.delete_at || raw?.delete_at === 0 ? raw?.delete_at : 0;
+        post.editAt = raw?.edit_at;
+        post.updateAt = raw?.update_at;
+        post.isPinned = raw!.is_pinned!;
+        post.message = Q.sanitizeLikeString(raw?.message);
+        post.userId = raw?.user_id;
+        post.originalId = raw?.original_id ?? '';
+        post.pendingPostId = raw?.pending_post_id ?? '';
+        post.previousPostId = raw?.prev_post_id ?? '';
+        post.rootId = raw?.root_id ?? '';
+        post.type = raw?.type ?? '';
+        post.props = raw?.props ?? {};
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: POST,
         value,
@@ -271,22 +305,24 @@ export const operatePostRecord = async ({database, value}: Operator) => {
 
 /**
  * operatePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operatePostInThreadRecord = async ({database, value}: Operator) => {
-    const record = value as RawPostsInThread;
+export const operatePostInThreadRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawPostsInThread;
+    const record = value.record as PostsInThread;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (postsInThread: PostsInThread) => {
-        postsInThread._raw.id = postsInThread.id;
-        postsInThread.postId = record.post_id;
-        postsInThread.earliest = record.earliest;
-        postsInThread.latest = record.latest!;
+        postsInThread.postId = isCreateAction ? raw.post_id : record.id;
+        postsInThread.earliest = raw.earliest;
+        postsInThread.latest = raw.latest!;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: POSTS_IN_THREAD,
         value,
@@ -296,23 +332,27 @@ export const operatePostInThreadRecord = async ({database, value}: Operator) => 
 
 /**
  * operateReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateReactionRecord = async ({database, value}: Operator) => {
-    const record = value as RawReaction;
+export const operateReactionRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawReaction;
+    const record = value.record as Reaction;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of reaction comes from server response
     const generator = (reaction: Reaction) => {
-        reaction._raw.id = reaction.id;
-        reaction.userId = record.user_id;
-        reaction.postId = record.post_id;
-        reaction.emojiName = record.emoji_name;
-        reaction.createAt = record.create_at;
+        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record?.id;
+        reaction.userId = raw.user_id;
+        reaction.postId = raw.post_id;
+        reaction.emojiName = raw.emoji_name;
+        reaction.createAt = raw.create_at;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: REACTION,
         value,
@@ -322,28 +362,32 @@ export const operateReactionRecord = async ({database, value}: Operator) => {
 
 /**
  * operateFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateFileRecord = async ({database, value}: Operator) => {
-    const record = value as RawFile;
+export const operateFileRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawFile;
+    const record = value.record as File;
+    const isCreateAction = action === OperationType.CREATE;
 
+    // id of file comes from server response
     const generator = (file: File) => {
-        file._raw.id = record?.id ?? file.id;
-        file.postId = record.post_id;
-        file.name = record.name;
-        file.extension = record.extension;
-        file.size = record.size;
-        file.mimeType = record?.mime_type ?? '';
-        file.width = record?.width ?? 0;
-        file.height = record?.height ?? 0;
-        file.imageThumbnail = record?.mini_preview ?? '';
-        file.localPath = record?.localPath ?? '';
+        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record?.id;
+        file.postId = raw.post_id;
+        file.name = raw.name;
+        file.extension = raw.extension;
+        file.size = raw.size;
+        file.mimeType = raw?.mime_type ?? '';
+        file.width = raw?.width ?? 0;
+        file.height = raw?.height ?? 0;
+        file.imageThumbnail = raw?.mini_preview ?? '';
+        file.localPath = raw?.localPath ?? '';
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: FILE,
         value,
@@ -353,22 +397,25 @@ export const operateFileRecord = async ({database, value}: Operator) => {
 
 /**
  * operatePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operatePostMetadataRecord = async ({database, value}: Operator) => {
-    const record = value as RawPostMetadata;
+export const operatePostMetadataRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawPostMetadata;
+    const record = value.record as PostMetadata;
+    const isCreateAction = action === OperationType.CREATE;
 
     const generator = (postMeta: PostMetadata) => {
-        postMeta._raw.id = postMeta.id;
-        postMeta.data = record.data;
-        postMeta.postId = record.postId;
-        postMeta.type = record.type;
+        postMeta._raw.id = isCreateAction ? postMeta.id : record.id;
+        postMeta.data = raw.data;
+        postMeta.postId = raw.postId;
+        postMeta.type = raw.type;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: POST_METADATA,
         value,
@@ -378,24 +425,26 @@ export const operatePostMetadataRecord = async ({database, value}: Operator) => 
 
 /**
  * operateDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operateDraftRecord = async ({database, value}: Operator) => {
-    const record = value as RawDraft;
+export const operateDraftRecord = async ({action, database, value}: DataFactoryArgs) => {
     const emptyFileInfo: FileInfo[] = [];
+    const raw = value.raw as RawDraft;
 
+    // Draft is client side only; plus you would only be creating/deleting one
     const generator = (draft: Draft) => {
-        draft._raw.id = record?.id ?? draft.id;
-        draft.rootId = record?.root_id ?? '';
-        draft.message = record?.message ?? '';
-        draft.channelId = record?.channel_id ?? '';
-        draft.files = record?.files ?? emptyFileInfo;
+        draft._raw.id = draft.id;
+        draft.rootId = raw?.root_id ?? '';
+        draft.message = raw?.message ?? '';
+        draft.channelId = raw?.channel_id ?? '';
+        draft.files = raw?.files ?? emptyFileInfo;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: DRAFT,
         value,
@@ -405,22 +454,23 @@ export const operateDraftRecord = async ({database, value}: Operator) => {
 
 /**
  * operatePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
- * @param {Operator} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {RecordValue} operator.value
- * @returns {Promise<Model>}
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
  */
-export const operatePostsInChannelRecord = async ({database, value}: Operator) => {
-    const record = value as RawPostsInChannel;
+export const operatePostsInChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawPostsInChannel;
 
     const generator = (postsInChannel: PostsInChannel) => {
-        postsInChannel._raw.id = record?.id ?? postsInChannel.id;
-        postsInChannel.channelId = record.channel_id;
-        postsInChannel.earliest = record.earliest;
-        postsInChannel.latest = record.latest;
+        postsInChannel._raw.id = raw?.id ?? postsInChannel.id;
+        postsInChannel.channelId = raw.channel_id;
+        postsInChannel.earliest = raw.earliest;
+        postsInChannel.latest = raw.latest;
     };
 
     return operateBaseRecord({
+        action,
         database,
         tableName: POSTS_IN_CHANNEL,
         value,
@@ -429,49 +479,180 @@ export const operatePostsInChannelRecord = async ({database, value}: Operator) =
 };
 
 /**
- * operateBaseRecord:  The 'id' of a record is key to this function. Please note that - at the moment - if WatermelonDB
- * encounters an existing record during a CREATE operation, it silently fails the operation.
+ * operateUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
+ * @param {DataFactoryArgs} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateUserRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawUser;
+    const record = value.record as User;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of user comes from server response
+    const generator = (user: User) => {
+        user._raw.id = isCreateAction ? (raw?.id ?? user.id) : record?.id;
+        user.authService = raw.auth_service;
+        user.deleteAt = raw.delete_at;
+        user.updateAt = raw.update_at;
+        user.email = raw.email;
+        user.firstName = raw.first_name;
+        user.isGuest = raw.roles.includes('system_guest');
+        user.lastName = raw.last_name;
+        user.lastPictureUpdate = raw.last_picture_update;
+        user.locale = raw.locale;
+        user.nickname = raw.nickname;
+        user.position = raw?.position ?? '';
+        user.roles = raw.roles;
+        user.username = raw.username;
+        user.notifyProps = raw.notify_props;
+        user.props = raw.props;
+        user.timezone = raw.timezone;
+        user.isBot = raw.is_bot;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: USER,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operatePreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
+ * @param {DataFactoryArgs} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operatePreferenceRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawPreference;
+    const record = value.record as Preference;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (preference: Preference) => {
+        preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record?.id;
+        preference.category = raw.category;
+        preference.name = raw.name;
+        preference.userId = raw.user_id;
+        preference.value = raw.value;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: PREFERENCE,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operatePreferenceRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactoryArgs} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateTeamMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawTeamMembership;
+    const record = value.record as TeamMembership;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (teamMembership: TeamMembership) => {
+        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record?.id;
+        teamMembership.teamId = raw.team_id;
+        teamMembership.userId = raw.user_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: TEAM_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactoryArgs} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateGroupMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroupMembership;
+    const record = value.record as GroupMembership;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (groupMember: GroupMembership) => {
+        groupMember._raw.id = isCreateAction ? (raw?.id ?? groupMember.id) : record?.id;
+        groupMember.groupId = raw.group_id;
+        groupMember.userId = raw.user_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUP_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactoryArgs} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<void>}
+ */
+export const operateChannelMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawChannelMembership;
+    const record = value.record as ChannelMembership;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (channelMember: ChannelMembership) => {
+        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record?.id;
+        channelMember.channelId = raw.channel_id;
+        channelMember.userId = raw.user_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: CHANNEL_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
+ * existing record for UPDATE or prepare a collection for CREATE
  *
- * This operator decides to go through an UPDATE action if we have an existing record in the table bearing the same id.
- * If not, it will go for a CREATE operation.
- *
- * However, if the tableName points to a major entity ( like Post, User or Channel, etc.), it verifies first if the
- * update_at value of the existing record is different from the parameter 'value' own update_at.  Only if they differ,
- * that it prepares the record for update.
- *
- * @param {Operator} operatorBase
+ * @param {DataFactoryArgs} operatorBase
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
- * @param {RecordValue} operatorBase.value
+ * @param {MatchExistingRecord} operatorBase.value
  * @param {((model: Model) => void)} operatorBase.generator
- * @returns {Promise<Model>}
+ * @returns {Promise<any>}
  */
-const operateBaseRecord = async ({database, tableName, value, generator}: BaseOperator) => {
-    // We query first to see if we have a record on that entity with the current value.id
-    const appRecord = (await database.collections.
-        get(tableName!).
-        query(Q.where('id', value.id!)).
-        fetch()) as Model[];
+const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs) => {
+    if (action === OperationType.UPDATE) {
+    // Two possible scenarios:
+    // 1. We are dealing with either duplicates here and if so, we'll update instead of create
+    // 2. This is just a normal update operation
 
-    const isPresent = appRecord.length > 0;
-
-    if (isPresent) {
-        const record = appRecord[0];
-
-        // We avoid unnecessary updates if we already have a record with the same update_at value for this model/entity
-        const isRecordIdentical = checkForIdenticalRecord({
-            tableName: tableName!,
-            newValue: value,
-            existingRecord: record,
-        });
-
-        if (isRecordIdentical) {
-            return null;
-        }
-
-        // Two possible scenarios:
-        // 1. We are dealing with either duplicates here and if so, we'll update instead of create
-        // 2. This is just a normal update operation
+        const record = value.record as Model;
         return record.prepareUpdate(() => generator!(record));
     }
 
@@ -479,29 +660,4 @@ const operateBaseRecord = async ({database, tableName, value, generator}: BaseOp
     // 1. We don't have a record yet to update; so we create it
     // 2. This is just a normal create operation
     return database.collections.get(tableName!).prepareCreate(generator);
-};
-
-/**
- * checkForIdenticalRecord:
- * @param {IdenticalRecord} identicalRecord
- * @param {string} identicalRecord.tableName
- * @param {RecordValue} identicalRecord.newValue
- * @param {Model} identicalRecord.existingRecord
- * @returns {boolean}
- */
-const checkForIdenticalRecord = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
-    const guardTables = [POST];
-    if (guardTables.includes(tableName)) {
-        switch (tableName) {
-            case POST: {
-                const tempPost = newValue as RawPost;
-                const currentRecord = (existingRecord as unknown) as Post;
-                return tempPost.update_at === currentRecord.updateAt;
-            }
-            default: {
-                return false;
-            }
-        }
-    }
-    return false;
 };

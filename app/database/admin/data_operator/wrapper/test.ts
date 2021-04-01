@@ -8,6 +8,8 @@ import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/admin/database_manager');
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 describe('*** DataOperator Wrapper ***', () => {
     it('=> wrapper should return an instance of DataOperator ', async () => {
         expect.assertions(1);
@@ -219,13 +221,12 @@ describe('*** DataOperator Wrapper ***', () => {
                 serverUrl: 'https://appv1.mattermost.com',
             },
         });
-
         const dataOperator = await createDataOperator('https://appv1.mattermost.com');
 
         const spyOnHandleReactions = jest.spyOn(dataOperator as any, 'handleReactions');
         const spyOnHandleFiles = jest.spyOn(dataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(dataOperator as any, 'handlePostMetadata');
-        const spyOnHandleIsolatedEntity = jest.spyOn(dataOperator as any, 'handleIsolatedEntity');
+        const spyOnHandleCustomEmojis = jest.spyOn(dataOperator as any, 'handleIsolatedEntity');
         const spyOnHandlePostsInThread = jest.spyOn(dataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(dataOperator as any, 'handlePostsInChannel');
 
@@ -329,8 +330,8 @@ describe('*** DataOperator Wrapper ***', () => {
             prepareRowsOnly: true,
         });
 
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleIsolatedEntity).toHaveBeenCalledWith({
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
             tableName: 'CustomEmoji',
             values: [
                 {
@@ -345,7 +346,9 @@ describe('*** DataOperator Wrapper ***', () => {
         });
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([{earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'}]);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
+            {earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'},
+        ]);
 
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));

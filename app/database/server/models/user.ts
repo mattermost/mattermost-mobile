@@ -60,6 +60,9 @@ export default class User extends Model {
     /** auth_service : The type of authentication service registered to that user */
     @field('auth_service') authService!: string;
 
+    /** update_at : The timestamp at which this user account has been updated */
+    @field('update_at') updateAt!: number;
+
     /** delete_at : The timestamp at which this user account has been archived/deleted */
     @field('delete_at') deleteAt!: number;
 
@@ -90,7 +93,7 @@ export default class User extends Model {
     /** position : The user's position in the company */
     @field('position') position!: string;
 
-    /** roles : The associated roles that this user has */
+    /** roles : The associated roles that this user has. Multiple roles concatenated together with comma to form a single string. */
     @field('roles') roles!: string;
 
     /** status : The presence status for the user */

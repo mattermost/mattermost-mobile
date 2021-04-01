@@ -1,24 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppSchema, Database} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
-import {Migration} from '@nozbe/watermelondb/Schema/migrations';
+import {Clause} from '@nozbe/watermelondb/QueryDescription';
 import {Class} from '@nozbe/watermelondb/utils/common';
 
-import {DatabaseType, IsolatedEntities} from './enums';
+import {DatabaseType, IsolatedEntities, OperationType} from './enums';
 
 export type MigrationEvents = {
   onSuccess: () => void;
   onStarted: () => void;
   onFailure: (error: string) => void;
-};
-
-export type MMAdaptorOptions = {
-  dbPath: string;
-  schema: AppSchema;
-  migrationSteps?: Migration[];
-  migrationEvents?: MigrationEvents;
 };
 
 export type DatabaseConfigs = {
@@ -28,7 +21,7 @@ export type DatabaseConfigs = {
   serverUrl?: string;
 };
 
-export type DefaultNewServer = {
+export type DefaultNewServerArgs = {
   databaseFilePath: string;
   displayName: string;
   serverUrl: string;
@@ -60,7 +53,7 @@ export type RawServers = {
 };
 
 export type RawCustomEmoji = {
-  id?: string;
+  id: string;
   name: string;
   create_at?: number;
   update_at?: number;
@@ -71,7 +64,10 @@ export type RawCustomEmoji = {
 export type RawRole = {
   id: string;
   name: string;
-  permissions: [];
+  display_name: string;
+  description: string;
+  permissions: string[];
+  scheme_managed: boolean;
 };
 
 export type RawSystem = {
@@ -83,10 +79,12 @@ export type RawSystem = {
 export type RawTermsOfService = {
   id: string;
   acceptedAt: number;
+  create_at: number;
+  user_id: string;
+  text: string;
 };
 
 export type RawDraft = {
-  id?: string;
   channel_id: string;
   files?: FileInfo[];
   message?: string;
@@ -196,6 +194,100 @@ export type RawPost = {
   };
 };
 
+export type ChannelType = 'D' | 'O' | 'G' | 'P';
+
+export type RawUser = {
+  id: string;
+  auth_service: string;
+  create_at: number;
+  delete_at: number;
+  email: string;
+  email_verified: boolean;
+  failed_attempts?: number;
+  first_name: string;
+  is_bot: boolean;
+  last_name: string;
+  last_password_update: number;
+  last_picture_update: number;
+  locale: string;
+  mfa_active?: boolean;
+  nickname: string;
+  notify_props: {
+    channel: boolean;
+    desktop: string;
+    desktop_sound: boolean;
+    email: boolean;
+    first_name: boolean;
+    mention_keys: string;
+    push: string;
+    auto_responder_active: boolean;
+    auto_responder_message: string;
+    desktop_notification_sound: string; // Not in use by the mobile app
+    push_status: string;
+    comments: string;
+  };
+  position?: string;
+  props: UserProps;
+  roles: string;
+  timezone: {
+    useAutomaticTimezone: boolean;
+    manualTimezone: string;
+    automaticTimezone: string;
+  };
+  terms_of_service_create_at?: number;
+  terms_of_service_id?: string;
+  update_at: number;
+  username: string;
+};
+
+export type RawPreference = {
+  id?: string;
+  user_id: string;
+  category: string;
+  name: string;
+  value: string;
+};
+
+export type RawTeamMembership = {
+  delete_at: number;
+  explicit_roles: string;
+  id?: string;
+  roles: string;
+  scheme_admin: boolean;
+  scheme_guest: boolean;
+  scheme_user: boolean;
+  team_id: string;
+  user_id: string;
+};
+
+export type RawGroupMembership = {
+  id?: string;
+  user_id: string;
+  group_id: string;
+};
+
+export type RawChannelMembership = {
+  id?: string;
+  channel_id: string;
+  user_id: string;
+  roles: string;
+  last_viewed_at: number;
+  msg_count: number;
+  mention_count: number;
+  notify_props: {
+    desktop: string;
+    email: string;
+    ignore_channel_mentions: string;
+    mark_unread: string;
+    push: string;
+  };
+  last_update_at: number;
+  scheme_guest: boolean;
+  scheme_user: boolean;
+  scheme_admin: boolean;
+  explicit_roles: string;
+};
+
 export type RawChannelMembers = {
   channel_id: string;
   explicit_roles: string;
@@ -210,8 +302,6 @@ export type RawChannelMembers = {
   scheme_user: boolean;
   user_id: string;
 };
-
-export type ChannelType = 'D' | 'O' | 'G' | 'P';
 
 export type RawChannel = {
   create_at: number;
@@ -241,101 +331,141 @@ export type RawPostsInThread = {
   post_id: string;
 };
 
-export type RecordValue =
+export type RawValue =
   | RawApp
+  | RawChannelMembership
   | RawCustomEmoji
   | RawDraft
   | RawFile
   | RawGlobal
+  | RawGroupMembership
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel
   | RawPostsInThread
+  | RawPreference
   | RawReaction
   | RawRole
   | RawServers
   | RawSystem
-  | RawTermsOfService;
+  | RawTeamMembership
+  | RawTermsOfService
+  | RawUser;
 
-export type Operator = {
+export type MatchExistingRecord = { record?: Model; raw: RawValue };
+
+export type DataFactoryArgs = {
   database: Database;
-  value: RecordValue;
+  generator?: (model: Model) => void;
+  tableName?: string;
+  value: MatchExistingRecord;
+  action: OperationType;
 };
 
-export type RecordOperator = (operator: Operator) => Promise<Model | null>;
-
-export type BaseOperator = Operator & {
-  generator: (model: Model) => void;
+export type PrepareForDatabaseArgs = {
   tableName: string;
+  createRaws?: MatchExistingRecord[];
+  updateRaws?: MatchExistingRecord[];
+  recordOperator: (DataFactoryArgs) => void;
 };
 
-export type ExecuteRecords = {
-  tableName: string;
-  values: RecordValue[];
-  recordOperator: RecordOperator;
-};
+export type PrepareRecordsArgs = PrepareForDatabaseArgs & { database: Database; };
 
-export type PrepareRecords = ExecuteRecords & { database: Database };
+export type BatchOperationsArgs = { database: Database; models: Model[] };
 
-export type BatchOperations = { database: Database; models: Model[] };
-
-export type HandleIsolatedEntityData = {
+export type HandleIsolatedEntityArgs = {
   tableName: IsolatedEntities;
-  values: RecordValue[];
+  values: RawValue[];
 };
 
 export type Models = Class<Model>[];
 
 // The elements needed to create a new connection
-export type DatabaseConnection = {
+export type DatabaseConnectionArgs = {
   configs: DatabaseConfigs;
   shouldAddToDefaultDatabase: boolean;
 };
 
 // The elements required to switch to another active server database
-export type ActiveServerDatabase = { displayName: string; serverUrl: string };
+export type ActiveServerDatabaseArgs = { displayName: string; serverUrl: string };
 
-export type HandleReactions = {
+export type HandleReactionsArgs = {
   reactions: RawReaction[];
   prepareRowsOnly: boolean;
 };
 
-export type HandleFiles = {
+export type HandleFilesArgs = {
   files: RawFile[];
   prepareRowsOnly: boolean;
 };
 
-export type HandlePostMetadata = {
+export type HandlePostMetadataArgs = {
   embeds?: { embed: RawEmbed[]; postId: string }[];
   images?: { images: Dictionary<PostImage>; postId: string }[];
   prepareRowsOnly: boolean;
 };
 
-export type HandlePosts = {
+export type HandlePostsArgs = {
   orders: string[];
   values: RawPost[];
   previousPostId?: string;
 };
 
-export type SanitizeReactions = {
+export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: RawReaction[];
 };
 
-export type ChainPosts = {
+export type ChainPostsArgs = {
   orders: string[];
   rawPosts: RawPost[];
   previousPostId: string;
 };
 
-export type SanitizePosts = {
+export type SanitizePostsArgs = {
   posts: RawPost[];
   orders: string[];
 };
 
-export type IdenticalRecord = {
+export type IdenticalRecordArgs = {
   existingRecord: Model;
-  newValue: RecordValue;
+  newValue: RawValue;
   tableName: string;
 };
+
+export type RetrieveRecordsArgs = {
+  database: Database;
+  tableName: string;
+  condition: Clause;
+};
+
+export type ProcessInputsArgs = {
+  rawValues: RawValue[];
+  tableName: string;
+  fieldName: string;
+  comparator: (existing: Model, newElement: RawValue) => boolean;
+};
+
+export type HandleEntityRecordsArgs = {
+  comparator: (existing: Model, newElement: RawValue) => boolean;
+  fieldName: string;
+  operator: (DataFactoryArgs) => Promise<Model | null>;
+  rawValues: RawValue[];
+  tableName: string;
+};
+
+export type DatabaseInstances = {
+  url: string;
+  dbInstance: DatabaseInstance;
+};
+
+export type RangeOfValueArgs = {
+  raws: RawValue[];
+  fieldName: string;
+};
+
+export type RecordPair = {
+  record?: Model;
+  raw: RawValue;
+}
