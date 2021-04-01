@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppSchema, Database} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
-import {Migration} from '@nozbe/watermelondb/Schema/migrations';
+import {Clause} from '@nozbe/watermelondb/QueryDescription';
 import {Class} from '@nozbe/watermelondb/utils/common';
 
 import {DatabaseType, IsolatedEntities, OperationType} from './enums';
@@ -14,13 +14,6 @@ export type MigrationEvents = {
   onFailure: (error: string) => void;
 };
 
-export type MMAdaptorOptions = {
-  dbPath: string;
-  schema: AppSchema;
-  migrationSteps?: Migration[];
-  migrationEvents?: MigrationEvents;
-};
-
 export type DatabaseConfigs = {
   actionsEnabled?: boolean;
   dbName: string;
@@ -28,7 +21,7 @@ export type DatabaseConfigs = {
   serverUrl?: string;
 };
 
-export type DefaultNewServer = {
+export type DefaultNewServerArgs = {
   databaseFilePath: string;
   displayName: string;
   serverUrl: string;
@@ -361,7 +354,7 @@ export type RawValue =
 
 export type MatchExistingRecord = { record?: Model; raw: RawValue };
 
-export type DataFactory = {
+export type DataFactoryArgs = {
   database: Database;
   generator?: (model: Model) => void;
   tableName?: string;
@@ -369,18 +362,18 @@ export type DataFactory = {
   action: OperationType;
 };
 
-export type PrepareForDatabase = {
+export type PrepareForDatabaseArgs = {
   tableName: string;
   createRaws?: MatchExistingRecord[];
   updateRaws?: MatchExistingRecord[];
-  recordOperator: (DataFactory) => void;
+  recordOperator: (DataFactoryArgs) => void;
 };
 
-export type PrepareRecords = PrepareForDatabase & { database: Database; };
+export type PrepareRecordsArgs = PrepareForDatabaseArgs & { database: Database; };
 
-export type BatchOperations = { database: Database; models: Model[] };
+export type BatchOperationsArgs = { database: Database; models: Model[] };
 
-export type HandleIsolatedEntityData = {
+export type HandleIsolatedEntityArgs = {
   tableName: IsolatedEntities;
   values: RawValue[];
 };
@@ -388,76 +381,76 @@ export type HandleIsolatedEntityData = {
 export type Models = Class<Model>[];
 
 // The elements needed to create a new connection
-export type DatabaseConnection = {
+export type DatabaseConnectionArgs = {
   configs: DatabaseConfigs;
   shouldAddToDefaultDatabase: boolean;
 };
 
 // The elements required to switch to another active server database
-export type ActiveServerDatabase = { displayName: string; serverUrl: string };
+export type ActiveServerDatabaseArgs = { displayName: string; serverUrl: string };
 
-export type HandleReactions = {
+export type HandleReactionsArgs = {
   reactions: RawReaction[];
   prepareRowsOnly: boolean;
 };
 
-export type HandleFiles = {
+export type HandleFilesArgs = {
   files: RawFile[];
   prepareRowsOnly: boolean;
 };
 
-export type HandlePostMetadata = {
+export type HandlePostMetadataArgs = {
   embeds?: { embed: RawEmbed[]; postId: string }[];
   images?: { images: Dictionary<PostImage>; postId: string }[];
   prepareRowsOnly: boolean;
 };
 
-export type HandlePosts = {
+export type HandlePostsArgs = {
   orders: string[];
   values: RawPost[];
   previousPostId?: string;
 };
 
-export type SanitizeReactions = {
+export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: RawReaction[];
 };
 
-export type ChainPosts = {
+export type ChainPostsArgs = {
   orders: string[];
   rawPosts: RawPost[];
   previousPostId: string;
 };
 
-export type SanitizePosts = {
+export type SanitizePostsArgs = {
   posts: RawPost[];
   orders: string[];
 };
 
-export type IdenticalRecord = {
+export type IdenticalRecordArgs = {
   existingRecord: Model;
   newValue: RawValue;
   tableName: string;
 };
 
-export type RetrieveRecords = {
+export type RetrieveRecordsArgs = {
   database: Database;
   tableName: string;
-  condition: any;
+  condition: Clause;
 };
 
-export type ProcessInputs = {
+export type ProcessInputsArgs = {
   rawValues: RawValue[];
   tableName: string;
   fieldName: string;
   comparator: (existing: Model, newElement: RawValue) => boolean;
 };
 
-export type HandleEntityRecords = {
+export type HandleEntityRecordsArgs = {
   comparator: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
-  operator: (DataFactory) => Promise<Model | null>;
+  operator: (DataFactoryArgs) => Promise<Model | null>;
   rawValues: RawValue[];
   tableName: string;
 };
@@ -466,3 +459,13 @@ export type DatabaseInstances = {
   url: string;
   dbInstance: DatabaseInstance;
 };
+
+export type RangeOfValueArgs = {
+  raws: RawValue[];
+  fieldName: string;
+};
+
+export type RecordPair = {
+  record?: Model;
+  raw: RawValue;
+}

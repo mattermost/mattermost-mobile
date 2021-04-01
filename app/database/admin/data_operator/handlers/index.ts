@@ -24,19 +24,19 @@ import {
 import DatabaseManager from '@database/admin/database_manager';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
-    BatchOperations,
+    BatchOperationsArgs,
     DatabaseInstance,
-    ProcessInputs,
-    HandleEntityRecords,
-    HandleFiles,
-    HandleIsolatedEntityData,
-    HandlePostMetadata,
-    HandlePosts,
-    HandleReactions,
+    ProcessInputsArgs,
+    HandleEntityRecordsArgs,
+    HandleFilesArgs,
+    HandleIsolatedEntityArgs,
+    HandlePostMetadataArgs,
+    HandlePostsArgs,
+    HandleReactionsArgs,
     MatchExistingRecord,
     PostImage,
-    PrepareForDatabase,
-    PrepareRecords,
+    PrepareForDatabaseArgs,
+    PrepareRecordsArgs,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -123,12 +123,12 @@ class DataOperator {
     /**
      * handleIsolatedEntity: Handler responsible for the Create/Update operations on the isolated entities as described
      * by the IsolatedEntities enum
-     * @param {HandleIsolatedEntityData} entityData
+     * @param {HandleIsolatedEntityArgs} entityData
      * @param {IsolatedEntities} entityData.tableName
      * @param {Records} entityData.values
      * @returns {Promise<void>}
      */
-    handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
+    handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityArgs) => {
         let comparator;
         let fieldName;
         let operator;
@@ -223,13 +223,13 @@ class DataOperator {
 
     /**
      * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction entity from the 'Server' schema
-     * @param {HandleReactions} handleReactions
+     * @param {HandleReactionsArgs} handleReactions
      * @param {RawReaction[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRowsOnly
      * @throws DataOperatorException
      * @returns {Promise<[] | (Reaction | CustomEmoji)[]>}
      */
-    handleReactions = async ({reactions, prepareRowsOnly}: HandleReactions) => {
+    handleReactions = async ({reactions, prepareRowsOnly}: HandleReactionsArgs) => {
         if (!reactions.length) {
             throw new DataOperatorException(
                 'An empty "reactions" array has been passed to the handleReactions method',
@@ -290,13 +290,13 @@ class DataOperator {
 
     /**
      * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
-     * @param {HandlePosts} handlePosts
+     * @param {HandlePostsArgs} handlePosts
      * @param {string[]} handlePosts.orders
      * @param {RawPost[]} handlePosts.values
      * @param {string | undefined} handlePosts.previousPostId
      * @returns {Promise<void>}
      */
-    handlePosts = async ({orders, values, previousPostId}: HandlePosts) => {
+    handlePosts = async ({orders, values, previousPostId}: HandlePostsArgs) => {
         const tableName = POST;
 
         // We rely on the order array; if it is empty, we stop processing
@@ -307,14 +307,14 @@ class DataOperator {
         }
 
         // By sanitizing the values, we are separating 'posts' that needs updating ( i.e. un-ordered posts ) from those that need to be created in our database
-        const {orderedPosts, unOrderedPosts} = sanitizePosts({
+        const {postsOrdered, postsUnordered} = sanitizePosts({
             posts: values,
             orders,
         });
 
-        // Here we verify in our database that the orderedPosts truly need 'CREATION'
+        // Here we verify in our database that the postsOrdered truly need 'CREATION'
         const futureEntries = await this.processInputs({
-            rawValues: orderedPosts,
+            rawValues: postsOrdered,
             tableName,
             comparator: isRecordPostEqualToRaw,
             fieldName: 'id',
@@ -333,7 +333,7 @@ class DataOperator {
             const linkedRawPosts: MatchExistingRecord[] = createPostsChain({
                 orders,
                 previousPostId: previousPostId || '',
-                rawPosts: orderedPosts,
+                rawPosts: postsOrdered,
             });
 
             const database = await this.getDatabase(tableName);
@@ -350,8 +350,8 @@ class DataOperator {
             batch = batch.concat(posts);
 
             // Starts extracting information from each post to build up for related entities' data
-            for (let i = 0; i < orderedPosts.length; i++) {
-                const post = orderedPosts[i] as RawPost;
+            for (let i = 0; i < postsOrdered.length; i++) {
+                const post = postsOrdered[i] as RawPost;
 
                 // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
                 if (!post.root_id) {
@@ -428,18 +428,18 @@ class DataOperator {
                 await this.handlePostsInThread(postsInThread);
             }
 
-            if (orderedPosts.length) {
-                await this.handlePostsInChannel(orderedPosts);
+            if (postsOrdered.length) {
+                await this.handlePostsInChannel(postsOrdered);
             }
         }
 
-        if (unOrderedPosts.length) {
+        if (postsUnordered.length) {
             // Truly update those posts that have a different update_at value
             await this.handleEntityRecords({
                 comparator: isRecordPostEqualToRaw,
                 fieldName: 'id',
                 operator: operatePostRecord,
-                rawValues: unOrderedPosts,
+                rawValues: postsUnordered,
                 tableName: POST,
             });
         }
@@ -447,12 +447,12 @@ class DataOperator {
 
     /**
      * handleFiles: Handler responsible for the Create/Update operations occurring on the File entity from the 'Server' schema
-     * @param {HandleFiles} handleFiles
+     * @param {HandleFilesArgs} handleFiles
      * @param {RawFile[]} handleFiles.files
      * @param {boolean} handleFiles.prepareRowsOnly
      * @returns {Promise<File[] | any[]>}
      */
-    private handleFiles = async ({files, prepareRowsOnly}: HandleFiles) => {
+    private handleFiles = async ({files, prepareRowsOnly}: HandleFilesArgs) => {
         if (!files.length) {
             return [];
         }
@@ -479,13 +479,13 @@ class DataOperator {
 
     /**
      * handlePostMetadata: Handler responsible for the Create/Update operations occurring on the PostMetadata entity from the 'Server' schema
-     * @param {HandlePostMetadata} handlePostMetadata
+     * @param {HandlePostMetadataArgs} handlePostMetadata
      * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
      * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
      * @param {boolean} handlePostMetadata.prepareRowsOnly
      * @returns {Promise<any[] | PostMetadata[]>}
      */
-    private handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadata) => {
+    private handlePostMetadata = async ({embeds, images, prepareRowsOnly}: HandlePostMetadataArgs) => {
         const metadata: RawPostMetadata[] = [];
 
         if (images?.length) {
@@ -804,15 +804,15 @@ class DataOperator {
 
     /**
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
-     * @param {HandleEntityRecords} handleEntityRecords
+     * @param {HandleEntityRecordsArgs} handleEntityRecords
      * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
      * @param {string} handleEntityRecords.fieldName
-     * @param {(DataFactory) => Promise<Model | null>} handleEntityRecords.operator
+     * @param {(DataFactoryArgs) => Promise<Model | null>} handleEntityRecords.operator
      * @param {RawValue[]} handleEntityRecords.rawValues
      * @param {string} handleEntityRecords.tableName
      * @returns {Promise<null | void>}
      */
-    private handleEntityRecords = async ({comparator, fieldName, operator, rawValues, tableName}: HandleEntityRecords) => {
+    private handleEntityRecords = async ({comparator, fieldName, operator, rawValues, tableName}: HandleEntityRecordsArgs) => {
         if (!rawValues.length) {
             return null;
         }
@@ -838,14 +838,14 @@ class DataOperator {
     /**
      * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-     * @param {ProcessInputs} prepareRecords
+     * @param {ProcessInputsArgs} prepareRecords
      * @param {RawValue[]} prepareRecords.rawValues
      * @param {string} prepareRecords.tableName
      * @param {string} prepareRecords.fieldName
      * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
      */
-    private processInputs = async ({rawValues, tableName, comparator, fieldName}: ProcessInputs) => {
-        // We will be doing a query an entity where one of its field can match a range of values.  Hence, here we are extracting all those potential values.
+    private processInputs = async ({rawValues, tableName, comparator, fieldName}: ProcessInputsArgs) => {
+        // We will query an entity where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
         const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
         const database = await this.getDatabase(tableName);
@@ -904,13 +904,13 @@ class DataOperator {
     /**
      * batchOperations: Accepts an instance of Database (either Default or Server) and an array of
      * prepareCreate/prepareUpdate 'models' and executes the actions on the database.
-     * @param {BatchOperations} operation
+     * @param {BatchOperationsArgs} operation
      * @param {Database} operation.database
      * @param {Array} operation.models
      * @throws {DataOperatorException}
      * @returns {Promise<void>}
      */
-    private batchOperations = async ({database, models}: BatchOperations) => {
+    private batchOperations = async ({database, models}: BatchOperationsArgs) => {
         try {
             if (models.length > 0) {
                 await database.action(async () => {
@@ -924,16 +924,16 @@ class DataOperator {
 
     /**
      * prepareRecords: Utility method that actually calls the operators for the handlers
-     * @param {PrepareRecords} prepareRecord
+     * @param {PrepareRecordsArgs} prepareRecord
      * @param {Database} prepareRecord.database
      * @param {string} prepareRecord.tableName
      * @param {RawValue[]} prepareRecord.createRaws
      * @param {RawValue[]} prepareRecord.updateRaws
-     * @param {(DataFactory) => void;} prepareRecord.recordOperator
+     * @param {(DataFactoryArgs) => void;} prepareRecord.recordOperator
      * @throws {DataOperatorException}
      * @returns {Promise<Model[]>}
      */
-    private prepareRecords = async ({database, tableName, createRaws, updateRaws, recordOperator}: PrepareRecords) => {
+    private prepareRecords = async ({database, tableName, createRaws, updateRaws, recordOperator}: PrepareRecordsArgs) => {
         if (!database) {
             throw new DataOperatorException(
                 'prepareRecords accepts only rawPosts of type RawValue[] or valid database connection',
@@ -974,14 +974,14 @@ class DataOperator {
 
     /**
      * executeInDatabase: Handles the Create/Update operations on an entity.
-     * @param {PrepareForDatabase} executeInDatabase
+     * @param {PrepareForDatabaseArgs} executeInDatabase
      * @param {string} executeInDatabase.tableName
      * @param {RecordValue[]} executeInDatabase.createRaws
      * @param {RecordValue[]} executeInDatabase.updateRaws
-     * @param {(DataFactory) => void} executeInDatabase.recordOperator
+     * @param {(DataFactoryArgs) => void} executeInDatabase.recordOperator
      * @returns {Promise<void>}
      */
-    private executeInDatabase = async ({createRaws, recordOperator, tableName, updateRaws}: PrepareForDatabase) => {
+    private executeInDatabase = async ({createRaws, recordOperator, tableName, updateRaws}: PrepareForDatabaseArgs) => {
         const database = await this.getDatabase(tableName);
 
         const models = (await this.prepareRecords({

@@ -13,12 +13,12 @@ jest.mock('@database/admin/database_manager');
 
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {
-        const {orderedPosts, unOrderedPosts} = sanitizePosts({
+        const {postsOrdered, postsUnordered} = sanitizePosts({
             posts: Object.values(mockedPosts.posts),
             orders: mockedPosts.order,
         });
-        expect(orderedPosts.length).toBe(4);
-        expect(unOrderedPosts.length).toBe(2);
+        expect(postsOrdered.length).toBe(4);
+        expect(postsUnordered.length).toBe(2);
     });
 
     it('=> createPostsChain: should link posts amongst each other based on order array', () => {
