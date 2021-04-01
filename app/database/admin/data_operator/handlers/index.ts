@@ -6,30 +6,29 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
-    compareAppRecord,
-    compareChannelMembershipRecord,
-    compareCustomEmojiRecord,
-    compareDraftRecord,
-    compareGlobalRecord,
-    compareGroupMembershipRecord,
-    compareGroupRecord,
-    compareGroupsInChannelRecord,
-    compareGroupsInTeamRecord,
-    comparePostRecord,
-    comparePreferenceRecord,
-    compareRoleRecord,
-    compareServerRecord,
-    compareSystemRecord,
-    compareTeamMembershipRecord,
-    compareTermsOfServiceRecord,
-    compareUserRecord,
+    isRecordAppEqualToRaw,
+    isRecordChannelMembershipEqualToRaw,
+    isRecordCustomEmojiEqualToRaw,
+    isRecordDraftEqualToRaw,
+    isRecordGlobalEqualToRaw,
+    isRecordGroupEqualToRaw,
+    isRecordGroupMembershipEqualToRaw,
+    isRecordGroupsInChannelEqualToRaw,
+    isRecordGroupsInTeamEqualToRaw,
+    isRecordPostEqualToRaw,
+    isRecordPreferenceEqualToRaw,
+    isRecordRoleEqualToRaw,
+    isRecordServerEqualToRaw,
+    isRecordSystemEqualToRaw,
+    isRecordTeamMembershipEqualToRaw,
+    isRecordTermsOfServiceEqualToRaw,
+    isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
     DatabaseInstance,
-    DiscardDuplicates,
     HandleEntityRecords,
     HandleFiles,
     HandleIsolatedEntityData,
@@ -40,6 +39,7 @@ import {
     PostImage,
     PrepareForDatabase,
     PrepareRecords,
+    ProcessInputs,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -68,6 +68,7 @@ import Reaction from '@typings/database/reaction';
 
 import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
+
 import {
     operateAppRecord,
     operateChannelMembershipRecord,
@@ -94,8 +95,10 @@ import {
 } from '../operators';
 import {
     createPostsChain,
-    findMatchingRecords,
+    getRangeOfValues,
+    getRawRecordPairs,
     hasSimilarUpdateAt,
+    retrieveRecords,
     sanitizePosts,
     sanitizeReactions,
 } from '../utils';
@@ -141,45 +144,57 @@ class DataOperator {
      * @returns {Promise<void>}
      */
     handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityData) => {
-        let recordOperator;
         let comparator;
-        let oneOfField;
+        let fieldName;
+        let operator;
+
+        if (!values.length) {
+            throw new DataOperatorException(
+                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${tableName}`,
+            );
+        }
 
         switch (tableName) {
             case IsolatedEntities.APP: {
-                comparator = compareAppRecord;
-                oneOfField = 'version_number';
-                recordOperator = operateAppRecord;
+                comparator = isRecordAppEqualToRaw;
+                fieldName = 'version_number';
+                operator = operateAppRecord;
+                break;
+            }
+            case IsolatedEntities.CUSTOM_EMOJI: {
+                comparator = isRecordCustomEmojiEqualToRaw;
+                fieldName = 'name';
+                operator = operateCustomEmojiRecord;
                 break;
             }
             case IsolatedEntities.GLOBAL: {
-                comparator = compareGlobalRecord;
-                oneOfField = 'name';
-                recordOperator = operateGlobalRecord;
-                break;
-            }
-            case IsolatedEntities.SERVERS: {
-                comparator = compareServerRecord;
-                oneOfField = 'db_path';
-                recordOperator = operateServersRecord;
+                comparator = isRecordGlobalEqualToRaw;
+                fieldName = 'name';
+                operator = operateGlobalRecord;
                 break;
             }
             case IsolatedEntities.ROLE: {
-                comparator = compareRoleRecord;
-                oneOfField = 'name';
-                recordOperator = operateRoleRecord;
+                comparator = isRecordRoleEqualToRaw;
+                fieldName = 'name';
+                operator = operateRoleRecord;
+                break;
+            }
+            case IsolatedEntities.SERVERS: {
+                comparator = isRecordServerEqualToRaw;
+                fieldName = 'db_path';
+                operator = operateServersRecord;
                 break;
             }
             case IsolatedEntities.SYSTEM: {
-                comparator = compareSystemRecord;
-                oneOfField = 'name';
-                recordOperator = operateSystemRecord;
+                comparator = isRecordSystemEqualToRaw;
+                fieldName = 'name';
+                operator = operateSystemRecord;
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
-                comparator = compareTermsOfServiceRecord;
-                oneOfField = 'accepted_at';
-                recordOperator = operateTermsOfServiceRecord;
+                comparator = isRecordTermsOfServiceEqualToRaw;
+                fieldName = 'accepted_at';
+                operator = operateTermsOfServiceRecord;
                 break;
             }
             default: {
@@ -189,11 +204,11 @@ class DataOperator {
             }
         }
 
-        if (recordOperator && oneOfField && comparator) {
+        if (operator && fieldName && comparator) {
             await this.handleEntityRecords({
                 comparator,
-                oneOfField,
-                operator: recordOperator,
+                fieldName,
+                operator,
                 rawValues: values,
                 tableName,
             });
@@ -213,8 +228,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareDraftRecord,
-            oneOfField: 'channel_id',
+            comparator: isRecordDraftEqualToRaw,
+            fieldName: 'channel_id',
             operator: operateDraftRecord,
             rawValues: drafts,
             tableName: DRAFT,
@@ -252,25 +267,23 @@ class DataOperator {
 
         if (createReactions.length) {
             // Prepares record for model Reactions
-            const reactionsRecords = ((await this.prepareRecords({
+            const reactionsRecords = (await this.prepareRecords({
                 createRaws: createReactions,
                 database,
                 recordOperator: operateReactionRecord,
                 tableName: REACTION,
-            })) as unknown) as Reaction[];
+            })) as Reaction[];
             batchRecords = batchRecords.concat(reactionsRecords);
         }
 
         if (createEmojis.length) {
             // Prepares records for model CustomEmoji
-            const emojiRecords = ((await this.prepareRecords({
+            const emojiRecords = (await this.prepareRecords({
+                createRaws: getRawRecordPairs(createEmojis),
                 database,
                 recordOperator: operateCustomEmojiRecord,
                 tableName: CUSTOM_EMOJI,
-                createRaws: createEmojis.map((emoji) => {
-                    return {record: undefined, raw: emoji};
-                }) as MatchExistingRecord[],
-            })) as unknown) as CustomEmoji[];
+            })) as CustomEmoji[];
             batchRecords = batchRecords.concat(emojiRecords);
         }
 
@@ -315,11 +328,11 @@ class DataOperator {
         });
 
         // Here we verify in our database that the orderedPosts truly need 'CREATION'
-        const futureEntries = await this.getCreateUpdateRecords({
+        const futureEntries = await this.processInputs({
             rawValues: orderedPosts,
             tableName,
-            comparator: comparePostRecord,
-            oneOfField: 'id',
+            comparator: isRecordPostEqualToRaw,
+            fieldName: 'id',
         });
 
         if (futureEntries.createRaws?.length) {
@@ -341,17 +354,15 @@ class DataOperator {
             const database = await this.getDatabase(tableName);
 
             // Prepares records for batch processing onto the 'Post' entity for the server schema
-            const posts = ((await this.prepareRecords({
-                database,
-                tableName,
+            const posts = (await this.prepareRecords({
                 createRaws: linkedRawPosts,
+                database,
                 recordOperator: operatePostRecord,
-            })) as unknown) as Post[];
+                tableName,
+            }))as Post[];
 
-            if (posts.length) {
-                // Appends the processed records into the final batch array
-                batch = batch.concat(posts);
-            }
+            // Appends the processed records into the final batch array
+            batch = batch.concat(posts);
 
             // Starts extracting information from each post to build up for related entities' data
             for (let i = 0; i < orderedPosts.length; i++) {
@@ -425,7 +436,7 @@ class DataOperator {
 
             // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
             if (emojis.length) {
-                await this.handleCustomEmojis(emojis);
+                await this.handleIsolatedEntity({tableName: IsolatedEntities.CUSTOM_EMOJI, values: emojis});
             }
 
             if (postsInThread.length) {
@@ -440,8 +451,8 @@ class DataOperator {
         if (unOrderedPosts.length) {
             // Truly update those posts that have a different update_at value
             await this.handleEntityRecords({
-                comparator: comparePostRecord,
-                oneOfField: 'id',
+                comparator: isRecordPostEqualToRaw,
+                fieldName: 'id',
                 operator: operatePostRecord,
                 rawValues: unOrderedPosts,
                 tableName: POST,
@@ -463,14 +474,12 @@ class DataOperator {
 
         const database = await this.getDatabase(FILE);
 
-        const postFiles = ((await this.prepareRecords({
+        const postFiles = (await this.prepareRecords({
+            createRaws: getRawRecordPairs(files),
             database,
             recordOperator: operateFileRecord,
             tableName: FILE,
-            createRaws: files.map((file) => {
-                return {record: undefined, raw: file};
-            }),
-        })) as unknown) as File[];
+        })) as File[];
 
         if (prepareRowsOnly) {
             return postFiles;
@@ -523,14 +532,12 @@ class DataOperator {
 
         const database = await this.getDatabase(POST_METADATA);
 
-        const postMetas = ((await this.prepareRecords({
+        const postMetas = (await this.prepareRecords({
+            createRaws: getRawRecordPairs(metadata),
             database,
             recordOperator: operatePostMetadataRecord,
             tableName: POST_METADATA,
-            createRaws: metadata.map((meta) => {
-                return {record: undefined, raw: meta};
-            }),
-        })) as unknown) as PostMetadata[];
+        })) as PostMetadata[];
 
         if (prepareRowsOnly) {
             return postMetas;
@@ -576,8 +583,7 @@ class DataOperator {
                 }
 
                 // Retrieves max createAt date of all posts whose root_id is rootPost.post_id
-                maxCreateAt =
-                    thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
+                maxCreateAt = thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
             }
 
             // Collects all 'raw' postInThreads objects that will be sent to the operatePostsInThread function
@@ -585,14 +591,12 @@ class DataOperator {
         });
 
         if (rawPostsInThreads.length) {
-            const postInThreadRecords = ((await this.prepareRecords({
+            const postInThreadRecords = (await this.prepareRecords({
+                createRaws: getRawRecordPairs(rawPostsInThreads),
                 database,
                 recordOperator: operatePostInThreadRecord,
                 tableName: POSTS_IN_THREAD,
-                createRaws: rawPostsInThreads.map((postInThread) => {
-                    return {raw: postInThread, record: undefined};
-                }),
-            })) as unknown) as PostsInThread[];
+            })) as PostsInThread[];
 
             if (postInThreadRecords?.length) {
                 await this.batchOperations({database, models: postInThreadRecords});
@@ -633,7 +637,12 @@ class DataOperator {
         const database = await this.getDatabase(POSTS_IN_CHANNEL);
 
         // Find the records in the PostsInChannel table that have a matching channel_id
-        const chunks = (await database.collections.get(POSTS_IN_CHANNEL).query(Q.where('channel_id', channelId)).fetch()) as PostsInChannel[];
+        // const chunks = (await database.collections.get(POSTS_IN_CHANNEL).query(Q.where('channel_id', channelId)).fetch()) as PostsInChannel[];
+        const chunks = (await retrieveRecords({
+            database,
+            tableName: POSTS_IN_CHANNEL,
+            condition: Q.where('channel_id', channelId),
+        })) as PostsInChannel[];
 
         const createPostsInChannelRecord = async () => {
             const createPostsInChannel = {channel_id: channelId, earliest, latest};
@@ -672,14 +681,13 @@ class DataOperator {
 
         if (found) {
             // We have a potential chunk to plug nearby
-            const potentialPosts = (await database.collections.get(POST).query(Q.where('create_at', earliest)).fetch()) as Post[];
+            const potentialPosts = await retrieveRecords({database, tableName: POST, condition: Q.where('create_at', earliest)}) as Post[];
 
             if (potentialPosts?.length > 0) {
                 const targetPost = potentialPosts[0];
 
                 // now we decide if we need to operate on the targetChunk or just create a new chunk
-                const isChainable =
-                    tipOfChain.prev_post_id === targetPost.previousPostId;
+                const isChainable = tipOfChain.prev_post_id === targetPost.previousPostId;
 
                 if (isChainable) {
                     // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
@@ -714,8 +722,8 @@ class DataOperator {
             );
         }
         await this.handleEntityRecords({
-            comparator: compareUserRecord,
-            oneOfField: 'id',
+            comparator: isRecordUserEqualToRaw,
+            fieldName: 'id',
             operator: operateUserRecord,
             rawValues: users,
             tableName: USER,
@@ -736,8 +744,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: comparePreferenceRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordPreferenceEqualToRaw,
+            fieldName: 'user_id',
             operator: operatePreferenceRecord,
             rawValues: preferences,
             tableName: PREFERENCE,
@@ -757,33 +765,11 @@ class DataOperator {
             );
         }
         await this.handleEntityRecords({
-            comparator: compareTeamMembershipRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordTeamMembershipEqualToRaw,
+            fieldName: 'user_id',
             operator: operateTeamMembershipRecord,
             rawValues: teamMemberships,
             tableName: TEAM_MEMBERSHIP,
-        });
-    };
-
-    /**
-     * handleCustomEmojis: Handler responsible for the Create/Update operations occurring on the CUSTOM_EMOJI entity from the 'Server' schema
-     * @param {RawCustomEmoji[]} customEmojis
-     * @throws DataOperatorException
-     * @returns {Promise<null|void>}
-     */
-    handleCustomEmojis = async (customEmojis: RawCustomEmoji[]) => {
-        if (!customEmojis.length) {
-            throw new DataOperatorException(
-                'An empty "customEmojis" array has been passed to the handleCustomEmojis method',
-            );
-        }
-
-        await this.handleEntityRecords({
-            comparator: compareCustomEmojiRecord,
-            oneOfField: 'name',
-            operator: operateCustomEmojiRecord,
-            rawValues: customEmojis,
-            tableName: CUSTOM_EMOJI,
         });
     };
 
@@ -801,8 +787,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareGroupMembershipRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordGroupMembershipEqualToRaw,
+            fieldName: 'user_id',
             operator: operateGroupMembershipRecord,
             rawValues: groupMemberships,
             tableName: GROUP_MEMBERSHIP,
@@ -823,8 +809,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareChannelMembershipRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordChannelMembershipEqualToRaw,
+            fieldName: 'user_id',
             operator: operateChannelMembershipRecord,
             rawValues: channelMemberships,
             tableName: CHANNEL_MEMBERSHIP,
@@ -845,8 +831,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareGroupRecord,
-            oneOfField: 'name',
+            comparator: isRecordGroupEqualToRaw,
+            fieldName: 'name',
             operator: operateGroupRecord,
             rawValues: groups,
             tableName: GROUP,
@@ -867,8 +853,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareGroupsInTeamRecord,
-            oneOfField: 'group_id',
+            comparator: isRecordGroupsInTeamEqualToRaw,
+            fieldName: 'group_id',
             operator: operateGroupsInTeamRecord,
             rawValues: groupsInTeam,
             tableName: GROUPS_IN_TEAM,
@@ -889,8 +875,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareGroupsInChannelRecord,
-            oneOfField: 'group_id',
+            comparator: isRecordGroupsInChannelEqualToRaw,
+            fieldName: 'group_id',
             operator: operateGroupsInChannelRecord,
             rawValues: groupsInChannel,
             tableName: GROUPS_IN_CHANNEL,
@@ -901,22 +887,22 @@ class DataOperator {
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
      * @param {HandleEntityRecords} handleEntityRecords
      * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
-     * @param {string} handleEntityRecords.oneOfField
+     * @param {string} handleEntityRecords.fieldName
      * @param {(DataFactory) => Promise<Model | null>} handleEntityRecords.operator
      * @param {RawValue[]} handleEntityRecords.rawValues
      * @param {string} handleEntityRecords.tableName
      * @returns {Promise<null | void>}
      */
-    private handleEntityRecords = async ({comparator, oneOfField, operator, rawValues, tableName}: HandleEntityRecords) => {
+    private handleEntityRecords = async ({comparator, fieldName, operator, rawValues, tableName}: HandleEntityRecords) => {
         if (!rawValues.length) {
             return null;
         }
 
-        const {createRaws, updateRaws} = await this.getCreateUpdateRecords({
+        const {createRaws, updateRaws} = await this.processInputs({
             rawValues,
             tableName,
             comparator,
-            oneOfField,
+            fieldName,
         });
 
         const records = await this.executeInDatabase({
@@ -929,82 +915,70 @@ class DataOperator {
         return records;
     };
 
-    // TODO : Add jest to getCreateUpdateRecords
+    // TODO : Add jest to processInputs
     /**
-     * getCreateUpdateRecords: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
+     * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-     * @param {DiscardDuplicates} prepareRecords
+     * @param {ProcessInputs} prepareRecords
      * @param {RawValue[]} prepareRecords.rawValues
      * @param {string} prepareRecords.tableName
-     * @param {string} prepareRecords.oneOfField
+     * @param {string} prepareRecords.fieldName
      * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
      */
-    private getCreateUpdateRecords = async ({rawValues, tableName, comparator, oneOfField}: DiscardDuplicates) => {
-        const getOneOfs = (raws: RawValue[]) => {
-            return raws.reduce((oneOfs, current: RawValue) => {
-                const key = oneOfField as keyof typeof current;
-                const value: string = current[key] as string;
-                if (value) {
-                    oneOfs.add(value);
-                }
-                return oneOfs;
-            }, new Set<string>());
-        };
-
-        const columnValues: string[] = Array.from(getOneOfs(rawValues));
+    private processInputs = async ({rawValues, tableName, comparator, fieldName}: ProcessInputs) => {
+        // We will be doing a query an entity where one of its field can match a range of values.  Hence, here we are extracting all those potential values.
+        const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
         const database = await this.getDatabase(tableName);
 
-        // NOTE: There is no 'id' field in the response, hence, we need to  weed out any duplicates before sending the values to the operator
-        const existingRecords = (await findMatchingRecords({database, tableName, condition: Q.where(oneOfField, Q.oneOf(columnValues))})) as Model[];
+        const existingRecords = (await retrieveRecords({
+            database,
+            tableName,
+            condition: Q.where(fieldName, Q.oneOf(columnValues)),
+        })) as Model[];
 
         const createRaws: MatchExistingRecord[] = [];
         const updateRaws: MatchExistingRecord[] = [];
-        const createRawsOnly: RawValue[] = [];
-        const updateRawsOnly: RawValue[] = [];
 
         if (existingRecords.length > 0) {
-            rawValues.map((newElement) => {
+            rawValues.map((newElement: RawValue) => {
                 const findIndex = existingRecords.findIndex((existing) => {
                     return comparator(existing, newElement);
                 });
 
+                // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
                 if (findIndex > -1) {
                     const existingRecord = existingRecords[findIndex];
 
-                    // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation
+                    // Some raw value has an update_at field.  We'll proceed to update only if the update_at value is different from the record's value in database
                     const isUpdateAtSimilar = hasSimilarUpdateAt({
                         tableName,
                         existingRecord,
                         newValue: newElement,
                     });
+
                     if (!isUpdateAtSimilar) {
-                        updateRawsOnly.push(newElement);
-                        return updateRaws.push({record: existingRecord, raw: newElement});
+                        return updateRaws.push({
+                            record: existingRecord,
+                            raw: newElement,
+                        });
                     }
                 } else {
-                    createRawsOnly.push(newElement);
-
                     // This RawValue is not present in the database; hence, we need to create it
                     return createRaws.push({record: undefined, raw: newElement});
                 }
                 return null;
             });
+
             return {
                 createRaws,
                 updateRaws,
-                createRawsOnly,
-                updateRawsOnly,
             };
         }
 
         return {
-            createRaws: rawValues.map((raw) => {
-                return {record: undefined, raw};
-            }),
+            createRaws: getRawRecordPairs(rawValues),
             updateRaws,
-            createRawsOnly: rawValues,
-            updateRawsOnly,
         };
     };
 
@@ -1023,10 +997,6 @@ class DataOperator {
                 await database.action(async () => {
                     await database.batch(...models);
                 });
-            } else {
-                throw new DataOperatorException(
-                    'batchOperations does not process empty model array',
-                );
             }
         } catch (e) {
             throw new DataOperatorException('batchOperations error ', e);
@@ -1042,7 +1012,7 @@ class DataOperator {
      * @param {RawValue[]} prepareRecord.updateRaws
      * @param {(DataFactory) => void;} prepareRecord.recordOperator
      * @throws {DataOperatorException}
-     * @returns {Promise<unknown[] | any[]>}
+     * @returns {Promise<Model[]>}
      */
     private prepareRecords = async ({database, tableName, createRaws, updateRaws, recordOperator}: PrepareRecords) => {
         if (!database) {
@@ -1095,13 +1065,13 @@ class DataOperator {
     private executeInDatabase = async ({createRaws, recordOperator, tableName, updateRaws}: PrepareForDatabase) => {
         const database = await this.getDatabase(tableName);
 
-        const models = ((await this.prepareRecords({
+        const models = (await this.prepareRecords({
             database,
             tableName,
             createRaws,
             updateRaws,
             recordOperator,
-        })) as unknown) as Model[];
+        })) as Model[];
 
         if (models?.length > 0) {
             await this.batchOperations({database, models});

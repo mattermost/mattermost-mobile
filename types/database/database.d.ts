@@ -474,22 +474,22 @@ export type IdenticalRecord = {
   tableName: string;
 };
 
-export type MatchingRecords = {
+export type RetrieveRecords = {
   condition: any;
   database: Database;
   tableName: string;
 };
 
-export type DiscardDuplicates = {
-  comparator: (existing: Model, newElement: RawValue) => boolean;
-  oneOfField: string;
+export type ProcessInputs = {
   rawValues: RawValue[];
   tableName: string;
+  fieldName: string;
+  comparator: (existing: Model, newElement: RawValue) => boolean;
 };
 
 export type HandleEntityRecords = {
   comparator: (existing: Model, newElement: RawValue) => boolean;
-  oneOfField: string;
+  fieldName: string;
   operator: (DataFactory) => Promise<Model | null>;
   rawValues: RawValue[];
   tableName: string;

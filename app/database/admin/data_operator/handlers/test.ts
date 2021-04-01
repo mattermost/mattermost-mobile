@@ -4,13 +4,13 @@
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperator from '@database/admin/data_operator';
 import {
-    compareAppRecord,
-    compareDraftRecord,
-    compareGlobalRecord,
-    compareRoleRecord,
-    compareServerRecord,
-    compareSystemRecord,
-    compareTermsOfServiceRecord,
+    isRecordAppEqualToRaw,
+    isRecordDraftEqualToRaw,
+    isRecordGlobalEqualToRaw,
+    isRecordRoleEqualToRaw,
+    isRecordServerEqualToRaw,
+    isRecordSystemEqualToRaw,
+    isRecordTermsOfServiceEqualToRaw,
 } from '@database/admin/data_operator/comparators';
 import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
@@ -78,9 +78,9 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.APP, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            oneOfField: 'version_number',
+            fieldName: 'version_number',
             operator: operateAppRecord,
-            comparator: compareAppRecord,
+            comparator: isRecordAppEqualToRaw,
             rawValues: values,
             tableName: 'app',
         });
@@ -98,8 +98,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.GLOBAL, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: compareGlobalRecord,
-            oneOfField: 'name',
+            comparator: isRecordGlobalEqualToRaw,
+            fieldName: 'name',
             operator: operateGlobalRecord,
             rawValues: values,
             tableName: 'global',
@@ -126,8 +126,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SERVERS, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: compareServerRecord,
-            oneOfField: 'db_path',
+            comparator: isRecordServerEqualToRaw,
+            fieldName: 'db_path',
             operator: operateServersRecord,
             rawValues: values,
             tableName: 'servers',
@@ -155,8 +155,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: compareRoleRecord,
-            oneOfField: 'name',
+            comparator: isRecordRoleEqualToRaw,
+            fieldName: 'name',
             operator: operateRoleRecord,
             rawValues: values,
             tableName: 'Role',
@@ -174,8 +174,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: compareSystemRecord,
-            oneOfField: 'name',
+            comparator: isRecordSystemEqualToRaw,
+            fieldName: 'name',
             operator: operateSystemRecord,
             rawValues: values,
             tableName: 'System',
@@ -206,8 +206,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: compareTermsOfServiceRecord,
-            oneOfField: 'accepted_at',
+            comparator: isRecordTermsOfServiceEqualToRaw,
+            fieldName: 'accepted_at',
             operator: operateTermsOfServiceRecord,
             rawValues: values,
             tableName: 'TermsOfService',
@@ -297,8 +297,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleDraft(values);
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: compareDraftRecord,
-            oneOfField: 'channel_id',
+            comparator: isRecordDraftEqualToRaw,
+            fieldName: 'channel_id',
             operator: operateDraftRecord,
             rawValues: values,
             tableName: 'Draft',
@@ -499,7 +499,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
         const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
-        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleCustomEmojis');
+        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
 
@@ -606,16 +606,19 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith([
-            {
-                id: 'dgwyadacdbbwjc8t357h6hwsrh',
-                create_at: 1502389307432,
-                update_at: 1502389307432,
-                delete_at: 0,
-                creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
-                name: 'thanks',
-            },
-        ]);
+        expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
+            tableName: 'CustomEmoji',
+            values: [
+                {
+                    id: 'dgwyadacdbbwjc8t357h6hwsrh',
+                    create_at: 1502389307432,
+                    update_at: 1502389307432,
+                    delete_at: 0,
+                    creator_id: 'x6sdh1ok1tyd9f4dgq4ybw839a',
+                    name: 'thanks',
+                },
+            ],
+        });
 
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
@@ -763,7 +766,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleCustomEmojis(emojis);
+        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.CUSTOM_EMOJI, values: emojis});
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
