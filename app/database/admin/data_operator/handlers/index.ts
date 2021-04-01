@@ -68,7 +68,6 @@ import Reaction from '@typings/database/reaction';
 
 import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
-
 import {
     operateAppRecord,
     operateChannelMembershipRecord,
