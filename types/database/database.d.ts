@@ -447,7 +447,7 @@ export type RetrieveRecords = {
   condition: any;
 };
 
-export type DiscardDuplicates = {
+export type ProcessInputs = {
   rawValues: RawValue[];
   tableName: string;
   fieldName: string;

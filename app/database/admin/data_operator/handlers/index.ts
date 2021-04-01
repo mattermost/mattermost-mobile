@@ -26,7 +26,7 @@ import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
     DatabaseInstance,
-    DiscardDuplicates,
+    ProcessInputs,
     HandleEntityRecords,
     HandleFiles,
     HandleIsolatedEntityData,
@@ -838,13 +838,13 @@ class DataOperator {
     /**
      * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-     * @param {DiscardDuplicates} prepareRecords
+     * @param {ProcessInputs} prepareRecords
      * @param {RawValue[]} prepareRecords.rawValues
      * @param {string} prepareRecords.tableName
      * @param {string} prepareRecords.fieldName
      * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
      */
-    private processInputs = async ({rawValues, tableName, comparator, fieldName}: DiscardDuplicates) => {
+    private processInputs = async ({rawValues, tableName, comparator, fieldName}: ProcessInputs) => {
         // We will be doing a query an entity where one of its field can match a range of values.  Hence, here we are extracting all those potential values.
         const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
