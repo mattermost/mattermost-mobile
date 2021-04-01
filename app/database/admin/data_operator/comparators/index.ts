@@ -55,7 +55,7 @@ export const isRecordServerEqualToRaw = (record: Servers, raw: RawServers) => {
 };
 
 export const isRecordRoleEqualToRaw = (record: Role, raw: RawRole) => {
-    return raw.name === record.name && raw.permissions === record.permissions;
+    return raw.name === record.name && JSON.stringify(raw.permissions) === JSON.stringify(record.permissions);
 };
 
 export const isRecordSystemEqualToRaw = (record: System, raw: RawSystem) => {
