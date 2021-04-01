@@ -13,7 +13,7 @@ import {ActionResult, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from
 import {RelationOneToOne} from '@mm-redux/types/utilities';
 import {Post} from '@mm-redux/types/posts';
 import {SearchParameter} from '@mm-redux/types/search';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 const WEBAPP_SEARCH_PER_PAGE = 20;
 export function getMissingChannelsFromPosts(posts: RelationOneToOne<Post, Post>): ActionFunc {
