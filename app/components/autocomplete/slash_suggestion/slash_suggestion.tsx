@@ -243,6 +243,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             theme={this.props.theme}
             suggestion={item.Suggestion}
             complete={item.Complete}
+            icon={item.IconData}
         />
     )
 
