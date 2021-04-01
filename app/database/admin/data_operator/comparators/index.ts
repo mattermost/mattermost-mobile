@@ -38,7 +38,7 @@ import TermsOfService from '@typings/database/terms_of_service';
  *  'record' and the 'raw'
  */
 
-export const compareAppRecord = (record: App, raw: RawApp) => {
+export const isRecordAppEqualToRaw = (record: App, raw: RawApp) => {
     return (
         raw.buildNumber === record.buildNumber &&
         raw.createdAt === record.createdAt &&
@@ -46,39 +46,39 @@ export const compareAppRecord = (record: App, raw: RawApp) => {
     );
 };
 
-export const compareGlobalRecord = (record: Global, raw: RawGlobal) => {
+export const isRecordGlobalEqualToRaw = (record: Global, raw: RawGlobal) => {
     return raw.name === record.name && raw.value === record.value;
 };
 
-export const compareServerRecord = (record: Servers, raw: RawServers) => {
+export const isRecordServerEqualToRaw = (record: Servers, raw: RawServers) => {
     return raw.url === record.url && raw.dbPath === record.dbPath;
 };
 
-export const compareRoleRecord = (record: Role, raw: RawRole) => {
+export const isRecordRoleEqualToRaw = (record: Role, raw: RawRole) => {
     return raw.name === record.name && raw.permissions === record.permissions;
 };
 
-export const compareSystemRecord = (record: System, raw: RawSystem) => {
+export const isRecordSystemEqualToRaw = (record: System, raw: RawSystem) => {
     return raw.name === record.name && raw.value === record.value;
 };
 
-export const compareTermsOfServiceRecord = (record: TermsOfService, raw: RawTermsOfService) => {
+export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfService, raw: RawTermsOfService) => {
     return raw.acceptedAt === record.acceptedAt;
 };
 
-export const compareDraftRecord = (record: Draft, raw: RawDraft) => {
+export const isRecordDraftEqualToRaw = (record: Draft, raw: RawDraft) => {
     return raw.channel_id === record.channelId;
 };
 
-export const comparePostRecord = (record: Post, raw: RawPost) => {
+export const isRecordPostEqualToRaw = (record: Post, raw: RawPost) => {
     return raw.id === record.id;
 };
 
-export const compareUserRecord = (record: User, raw: RawUser) => {
+export const isRecordUserEqualToRaw = (record: User, raw: RawUser) => {
     return raw.id === record.id;
 };
 
-export const comparePreferenceRecord = (record: Preference, raw: RawPreference) => {
+export const isRecordPreferenceEqualToRaw = (record: Preference, raw: RawPreference) => {
     return (
         raw.category === record.category &&
         raw.name === record.name &&
@@ -87,18 +87,18 @@ export const comparePreferenceRecord = (record: Preference, raw: RawPreference) 
     );
 };
 
-export const compareTeamMembershipRecord = (record: TeamMembership, raw: RawTeamMembership) => {
+export const isRecordTeamMembershipEqualToRaw = (record: TeamMembership, raw: RawTeamMembership) => {
     return raw.team_id === record.teamId && raw.user_id === record.userId;
 };
 
-export const compareCustomEmojiRecord = (record: CustomEmoji, raw: RawCustomEmoji) => {
+export const isRecordCustomEmojiEqualToRaw = (record: CustomEmoji, raw: RawCustomEmoji) => {
     return raw.name === record.name;
 };
 
-export const compareGroupMembershipRecord = (record: GroupMembership, raw: RawGroupMembership) => {
+export const isRecordGroupMembershipEqualToRaw = (record: GroupMembership, raw: RawGroupMembership) => {
     return raw.user_id === record.userId && raw.group_id === record.groupId;
 };
 
-export const compareChannelMembershipRecord = (record: ChannelMembership, raw: RawChannelMembership) => {
+export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembership, raw: RawChannelMembership) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
 };

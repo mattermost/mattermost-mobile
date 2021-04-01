@@ -456,7 +456,7 @@ export type DiscardDuplicates = {
 
 export type HandleEntityRecords = {
   comparator: (existing: Model, newElement: RawValue) => boolean;
-  oneOfField: string;
+  fieldName: string;
   operator: (DataFactory) => Promise<Model | null>;
   rawValues: RawValue[];
   tableName: string;

@@ -6,20 +6,20 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
-    compareAppRecord,
-    compareChannelMembershipRecord,
-    compareCustomEmojiRecord,
-    compareDraftRecord,
-    compareGlobalRecord,
-    compareGroupMembershipRecord,
-    comparePostRecord,
-    comparePreferenceRecord,
-    compareRoleRecord,
-    compareServerRecord,
-    compareSystemRecord,
-    compareTeamMembershipRecord,
-    compareTermsOfServiceRecord,
-    compareUserRecord,
+    isRecordAppEqualToRaw,
+    isRecordChannelMembershipEqualToRaw,
+    isRecordCustomEmojiEqualToRaw,
+    isRecordDraftEqualToRaw,
+    isRecordGlobalEqualToRaw,
+    isRecordGroupMembershipEqualToRaw,
+    isRecordPostEqualToRaw,
+    isRecordPreferenceEqualToRaw,
+    isRecordRoleEqualToRaw,
+    isRecordServerEqualToRaw,
+    isRecordSystemEqualToRaw,
+    isRecordTeamMembershipEqualToRaw,
+    isRecordTermsOfServiceEqualToRaw,
+    isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
 
@@ -134,39 +134,45 @@ class DataOperator {
         let comparator;
         let oneOfField;
 
+        if (!values.length) {
+            throw new DataOperatorException(
+                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${tableName}`,
+            );
+        }
+
         switch (tableName) {
             case IsolatedEntities.APP: {
-                comparator = compareAppRecord;
+                comparator = isRecordAppEqualToRaw;
                 oneOfField = 'version_number';
                 recordOperator = operateAppRecord;
                 break;
             }
             case IsolatedEntities.GLOBAL: {
-                comparator = compareGlobalRecord;
+                comparator = isRecordGlobalEqualToRaw;
                 oneOfField = 'name';
                 recordOperator = operateGlobalRecord;
                 break;
             }
             case IsolatedEntities.SERVERS: {
-                comparator = compareServerRecord;
+                comparator = isRecordServerEqualToRaw;
                 oneOfField = 'db_path';
                 recordOperator = operateServersRecord;
                 break;
             }
             case IsolatedEntities.ROLE: {
-                comparator = compareRoleRecord;
+                comparator = isRecordRoleEqualToRaw;
                 oneOfField = 'name';
                 recordOperator = operateRoleRecord;
                 break;
             }
             case IsolatedEntities.SYSTEM: {
-                comparator = compareSystemRecord;
+                comparator = isRecordSystemEqualToRaw;
                 oneOfField = 'name';
                 recordOperator = operateSystemRecord;
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
-                comparator = compareTermsOfServiceRecord;
+                comparator = isRecordTermsOfServiceEqualToRaw;
                 oneOfField = 'accepted_at';
                 recordOperator = operateTermsOfServiceRecord;
                 break;
@@ -181,7 +187,7 @@ class DataOperator {
         if (recordOperator && oneOfField && comparator) {
             await this.handleEntityRecords({
                 comparator,
-                oneOfField,
+                fieldName: oneOfField,
                 operator: recordOperator,
                 rawValues: values,
                 tableName,
@@ -202,8 +208,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareDraftRecord,
-            oneOfField: 'channel_id',
+            comparator: isRecordDraftEqualToRaw,
+            fieldName: 'channel_id',
             operator: operateDraftRecord,
             rawValues: drafts,
             tableName: DRAFT,
@@ -305,7 +311,7 @@ class DataOperator {
         const futureEntries = await this.processInputs({
             rawValues: orderedPosts,
             tableName,
-            comparator: comparePostRecord,
+            comparator: isRecordPostEqualToRaw,
             fieldName: 'id',
         });
 
@@ -425,8 +431,8 @@ class DataOperator {
         if (unOrderedPosts.length) {
             // Truly update those posts that have a different update_at value
             await this.handleEntityRecords({
-                comparator: comparePostRecord,
-                oneOfField: 'id',
+                comparator: isRecordPostEqualToRaw,
+                fieldName: 'id',
                 operator: operatePostRecord,
                 rawValues: unOrderedPosts,
                 tableName: POST,
@@ -696,8 +702,8 @@ class DataOperator {
             );
         }
         await this.handleEntityRecords({
-            comparator: compareUserRecord,
-            oneOfField: 'id',
+            comparator: isRecordUserEqualToRaw,
+            fieldName: 'id',
             operator: operateUserRecord,
             rawValues: users,
             tableName: USER,
@@ -718,8 +724,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: comparePreferenceRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordPreferenceEqualToRaw,
+            fieldName: 'user_id',
             operator: operatePreferenceRecord,
             rawValues: preferences,
             tableName: PREFERENCE,
@@ -739,8 +745,8 @@ class DataOperator {
             );
         }
         await this.handleEntityRecords({
-            comparator: compareTeamMembershipRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordTeamMembershipEqualToRaw,
+            fieldName: 'user_id',
             operator: operateTeamMembershipRecord,
             rawValues: teamMemberships,
             tableName: TEAM_MEMBERSHIP,
@@ -761,8 +767,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareCustomEmojiRecord,
-            oneOfField: 'name',
+            comparator: isRecordCustomEmojiEqualToRaw,
+            fieldName: 'name',
             operator: operateCustomEmojiRecord,
             rawValues: customEmojis,
             tableName: CUSTOM_EMOJI,
@@ -783,8 +789,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareGroupMembershipRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordGroupMembershipEqualToRaw,
+            fieldName: 'user_id',
             operator: operateGroupMembershipRecord,
             rawValues: groupMemberships,
             tableName: GROUP_MEMBERSHIP,
@@ -805,8 +811,8 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: compareChannelMembershipRecord,
-            oneOfField: 'user_id',
+            comparator: isRecordChannelMembershipEqualToRaw,
+            fieldName: 'user_id',
             operator: operateChannelMembershipRecord,
             rawValues: channelMemberships,
             tableName: CHANNEL_MEMBERSHIP,
@@ -817,13 +823,13 @@ class DataOperator {
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
      * @param {HandleEntityRecords} handleEntityRecords
      * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
-     * @param {string} handleEntityRecords.oneOfField
+     * @param {string} handleEntityRecords.fieldName
      * @param {(DataFactory) => Promise<Model | null>} handleEntityRecords.operator
      * @param {RawValue[]} handleEntityRecords.rawValues
      * @param {string} handleEntityRecords.tableName
      * @returns {Promise<null | void>}
      */
-    private handleEntityRecords = async ({comparator, oneOfField, operator, rawValues, tableName}: HandleEntityRecords) => {
+    private handleEntityRecords = async ({comparator, fieldName, operator, rawValues, tableName}: HandleEntityRecords) => {
         if (!rawValues.length) {
             return null;
         }
@@ -832,7 +838,7 @@ class DataOperator {
             rawValues,
             tableName,
             comparator,
-            fieldName: oneOfField,
+            fieldName,
         });
 
         const records = await this.executeInDatabase({
@@ -852,7 +858,7 @@ class DataOperator {
      * @param {DiscardDuplicates} prepareRecords
      * @param {RawValue[]} prepareRecords.rawValues
      * @param {string} prepareRecords.tableName
-     * @param {string} prepareRecords.oneOfField
+     * @param {string} prepareRecords.fieldName
      * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
      */
     private processInputs = async ({rawValues, tableName, comparator, fieldName}: DiscardDuplicates) => {
@@ -927,10 +933,6 @@ class DataOperator {
                 await database.action(async () => {
                     await database.batch(...models);
                 });
-            } else {
-                throw new DataOperatorException(
-                    'batchOperations does not process empty model array',
-                );
             }
         } catch (e) {
             throw new DataOperatorException('batchOperations error ', e);
