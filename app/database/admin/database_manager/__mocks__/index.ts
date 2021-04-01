@@ -42,11 +42,11 @@ import {
 import {serverSchema} from '@database/server/schema';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import type {
-    ActiveServerDatabase,
-    DatabaseConnection,
+    ActiveServerDatabaseArgs,
+    DatabaseConnectionArgs,
     DatabaseInstance,
     DatabaseInstances,
-    DefaultNewServer,
+    DefaultNewServerArgs,
     Models,
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
@@ -113,7 +113,7 @@ class DatabaseManager {
    *
    * @returns {Promise<DatabaseInstance>}
    */
-  createDatabaseConnection = async ({configs, shouldAddToDefaultDatabase = true}: DatabaseConnection): Promise<DatabaseInstance> => {
+  createDatabaseConnection = async ({configs, shouldAddToDefaultDatabase = true}: DatabaseConnectionArgs): Promise<DatabaseInstance> => {
       const {
           actionsEnabled = true,
           dbName = 'default',
@@ -158,7 +158,7 @@ class DatabaseManager {
    * @param {string} serverUrl
    * @returns {Promise<void>}
    */
-  setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
+  setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabaseArgs) => {
       const isServerPresent = await this.isServerPresent(serverUrl);
 
       this.activeDatabase = await this.createDatabaseConnection({
@@ -312,7 +312,7 @@ class DatabaseManager {
    * @param {string} serverUrl
    * @returns {Promise<void>}
    */
-  private addServerToDefaultDatabase = async ({databaseFilePath, displayName, serverUrl}: DefaultNewServer) => {
+  private addServerToDefaultDatabase = async ({databaseFilePath, displayName, serverUrl}: DefaultNewServerArgs) => {
       try {
           const defaultDatabase = await this.getDefaultDatabase();
           const isServerPresent = await this.isServerPresent(serverUrl);

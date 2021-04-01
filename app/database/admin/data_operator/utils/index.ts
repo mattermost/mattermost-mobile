@@ -6,15 +6,17 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
-    ChainPosts,
-    IdenticalRecord,
+    ChainPostsArgs,
+    IdenticalRecordArgs,
     MatchExistingRecord,
-    RetrieveRecords,
+    RangeOfValueArgs,
     RawPost,
     RawReaction,
     RawUser, RawValue,
-    SanitizePosts,
-    SanitizeReactions,
+    RecordPair,
+    RetrieveRecordsArgs,
+    SanitizePostsArgs,
+    SanitizeReactionsArgs,
 } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 import Post from '@typings/database/post';
@@ -25,11 +27,11 @@ const {POST, USER, REACTION} = MM_TABLES.SERVER;
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
  * present in the orders array
- * @param {SanitizePosts} sanitizePosts
+ * @param {SanitizePostsArgs} sanitizePosts
  * @param {RawPost[]} sanitizePosts.posts
  * @param {string[]} sanitizePosts.orders
  */
-export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
+export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
     const orderedPosts:RawPost[] = [];
     const unOrderedPosts:RawPost[] = [];
 
@@ -42,21 +44,21 @@ export const sanitizePosts = ({posts, orders}: SanitizePosts) => {
     });
 
     return {
-        orderedPosts,
-        unOrderedPosts,
+        postsOrdered: orderedPosts,
+        postsUnordered: unOrderedPosts,
     };
 };
 
 /**
  * createPostsChain: Basically creates the 'chain of posts' using the 'orders' array; each post is linked to the other
  * by the previous_post_id field.
- * @param {ChainPosts} chainPosts
+ * @param {ChainPostsArgs} chainPosts
  * @param {string[]} chainPosts.orders
  * @param {RawPost[]} chainPosts.rawPosts
  * @param {string} chainPosts.previousPostId
  * @returns {RawPost[]}
  */
-export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPosts) => {
+export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPostsArgs) => {
     const posts: MatchExistingRecord[] = [];
 
     rawPosts.forEach((post) => {
@@ -82,13 +84,13 @@ export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainP
  * sanitizeReactions: Treats reactions happening on a Post. For example, a user can add/remove an emoji.  Hence, this function
  * tell us which reactions to create/delete in the Reaction table and which custom-emoji to create in our database.
  * For more information, please have a look at https://community.mattermost.com/core/pl/rq9e8jnonpyrmnyxpuzyc4d6ko
- * @param {SanitizeReactions} sanitizeReactions
+ * @param {SanitizeReactionsArgs} sanitizeReactions
  * @param {Database} sanitizeReactions.database
  * @param {string} sanitizeReactions.post_id
  * @param {RawReaction[]} sanitizeReactions.rawReactions
  * @returns {Promise<{createReactions: RawReaction[], createEmojis: {name: string}[], deleteReactions: Reaction[]}>}
  */
-export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactions) => {
+export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactionsArgs) => {
     const reactions = (await database.collections.
         get(REACTION).
         query(Q.where('post_id', post_id)).
@@ -137,28 +139,28 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
 };
 
 /**
- * retrieveRecords: This event will alert the DataOperator handler of the possibility of writing duplicates in the database.
- * @param {RetrieveRecords} records
+ * retrieveRecords: Retrieves records from the database
+ * @param {RetrieveRecordsArgs} records
  * @param {Database} records.database
  * @param {string} records.tableName
  * @param {any} records.condition
  * @returns {Promise<Model[]>}
  */
-export const retrieveRecords = async ({database, tableName, condition}: RetrieveRecords) => {
+export const retrieveRecords = async ({database, tableName, condition}: RetrieveRecordsArgs) => {
     const records = (await database.collections.get(tableName).query(condition).fetch()) as Model[];
     return records;
 };
 
 /**
- * hasSimilarUpdateAt: Database Operations on some entities are expensive.  As such, we would like to operate if we are
+ * hasSimilarUpdateAt: Database Operations on some entities are expensive.  As such, we would like to operate if and only if we are
  * 100% sure that the records are actually different from what we already have in the database.
- * @param {IdenticalRecord} identicalRecord
+ * @param {IdenticalRecordArgs} identicalRecord
  * @param {string} identicalRecord.tableName
  * @param {RecordValue} identicalRecord.newValue
  * @param {Model} identicalRecord.existingRecord
  * @returns {boolean}
  */
-export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecord) => {
+export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
     const guardTables = [POST, USER];
 
     if (guardTables.includes(tableName)) {
@@ -172,11 +174,12 @@ export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: Identi
 
 /**
  * This method extracts one particular field 'fieldName' from the raw values and returns them as a string array
- * @param {string} oneOfField
- * @param {RawValue[]} raws
+ * @param {RangeOfValueArgs} range
+ * @param {string} range.fieldName
+ * @param {RawValue[]} range.raws
  * @returns {string[]}
  */
-export const getRangeOfValues = ({fieldName, raws}: {raws: RawValue[], fieldName: string}) => {
+export const getRangeOfValues = ({fieldName, raws}: RangeOfValueArgs) => {
     return raws.reduce((oneOfs, current: RawValue) => {
         const key = fieldName as keyof typeof current;
         const value: string = current[key] as string;
@@ -187,7 +190,12 @@ export const getRangeOfValues = ({fieldName, raws}: {raws: RawValue[], fieldName
     }, [] as string[]);
 };
 
-export const getRawRecordPairs = (raws: any[]) => {
+/**
+ * getRawRecordPairs: Utility method that maps over the raws array to create an array of RecordPair
+ * @param {any[]} raws
+ * @returns {{record: undefined, raw: any}[]}
+ */
+export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
     return raws.map((raw) => {
         return {raw, record: undefined};
     });

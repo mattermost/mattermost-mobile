@@ -10,7 +10,7 @@ import App from '@typings/database/app';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
-    DataFactory,
+    DataFactoryArgs,
     RawApp,
     RawChannelMembership,
     RawCustomEmoji,
@@ -81,12 +81,12 @@ const {
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateAppRecord = async ({action, database, value}: DataFactory) => {
+export const operateAppRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawApp;
     const record = value.record as App;
     const isCreateAction = action === OperationType.CREATE;
@@ -109,12 +109,12 @@ export const operateAppRecord = async ({action, database, value}: DataFactory) =
 
 /**
  * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateGlobalRecord = async ({action, database, value}: DataFactory) => {
+export const operateGlobalRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGlobal;
     const record = value.record as Global;
     const isCreateAction = action === OperationType.CREATE;
@@ -136,12 +136,12 @@ export const operateGlobalRecord = async ({action, database, value}: DataFactory
 
 /**
  * operateServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateServersRecord = async ({action, database, value}: DataFactory) => {
+export const operateServersRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawServers;
     const record = value.record as Servers;
     const isCreateAction = action === OperationType.CREATE;
@@ -166,12 +166,12 @@ export const operateServersRecord = async ({action, database, value}: DataFactor
 
 /**
  * operateCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateCustomEmojiRecord = async ({action, database, value}: DataFactory) => {
+export const operateCustomEmojiRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawCustomEmoji;
     const record = value.record as CustomEmoji;
     const isCreateAction = action === OperationType.CREATE;
@@ -193,12 +193,12 @@ export const operateCustomEmojiRecord = async ({action, database, value}: DataFa
 
 /**
  * operateRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateRoleRecord = async ({action, database, value}: DataFactory) => {
+export const operateRoleRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawRole;
     const record = value.record as Role;
     const isCreateAction = action === OperationType.CREATE;
@@ -221,12 +221,12 @@ export const operateRoleRecord = async ({action, database, value}: DataFactory) 
 
 /**
  * operateSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateSystemRecord = async ({action, database, value}: DataFactory) => {
+export const operateSystemRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawSystem;
     const record = value.record as System;
     const isCreateAction = action === OperationType.CREATE;
@@ -249,12 +249,12 @@ export const operateSystemRecord = async ({action, database, value}: DataFactory
 
 /**
  * operateTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateTermsOfServiceRecord = async ({action, database, value}: DataFactory) => {
+export const operateTermsOfServiceRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTermsOfService;
     const record = value.record as TermsOfService;
     const isCreateAction = action === OperationType.CREATE;
@@ -276,12 +276,12 @@ export const operateTermsOfServiceRecord = async ({action, database, value}: Dat
 
 /**
  * operatePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostRecord = async ({action, database, value}: DataFactory) => {
+export const operatePostRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPost;
     const record = value.record as Post;
     const isCreateAction = action === OperationType.CREATE;
@@ -316,12 +316,12 @@ export const operatePostRecord = async ({action, database, value}: DataFactory) 
 
 /**
  * operatePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostInThreadRecord = async ({action, database, value}: DataFactory) => {
+export const operatePostInThreadRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInThread;
     const record = value.record as PostsInThread;
     const isCreateAction = action === OperationType.CREATE;
@@ -343,12 +343,12 @@ export const operatePostInThreadRecord = async ({action, database, value}: DataF
 
 /**
  * operateReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateReactionRecord = async ({action, database, value}: DataFactory) => {
+export const operateReactionRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawReaction;
     const record = value.record as Reaction;
     const isCreateAction = action === OperationType.CREATE;
@@ -373,12 +373,12 @@ export const operateReactionRecord = async ({action, database, value}: DataFacto
 
 /**
  * operateFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateFileRecord = async ({action, database, value}: DataFactory) => {
+export const operateFileRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawFile;
     const record = value.record as File;
     const isCreateAction = action === OperationType.CREATE;
@@ -408,12 +408,12 @@ export const operateFileRecord = async ({action, database, value}: DataFactory) 
 
 /**
  * operatePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostMetadataRecord = async ({action, database, value}: DataFactory) => {
+export const operatePostMetadataRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostMetadata;
     const record = value.record as PostMetadata;
     const isCreateAction = action === OperationType.CREATE;
@@ -436,12 +436,12 @@ export const operatePostMetadataRecord = async ({action, database, value}: DataF
 
 /**
  * operateDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateDraftRecord = async ({action, database, value}: DataFactory) => {
+export const operateDraftRecord = async ({action, database, value}: DataFactoryArgs) => {
     const emptyFileInfo: FileInfo[] = [];
     const raw = value.raw as RawDraft;
 
@@ -465,12 +465,12 @@ export const operateDraftRecord = async ({action, database, value}: DataFactory)
 
 /**
  * operatePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePostsInChannelRecord = async ({action, database, value}: DataFactory) => {
+export const operatePostsInChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInChannel;
     const record = value.record as PostsInChannel;
     const isCreateAction = action === OperationType.CREATE;
@@ -493,12 +493,12 @@ export const operatePostsInChannelRecord = async ({action, database, value}: Dat
 
 /**
  * operateUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateUserRecord = async ({action, database, value}: DataFactory) => {
+export const operateUserRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawUser;
     const record = value.record as User;
     const isCreateAction = action === OperationType.CREATE;
@@ -536,12 +536,12 @@ export const operateUserRecord = async ({action, database, value}: DataFactory) 
 
 /**
  * operatePreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operatePreferenceRecord = async ({action, database, value}: DataFactory) => {
+export const operatePreferenceRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPreference;
     const record = value.record as Preference;
     const isCreateAction = action === OperationType.CREATE;
@@ -566,12 +566,12 @@ export const operatePreferenceRecord = async ({action, database, value}: DataFac
 
 /**
  * operatePreferenceRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateTeamMembershipRecord = async ({action, database, value}: DataFactory) => {
+export const operateTeamMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeamMembership;
     const record = value.record as TeamMembership;
     const isCreateAction = action === OperationType.CREATE;
@@ -594,12 +594,12 @@ export const operateTeamMembershipRecord = async ({action, database, value}: Dat
 
 /**
  * operateGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateGroupMembershipRecord = async ({action, database, value}: DataFactory) => {
+export const operateGroupMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupMembership;
     const record = value.record as GroupMembership;
     const isCreateAction = action === OperationType.CREATE;
@@ -622,12 +622,12 @@ export const operateGroupMembershipRecord = async ({action, database, value}: Da
 
 /**
  * operateChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
- * @param {DataFactory} operator
+ * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<void>}
  */
-export const operateChannelMembershipRecord = async ({action, database, value}: DataFactory) => {
+export const operateChannelMembershipRecord = async ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawChannelMembership;
     const record = value.record as ChannelMembership;
     const isCreateAction = action === OperationType.CREATE;
@@ -734,14 +734,14 @@ export const operateGroupsInChannelRecord = async ({action, database, value}: Da
  * operateBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
  * existing record for UPDATE or prepare a collection for CREATE
  *
- * @param {DataFactory} operatorBase
+ * @param {DataFactoryArgs} operatorBase
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
  * @param {MatchExistingRecord} operatorBase.value
  * @param {((model: Model) => void)} operatorBase.generator
  * @returns {Promise<any>}
  */
-const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactory) => {
+const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs) => {
     if (action === OperationType.UPDATE) {
     // Two possible scenarios:
     // 1. We are dealing with either duplicates here and if so, we'll update instead of create
