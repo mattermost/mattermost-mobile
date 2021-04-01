@@ -1,7 +1,9 @@
 #import <UIKit/UIKit.h>
 #import "RNNotifications.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+#import <UMCore/UMAppDelegateWrapper.h>
+
+@interface AppDelegate : UMAppDelegateWrapper <UIApplicationDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
 

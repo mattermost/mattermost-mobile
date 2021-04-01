@@ -9,6 +9,15 @@
 #import "Mattermost-Swift.h"
 #import <os/log.h>
 #import <RNHWKeyboardEvent.h>
+#import <UMCore/UMModuleRegistry.h>
+#import <UMReactNativeAdapter/UMNativeModulesProxy.h>
+#import <UMReactNativeAdapter/UMModuleRegistryAdapter.h>
+
+@interface AppDelegate () <RCTBridgeDelegate>
+
+@property (nonatomic, strong) UMModuleRegistryAdapter *moduleRegistryAdapter;
+
+@end
 
 @implementation AppDelegate
 
@@ -23,7 +32,8 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 }
 
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge {
-  return [ReactNativeNavigation extraModulesForBridge:bridge];
+  NSArray<id<RCTBridgeModule>> *extraModules = [_moduleRegistryAdapter extraModulesForBridge:bridge];
+  return [extraModules arrayByAddingObjectsFromArray:[ReactNativeNavigation extraModulesForBridge:bridge]];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
@@ -54,14 +64,17 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
     [[NSUserDefaults standardUserDefaults] synchronize];
   }
 
+  self.moduleRegistryAdapter = [[UMModuleRegistryAdapter alloc] initWithModuleRegistryProvider:[[UMModuleRegistryProvider alloc] init]];
+
   [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
 
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
   [RNNotifications startMonitorNotifications];
 
+  [super application:application didFinishLaunchingWithOptions:launchOptions];
+  
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-
 
   return YES;
 }
