@@ -738,8 +738,8 @@ export const operateGroupsInChannelRecord = async ({action, database, value}: Da
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
  * @param {MatchExistingRecord} operatorBase.value
- * @param {((model: Model) => void)} operatorBase.generator
- * @returns {Promise<any>}
+ * @param {((DataFactoryArgs) => void)} operatorBase.generator
+ * @returns {Promise<Model>}
  */
 const operateBaseRecord = async ({action, database, tableName, value, generator}: DataFactoryArgs): Promise<Model> => {
     if (action === OperationType.UPDATE) {

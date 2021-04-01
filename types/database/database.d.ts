@@ -423,7 +423,6 @@ export type DatabaseConnectionArgs = {
 export type ActiveServerDatabaseArgs = { displayName: string; serverUrl: string };
 
 export type HandleReactionsArgs = {
-  reactions: RawReaction[];
   prepareRowsOnly: boolean;
   reactions: RawReaction[];
 };
@@ -458,7 +457,6 @@ export type ChainPostsArgs = {
 };
 
 export type SanitizePostsArgs = {
-  posts: RawPost[];
   orders: string[];
   posts: RawPost[];
 };
