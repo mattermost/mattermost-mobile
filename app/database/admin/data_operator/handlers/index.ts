@@ -302,11 +302,11 @@ class DataOperator {
         });
 
         // Here we verify in our database that the orderedPosts truly need 'CREATION'
-        const futureEntries = await this.getFilteredInputs({
+        const futureEntries = await this.processInputs({
             rawValues: orderedPosts,
             tableName,
             comparator: comparePostRecord,
-            oneOfField: 'id',
+            fieldName: 'id',
         });
 
         if (futureEntries.createRaws?.length) {
@@ -828,11 +828,11 @@ class DataOperator {
             return null;
         }
 
-        const {createRaws, updateRaws} = await this.getFilteredInputs({
+        const {createRaws, updateRaws} = await this.processInputs({
             rawValues,
             tableName,
             comparator,
-            oneOfField,
+            fieldName: oneOfField,
         });
 
         const records = await this.executeInDatabase({
@@ -845,9 +845,9 @@ class DataOperator {
         return records;
     };
 
-    // TODO : Add jest to getFilteredInputs
+    // TODO : Add jest to processInputs
     /**
-     * getFilteredInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
+     * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
      * @param {DiscardDuplicates} prepareRecords
      * @param {RawValue[]} prepareRecords.rawValues
@@ -855,16 +855,16 @@ class DataOperator {
      * @param {string} prepareRecords.oneOfField
      * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
      */
-    private getFilteredInputs = async ({rawValues, tableName, comparator, oneOfField}: DiscardDuplicates) => {
+    private processInputs = async ({rawValues, tableName, comparator, fieldName}: DiscardDuplicates) => {
         // We will be doing a query an entity where one of its field can match a range of values.  Hence, here we are extracting all those potential values.
-        const columnValues: string[] = getRangeOfValues({oneOfField, raws: rawValues});
+        const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
         const database = await this.getDatabase(tableName);
 
         const existingRecords = (await retrieveRecords({
             database,
             tableName,
-            condition: Q.where(oneOfField, Q.oneOf(columnValues)),
+            condition: Q.where(fieldName, Q.oneOf(columnValues)),
         })) as Model[];
 
         const createRaws: MatchExistingRecord[] = [];

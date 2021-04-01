@@ -171,14 +171,14 @@ export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: Identi
 };
 
 /**
- * This method extracts one particular field 'oneOfField' from the raw values and returns them as a string array
+ * This method extracts one particular field 'fieldName' from the raw values and returns them as a string array
  * @param {string} oneOfField
  * @param {RawValue[]} raws
  * @returns {string[]}
  */
-export const getRangeOfValues = ({oneOfField, raws}: {raws: RawValue[], oneOfField: string}) => {
+export const getRangeOfValues = ({fieldName, raws}: {raws: RawValue[], fieldName: string}) => {
     return raws.reduce((oneOfs, current: RawValue) => {
-        const key = oneOfField as keyof typeof current;
+        const key = fieldName as keyof typeof current;
         const value: string = current[key] as string;
         if (value) {
             oneOfs.push(value);

@@ -450,7 +450,7 @@ export type RetrieveRecords = {
 export type DiscardDuplicates = {
   rawValues: RawValue[];
   tableName: string;
-  oneOfField: string;
+  fieldName: string;
   comparator: (existing: Model, newElement: RawValue) => boolean;
 };
 
