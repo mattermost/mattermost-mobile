@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+
 import {MM_TABLES} from '@constants/database';
 import {
     isRecordAppEqualToRaw,
@@ -19,9 +22,6 @@ import {
     isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
-import {Database, Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperations,
