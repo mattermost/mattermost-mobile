@@ -21,11 +21,6 @@ describe('SSO with redirect url', () => {
         theme: Preferences.THEMES.default,
     };
 
-    test('should show message when user navigates to the page', () => {
-        const wrapperWithBaseProps = shallow(<SSOWithRedirectURL {...baseProps}/>);
-        expect(wrapperWithBaseProps.find(FormattedText).find({id: 'mobile.oauth.switch_to_browser'}).exists()).toBe(true);
-    });
-
     test('should show "try again" and hide default message when error text is displayed', () => {
         const wrapperWithBaseProps = shallow(<SSOWithRedirectURL {...baseProps}/>);
         expect(wrapperWithBaseProps.find(FormattedText).find({id: 'mobile.oauth.try_again'}).exists()).toBe(false);
@@ -36,6 +31,5 @@ describe('SSO with redirect url', () => {
             />,
         );
         expect(wrapper.find(FormattedText).find({id: 'mobile.oauth.try_again'}).exists()).toBe(true);
-        expect(wrapper.find(FormattedText).find({id: 'mobile.oauth.switch_to_browser'}).exists()).toBe(false);
     });
 });

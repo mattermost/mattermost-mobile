@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {intlShape} from 'react-intl';
-import {Linking, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import * as WebBrowser from 'expo-web-browser';
 import urlParse from 'url-parse';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -14,7 +15,6 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
-import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
     intl: typeof intlShape;
@@ -45,7 +45,7 @@ function SSOWithRedirectURL({
 
     const redirectUrl = customUrlScheme + 'callback';
 
-    const init = (resetErrors?: boolean) => {
+    const init = async (resetErrors?: boolean) => {
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
@@ -63,11 +63,21 @@ function SSOWithRedirectURL({
                 defaultMessage: 'The link failed to open. Please try again.',
             }),
         );
-        tryOpenURL(url, onError);
+        try {
+            const result = await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+            if (result.type === 'success') {
+                onURLChange(result);
+            } else {
+                onError();
+            }
+        } catch (e) {
+            onError();
+        }
     };
 
     const onURLChange = ({url}: { url: string }) => {
         if (url && url.startsWith(redirectUrl)) {
+            WebBrowser.dismissBrowser();
             Store?.redux?.dispatch(setDeepLinkURL(''));
             const parsedUrl = urlParse(url, true);
             if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
@@ -85,11 +95,7 @@ function SSOWithRedirectURL({
     };
 
     React.useEffect(() => {
-        Linking.addEventListener('url', onURLChange);
         init(false);
-        return () => {
-            Linking.removeEventListener('url', onURLChange);
-        };
     }, []);
 
     return (
@@ -114,18 +120,6 @@ function SSOWithRedirectURL({
                 </View>
             ) : (
                 <View style={style.infoContainer}>
-                    <FormattedText
-                        id='mobile.oauth.switch_to_browser'
-                        defaultMessage='Please use your browser to complete the login'
-                        style={style.infoText}
-                    />
-                    <TouchableOpacity onPress={() => init()}>
-                        <FormattedText
-                            id='mobile.oauth.restart_login'
-                            defaultMessage='Restart login'
-                            style={style.button}
-                        />
-                    </TouchableOpacity>
                     <Loading/>
                 </View>
             )}
