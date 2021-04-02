@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {App} from '@database/default/models';
-import {Role, Team, User} from '@database/server/models';
+import App from '@typings/database/app';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -21,6 +20,7 @@ import {
     RawServers,
     RawSystem,
     RawTeam,
+    RawTeamChannelHistory,
     RawTeamMembership,
     RawTermsOfService,
     RawUser,
@@ -33,10 +33,14 @@ import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
+import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
+import Team from '@typings/database/team';
+import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
 import TermsOfService from '@typings/database/terms_of_service';
+import User from '@typings/database/user';
 
 /**
  *  This file contains all the comparators that are used by the handlers to find out which records to truly update and
@@ -89,8 +93,7 @@ export const isRecordPreferenceEqualToRaw = (record: Preference, raw: RawPrefere
     return (
         raw.category === record.category &&
         raw.name === record.name &&
-        raw.user_id === record.userId &&
-        raw.value === record.value
+        raw.user_id === record.userId
     );
 };
 
@@ -124,4 +127,8 @@ export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannel, raw: 
 
 export const isRecordTeamEqualToRaw = (record: Team, raw: RawTeam) => {
     return raw.id === record.id;
+};
+
+export const isRecordTeamChannelHistoryEqualToRaw = (record: TeamChannelHistory, raw: RawTeamChannelHistory) => {
+    return raw.team_id === record.teamId;
 };

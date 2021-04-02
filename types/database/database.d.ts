@@ -380,6 +380,11 @@ export type RawTeam = {
   update_at: number;
 };
 
+export type RawTeamChannelHistory = {
+team_id: string;
+channel_ids: string[]
+}
+
 export type RawSlashCommand = {
   id: string;
   auto_complete: boolean;
@@ -421,6 +426,7 @@ export type RawValue =
   | RawServers
   | RawSystem
   | RawTeam
+  | RawTeamChannelHistory
   | RawTeamMembership
   | RawTermsOfService
   | RawUser;

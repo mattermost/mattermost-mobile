@@ -5,7 +5,6 @@ import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {Team, User} from '@database/server/models';
 import App from '@typings/database/app';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
@@ -31,6 +30,7 @@ import {
     RawServers,
     RawSystem,
     RawTeam,
+    RawTeamChannelHistory,
     RawTeamMembership,
     RawTermsOfService,
     RawUser,
@@ -52,8 +52,11 @@ import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
 import System from '@typings/database/system';
+import Team from '@typings/database/team';
+import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
 import TermsOfService from '@typings/database/terms_of_service';
+import User from '@typings/database/user';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
@@ -74,6 +77,7 @@ const {
     ROLE,
     SYSTEM,
     TEAM,
+    TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TERMS_OF_SERVICE,
     USER,
@@ -706,7 +710,7 @@ export const operateGroupsInTeamRecord = async ({action, database, value}: DataF
 };
 
 /**
- * operateGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * operateGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
@@ -763,6 +767,34 @@ export const operateTeamRecord = async ({action, database, value}: DataFactoryAr
         action,
         database,
         tableName: TEAM,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateTeamChannelHistoryRecord: Prepares record of entity 'TEAM_CHANNEL_HISTORY' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateTeamChannelHistoryRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawTeamChannelHistory;
+    const record = value.record as TeamChannelHistory;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of team comes from server response
+    const generator = (teamChannelHistory: TeamChannelHistory) => {
+        teamChannelHistory._raw.id = isCreateAction ? (teamChannelHistory.id) : record?.id;
+        teamChannelHistory.teamId = raw.team_id;
+        teamChannelHistory.channelIds = raw.channel_ids;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: TEAM_CHANNEL_HISTORY,
         value,
         generator,
     });

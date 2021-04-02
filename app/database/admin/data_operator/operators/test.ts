@@ -24,6 +24,7 @@ import {
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
+    operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
     operateTeamRecord,
     operateTermsOfServiceRecord,
@@ -701,6 +702,28 @@ describe('*** DataOperator: Operators tests ***', () => {
                     last_team_icon_update: 1525181587639,
                     scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
                     group_constrained: null,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Team');
+    });
+
+    it('=> operateTeamRecord: should return an array of type Team', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateTeamChannelHistoryRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    team_id: 'a',
+                    channel_ids: ['ca', 'cb'],
                 },
             },
         });

@@ -20,6 +20,7 @@ import {
     isRecordRoleEqualToRaw,
     isRecordServerEqualToRaw,
     isRecordSystemEqualToRaw,
+    isRecordTeamChannelHistoryEqualToRaw,
     isRecordTeamEqualToRaw,
     isRecordTeamMembershipEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
@@ -56,6 +57,7 @@ import {
     RawPreference,
     RawReaction,
     RawTeam,
+    RawTeamChannelHistory,
     RawTeamMembership,
     RawUser,
     RawValue,
@@ -90,6 +92,7 @@ import {
     operateRoleRecord,
     operateServersRecord,
     operateSystemRecord,
+    operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
     operateTeamRecord,
     operateTermsOfServiceRecord,
@@ -121,6 +124,7 @@ const {
     PREFERENCE,
     REACTION,
     TEAM,
+    TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
@@ -909,6 +913,28 @@ class DataOperator {
     };
 
     /**
+     * handleTeamChannelHistory: Handler responsible for the Create/Update operations occurring on the TEAM_CHANNEL_HISTORY entity from the 'Server' schema
+     * @param {RawTeamChannelHistory[]} teamChannelHistories
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleTeamChannelHistory = async (teamChannelHistories: RawTeamChannelHistory[]) => {
+        if (!teamChannelHistories.length) {
+            throw new DataOperatorException(
+                'An empty "teamChannelHistories" array has been passed to the handleTeamChannelHistory method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateTeamChannelHistoryRecord,
+            rawValues: teamChannelHistories,
+            tableName: TEAM_CHANNEL_HISTORY,
+        });
+    };
+
+    /**
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
      * @param {HandleEntityRecordsArgs} handleEntityArgs
      * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityArgs.findMatchingRecordBy
@@ -940,7 +966,6 @@ class DataOperator {
         return records;
     };
 
-    // TODO : Add jest to processInputs
     /**
      * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
@@ -981,6 +1006,7 @@ class DataOperator {
                         existingRecord,
                         newValue: newElement,
                     });
+
                     if (!isUpdateAtSimilar) {
                         return updateRaws.push({
                             record: existingRecord,

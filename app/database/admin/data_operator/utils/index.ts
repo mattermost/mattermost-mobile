@@ -22,7 +22,8 @@ import {
 } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 import Post from '@typings/database/post';
-import {Team, User} from '@database/server/models';
+import Team from '@typings/database/team';
+import User from '@typings/database/user';
 
 const {POST, REACTION, TEAM, USER} = MM_TABLES.SERVER;
 
