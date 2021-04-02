@@ -65,7 +65,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                 switch (callResp.type) {
                 case AppCallResponseTypes.OK:
                     if (callResp.markdown) {
-                        dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id));
+                        dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id, callResp.app_metadata?.bot_user_id));
                     }
                     return {data: {}};
                 case AppCallResponseTypes.FORM:
