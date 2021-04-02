@@ -203,3 +203,18 @@ export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
         return {raw, record: undefined};
     });
 };
+
+/**
+ * getUniqueRawsBy: We have to ensure that we are not updating the same record twice in the same operation.
+ * Hence, thought it might not occur, prevention is better than cure.  This function removes duplicates from the 'raws' array.
+ * @param {RawValue[]} raws
+ * @param {string} key
+ */
+export const getUniqueRawsBy = ({raws, key}:{ raws: RawValue[], key: string}) => {
+    return [...new Map(raws.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const curItemKey = item[key];
+        return [curItemKey, item];
+    })).values()];
+};

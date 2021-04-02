@@ -102,6 +102,7 @@ import {
     createPostsChain,
     getRangeOfValues,
     getRawRecordPairs,
+    getUniqueRawsBy,
     hasSimilarUpdateAt,
     retrieveRecords,
     sanitizePosts,
@@ -154,6 +155,7 @@ class DataOperator {
         let findMatchingRecordBy;
         let fieldName;
         let operator;
+        let rawValues;
 
         if (!values.length) {
             throw new DataOperatorException(
@@ -166,42 +168,49 @@ class DataOperator {
                 findMatchingRecordBy = isRecordAppEqualToRaw;
                 fieldName = 'version_number';
                 operator = operateAppRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'versionNumber'});
                 break;
             }
             case IsolatedEntities.CUSTOM_EMOJI: {
                 findMatchingRecordBy = isRecordCustomEmojiEqualToRaw;
                 fieldName = 'name';
                 operator = operateCustomEmojiRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
                 break;
             }
             case IsolatedEntities.GLOBAL: {
                 findMatchingRecordBy = isRecordGlobalEqualToRaw;
                 fieldName = 'name';
                 operator = operateGlobalRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
                 break;
             }
             case IsolatedEntities.ROLE: {
                 findMatchingRecordBy = isRecordRoleEqualToRaw;
                 fieldName = 'name';
                 operator = operateRoleRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
                 break;
             }
             case IsolatedEntities.SERVERS: {
                 findMatchingRecordBy = isRecordServerEqualToRaw;
                 fieldName = 'db_path';
                 operator = operateServersRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'displayName'});
                 break;
             }
             case IsolatedEntities.SYSTEM: {
                 findMatchingRecordBy = isRecordSystemEqualToRaw;
                 fieldName = 'name';
                 operator = operateSystemRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
                 findMatchingRecordBy = isRecordTermsOfServiceEqualToRaw;
                 fieldName = 'accepted_at';
                 operator = operateTermsOfServiceRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'acceptedAt'});
                 break;
             }
             default: {
@@ -216,7 +225,7 @@ class DataOperator {
                 findMatchingRecordBy,
                 fieldName,
                 operator,
-                rawValues: values,
+                rawValues,
                 tableName,
             });
         }
@@ -234,11 +243,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
             operator: operateDraftRecord,
-            rawValues: drafts,
+            rawValues,
             tableName: DRAFT,
         });
     };
@@ -258,6 +269,8 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as RawReaction[];
+
         const database = await this.getDatabase(REACTION);
 
         const {
@@ -267,7 +280,7 @@ class DataOperator {
         } = await sanitizeReactions({
             database,
             post_id: reactions[0].post_id,
-            rawReactions: reactions,
+            rawReactions: rawValues,
         });
 
         let batchRecords: Model[] = [];
@@ -328,9 +341,11 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: values, key: 'id'}) as RawPost[];
+
         // By sanitizing the values, we are separating 'posts' that needs updating ( i.e. un-ordered posts ) from those that need to be created in our database
         const {postsOrdered, postsUnordered} = sanitizePosts({
-            posts: values,
+            posts: rawValues,
             orders,
         });
 
@@ -728,11 +743,14 @@ class DataOperator {
                 'An empty "users" array has been passed to the handleUsers method',
             );
         }
+
+        const rawValues = getUniqueRawsBy({raws: users, key: 'id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordUserEqualToRaw,
             fieldName: 'id',
             operator: operateUserRecord,
-            rawValues: users,
+            rawValues,
             tableName: USER,
         });
     };
@@ -750,11 +768,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             fieldName: 'user_id',
             operator: operatePreferenceRecord,
-            rawValues: preferences,
+            rawValues,
             tableName: PREFERENCE,
         });
     };
@@ -771,11 +791,14 @@ class DataOperator {
                 'An empty "teamMemberships" array has been passed to the handleTeamMemberships method',
             );
         }
+
+        const rawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateTeamMembershipRecord,
-            rawValues: teamMemberships,
+            rawValues,
             tableName: TEAM_MEMBERSHIP,
         });
     };
@@ -793,11 +816,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateGroupMembershipRecord,
-            rawValues: groupMemberships,
+            rawValues,
             tableName: GROUP_MEMBERSHIP,
         });
     };
@@ -815,11 +840,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateChannelMembershipRecord,
-            rawValues: channelMemberships,
+            rawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });
     };
@@ -836,12 +863,13 @@ class DataOperator {
                 'An empty "groups" array has been passed to the handleGroup method',
             );
         }
+        const rawValues = getUniqueRawsBy({raws: groups, key: 'name'});
 
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             fieldName: 'name',
             operator: operateGroupRecord,
-            rawValues: groups,
+            rawValues,
             tableName: GROUP,
         });
     };
@@ -859,11 +887,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             fieldName: 'group_id',
             operator: operateGroupsInTeamRecord,
-            rawValues: groupsInTeams,
+            rawValues,
             tableName: GROUPS_IN_TEAM,
         });
     };
@@ -881,11 +911,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             fieldName: 'group_id',
             operator: operateGroupsInChannelRecord,
-            rawValues: groupsInChannels,
+            rawValues,
             tableName: GROUPS_IN_CHANNEL,
         });
     };
@@ -903,11 +935,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: teams, key: 'id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamEqualToRaw,
             fieldName: 'id',
             operator: operateTeamRecord,
-            rawValues: teams,
+            rawValues,
             tableName: TEAM,
         });
     };
@@ -925,11 +959,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'team_id'});
+
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
             fieldName: 'team_id',
             operator: operateTeamChannelHistoryRecord,
-            rawValues: teamChannelHistories,
+            rawValues,
             tableName: TEAM_CHANNEL_HISTORY,
         });
     };
