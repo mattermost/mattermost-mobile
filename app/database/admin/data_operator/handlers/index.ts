@@ -20,6 +20,7 @@ import {
     isRecordRoleEqualToRaw,
     isRecordServerEqualToRaw,
     isRecordSystemEqualToRaw,
+    isRecordTeamEqualToRaw,
     isRecordTeamMembershipEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
     isRecordUserEqualToRaw,
@@ -54,6 +55,7 @@ import {
     RawPostsInThread,
     RawPreference,
     RawReaction,
+    RawTeam,
     RawTeamMembership,
     RawUser,
     RawValue,
@@ -89,6 +91,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
     operateTeamMembershipRecord,
+    operateTeamRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from '../operators';
@@ -117,6 +120,7 @@ const {
     POST_METADATA,
     PREFERENCE,
     REACTION,
+    TEAM,
     TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
@@ -143,7 +147,7 @@ class DataOperator {
      * @returns {Promise<void>}
      */
     handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityArgs) => {
-        let comparator;
+        let findMatchingRecordBy;
         let fieldName;
         let operator;
 
@@ -155,43 +159,43 @@ class DataOperator {
 
         switch (tableName) {
             case IsolatedEntities.APP: {
-                comparator = isRecordAppEqualToRaw;
+                findMatchingRecordBy = isRecordAppEqualToRaw;
                 fieldName = 'version_number';
                 operator = operateAppRecord;
                 break;
             }
             case IsolatedEntities.CUSTOM_EMOJI: {
-                comparator = isRecordCustomEmojiEqualToRaw;
+                findMatchingRecordBy = isRecordCustomEmojiEqualToRaw;
                 fieldName = 'name';
                 operator = operateCustomEmojiRecord;
                 break;
             }
             case IsolatedEntities.GLOBAL: {
-                comparator = isRecordGlobalEqualToRaw;
+                findMatchingRecordBy = isRecordGlobalEqualToRaw;
                 fieldName = 'name';
                 operator = operateGlobalRecord;
                 break;
             }
             case IsolatedEntities.ROLE: {
-                comparator = isRecordRoleEqualToRaw;
+                findMatchingRecordBy = isRecordRoleEqualToRaw;
                 fieldName = 'name';
                 operator = operateRoleRecord;
                 break;
             }
             case IsolatedEntities.SERVERS: {
-                comparator = isRecordServerEqualToRaw;
+                findMatchingRecordBy = isRecordServerEqualToRaw;
                 fieldName = 'db_path';
                 operator = operateServersRecord;
                 break;
             }
             case IsolatedEntities.SYSTEM: {
-                comparator = isRecordSystemEqualToRaw;
+                findMatchingRecordBy = isRecordSystemEqualToRaw;
                 fieldName = 'name';
                 operator = operateSystemRecord;
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
-                comparator = isRecordTermsOfServiceEqualToRaw;
+                findMatchingRecordBy = isRecordTermsOfServiceEqualToRaw;
                 fieldName = 'accepted_at';
                 operator = operateTermsOfServiceRecord;
                 break;
@@ -203,9 +207,9 @@ class DataOperator {
             }
         }
 
-        if (operator && fieldName && comparator) {
+        if (operator && fieldName && findMatchingRecordBy) {
             await this.handleEntityRecords({
-                comparator,
+                findMatchingRecordBy,
                 fieldName,
                 operator,
                 rawValues: values,
@@ -227,7 +231,7 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordDraftEqualToRaw,
+            findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
             operator: operateDraftRecord,
             rawValues: drafts,
@@ -330,7 +334,7 @@ class DataOperator {
         const futureEntries = await this.processInputs({
             rawValues: postsOrdered,
             tableName,
-            comparator: isRecordPostEqualToRaw,
+            findMatchingRecordBy: isRecordPostEqualToRaw,
             fieldName: 'id',
         });
 
@@ -450,7 +454,7 @@ class DataOperator {
         if (postsUnordered.length) {
             // Truly update those posts that have a different update_at value
             await this.handleEntityRecords({
-                comparator: isRecordPostEqualToRaw,
+                findMatchingRecordBy: isRecordPostEqualToRaw,
                 fieldName: 'id',
                 operator: operatePostRecord,
                 rawValues: postsUnordered,
@@ -721,7 +725,7 @@ class DataOperator {
             );
         }
         await this.handleEntityRecords({
-            comparator: isRecordUserEqualToRaw,
+            findMatchingRecordBy: isRecordUserEqualToRaw,
             fieldName: 'id',
             operator: operateUserRecord,
             rawValues: users,
@@ -743,7 +747,7 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordPreferenceEqualToRaw,
+            findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             fieldName: 'user_id',
             operator: operatePreferenceRecord,
             rawValues: preferences,
@@ -764,7 +768,7 @@ class DataOperator {
             );
         }
         await this.handleEntityRecords({
-            comparator: isRecordTeamMembershipEqualToRaw,
+            findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateTeamMembershipRecord,
             rawValues: teamMemberships,
@@ -786,7 +790,7 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordGroupMembershipEqualToRaw,
+            findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateGroupMembershipRecord,
             rawValues: groupMemberships,
@@ -808,7 +812,7 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordChannelMembershipEqualToRaw,
+            findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateChannelMembershipRecord,
             rawValues: channelMemberships,
@@ -830,7 +834,7 @@ class DataOperator {
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordGroupEqualToRaw,
+            findMatchingRecordBy: isRecordGroupEqualToRaw,
             fieldName: 'name',
             operator: operateGroupRecord,
             rawValues: groups,
@@ -840,59 +844,81 @@ class DataOperator {
 
     /**
      * handleGroupsInTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_TEAM entity from the 'Server' schema
-     * @param {RawGroupsInTeam[]} groupsInTeam
+     * @param {RawGroupsInTeam[]} groupsInTeams
      * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
-    handleGroupsInTeam = async (groupsInTeam: RawGroupsInTeam[]) => {
-        if (!groupsInTeam.length) {
+    handleGroupsInTeam = async (groupsInTeams: RawGroupsInTeam[]) => {
+        if (!groupsInTeams.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
             );
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordGroupsInTeamEqualToRaw,
+            findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             fieldName: 'group_id',
             operator: operateGroupsInTeamRecord,
-            rawValues: groupsInTeam,
+            rawValues: groupsInTeams,
             tableName: GROUPS_IN_TEAM,
         });
     };
 
     /**
      * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL entity from the 'Server' schema
-     * @param {RawGroupsInChannel[]} groupsInChannel
+     * @param {RawGroupsInChannel[]} groupsInChannels
      * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
-    handleGroupsInChannel = async (groupsInChannel: RawGroupsInChannel[]) => {
-        if (!groupsInChannel.length) {
+    handleGroupsInChannel = async (groupsInChannels: RawGroupsInChannel[]) => {
+        if (!groupsInChannels.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
             );
         }
 
         await this.handleEntityRecords({
-            comparator: isRecordGroupsInChannelEqualToRaw,
+            findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             fieldName: 'group_id',
             operator: operateGroupsInChannelRecord,
-            rawValues: groupsInChannel,
+            rawValues: groupsInChannels,
             tableName: GROUPS_IN_CHANNEL,
         });
     };
 
     /**
+     * handleTeam: Handler responsible for the Create/Update operations occurring on the TEAM entity from the 'Server' schema
+     * @param {RawTeam[]} teams
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleTeam = async (teams: RawTeam[]) => {
+        if (!teams.length) {
+            throw new DataOperatorException(
+                'An empty "teams" array has been passed to the handleTeam method',
+            );
+        }
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordTeamEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateTeamRecord,
+            rawValues: teams,
+            tableName: TEAM,
+        });
+    };
+
+    /**
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
-     * @param {HandleEntityRecordsArgs} handleEntityRecords
-     * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
-     * @param {string} handleEntityRecords.fieldName
-     * @param {(DataFactoryArgs) => Promise<Model | null>} handleEntityRecords.operator
-     * @param {RawValue[]} handleEntityRecords.rawValues
-     * @param {string} handleEntityRecords.tableName
+     * @param {HandleEntityRecordsArgs} handleEntityArgs
+     * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityArgs.findMatchingRecordBy
+     * @param {string} handleEntityArgs.fieldName
+     * @param {(DataFactoryArgs) => Promise<Model | null>} handleEntityArgs.operator
+     * @param {RawValue[]} handleEntityArgs.rawValues
+     * @param {string} handleEntityArgs.tableName
      * @returns {Promise<null | void>}
      */
-    private handleEntityRecords = async ({comparator, fieldName, operator, rawValues, tableName}: HandleEntityRecordsArgs) => {
+    private handleEntityRecords = async ({findMatchingRecordBy, fieldName, operator, rawValues, tableName}: HandleEntityRecordsArgs) => {
         if (!rawValues.length) {
             return null;
         }
@@ -900,7 +926,7 @@ class DataOperator {
         const {createRaws, updateRaws} = await this.processInputs({
             rawValues,
             tableName,
-            comparator,
+            findMatchingRecordBy,
             fieldName,
         });
 
@@ -918,13 +944,13 @@ class DataOperator {
     /**
      * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-     * @param {ProcessInputsArgs} prepareRecords
-     * @param {RawValue[]} prepareRecords.rawValues
-     * @param {string} prepareRecords.tableName
-     * @param {string} prepareRecords.fieldName
-     * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
+     * @param {ProcessInputsArgs} inputsArg
+     * @param {RawValue[]} inputsArg.rawValues
+     * @param {string} inputsArg.tableName
+     * @param {string} inputsArg.fieldName
+     * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.findMatchingRecordBy
      */
-    private processInputs = async ({rawValues, tableName, comparator, fieldName}: ProcessInputsArgs) => {
+    private processInputs = async ({rawValues, tableName, findMatchingRecordBy, fieldName}: ProcessInputsArgs) => {
         // We will query an entity where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
         const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
@@ -942,7 +968,7 @@ class DataOperator {
         if (existingRecords.length > 0) {
             rawValues.map((newElement: RawValue) => {
                 const findIndex = existingRecords.findIndex((existing) => {
-                    return comparator(existing, newElement);
+                    return findMatchingRecordBy(existing, newElement);
                 });
 
                 // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation

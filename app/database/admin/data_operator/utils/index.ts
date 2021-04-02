@@ -12,7 +12,9 @@ import {
     RangeOfValueArgs,
     RawPost,
     RawReaction,
-    RawUser, RawValue,
+    RawTeam,
+    RawUser,
+    RawValue,
     RecordPair,
     RetrieveRecordsArgs,
     SanitizePostsArgs,
@@ -20,9 +22,9 @@ import {
 } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 import Post from '@typings/database/post';
-import {User} from '@database/server/models';
+import {Team, User} from '@database/server/models';
 
-const {POST, USER, REACTION} = MM_TABLES.SERVER;
+const {POST, REACTION, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -161,11 +163,11 @@ export const retrieveRecords = async ({database, tableName, condition}: Retrieve
  * @returns {boolean}
  */
 export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
-    const guardTables = [POST, USER];
+    const guardTables = [POST, TEAM, USER];
 
     if (guardTables.includes(tableName)) {
-        type Raw = RawPost | RawUser
-        type ExistingRecord = Post | User
+        type Raw = RawPost | RawUser | RawTeam
+        type ExistingRecord = Post | User | Team
 
         return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
     }

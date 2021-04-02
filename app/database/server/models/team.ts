@@ -75,6 +75,9 @@ export default class Team extends Model {
     /** name : The name for the team */
     @field('name') name!: string;
 
+    /** update_at : The timestamp to when this team was last updated on the server */
+    @field('update_at') updateAt!: number;
+
     /** type : The type of team ( e.g. open/private ) */
     @field('type') type!: string;
 

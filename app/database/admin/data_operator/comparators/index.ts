@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {App} from '@database/default/models';
-import {Role, User} from '@database/server/models';
+import {Role, Team, User} from '@database/server/models';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -13,13 +13,14 @@ import {
     RawGlobal,
     RawGroup,
     RawGroupMembership,
-    RawGroupsInTeam,
     RawGroupsInChannel,
+    RawGroupsInTeam,
     RawPost,
     RawPreference,
     RawRole,
     RawServers,
     RawSystem,
+    RawTeam,
     RawTeamMembership,
     RawTermsOfService,
     RawUser,
@@ -40,7 +41,7 @@ import TermsOfService from '@typings/database/terms_of_service';
 /**
  *  This file contains all the comparators that are used by the handlers to find out which records to truly update and
  *  which one to create.  A 'record' is a model in our database and a 'raw' is the object that is passed to the handler
- *  (e.g. API response). Each comparator will return a boolean condition after comparing specific fields from the
+ *  (e.g. API response). Each comparators will return a boolean condition after comparing specific fields from the
  *  'record' and the 'raw'
  */
 
@@ -119,4 +120,8 @@ export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeam, raw: RawGro
 
 export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannel, raw: RawGroupsInChannel) => {
     return raw.channel_id === record.channelId && raw.group_id === record.groupId;
+};
+
+export const isRecordTeamEqualToRaw = (record: Team, raw: RawTeam) => {
+    return raw.id === record.id;
 };

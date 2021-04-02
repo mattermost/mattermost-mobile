@@ -31,6 +31,9 @@ export default class Team extends Model {
     /** display_name : The display name for the team */
     displayName: string;
 
+    /** update_at : The timestamp to when this team was last updated on the server */
+    updateAt!: number;
+
     /** is_group_constrained : Boolean flag indicating if members are managed groups */
     isGroupConstrained: boolean;
 

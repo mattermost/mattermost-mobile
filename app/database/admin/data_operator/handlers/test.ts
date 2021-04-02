@@ -80,7 +80,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
             operator: operateAppRecord,
-            comparator: isRecordAppEqualToRaw,
+            findMatchingRecordBy: isRecordAppEqualToRaw,
             rawValues: values,
             tableName: 'app',
         });
@@ -98,7 +98,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.GLOBAL, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: isRecordGlobalEqualToRaw,
+            findMatchingRecordBy: isRecordGlobalEqualToRaw,
             fieldName: 'name',
             operator: operateGlobalRecord,
             rawValues: values,
@@ -126,7 +126,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SERVERS, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: isRecordServerEqualToRaw,
+            findMatchingRecordBy: isRecordServerEqualToRaw,
             fieldName: 'db_path',
             operator: operateServersRecord,
             rawValues: values,
@@ -155,7 +155,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: isRecordRoleEqualToRaw,
+            findMatchingRecordBy: isRecordRoleEqualToRaw,
             fieldName: 'name',
             operator: operateRoleRecord,
             rawValues: values,
@@ -174,7 +174,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: isRecordSystemEqualToRaw,
+            findMatchingRecordBy: isRecordSystemEqualToRaw,
             fieldName: 'name',
             operator: operateSystemRecord,
             rawValues: values,
@@ -206,7 +206,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: isRecordTermsOfServiceEqualToRaw,
+            findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
             fieldName: 'accepted_at',
             operator: operateTermsOfServiceRecord,
             rawValues: values,
@@ -297,7 +297,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleDraft(values);
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            comparator: isRecordDraftEqualToRaw,
+            findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
             operator: operateDraftRecord,
             rawValues: values,

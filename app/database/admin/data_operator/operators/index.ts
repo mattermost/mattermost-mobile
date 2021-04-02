@@ -5,7 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {User} from '@database/server/models';
+import {Team, User} from '@database/server/models';
 import App from '@typings/database/app';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
@@ -30,6 +30,7 @@ import {
     RawRole,
     RawServers,
     RawSystem,
+    RawTeam,
     RawTeamMembership,
     RawTermsOfService,
     RawUser,
@@ -61,8 +62,8 @@ const {
     DRAFT,
     FILE,
     GROUP,
-    GROUPS_IN_TEAM,
     GROUPS_IN_CHANNEL,
+    GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
     POST,
     POSTS_IN_CHANNEL,
@@ -72,12 +73,11 @@ const {
     REACTION,
     ROLE,
     SYSTEM,
+    TEAM,
     TEAM_MEMBERSHIP,
     TERMS_OF_SERVICE,
     USER,
 } = MM_TABLES.SERVER;
-
-// TODO : Include timezone_count and member_count when you have the information for the group section
 
 /**
  * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
@@ -688,6 +688,8 @@ export const operateGroupsInTeamRecord = async ({action, database, value}: DataF
     const record = value.record as GroupsInTeam;
     const isCreateAction = action === OperationType.CREATE;
 
+    // FIXME : should include memberCount and timezoneCount or will it be by update action?
+
     const generator = (groupsInTeam: GroupsInTeam) => {
         groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record?.id;
         groupsInTeam.teamId = raw.team_id;
@@ -715,6 +717,7 @@ export const operateGroupsInChannelRecord = async ({action, database, value}: Da
     const record = value.record as GroupsInChannel;
     const isCreateAction = action === OperationType.CREATE;
 
+    // FIXME : should include memberCount and timezoneCount or will it be by update action?
     const generator = (groupsInChannel: GroupsInChannel) => {
         groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record?.id;
         groupsInChannel.channelId = raw.channel_id;
@@ -725,6 +728,43 @@ export const operateGroupsInChannelRecord = async ({action, database, value}: Da
         action,
         database,
         tableName: GROUPS_IN_CHANNEL,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateTeamRecord: Prepares record of entity 'TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateTeamRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawTeam;
+    const record = value.record as Team;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of team comes from server response
+    const generator = (team: Team) => {
+        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record?.id;
+        team.isAllowOpenInvite = raw.allow_open_invite;
+        team.description = raw.description;
+        team.displayName = raw.display_name;
+        team.name = raw.name;
+        team.updateAt = raw.update_at;
+        team.type = raw.type;
+        team.allowedDomains = raw.allowed_domains;
+
+        // FIXME : confirm where those two fields come from
+        // team.isGroupConstrained = raw.allowed_domains;
+        // team.lastTeamIconUpdatedAt = raw.
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: TEAM,
         value,
         generator,
     });
