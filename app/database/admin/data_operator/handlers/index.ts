@@ -901,7 +901,7 @@ class DataOperator {
 
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamEqualToRaw,
-            fieldName: 'team_id',
+            fieldName: 'id',
             operator: operateTeamRecord,
             rawValues: teams,
             tableName: TEAM,
@@ -981,7 +981,6 @@ class DataOperator {
                         existingRecord,
                         newValue: newElement,
                     });
-
                     if (!isUpdateAtSimilar) {
                         return updateRaws.push({
                             record: existingRecord,

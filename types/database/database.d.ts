@@ -365,13 +365,17 @@ export type RawTeam = {
   id: string;
   allow_open_invite: boolean;
   allowed_domains: string;
+  company_name: string;
   create_at: number;
   delete_at: number;
   description: string;
   display_name: string;
   email: string;
+  group_constrained: boolean | null;
   invite_id: string;
+  last_team_icon_update: number;
   name: string;
+  scheme_id: string;
   type: string;
   update_at: number;
 };

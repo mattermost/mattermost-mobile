@@ -755,10 +755,8 @@ export const operateTeamRecord = async ({action, database, value}: DataFactoryAr
         team.updateAt = raw.update_at;
         team.type = raw.type;
         team.allowedDomains = raw.allowed_domains;
-
-        // FIXME : confirm where those two fields come from
-        // team.isGroupConstrained = raw.allowed_domains;
-        // team.lastTeamIconUpdatedAt = raw.
+        team.isGroupConstrained = Boolean(raw.group_constrained);
+        team.lastTeamIconUpdatedAt = raw.last_team_icon_update;
     };
 
     return operateBaseRecord({

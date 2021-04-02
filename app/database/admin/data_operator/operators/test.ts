@@ -25,6 +25,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
     operateTeamMembershipRecord,
+    operateTeamRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from './index';
@@ -670,5 +671,41 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('GroupsInChannel');
+    });
+
+    it('=> operateTeamRecord: should return an array of type Team', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateTeamRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                    create_at: 1445538153952,
+                    update_at: 1588876392150,
+                    delete_at: 0,
+                    display_name: 'Contributors',
+                    name: 'core',
+                    description: '',
+                    email: '',
+                    type: 'O',
+                    company_name: '',
+                    allowed_domains: '',
+                    invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                    allow_open_invite: true,
+                    last_team_icon_update: 1525181587639,
+                    scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                    group_constrained: null,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toMatch('Team');
     });
 });
