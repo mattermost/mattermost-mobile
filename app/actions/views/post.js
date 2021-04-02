@@ -28,12 +28,12 @@ import {getChannelSinceValue} from '@utils/channels';
 
 import {getEmojisInPosts} from './emoji';
 
-export function sendEphemeralPost(message, channelId = '', parentId = '') {
+export function sendEphemeralPost(message, channelId = '', parentId = '', userId = '0') {
     return async (dispatch, getState) => {
         const timestamp = Date.now();
         const post = {
             id: generateId(),
-            user_id: '0',
+            user_id: userId,
             channel_id: channelId || getCurrentChannelId(getState()),
             message,
             type: Posts.POST_TYPES.EPHEMERAL,

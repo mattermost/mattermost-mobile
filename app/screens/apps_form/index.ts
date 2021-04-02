@@ -9,14 +9,15 @@ import {doAppCall} from '@actions/apps';
 
 import {AppCallResponse, AppCallRequest, AppCallType} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
-import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
+import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 import AppsFormContainer from './apps_form_container';
 import {sendEphemeralPost} from '@actions/views/post';
 
 type Actions = {
     doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-    sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+    sendEphemeralPost: SendEphemeralPost;
 };
 
 function mapStateToProps(state: GlobalState) {
