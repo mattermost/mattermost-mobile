@@ -401,6 +401,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         last_team_icon_updated_at: {name: 'last_team_icon_updated_at', type: 'number'},
                         name: {name: 'name', type: 'string'},
                         type: {name: 'type', type: 'string'},
+                        update_at: {name: 'update_at', type: 'string'},
                     },
                     columnArray: [
                         {name: 'is_allow_open_invite', type: 'boolean'},
@@ -411,6 +412,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'last_team_icon_updated_at', type: 'number'},
                         {name: 'name', type: 'string'},
                         {name: 'type', type: 'string'},
+                        {name: 'update_at', type: 'string'},
                     ],
                 },
                 [TEAM_CHANNEL_HISTORY]: {
