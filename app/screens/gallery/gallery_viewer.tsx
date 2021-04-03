@@ -137,6 +137,7 @@ const GalleryViewer = (props: GalleryProps) => {
             file,
             deviceWidth: width,
             deviceHeight: height,
+            theme: props.theme,
         };
 
         if (isImage(file)) {
@@ -167,7 +168,6 @@ const GalleryViewer = (props: GalleryProps) => {
                     <GalleryVideo
                         isActive={currentIndex === i}
                         showHideHeaderFooter={props.onTap}
-                        theme={props.theme}
                         {...itemProps}
                     />
                 </View>
@@ -179,10 +179,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 key={file.id}
                 style={styles.item}
             >
-                <GalleryFile
-                    theme={props.theme}
-                    {...itemProps}
-                />
+                <GalleryFile {...itemProps}/>
             </View>
         );
     });
