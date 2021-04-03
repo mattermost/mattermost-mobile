@@ -16,7 +16,7 @@ import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import Hashtag from 'app/components/markdown/hashtag';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getScheme} from 'app/utils/url';
 

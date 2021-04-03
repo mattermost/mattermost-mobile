@@ -7,7 +7,7 @@ import React, {PureComponent} from 'react';
 import {TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class TouchableWithFeedbackAndroid extends PureComponent {
     static propTypes = {

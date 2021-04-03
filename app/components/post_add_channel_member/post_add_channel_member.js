@@ -14,7 +14,7 @@ import {t} from 'app/utils/i18n';
 
 import AtMention from 'app/components/at_mention';
 import FormattedText from 'app/components/formatted_text';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class PostAddChannelMember extends React.PureComponent {
     static propTypes = {
