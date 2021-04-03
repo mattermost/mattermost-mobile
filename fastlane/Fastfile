@@ -765,6 +765,7 @@ platform :android do
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
     apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
+    Ui.message("JSON PATH APK #{lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]}")
     outputJson = load_config_json(lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH])
     paths = []
     apks.each do |apk|
