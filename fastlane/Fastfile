@@ -777,9 +777,9 @@ platform :android do
     paths = []
     apks.each do |apk|
       filename = File.basename(apk)
-      output = outputJson.find { |o| o["path"] === filename }
+      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
       unless output.nil?
-        filterName = output["apkData"]["filterName"]
+        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
         name = "#{app_name_sub}"
         unless filterName.nil? || filterName.empty?
           name += "-#{filterName}"
