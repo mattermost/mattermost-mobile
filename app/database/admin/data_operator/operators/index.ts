@@ -28,6 +28,7 @@ import {
     RawReaction,
     RawRole,
     RawServers,
+    RawSlashCommand,
     RawSystem,
     RawTeam,
     RawTeamChannelHistory,
@@ -52,6 +53,7 @@ import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
+import SlashCommand from '@typings/database/slash_command';
 import System from '@typings/database/system';
 import Team from '@typings/database/team';
 import TeamChannelHistory from '@typings/database/team_channel_history';
@@ -77,11 +79,12 @@ const {
     PREFERENCE,
     REACTION,
     ROLE,
+    SLASH_COMMAND,
     SYSTEM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
-    TEAM_SEARCH_HISTORY,
     TEAM_MEMBERSHIP,
+    TEAM_SEARCH_HISTORY,
     TERMS_OF_SERVICE,
     USER,
 } = MM_TABLES.SERVER;
@@ -826,6 +829,40 @@ export const operateTeamSearchHistoryRecord = async ({action, database, value}: 
         action,
         database,
         tableName: TEAM_SEARCH_HISTORY,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateSlashCommandRecord: Prepares record of entity 'SLASH_COMMAND' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateSlashCommandRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawSlashCommand;
+    const record = value.record as SlashCommand;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (slashCommand: SlashCommand) => {
+        slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record?.id;
+        slashCommand.isAutoComplete = raw.auto_complete;
+        slashCommand.description = raw.description;
+        slashCommand.displayName = raw.display_name;
+        slashCommand.hint = raw.auto_complete_hint;
+        slashCommand.method = raw.method;
+        slashCommand.teamId = raw.team_id;
+        slashCommand.token = raw.token;
+        slashCommand.trigger = raw.trigger;
+        slashCommand.updateAt = raw.update_at;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: SLASH_COMMAND,
         value,
         generator,
     });

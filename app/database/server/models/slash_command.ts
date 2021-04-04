@@ -48,6 +48,9 @@ export default class SlashCommand extends Model {
     /** trigger : A pattern/text used to recognize when a slash command needs to launch */
     @field('trigger') trigger!: string;
 
+    /** update_at : The timestamp to when this command was last updated on the server */
+    @field('update_at') updateAt!: number;
+
     /** team : The related parent TEAM record */
     @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 }

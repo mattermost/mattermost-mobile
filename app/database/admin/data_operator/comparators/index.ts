@@ -18,6 +18,7 @@ import {
     RawPreference,
     RawRole,
     RawServers,
+    RawSlashCommand,
     RawSystem,
     RawTeam,
     RawTeamChannelHistory,
@@ -36,6 +37,7 @@ import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Role from '@typings/database/role';
 import Servers from '@typings/database/servers';
+import SlashCommand from '@typings/database/slash_command';
 import System from '@typings/database/system';
 import Team from '@typings/database/team';
 import TeamChannelHistory from '@typings/database/team_channel_history';
@@ -137,4 +139,8 @@ export const isRecordTeamChannelHistoryEqualToRaw = (record: TeamChannelHistory,
 
 export const isRecordTeamSearchHistoryEqualToRaw = (record: TeamSearchHistory, raw: RawTeamSearchHistory) => {
     return raw.team_id === record.teamId && raw.term === record.term;
+};
+
+export const isRecordSlashCommandEqualToRaw = (record: SlashCommand, raw: RawSlashCommand) => {
+    return raw.id === record.id;
 };

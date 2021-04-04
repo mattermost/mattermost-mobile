@@ -23,6 +23,7 @@ import {
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
+    operateSlashCommandRecord,
     operateSystemRecord,
     operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
@@ -755,5 +756,42 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe('TeamSearchHistory');
+    });
+
+    it('=> operateSlashCommandRecord: should return an array of type SlashCommand', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateSlashCommandRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'command_1',
+                    auto_complete: true,
+                    auto_complete_desc: 'mock_command',
+                    auto_complete_hint: 'hint',
+                    create_at: 1445538153952,
+                    creator_id: 'creator_id',
+                    delete_at: 1445538153952,
+                    description: 'description',
+                    display_name: 'display_name',
+                    icon_url: 'display_name',
+                    method: 'get',
+                    team_id: 'teamA',
+                    token: 'token',
+                    trigger: 'trigger',
+                    update_at: 1445538153953,
+                    url: 'url',
+                    username: 'userA',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('SlashCommand');
     });
 });

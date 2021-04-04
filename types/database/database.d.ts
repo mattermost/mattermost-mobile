@@ -431,11 +431,12 @@ export type RawValue =
   | RawReaction
   | RawRole
   | RawServers
+  | RawSlashCommand
   | RawSystem
   | RawTeam
   | RawTeamChannelHistory
-  | RawTeamSearchHistory
   | RawTeamMembership
+  | RawTeamSearchHistory
   | RawTermsOfService
   | RawUser;
 

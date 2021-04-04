@@ -19,6 +19,7 @@ import {
     isRecordPreferenceEqualToRaw,
     isRecordRoleEqualToRaw,
     isRecordServerEqualToRaw,
+    isRecordSlashCommandEqualToRaw,
     isRecordSystemEqualToRaw,
     isRecordTeamChannelHistoryEqualToRaw,
     isRecordTeamEqualToRaw,
@@ -57,6 +58,7 @@ import {
     RawPostsInThread,
     RawPreference,
     RawReaction,
+    RawSlashCommand,
     RawTeam,
     RawTeamChannelHistory,
     RawTeamMembership,
@@ -93,6 +95,7 @@ import {
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
+    operateSlashCommandRecord,
     operateSystemRecord,
     operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
@@ -127,10 +130,11 @@ const {
     POST_METADATA,
     PREFERENCE,
     REACTION,
+    SLASH_COMMAND,
     TEAM,
     TEAM_CHANNEL_HISTORY,
-    TEAM_SEARCH_HISTORY,
     TEAM_MEMBERSHIP,
+    TEAM_SEARCH_HISTORY,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -996,6 +1000,30 @@ class DataOperator {
             operator: operateTeamSearchHistoryRecord,
             rawValues,
             tableName: TEAM_SEARCH_HISTORY,
+        });
+    };
+
+    /**
+     * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND entity from the 'Server' schema
+     * @param {RawSlashCommand[]} slashCommands
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleSlashCommand = async (slashCommands: RawSlashCommand[]) => {
+        if (!slashCommands.length) {
+            throw new DataOperatorException(
+                'An empty "slashCommands" array has been passed to the handleSlashCommand method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
+            fieldName: 'id',
+            operator: operateSlashCommandRecord,
+            rawValues,
+            tableName: SLASH_COMMAND,
         });
     };
 

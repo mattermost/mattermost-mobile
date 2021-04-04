@@ -12,6 +12,7 @@ import {
     RangeOfValueArgs,
     RawPost,
     RawReaction,
+    RawSlashCommand,
     RawTeam,
     RawUser,
     RawValue,
@@ -22,10 +23,11 @@ import {
 } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 import Post from '@typings/database/post';
+import SlashCommand from '@typings/database/slash_command';
 import Team from '@typings/database/team';
 import User from '@typings/database/user';
 
-const {POST, REACTION, TEAM, USER} = MM_TABLES.SERVER;
+const {POST, REACTION, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -164,11 +166,11 @@ export const retrieveRecords = async ({database, tableName, condition}: Retrieve
  * @returns {boolean}
  */
 export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
-    const guardTables = [POST, TEAM, USER];
+    const guardTables = [POST, SLASH_COMMAND, TEAM, USER];
 
     if (guardTables.includes(tableName)) {
-        type Raw = RawPost | RawUser | RawTeam
-        type ExistingRecord = Post | User | Team
+        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand
+        type ExistingRecord = Post | User | Team | SlashCommand
 
         return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
     }

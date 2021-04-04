@@ -983,4 +983,36 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleSlashCommand: should write to SLASH_COMMAND entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleSlashCommand([
+            {
+                id: 'command_1',
+                auto_complete: true,
+                auto_complete_desc: 'mock_command',
+                auto_complete_hint: 'hint',
+                create_at: 1445538153952,
+                creator_id: 'creator_id',
+                delete_at: 1445538153952,
+                description: 'description',
+                display_name: 'display_name',
+                icon_url: 'display_name',
+                method: 'get',
+                team_id: 'teamA',
+                token: 'token',
+                trigger: 'trigger',
+                update_at: 1445538153953,
+                url: 'url',
+                username: 'userA',
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });

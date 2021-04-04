@@ -67,7 +67,10 @@ describe('*** Test schema for SERVER database ***', () => {
                         creator_id: {name: 'creator_id', type: 'string', isIndexed: true},
                         delete_at: {name: 'delete_at', type: 'number'},
                         display_name: {name: 'display_name', type: 'string'},
-                        is_group_constrained: {name: 'is_group_constrained', type: 'boolean'},
+                        is_group_constrained: {
+                            name: 'is_group_constrained',
+                            type: 'boolean',
+                        },
                         name: {name: 'name', type: 'string', isIndexed: true},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         type: {name: 'type', type: 'string'},
@@ -99,9 +102,7 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         name: {name: 'name', type: 'string'},
                     },
-                    columnArray: [
-                        {name: 'name', type: 'string'},
-                    ],
+                    columnArray: [{name: 'name', type: 'string'}],
                 },
                 [MY_CHANNEL]: {
                     name: MY_CHANNEL,
@@ -144,7 +145,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'earliest', type: 'number'},
                         {name: 'latest', type: 'number'},
-
                     ],
                 },
                 [DRAFT]: {
@@ -367,6 +367,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         token: {name: 'token', type: 'string'},
                         trigger: {name: 'trigger', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'is_auto_complete', type: 'boolean'},
@@ -377,6 +378,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'token', type: 'string'},
                         {name: 'trigger', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [SYSTEM]: {
@@ -393,12 +395,21 @@ describe('*** Test schema for SERVER database ***', () => {
                 [TEAM]: {
                     name: TEAM,
                     columns: {
-                        is_allow_open_invite: {name: 'is_allow_open_invite', type: 'boolean'},
+                        is_allow_open_invite: {
+                            name: 'is_allow_open_invite',
+                            type: 'boolean',
+                        },
                         allowed_domains: {name: 'allowed_domains', type: 'string'},
                         description: {name: 'description', type: 'string'},
                         display_name: {name: 'display_name', type: 'string'},
-                        is_group_constrained: {name: 'is_group_constrained', type: 'boolean'},
-                        last_team_icon_updated_at: {name: 'last_team_icon_updated_at', type: 'number'},
+                        is_group_constrained: {
+                            name: 'is_group_constrained',
+                            type: 'boolean',
+                        },
+                        last_team_icon_updated_at: {
+                            name: 'last_team_icon_updated_at',
+                            type: 'number',
+                        },
                         name: {name: 'name', type: 'string'},
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
@@ -444,7 +455,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         display_term: {name: 'display_term', type: 'string'},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         term: {name: 'term', type: 'string'},
-
                     },
                     columnArray: [
                         {name: 'created_at', type: 'number'},
@@ -458,9 +468,7 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         accepted_at: {name: 'accepted_at', type: 'number'},
                     },
-                    columnArray: [
-                        {name: 'accepted_at', type: 'number'},
-                    ],
+                    columnArray: [{name: 'accepted_at', type: 'number'}],
                 },
                 [USER]: {
                     name: USER,
@@ -473,7 +481,10 @@ describe('*** Test schema for SERVER database ***', () => {
                         is_bot: {name: 'is_bot', type: 'boolean'},
                         is_guest: {name: 'is_guest', type: 'boolean'},
                         last_name: {name: 'last_name', type: 'string'},
-                        last_picture_update: {name: 'last_picture_update', type: 'number'},
+                        last_picture_update: {
+                            name: 'last_picture_update',
+                            type: 'number',
+                        },
                         locale: {name: 'locale', type: 'string'},
                         nickname: {name: 'nickname', type: 'string'},
                         notify_props: {name: 'notify_props', type: 'string'},
