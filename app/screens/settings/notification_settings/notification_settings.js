@@ -127,38 +127,6 @@ export default class NotificationSettings extends PureComponent {
         });
     };
 
-    saveNotificationProps = (notifyProps) => {
-        const {currentUser} = this.props;
-        const prevProps = getNotificationProps(currentUser);
-        const updatedProps = {
-            ...prevProps,
-            ...notifyProps,
-        };
-
-        if (!deepEqual(prevProps, notifyProps)) {
-            this.props.actions.updateMe({notify_props: updatedProps});
-        }
-    };
-
-    /**
-     * shouldSaveAutoResponder
-     *
-     * Necessary in order to properly update the notifyProps when
-     * enabling/disabling the Auto Responder.
-     *
-     * Reason being, on mobile when the AutoResponder is disabled on the server
-     * for some reason the update does not get received on mobile, it does for web
-     */
-    shouldSaveAutoResponder = (notifyProps) => {
-        const {currentUserStatus} = this.props;
-        const {auto_responder_active: autoResponderActive} = notifyProps;
-
-        const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
-        const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoResponderActive === 'false';
-
-        return enabling || disabling;
-    };
-
     saveAutoResponder = (notifyProps) => {
         const {intl} = this.context;
 
@@ -170,8 +138,55 @@ export default class NotificationSettings extends PureComponent {
         }
 
         if (this.shouldSaveAutoResponder(notifyProps)) {
-            this.props.actions.updateMe({notify_props: notifyProps});
+            const notify_props = this.sanitizeNotificationProps(notifyProps);
+            this.props.actions.updateMe({notify_props});
         }
+    };
+
+    saveNotificationProps = (notifyProps) => {
+        const {currentUser} = this.props;
+        const prevProps = getNotificationProps(currentUser);
+        const updatedProps = {
+            ...prevProps,
+            ...notifyProps,
+        };
+
+        if (!deepEqual(prevProps, notifyProps)) {
+            const notify_props = this.sanitizeNotificationProps(updatedProps);
+            this.props.actions.updateMe({notify_props});
+        }
+    };
+
+    sanitizeNotificationProps = (notifyProps) => {
+        const sanitized = {...notifyProps};
+        Reflect.deleteProperty(sanitized, 'showKeywordsModal');
+        Reflect.deleteProperty(sanitized, 'showReplyModal');
+        Reflect.deleteProperty(sanitized, 'androidKeywords');
+        Reflect.deleteProperty(sanitized, 'newReplyValue');
+        Reflect.deleteProperty(sanitized, 'user_id');
+
+        return sanitized;
+    }
+
+    /**
+     * shouldSaveAutoResponder
+     *
+     * Necessary in order to properly update the notifyProps when
+     * enabling/disabling the Auto Responder.
+     *
+     * Reason being, on mobile when the AutoResponder is disabled on the server
+     * for some reason the update does not get received on mobile, it does for web
+     */
+    shouldSaveAutoResponder = (notifyProps) => {
+        const {currentUser, currentUserStatus} = this.props;
+        const {auto_responder_active: autoResponderActive} = notifyProps;
+        const prevProps = getNotificationProps(currentUser);
+
+        const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
+        const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoResponderActive === 'false';
+        const updatedMsg = prevProps.auto_responder_message !== notifyProps.auto_responder_message;
+
+        return enabling || disabling || updatedMsg;
     };
 
     render() {

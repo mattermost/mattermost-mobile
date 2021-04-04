@@ -5,9 +5,10 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
+import {GlobalState} from '@mm-redux/types/store';
 import NotificationSettingsAutoResponder from './notification_settings_auto_responder';
 
-function mapStateToProps(state) {
+function mapStateToProps(state: GlobalState) {
     const currentUserId = getCurrentUserId(state);
     const currentUserStatus = getStatusForUserId(state, currentUserId);
 
