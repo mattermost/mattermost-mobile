@@ -15,6 +15,7 @@ import {
     isRecordGroupMembershipEqualToRaw,
     isRecordGroupsInChannelEqualToRaw,
     isRecordGroupsInTeamEqualToRaw,
+    isRecordMyTeamEqualToRaw,
     isRecordPostEqualToRaw,
     isRecordPreferenceEqualToRaw,
     isRecordRoleEqualToRaw,
@@ -53,6 +54,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyTeam,
     RawPost,
     RawPostMetadata,
     RawPostsInThread,
@@ -87,6 +89,7 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -124,6 +127,7 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -1024,6 +1028,30 @@ class DataOperator {
             operator: operateSlashCommandRecord,
             rawValues,
             tableName: SLASH_COMMAND,
+        });
+    };
+
+    /**
+     * handleMyTeam: Handler responsible for the Create/Update operations occurring on the MY_TEAM entity from the 'Server' schema
+     * @param {RawMyTeam[]} myTeams
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyTeam = async (myTeams: RawMyTeam[]) => {
+        if (!myTeams.length) {
+            throw new DataOperatorException(
+                'An empty "myTeams" array has been passed to the handleSlashCommand method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyTeamEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateMyTeamRecord,
+            rawValues,
+            tableName: MY_TEAM,
         });
     };
 

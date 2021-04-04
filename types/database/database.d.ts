@@ -412,6 +412,13 @@ export type RawSlashCommand = {
   username: string;
 };
 
+export type RawMyTeam = {
+  team_id: string;
+  roles: string;
+  is_unread: boolean;
+  mentions_count: number;
+};
+
 export type RawValue =
   | RawApp
   | RawChannelMembership
@@ -423,6 +430,7 @@ export type RawValue =
   | RawGroupMembership
   | RawGroupsInChannel
   | RawGroupsInTeam
+  | RawMyTeam
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel

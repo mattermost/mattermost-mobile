@@ -20,6 +20,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyTeam,
     RawPost,
     RawPostMetadata,
     RawPostsInChannel,
@@ -45,6 +46,7 @@ import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyTeam from '@typings/database/my_team';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -72,6 +74,7 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
@@ -863,6 +866,35 @@ export const operateSlashCommandRecord = async ({action, database, value}: DataF
         action,
         database,
         tableName: SLASH_COMMAND,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateMyTeamRecord: Prepares record of entity 'MY_TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateMyTeamRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawMyTeam;
+    const record = value.record as MyTeam;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (myTeam: MyTeam) => {
+        myTeam._raw.id = isCreateAction ? myTeam.id : record?.id;
+        myTeam.teamId = raw.team_id;
+        myTeam.roles = raw.roles;
+        myTeam.isUnread = raw.is_unread;
+        myTeam.mentionsCount = raw.mentions_count;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: MY_TEAM,
         value,
         generator,
     });
