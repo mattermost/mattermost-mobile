@@ -22,6 +22,7 @@ import {
     RawTeam,
     RawTeamChannelHistory,
     RawTeamMembership,
+    RawTeamSearchHistory,
     RawTermsOfService,
     RawUser,
 } from '@typings/database/database';
@@ -39,6 +40,7 @@ import System from '@typings/database/system';
 import Team from '@typings/database/team';
 import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
+import TeamSearchHistory from '@typings/database/team_search_history';
 import TermsOfService from '@typings/database/terms_of_service';
 import User from '@typings/database/user';
 
@@ -131,4 +133,8 @@ export const isRecordTeamEqualToRaw = (record: Team, raw: RawTeam) => {
 
 export const isRecordTeamChannelHistoryEqualToRaw = (record: TeamChannelHistory, raw: RawTeamChannelHistory) => {
     return raw.team_id === record.teamId;
+};
+
+export const isRecordTeamSearchHistoryEqualToRaw = (record: TeamSearchHistory, raw: RawTeamSearchHistory) => {
+    return raw.team_id === record.teamId && raw.term === record.term;
 };

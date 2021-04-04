@@ -32,6 +32,7 @@ import {
     RawTeam,
     RawTeamChannelHistory,
     RawTeamMembership,
+    RawTeamSearchHistory,
     RawTermsOfService,
     RawUser,
 } from '@typings/database/database';
@@ -55,6 +56,7 @@ import System from '@typings/database/system';
 import Team from '@typings/database/team';
 import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
+import TeamSearchHistory from '@typings/database/team_search_history';
 import TermsOfService from '@typings/database/terms_of_service';
 import User from '@typings/database/user';
 
@@ -78,6 +80,7 @@ const {
     SYSTEM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
+    TEAM_SEARCH_HISTORY,
     TEAM_MEMBERSHIP,
     TERMS_OF_SERVICE,
     USER,
@@ -784,7 +787,6 @@ export const operateTeamChannelHistoryRecord = async ({action, database, value}:
     const record = value.record as TeamChannelHistory;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of team comes from server response
     const generator = (teamChannelHistory: TeamChannelHistory) => {
         teamChannelHistory._raw.id = isCreateAction ? (teamChannelHistory.id) : record?.id;
         teamChannelHistory.teamId = raw.team_id;
@@ -795,6 +797,35 @@ export const operateTeamChannelHistoryRecord = async ({action, database, value}:
         action,
         database,
         tableName: TEAM_CHANNEL_HISTORY,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateTeamSearchHistoryRecord: Prepares record of entity 'TEAM_SEARCH_HISTORY' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateTeamSearchHistoryRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawTeamSearchHistory;
+    const record = value.record as TeamSearchHistory;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (teamSearchHistory: TeamSearchHistory) => {
+        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record?.id;
+        teamSearchHistory.createdAt = raw.created_at;
+        teamSearchHistory.displayTerm = raw.display_term;
+        teamSearchHistory.term = raw.term;
+        teamSearchHistory.teamId = raw.team_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: TEAM_SEARCH_HISTORY,
         value,
         generator,
     });

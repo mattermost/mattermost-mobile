@@ -385,6 +385,13 @@ team_id: string;
 channel_ids: string[]
 }
 
+export type RawTeamSearchHistory = {
+  created_at: number;
+  display_term: string;
+  term: string;
+  team_id: string;
+}
+
 export type RawSlashCommand = {
   id: string;
   auto_complete: boolean;
@@ -427,6 +434,7 @@ export type RawValue =
   | RawSystem
   | RawTeam
   | RawTeamChannelHistory
+  | RawTeamSearchHistory
   | RawTeamMembership
   | RawTermsOfService
   | RawUser;

@@ -23,6 +23,7 @@ import {
     isRecordTeamChannelHistoryEqualToRaw,
     isRecordTeamEqualToRaw,
     isRecordTeamMembershipEqualToRaw,
+    isRecordTeamSearchHistoryEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
     isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
@@ -59,6 +60,7 @@ import {
     RawTeam,
     RawTeamChannelHistory,
     RawTeamMembership,
+    RawTeamSearchHistory,
     RawUser,
     RawValue,
 } from '@typings/database/database';
@@ -95,6 +97,7 @@ import {
     operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
     operateTeamRecord,
+    operateTeamSearchHistoryRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from '../operators';
@@ -126,6 +129,7 @@ const {
     REACTION,
     TEAM,
     TEAM_CHANNEL_HISTORY,
+    TEAM_SEARCH_HISTORY,
     TEAM_MEMBERSHIP,
     USER,
 } = MM_TABLES.SERVER;
@@ -863,6 +867,7 @@ class DataOperator {
                 'An empty "groups" array has been passed to the handleGroup method',
             );
         }
+
         const rawValues = getUniqueRawsBy({raws: groups, key: 'name'});
 
         await this.handleEntityRecords({
@@ -967,6 +972,30 @@ class DataOperator {
             operator: operateTeamChannelHistoryRecord,
             rawValues,
             tableName: TEAM_CHANNEL_HISTORY,
+        });
+    };
+
+    /**
+     * handleTeamSearchHistory: Handler responsible for the Create/Update operations occurring on the TEAM_SEARCH_HISTORY entity from the 'Server' schema
+     * @param {RawTeamSearchHistory[]} teamSearchHistories
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleTeamSearchHistory = async (teamSearchHistories: RawTeamSearchHistory[]) => {
+        if (!teamSearchHistories.length) {
+            throw new DataOperatorException(
+                'An empty "teamSearchHistories" array has been passed to the handleTeamSearchHistory method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateTeamSearchHistoryRecord,
+            rawValues,
+            tableName: TEAM_SEARCH_HISTORY,
         });
     };
 

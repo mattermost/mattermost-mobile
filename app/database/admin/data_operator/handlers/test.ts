@@ -964,4 +964,23 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleTeamSearchHistory: should write to TEAM_SEARCH_HISTORY entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleTeamSearchHistory([
+            {
+                team_id: 'a',
+                term: 'termA',
+                display_term: 'termA',
+                created_at: 1445538153952,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });
