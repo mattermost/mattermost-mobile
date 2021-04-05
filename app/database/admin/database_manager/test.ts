@@ -167,7 +167,7 @@ describe('*** Database Manager tests ***', () => {
 
         const occurrences = allServers?.map((server) => server.url).reduce((acc, cur) => (cur === serverUrl ? acc + 1 : acc), 0);
 
-        // We should only have one occurence of the 'https://appv3.mattermost.com' url
+        // We should only have one occurrence of the 'https://appv3.mattermost.com' url
         expect(occurrences).toEqual(1);
     });
 });

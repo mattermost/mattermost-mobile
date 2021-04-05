@@ -6,7 +6,7 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
-    isRecordAppEqualToRaw,
+    isRecordAppEqualToRaw, isRecordChannelEqualToRaw,
     isRecordChannelMembershipEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -44,7 +44,7 @@ import {
     PostImage,
     PrepareForDatabaseArgs,
     PrepareRecordsArgs,
-    ProcessInputsArgs,
+    ProcessInputsArgs, RawChannel,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -80,7 +80,7 @@ import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
 import {
     operateAppRecord,
-    operateChannelMembershipRecord,
+    operateChannelMembershipRecord, operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -119,6 +119,7 @@ import {
 } from '../utils';
 
 const {
+    CHANNEL,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -1052,6 +1053,30 @@ class DataOperator {
             operator: operateMyTeamRecord,
             rawValues,
             tableName: MY_TEAM,
+        });
+    };
+
+    /**
+     * handleMyTeam: Handler responsible for the Create/Update operations occurring on the CHANNEL entity from the 'Server' schema
+     * @param {RawChannel[]} channels
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleChannel = async (channels: RawChannel[]) => {
+        if (!channels.length) {
+            throw new DataOperatorException(
+                'An empty "channels" array has been passed to the handleChannel method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordChannelEqualToRaw,
+            fieldName: 'id',
+            operator: operateChannelRecord,
+            rawValues,
+            tableName: CHANNEL,
         });
     };
 

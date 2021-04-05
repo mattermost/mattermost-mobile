@@ -191,8 +191,6 @@ export type RawPost = {
   };
 };
 
-export type ChannelType = 'D' | 'O' | 'G' | 'P';
-
 export type RawUser = {
   id: string;
   auth_service: string;
@@ -294,27 +292,6 @@ export type RawChannelMembers = {
   scheme_guest: boolean;
   scheme_user: boolean;
   user_id: string;
-};
-
-export type RawChannel = {
-  create_at: number;
-  creator_id: string;
-  delete_at: number;
-  display_name: string;
-  extra_update_at: number;
-  group_constrained: boolean | null;
-  header: string;
-  id: string;
-  last_post_at: number;
-  name: string;
-  props: null;
-  purpose: string;
-  scheme_id: null;
-  shared: null;
-  team_id: string;
-  total_msg_count: number;
-  type: ChannelType;
-  update_at: number;
 };
 
 export type RawPostsInThread = {
@@ -419,8 +396,32 @@ export type RawMyTeam = {
   mentions_count: number;
 };
 
+export type ChannelType = 'D' | 'O' | 'G' | 'P';
+
+export type RawChannel = {
+  create_at: number;
+  creator_id: string;
+  delete_at: number;
+  display_name: string;
+  extra_update_at: number;
+  group_constrained: boolean | null;
+  header: string;
+  id: string;
+  last_post_at: number;
+  name: string;
+  props: null;
+  purpose: string;
+  scheme_id: null;
+  shared: null;
+  team_id: string;
+  total_msg_count: number;
+  type: ChannelType;
+  update_at: number;
+};
+
 export type RawValue =
   | RawApp
+  | RawChannel
   | RawChannelMembership
   | RawCustomEmoji
   | RawDraft

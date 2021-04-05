@@ -6,7 +6,7 @@ import {DatabaseType, OperationType} from '@typings/database/enums';
 
 import {
     operateAppRecord,
-    operateChannelMembershipRecord,
+    operateChannelMembershipRecord, operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -818,5 +818,43 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe('MyTeam');
+    });
+
+    it('=> operateChannelRecord: should return an array of type Channel', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateChannelRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'kow9j1ttnxwig7tnqgebg7dtipno',
+                    create_at: 1600185541285,
+                    update_at: 1604401077256,
+                    delete_at: 0,
+                    team_id: '',
+                    type: 'D',
+                    display_name: '',
+                    name: 'jui1zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
+                    header: 'https://mattermost)',
+                    purpose: '',
+                    last_post_at: 1617311494451,
+                    total_msg_count: 585,
+                    extra_update_at: 0,
+                    creator_id: '',
+                    scheme_id: null,
+                    props: null,
+                    group_constrained: null,
+                    shared: null,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('Channel');
     });
 });

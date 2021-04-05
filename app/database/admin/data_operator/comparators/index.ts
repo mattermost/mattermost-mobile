@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import App from '@typings/database/app';
+import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
-    RawApp,
+    RawApp, RawChannel,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -149,4 +150,8 @@ export const isRecordSlashCommandEqualToRaw = (record: SlashCommand, raw: RawSla
 
 export const isRecordMyTeamEqualToRaw = (record: MyTeam, raw: RawMyTeam) => {
     return raw.team_id === record.teamId;
+};
+
+export const isRecordChannelEqualToRaw = (record: Channel, raw: RawChannel) => {
+    return raw.id === record.id;
 };

@@ -1034,4 +1034,37 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleChannel: should write to CHANNEL entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleChannel([
+            {
+                id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
+                create_at: 1600185541285,
+                update_at: 1604401077256,
+                delete_at: 0,
+                team_id: '',
+                type: 'D',
+                display_name: '',
+                name: 'gh781zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
+                header: '(https://mattermost',
+                purpose: '',
+                last_post_at: 1617311494451,
+                total_msg_count: 585,
+                extra_update_at: 0,
+                creator_id: '',
+                scheme_id: null,
+                props: null,
+                group_constrained: null,
+                shared: null,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });

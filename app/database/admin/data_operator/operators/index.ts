@@ -6,11 +6,12 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
+import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactoryArgs,
-    RawApp,
+    RawApp, RawChannel,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -66,6 +67,7 @@ import User from '@typings/database/user';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
+    CHANNEL,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -849,6 +851,7 @@ export const operateSlashCommandRecord = async ({action, database, value}: DataF
     const record = value.record as SlashCommand;
     const isCreateAction = action === OperationType.CREATE;
 
+    // id of team comes from server response
     const generator = (slashCommand: SlashCommand) => {
         slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record?.id;
         slashCommand.isAutoComplete = raw.auto_complete;
@@ -895,6 +898,40 @@ export const operateMyTeamRecord = async ({action, database, value}: DataFactory
         action,
         database,
         tableName: MY_TEAM,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateChannelRecord: Prepares record of entity 'CHANNEL' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawChannel;
+    const record = value.record as Channel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of team comes from server response
+    const generator = (channel: Channel) => {
+        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record?.id;
+        channel.createAt = raw.create_at;
+        channel.creatorId = raw.creator_id;
+        channel.deleteAt = raw.delete_at;
+        channel.displayName = raw.display_name;
+        channel.isGroupConstrained = Boolean(raw.group_constrained);
+        channel.name = raw.name;
+        channel.teamId = raw.team_id;
+        channel.type = raw.type;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: CHANNEL,
         value,
         generator,
     });
