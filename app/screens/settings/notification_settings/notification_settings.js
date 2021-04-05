@@ -130,7 +130,7 @@ export default class NotificationSettings extends PureComponent {
     saveAutoResponder = (notifyProps) => {
         const {intl} = this.context;
 
-        if (!notifyProps.auto_responder_message || notifyProps.auto_responder_message === '') {
+        if (!notifyProps.auto_responder_message) {
             notifyProps.auto_responder_message = intl.formatMessage({
                 id: 'mobile.notification_settings.auto_responder.default_message',
                 defaultMessage: 'Hello, I am out of office and unable to respond to messages.',

@@ -102,9 +102,13 @@ const NotificationSettingsAutoResponder = ({currentUser, currentUserStatus, intl
     }, []);
 
     useEffect(() => {
-        // autoresponderRef.current?.focus();
+        const autoresponderTimeout = setTimeout(() => {
+            autoresponderRef.current?.focus();
+        }, 500);
 
         return () => {
+            clearTimeout(autoresponderTimeout);
+
             onBack({
                 ...notifyProps,
                 user_id: currentUser.id,
