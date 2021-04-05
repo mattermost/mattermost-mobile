@@ -6,7 +6,8 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
-    isRecordAppEqualToRaw, isRecordChannelEqualToRaw,
+    isRecordAppEqualToRaw,
+    isRecordChannelEqualToRaw,
     isRecordChannelMembershipEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -15,6 +16,7 @@ import {
     isRecordGroupMembershipEqualToRaw,
     isRecordGroupsInChannelEqualToRaw,
     isRecordGroupsInTeamEqualToRaw,
+    isRecordMyChannelSettingsEqualToRaw,
     isRecordMyTeamEqualToRaw,
     isRecordPostEqualToRaw,
     isRecordPreferenceEqualToRaw,
@@ -55,6 +57,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannelSettings,
     RawMyTeam,
     RawPost,
     RawPostMetadata,
@@ -91,6 +94,7 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelSettingsRecord,
     operateMyTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
@@ -130,6 +134,7 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
@@ -144,8 +149,6 @@ const {
     TEAM_SEARCH_HISTORY,
     USER,
 } = MM_TABLES.SERVER;
-
-// TODO : We assume that we are receiving clean&correct data from the server.  Hence, we can never have two posts in an array with the same post_id. This should be confirmed.
 
 class DataOperator {
     /**
@@ -1079,6 +1082,30 @@ class DataOperator {
             operator: operateChannelRecord,
             rawValues,
             tableName: CHANNEL,
+        });
+    };
+
+    /**
+     * handleMyChannelSettings: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL_SETTINGS entity from the 'Server' schema
+     * @param {RawMyChannelSettings[]} settings
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyChannelSettings = async (settings: RawMyChannelSettings[]) => {
+        if (!settings.length) {
+            throw new DataOperatorException(
+                'An empty "settings" array has been passed to the handleMyChannelSettings method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateMyChannelSettingsRecord,
+            rawValues,
+            tableName: MY_CHANNEL_SETTINGS,
         });
     };
 

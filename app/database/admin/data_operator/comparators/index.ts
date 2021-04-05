@@ -16,6 +16,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannelSettings,
     RawMyTeam,
     RawPost,
     RawPreference,
@@ -36,6 +37,7 @@ import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyChannelSettings from '@typings/database/my_channel_settings';
 import MyTeam from '@typings/database/my_team';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
@@ -155,4 +157,8 @@ export const isRecordMyTeamEqualToRaw = (record: MyTeam, raw: RawMyTeam) => {
 
 export const isRecordChannelEqualToRaw = (record: Channel, raw: RawChannel) => {
     return raw.id === record.id;
+};
+
+export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettings, raw: RawMyChannelSettings) => {
+    return raw.channel_id === record.channelId;
 };

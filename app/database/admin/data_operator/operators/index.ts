@@ -22,6 +22,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannelSettings,
     RawMyTeam,
     RawPost,
     RawPostMetadata,
@@ -48,6 +49,7 @@ import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyChannelSettings from '@typings/database/my_channel_settings';
 import MyTeam from '@typings/database/my_team';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
@@ -77,6 +79,7 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
@@ -933,6 +936,33 @@ export const operateChannelRecord = async ({action, database, value}: DataFactor
         action,
         database,
         tableName: CHANNEL,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateMyChannelSettingsRecord: Prepares record of entity 'MY_CHANNEL_SETTINGS' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateMyChannelSettingsRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawMyChannelSettings;
+    const record = value.record as MyChannelSettings;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (myChannelSetting: MyChannelSettings) => {
+        myChannelSetting._raw.id = isCreateAction ? myChannelSetting.id : record?.id;
+        myChannelSetting.channelId = raw.channel_id;
+        myChannelSetting.notifyProps = raw.notify_props;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: MY_CHANNEL_SETTINGS,
         value,
         generator,
     });

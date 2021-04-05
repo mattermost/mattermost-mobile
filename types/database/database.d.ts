@@ -419,6 +419,11 @@ export type RawChannel = {
   update_at: number;
 };
 
+export type RawMyChannelSettings = {
+  notify_props: NotifyProps,
+  channel_id: string;
+}
+
 export type RawValue =
   | RawApp
   | RawChannel
@@ -431,6 +436,7 @@ export type RawValue =
   | RawGroupMembership
   | RawGroupsInChannel
   | RawGroupsInTeam
+  | RawMyChannelSettings
   | RawMyTeam
   | RawPost
   | RawPostMetadata

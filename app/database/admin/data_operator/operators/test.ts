@@ -6,7 +6,8 @@ import {DatabaseType, OperationType} from '@typings/database/enums';
 
 import {
     operateAppRecord,
-    operateChannelMembershipRecord, operateChannelRecord,
+    operateChannelMembershipRecord,
+    operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -15,6 +16,7 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelSettingsRecord,
     operateMyTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
@@ -850,6 +852,36 @@ describe('*** DataOperator: Operators tests ***', () => {
                     props: null,
                     group_constrained: null,
                     shared: null,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('Channel');
+    });
+
+    it('=> operateMyChannelSettingsRecord: should return an array of type MY_CHANNEL_SETTINGS', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateMyChannelSettingsRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'c',
+                    notify_props: {
+                        desktop: 'all',
+                        desktop_sound: true,
+                        email: true,
+                        first_name: true,
+                        mention_keys: '',
+                        push: 'mention',
+                        channel: true,
+                    },
                 },
             },
         });
