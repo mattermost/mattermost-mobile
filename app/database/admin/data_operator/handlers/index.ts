@@ -1070,7 +1070,7 @@ class DataOperator {
     };
 
     /**
-     * handleMyTeam: Handler responsible for the Create/Update operations occurring on the CHANNEL entity from the 'Server' schema
+     * handleChannel: Handler responsible for the Create/Update operations occurring on the CHANNEL entity from the 'Server' schema
      * @param {RawChannel[]} channels
      * @throws DataOperatorException
      * @returns {Promise<null|void>}
