@@ -6,6 +6,7 @@ import {DatabaseType, OperationType} from '@typings/database/enums';
 
 import {
     operateAppRecord,
+    operateChannelInfoRecord,
     operateChannelMembershipRecord,
     operateChannelRecord,
     operateCustomEmojiRecord,
@@ -887,6 +888,32 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Channel');
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettings');
+    });
+
+    it('=> operateChannelInfoRecord: should return an array of type CHANNEL_INFO', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateChannelInfoRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'c',
+                    guest_count: 10,
+                    header: 'channel info header',
+                    member_count: 10,
+                    pinned_post_count: 3,
+                    purpose: 'sample channel ',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfo');
     });
 });

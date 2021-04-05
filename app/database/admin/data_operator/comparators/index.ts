@@ -3,11 +3,13 @@
 
 import App from '@typings/database/app';
 import Channel from '@typings/database/channel';
+import ChannelInfo from '@typings/database/channel_info';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     RawApp,
     RawChannel,
+    RawChannelInfo,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -160,5 +162,9 @@ export const isRecordChannelEqualToRaw = (record: Channel, raw: RawChannel) => {
 };
 
 export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettings, raw: RawMyChannelSettings) => {
+    return raw.channel_id === record.channelId;
+};
+
+export const isRecordChannelInfoEqualToRaw = (record: ChannelInfo, raw: RawChannelInfo) => {
     return raw.channel_id === record.channelId;
 };

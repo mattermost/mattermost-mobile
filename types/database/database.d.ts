@@ -424,9 +424,19 @@ export type RawMyChannelSettings = {
   channel_id: string;
 }
 
+export type RawChannelInfo = {
+  channel_id: string;
+  guest_count: number;
+  header: string;
+  member_count: number;
+  pinned_post_count: number;
+  purpose: string;
+}
+
 export type RawValue =
   | RawApp
   | RawChannel
+  | RawChannelInfo
   | RawChannelMembership
   | RawCustomEmoji
   | RawDraft

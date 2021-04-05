@@ -8,6 +8,7 @@ import {MM_TABLES} from '@constants/database';
 import {
     isRecordAppEqualToRaw,
     isRecordChannelEqualToRaw,
+    isRecordChannelInfoEqualToRaw,
     isRecordChannelMembershipEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -48,6 +49,7 @@ import {
     PrepareRecordsArgs,
     ProcessInputsArgs,
     RawChannel,
+    RawChannelInfo,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -84,6 +86,7 @@ import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
 import {
     operateAppRecord,
+    operateChannelInfoRecord,
     operateChannelMembershipRecord,
     operateChannelRecord,
     operateCustomEmojiRecord,
@@ -126,6 +129,7 @@ import {
 
 const {
     CHANNEL,
+    CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -1106,6 +1110,30 @@ class DataOperator {
             operator: operateMyChannelSettingsRecord,
             rawValues,
             tableName: MY_CHANNEL_SETTINGS,
+        });
+    };
+
+    /**
+     * handleChannelInfo: Handler responsible for the Create/Update operations occurring on the CHANNEL_INFO entity from the 'Server' schema
+     * @param {RawChannelInfo[]} channelInfos
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleChannelInfo = async (channelInfos: RawChannelInfo[]) => {
+        if (!channelInfos.length) {
+            throw new DataOperatorException(
+                'An empty "channelInfos" array has been passed to the handleMyChannelSettings method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: channelInfos, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateChannelInfoRecord,
+            rawValues,
+            tableName: CHANNEL_INFO,
         });
     };
 

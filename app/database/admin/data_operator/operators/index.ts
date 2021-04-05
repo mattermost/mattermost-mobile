@@ -7,12 +7,14 @@ import Model from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
 import Channel from '@typings/database/channel';
+import ChannelInfo from '@typings/database/channel_info';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactoryArgs,
     RawApp,
     RawChannel,
+    RawChannelInfo,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -71,6 +73,7 @@ import User from '@typings/database/user';
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
     CHANNEL,
+    CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -963,6 +966,37 @@ export const operateMyChannelSettingsRecord = async ({action, database, value}: 
         action,
         database,
         tableName: MY_CHANNEL_SETTINGS,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateChannelInfoRecord: Prepares record of entity 'CHANNEL_INFO' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateChannelInfoRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawChannelInfo;
+    const record = value.record as ChannelInfo;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (channelInfo: ChannelInfo) => {
+        channelInfo._raw.id = isCreateAction ? channelInfo.id : record?.id;
+        channelInfo.channelId = raw.channel_id;
+        channelInfo.guestCount = raw.guest_count;
+        channelInfo.header = raw.header;
+        channelInfo.memberCount = raw.member_count;
+        channelInfo.pinned_post_count = raw.pinned_post_count;
+        channelInfo.purpose = raw.purpose;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: CHANNEL_INFO,
         value,
         generator,
     });
