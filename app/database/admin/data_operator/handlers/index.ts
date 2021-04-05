@@ -213,14 +213,14 @@ class DataOperator {
             }
             case IsolatedEntities.ROLE: {
                 findMatchingRecordBy = isRecordRoleEqualToRaw;
-                fieldName = 'name';
+                fieldName = 'id';
                 operator = operateRoleRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.SERVERS: {
                 findMatchingRecordBy = isRecordServerEqualToRaw;
-                fieldName = 'db_path';
+                fieldName = 'url';
                 operator = operateServersRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'displayName'});
                 break;

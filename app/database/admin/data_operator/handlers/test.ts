@@ -13,6 +13,7 @@ import {
 } from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
+import {RawApp, RawGlobal, RawRole, RawServers} from '@typings/database/database';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
@@ -79,17 +80,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const values = [
+        const values: RawApp[] = [
             {
                 build_number: 'build-10x',
                 created_at: 1,
-                id: 'id-21',
                 version_number: 'version-10',
             },
             {
                 build_number: 'build-11y',
                 created_at: 1,
-                id: 'id-22',
                 version_number: 'version-11',
             },
         ];
@@ -112,7 +111,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
-        const values = [{id: 'global-1-id', name: 'global-1-name', value: 'global-1-value'}];
+        const values: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
 
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.GLOBAL, values});
 
@@ -132,11 +131,10 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
-        const values = [
+        const values: RawServers[] = [
             {
                 db_path: 'server.db',
                 display_name: 'community',
-                id: 'server-id-1',
                 mention_count: 0,
                 unread_count: 0,
                 url: 'https://community.mattermost.com',
@@ -160,7 +158,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(database).toBeTruthy();
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
-        const values = [
+        const values: RawRole[] = [
             {
                 id: 'custom-emoji-id-1',
                 name: 'custom-emoji-1',
