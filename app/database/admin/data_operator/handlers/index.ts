@@ -199,9 +199,9 @@ class DataOperator {
             }
             case IsolatedEntities.CUSTOM_EMOJI: {
                 findMatchingRecordBy = isRecordCustomEmojiEqualToRaw;
-                fieldName = 'name';
+                fieldName = 'id';
                 operator = operateCustomEmojiRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.GLOBAL: {
@@ -227,16 +227,16 @@ class DataOperator {
             }
             case IsolatedEntities.SYSTEM: {
                 findMatchingRecordBy = isRecordSystemEqualToRaw;
-                fieldName = 'name';
+                fieldName = 'id';
                 operator = operateSystemRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
                 findMatchingRecordBy = isRecordTermsOfServiceEqualToRaw;
-                fieldName = 'accepted_at';
+                fieldName = 'id';
                 operator = operateTermsOfServiceRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'acceptedAt'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             default: {

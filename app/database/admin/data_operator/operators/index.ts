@@ -287,7 +287,7 @@ export const operateTermsOfServiceRecord = async ({action, database, value}: Dat
     // id of TOS comes from server response
     const generator = (tos: TermsOfService) => {
         tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record?.id;
-        tos.acceptedAt = raw?.acceptedAt;
+        tos.acceptedAt = raw?.accepted_at;
     };
 
     return operateBaseRecord({

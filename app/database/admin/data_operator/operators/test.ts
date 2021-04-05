@@ -188,7 +188,7 @@ describe('*** DataOperator: Operators tests ***', () => {
                 record: undefined,
                 raw: {
                     id: 'tos-1',
-                    acceptedAt: 1,
+                    accepted_at: 1,
                     create_at: 1613667352029,
                     user_id: 'user1613667352029',
                     text: '',

@@ -13,7 +13,7 @@ import {
 } from '@database/admin/data_operator/comparators';
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
-import {RawApp, RawGlobal, RawRole, RawServers} from '@typings/database/database';
+import {RawApp, RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
@@ -99,7 +99,13 @@ describe('*** DataOperator: Handlers tests ***', () => {
             fieldName: 'version_number',
             operator: operateAppRecord,
             findMatchingRecordBy: isRecordAppEqualToRaw,
-            rawValues: values,
+            rawValues: [
+                {
+                    build_number: 'build-11y',
+                    created_at: 1,
+                    version_number: 'version-11',
+                },
+            ],
             tableName: 'app',
         });
     });
@@ -143,10 +149,18 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SERVERS, values});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordServerEqualToRaw,
-            fieldName: 'db_path',
+            fieldName: 'url',
             operator: operateServersRecord,
-            rawValues: values,
+            findMatchingRecordBy: isRecordServerEqualToRaw,
+            rawValues: [
+                {
+                    db_path: 'server.db',
+                    display_name: 'community',
+                    mention_count: 0,
+                    unread_count: 0,
+                    url: 'https://community.mattermost.com',
+                },
+            ],
             tableName: 'servers',
         });
     });
@@ -172,10 +186,16 @@ describe('*** DataOperator: Handlers tests ***', () => {
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
-            findMatchingRecordBy: isRecordRoleEqualToRaw,
-            fieldName: 'name',
+            fieldName: 'id',
             operator: operateRoleRecord,
-            rawValues: values,
+            findMatchingRecordBy: isRecordRoleEqualToRaw,
+            rawValues: [
+                {
+                    id: 'custom-emoji-id-1',
+                    name: 'custom-emoji-1',
+                    permissions: ['custom-emoji-1'],
+                },
+            ],
             tableName: 'Role',
         });
     });
@@ -192,7 +212,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
-            fieldName: 'name',
+            fieldName: 'id',
             operator: operateSystemRecord,
             rawValues: values,
             tableName: 'System',
@@ -207,10 +227,10 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const values = [
+        const values: RawTermsOfService[] = [
             {
                 id: 'tos-1',
-                acceptedAt: 1,
+                accepted_at: 1,
                 create_at: 1613667352029,
                 user_id: 'user1613667352029',
                 text: '',
@@ -224,7 +244,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
-            fieldName: 'accepted_at',
+            fieldName: 'id',
             operator: operateTermsOfServiceRecord,
             rawValues: values,
             tableName: 'TermsOfService',
@@ -244,7 +264,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 tableName: 'INVALID_TABLE_NAME',
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                values: [{id: 'tos-1', acceptedAt: 1}],
+                values: [{id: 'tos-1', accepted_at: 1}],
             }),
         ).rejects.toThrow(DataOperatorException);
     });

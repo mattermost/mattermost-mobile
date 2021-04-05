@@ -84,11 +84,11 @@ export const isRecordRoleEqualToRaw = (record: Role, raw: RawRole) => {
 };
 
 export const isRecordSystemEqualToRaw = (record: System, raw: RawSystem) => {
-    return raw.name === record.name && raw.value === record.value;
+    return raw.id === record.id;
 };
 
 export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfService, raw: RawTermsOfService) => {
-    return raw.acceptedAt === record.acceptedAt;
+    return raw.id === record.id;
 };
 
 export const isRecordDraftEqualToRaw = (record: Draft, raw: RawDraft) => {
@@ -116,7 +116,7 @@ export const isRecordTeamMembershipEqualToRaw = (record: TeamMembership, raw: Ra
 };
 
 export const isRecordCustomEmojiEqualToRaw = (record: CustomEmoji, raw: RawCustomEmoji) => {
-    return raw.name === record.name;
+    return raw.id === record.id;
 };
 
 export const isRecordGroupMembershipEqualToRaw = (record: GroupMembership, raw: RawGroupMembership) => {

@@ -75,7 +75,7 @@ export type RawSystem = {
 
 export type RawTermsOfService = {
   id: string;
-  acceptedAt: number;
+  accepted_at: number;
   create_at: number;
   user_id: string;
   text: string;
