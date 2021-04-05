@@ -118,9 +118,9 @@ export const operateAppRecord = async ({action, database, value}: DataFactoryArg
 
     const generator = (app: App) => {
         app._raw.id = isCreateAction ? app.id : record.id;
-        app.buildNumber = raw?.buildNumber;
-        app.createdAt = raw?.createdAt;
-        app.versionNumber = raw?.versionNumber;
+        app.buildNumber = raw?.build_number;
+        app.createdAt = raw?.created_at;
+        app.versionNumber = raw?.version_number;
     };
 
     return operateBaseRecord({
@@ -173,10 +173,10 @@ export const operateServersRecord = async ({action, database, value}: DataFactor
 
     const generator = (servers: Servers) => {
         servers._raw.id = isCreateAction ? servers.id : record.id;
-        servers.dbPath = raw?.dbPath;
-        servers.displayName = raw?.displayName;
-        servers.mentionCount = raw?.mentionCount;
-        servers.unreadCount = raw?.unreadCount;
+        servers.dbPath = raw?.db_path;
+        servers.displayName = raw?.display_name;
+        servers.mentionCount = raw?.mention_count;
+        servers.unreadCount = raw?.unread_count;
         servers.url = raw?.url;
     };
 

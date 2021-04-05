@@ -31,24 +31,21 @@ export type DefaultNewServerArgs = {
 export type DatabaseInstance = Database | undefined;
 
 export type RawApp = {
-  buildNumber: string;
-  createdAt: number;
-  id: string;
-  versionNumber: string;
+  build_number: string;
+  created_at: number;
+  version_number: string;
 };
 
 export type RawGlobal = {
-  id: string;
   name: string;
   value: string;
 };
 
 export type RawServers = {
-  dbPath: string;
-  displayName: string;
-  id: string;
-  mentionCount: number;
-  unreadCount: number;
+  db_path: string;
+  display_name: string;
+  mention_count: number;
+  unread_count: number;
   url: string;
 };
 

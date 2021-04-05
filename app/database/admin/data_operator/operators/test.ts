@@ -78,10 +78,9 @@ describe('*** DataOperator: Operators tests ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    buildNumber: 'build-7',
-                    createdAt: 1,
-                    id: 'id-18',
-                    versionNumber: 'v-1',
+                    build_number: 'build-7',
+                    created_at: 1,
+                    version_number: 'v-1',
                 },
             },
         });
@@ -101,7 +100,7 @@ describe('*** DataOperator: Operators tests ***', () => {
             database: database!,
             value: {
                 record: undefined,
-                raw: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
+                raw: {name: 'g-n1', value: 'g-v1'},
             },
         });
 
@@ -121,11 +120,10 @@ describe('*** DataOperator: Operators tests ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    dbPath: 'mm-server',
-                    displayName: 's-displayName',
-                    id: 's-1',
-                    mentionCount: 1,
-                    unreadCount: 0,
+                    db_path: 'mm-server',
+                    display_name: 's-displayName',
+                    mention_count: 1,
+                    unread_count: 0,
                     url: 'https://community.mattermost.com',
                 },
             },

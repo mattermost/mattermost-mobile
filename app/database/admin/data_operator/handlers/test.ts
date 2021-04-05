@@ -81,16 +81,16 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         const values = [
             {
-                buildNumber: 'build-10x',
-                createdAt: 1,
+                build_number: 'build-10x',
+                created_at: 1,
                 id: 'id-21',
-                versionNumber: 'version-10',
+                version_number: 'version-10',
             },
             {
-                buildNumber: 'build-11y',
-                createdAt: 1,
+                build_number: 'build-11y',
+                created_at: 1,
                 id: 'id-22',
-                versionNumber: 'version-11',
+                version_number: 'version-11',
             },
         ];
 
@@ -134,11 +134,11 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
         const values = [
             {
-                dbPath: 'server.db',
-                displayName: 'community',
+                db_path: 'server.db',
+                display_name: 'community',
                 id: 'server-id-1',
-                mentionCount: 0,
-                unreadCount: 0,
+                mention_count: 0,
+                unread_count: 0,
                 url: 'https://community.mattermost.com',
             },
         ];
