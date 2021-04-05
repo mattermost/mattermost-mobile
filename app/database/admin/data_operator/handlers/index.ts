@@ -17,6 +17,7 @@ import {
     isRecordGroupMembershipEqualToRaw,
     isRecordGroupsInChannelEqualToRaw,
     isRecordGroupsInTeamEqualToRaw,
+    isRecordMyChannelEqualToRaw,
     isRecordMyChannelSettingsEqualToRaw,
     isRecordMyTeamEqualToRaw,
     isRecordPostEqualToRaw,
@@ -59,6 +60,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannel,
     RawMyChannelSettings,
     RawMyTeam,
     RawPost,
@@ -97,6 +99,7 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelRecord,
     operateMyChannelSettingsRecord,
     operateMyTeamRecord,
     operatePostInThreadRecord,
@@ -138,6 +141,7 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
@@ -1134,6 +1138,30 @@ class DataOperator {
             operator: operateChannelInfoRecord,
             rawValues,
             tableName: CHANNEL_INFO,
+        });
+    };
+
+    /**
+     * handleMyChannel: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL entity from the 'Server' schema
+     * @param {RawMyChannel[]} myChannels
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyChannel = async (myChannels: RawMyChannel[]) => {
+        if (!myChannels.length) {
+            throw new DataOperatorException(
+                'An empty "myChannels" array has been passed to the handleMyChannel method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: myChannels, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyChannelEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateMyChannelRecord,
+            rawValues,
+            tableName: MY_CHANNEL,
         });
     };
 

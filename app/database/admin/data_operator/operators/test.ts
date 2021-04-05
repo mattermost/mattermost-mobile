@@ -17,6 +17,7 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelRecord,
     operateMyChannelSettingsRecord,
     operateMyTeamRecord,
     operatePostInThreadRecord,
@@ -476,7 +477,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Preference');
     });
 
-    it('=> operateTeamMembershipRecord: should return an array of type TEAM_MEMBERSHIP', async () => {
+    it('=> operateTeamMembershipRecord: should return an array of type TeamMembership', async () => {
         expect.assertions(3);
 
         const database = await createConnection();
@@ -861,7 +862,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Channel');
     });
 
-    it('=> operateMyChannelSettingsRecord: should return an array of type MY_CHANNEL_SETTINGS', async () => {
+    it('=> operateMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
         expect.assertions(3);
 
         const database = await createConnection();
@@ -891,7 +892,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettings');
     });
 
-    it('=> operateChannelInfoRecord: should return an array of type CHANNEL_INFO', async () => {
+    it('=> operateChannelInfoRecord: should return an array of type ChannelInfo', async () => {
         expect.assertions(3);
 
         const database = await createConnection();
@@ -915,5 +916,31 @@ describe('*** DataOperator: Operators tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfo');
+    });
+
+    it('=> operateMyChannelRecord: should return an array of type MyChannel', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateMyChannelRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'cd',
+                    last_post_at: 1617311494451,
+                    last_viewed_at: 1617311494451,
+                    mentions_count: 3,
+                    message_count: 10,
+                    roles: 'guest',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannel');
     });
 });

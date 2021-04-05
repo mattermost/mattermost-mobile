@@ -433,6 +433,15 @@ export type RawChannelInfo = {
   purpose: string;
 }
 
+export type RawMyChannel = {
+  channel_id: string;
+  last_post_at: number;
+  last_viewed_at: number;
+  mentions_count: number;
+  message_count: number;
+  roles: string;
+}
+
 export type RawValue =
   | RawApp
   | RawChannel
@@ -446,6 +455,7 @@ export type RawValue =
   | RawGroupMembership
   | RawGroupsInChannel
   | RawGroupsInTeam
+  | RawMyChannel
   | RawMyChannelSettings
   | RawMyTeam
   | RawPost

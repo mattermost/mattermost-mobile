@@ -1113,4 +1113,25 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
     });
+
+    it('=> HandleMyChannel: should write to MY_CHANNEL entity', async () => {
+        expect.assertions(1);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleMyChannel([
+            {
+                channel_id: 'c',
+                last_post_at: 1617311494451,
+                last_viewed_at: 1617311494451,
+                mentions_count: 3,
+                message_count: 10,
+                roles: 'guest',
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+    });
 });

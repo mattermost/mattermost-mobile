@@ -24,6 +24,7 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannel,
     RawMyChannelSettings,
     RawMyTeam,
     RawPost,
@@ -51,6 +52,7 @@ import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyChannel from '@typings/database/my_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import MyTeam from '@typings/database/my_team';
 import Post from '@typings/database/post';
@@ -82,6 +84,7 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
@@ -997,6 +1000,37 @@ export const operateChannelInfoRecord = async ({action, database, value}: DataFa
         action,
         database,
         tableName: CHANNEL_INFO,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateMyChannelRecord: Prepares record of entity 'MY_CHANNEL' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateMyChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawMyChannel;
+    const record = value.record as MyChannel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (myChannel: MyChannel) => {
+        myChannel._raw.id = isCreateAction ? myChannel.id : record?.id;
+        myChannel.channelId = raw.channel_id;
+        myChannel.roles = raw.roles;
+        myChannel.messageCount = raw.message_count;
+        myChannel.mentionsCount = raw.mentions_count;
+        myChannel.lastPostAt = raw.last_post_at;
+        myChannel.lastViewedAt = raw.last_viewed_at;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: MY_CHANNEL,
         value,
         generator,
     });
