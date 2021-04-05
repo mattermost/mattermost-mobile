@@ -128,7 +128,7 @@ export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembership, r
 };
 
 export const isRecordGroupEqualToRaw = (record: Group, raw: RawGroup) => {
-    return raw.name === record.name && raw.display_name === record.displayName;
+    return raw.id === record.id;
 };
 
 export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeam, raw: RawGroupsInTeam) => {
