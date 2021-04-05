@@ -11,7 +11,8 @@ import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactoryArgs,
-    RawApp, RawChannel,
+    RawApp,
+    RawChannel,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,

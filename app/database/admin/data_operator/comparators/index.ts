@@ -6,7 +6,8 @@ import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
-    RawApp, RawChannel,
+    RawApp,
+    RawChannel,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,

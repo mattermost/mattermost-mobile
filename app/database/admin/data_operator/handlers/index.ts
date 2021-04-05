@@ -44,7 +44,8 @@ import {
     PostImage,
     PrepareForDatabaseArgs,
     PrepareRecordsArgs,
-    ProcessInputsArgs, RawChannel,
+    ProcessInputsArgs,
+    RawChannel,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -80,7 +81,8 @@ import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
 import {
     operateAppRecord,
-    operateChannelMembershipRecord, operateChannelRecord,
+    operateChannelMembershipRecord,
+    operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
