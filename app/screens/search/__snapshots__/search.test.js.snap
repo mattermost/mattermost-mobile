@@ -113,7 +113,7 @@ exports[`Search should match snapshot 1`] = `
               },
               Object {
                 "description": "to find posts in specific channels",
-                "modifier": ":channel-name",
+                "modifier": "channel-name",
                 "testID": "search.in_section",
                 "value": "in:",
               },
