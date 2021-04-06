@@ -16,7 +16,7 @@ import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import Hashtag from 'app/components/markdown/hashtag';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getScheme} from 'app/utils/url';
 
@@ -39,7 +39,7 @@ import {
 
 export default class Markdown extends PureComponent {
     static propTypes = {
-        autolinkedUrlSchemes: PropTypes.array.isRequired,
+        autolinkedUrlSchemes: PropTypes.array,
         baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object,
         channelMentions: PropTypes.object,
@@ -47,15 +47,15 @@ export default class Markdown extends PureComponent {
         isEdited: PropTypes.bool,
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
-        mentionKeys: PropTypes.array.isRequired,
-        minimumHashtagLength: PropTypes.number.isRequired,
+        mentionKeys: PropTypes.array,
+        minimumHashtagLength: PropTypes.number,
         onChannelLinkPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         postId: PropTypes.string,
         textStyles: PropTypes.object,
-        theme: PropTypes.object.isRequired,
+        theme: PropTypes.object,
         value: PropTypes.string.isRequired,
         disableHashtags: PropTypes.bool,
         disableAtMentions: PropTypes.bool,

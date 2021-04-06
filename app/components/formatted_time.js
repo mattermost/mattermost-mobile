@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 import moment from 'moment-timezone';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class FormattedTime extends React.PureComponent {
     static propTypes = {

@@ -9,7 +9,7 @@ import {Client4} from '@mm-redux/client';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 

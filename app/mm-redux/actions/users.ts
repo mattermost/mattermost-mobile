@@ -22,7 +22,7 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 export function checkMfa(loginId: string): ActionFunc {
     return async (dispatch: DispatchFunc) => {

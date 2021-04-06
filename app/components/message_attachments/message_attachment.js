@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 import {getStatusColors} from 'app/utils/message_attachment_colors';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
