@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text} from 'react-native';
+import {Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -139,7 +139,7 @@ export default class AtMention extends React.PureComponent {
     }
 
     render() {
-        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
+        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys, theme} = this.props;
         const {user} = this.state;
         const mentionTextStyle = [];
 
@@ -155,9 +155,8 @@ export default class AtMention extends React.PureComponent {
         let styleText;
 
         if (textStyle) {
-            const {backgroundColor: bg, ...otherStyles} = StyleSheet.flatten(textStyle);
-            backgroundColor = bg;
-            styleText = otherStyles;
+            backgroundColor = theme.mentionHighlightBg;
+            styleText = textStyle;
         }
 
         if (user?.username) {
@@ -194,7 +193,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (suffix) {
-            const suffixStyle = {...styleText, color: this.props.theme.centerChannelColor};
+            const suffixStyle = {...styleText, color: theme.centerChannelColor};
             suffixElement = (
                 <Text style={suffixStyle}>
                     {suffix}
@@ -207,7 +206,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (highlighted) {
-            mentionTextStyle.push({backgroundColor});
+            mentionTextStyle.push({backgroundColor, color: theme.mentionColor});
         }
 
         return (
