@@ -24,7 +24,7 @@
   "apps.error.form.refresh_no_refresh": "Uppdatering efterfrågad på ett fält som inte kan uppdateras.",
   "apps.error.form.submit.pretext": "Ett fel uppstod då modalen skulle skickas. Kontakta app-utvecklaren. Detaljer: {details}",
   "apps.error.lookup.error_preparing_request": "Ett fel uppstod vid skapandet av sökningsbegäran: {errorMessage}",
-  "apps.error.parser": "Tolkningsfel: {error}.\n```\n{command}\n{space}^\n```",
+  "apps.error.parser": "Tolkningsfel: {error}",
   "apps.error.parser.empty_value": "tomma värden är inte tillåtna",
   "apps.error.parser.missing_binding": "Saknar command bindings.",
   "apps.error.parser.missing_call": "Saknar bindningsanrop.",

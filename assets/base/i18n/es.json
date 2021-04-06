@@ -12,6 +12,7 @@
   "about.title": "Acerca de {appTitle}",
   "announcment_banner.dont_show_again": "No volver a mostrar",
   "api.channel.add_member.added": "{addedUsername} agregado al canal por {username}.",
+  "apps.error": "Error: {error}",
   "archivedChannelMessage": "Estás viendo un **canal archivado**. No serán publicados nuevos mensajes.",
   "center_panel.archived.closeChannel": "Cerrar Canal",
   "channel.channelHasGuests": "Este canal tiene huéspedes",
