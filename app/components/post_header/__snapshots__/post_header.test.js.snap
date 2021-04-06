@@ -497,58 +497,37 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
       }
       testID="post_header"
     >
-      <React.Fragment>
-        <TouchableWithFeedbackIOS
-          onPress={[Function]}
-          style={
-            Array [
-              Object {
-                "marginBottom": 3,
-                "marginRight": 5,
-                "maxWidth": "60%",
-              },
-              Object {
-                "maxWidth": "50%",
-              },
-            ]
-          }
-          type="opacity"
-        >
-          <Text
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={
-              Object {
-                "color": "#3d3c40",
-                "flexGrow": 1,
-                "fontSize": 15,
-                "fontWeight": "600",
-                "paddingVertical": 2,
-              }
-            }
-            testID="post_header.display_name"
-          >
-            John Smith
-          </Text>
-        </TouchableWithFeedbackIOS>
-        <View
+      <View
+        style={
+          Array [
+            Object {
+              "marginBottom": 3,
+              "marginRight": 5,
+              "maxWidth": "60%",
+            },
+            Object {
+              "maxWidth": "50%",
+            },
+          ]
+        }
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             Object {
-              "marginRight": 4,
-              "marginTop": 1,
+              "color": "#3d3c40",
+              "flexGrow": 1,
+              "fontSize": 15,
+              "fontWeight": "600",
+              "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
-      </React.Fragment>
+          John Smith
+        </Text>
+      </View>
       <BotTag
         style={
           Object {
@@ -672,58 +651,37 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
       }
       testID="post_header"
     >
-      <React.Fragment>
-        <TouchableWithFeedbackIOS
-          onPress={[Function]}
-          style={
-            Array [
-              Object {
-                "marginBottom": 3,
-                "marginRight": 5,
-                "maxWidth": "60%",
-              },
-              Object {
-                "maxWidth": "70%",
-              },
-            ]
-          }
-          type="opacity"
-        >
-          <Text
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={
-              Object {
-                "color": "#3d3c40",
-                "flexGrow": 1,
-                "fontSize": 15,
-                "fontWeight": "600",
-                "paddingVertical": 2,
-              }
-            }
-            testID="post_header.display_name"
-          >
-            John Smith
-          </Text>
-        </TouchableWithFeedbackIOS>
-        <View
+      <View
+        style={
+          Array [
+            Object {
+              "marginBottom": 3,
+              "marginRight": 5,
+              "maxWidth": "60%",
+            },
+            Object {
+              "maxWidth": "70%",
+            },
+          ]
+        }
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             Object {
-              "marginRight": 4,
-              "marginTop": 1,
+              "color": "#3d3c40",
+              "flexGrow": 1,
+              "fontSize": 15,
+              "fontWeight": "600",
+              "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
-      </React.Fragment>
+          John Smith
+        </Text>
+      </View>
       <BotTag
         style={
           Object {

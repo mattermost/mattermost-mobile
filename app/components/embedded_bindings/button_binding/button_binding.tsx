@@ -16,12 +16,13 @@ import {Post} from '@mm-redux/types/posts';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {Channel} from '@mm-redux/types/channels';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 type Props = {
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
         getChannel: (channelId: string) => Promise<ActionResult>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     };
     post: Post;
     binding: AppBinding;
@@ -32,9 +33,10 @@ export default class ButtonBinding extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-    handleActionPress = preventDoubleTap(async () => {
-        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id);
 
+    private mounted = false;
+
+    handleActionPress = preventDoubleTap(async () => {
         const {
             binding,
             post,
@@ -66,8 +68,11 @@ export default class ButtonBinding extends PureComponent<Props> {
         );
         this.setState({executing: true});
         const res = await this.props.actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
-        this.setState({executing: false});
+        if (this.mounted) {
+            this.setState({executing: false});
+        }
 
+        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id, res.data?.app_metadata?.bot_user_id);
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage(
@@ -103,6 +108,14 @@ export default class ButtonBinding extends PureComponent<Props> {
         }
         }
     }, 4000);
+
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
 
     render() {
         const {theme, binding} = this.props;

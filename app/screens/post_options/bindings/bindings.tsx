@@ -13,8 +13,8 @@ import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
 import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
-import {ActionResult} from '@mm-redux/types/actions';
 import {createCallContext, createCallRequest} from '@utils/apps';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 type Props = {
     bindings: AppBinding[],
@@ -24,13 +24,14 @@ type Props = {
     teamID: string,
     closeWithAnimation: () => void,
     appsEnabled: boolean,
+    intl: typeof intlShape,
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     }
 }
 
-const Bindings = (props: Props) => {
+const Bindings = injectIntl((props: Props) => {
     if (!props.appsEnabled) {
         return null;
     }
@@ -58,7 +59,7 @@ const Bindings = (props: Props) => {
             {options}
         </>
     );
-};
+});
 
 export default Bindings;
 
@@ -72,13 +73,14 @@ type OptionProps = {
     intl: typeof intlShape,
     actions: {
         doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+        sendEphemeralPost: SendEphemeralPost;
     },
 }
 
-const Option = injectIntl((props: OptionProps) => {
-    const onPress = async () => {
-        const {closeWithAnimation, post, teamID} = props;
+class Option extends React.PureComponent<OptionProps> {
+    onPress = async () => {
+        const {closeWithAnimation, post, teamID, binding, intl} = this.props;
+        const {doAppCall, sendEphemeralPost} = this.props.actions;
 
         if (!binding.call) {
             return;
@@ -98,24 +100,25 @@ const Option = injectIntl((props: OptionProps) => {
                 post: AppExpandLevels.ALL,
             },
         );
-        const res = await props.actions?.doAppCall(call, AppCallTypes.SUBMIT, props.intl);
+
+        closeWithAnimation();
+        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
         if (res.error) {
             const errorResponse = res.error;
-            const title = props.intl.formatMessage({
+            const title = intl.formatMessage({
                 id: 'mobile.general.error.title',
                 defaultMessage: 'Error',
             });
-            const errorMessage = errorResponse.error || props.intl.formatMessage({
+            const errorMessage = errorResponse.error || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
             Alert.alert(title, errorMessage);
-            closeWithAnimation();
             return;
         }
 
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => props.actions.sendEphemeralPost(message, props.post.channel_id, props.post.root_id);
+        const ephemeral = (message: string) => sendEphemeralPost(message, post.channel_id, post.root_id || post.id, callResp.app_metadata?.bot_user_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
@@ -126,11 +129,11 @@ const Option = injectIntl((props: OptionProps) => {
         case AppCallResponseTypes.FORM:
             break;
         default: {
-            const title = props.intl.formatMessage({
+            const title = intl.formatMessage({
                 id: 'mobile.general.error.title',
                 defaultMessage: 'Error',
             });
-            const errMessage = props.intl.formatMessage({
+            const errMessage = intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
             }, {
@@ -139,21 +142,21 @@ const Option = injectIntl((props: OptionProps) => {
             Alert.alert(title, errMessage);
         }
         }
-
-        closeWithAnimation();
     };
 
-    const {binding, theme} = props;
-    if (!binding.label) {
-        return null;
-    }
+    render() {
+        const {binding, theme} = this.props;
+        if (!binding.label) {
+            return null;
+        }
 
-    return (
-        <PostOption
-            icon={{uri: binding.icon}}
-            text={binding.label}
-            onPress={onPress}
-            theme={theme}
-        />
-    );
-});
+        return (
+            <PostOption
+                icon={{uri: binding.icon}}
+                text={binding.label}
+                onPress={this.onPress}
+                theme={theme}
+            />
+        );
+    }
+}

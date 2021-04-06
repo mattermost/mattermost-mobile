@@ -143,6 +143,7 @@ export default class PostHeader extends PureComponent {
             displayName,
             enablePostUsernameOverride,
             fromWebHook,
+            isBot,
             isSystemMessage,
             fromAutoResponder,
             overrideUsername,
@@ -155,7 +156,7 @@ export default class PostHeader extends PureComponent {
         const displayNameWidth = this.calcNameWidth();
         const displayNameStyle = [style.displayNameContainer, displayNameWidth];
 
-        if (fromAutoResponder || fromWebHook) {
+        if (fromAutoResponder || fromWebHook || isBot) {
             let name = displayName;
             if (overrideUsername && enablePostUsernameOverride) {
                 name = overrideUsername;

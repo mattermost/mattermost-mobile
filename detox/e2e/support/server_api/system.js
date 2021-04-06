@@ -181,7 +181,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
 
 /**
  * Upload server license with file expected at "/detox/e2e/support/fixtures/mattermost-license.txt"
- * @return {Object} returns response
+ * @return {Object} returns response on success or {error, status} on error
  */
 export const apiUploadLicense = async () => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');

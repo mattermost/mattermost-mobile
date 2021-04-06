@@ -237,10 +237,6 @@ export default class PostOptions extends PureComponent {
     };
 
     getAppsOptions = () => {
-        if (!this.props.showAppOptions) {
-            return null;
-        }
-
         const {post} = this.props;
         return (
             <Bindings

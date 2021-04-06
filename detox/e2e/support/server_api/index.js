@@ -3,6 +3,7 @@
 
 import Channel from './channel';
 import Ldap from './ldap';
+import Plugin from './plugin';
 import Post from './post';
 import Preference from './preference';
 import Setup from './setup';
@@ -14,6 +15,7 @@ import User from './user';
 export {
     Channel,
     Ldap,
+    Plugin,
     Post,
     Preference,
     Setup,
