@@ -24,7 +24,7 @@
   "apps.error.form.refresh_no_refresh": "Yenilenmeyen bir alan için yenileme isteği yapıldı.",
   "apps.error.form.submit.pretext": "Üste açılan pencere gönderilirken bir sorun çıktı. Uygulama geliştiricisi ile görüşün. Ayrıntılar: {details}",
   "apps.error.lookup.error_preparing_request": "Arama isteği hazırlanırken sorun çıktı: {errorMessage}",
-  "apps.error.parser": "İşleme sorunu: {error}.\n```\n{command}\n{space}^\n```",
+  "apps.error.parser": "İşleme sorunu: {error}",
   "apps.error.parser.empty_value": "boş bırakılamaz",
   "apps.error.parser.missing_binding": "Komut bağlantıları eksik.",
   "apps.error.parser.missing_call": "İlgili çağrı eksik.",

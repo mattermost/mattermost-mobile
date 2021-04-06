@@ -30,7 +30,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const opacity = useRef(new Animated.Value(1)).current;
     const downloadingOpacitity = useRef(new Animated.Value(0)).current;
     const prepareRef = useRef<PrepareFileRef>(null);
-    const toastRef = useRef<ToastRef>();
+    const toastRef = useRef<ToastRef>(null);
 
     const animate = (value: Animated.Value, show: boolean, callback?: () => void): Animated.CompositeAnimation => {
         const animation = Animated.timing(value, {

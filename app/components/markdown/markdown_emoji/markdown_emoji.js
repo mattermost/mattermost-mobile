@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class MarkdownEmoji extends PureComponent {

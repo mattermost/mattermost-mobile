@@ -15,7 +15,7 @@ export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
         continue: PropTypes.bool,
         iconStyle: CustomPropTypes.Style,
-        children: CustomPropTypes.Children.isRequired,
+        children: CustomPropTypes.Children,
     };
 
     render() {

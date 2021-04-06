@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import * as CustomPropTypes from 'app/constants/custom_prop_types';
+import * as CustomPropTypes from '@constants/custom_prop_types';
 
 export default class KeyboardLayout extends PureComponent {
     static propTypes = {

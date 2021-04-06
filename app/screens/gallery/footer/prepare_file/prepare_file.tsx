@@ -3,7 +3,7 @@
 
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
 import {intlShape} from 'react-intl';
-import {Alert, Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
+import {Alert, BackHandler, Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
 import RNFetchBlob, {FetchBlobResponse, RNFetchBlobConfig, StatefulPromise} from 'rn-fetch-blob';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
@@ -47,7 +47,8 @@ const styles = StyleSheet.create({
 
 const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLandscape, theme}: PrepareFileProps, ref) => {
     const containerStyles: Array<ViewStyle> = [styles.container];
-    let downloadTask = useRef<StatefulPromise<FetchBlobResponse>>().current;
+    const downloadTask = useRef<StatefulPromise<FetchBlobResponse>>();
+    const [canceled, setCanceled] = useState(false);
     const insets = useSafeAreaInsets();
     const [progress, setProgress] = useState(0);
     const [visible, setVisible] = useState(false);
@@ -55,6 +56,9 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
         const localPath = getLocalPath(file);
         let uri;
         let certificate;
+
+        setCanceled(false);
+        setVisible(true);
 
         if (file.id.startsWith('uid') && file.uri) {
             uri = file.uri;
@@ -76,20 +80,23 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
         let path;
         try {
             const exist = await RNFetchBlob.fs.exists(localPath);
+
             if (exist) {
                 path = localPath;
             } else {
-                setVisible(true);
-                downloadTask = RNFetchBlob.config(options).fetch('GET', uri);
-                downloadTask.progress((received: number, total: number) => {
-                    setProgress(parseFloat((received / total).toFixed(1)));
+                downloadTask.current = RNFetchBlob.config(options).fetch('GET', uri);
+                downloadTask.current.progress((received: number, total: number) => {
+                    if (visible) {
+                        setProgress(parseFloat((received / total).toFixed(1)));
+                    }
                 });
-                const response = await downloadTask;
+                const response = await downloadTask.current;
                 path = response.path();
-                file.localPath = path;
             }
         } catch (e) {
-            if (downloadTask) {
+            path = undefined;
+
+            if (downloadTask.current && e.message !== 'canceled') {
                 Alert.alert(
                     intl.formatMessage({
                         id: 'mobile.prepare_file.failed_title',
@@ -111,14 +118,13 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
                     RNFetchBlob.fs.unlink(path);
                     file.localPath = undefined;
                 }
-                path = undefined;
             }
         } finally {
             setVisible(false);
-            downloadTask = undefined;
+            downloadTask.current = undefined;
         }
 
-        if (path && share) {
+        if (path && share && !canceled) {
             Share.open({
                 url: `file://${path}`,
                 showAppsToView: true,
@@ -130,14 +136,33 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
         return path;
     };
 
+    const abort = (): boolean => {
+        setCanceled(true);
+
+        if (downloadTask.current) {
+            setVisible(false);
+            downloadTask.current.cancel();
+        }
+
+        return visible;
+    };
+
     useEffect(() => {
         return () => {
-            if (downloadTask) {
-                downloadTask.cancel();
+            if (downloadTask.current) {
+                downloadTask.current.cancel();
                 setVisible(false);
             }
         };
     }, []);
+
+    useEffect(() => {
+        BackHandler.addEventListener('hardwareBackPress', abort);
+
+        return () => {
+            BackHandler.removeEventListener('hardwareBackPress', abort);
+        };
+    });
 
     useImperativeHandle(ref, () => ({
         start,

@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {PanResponder, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class TouchableWithFeedbackIOS extends PureComponent {
     static propTypes = {

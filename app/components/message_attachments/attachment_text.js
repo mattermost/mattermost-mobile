@@ -7,13 +7,13 @@ import PropTypes from 'prop-types';
 
 import Markdown from 'app/components/markdown';
 import ShowMoreButton from 'app/components/show_more_button';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 const SHOW_MORE_HEIGHT = 60;
 
 export default class AttachmentText extends PureComponent {
     static propTypes = {
-        baseTextStyle: CustomPropTypes.Style.isRequired,
+        baseTextStyle: CustomPropTypes.Style,
         blockStyles: PropTypes.object.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         hasThumbnail: PropTypes.bool,
