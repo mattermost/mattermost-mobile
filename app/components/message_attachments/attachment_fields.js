@@ -5,13 +5,12 @@ import React, {PureComponent} from 'react';
 import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Markdown from 'app/components/markdown';
-import CustomPropTypes from '@constants/custom_prop_types';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import Markdown from '@components/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class AttachmentFields extends PureComponent {
     static propTypes = {
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object.isRequired,
         fields: PropTypes.array,
         metadata: PropTypes.object,
