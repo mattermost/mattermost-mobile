@@ -24,7 +24,7 @@ export default class MarkdownLink extends PureComponent {
         actions: PropTypes.shape({
             handleSelectChannelByName: PropTypes.func.isRequired,
         }).isRequired,
-        children: CustomPropTypes.Children.isRequired,
+        children: CustomPropTypes.Children,
         href: PropTypes.string.isRequired,
         onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string,

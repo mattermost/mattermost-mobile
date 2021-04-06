@@ -22,7 +22,7 @@ import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelA
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 import {
     deletePreferences,

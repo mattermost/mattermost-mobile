@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 import MessageAttachment from './message_attachment';
 

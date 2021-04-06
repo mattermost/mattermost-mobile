@@ -1,0 +1,74 @@
+diff --git a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
+index dffccc4..dc426c2 100644
+--- a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
++++ b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
+@@ -553,7 +553,7 @@ if (global.RN$Bridgeless) {
+   AndroidTextInputNativeComponent = 'AndroidTextInput';
+ } else {
+   AndroidTextInputNativeComponent = requireNativeComponent<NativeProps>(
+-    'AndroidTextInput',
++    'PasteableTextInputAndroid',
+   );
+ }
+ 
+diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+index 2249d54..d26452a 100644
+--- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
++++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+@@ -18,6 +18,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
+ const StyleSheet = require('../StyleSheet/StyleSheet');
+ const View = require('../Components/View/View');
+ const ViewabilityHelper = require('./ViewabilityHelper');
++const Platform = require('../Utilities/Platform');
+ 
+ const flattenStyle = require('../StyleSheet/flattenStyle');
+ const infoLog = require('../Utilities/infoLog');
+@@ -2061,7 +2062,7 @@ function describeNestedLists(childList: {
+ 
+ const styles = StyleSheet.create({
+   verticallyInverted: {
+-    transform: [{scaleY: -1}],
++    ...Platform.select({android: {transform: [{perspective: 1}, {scaleY: -1}]}, ios: {transform: [{scaleY: -1}]}}),
+   },
+   horizontallyInverted: {
+     transform: [{scaleX: -1}],
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index 5995ad5..dbae7e3 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -157,7 +157,7 @@ afterEvaluate {
+ 
+             // Set up dev mode
+             def devEnabled = !(config."devDisabledIn${targetName}"
+-                || targetName.toLowerCase().contains("release"))
++                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+ 
+             def extraArgs = config.extraPackagerArgs ?: [];
+ 
+@@ -177,7 +177,7 @@ afterEvaluate {
+                     def hermesFlags;
+                     def hbcTempFile = file("${jsBundleFile}.hbc")
+                     exec {
+-                        if (targetName.toLowerCase().contains("release")) {
++                        if (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")) {
+                             // Can't use ?: since that will also substitute valid empty lists
+                             hermesFlags = config.hermesFlagsRelease
+                             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
+@@ -221,7 +221,7 @@ afterEvaluate {
+                 ? config."bundleIn${targetName}"
+                 : config."bundleIn${variant.buildType.name.capitalize()}" != null
+                     ? config."bundleIn${variant.buildType.name.capitalize()}"
+-                    : targetName.toLowerCase().contains("release")
++                    : (targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
+         }
+ 
+         // Expose a minimal interface on the application variant and the task itself:
+@@ -318,7 +318,7 @@ afterEvaluate {
+         // This should really be done by packaging all Hermes releated libs into
+         // two separate HermesDebug and HermesRelease AARs, but until then we'll
+         // kludge it by deleting the .so files out of the /transforms/ directory.
+-        def isRelease = targetName.toLowerCase().contains("release")
++        def isRelease = targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned")
+         def libDir = "$buildDir/intermediates/transforms/"
+         def vmSelectionAction = {
+             fileTree(libDir).matching {

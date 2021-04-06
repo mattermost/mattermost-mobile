@@ -24,7 +24,6 @@ import {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import networkConnectionListener, {checkConnection} from '@utils/network';
 import {t} from '@utils/i18n';
 
-import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from '@init/push_notifications';
 
 const MAX_WEBSOCKET_RETRIES = 3;
@@ -288,13 +287,8 @@ export default class NetworkIndicator extends PureComponent {
     initializeWebSocket = async () => {
         const {actions} = this.props;
         const {closeWebSocket, initWebSocket} = actions;
-        const platform = Platform.OS;
-        let certificate = null;
-        if (platform === 'ios') {
-            certificate = await mattermostBucket.getPreference('cert');
-        }
 
-        initWebSocket({certificate, forceConnection: true}).catch(() => {
+        initWebSocket({forceConnection: true}).catch(() => {
             // we should dispatch a failure and show the app as disconnected
             closeWebSocket(true);
         });

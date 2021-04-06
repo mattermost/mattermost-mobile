@@ -19,18 +19,19 @@ const STATUS_BUFFER = Platform.select({
 
 export default class ProfilePicture extends PureComponent {
     static propTypes = {
-        isCurrentUser: PropTypes.bool.isRequired,
+        isCurrentUser: PropTypes.bool,
         size: PropTypes.number,
         statusSize: PropTypes.number,
         iconSize: PropTypes.number,
         user: PropTypes.object,
+        userId: PropTypes.string,
         showStatus: PropTypes.bool,
         status: PropTypes.string,
         edit: PropTypes.bool,
         imageUri: PropTypes.string,
         profileImageUri: PropTypes.string,
         profileImageRemove: PropTypes.bool,
-        theme: PropTypes.object.isRequired,
+        theme: PropTypes.object,
         testID: PropTypes.string,
         actions: PropTypes.shape({
             getStatusForId: PropTypes.func.isRequired,

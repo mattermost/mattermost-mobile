@@ -8,7 +8,7 @@ import {
     Platform,
 } from 'react-native';
 
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
