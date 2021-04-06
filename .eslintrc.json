@@ -6,8 +6,8 @@
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
-    "mattermost",
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "mattermost"
   ],
   "settings": {
     "react": {

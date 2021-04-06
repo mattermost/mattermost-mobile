@@ -191,6 +191,10 @@ android {
         targetCompatibility 1.8
     }
 
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+
 }
 
 repositories {

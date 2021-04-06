@@ -50,7 +50,6 @@
           <data android:scheme="mmauthbeta" />
         </intent-filter>
       </activity>
-      <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
       <service android:name=".NotificationDismissService"
                 android:enabled="true"
                 android:exported="false" />

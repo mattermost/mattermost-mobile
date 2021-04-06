@@ -25,7 +25,7 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {getMissingProfilesByIds} from './users';
 import {loadRolesIfNeeded} from './roles';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 export function selectChannel(channelId: string) {
     return {
