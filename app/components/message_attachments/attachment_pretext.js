@@ -5,12 +5,11 @@ import React, {PureComponent} from 'react';
 import {StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Markdown from 'app/components/markdown';
-import CustomPropTypes from '@constants/custom_prop_types';
+import Markdown from '@components/markdown';
 
 export default class AttachmentPreText extends PureComponent {
     static propTypes = {
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object.isRequired,
         metadata: PropTypes.object,
         onPermalinkPress: PropTypes.func,

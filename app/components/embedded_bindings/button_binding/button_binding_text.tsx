@@ -3,12 +3,13 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
-import Emoji from 'app/components/emoji';
-import {getEmoticonName} from 'app/utils/emoji_utils';
-import {reEmoji, reEmoticon, reMain} from 'app/constants/emoji';
+import {Text, View, StyleSheet, StyleProp} from 'react-native';
 
-export default function ButtonBindingText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
+import Emoji from '@components/emoji';
+import {reEmoji, reEmoticon, reMain} from '@constants/emoji';
+import {getEmoticonName} from '@utils/emoji_utils';
+
+export default function ButtonBindingText({message, style}: {message: string; style: StyleProp<any>}) {
     const components = [] as JSX.Element[];
 
     let text = message;

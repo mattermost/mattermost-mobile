@@ -16,7 +16,6 @@ import ChannelLink from 'app/components/channel_link';
 import Emoji from 'app/components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import Hashtag from 'app/components/markdown/hashtag';
-import CustomPropTypes from '@constants/custom_prop_types';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getScheme} from 'app/utils/url';
 
@@ -40,7 +39,7 @@ import {
 export default class Markdown extends PureComponent {
     static propTypes = {
         autolinkedUrlSchemes: PropTypes.array,
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object,
         channelMentions: PropTypes.object,
         imagesMetadata: PropTypes.object,
@@ -155,7 +154,8 @@ export default class Markdown extends PureComponent {
     };
 
     computeTextStyle = (baseStyle, context) => {
-        return concatStyles(baseStyle, context.map((type) => this.props.textStyles[type]));
+        const contextStyles = context.map((type) => this.props.textStyles[type]).filter((f) => f !== undefined);
+        return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
     renderText = ({context, literal}) => {
