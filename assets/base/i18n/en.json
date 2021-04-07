@@ -407,6 +407,7 @@
   "mobile.notification_settings.save_failed_title": "Connection issue",
   "mobile.oauth.failed_to_login": "Your login attempt failed. Please try again.",
   "mobile.oauth.failed_to_open_link": "The link failed to open. Please try again.",
+  "mobile.oauth.failed_to_open_link_no_browser": "The link failed to open. Please verify if a browser is installed in the current space.",
   "mobile.oauth.restart_login": "Restart login",
   "mobile.oauth.something_wrong": "Something went wrong",
   "mobile.oauth.something_wrong.okButon": "OK",
