@@ -57,12 +57,23 @@ function SSOWithRedirectURL({
         });
         const url = parsedUrl.toString();
 
-        const onError = () => setError(
-            intl.formatMessage({
-                id: 'mobile.oauth.failed_to_open_link',
-                defaultMessage: 'The link failed to open. Please try again.',
-            }),
-        );
+        const onError = (e: Error) => {
+            let message;
+            if (e?.message?.match(/no activity found to handle intent/i)) {
+                message = intl.formatMessage({
+                    id: 'mobile.oauth.failed_to_open_link_no_browser',
+                    defaultMessage: 'The link failed to open. Please verify if a browser is installed in the current space.',
+                });
+            } else {
+                message = intl.formatMessage({
+                    id: 'mobile.oauth.failed_to_open_link',
+                    defaultMessage: 'The link failed to open. Please try again.',
+                });
+            }
+            setError(
+                message,
+            );
+        };
         tryOpenURL(url, onError);
     };
 
@@ -151,6 +162,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 16,
             fontWeight: '400',
             lineHeight: 23,
+            textAlign: 'center',
         },
         infoContainer: {
             alignItems: 'center',
