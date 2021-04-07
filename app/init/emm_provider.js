@@ -28,6 +28,7 @@ class EMMProvider {
 
         this.allowOtherServers = true;
         this.emmServerUrl = null;
+        this.inAppSessionAuth = false;
     }
 
     checkIfDeviceIsTrusted = () => {
@@ -105,6 +106,8 @@ class EMMProvider {
             this.blurApplicationScreen = managedConfig.blurApplicationScreen === 'true';
             this.jailbreakProtection = managedConfig.jailbreakProtection === 'true';
             this.vendor = managedConfig.vendor || 'Mattermost';
+
+            this.inAppSessionAuth = managedConfig.inAppSessionAuth === 'true';
 
             const credentials = await getAppCredentials();
             if (!credentials) {
