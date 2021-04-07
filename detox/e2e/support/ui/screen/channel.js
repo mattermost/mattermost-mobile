@@ -25,6 +25,7 @@ class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
+        channelPostList: 'channel.post_list',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
         mainSidebarDrawerButtonBadge: 'main_sidebar_drawer.button.badge',
         mainSidebarDrawerButtonBadgeUnreadCount: 'main_sidebar_drawer.button.badge.unread_count',
@@ -37,6 +38,7 @@ class ChannelScreen {
     }
 
     channelScreen = element(by.id(this.testID.channelScreen));
+    channelPostList = element(by.id(this.testID.channelPostList));
     mainSidebarDrawerButton = element(by.id(this.testID.mainSidebarDrawerButton));
     mainSidebarDrawerButtonBadge = element(by.id(this.testID.mainSidebarDrawerButtonBadge));
     mainSidebarDrawerButtonBadgeUnreadCount = element(by.id(this.testID.mainSidebarDrawerButtonBadgeUnreadCount));
@@ -131,11 +133,11 @@ class ChannelScreen {
         await this.closeMainSidebar();
     }
 
-    deletePost = async (postId, text, confirm = true) => {
+    deletePost = async (postId, text, {confirm = true} = {}) => {
         await this.openPostOptionsFor(postId, text);
 
         // # Delete post
-        await PostOptions.deletePost(confirm);
+        await PostOptions.deletePost({confirm});
         await this.toBeVisible();
     }
 
