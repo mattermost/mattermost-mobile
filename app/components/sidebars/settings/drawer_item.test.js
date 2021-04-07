@@ -45,4 +45,18 @@ describe('DrawerItem', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot with failure text element', () => {
+        const failureText = (
+            <Text>{'Hey'}</Text>
+        );
+        const wrapper = shallowWithIntl(
+            <DrawerItem
+                {...baseProps}
+                failureText={failureText}
+            />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });
