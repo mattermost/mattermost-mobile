@@ -3,14 +3,13 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
-import CustomPropTypes from '@constants/custom_prop_types';
 import BottomSheet from '@utils/bottom_sheet';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -19,9 +18,9 @@ export default class AtMention extends React.PureComponent {
         isSearchResult: PropTypes.bool,
         mentionKeys: PropTypes.array.isRequired,
         mentionName: PropTypes.string.isRequired,
-        mentionStyle: CustomPropTypes.Style,
+        mentionStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         onPostPress: PropTypes.func,
-        textStyle: CustomPropTypes.Style,
+        textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired,
@@ -193,7 +192,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (suffix) {
-            const suffixStyle = {...styleText, color: theme.centerChannelColor};
+            const suffixStyle = {...StyleSheet.flatten(styleText), color: theme.centerChannelColor};
             suffixElement = (
                 <Text style={suffixStyle}>
                     {suffix}

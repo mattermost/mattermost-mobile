@@ -7,7 +7,6 @@ import {Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {popToRoot, dismissAllModals} from '@actions/navigation';
-import CustomPropTypes from '@constants/custom_prop_types';
 import {t} from '@utils/i18n';
 import {alertErrorWithFallback} from '@utils/general';
 
@@ -19,9 +18,9 @@ export default class ChannelLink extends React.PureComponent {
         channelMentions: PropTypes.object,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        linkStyle: CustomPropTypes.Style,
+        linkStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         onChannelLinkPress: PropTypes.func,
-        textStyle: CustomPropTypes.Style,
+        textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         channelsByName: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
