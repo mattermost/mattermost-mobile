@@ -104,6 +104,22 @@ describe('PostAttachmentOpenGraph', () => {
         expect(wrapper.find(TouchableWithFeedback).exists()).toEqual(true);
     });
 
+    test('should match state and snapshot, on renderImage', () => {
+        const images = [{height: 440, width: 1200, url: '%REACT_APP_WEBSITE_BANNER%'}];
+        const openGraphDataWithImage = {...openGraphData, images};
+        const wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={openGraphDataWithImage}
+            />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.state('hasImage')).toEqual(false);
+        expect(wrapper.find(FastImage).exists()).toEqual(false);
+        expect(wrapper.find(TouchableWithFeedback).exists()).toEqual(true);
+    });
+
     test('should match state and snapshot, on renderDescription', () => {
         const wrapper = shallow(
             <PostAttachmentOpenGraph
