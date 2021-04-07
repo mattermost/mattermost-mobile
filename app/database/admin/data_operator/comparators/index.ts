@@ -59,7 +59,7 @@ import User from '@typings/database/user';
 /**
  *  This file contains all the comparators that are used by the handlers to find out which records to truly update and
  *  which one to create.  A 'record' is a model in our database and a 'raw' is the object that is passed to the handler
- *  (e.g. API response). Each comparators will return a boolean condition after comparing specific fields from the
+ *  (e.g. API response). Each comparator will return a boolean condition after comparing specific fields from the
  *  'record' and the 'raw'
  */
 
