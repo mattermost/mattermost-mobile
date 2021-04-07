@@ -36,6 +36,8 @@ export type UsersRequestsStatuses = {
     login: RequestStatusType;
     autocompleteUsers: RequestStatusType;
     updateMe: RequestStatusType;
+    setCustomStatus: RequestStatusType;
+    clearCustomStatus: RequestStatusType;
 };
 
 export type EmojisRequestsStatuses = {

@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
 
-import {General} from '@mm-redux/constants';
+import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
@@ -22,6 +22,7 @@ import StatusLabel from './status_label';
 import Emoji from '@components/emoji';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import ClearButton from '@components/custom_status/clear_button';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity} from '@utils/theme';
 
 export default class SettingsSidebarBase extends PureComponent {
@@ -36,6 +37,8 @@ export default class SettingsSidebarBase extends PureComponent {
         theme: PropTypes.object.isRequired,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         customStatus: PropTypes.object,
+        setStatusRequestStatus: PropTypes.string,
+        clearStatusRequestStatus: PropTypes.string,
     };
 
     static defaultProps = {
@@ -44,14 +47,63 @@ export default class SettingsSidebarBase extends PureComponent {
         customStatus: {},
     };
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            showStatus: true,
+            showRetryMessage: false,
+        };
+    }
+
     componentDidMount() {
         this.mounted = true;
         EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
     }
 
+    componentDidUpdate(prevProps) {
+        const {setStatusRequestStatus, clearStatusRequestStatus} = this.props;
+        if (prevProps.clearStatusRequestStatus !== clearStatusRequestStatus) {
+            this.handleClearStatusRequestStatusChange();
+        }
+
+        if (prevProps.setStatusRequestStatus !== setStatusRequestStatus) {
+            this.handleSetStatusRequestStatusChange();
+        }
+    }
+
     componentWillUnmount() {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+    }
+
+    handleClearStatusRequestStatusChange = () => {
+        const {clearStatusRequestStatus} = this.props;
+        if (clearStatusRequestStatus === RequestStatus.STARTED || clearStatusRequestStatus === RequestStatus.SUCCESS) {
+            this.setState({
+                showStatus: false,
+                showRetryMessage: false,
+            });
+        } else if (clearStatusRequestStatus === RequestStatus.FAILURE) {
+            this.setState({
+                showStatus: true,
+                showRetryMessage: true,
+            });
+        }
+    }
+
+    handleSetStatusRequestStatusChange = () => {
+        const {setStatusRequestStatus} = this.props;
+        if (setStatusRequestStatus === RequestStatus.STARTED || setStatusRequestStatus === RequestStatus.SUCCESS) {
+            this.setState({
+                showStatus: true,
+                showRetryMessage: false,
+            });
+        } else if (setStatusRequestStatus === RequestStatus.FAILURE) {
+            this.setState({
+                showStatus: true,
+                showRetryMessage: true,
+            });
+        }
     }
 
     confirmResetBase = (status, intl) => {
@@ -207,10 +259,12 @@ export default class SettingsSidebarBase extends PureComponent {
 
     renderCustomStatus = () => {
         const {isCustomStatusEnabled, customStatus, theme} = this.props;
+        const {showStatus, showRetryMessage} = this.state;
         if (!isCustomStatusEnabled) {
             return null;
         }
-        const isStatusSet = customStatus && (customStatus.text || customStatus.emoji);
+
+        const isStatusSet = customStatus && customStatus.emoji && showStatus;
         const labelComponent = isStatusSet ? (
             <CustomStatusText
                 text={customStatus.text}
@@ -245,6 +299,15 @@ export default class SettingsSidebarBase extends PureComponent {
                 />
             ) : null;
 
+        const retryMessage = showRetryMessage ?
+            (
+                <FormattedText
+                    id='custom_status.failure_message'
+                    defaultMessage='Failed to update status. Try again'
+                    style={{color: theme.errorTextColor}}
+                />
+            ) : null;
+
         return (
             <DrawerItem
                 testID='settings.sidebar.custom_status.action'
@@ -256,6 +319,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 onPress={this.goToCustomStatus}
                 theme={theme}
                 labelSibling={clearButton}
+                failureText={retryMessage}
             />
         );
     };

@@ -19,6 +19,7 @@ export default class DrawerItem extends PureComponent {
         isDestructor: PropTypes.bool,
         labelComponent: PropTypes.node,
         labelSibling: PropTypes.node,
+        failureText: PropTypes.node,
         leftComponent: PropTypes.node,
         onPress: PropTypes.func,
         separator: PropTypes.bool,
@@ -45,6 +46,7 @@ export default class DrawerItem extends PureComponent {
             separator,
             theme,
             labelSibling,
+            failureText,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -103,6 +105,7 @@ export default class DrawerItem extends PureComponent {
                                 {labelSibling}
                             </View>
                         )}
+                        {failureText}
                         {divider}
                     </View>
                 </View>
