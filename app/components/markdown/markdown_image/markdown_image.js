@@ -19,7 +19,6 @@ import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {CustomPropTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
@@ -35,7 +34,7 @@ export default class MarkdownImage extends ImageViewPort {
     static propTypes = {
         children: PropTypes.node,
         disable: PropTypes.bool,
-        errorTextStyle: CustomPropTypes.Style,
+        errorTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         imagesMetadata: PropTypes.object,
         isReplyPost: PropTypes.bool,
         linkDestination: PropTypes.string,
