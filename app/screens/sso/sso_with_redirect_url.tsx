@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {intlShape} from 'react-intl';
-import {Linking, Text, TouchableOpacity, View} from 'react-native';
+import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
@@ -59,7 +59,7 @@ function SSOWithRedirectURL({
 
         const onError = (e: Error) => {
             let message;
-            if (e?.message?.match(/no activity found to handle intent/i)) {
+            if (e && Platform.OS === 'android' && e?.message?.match(/no activity found to handle intent/i)) {
                 message = intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link_no_browser',
                     defaultMessage: 'The link failed to open. Please verify if a browser is installed in the current space.',
