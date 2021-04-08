@@ -93,7 +93,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
 
         return {
-            hasImage: Boolean(isValidUrl(imageUrl) && ((ogImage.width && ogImage.height) || metaImages?.length)),
+            hasImage: Boolean(isValidUrl(imageUrl) && (ogImage.width && ogImage.height)),
             ...dimensions,
             openGraphImageUrl: imageUrl,
         };
