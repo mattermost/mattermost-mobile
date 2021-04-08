@@ -8473,6 +8473,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                     Object {
                       "aliases": Array [
                         "canada",
+                        "ca",
                       ],
                       "name": "canada",
                     },
@@ -9332,6 +9333,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                     Object {
                       "aliases": Array [
                         "pakistan",
+                        "pk",
                       ],
                       "name": "pakistan",
                     },
@@ -9584,6 +9586,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                     Object {
                       "aliases": Array [
                         "south_africa",
+                        "za",
                       ],
                       "name": "south_africa",
                     },
