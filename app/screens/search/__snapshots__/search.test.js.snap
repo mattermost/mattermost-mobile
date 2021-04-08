@@ -98,6 +98,7 @@ exports[`Search should match snapshot 1`] = `
       onLayout={[Function]}
       onScroll={[Function]}
       onViewableItemsChanged={[Function]}
+      removeClippedSubviews={true}
       renderSectionHeader={[Function]}
       scrollEventThrottle={60}
       sections={
