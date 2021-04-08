@@ -76,6 +76,7 @@ const TeamList = () => {
             testID='share_extension.team_list.screen'
             data={teams}
             ItemSeparatorComponent={renderItemSeparator}
+            removeClippedSubviews={true}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             keyboardShouldPersistTaps='always'

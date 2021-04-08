@@ -230,6 +230,7 @@ export default class EmojiSuggestion extends PureComponent {
                 extraData={this.state}
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
+                removeClippedSubviews={true}
                 renderItem={this.renderItem}
                 pageSize={10}
                 initialListSize={10}

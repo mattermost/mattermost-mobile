@@ -72,7 +72,7 @@ class ChannelMembersScreen {
         await expect(this.channelMembersScreen).not.toBeVisible();
     }
 
-    removeMembers = async (displayUsernameList, confirm = true) => {
+    removeMembers = async (displayUsernameList, {confirm = true} = {}) => {
         displayUsernameList.forEach(async (displayUsername) => {
             await this.getUserByDisplayUsername(`@${displayUsername}`).tap();
         });
@@ -84,13 +84,17 @@ class ChannelMembersScreen {
             yesButton,
         } = Alert;
         await expect(removeMembersTitle).toBeVisible();
+        await expect(noButton).toBeVisible();
+        await expect(yesButton).toBeVisible();
         if (confirm) {
             yesButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelMembersScreen).not.toBeVisible();
         } else {
             noButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelMembersScreen).toBeVisible();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.channelMembersScreen).not.toBeVisible();
     }
 
     hasUserDisplayUsernameAtIndex = async (index, displayUsername) => {

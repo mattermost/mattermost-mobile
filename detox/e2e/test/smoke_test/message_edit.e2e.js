@@ -54,6 +54,7 @@ describe('Message Edit', () => {
         await EditPostScreen.open();
 
         // # Edit post and cancel
+        await messageInput.tap();
         await messageInput.typeText(additionalText);
         await EditPostScreen.close();
 
@@ -70,6 +71,7 @@ describe('Message Edit', () => {
         await EditPostScreen.open();
 
         // # Edit post and save
+        await messageInput.tap();
         await messageInput.typeText(additionalText);
         await saveButton.tap();
 

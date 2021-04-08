@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import moment from 'moment-timezone';
+
 import {
     ChannelScreen,
     LongPostScreen,
@@ -16,21 +18,24 @@ import {
     Post,
     Setup,
 } from '@support/server_api';
+import {isAndroid} from '@support/utils';
 
 describe('Message Posting', () => {
     const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(30);
     const {
         getLongPostItem,
         getPostListPostItem,
+        goToChannel,
         postMessage,
     } = ChannelScreen;
     let testChannel;
+    let townSquareChannel;
 
     beforeAll(async () => {
-        const {team, user} = await Setup.apiInit();
-
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel, team, user} = await Setup.apiInit();
         testChannel = channel;
+
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
 
         // # Open channel screen
         await ChannelScreen.open(user);
@@ -45,7 +50,7 @@ describe('Message Posting', () => {
         await postMessage(longMessage, {quickReplace: true});
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
         const {
             postListPostItem,
             postListPostItemShowMoreButton,
@@ -56,7 +61,7 @@ describe('Message Posting', () => {
 
     it('MM-T3229 should be able to open long post via show more', async () => {
         // # Open long post via show more
-        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
         const {postListPostItemShowMoreButton} = await getPostListPostItem(post.id, longMessage);
         await postListPostItemShowMoreButton.tap();
 
@@ -74,7 +79,7 @@ describe('Message Posting', () => {
         await postMessage(message, {quickReplace: true});
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
         const {postListPostItemImage} = await getPostListPostItem(post.id);
         await expect(postListPostItemImage).toBeVisible();
     });
@@ -85,8 +90,52 @@ describe('Message Posting', () => {
         await postMessage(message);
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
         const {postListPostItem} = await getPostListPostItem(post.id, '🦊');
         await expect(postListPostItem).toBeVisible();
+    });
+
+    it('MM-T3189 should be able to scroll up in channel with long history', async () => {
+        // # Post messages
+        await goToChannel(testChannel.display_name);
+        const size = 50;
+        const firstMessageDate = moment().subtract(size + 1, 'days').toDate();
+        const firstMessage = `${firstMessageDate} first`;
+        const firstPost = await Post.apiCreatePost({
+            channelId: testChannel.id,
+            message: firstMessage,
+            createAt: firstMessageDate.getTime(),
+        });
+        [...Array(size).keys()].forEach(async (key) => {
+            const messageDate = moment().subtract(key + 1, 'days').toDate();
+            const message = `${messageDate}-${key}.`.repeat(10);
+            await Post.apiCreatePost({
+                channelId: testChannel.id,
+                message,
+                createAt: messageDate.getTime(),
+            });
+        });
+        const lastMessageDate = moment().toDate();
+        const lastMessage = `${lastMessageDate} last`;
+        const lastPost = await Post.apiCreatePost({
+            channelId: testChannel.id,
+            message: lastMessage,
+            createAt: lastMessageDate.getTime(),
+        });
+
+        // Detox is having trouble scrolling
+        if (isAndroid()) {
+            return;
+        }
+
+        // * Verify last message is posted
+        await goToChannel(townSquareChannel.display_name);
+        await goToChannel(testChannel.display_name);
+        const {postListPostItem: lastPostItem} = await getPostListPostItem(lastPost.post.id, lastMessage);
+        await waitFor(lastPostItem).toBeVisible().whileElement(by.id(ChannelScreen.testID.channelPostList)).scroll(1000, 'down');
+
+        // * Verify user can scroll up multiple times until first matching post is seen
+        const {postListPostItem: firstPostItem} = await getPostListPostItem(firstPost.post.id, firstMessage);
+        await waitFor(firstPostItem).toBeVisible().whileElement(by.id(ChannelScreen.testID.channelPostList)).scroll(1000, 'up');
     });
 });

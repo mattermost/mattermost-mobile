@@ -8,10 +8,12 @@ class PermalinkScreen {
     testID = {
         permalinkScreenPrefix: 'permalink.',
         permalinkScreen: 'permalink.screen',
+        permalinkPostList: 'permalink.post_list',
         searchJump: 'permalink.search.jump',
     }
 
     permalinkScreen = element(by.id(this.testID.permalinkScreen));
+    permalinkPostList = element(by.id(this.testID.permalinkPostList));
     searchJump = element(by.id(this.testID.searchJump));
 
     postList = new PostList(this.testID.permalinkScreenPrefix);

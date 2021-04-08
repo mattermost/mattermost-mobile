@@ -18,10 +18,12 @@ class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
+        threadPostList: 'thread.post_list',
         backButton: 'screen.back.button',
     }
 
     threadScreen = element(by.id(this.testID.threadScreen));
+    threadPostList = element(by.id(this.testID.threadPostList));
     backButton = element(by.id(this.testID.backButton));
 
     // convenience props
@@ -72,11 +74,11 @@ class ThreadScreen {
         await expect(this.threadScreen).not.toBeVisible();
     }
 
-    deletePost = async (postId, text, confirm = true, isParentPost = true) => {
+    deletePost = async (postId, text, {confirm = true, isParentPost = true} = {}) => {
         await this.openPostOptionsFor(postId, text);
 
         // # Delete post
-        await PostOptions.deletePost(confirm);
+        await PostOptions.deletePost({confirm});
         if (isParentPost) {
             await expect(this.threadScreen).not.toBeVisible();
         } else {
