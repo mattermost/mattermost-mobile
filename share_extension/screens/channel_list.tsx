@@ -172,6 +172,7 @@ const ChannelList = ({intl}: ChannnelListProps) => {
                 style={styles.flex}
                 sections={sections}
                 ItemSeparatorComponent={renderItemSeparator}
+                removeClippedSubviews={true}
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 keyExtractor={keyExtractor}

@@ -411,6 +411,7 @@ export default class List extends PureComponent {
                     ref={this.setListRef}
                     sections={sections}
                     contentContainerStyle={{paddingBottom}}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyboardShouldPersistTaps={'always'}

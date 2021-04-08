@@ -214,6 +214,7 @@ export default class PinnedPosts extends PureComponent {
                     keyExtractor={this.keyExtractor}
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
+                    removeClippedSubviews={true}
                     renderItem={this.renderPost}
                     onViewableItemsChanged={this.onViewableItemsChanged}
                 />
