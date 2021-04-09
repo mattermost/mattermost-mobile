@@ -7,6 +7,8 @@ import Model from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {
     isRecordAppEqualToRaw,
+    isRecordChannelEqualToRaw,
+    isRecordChannelInfoEqualToRaw,
     isRecordChannelMembershipEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -15,12 +17,19 @@ import {
     isRecordGroupMembershipEqualToRaw,
     isRecordGroupsInChannelEqualToRaw,
     isRecordGroupsInTeamEqualToRaw,
+    isRecordMyChannelEqualToRaw,
+    isRecordMyChannelSettingsEqualToRaw,
+    isRecordMyTeamEqualToRaw,
     isRecordPostEqualToRaw,
     isRecordPreferenceEqualToRaw,
     isRecordRoleEqualToRaw,
     isRecordServerEqualToRaw,
+    isRecordSlashCommandEqualToRaw,
     isRecordSystemEqualToRaw,
+    isRecordTeamChannelHistoryEqualToRaw,
+    isRecordTeamEqualToRaw,
     isRecordTeamMembershipEqualToRaw,
+    isRecordTeamSearchHistoryEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
     isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
@@ -40,6 +49,8 @@ import {
     PrepareForDatabaseArgs,
     PrepareRecordsArgs,
     ProcessInputsArgs,
+    RawChannel,
+    RawChannelInfo,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -49,12 +60,19 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannel,
+    RawMyChannelSettings,
+    RawMyTeam,
     RawPost,
     RawPostMetadata,
     RawPostsInThread,
     RawPreference,
     RawReaction,
+    RawSlashCommand,
+    RawTeam,
+    RawTeamChannelHistory,
     RawTeamMembership,
+    RawTeamSearchHistory,
     RawUser,
     RawValue,
 } from '@typings/database/database';
@@ -70,7 +88,9 @@ import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
 import {
     operateAppRecord,
+    operateChannelInfoRecord,
     operateChannelMembershipRecord,
+    operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -79,6 +99,9 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelRecord,
+    operateMyChannelSettingsRecord,
+    operateMyTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -87,8 +110,12 @@ import {
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
+    operateSlashCommandRecord,
     operateSystemRecord,
+    operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
+    operateTeamRecord,
+    operateTeamSearchHistoryRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from '../operators';
@@ -96,6 +123,7 @@ import {
     createPostsChain,
     getRangeOfValues,
     getRawRecordPairs,
+    getUniqueRawsBy,
     hasSimilarUpdateAt,
     retrieveRecords,
     sanitizePosts,
@@ -103,6 +131,8 @@ import {
 } from '../utils';
 
 const {
+    CHANNEL,
+    CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -111,17 +141,22 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL,
+    MY_CHANNEL_SETTINGS,
+    MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
     POST_METADATA,
     PREFERENCE,
     REACTION,
+    SLASH_COMMAND,
+    TEAM,
+    TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
+    TEAM_SEARCH_HISTORY,
     USER,
 } = MM_TABLES.SERVER;
-
-// TODO : We assume that we are receiving clean&correct data from the server.  Hence, we can never have two posts in an array with the same post_id. This should be confirmed.
 
 class DataOperator {
     /**
@@ -143,9 +178,10 @@ class DataOperator {
      * @returns {Promise<void>}
      */
     handleIsolatedEntity = async ({tableName, values}: HandleIsolatedEntityArgs) => {
-        let comparator;
+        let findMatchingRecordBy;
         let fieldName;
         let operator;
+        let rawValues;
 
         if (!values.length) {
             throw new DataOperatorException(
@@ -155,45 +191,52 @@ class DataOperator {
 
         switch (tableName) {
             case IsolatedEntities.APP: {
-                comparator = isRecordAppEqualToRaw;
+                findMatchingRecordBy = isRecordAppEqualToRaw;
                 fieldName = 'version_number';
                 operator = operateAppRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'versionNumber'});
                 break;
             }
             case IsolatedEntities.CUSTOM_EMOJI: {
-                comparator = isRecordCustomEmojiEqualToRaw;
-                fieldName = 'name';
+                findMatchingRecordBy = isRecordCustomEmojiEqualToRaw;
+                fieldName = 'id';
                 operator = operateCustomEmojiRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.GLOBAL: {
-                comparator = isRecordGlobalEqualToRaw;
+                findMatchingRecordBy = isRecordGlobalEqualToRaw;
                 fieldName = 'name';
                 operator = operateGlobalRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
                 break;
             }
             case IsolatedEntities.ROLE: {
-                comparator = isRecordRoleEqualToRaw;
-                fieldName = 'name';
+                findMatchingRecordBy = isRecordRoleEqualToRaw;
+                fieldName = 'id';
                 operator = operateRoleRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.SERVERS: {
-                comparator = isRecordServerEqualToRaw;
-                fieldName = 'db_path';
+                findMatchingRecordBy = isRecordServerEqualToRaw;
+                fieldName = 'url';
                 operator = operateServersRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'displayName'});
                 break;
             }
             case IsolatedEntities.SYSTEM: {
-                comparator = isRecordSystemEqualToRaw;
-                fieldName = 'name';
+                findMatchingRecordBy = isRecordSystemEqualToRaw;
+                fieldName = 'id';
                 operator = operateSystemRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
-                comparator = isRecordTermsOfServiceEqualToRaw;
-                fieldName = 'accepted_at';
+                findMatchingRecordBy = isRecordTermsOfServiceEqualToRaw;
+                fieldName = 'id';
                 operator = operateTermsOfServiceRecord;
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             default: {
@@ -203,12 +246,12 @@ class DataOperator {
             }
         }
 
-        if (operator && fieldName && comparator) {
+        if (operator && fieldName && findMatchingRecordBy) {
             await this.handleEntityRecords({
-                comparator,
+                findMatchingRecordBy,
                 fieldName,
                 operator,
-                rawValues: values,
+                rawValues,
                 tableName,
             });
         }
@@ -226,11 +269,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordDraftEqualToRaw,
+            findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
             operator: operateDraftRecord,
-            rawValues: drafts,
+            rawValues,
             tableName: DRAFT,
         });
     };
@@ -250,6 +295,8 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as RawReaction[];
+
         const database = await this.getDatabase(REACTION);
 
         const {
@@ -259,7 +306,7 @@ class DataOperator {
         } = await sanitizeReactions({
             database,
             post_id: reactions[0].post_id,
-            rawReactions: reactions,
+            rawReactions: rawValues,
         });
 
         let batchRecords: Model[] = [];
@@ -320,9 +367,11 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: values, key: 'id'}) as RawPost[];
+
         // By sanitizing the values, we are separating 'posts' that needs updating ( i.e. un-ordered posts ) from those that need to be created in our database
         const {postsOrdered, postsUnordered} = sanitizePosts({
-            posts: values,
+            posts: rawValues,
             orders,
         });
 
@@ -330,7 +379,7 @@ class DataOperator {
         const futureEntries = await this.processInputs({
             rawValues: postsOrdered,
             tableName,
-            comparator: isRecordPostEqualToRaw,
+            findMatchingRecordBy: isRecordPostEqualToRaw,
             fieldName: 'id',
         });
 
@@ -450,7 +499,7 @@ class DataOperator {
         if (postsUnordered.length) {
             // Truly update those posts that have a different update_at value
             await this.handleEntityRecords({
-                comparator: isRecordPostEqualToRaw,
+                findMatchingRecordBy: isRecordPostEqualToRaw,
                 fieldName: 'id',
                 operator: operatePostRecord,
                 rawValues: postsUnordered,
@@ -720,11 +769,14 @@ class DataOperator {
                 'An empty "users" array has been passed to the handleUsers method',
             );
         }
+
+        const rawValues = getUniqueRawsBy({raws: users, key: 'id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordUserEqualToRaw,
+            findMatchingRecordBy: isRecordUserEqualToRaw,
             fieldName: 'id',
             operator: operateUserRecord,
-            rawValues: users,
+            rawValues,
             tableName: USER,
         });
     };
@@ -742,11 +794,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
+
         await this.handleEntityRecords({
-            comparator: isRecordPreferenceEqualToRaw,
+            findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             fieldName: 'user_id',
             operator: operatePreferenceRecord,
-            rawValues: preferences,
+            rawValues,
             tableName: PREFERENCE,
         });
     };
@@ -763,11 +817,14 @@ class DataOperator {
                 'An empty "teamMemberships" array has been passed to the handleTeamMemberships method',
             );
         }
+
+        const rawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordTeamMembershipEqualToRaw,
+            findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateTeamMembershipRecord,
-            rawValues: teamMemberships,
+            rawValues,
             tableName: TEAM_MEMBERSHIP,
         });
     };
@@ -785,11 +842,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordGroupMembershipEqualToRaw,
+            findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateGroupMembershipRecord,
-            rawValues: groupMemberships,
+            rawValues,
             tableName: GROUP_MEMBERSHIP,
         });
     };
@@ -807,11 +866,13 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordChannelMembershipEqualToRaw,
+            findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             fieldName: 'user_id',
             operator: operateChannelMembershipRecord,
-            rawValues: channelMemberships,
+            rawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });
     };
@@ -829,70 +890,292 @@ class DataOperator {
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groups, key: 'name'});
+
         await this.handleEntityRecords({
-            comparator: isRecordGroupEqualToRaw,
+            findMatchingRecordBy: isRecordGroupEqualToRaw,
             fieldName: 'name',
             operator: operateGroupRecord,
-            rawValues: groups,
+            rawValues,
             tableName: GROUP,
         });
     };
 
     /**
      * handleGroupsInTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_TEAM entity from the 'Server' schema
-     * @param {RawGroupsInTeam[]} groupsInTeam
+     * @param {RawGroupsInTeam[]} groupsInTeams
      * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
-    handleGroupsInTeam = async (groupsInTeam: RawGroupsInTeam[]) => {
-        if (!groupsInTeam.length) {
+    handleGroupsInTeam = async (groupsInTeams: RawGroupsInTeam[]) => {
+        if (!groupsInTeams.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordGroupsInTeamEqualToRaw,
+            findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             fieldName: 'group_id',
             operator: operateGroupsInTeamRecord,
-            rawValues: groupsInTeam,
+            rawValues,
             tableName: GROUPS_IN_TEAM,
         });
     };
 
     /**
      * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL entity from the 'Server' schema
-     * @param {RawGroupsInChannel[]} groupsInChannel
+     * @param {RawGroupsInChannel[]} groupsInChannels
      * @throws DataOperatorException
      * @returns {Promise<null|void>}
      */
-    handleGroupsInChannel = async (groupsInChannel: RawGroupsInChannel[]) => {
-        if (!groupsInChannel.length) {
+    handleGroupsInChannel = async (groupsInChannels: RawGroupsInChannel[]) => {
+        if (!groupsInChannels.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
             );
         }
 
+        const rawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
+
         await this.handleEntityRecords({
-            comparator: isRecordGroupsInChannelEqualToRaw,
+            findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             fieldName: 'group_id',
             operator: operateGroupsInChannelRecord,
-            rawValues: groupsInChannel,
+            rawValues,
             tableName: GROUPS_IN_CHANNEL,
         });
     };
 
     /**
+     * handleTeam: Handler responsible for the Create/Update operations occurring on the TEAM entity from the 'Server' schema
+     * @param {RawTeam[]} teams
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleTeam = async (teams: RawTeam[]) => {
+        if (!teams.length) {
+            throw new DataOperatorException(
+                'An empty "teams" array has been passed to the handleTeam method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: teams, key: 'id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordTeamEqualToRaw,
+            fieldName: 'id',
+            operator: operateTeamRecord,
+            rawValues,
+            tableName: TEAM,
+        });
+    };
+
+    /**
+     * handleTeamChannelHistory: Handler responsible for the Create/Update operations occurring on the TEAM_CHANNEL_HISTORY entity from the 'Server' schema
+     * @param {RawTeamChannelHistory[]} teamChannelHistories
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleTeamChannelHistory = async (teamChannelHistories: RawTeamChannelHistory[]) => {
+        if (!teamChannelHistories.length) {
+            throw new DataOperatorException(
+                'An empty "teamChannelHistories" array has been passed to the handleTeamChannelHistory method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'team_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateTeamChannelHistoryRecord,
+            rawValues,
+            tableName: TEAM_CHANNEL_HISTORY,
+        });
+    };
+
+    /**
+     * handleTeamSearchHistory: Handler responsible for the Create/Update operations occurring on the TEAM_SEARCH_HISTORY entity from the 'Server' schema
+     * @param {RawTeamSearchHistory[]} teamSearchHistories
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleTeamSearchHistory = async (teamSearchHistories: RawTeamSearchHistory[]) => {
+        if (!teamSearchHistories.length) {
+            throw new DataOperatorException(
+                'An empty "teamSearchHistories" array has been passed to the handleTeamSearchHistory method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateTeamSearchHistoryRecord,
+            rawValues,
+            tableName: TEAM_SEARCH_HISTORY,
+        });
+    };
+
+    /**
+     * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND entity from the 'Server' schema
+     * @param {RawSlashCommand[]} slashCommands
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleSlashCommand = async (slashCommands: RawSlashCommand[]) => {
+        if (!slashCommands.length) {
+            throw new DataOperatorException(
+                'An empty "slashCommands" array has been passed to the handleSlashCommand method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
+            fieldName: 'id',
+            operator: operateSlashCommandRecord,
+            rawValues,
+            tableName: SLASH_COMMAND,
+        });
+    };
+
+    /**
+     * handleMyTeam: Handler responsible for the Create/Update operations occurring on the MY_TEAM entity from the 'Server' schema
+     * @param {RawMyTeam[]} myTeams
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyTeam = async (myTeams: RawMyTeam[]) => {
+        if (!myTeams.length) {
+            throw new DataOperatorException(
+                'An empty "myTeams" array has been passed to the handleSlashCommand method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyTeamEqualToRaw,
+            fieldName: 'team_id',
+            operator: operateMyTeamRecord,
+            rawValues,
+            tableName: MY_TEAM,
+        });
+    };
+
+    /**
+     * handleChannel: Handler responsible for the Create/Update operations occurring on the CHANNEL entity from the 'Server' schema
+     * @param {RawChannel[]} channels
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleChannel = async (channels: RawChannel[]) => {
+        if (!channels.length) {
+            throw new DataOperatorException(
+                'An empty "channels" array has been passed to the handleChannel method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordChannelEqualToRaw,
+            fieldName: 'id',
+            operator: operateChannelRecord,
+            rawValues,
+            tableName: CHANNEL,
+        });
+    };
+
+    /**
+     * handleMyChannelSettings: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL_SETTINGS entity from the 'Server' schema
+     * @param {RawMyChannelSettings[]} settings
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyChannelSettings = async (settings: RawMyChannelSettings[]) => {
+        if (!settings.length) {
+            throw new DataOperatorException(
+                'An empty "settings" array has been passed to the handleMyChannelSettings method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateMyChannelSettingsRecord,
+            rawValues,
+            tableName: MY_CHANNEL_SETTINGS,
+        });
+    };
+
+    /**
+     * handleChannelInfo: Handler responsible for the Create/Update operations occurring on the CHANNEL_INFO entity from the 'Server' schema
+     * @param {RawChannelInfo[]} channelInfos
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleChannelInfo = async (channelInfos: RawChannelInfo[]) => {
+        if (!channelInfos.length) {
+            throw new DataOperatorException(
+                'An empty "channelInfos" array has been passed to the handleMyChannelSettings method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: channelInfos, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateChannelInfoRecord,
+            rawValues,
+            tableName: CHANNEL_INFO,
+        });
+    };
+
+    /**
+     * handleMyChannel: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL entity from the 'Server' schema
+     * @param {RawMyChannel[]} myChannels
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyChannel = async (myChannels: RawMyChannel[]) => {
+        if (!myChannels.length) {
+            throw new DataOperatorException(
+                'An empty "myChannels" array has been passed to the handleMyChannel method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: myChannels, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyChannelEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateMyChannelRecord,
+            rawValues,
+            tableName: MY_CHANNEL,
+        });
+    };
+
+    /**
      * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
-     * @param {HandleEntityRecordsArgs} handleEntityRecords
-     * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityRecords.comparator
-     * @param {string} handleEntityRecords.fieldName
-     * @param {(DataFactoryArgs) => Promise<Model | null>} handleEntityRecords.operator
-     * @param {RawValue[]} handleEntityRecords.rawValues
-     * @param {string} handleEntityRecords.tableName
+     * @param {HandleEntityRecordsArgs} handleEntityArgs
+     * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityArgs.findMatchingRecordBy
+     * @param {string} handleEntityArgs.fieldName
+     * @param {(DataFactoryArgs) => Promise<Model | null>} handleEntityArgs.operator
+     * @param {RawValue[]} handleEntityArgs.rawValues
+     * @param {string} handleEntityArgs.tableName
      * @returns {Promise<null | void>}
      */
-    private handleEntityRecords = async ({comparator, fieldName, operator, rawValues, tableName}: HandleEntityRecordsArgs) => {
+    private handleEntityRecords = async ({findMatchingRecordBy, fieldName, operator, rawValues, tableName}: HandleEntityRecordsArgs) => {
         if (!rawValues.length) {
             return null;
         }
@@ -900,7 +1183,7 @@ class DataOperator {
         const {createRaws, updateRaws} = await this.processInputs({
             rawValues,
             tableName,
-            comparator,
+            findMatchingRecordBy,
             fieldName,
         });
 
@@ -914,17 +1197,16 @@ class DataOperator {
         return records;
     };
 
-    // TODO : Add jest to processInputs
     /**
      * processInputs: This method weeds out duplicates entries.  It may happen that we do multiple inserts for
      * the same value.  Hence, prior to that we query the database and pick only those values that are  'new' from the 'Raw' array.
-     * @param {ProcessInputsArgs} prepareRecords
-     * @param {RawValue[]} prepareRecords.rawValues
-     * @param {string} prepareRecords.tableName
-     * @param {string} prepareRecords.fieldName
-     * @param {(existing: Model, newElement: RawValue) => boolean} prepareRecords.comparator
+     * @param {ProcessInputsArgs} inputsArg
+     * @param {RawValue[]} inputsArg.rawValues
+     * @param {string} inputsArg.tableName
+     * @param {string} inputsArg.fieldName
+     * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.findMatchingRecordBy
      */
-    private processInputs = async ({rawValues, tableName, comparator, fieldName}: ProcessInputsArgs) => {
+    private processInputs = async ({rawValues, tableName, findMatchingRecordBy, fieldName}: ProcessInputsArgs) => {
         // We will query an entity where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
         const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
@@ -942,7 +1224,7 @@ class DataOperator {
         if (existingRecords.length > 0) {
             rawValues.map((newElement: RawValue) => {
                 const findIndex = existingRecords.findIndex((existing) => {
-                    return comparator(existing, newElement);
+                    return findMatchingRecordBy(existing, newElement);
                 });
 
                 // We found a record in the database that matches this element; hence, we'll proceed for an UPDATE operation

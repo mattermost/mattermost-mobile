@@ -31,24 +31,21 @@ export type DefaultNewServerArgs = {
 export type DatabaseInstance = Database | undefined;
 
 export type RawApp = {
-  buildNumber: string;
-  createdAt: number;
-  id: string;
-  versionNumber: string;
+  build_number: string;
+  created_at: number;
+  version_number: string;
 };
 
 export type RawGlobal = {
-  id: string;
   name: string;
   value: string;
 };
 
 export type RawServers = {
-  dbPath: string;
-  displayName: string;
-  id: string;
-  mentionCount: number;
-  unreadCount: number;
+  db_path: string;
+  display_name: string;
+  mention_count: number;
+  unread_count: number;
   url: string;
 };
 
@@ -78,7 +75,7 @@ export type RawSystem = {
 
 export type RawTermsOfService = {
   id: string;
-  acceptedAt: number;
+  accepted_at: number;
   create_at: number;
   user_id: string;
   text: string;
@@ -191,8 +188,6 @@ export type RawPost = {
   };
 };
 
-export type ChannelType = 'D' | 'O' | 'G' | 'P';
-
 export type RawUser = {
   id: string;
   auth_service: string;
@@ -296,6 +291,110 @@ export type RawChannelMembers = {
   user_id: string;
 };
 
+export type RawPostsInThread = {
+  earliest: number;
+  latest?: number;
+  post_id: string;
+};
+
+export type RawGroup = {
+  create_at: number;
+  delete_at: number;
+  description: string;
+  display_name: string;
+  has_syncables: boolean;
+  id: string;
+  name: string;
+  remote_id: string;
+  source: string;
+  update_at: number;
+};
+
+export type RawGroupsInTeam = {
+  auto_add: boolean;
+  create_at: number;
+  delete_at: number;
+  group_id: string;
+  team_display_name: string;
+  team_id: string;
+  team_type: string;
+  update_at: number;
+};
+
+export type RawGroupsInChannel = {
+  auto_add: boolean;
+  channel_display_name: string;
+  channel_id: string;
+  channel_type: string;
+  create_at: number;
+  delete_at: number;
+  group_id: string;
+  team_display_name: string;
+  team_id: string;
+  team_type: string;
+  update_at: number;
+};
+
+export type RawTeam = {
+  id: string;
+  allow_open_invite: boolean;
+  allowed_domains: string;
+  company_name: string;
+  create_at: number;
+  delete_at: number;
+  description: string;
+  display_name: string;
+  email: string;
+  group_constrained: boolean | null;
+  invite_id: string;
+  last_team_icon_update: number;
+  name: string;
+  scheme_id: string;
+  type: string;
+  update_at: number;
+};
+
+export type RawTeamChannelHistory = {
+team_id: string;
+channel_ids: string[]
+}
+
+export type RawTeamSearchHistory = {
+  created_at: number;
+  display_term: string;
+  term: string;
+  team_id: string;
+}
+
+export type RawSlashCommand = {
+  id: string;
+  auto_complete: boolean;
+  auto_complete_desc: string;
+  auto_complete_hint: string;
+  create_at: number;
+  creator_id: string;
+  delete_at: number;
+  description: string;
+  display_name: string;
+  icon_url: string;
+  method: string;
+  team_id: string;
+  token: string;
+  trigger: string;
+  update_at: number;
+  url: string;
+  username: string;
+};
+
+export type RawMyTeam = {
+  team_id: string;
+  roles: string;
+  is_unread: boolean;
+  mentions_count: number;
+};
+
+export type ChannelType = 'D' | 'O' | 'G' | 'P';
+
 export type RawChannel = {
   create_at: number;
   creator_id: string;
@@ -317,52 +416,33 @@ export type RawChannel = {
   update_at: number;
 };
 
-export type RawPostsInThread = {
-  earliest: number;
-  latest?: number;
-  post_id: string;
-};
-
-export type RawGroup = {
-  create_at: number,
-  delete_at: number,
-  description: string,
-  display_name: string,
-  has_syncables: boolean
-  id: string,
-  name: string,
-  remote_id: string,
-  source: string,
-  update_at: number,
+export type RawMyChannelSettings = {
+  notify_props: NotifyProps,
+  channel_id: string;
 }
 
-export type RawGroupsInTeam = {
-  auto_add: boolean,
-  create_at: number,
-  delete_at: number,
-  group_id: string,
-  team_display_name: string,
-  team_id: string,
-  team_type: string,
-  update_at: number
+export type RawChannelInfo = {
+  channel_id: string;
+  guest_count: number;
+  header: string;
+  member_count: number;
+  pinned_post_count: number;
+  purpose: string;
 }
 
-export type RawGroupsInChannel = {
-  auto_add: boolean,
-  channel_display_name: string,
-  channel_id: string,
-  channel_type: string,
-  create_at: number,
-  delete_at: number,
-  group_id: string,
-  team_display_name: string,
-  team_id: string,
-  team_type: string,
-  update_at: number
+export type RawMyChannel = {
+  channel_id: string;
+  last_post_at: number;
+  last_viewed_at: number;
+  mentions_count: number;
+  message_count: number;
+  roles: string;
 }
 
 export type RawValue =
   | RawApp
+  | RawChannel
+  | RawChannelInfo
   | RawChannelMembership
   | RawCustomEmoji
   | RawDraft
@@ -372,6 +452,9 @@ export type RawValue =
   | RawGroupMembership
   | RawGroupsInChannel
   | RawGroupsInTeam
+  | RawMyChannel
+  | RawMyChannelSettings
+  | RawMyTeam
   | RawPost
   | RawPostMetadata
   | RawPostsInChannel
@@ -380,8 +463,12 @@ export type RawValue =
   | RawReaction
   | RawRole
   | RawServers
+  | RawSlashCommand
   | RawSystem
+  | RawTeam
+  | RawTeamChannelHistory
   | RawTeamMembership
+  | RawTeamSearchHistory
   | RawTermsOfService
   | RawUser;
 
@@ -402,7 +489,9 @@ export type PrepareForDatabaseArgs = {
   recordOperator: (DataFactoryArgs) => void;
 };
 
-export type PrepareRecordsArgs = PrepareForDatabaseArgs & { database: Database; };
+export type PrepareRecordsArgs = PrepareForDatabaseArgs & {
+  database: Database;
+};
 
 export type BatchOperationsArgs = { database: Database; models: Model[] };
 
@@ -420,7 +509,10 @@ export type DatabaseConnectionArgs = {
 };
 
 // The elements required to switch to another active server database
-export type ActiveServerDatabaseArgs = { displayName: string; serverUrl: string };
+export type ActiveServerDatabaseArgs = {
+  displayName: string;
+  serverUrl: string;
+};
 
 export type HandleReactionsArgs = {
   prepareRowsOnly: boolean;
@@ -477,11 +569,11 @@ export type ProcessInputsArgs = {
   rawValues: RawValue[];
   tableName: string;
   fieldName: string;
-  comparator: (existing: Model, newElement: RawValue) => boolean;
+  findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
 };
 
 export type HandleEntityRecordsArgs = {
-  comparator: (existing: Model, newElement: RawValue) => boolean;
+  findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
   operator: (DataFactoryArgs) => Promise<Model | null>;
   rawValues: RawValue[];
@@ -501,4 +593,4 @@ export type RangeOfValueArgs = {
 export type RecordPair = {
   record?: Model;
   raw: RawValue;
-}
+};

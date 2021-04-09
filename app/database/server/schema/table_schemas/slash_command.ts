@@ -18,5 +18,6 @@ export default tableSchema({
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'token', type: 'string'},
         {name: 'trigger', type: 'string'},
+        {name: 'update_at', type: 'number'},
     ],
 });

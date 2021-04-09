@@ -6,7 +6,9 @@ import {DatabaseType, OperationType} from '@typings/database/enums';
 
 import {
     operateAppRecord,
+    operateChannelInfoRecord,
     operateChannelMembershipRecord,
+    operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -15,6 +17,9 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelRecord,
+    operateMyChannelSettingsRecord,
+    operateMyTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
     operatePostRecord,
@@ -23,8 +28,12 @@ import {
     operateReactionRecord,
     operateRoleRecord,
     operateServersRecord,
+    operateSlashCommandRecord,
     operateSystemRecord,
+    operateTeamChannelHistoryRecord,
     operateTeamMembershipRecord,
+    operateTeamRecord,
+    operateTeamSearchHistoryRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
 } from './index';
@@ -69,16 +78,15 @@ describe('*** DataOperator: Operators tests ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    buildNumber: 'build-7',
-                    createdAt: 1,
-                    id: 'id-18',
-                    versionNumber: 'v-1',
+                    build_number: 'build-7',
+                    created_at: 1,
+                    version_number: 'v-1',
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('App');
+        expect(preparedRecords!.collection.modelClass.name).toBe('App');
     });
 
     it('=> operateGlobalRecord: should return an array of type Global', async () => {
@@ -92,12 +100,12 @@ describe('*** DataOperator: Operators tests ***', () => {
             database: database!,
             value: {
                 record: undefined,
-                raw: {id: 'g-1', name: 'g-n1', value: 'g-v1'},
+                raw: {name: 'g-n1', value: 'g-v1'},
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Global');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Global');
     });
 
     it('=> operateServersRecord: should return an array of type Servers', async () => {
@@ -112,18 +120,17 @@ describe('*** DataOperator: Operators tests ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    dbPath: 'mm-server',
-                    displayName: 's-displayName',
-                    id: 's-1',
-                    mentionCount: 1,
-                    unreadCount: 0,
+                    db_path: 'mm-server',
+                    display_name: 's-displayName',
+                    mention_count: 1,
+                    unread_count: 0,
                     url: 'https://community.mattermost.com',
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Servers');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Servers');
     });
 
     it('=> operateRoleRecord: should return an array of type Role', async () => {
@@ -146,7 +153,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Role');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Role');
     });
 
     it('=> operateSystemRecord: should return an array of type System', async () => {
@@ -165,7 +172,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('System');
+        expect(preparedRecords!.collection.modelClass.name).toBe('System');
     });
 
     it('=> operateTermsOfServiceRecord: should return an array of type TermsOfService', async () => {
@@ -181,7 +188,7 @@ describe('*** DataOperator: Operators tests ***', () => {
                 record: undefined,
                 raw: {
                     id: 'tos-1',
-                    acceptedAt: 1,
+                    accepted_at: 1,
                     create_at: 1613667352029,
                     user_id: 'user1613667352029',
                     text: '',
@@ -190,7 +197,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch(
+        expect(preparedRecords!.collection.modelClass.name).toBe(
             'TermsOfService',
         );
     });
@@ -232,7 +239,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Post');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Post');
     });
 
     it('=> operatePostInThreadRecord: should return an array of type PostsInThread', async () => {
@@ -256,7 +263,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch(
+        expect(preparedRecords!.collection.modelClass.name).toBe(
             'PostsInThread',
         );
     });
@@ -285,7 +292,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Reaction');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Reaction');
     });
 
     it('=> operateFileRecord: should return an array of type File', async () => {
@@ -314,7 +321,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('File');
+        expect(preparedRecords!.collection.modelClass.name).toBe('File');
     });
 
     it('=> operatePostMetadataRecord: should return an array of type PostMetadata', async () => {
@@ -338,7 +345,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('PostMetadata');
+        expect(preparedRecords!.collection.modelClass.name).toBe('PostMetadata');
     });
 
     it('=> operateDraftRecord: should return an array of type Draft', async () => {
@@ -363,7 +370,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Draft');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Draft');
     });
 
     it('=> operatePostsInChannelRecord: should return an array of type PostsInChannel', async () => {
@@ -387,7 +394,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch(
+        expect(preparedRecords!.collection.modelClass.name).toBe(
             'PostsInChannel',
         );
     });
@@ -446,7 +453,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('User');
+        expect(preparedRecords!.collection.modelClass.name).toBe('User');
     });
 
     it('=> operatePreferenceRecord: should return an array of type Preference', async () => {
@@ -465,10 +472,10 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Preference');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Preference');
     });
 
-    it('=> operatePreferenceRecord: should return an array of type TEAM_MEMBERSHIP', async () => {
+    it('=> operateTeamMembershipRecord: should return an array of type TeamMembership', async () => {
         expect.assertions(3);
 
         const database = await createConnection();
@@ -493,7 +500,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('TeamMembership');
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamMembership');
     });
 
     it('=> operateCustomEmojiRecord: should return an array of type CustomEmoji', async () => {
@@ -519,7 +526,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('CustomEmoji');
+        expect(preparedRecords!.collection.modelClass.name).toBe('CustomEmoji');
     });
 
     it('=> operateGroupMembershipRecord: should return an array of type GroupMembership', async () => {
@@ -542,7 +549,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('GroupMembership');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupMembership');
     });
 
     it('=> operateChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
@@ -580,7 +587,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('ChannelMembership');
+        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelMembership');
     });
 
     it('=> operateGroupRecord: should return an array of type Group', async () => {
@@ -610,7 +617,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('Group');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Group');
     });
 
     it('=> operateGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
@@ -638,7 +645,7 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('GroupsInTeam');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInTeam');
     });
 
     it('=> operateGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
@@ -669,6 +676,269 @@ describe('*** DataOperator: Operators tests ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toMatch('GroupsInChannel');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInChannel');
+    });
+
+    it('=> operateTeamRecord: should return an array of type Team', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateTeamRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                    create_at: 1445538153952,
+                    update_at: 1588876392150,
+                    delete_at: 0,
+                    display_name: 'Contributors',
+                    name: 'core',
+                    description: '',
+                    email: '',
+                    type: 'O',
+                    company_name: '',
+                    allowed_domains: '',
+                    invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                    allow_open_invite: true,
+                    last_team_icon_update: 1525181587639,
+                    scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                    group_constrained: null,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('Team');
+    });
+
+    it('=> operateTeamChannelHistoryRecord: should return an array of type Team', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateTeamChannelHistoryRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    team_id: 'a',
+                    channel_ids: ['ca', 'cb'],
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamChannelHistory');
+    });
+
+    it('=> operateTeamSearchHistoryRecord: should return an array of type TeamSearchHistory', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateTeamSearchHistoryRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    team_id: 'a',
+                    term: 'termA',
+                    display_term: 'termA',
+                    created_at: 1445538153952,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamSearchHistory');
+    });
+
+    it('=> operateSlashCommandRecord: should return an array of type SlashCommand', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateSlashCommandRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'command_1',
+                    auto_complete: true,
+                    auto_complete_desc: 'mock_command',
+                    auto_complete_hint: 'hint',
+                    create_at: 1445538153952,
+                    creator_id: 'creator_id',
+                    delete_at: 1445538153952,
+                    description: 'description',
+                    display_name: 'display_name',
+                    icon_url: 'display_name',
+                    method: 'get',
+                    team_id: 'teamA',
+                    token: 'token',
+                    trigger: 'trigger',
+                    update_at: 1445538153953,
+                    url: 'url',
+                    username: 'userA',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('SlashCommand');
+    });
+
+    it('=> operateMyTeamRecord: should return an array of type MyTeam', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateMyTeamRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    team_id: 'teamA',
+                    roles: 'roleA, roleB, roleC',
+                    is_unread: true,
+                    mentions_count: 3,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyTeam');
+    });
+
+    it('=> operateChannelRecord: should return an array of type Channel', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateChannelRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'kow9j1ttnxwig7tnqgebg7dtipno',
+                    create_at: 1600185541285,
+                    update_at: 1604401077256,
+                    delete_at: 0,
+                    team_id: '',
+                    type: 'D',
+                    display_name: '',
+                    name: 'jui1zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
+                    header: 'https://mattermost)',
+                    purpose: '',
+                    last_post_at: 1617311494451,
+                    total_msg_count: 585,
+                    extra_update_at: 0,
+                    creator_id: '',
+                    scheme_id: null,
+                    props: null,
+                    group_constrained: null,
+                    shared: null,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('Channel');
+    });
+
+    it('=> operateMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateMyChannelSettingsRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'c',
+                    notify_props: {
+                        desktop: 'all',
+                        desktop_sound: true,
+                        email: true,
+                        first_name: true,
+                        mention_keys: '',
+                        push: 'mention',
+                        channel: true,
+                    },
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettings');
+    });
+
+    it('=> operateChannelInfoRecord: should return an array of type ChannelInfo', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateChannelInfoRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'c',
+                    guest_count: 10,
+                    header: 'channel info header',
+                    member_count: 10,
+                    pinned_post_count: 3,
+                    purpose: 'sample channel ',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfo');
+    });
+
+    it('=> operateMyChannelRecord: should return an array of type MyChannel', async () => {
+        expect.assertions(3);
+
+        const database = await createConnection();
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await operateMyChannelRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'cd',
+                    last_post_at: 1617311494451,
+                    last_viewed_at: 1617311494451,
+                    mentions_count: 3,
+                    message_count: 10,
+                    roles: 'guest',
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannel');
     });
 });

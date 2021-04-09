@@ -10,7 +10,7 @@ const {SERVERS} = MM_TABLES.DEFAULT;
 
 /**
  * The Server model will help us to identify the various servers a user will log in; in the context of
- * multi-server support system.  The dbPath field will hold the App-Groups file-path
+ * multi-server support system.  The db_path field will hold the App-Groups file-path
  */
 export default class Servers extends Model {
     /** table (entity name) : servers */

@@ -18,5 +18,6 @@ export default tableSchema({
         {name: 'name', type: 'string', isIndexed: true},
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'type', type: 'string'},
+        {name: 'update_at', type: 'number'},
     ],
 });

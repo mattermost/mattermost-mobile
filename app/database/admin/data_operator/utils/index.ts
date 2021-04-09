@@ -5,14 +5,19 @@ import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import Channel from '@typings/database/channel';
 import {
     ChainPostsArgs,
     IdenticalRecordArgs,
     MatchExistingRecord,
     RangeOfValueArgs,
+    RawChannel,
     RawPost,
     RawReaction,
-    RawUser, RawValue,
+    RawSlashCommand,
+    RawTeam,
+    RawUser,
+    RawValue,
     RecordPair,
     RetrieveRecordsArgs,
     SanitizePostsArgs,
@@ -20,9 +25,11 @@ import {
 } from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 import Post from '@typings/database/post';
-import {User} from '@database/server/models';
+import SlashCommand from '@typings/database/slash_command';
+import Team from '@typings/database/team';
+import User from '@typings/database/user';
 
-const {POST, USER, REACTION} = MM_TABLES.SERVER;
+const {CHANNEL, POST, REACTION, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -161,11 +168,11 @@ export const retrieveRecords = async ({database, tableName, condition}: Retrieve
  * @returns {boolean}
  */
 export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
-    const guardTables = [POST, USER];
+    const guardTables = [CHANNEL, POST, SLASH_COMMAND, TEAM, USER];
 
     if (guardTables.includes(tableName)) {
-        type Raw = RawPost | RawUser
-        type ExistingRecord = Post | User
+        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand | RawChannel
+        type ExistingRecord = Post | User | Team | SlashCommand | Channel
 
         return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
     }
@@ -199,4 +206,19 @@ export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
     return raws.map((raw) => {
         return {raw, record: undefined};
     });
+};
+
+/**
+ * getUniqueRawsBy: We have to ensure that we are not updating the same record twice in the same operation.
+ * Hence, thought it might not occur, prevention is better than cure.  This function removes duplicates from the 'raws' array.
+ * @param {RawValue[]} raws
+ * @param {string} key
+ */
+export const getUniqueRawsBy = ({raws, key}:{ raws: RawValue[], key: string}) => {
+    return [...new Map(raws.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const curItemKey = item[key];
+        return [curItemKey, item];
+    })).values()];
 };

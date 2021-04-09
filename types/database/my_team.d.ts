@@ -22,7 +22,7 @@ export default class MyTeam extends Model {
     /** mentions_count : Count of posts in which the user has been mentioned */
     mentionsCount: number;
 
-    /** roles : The different permissions that this user has in the team */
+    /** roles : The different permissions that this user has in the team, concatenated together with comma to form a single string. */
     roles: string;
 
     /** team_id : The foreign key of the 'parent' Team entity */

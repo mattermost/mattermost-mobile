@@ -18,5 +18,6 @@ export default tableSchema({
         {name: 'last_team_icon_updated_at', type: 'number'},
         {name: 'name', type: 'string'},
         {name: 'type', type: 'string'},
+        {name: 'update_at', type: 'number'},
     ],
 });
