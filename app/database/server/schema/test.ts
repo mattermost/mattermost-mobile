@@ -281,15 +281,11 @@ describe('*** Test schema for SERVER database ***', () => {
                     name: GROUPS_IN_TEAM,
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        member_count: {name: 'member_count', type: 'number'},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
-                        timezone_count: {name: 'timezone_count', type: 'number'},
                     },
                     columnArray: [
                         {name: 'group_id', type: 'string', isIndexed: true},
-                        {name: 'member_count', type: 'number'},
                         {name: 'team_id', type: 'string', isIndexed: true},
-                        {name: 'timezone_count', type: 'number'},
                     ],
                 },
                 [GROUP_MEMBERSHIP]: {

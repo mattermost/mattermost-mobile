@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createPostsChain, sanitizePosts} from '@database/admin/data_operator/utils/post';
+import {sanitizeReactions} from '@database/admin/data_operator/utils/reaction';
 import {Database, Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
@@ -120,15 +122,13 @@ import {
     operateUserRecord,
 } from '../operators';
 import {
-    createPostsChain,
     getRangeOfValues,
     getRawRecordPairs,
     getUniqueRawsBy,
     hasSimilarUpdateAt,
     retrieveRecords,
-    sanitizePosts,
-    sanitizeReactions,
-} from '../utils';
+
+} from '../utils/general';
 
 const {
     CHANNEL,
@@ -507,6 +507,8 @@ class DataOperator {
             });
         }
     };
+
+    // TODO : prepareRowsOnly should be defaulted to true for all handlers
 
     /**
      * handleFiles: Handler responsible for the Create/Update operations occurring on the File entity from the 'Server' schema
@@ -1170,7 +1172,7 @@ class DataOperator {
      * @param {HandleEntityRecordsArgs} handleEntityArgs
      * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityArgs.findMatchingRecordBy
      * @param {string} handleEntityArgs.fieldName
-     * @param {(DataFactoryArgs) => Promise<Model | null>} handleEntityArgs.operator
+     * @param {(DataFactoryArgs) => Promise<Model>} handleEntityArgs.operator
      * @param {RawValue[]} handleEntityArgs.rawValues
      * @param {string} handleEntityArgs.tableName
      * @returns {Promise<null | void>}
@@ -1291,7 +1293,7 @@ class DataOperator {
      * @param {string} prepareRecord.tableName
      * @param {RawValue[]} prepareRecord.createRaws
      * @param {RawValue[]} prepareRecord.updateRaws
-     * @param {(DataFactoryArgs) => void;} prepareRecord.recordOperator
+     * @param {(DataFactoryArgs) => Promise<Model>;} prepareRecord.recordOperator
      * @throws {DataOperatorException}
      * @returns {Promise<Model[]>}
      */
@@ -1302,36 +1304,31 @@ class DataOperator {
             );
         }
 
-        let prepareCreate: Model[] = [];
-        let prepareUpdate: Model[] = [];
+        let preparedRecords: Promise<Model>[] = [];
 
         // create operation
         if (createRaws?.length) {
-            const recordPromises = await createRaws.map(
-                async (createRecord: MatchExistingRecord) => {
-                    const record = await recordOperator({database, tableName, value: createRecord, action: OperationType.CREATE});
-                    return record;
+            const recordPromises = createRaws.map(
+                (createRecord: MatchExistingRecord) => {
+                    return recordOperator({database, tableName, value: createRecord, action: OperationType.CREATE});
                 },
             );
 
-            const results = ((await Promise.all(recordPromises)) as unknown) as Model[];
-            prepareCreate = prepareCreate.concat(results);
+            preparedRecords = preparedRecords.concat(recordPromises);
         }
 
         // update operation
         if (updateRaws?.length) {
-            const recordPromises = await updateRaws.map(
-                async (updateRecord: MatchExistingRecord) => {
-                    const record = await recordOperator({database, tableName, value: updateRecord, action: OperationType.UPDATE});
-                    return record;
+            const recordPromises = updateRaws.map(
+                (updateRecord: MatchExistingRecord) => {
+                    return recordOperator({database, tableName, value: updateRecord, action: OperationType.UPDATE});
                 },
             );
 
-            const results = ((await Promise.all(recordPromises)) as unknown) as Model[];
-            prepareUpdate = prepareUpdate.concat(results);
+            preparedRecords = preparedRecords.concat(recordPromises);
         }
-
-        return [...prepareCreate, ...prepareUpdate];
+        const results = ((await Promise.all(preparedRecords)) as unknown) as Model[];
+        return results;
     };
 
     /**
@@ -1340,7 +1337,7 @@ class DataOperator {
      * @param {string} executeInDatabase.tableName
      * @param {RecordValue[]} executeInDatabase.createRaws
      * @param {RecordValue[]} executeInDatabase.updateRaws
-     * @param {(DataFactoryArgs) => void} executeInDatabase.recordOperator
+     * @param {(DataFactoryArgs) => Promise<Model>} executeInDatabase.recordOperator
      * @returns {Promise<void>}
      */
     private executeInDatabase = async ({createRaws, recordOperator, tableName, updateRaws}: PrepareForDatabaseArgs) => {

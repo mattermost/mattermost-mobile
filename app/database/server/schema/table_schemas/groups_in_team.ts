@@ -11,8 +11,6 @@ export default tableSchema({
     name: GROUPS_IN_TEAM,
     columns: [
         {name: 'group_id', type: 'string', isIndexed: true},
-        {name: 'member_count', type: 'number'},
         {name: 'team_id', type: 'string', isIndexed: true},
-        {name: 'timezone_count', type: 'number'},
     ],
 });

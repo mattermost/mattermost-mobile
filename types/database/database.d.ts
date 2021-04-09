@@ -333,6 +333,8 @@ export type RawGroupsInChannel = {
   team_id: string;
   team_type: string;
   update_at: number;
+  member_count: number;
+  timezone_count: number;
 };
 
 export type RawTeam = {
@@ -486,7 +488,7 @@ export type PrepareForDatabaseArgs = {
   tableName: string;
   createRaws?: MatchExistingRecord[];
   updateRaws?: MatchExistingRecord[];
-  recordOperator: (DataFactoryArgs) => void;
+  recordOperator: (DataFactoryArgs) => Promise<Model>;
 };
 
 export type PrepareRecordsArgs = PrepareForDatabaseArgs & {
@@ -575,7 +577,7 @@ export type ProcessInputsArgs = {
 export type HandleEntityRecordsArgs = {
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
-  operator: (DataFactoryArgs) => Promise<Model | null>;
+  operator: (DataFactoryArgs) => Promise<Model>;
   rawValues: RawValue[];
   tableName: string;
 };

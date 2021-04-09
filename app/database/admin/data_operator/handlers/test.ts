@@ -1192,6 +1192,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 team_id: '',
                 team_type: '',
                 update_at: 0,
+                member_count: 0,
+                timezone_count: 0,
             },
         ]);
 
