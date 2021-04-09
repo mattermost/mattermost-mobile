@@ -1,0 +1,136 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {MM_TABLES} from '@constants/database';
+import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
+import {
+    DataFactoryArgs,
+    RawGroup,
+    RawGroupMembership,
+    RawGroupsInChannel,
+    RawGroupsInTeam,
+} from '@typings/database/database';
+import {OperationType} from '@typings/database/enums';
+import Group from '@typings/database/group';
+import GroupMembership from '@typings/database/group_membership';
+import GroupsInChannel from '@typings/database/groups_in_channel';
+import GroupsInTeam from '@typings/database/groups_in_team';
+
+const {
+    GROUP,
+    GROUPS_IN_CHANNEL,
+    GROUPS_IN_TEAM,
+    GROUP_MEMBERSHIP,
+} = MM_TABLES.SERVER;
+
+/**
+ * operateGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
+ * @param {DataFactoryArgs} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroupMembership;
+    const record = value.record as GroupMembership;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (groupMember: GroupMembership) => {
+        groupMember._raw.id = isCreateAction ? groupMember.id : record?.id;
+        groupMember.groupId = raw.group_id;
+        groupMember.userId = raw.user_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUP_MEMBERSHIP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupRecord = ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroup;
+    const record = value.record as Group;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of preference comes from server response
+    const generator = (group: Group) => {
+        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record?.id;
+        group.name = raw.name;
+        group.displayName = raw.display_name;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUP,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupsInTeamRecord = ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroupsInTeam;
+    const record = value.record as GroupsInTeam;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (groupsInTeam: GroupsInTeam) => {
+        groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record?.id;
+        groupsInTeam.teamId = raw.team_id;
+        groupsInTeam.groupId = raw.group_id;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUPS_IN_TEAM,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_CHANNEL' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateGroupsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawGroupsInChannel;
+    const record = value.record as GroupsInChannel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (groupsInChannel: GroupsInChannel) => {
+        groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record?.id;
+        groupsInChannel.channelId = raw.channel_id;
+        groupsInChannel.groupId = raw.group_id;
+        groupsInChannel.memberCount = raw.member_count;
+        groupsInChannel.timezoneCount = raw.timezone_count;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: GROUPS_IN_CHANNEL,
+        value,
+        generator,
+    });
+};

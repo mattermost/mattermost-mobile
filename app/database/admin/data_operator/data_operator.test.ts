@@ -11,38 +11,42 @@ import {
     isRecordSystemEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
 } from '@database/admin/data_operator/comparators';
+import {
+    operateAppRecord,
+    operateCustomEmojiRecord, operateGlobalRecord,
+    operateRoleRecord, operateServersRecord,
+    operateSystemRecord,
+    operateTermsOfServiceRecord,
+} from '@database/admin/data_operator/operators/general';
+import {
+    operateGroupMembershipRecord,
+    operateGroupRecord,
+    operateGroupsInChannelRecord,
+    operateGroupsInTeamRecord,
+} from '@database/admin/data_operator/operators/group';
+import {operateDraftRecord} from '@database/admin/data_operator/operators/post';
+import {
+    operateMyTeamRecord,
+    operateSlashCommandRecord, operateTeamChannelHistoryRecord, operateTeamMembershipRecord, operateTeamRecord,
+    operateTeamSearchHistoryRecord,
+} from '@database/admin/data_operator/operators/team';
+import {
+    operateChannelMembershipRecord,
+    operatePreferenceRecord,
+    operateUserRecord,
+} from '@database/admin/data_operator/operators/user';
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
 import {RawApp, RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
-    operateAppRecord,
     operateChannelInfoRecord,
-    operateChannelMembershipRecord,
     operateChannelRecord,
-    operateCustomEmojiRecord,
-    operateDraftRecord,
-    operateGlobalRecord,
-    operateGroupMembershipRecord,
-    operateGroupRecord,
-    operateGroupsInChannelRecord,
-    operateGroupsInTeamRecord,
     operateMyChannelRecord,
     operateMyChannelSettingsRecord,
-    operateMyTeamRecord,
-    operatePreferenceRecord,
-    operateRoleRecord,
-    operateServersRecord,
-    operateSlashCommandRecord,
-    operateSystemRecord,
-    operateTeamChannelHistoryRecord,
-    operateTeamMembershipRecord,
-    operateTeamRecord,
-    operateTeamSearchHistoryRecord,
-    operateTermsOfServiceRecord,
-    operateUserRecord,
-} from './operators';
+
+} from './operators/channel';
 
 jest.mock('@database/admin/database_manager');
 

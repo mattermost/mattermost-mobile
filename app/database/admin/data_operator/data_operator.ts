@@ -1,6 +1,34 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {
+    operateAppRecord,
+    operateCustomEmojiRecord, operateGlobalRecord,
+    operateRoleRecord, operateServersRecord,
+    operateSystemRecord,
+    operateTermsOfServiceRecord,
+} from '@database/admin/data_operator/operators/general';
+import {
+    operateGroupMembershipRecord,
+    operateGroupRecord,
+    operateGroupsInChannelRecord,
+    operateGroupsInTeamRecord,
+} from '@database/admin/data_operator/operators/group';
+import {
+    operateDraftRecord, operateFileRecord, operatePostInThreadRecord,
+    operatePostMetadataRecord, operatePostRecord,
+    operatePostsInChannelRecord,
+} from '@database/admin/data_operator/operators/post';
+import {
+    operateMyTeamRecord,
+    operateSlashCommandRecord, operateTeamChannelHistoryRecord, operateTeamMembershipRecord, operateTeamRecord,
+    operateTeamSearchHistoryRecord,
+} from '@database/admin/data_operator/operators/team';
+import {
+    operateChannelMembershipRecord,
+    operatePreferenceRecord, operateReactionRecord,
+    operateUserRecord,
+} from '@database/admin/data_operator/operators/user';
 import {createPostsChain, sanitizePosts} from '@database/admin/data_operator/utils/post';
 import {sanitizeReactions} from '@database/admin/data_operator/utils/reaction';
 import {Database, Q} from '@nozbe/watermelondb';
@@ -89,38 +117,12 @@ import Reaction from '@typings/database/reaction';
 import DataOperatorException from '../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../exceptions/database_connection_exception';
 import {
-    operateAppRecord,
     operateChannelInfoRecord,
-    operateChannelMembershipRecord,
     operateChannelRecord,
-    operateCustomEmojiRecord,
-    operateDraftRecord,
-    operateFileRecord,
-    operateGlobalRecord,
-    operateGroupMembershipRecord,
-    operateGroupRecord,
-    operateGroupsInChannelRecord,
-    operateGroupsInTeamRecord,
     operateMyChannelRecord,
     operateMyChannelSettingsRecord,
-    operateMyTeamRecord,
-    operatePostInThreadRecord,
-    operatePostMetadataRecord,
-    operatePostRecord,
-    operatePostsInChannelRecord,
-    operatePreferenceRecord,
-    operateReactionRecord,
-    operateRoleRecord,
-    operateServersRecord,
-    operateSlashCommandRecord,
-    operateSystemRecord,
-    operateTeamChannelHistoryRecord,
-    operateTeamMembershipRecord,
-    operateTeamRecord,
-    operateTeamSearchHistoryRecord,
-    operateTermsOfServiceRecord,
-    operateUserRecord,
-} from './operators';
+
+} from './operators/channel';
 import {
     getRangeOfValues,
     getRawRecordPairs,
