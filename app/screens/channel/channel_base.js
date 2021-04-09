@@ -132,6 +132,10 @@ export default class ChannelBase extends PureComponent {
             });
         }
 
+        if (prevProps.currentTeamId && !this.props.currentTeamId) {
+            this.props.actions.selectDefaultTeam();
+        }
+
         if (this.props.currentTeamId &&
             (!this.props.currentChannelId || this.props.currentTeamId !== prevProps.currentTeamId)) {
             this.loadChannels(this.props.currentTeamId);

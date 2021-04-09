@@ -36,14 +36,17 @@ function mapStateToProps(state) {
         );
     }
 
+    const currentTeamId = currentTeam?.delete_at === 0 ? currentTeam?.id : '';
+    const currentChannelId = currentTeam?.delete_at === 0 ? getCurrentChannelId(state) : '';
+
     return {
-        currentTeamId: currentTeam?.id,
-        currentChannelId: getCurrentChannelId(state),
+        currentChannelId,
+        currentTeamId,
         isSupportedServer,
         isSystemAdmin,
+        showTermsOfService: shouldShowTermsOfService(state),
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
-        showTermsOfService: shouldShowTermsOfService(state),
     };
 }
 
