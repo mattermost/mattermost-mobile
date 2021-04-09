@@ -29,15 +29,15 @@ PODS:
   - glog (0.3.5)
   - jail-monkey (2.3.3):
     - React
-  - libwebp (1.1.0):
-    - libwebp/demux (= 1.1.0)
-    - libwebp/mux (= 1.1.0)
-    - libwebp/webp (= 1.1.0)
-  - libwebp/demux (1.1.0):
+  - libwebp (1.2.0):
+    - libwebp/demux (= 1.2.0)
+    - libwebp/mux (= 1.2.0)
+    - libwebp/webp (= 1.2.0)
+  - libwebp/demux (1.2.0):
     - libwebp/webp
-  - libwebp/mux (1.1.0):
+  - libwebp/mux (1.2.0):
     - libwebp/demux
-  - libwebp/webp (1.1.0)
+  - libwebp/webp (1.2.0)
   - Permission-Camera (2.2.2):
     - RNPermissions
   - Permission-PhotoLibrary (2.2.2):
@@ -356,16 +356,16 @@ PODS:
     - React
   - RNVectorIcons (7.1.0):
     - React
-  - Rudder (1.0.9)
-  - SDWebImage (5.9.4):
-    - SDWebImage/Core (= 5.9.4)
-  - SDWebImage/Core (5.9.4)
+  - Rudder (1.0.11)
+  - SDWebImage (5.11.0):
+    - SDWebImage/Core (= 5.11.0)
+  - SDWebImage/Core (5.11.0)
   - SDWebImageWebPCoder (0.6.1):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.7)
-  - Sentry (6.0.7):
-    - Sentry/Core (= 6.0.7)
-  - Sentry/Core (6.0.7)
+  - Sentry (6.0.12):
+    - Sentry/Core (= 6.0.12)
+  - Sentry/Core (6.0.12)
   - Swime (3.0.6)
   - UMAppLoader (1.3.0)
   - UMBarCodeScannerInterface (5.3.0)
@@ -389,7 +389,7 @@ PODS:
     - React-jsi
   - XCDYouTubeKit (2.8.2)
   - Yoga (1.14.0)
-  - YoutubePlayer-in-WKWebView (0.3.4)
+  - YoutubePlayer-in-WKWebView (0.3.5)
 
 DEPENDENCIES:
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
@@ -665,7 +665,7 @@ SPEC CHECKSUMS:
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   jail-monkey: 80c9e34da2cd54023e5ad08bf7051ec75bd43d5b
-  libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
+  libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
   Permission-Camera: 375576c57ea625c88137d2cc52ba6dfeb21db036
   Permission-PhotoLibrary: bb20a7ac8aec0f7459558e5fbe2bd0a6f2744be3
   RCTRequired: 48884c74035a0b5b76dbb7a998bd93bcfc5f2047
@@ -723,10 +723,10 @@ SPEC CHECKSUMS:
   RNShare: 106a76243ac90f43ddb9028dcb78ade406b8adff
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: bc69e6a278b14842063605de32bec61f0b251a59
-  Rudder: 90ed801a09c73017184e6fc901370be1754eb182
-  SDWebImage: b69257f4ab14e9b6a2ef53e910fdf914d8f757c1
+  Rudder: ef340f877a39653f19e69124dffae12fde3f881b
+  SDWebImage: 7acbb57630ac7db4a495547fb73916ff3e432f6b
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
-  Sentry: e2c691627ae1dc0029acebbd1b0b4af4df12af73
+  Sentry: 8ffcfe3416e0a58b90bb1ae319e8e8a13022a03e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   UMAppLoader: 939854a42e69527ee11dd17b39ebafcbfbefd05c
   UMBarCodeScannerInterface: 198ced513a0cf8143d822620f1620bce467d02be
@@ -744,7 +744,7 @@ SPEC CHECKSUMS:
   WatermelonDB: 0aa53ec3f017fd52cd953ad6e69e4eec36c04044
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 7d13633d129fd179e01b8953d38d47be90db185a
-  YoutubePlayer-in-WKWebView: af2f5929fc78882d94bfdfeea999b661b78d9717
+  YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
 PODFILE CHECKSUM: 93ddf37519d321c69692a52e0a30c3e7fb27b0e0
 
