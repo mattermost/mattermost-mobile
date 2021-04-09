@@ -6,8 +6,8 @@ import {
     prepareGroupRecord,
     prepareGroupsInChannelRecord,
     prepareGroupsInTeamRecord,
-} from '@database/admin/data_operator/operators/group';
-import {createConnection} from '@database/admin/data_operator/operators/utils';
+} from '@database/operator/prepareRecords/group';
+import {createConnection} from '@database/operator/prepareRecords/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** GROUP Prepare Records Test ***', () => {

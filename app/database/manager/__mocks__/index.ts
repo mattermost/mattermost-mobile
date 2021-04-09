@@ -2,16 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import logger from '@nozbe/watermelondb/utils/common/logger';
-import {DeviceEventEmitter, Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import DefaultMigration from '@database/default/migration';
-import {App, Global, Servers} from '@database/default/models';
-import {defaultSchema} from '@database/default/schema';
-import ServerMigration from '@database/server/migration';
+import {MM_TABLES} from '@constants/database';
+import DefaultMigration from '@database/migration/default';
+import {App, Global, Servers} from '@database/models/default';
+import {defaultSchema} from '@database/schema/default';
+import ServerMigration from '@database/migration/server';
 import {
     Channel,
     ChannelInfo,
@@ -41,22 +38,27 @@ import {
     TeamSearchHistory,
     TermsOfService,
     User,
-} from '@database/server/models';
-import {serverSchema} from '@database/server/schema';
+} from '@database/models/server';
+import {serverSchema} from '@database/schema/server';
+import logger from '@nozbe/watermelondb/utils/common/logger';
 import type {
     ActiveServerDatabaseArgs,
     DatabaseConnectionArgs,
     DatabaseInstance,
     DatabaseInstances,
     DefaultNewServerArgs,
-    MigrationEvents,
     Models,
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import IServers from '@typings/database/servers';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
+
+if (__DEV__) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    logger.silence();
+}
 
 class DatabaseManager {
   private activeDatabase: DatabaseInstance;
@@ -99,14 +101,14 @@ class DatabaseManager {
           User,
       ];
 
-      this.iOSAppGroupDatabase = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : null;
-      this.androidFilesDirectory = Platform.OS === 'android' ? FileSystem.documentDirectory : null;
+      this.iOSAppGroupDatabase = null;
+      this.androidFilesDirectory = null;
   }
 
   /**
    * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
    * if a database connection could not be created, it will return undefined.
-   * @param {MMDatabaseConnection} databaseConnection
+   * @param {DatabaseConfigs} databaseConnection
    * @param {boolean} shouldAddToDefaultDatabase
    *
    * @returns {Promise<DatabaseInstance>}
@@ -121,14 +123,14 @@ class DatabaseManager {
 
       try {
           const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
-          const databaseFilePath = this.getDatabaseDirectory(databaseName);
+
+          // const databaseFilePath = this.getDatabaseDirectory(databaseName);
           const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
           const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
           const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
 
-          const adapter = new SQLiteAdapter({
-              dbName: databaseFilePath,
-              migrationEvents: this.buildMigrationCallbacks(databaseName),
+          const adapter = new LokiJSAdapter({
+              dbName: databaseName,
               migrations,
               schema,
           });
@@ -136,15 +138,14 @@ class DatabaseManager {
           // Registers the new server connection into the DEFAULT database
           if (serverUrl && shouldAddToDefaultDatabase) {
               await this.addServerToDefaultDatabase({
-                  databaseFilePath,
+                  databaseFilePath: databaseName,
                   displayName: dbName,
                   serverUrl,
               });
           }
-
           return new Database({adapter, actionsEnabled, modelClasses});
       } catch (e) {
-          // TODO : report to sentry? Show something on the UI ?
+      // console.log(e);
       }
 
       return undefined;
@@ -176,14 +177,12 @@ class DatabaseManager {
    * @param {String} serverUrl
    * @returns {Promise<boolean>}
    */
-  private isServerPresent = async (serverUrl: String) => {
+  isServerPresent = async (serverUrl: String) => {
       const allServers = await this.getAllServers();
-
       const existingServer = allServers?.filter((server) => {
           return server.url === serverUrl;
       });
-
-      return existingServer && existingServer?.length > 0;
+      return existingServer && existingServer.length > 0;
   };
 
   /**
@@ -211,7 +210,7 @@ class DatabaseManager {
    * and return them to the caller.
    *
    * @param {string[]} serverUrls
-   * @returns {Promise<{url: string, dbInstance: DatabaseInstance}[] | null>}
+   * @returns {Promise<DatabaseInstances[] | null>}
    */
   retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<DatabaseInstances[] | null> => {
       if (serverUrls?.length) {
@@ -225,7 +224,7 @@ class DatabaseManager {
 
           // Creates server database instances
           if (servers.length) {
-              const databasePromises = await servers.map(async (server: IServers) => {
+              const databasePromises = servers.map(async (server: IServers) => {
                   const {displayName, url} = server;
 
                   // Since we are retrieving existing URL ( and so database connections ) from the 'DEFAULT' database, shouldAddToDefaultDatabase is set to false
@@ -262,10 +261,7 @@ class DatabaseManager {
           let server: IServers;
 
           if (defaultDB) {
-              const serversRecords = (await defaultDB.collections.
-                  get(SERVERS).
-                  query(Q.where('url', serverUrl)).
-                  fetch()) as IServers[];
+              const serversRecords = (await defaultDB.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch()) as IServers[];
               server = serversRecords?.[0] ?? undefined;
 
               if (server) {
@@ -274,22 +270,6 @@ class DatabaseManager {
                       await server.destroyPermanently();
                   });
 
-                  const databaseName = server.displayName;
-
-                  if (Platform.OS === 'ios') {
-                      // On iOS, we'll delete the *.db file under the shared app-group/databases folder
-                      deleteIOSDatabase({databaseName});
-                      return true;
-                  }
-
-                  // On Android, we'll delete both the *.db file and the *.db-journal file
-                  const androidFilesDir = `${this.androidFilesDirectory}databases/`;
-                  const databaseFile = `${androidFilesDir}${databaseName}.db`;
-                  const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
-
-                  await FileSystem.deleteAsync(databaseFile);
-                  await FileSystem.deleteAsync(databaseJournal);
-
                   return true;
               }
               return false;
@@ -297,29 +277,6 @@ class DatabaseManager {
           return false;
       } catch (e) {
       // console.log('An error occurred while trying to delete database with name ', databaseName);
-          return false;
-      }
-  };
-
-  /**
-   * factoryReset: Removes the databases directory and all its contents on the respective platform
-   * @param {boolean} shouldRemoveDirectory
-   * @returns {Promise<boolean>}
-   */
-  factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
-      try {
-      //On iOS, we'll delete the databases folder under the shared AppGroup folder
-          if (Platform.OS === 'ios') {
-              deleteIOSDatabase({shouldRemoveDirectory});
-              return true;
-          }
-
-          // On Android, we'll remove the databases folder under the Document Directory
-          const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
-          await FileSystem.deleteAsync(androidFilesDir);
-          return true;
-      } catch (e) {
-      // console.log('An error occurred while trying to delete the databases directory);
           return false;
       }
   };
@@ -373,59 +330,9 @@ class DatabaseManager {
               });
           }
       } catch (e) {
-          // TODO : report to sentry? Show something on the UI ?
+      // console.log({catchError: e});
       }
   };
-
-  /**
-   * buildMigrationCallbacks: Creates a set of callbacks that can be used to monitor the migration process.
-   * For example, we can display a processing spinner while we have a migration going on. Moreover, we can also
-   * hook into those callbacks to assess how many of our servers successfully completed their migration.
-   * @param {string} dbName
-   * @returns {MigrationEvents}
-   */
-  private buildMigrationCallbacks = (dbName: string) => {
-      const migrationEvents: MigrationEvents = {
-          onSuccess: () => {
-              return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {
-                  dbName,
-              });
-          },
-          onStarted: () => {
-              return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {
-                  dbName,
-              });
-          },
-          onFailure: (error) => {
-              return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
-                  dbName,
-                  error,
-              });
-          },
-      };
-
-      return migrationEvents;
-  };
-
-  /**
-   * getDatabaseDirectory: Using the database name, this method will return the database directory for each platform.
-   * On iOS, it will point towards the AppGroup shared directory while on Android, it will point towards the Files Directory.
-   * Please note that in each case, the *.db files will be created/grouped under a 'databases' sub-folder.
-   * iOS Simulator : appGroup => /Users/{username}/Library/Developer/CoreSimulator/Devices/DA6F1C73/data/Containers/Shared/AppGroup/ACA65327/databases"}
-   * Android Device: file:///data/user/0/com.mattermost.rnbeta/files/databases
-   *
-   * @param {string} dbName
-   * @returns {string}
-   */
-  private getDatabaseDirectory = (dbName: string): string => {
-      return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
-  };
-}
-
-if (!__DEV__) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    logger.silence();
 }
 
 export default new DatabaseManager();

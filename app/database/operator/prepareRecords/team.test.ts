@@ -8,8 +8,8 @@ import {
     prepareTeamMembershipRecord,
     prepareTeamRecord,
     prepareTeamSearchHistoryRecord,
-} from '@database/admin/data_operator/operators/team';
-import {createConnection} from '@database/admin/data_operator/operators/utils';
+} from '@database/operator/prepareRecords/team';
+import {createConnection} from '@database/operator/prepareRecords/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** TEAM Prepare Records Test ***', () => {

@@ -3,9 +3,9 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import DataOperator from '@database/admin/data_operator/data_operator';
-import DatabaseManager from '@database/admin/database_manager';
-import DatabaseConnectionException from '@database/admin/exceptions/database_connection_exception';
+import DataOperator from '@database/operator/data_operator';
+import DatabaseManager from '@database/manager';
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 
 export const createDataOperator = async (serverUrl: string) => {
     // Retrieves the connection matching serverUrl

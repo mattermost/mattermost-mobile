@@ -9,8 +9,8 @@ import {
     isRecordServerEqualToRaw,
     isRecordSystemEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
-} from '@database/admin/data_operator/comparators';
-import DataOperator from '@database/admin/data_operator/index';
+} from '@database/operator/comparators';
+import DataOperator from '@database/operator/index';
 import {
     prepareAppRecord,
     prepareCustomEmojiRecord,
@@ -19,14 +19,14 @@ import {
     prepareServersRecord,
     prepareSystemRecord,
     prepareTermsOfServiceRecord,
-} from '@database/admin/data_operator/operators/general';
+} from '@database/operator/prepareRecords/general';
 import {
     prepareGroupMembershipRecord,
     prepareGroupRecord,
     prepareGroupsInChannelRecord,
     prepareGroupsInTeamRecord,
-} from '@database/admin/data_operator/operators/group';
-import {prepareDraftRecord} from '@database/admin/data_operator/operators/post';
+} from '@database/operator/prepareRecords/group';
+import {prepareDraftRecord} from '@database/operator/prepareRecords/post';
 import {
     prepareMyTeamRecord,
     prepareSlashCommandRecord,
@@ -34,14 +34,14 @@ import {
     prepareTeamMembershipRecord,
     prepareTeamRecord,
     prepareTeamSearchHistoryRecord,
-} from '@database/admin/data_operator/operators/team';
+} from '@database/operator/prepareRecords/team';
 import {
     prepareChannelMembershipRecord,
     preparePreferenceRecord,
     prepareUserRecord,
-} from '@database/admin/data_operator/operators/user';
-import DatabaseManager from '@database/admin/database_manager';
-import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
+} from '@database/operator/prepareRecords/user';
+import DatabaseManager from '@database/manager';
+import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {RawApp, RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
@@ -50,9 +50,9 @@ import {
     prepareChannelRecord,
     prepareMyChannelRecord,
     prepareMyChannelSettingsRecord,
-} from './operators/channel';
+} from './prepareRecords/channel';
 
-jest.mock('@database/admin/database_manager');
+jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 

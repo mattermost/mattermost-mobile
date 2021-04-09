@@ -5,10 +5,10 @@ import {
     preparePreferenceRecord,
     prepareReactionRecord,
     prepareUserRecord,
-} from '@database/admin/data_operator/operators/user';
+} from '@database/operator/prepareRecords/user';
 
 // See LICENSE.txt for license information.
-import {createConnection} from '@database/admin/data_operator/operators/utils';
+import {createConnection} from '@database/operator/prepareRecords/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** USER Prepare Records Test ***', () => {

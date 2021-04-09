@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DataOperator from '@database/admin/data_operator';
-import {createPostsChain, sanitizePosts} from '@database/admin/data_operator/utils/post';
-import {sanitizeReactions} from '@database/admin/data_operator/utils/reaction';
-import DatabaseManager from '@database/admin/database_manager';
+import DataOperator from '@database/operator';
+import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
+import {sanitizeReactions} from '@database/operator/utils/reaction';
+import DatabaseManager from '@database/manager';
 import {DatabaseType} from '@typings/database/enums';
 import {RawPost} from '@typings/database/database';
 
 import {mockedPosts, mockedReactions} from './mock';
 
-jest.mock('@database/admin/database_manager');
+jest.mock('@database/manager');
 
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {

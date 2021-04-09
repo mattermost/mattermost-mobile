@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
+import {prepareBaseRecord} from '@database/operator/prepareRecords/index';
 import {
     DataFactoryArgs,
     RawGroup,

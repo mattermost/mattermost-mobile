@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DatabaseManager from '@database/admin/database_manager';
-import {createDataOperator} from '@database/admin/data_operator/wrapper';
-import DatabaseConnectionException from '@database/admin/exceptions/database_connection_exception';
+import DatabaseManager from '@database/manager';
+import {createDataOperator} from '@database/operator/wrapper/index';
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import {DatabaseType} from '@typings/database/enums';
 
-jest.mock('@database/admin/database_manager');
+jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 

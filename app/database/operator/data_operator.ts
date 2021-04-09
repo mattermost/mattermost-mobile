@@ -32,7 +32,7 @@ import {
     isRecordTeamSearchHistoryEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
     isRecordUserEqualToRaw,
-} from '@database/admin/data_operator/comparators';
+} from '@database/operator/comparators';
 import {
     prepareAppRecord,
     prepareCustomEmojiRecord,
@@ -41,13 +41,13 @@ import {
     prepareServersRecord,
     prepareSystemRecord,
     prepareTermsOfServiceRecord,
-} from '@database/admin/data_operator/operators/general';
+} from '@database/operator/prepareRecords/general';
 import {
     prepareGroupMembershipRecord,
     prepareGroupRecord,
     prepareGroupsInChannelRecord,
     prepareGroupsInTeamRecord,
-} from '@database/admin/data_operator/operators/group';
+} from '@database/operator/prepareRecords/group';
 import {
     prepareDraftRecord,
     prepareFileRecord,
@@ -55,7 +55,7 @@ import {
     preparePostMetadataRecord,
     preparePostRecord,
     preparePostsInChannelRecord,
-} from '@database/admin/data_operator/operators/post';
+} from '@database/operator/prepareRecords/post';
 import {
     prepareMyTeamRecord,
     prepareSlashCommandRecord,
@@ -63,16 +63,16 @@ import {
     prepareTeamMembershipRecord,
     prepareTeamRecord,
     prepareTeamSearchHistoryRecord,
-} from '@database/admin/data_operator/operators/team';
+} from '@database/operator/prepareRecords/team';
 import {
     prepareChannelMembershipRecord,
     preparePreferenceRecord,
     prepareReactionRecord,
     prepareUserRecord,
-} from '@database/admin/data_operator/operators/user';
-import {createPostsChain, sanitizePosts} from '@database/admin/data_operator/utils/post';
-import {sanitizeReactions} from '@database/admin/data_operator/utils/reaction';
-import DatabaseManager from '@database/admin/database_manager';
+} from '@database/operator/prepareRecords/user';
+import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
+import {sanitizeReactions} from '@database/operator/utils/reaction';
+import DatabaseManager from '@database/manager';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     BatchOperationsArgs,
@@ -130,7 +130,7 @@ import {
     prepareChannelRecord,
     prepareMyChannelRecord,
     prepareMyChannelSettingsRecord,
-} from './operators/channel';
+} from './prepareRecords/channel';
 import {
     getRangeOfValues,
     getRawRecordPairs,

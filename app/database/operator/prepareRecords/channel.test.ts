@@ -6,8 +6,8 @@ import {
     prepareChannelRecord,
     prepareMyChannelRecord,
     prepareMyChannelSettingsRecord,
-} from '@database/admin/data_operator/operators/channel';
-import {createConnection} from '@database/admin/data_operator/operators/utils';
+} from '@database/operator/prepareRecords/channel';
+import {createConnection} from '@database/operator/prepareRecords/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** CHANNEL Prepare Records Test ***', () => {

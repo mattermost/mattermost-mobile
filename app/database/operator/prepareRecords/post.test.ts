@@ -8,8 +8,8 @@ import {
     preparePostMetadataRecord,
     preparePostRecord,
     preparePostsInChannelRecord,
-} from '@database/admin/data_operator/operators/post';
-import {createConnection} from '@database/admin/data_operator/operators/utils';
+} from '@database/operator/prepareRecords/post';
+import {createConnection} from '@database/operator/prepareRecords/utils';
 import {OperationType} from '@typings/database/enums';
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */

@@ -9,9 +9,9 @@ import {
     prepareServersRecord,
     prepareSystemRecord,
     prepareTermsOfServiceRecord,
-} from '@database/admin/data_operator/operators/general';
-import {createConnection} from '@database/admin/data_operator/operators/utils';
-import DatabaseManager from '@database/admin/database_manager';
+} from '@database/operator/prepareRecords/general';
+import {createConnection} from '@database/operator/prepareRecords/utils';
+import DatabaseManager from '@database/manager';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** Isolated Prepare Records Test ***', () => {
