@@ -22,6 +22,7 @@ import Channel from './channel';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
+    const currentUserId = getCurrentUserId(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const serverVersion = Client4.getServerVersion() || getServerVersion(state);
@@ -42,6 +43,7 @@ function mapStateToProps(state) {
     return {
         currentChannelId,
         currentTeamId,
+        currentUserId,
         isSupportedServer,
         isSystemAdmin,
         showTermsOfService: shouldShowTermsOfService(state),
