@@ -3,7 +3,7 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import DataOperator from '@database/admin/data_operator/handlers';
+import DataOperator from '@database/admin/data_operator/data_operator';
 import DatabaseManager from '@database/admin/database_manager';
 import DatabaseConnectionException from '@database/admin/exceptions/database_connection_exception';
 

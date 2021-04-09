@@ -86,8 +86,8 @@ import PostsInChannel from '@typings/database/posts_in_channel';
 import PostsInThread from '@typings/database/posts_in_thread';
 import Reaction from '@typings/database/reaction';
 
-import DataOperatorException from '../../exceptions/data_operator_exception';
-import DatabaseConnectionException from '../../exceptions/database_connection_exception';
+import DataOperatorException from '../exceptions/data_operator_exception';
+import DatabaseConnectionException from '../exceptions/database_connection_exception';
 import {
     operateAppRecord,
     operateChannelInfoRecord,
@@ -120,7 +120,7 @@ import {
     operateTeamSearchHistoryRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
-} from '../operators';
+} from './operators';
 import {
     getRangeOfValues,
     getRawRecordPairs,
@@ -128,7 +128,7 @@ import {
     hasSimilarUpdateAt,
     retrieveRecords,
 
-} from '../utils/general';
+} from './utils/general';
 
 const {
     CHANNEL,

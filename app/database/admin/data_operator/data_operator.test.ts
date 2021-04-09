@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DataOperator from '@database/admin/data_operator';
+import DataOperator from '@database/admin/data_operator/index';
 import {
     isRecordAppEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -42,7 +42,7 @@ import {
     operateTeamSearchHistoryRecord,
     operateTermsOfServiceRecord,
     operateUserRecord,
-} from '../operators';
+} from './operators';
 
 jest.mock('@database/admin/database_manager');
 
