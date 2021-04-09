@@ -1,36 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {
-    operateAppRecord,
-    operateCustomEmojiRecord, operateGlobalRecord,
-    operateRoleRecord, operateServersRecord,
-    operateSystemRecord,
-    operateTermsOfServiceRecord,
-} from '@database/admin/data_operator/operators/general';
-import {
-    operateGroupMembershipRecord,
-    operateGroupRecord,
-    operateGroupsInChannelRecord,
-    operateGroupsInTeamRecord,
-} from '@database/admin/data_operator/operators/group';
-import {
-    operateDraftRecord, operateFileRecord, operatePostInThreadRecord,
-    operatePostMetadataRecord, operatePostRecord,
-    operatePostsInChannelRecord,
-} from '@database/admin/data_operator/operators/post';
-import {
-    operateMyTeamRecord,
-    operateSlashCommandRecord, operateTeamChannelHistoryRecord, operateTeamMembershipRecord, operateTeamRecord,
-    operateTeamSearchHistoryRecord,
-} from '@database/admin/data_operator/operators/team';
-import {
-    operateChannelMembershipRecord,
-    operatePreferenceRecord, operateReactionRecord,
-    operateUserRecord,
-} from '@database/admin/data_operator/operators/user';
-import {createPostsChain, sanitizePosts} from '@database/admin/data_operator/utils/post';
-import {sanitizeReactions} from '@database/admin/data_operator/utils/reaction';
 import {Database, Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
@@ -63,6 +33,45 @@ import {
     isRecordTermsOfServiceEqualToRaw,
     isRecordUserEqualToRaw,
 } from '@database/admin/data_operator/comparators';
+import {
+    prepareAppRecord,
+    prepareCustomEmojiRecord,
+    prepareGlobalRecord,
+    prepareRoleRecord,
+    prepareServersRecord,
+    prepareSystemRecord,
+    prepareTermsOfServiceRecord,
+} from '@database/admin/data_operator/operators/general';
+import {
+    prepareGroupMembershipRecord,
+    prepareGroupRecord,
+    prepareGroupsInChannelRecord,
+    prepareGroupsInTeamRecord,
+} from '@database/admin/data_operator/operators/group';
+import {
+    prepareDraftRecord,
+    prepareFileRecord,
+    preparePostInThreadRecord,
+    preparePostMetadataRecord,
+    preparePostRecord,
+    preparePostsInChannelRecord,
+} from '@database/admin/data_operator/operators/post';
+import {
+    prepareMyTeamRecord,
+    prepareSlashCommandRecord,
+    prepareTeamChannelHistoryRecord,
+    prepareTeamMembershipRecord,
+    prepareTeamRecord,
+    prepareTeamSearchHistoryRecord,
+} from '@database/admin/data_operator/operators/team';
+import {
+    prepareChannelMembershipRecord,
+    preparePreferenceRecord,
+    prepareReactionRecord,
+    prepareUserRecord,
+} from '@database/admin/data_operator/operators/user';
+import {createPostsChain, sanitizePosts} from '@database/admin/data_operator/utils/post';
+import {sanitizeReactions} from '@database/admin/data_operator/utils/reaction';
 import DatabaseManager from '@database/admin/database_manager';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -117,11 +126,10 @@ import Reaction from '@typings/database/reaction';
 import DataOperatorException from '../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../exceptions/database_connection_exception';
 import {
-    operateChannelInfoRecord,
-    operateChannelRecord,
-    operateMyChannelRecord,
-    operateMyChannelSettingsRecord,
-
+    prepareChannelInfoRecord,
+    prepareChannelRecord,
+    prepareMyChannelRecord,
+    prepareMyChannelSettingsRecord,
 } from './operators/channel';
 import {
     getRangeOfValues,
@@ -129,7 +137,6 @@ import {
     getUniqueRawsBy,
     hasSimilarUpdateAt,
     retrieveRecords,
-
 } from './utils/general';
 
 const {
@@ -195,49 +202,49 @@ class DataOperator {
             case IsolatedEntities.APP: {
                 findMatchingRecordBy = isRecordAppEqualToRaw;
                 fieldName = 'version_number';
-                operator = operateAppRecord;
+                operator = prepareAppRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'versionNumber'});
                 break;
             }
             case IsolatedEntities.CUSTOM_EMOJI: {
                 findMatchingRecordBy = isRecordCustomEmojiEqualToRaw;
                 fieldName = 'id';
-                operator = operateCustomEmojiRecord;
+                operator = prepareCustomEmojiRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.GLOBAL: {
                 findMatchingRecordBy = isRecordGlobalEqualToRaw;
                 fieldName = 'name';
-                operator = operateGlobalRecord;
+                operator = prepareGlobalRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'name'});
                 break;
             }
             case IsolatedEntities.ROLE: {
                 findMatchingRecordBy = isRecordRoleEqualToRaw;
                 fieldName = 'id';
-                operator = operateRoleRecord;
+                operator = prepareRoleRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.SERVERS: {
                 findMatchingRecordBy = isRecordServerEqualToRaw;
                 fieldName = 'url';
-                operator = operateServersRecord;
+                operator = prepareServersRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'displayName'});
                 break;
             }
             case IsolatedEntities.SYSTEM: {
                 findMatchingRecordBy = isRecordSystemEqualToRaw;
                 fieldName = 'id';
-                operator = operateSystemRecord;
+                operator = prepareSystemRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
                 findMatchingRecordBy = isRecordTermsOfServiceEqualToRaw;
                 fieldName = 'id';
-                operator = operateTermsOfServiceRecord;
+                operator = prepareTermsOfServiceRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
@@ -276,7 +283,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
-            operator: operateDraftRecord,
+            operator: prepareDraftRecord,
             rawValues,
             tableName: DRAFT,
         });
@@ -318,7 +325,7 @@ class DataOperator {
             const reactionsRecords = (await this.prepareRecords({
                 createRaws: createReactions,
                 database,
-                recordOperator: operateReactionRecord,
+                recordOperator: prepareReactionRecord,
                 tableName: REACTION,
             })) as Reaction[];
             batchRecords = batchRecords.concat(reactionsRecords);
@@ -329,7 +336,7 @@ class DataOperator {
             const emojiRecords = (await this.prepareRecords({
                 createRaws: getRawRecordPairs(createEmojis),
                 database,
-                recordOperator: operateCustomEmojiRecord,
+                recordOperator: prepareCustomEmojiRecord,
                 tableName: CUSTOM_EMOJI,
             })) as CustomEmoji[];
             batchRecords = batchRecords.concat(emojiRecords);
@@ -407,7 +414,7 @@ class DataOperator {
             const posts = (await this.prepareRecords({
                 createRaws: linkedRawPosts,
                 database,
-                recordOperator: operatePostRecord,
+                recordOperator: preparePostRecord,
                 tableName,
             }))as Post[];
 
@@ -503,7 +510,7 @@ class DataOperator {
             await this.handleEntityRecords({
                 findMatchingRecordBy: isRecordPostEqualToRaw,
                 fieldName: 'id',
-                operator: operatePostRecord,
+                operator: preparePostRecord,
                 rawValues: postsUnordered,
                 tableName: POST,
             });
@@ -529,7 +536,7 @@ class DataOperator {
         const postFiles = (await this.prepareRecords({
             createRaws: getRawRecordPairs(files),
             database,
-            recordOperator: operateFileRecord,
+            recordOperator: prepareFileRecord,
             tableName: FILE,
         })) as File[];
 
@@ -587,7 +594,7 @@ class DataOperator {
         const postMetas = (await this.prepareRecords({
             createRaws: getRawRecordPairs(metadata),
             database,
-            recordOperator: operatePostMetadataRecord,
+            recordOperator: preparePostMetadataRecord,
             tableName: POST_METADATA,
         })) as PostMetadata[];
 
@@ -646,7 +653,7 @@ class DataOperator {
             const postInThreadRecords = (await this.prepareRecords({
                 createRaws: getRawRecordPairs(rawPostsInThreads),
                 database,
-                recordOperator: operatePostInThreadRecord,
+                recordOperator: preparePostInThreadRecord,
                 tableName: POSTS_IN_THREAD,
             })) as PostsInThread[];
 
@@ -701,7 +708,7 @@ class DataOperator {
             await this.executeInDatabase({
                 createRaws: [{record: undefined, raw: createPostsInChannel}],
                 tableName: POSTS_IN_CHANNEL,
-                recordOperator: operatePostsInChannelRecord,
+                recordOperator: preparePostsInChannelRecord,
             });
         };
 
@@ -779,7 +786,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordUserEqualToRaw,
             fieldName: 'id',
-            operator: operateUserRecord,
+            operator: prepareUserRecord,
             rawValues,
             tableName: USER,
         });
@@ -803,7 +810,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             fieldName: 'user_id',
-            operator: operatePreferenceRecord,
+            operator: preparePreferenceRecord,
             rawValues,
             tableName: PREFERENCE,
         });
@@ -827,7 +834,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
             fieldName: 'user_id',
-            operator: operateTeamMembershipRecord,
+            operator: prepareTeamMembershipRecord,
             rawValues,
             tableName: TEAM_MEMBERSHIP,
         });
@@ -851,7 +858,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             fieldName: 'user_id',
-            operator: operateGroupMembershipRecord,
+            operator: prepareGroupMembershipRecord,
             rawValues,
             tableName: GROUP_MEMBERSHIP,
         });
@@ -875,7 +882,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             fieldName: 'user_id',
-            operator: operateChannelMembershipRecord,
+            operator: prepareChannelMembershipRecord,
             rawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });
@@ -899,7 +906,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             fieldName: 'name',
-            operator: operateGroupRecord,
+            operator: prepareGroupRecord,
             rawValues,
             tableName: GROUP,
         });
@@ -923,7 +930,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             fieldName: 'group_id',
-            operator: operateGroupsInTeamRecord,
+            operator: prepareGroupsInTeamRecord,
             rawValues,
             tableName: GROUPS_IN_TEAM,
         });
@@ -947,7 +954,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             fieldName: 'group_id',
-            operator: operateGroupsInChannelRecord,
+            operator: prepareGroupsInChannelRecord,
             rawValues,
             tableName: GROUPS_IN_CHANNEL,
         });
@@ -971,7 +978,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamEqualToRaw,
             fieldName: 'id',
-            operator: operateTeamRecord,
+            operator: prepareTeamRecord,
             rawValues,
             tableName: TEAM,
         });
@@ -995,7 +1002,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
             fieldName: 'team_id',
-            operator: operateTeamChannelHistoryRecord,
+            operator: prepareTeamChannelHistoryRecord,
             rawValues,
             tableName: TEAM_CHANNEL_HISTORY,
         });
@@ -1019,7 +1026,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
             fieldName: 'team_id',
-            operator: operateTeamSearchHistoryRecord,
+            operator: prepareTeamSearchHistoryRecord,
             rawValues,
             tableName: TEAM_SEARCH_HISTORY,
         });
@@ -1043,7 +1050,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
             fieldName: 'id',
-            operator: operateSlashCommandRecord,
+            operator: prepareSlashCommandRecord,
             rawValues,
             tableName: SLASH_COMMAND,
         });
@@ -1067,7 +1074,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordMyTeamEqualToRaw,
             fieldName: 'team_id',
-            operator: operateMyTeamRecord,
+            operator: prepareMyTeamRecord,
             rawValues,
             tableName: MY_TEAM,
         });
@@ -1091,7 +1098,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordChannelEqualToRaw,
             fieldName: 'id',
-            operator: operateChannelRecord,
+            operator: prepareChannelRecord,
             rawValues,
             tableName: CHANNEL,
         });
@@ -1115,7 +1122,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
             fieldName: 'channel_id',
-            operator: operateMyChannelSettingsRecord,
+            operator: prepareMyChannelSettingsRecord,
             rawValues,
             tableName: MY_CHANNEL_SETTINGS,
         });
@@ -1139,7 +1146,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
             fieldName: 'channel_id',
-            operator: operateChannelInfoRecord,
+            operator: prepareChannelInfoRecord,
             rawValues,
             tableName: CHANNEL_INFO,
         });
@@ -1163,7 +1170,7 @@ class DataOperator {
         await this.handleEntityRecords({
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
             fieldName: 'channel_id',
-            operator: operateMyChannelRecord,
+            operator: prepareMyChannelRecord,
             rawValues,
             tableName: MY_CHANNEL,
         });

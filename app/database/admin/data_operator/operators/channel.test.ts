@@ -2,21 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {
-    operateChannelInfoRecord,
-    operateChannelRecord, operateMyChannelRecord,
-    operateMyChannelSettingsRecord,
+    prepareChannelInfoRecord,
+    prepareChannelRecord,
+    prepareMyChannelRecord,
+    prepareMyChannelSettingsRecord,
 } from '@database/admin/data_operator/operators/channel';
 import {createConnection} from '@database/admin/data_operator/operators/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** CHANNEL Prepare Records Test ***', () => {
-    it('=> operateChannelRecord: should return an array of type Channel', async () => {
+    it('=> prepareChannelRecord: should return an array of type Channel', async () => {
         expect.assertions(3);
 
         const database = await createConnection('channel_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateChannelRecord({
+        const preparedRecords = await prepareChannelRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -48,13 +49,13 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Channel');
     });
 
-    it('=> operateMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
+    it('=> prepareMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
         expect.assertions(3);
 
         const database = await createConnection('channel_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateMyChannelSettingsRecord({
+        const preparedRecords = await prepareMyChannelSettingsRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -78,13 +79,13 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettings');
     });
 
-    it('=> operateChannelInfoRecord: should return an array of type ChannelInfo', async () => {
+    it('=> prepareChannelInfoRecord: should return an array of type ChannelInfo', async () => {
         expect.assertions(3);
 
         const database = await createConnection('channel_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateChannelInfoRecord({
+        const preparedRecords = await prepareChannelInfoRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -104,13 +105,13 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfo');
     });
 
-    it('=> operateMyChannelRecord: should return an array of type MyChannel', async () => {
+    it('=> prepareMyChannelRecord: should return an array of type MyChannel', async () => {
         expect.assertions(3);
 
         const database = await createConnection('channel_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateMyChannelRecord({
+        const preparedRecords = await prepareMyChannelRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

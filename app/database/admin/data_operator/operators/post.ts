@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
-import {Q} from '@nozbe/watermelondb';
-
 import {MM_TABLES} from '@constants/database';
+import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
+import {Q} from '@nozbe/watermelondb';
 import {
     DataFactoryArgs,
     RawDraft,
@@ -32,13 +31,13 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * operatePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
+ * preparePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operatePostRecord = ({action, database, value}: DataFactoryArgs) => {
+export const preparePostRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPost;
     const record = value.record as Post;
     const isCreateAction = action === OperationType.CREATE;
@@ -62,7 +61,7 @@ export const operatePostRecord = ({action, database, value}: DataFactoryArgs) =>
         post.props = raw?.props ?? {};
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: POST,
@@ -72,13 +71,13 @@ export const operatePostRecord = ({action, database, value}: DataFactoryArgs) =>
 };
 
 /**
- * operatePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
+ * preparePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operatePostInThreadRecord = ({action, database, value}: DataFactoryArgs) => {
+export const preparePostInThreadRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInThread;
     const record = value.record as PostsInThread;
     const isCreateAction = action === OperationType.CREATE;
@@ -89,7 +88,7 @@ export const operatePostInThreadRecord = ({action, database, value}: DataFactory
         postsInThread.latest = raw.latest!;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: POSTS_IN_THREAD,
@@ -99,13 +98,13 @@ export const operatePostInThreadRecord = ({action, database, value}: DataFactory
 };
 
 /**
- * operateFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
+ * prepareFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateFileRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareFileRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawFile;
     const record = value.record as File;
     const isCreateAction = action === OperationType.CREATE;
@@ -124,7 +123,7 @@ export const operateFileRecord = ({action, database, value}: DataFactoryArgs) =>
         file.localPath = raw?.localPath ?? '';
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: FILE,
@@ -134,13 +133,13 @@ export const operateFileRecord = ({action, database, value}: DataFactoryArgs) =>
 };
 
 /**
- * operatePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
+ * preparePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operatePostMetadataRecord = ({action, database, value}: DataFactoryArgs) => {
+export const preparePostMetadataRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostMetadata;
     const record = value.record as PostMetadata;
     const isCreateAction = action === OperationType.CREATE;
@@ -152,7 +151,7 @@ export const operatePostMetadataRecord = ({action, database, value}: DataFactory
         postMeta.type = raw.type;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: POST_METADATA,
@@ -162,13 +161,13 @@ export const operatePostMetadataRecord = ({action, database, value}: DataFactory
 };
 
 /**
- * operateDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
+ * prepareDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateDraftRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareDraftRecord = ({action, database, value}: DataFactoryArgs) => {
     const emptyFileInfo: FileInfo[] = [];
     const raw = value.raw as RawDraft;
 
@@ -181,7 +180,7 @@ export const operateDraftRecord = ({action, database, value}: DataFactoryArgs) =
         draft.files = raw?.files ?? emptyFileInfo;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: DRAFT,
@@ -191,13 +190,13 @@ export const operateDraftRecord = ({action, database, value}: DataFactoryArgs) =
 };
 
 /**
- * operatePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
+ * preparePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operatePostsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {
+export const preparePostsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPostsInChannel;
     const record = value.record as PostsInChannel;
     const isCreateAction = action === OperationType.CREATE;
@@ -209,7 +208,7 @@ export const operatePostsInChannelRecord = ({action, database, value}: DataFacto
         postsInChannel.latest = raw.latest;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: POSTS_IN_CHANNEL,

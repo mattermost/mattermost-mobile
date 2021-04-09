@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {
-    operateDraftRecord,
-    operateFileRecord,
-    operatePostInThreadRecord,
-    operatePostMetadataRecord,
-    operatePostRecord,
-    operatePostsInChannelRecord,
+    prepareDraftRecord,
+    prepareFileRecord,
+    preparePostInThreadRecord,
+    preparePostMetadataRecord,
+    preparePostRecord,
+    preparePostsInChannelRecord,
 } from '@database/admin/data_operator/operators/post';
 import {createConnection} from '@database/admin/data_operator/operators/utils';
 import {OperationType} from '@typings/database/enums';
@@ -15,13 +15,13 @@ import {OperationType} from '@typings/database/enums';
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('***  POST Prepare Records Test ***', () => {
-    it('=> operatePostRecord: should return an array of type Post', async () => {
+    it('=> preparePostRecord: should return an array of type Post', async () => {
         expect.assertions(3);
 
         const database = await createConnection('post_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operatePostRecord({
+        const preparedRecords = await preparePostRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -55,13 +55,13 @@ describe('***  POST Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Post');
     });
 
-    it('=> operatePostInThreadRecord: should return an array of type PostsInThread', async () => {
+    it('=> preparePostInThreadRecord: should return an array of type PostsInThread', async () => {
         expect.assertions(3);
 
         const database = await createConnection('post_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operatePostInThreadRecord({
+        const preparedRecords = await preparePostInThreadRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -81,13 +81,13 @@ describe('***  POST Prepare Records Test ***', () => {
         );
     });
 
-    it('=> operateFileRecord: should return an array of type File', async () => {
+    it('=> prepareFileRecord: should return an array of type File', async () => {
         expect.assertions(3);
 
         const database = await createConnection('post_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateFileRecord({
+        const preparedRecords = await prepareFileRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -110,13 +110,13 @@ describe('***  POST Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('File');
     });
 
-    it('=> operatePostMetadataRecord: should return an array of type PostMetadata', async () => {
+    it('=> preparePostMetadataRecord: should return an array of type PostMetadata', async () => {
         expect.assertions(3);
 
         const database = await createConnection('post_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operatePostMetadataRecord({
+        const preparedRecords = await preparePostMetadataRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -134,13 +134,13 @@ describe('***  POST Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('PostMetadata');
     });
 
-    it('=> operateDraftRecord: should return an array of type Draft', async () => {
+    it('=> prepareDraftRecord: should return an array of type Draft', async () => {
         expect.assertions(3);
 
         const database = await createConnection('post_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateDraftRecord({
+        const preparedRecords = await prepareDraftRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -159,13 +159,13 @@ describe('***  POST Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Draft');
     });
 
-    it('=> operatePostsInChannelRecord: should return an array of type PostsInChannel', async () => {
+    it('=> preparePostsInChannelRecord: should return an array of type PostsInChannel', async () => {
         expect.assertions(3);
 
         const database = await createConnection('post_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operatePostsInChannelRecord({
+        const preparedRecords = await preparePostsInChannelRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

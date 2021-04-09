@@ -6,7 +6,7 @@ import {DataFactoryArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
 
 /**
- * operateBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
+ * prepareBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
  * existing record for UPDATE or prepare a collection for CREATE
  *
  * @param {DataFactoryArgs} operatorBase
@@ -16,7 +16,7 @@ import {OperationType} from '@typings/database/enums';
  * @param {((DataFactoryArgs) => void)} operatorBase.generator
  * @returns {Promise<Model>}
  */
-export const operateBaseRecord = async ({
+export const prepareBaseRecord = async ({
     action,
     database,
     tableName,

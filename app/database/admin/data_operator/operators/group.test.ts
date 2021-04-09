@@ -2,22 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {
-    operateGroupMembershipRecord,
-    operateGroupRecord,
-    operateGroupsInChannelRecord,
-    operateGroupsInTeamRecord,
+    prepareGroupMembershipRecord,
+    prepareGroupRecord,
+    prepareGroupsInChannelRecord,
+    prepareGroupsInTeamRecord,
 } from '@database/admin/data_operator/operators/group';
 import {createConnection} from '@database/admin/data_operator/operators/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** GROUP Prepare Records Test ***', () => {
-    it('=> operateGroupRecord: should return an array of type Group', async () => {
+    it('=> prepareGroupRecord: should return an array of type Group', async () => {
         expect.assertions(3);
 
         const database = await createConnection('group_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateGroupRecord({
+        const preparedRecords = await prepareGroupRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -41,13 +41,13 @@ describe('*** GROUP Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Group');
     });
 
-    it('=> operateGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
+    it('=> prepareGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
         expect.assertions(3);
 
         const database = await createConnection('group_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateGroupsInTeamRecord({
+        const preparedRecords = await prepareGroupsInTeamRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -69,13 +69,13 @@ describe('*** GROUP Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInTeam');
     });
 
-    it('=> operateGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
+    it('=> prepareGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
         expect.assertions(3);
 
         const database = await createConnection('group_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateGroupsInChannelRecord({
+        const preparedRecords = await prepareGroupsInChannelRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -100,13 +100,13 @@ describe('*** GROUP Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInChannel');
     });
 
-    it('=> operateGroupMembershipRecord: should return an array of type GroupMembership', async () => {
+    it('=> prepareGroupMembershipRecord: should return an array of type GroupMembership', async () => {
         expect.assertions(3);
 
         const database = await createConnection('group_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateGroupMembershipRecord({
+        const preparedRecords = await prepareGroupMembershipRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

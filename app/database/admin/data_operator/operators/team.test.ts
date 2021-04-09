@@ -2,23 +2,24 @@
 // See LICENSE.txt for license information.
 
 import {
-    operateMyTeamRecord,
-    operateSlashCommandRecord,
-    operateTeamChannelHistoryRecord, operateTeamMembershipRecord,
-    operateTeamRecord,
-    operateTeamSearchHistoryRecord,
+    prepareMyTeamRecord,
+    prepareSlashCommandRecord,
+    prepareTeamChannelHistoryRecord,
+    prepareTeamMembershipRecord,
+    prepareTeamRecord,
+    prepareTeamSearchHistoryRecord,
 } from '@database/admin/data_operator/operators/team';
 import {createConnection} from '@database/admin/data_operator/operators/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** TEAM Prepare Records Test ***', () => {
-    it('=> operateSlashCommandRecord: should return an array of type SlashCommand', async () => {
+    it('=> prepareSlashCommandRecord: should return an array of type SlashCommand', async () => {
         expect.assertions(3);
 
         const database = await createConnection('team_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateSlashCommandRecord({
+        const preparedRecords = await prepareSlashCommandRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -49,13 +50,13 @@ describe('*** TEAM Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('SlashCommand');
     });
 
-    it('=> operateMyTeamRecord: should return an array of type MyTeam', async () => {
+    it('=> prepareMyTeamRecord: should return an array of type MyTeam', async () => {
         expect.assertions(3);
 
         const database = await createConnection('team_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateMyTeamRecord({
+        const preparedRecords = await prepareMyTeamRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -73,13 +74,13 @@ describe('*** TEAM Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('MyTeam');
     });
 
-    it('=> operateTeamRecord: should return an array of type Team', async () => {
+    it('=> prepareTeamRecord: should return an array of type Team', async () => {
         expect.assertions(3);
 
         const database = await createConnection('team_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateTeamRecord({
+        const preparedRecords = await prepareTeamRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -109,13 +110,13 @@ describe('*** TEAM Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Team');
     });
 
-    it('=> operateTeamChannelHistoryRecord: should return an array of type Team', async () => {
+    it('=> prepareTeamChannelHistoryRecord: should return an array of type Team', async () => {
         expect.assertions(3);
 
         const database = await createConnection('team_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateTeamChannelHistoryRecord({
+        const preparedRecords = await prepareTeamChannelHistoryRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -131,13 +132,13 @@ describe('*** TEAM Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('TeamChannelHistory');
     });
 
-    it('=> operateTeamSearchHistoryRecord: should return an array of type TeamSearchHistory', async () => {
+    it('=> prepareTeamSearchHistoryRecord: should return an array of type TeamSearchHistory', async () => {
         expect.assertions(3);
 
         const database = await createConnection('team_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateTeamSearchHistoryRecord({
+        const preparedRecords = await prepareTeamSearchHistoryRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -155,13 +156,13 @@ describe('*** TEAM Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('TeamSearchHistory');
     });
 
-    it('=> operateTeamMembershipRecord: should return an array of type TeamMembership', async () => {
+    it('=> prepareTeamMembershipRecord: should return an array of type TeamMembership', async () => {
         expect.assertions(3);
 
         const database = await createConnection('team_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateTeamMembershipRecord({
+        const preparedRecords = await prepareTeamMembershipRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

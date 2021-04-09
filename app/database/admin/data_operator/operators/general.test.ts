@@ -2,22 +2,26 @@
 // See LICENSE.txt for license information.
 
 import {
-    operateAppRecord, operateCustomEmojiRecord,
-    operateGlobalRecord, operateRoleRecord,
-    operateServersRecord, operateSystemRecord, operateTermsOfServiceRecord,
+    prepareAppRecord,
+    prepareCustomEmojiRecord,
+    prepareGlobalRecord,
+    prepareRoleRecord,
+    prepareServersRecord,
+    prepareSystemRecord,
+    prepareTermsOfServiceRecord,
 } from '@database/admin/data_operator/operators/general';
 import {createConnection} from '@database/admin/data_operator/operators/utils';
 import DatabaseManager from '@database/admin/database_manager';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** Isolated Prepare Records Test ***', () => {
-    it('=> operateAppRecord: should return an array of type App', async () => {
+    it('=> prepareAppRecord: should return an array of type App', async () => {
         expect.assertions(3);
 
         const database = await DatabaseManager.getDefaultDatabase();
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateAppRecord({
+        const preparedRecords = await prepareAppRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -34,13 +38,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('App');
     });
 
-    it('=> operateGlobalRecord: should return an array of type Global', async () => {
+    it('=> prepareGlobalRecord: should return an array of type Global', async () => {
         expect.assertions(3);
 
         const database = await DatabaseManager.getDefaultDatabase();
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateGlobalRecord({
+        const preparedRecords = await prepareGlobalRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -53,13 +57,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Global');
     });
 
-    it('=> operateServersRecord: should return an array of type Servers', async () => {
+    it('=> prepareServersRecord: should return an array of type Servers', async () => {
         expect.assertions(3);
 
         const database = await DatabaseManager.getDefaultDatabase();
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateServersRecord({
+        const preparedRecords = await prepareServersRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -78,13 +82,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Servers');
     });
 
-    it('=> operateRoleRecord: should return an array of type Role', async () => {
+    it('=> prepareRoleRecord: should return an array of type Role', async () => {
         expect.assertions(3);
 
         const database = await createConnection('isolated_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateRoleRecord({
+        const preparedRecords = await prepareRoleRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -101,13 +105,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Role');
     });
 
-    it('=> operateSystemRecord: should return an array of type System', async () => {
+    it('=> prepareSystemRecord: should return an array of type System', async () => {
         expect.assertions(3);
 
         const database = await createConnection('isolated_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateSystemRecord({
+        const preparedRecords = await prepareSystemRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -120,13 +124,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('System');
     });
 
-    it('=> operateTermsOfServiceRecord: should return an array of type TermsOfService', async () => {
+    it('=> prepareTermsOfServiceRecord: should return an array of type TermsOfService', async () => {
         expect.assertions(3);
 
         const database = await createConnection('isolated_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateTermsOfServiceRecord({
+        const preparedRecords = await prepareTermsOfServiceRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -147,13 +151,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         );
     });
 
-    it('=> operateCustomEmojiRecord: should return an array of type CustomEmoji', async () => {
+    it('=> prepareCustomEmojiRecord: should return an array of type CustomEmoji', async () => {
         expect.assertions(3);
 
         const database = await createConnection('isolated_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateCustomEmojiRecord({
+        const preparedRecords = await prepareCustomEmojiRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

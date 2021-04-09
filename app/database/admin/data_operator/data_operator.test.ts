@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DataOperator from '@database/admin/data_operator/index';
 import {
     isRecordAppEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -11,29 +10,35 @@ import {
     isRecordSystemEqualToRaw,
     isRecordTermsOfServiceEqualToRaw,
 } from '@database/admin/data_operator/comparators';
+import DataOperator from '@database/admin/data_operator/index';
 import {
-    operateAppRecord,
-    operateCustomEmojiRecord, operateGlobalRecord,
-    operateRoleRecord, operateServersRecord,
-    operateSystemRecord,
-    operateTermsOfServiceRecord,
+    prepareAppRecord,
+    prepareCustomEmojiRecord,
+    prepareGlobalRecord,
+    prepareRoleRecord,
+    prepareServersRecord,
+    prepareSystemRecord,
+    prepareTermsOfServiceRecord,
 } from '@database/admin/data_operator/operators/general';
 import {
-    operateGroupMembershipRecord,
-    operateGroupRecord,
-    operateGroupsInChannelRecord,
-    operateGroupsInTeamRecord,
+    prepareGroupMembershipRecord,
+    prepareGroupRecord,
+    prepareGroupsInChannelRecord,
+    prepareGroupsInTeamRecord,
 } from '@database/admin/data_operator/operators/group';
-import {operateDraftRecord} from '@database/admin/data_operator/operators/post';
+import {prepareDraftRecord} from '@database/admin/data_operator/operators/post';
 import {
-    operateMyTeamRecord,
-    operateSlashCommandRecord, operateTeamChannelHistoryRecord, operateTeamMembershipRecord, operateTeamRecord,
-    operateTeamSearchHistoryRecord,
+    prepareMyTeamRecord,
+    prepareSlashCommandRecord,
+    prepareTeamChannelHistoryRecord,
+    prepareTeamMembershipRecord,
+    prepareTeamRecord,
+    prepareTeamSearchHistoryRecord,
 } from '@database/admin/data_operator/operators/team';
 import {
-    operateChannelMembershipRecord,
-    operatePreferenceRecord,
-    operateUserRecord,
+    prepareChannelMembershipRecord,
+    preparePreferenceRecord,
+    prepareUserRecord,
 } from '@database/admin/data_operator/operators/user';
 import DatabaseManager from '@database/admin/database_manager';
 import DataOperatorException from '@database/admin/exceptions/data_operator_exception';
@@ -41,11 +46,10 @@ import {RawApp, RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typing
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
-    operateChannelInfoRecord,
-    operateChannelRecord,
-    operateMyChannelRecord,
-    operateMyChannelSettingsRecord,
-
+    prepareChannelInfoRecord,
+    prepareChannelRecord,
+    prepareMyChannelRecord,
+    prepareMyChannelSettingsRecord,
 } from './operators/channel';
 
 jest.mock('@database/admin/database_manager');
@@ -101,7 +105,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
-            operator: operateAppRecord,
+            operator: prepareAppRecord,
             findMatchingRecordBy: isRecordAppEqualToRaw,
             rawValues: [
                 {
@@ -128,7 +132,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
             fieldName: 'name',
-            operator: operateGlobalRecord,
+            operator: prepareGlobalRecord,
             rawValues: values,
             tableName: 'global',
         });
@@ -154,7 +158,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'url',
-            operator: operateServersRecord,
+            operator: prepareServersRecord,
             findMatchingRecordBy: isRecordServerEqualToRaw,
             rawValues: [
                 {
@@ -191,7 +195,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'id',
-            operator: operateRoleRecord,
+            operator: prepareRoleRecord,
             findMatchingRecordBy: isRecordRoleEqualToRaw,
             rawValues: [
                 {
@@ -217,7 +221,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
             fieldName: 'id',
-            operator: operateSystemRecord,
+            operator: prepareSystemRecord,
             rawValues: values,
             tableName: 'System',
         });
@@ -249,7 +253,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
             fieldName: 'id',
-            operator: operateTermsOfServiceRecord,
+            operator: prepareTermsOfServiceRecord,
             rawValues: values,
             tableName: 'TermsOfService',
         });
@@ -340,7 +344,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
-            operator: operateDraftRecord,
+            operator: prepareDraftRecord,
             rawValues: values,
             tableName: 'Draft',
         });
@@ -773,7 +777,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'User',
             updateRaws: [],
-            recordOperator: operateUserRecord,
+            recordOperator: prepareUserRecord,
         });
     });
 
@@ -853,7 +857,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'Preference',
             updateRaws: [],
-            recordOperator: operatePreferenceRecord,
+            recordOperator: preparePreferenceRecord,
         });
     });
 
@@ -900,7 +904,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'TeamMembership',
             updateRaws: [],
-            recordOperator: operateTeamMembershipRecord,
+            recordOperator: prepareTeamMembershipRecord,
         });
     });
 
@@ -945,7 +949,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'CustomEmoji',
             updateRaws: [],
-            recordOperator: operateCustomEmojiRecord,
+            recordOperator: prepareCustomEmojiRecord,
         });
     });
 
@@ -976,7 +980,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'GroupMembership',
             updateRaws: [],
-            recordOperator: operateGroupMembershipRecord,
+            recordOperator: prepareGroupMembershipRecord,
         });
     });
 
@@ -1081,7 +1085,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'ChannelMembership',
             updateRaws: [],
-            recordOperator: operateChannelMembershipRecord,
+            recordOperator: prepareChannelMembershipRecord,
         });
     });
 
@@ -1130,7 +1134,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'Group',
             updateRaws: [],
-            recordOperator: operateGroupRecord,
+            recordOperator: prepareGroupRecord,
         });
     });
 
@@ -1172,7 +1176,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'GroupsInTeam',
             updateRaws: [],
-            recordOperator: operateGroupsInTeamRecord,
+            recordOperator: prepareGroupsInTeamRecord,
         });
     });
 
@@ -1224,7 +1228,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'GroupsInChannel',
             updateRaws: [],
-            recordOperator: operateGroupsInChannelRecord,
+            recordOperator: prepareGroupsInChannelRecord,
         });
     });
 
@@ -1282,7 +1286,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'Team',
             updateRaws: [],
-            recordOperator: operateTeamRecord,
+            recordOperator: prepareTeamRecord,
         });
     });
 
@@ -1305,7 +1309,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             createRaws: [{raw: {team_id: 'a', channel_ids: ['ca', 'cb']}}],
             tableName: 'TeamChannelHistory',
             updateRaws: [],
-            recordOperator: operateTeamChannelHistoryRecord,
+            recordOperator: prepareTeamChannelHistoryRecord,
         });
     });
 
@@ -1363,7 +1367,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'Team',
             updateRaws: [],
-            recordOperator: operateTeamRecord,
+            recordOperator: prepareTeamRecord,
         });
     });
 
@@ -1386,7 +1390,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             createRaws: [{raw: {team_id: 'a', channel_ids: ['ca', 'cb']}}],
             tableName: 'TeamChannelHistory',
             updateRaws: [],
-            recordOperator: operateTeamChannelHistoryRecord,
+            recordOperator: prepareTeamChannelHistoryRecord,
         });
     });
 
@@ -1420,7 +1424,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'TeamSearchHistory',
             updateRaws: [],
-            recordOperator: operateTeamSearchHistoryRecord,
+            recordOperator: prepareTeamSearchHistoryRecord,
         });
     });
 
@@ -1480,7 +1484,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'SlashCommand',
             updateRaws: [],
-            recordOperator: operateSlashCommandRecord,
+            recordOperator: prepareSlashCommandRecord,
         });
     });
 
@@ -1514,7 +1518,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'MyTeam',
             updateRaws: [],
-            recordOperator: operateMyTeamRecord,
+            recordOperator: prepareMyTeamRecord,
         });
     });
 
@@ -1577,7 +1581,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'Channel',
             updateRaws: [],
-            recordOperator: operateChannelRecord,
+            recordOperator: prepareChannelRecord,
         });
     });
 
@@ -1623,7 +1627,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'MyChannelSettings',
             updateRaws: [],
-            recordOperator: operateMyChannelSettingsRecord,
+            recordOperator: prepareMyChannelSettingsRecord,
         });
     });
 
@@ -1661,7 +1665,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'ChannelInfo',
             updateRaws: [],
-            recordOperator: operateChannelInfoRecord,
+            recordOperator: prepareChannelInfoRecord,
         });
     });
 
@@ -1699,7 +1703,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             ],
             tableName: 'MyChannel',
             updateRaws: [],
-            recordOperator: operateMyChannelRecord,
+            recordOperator: prepareMyChannelRecord,
         });
     });
 });

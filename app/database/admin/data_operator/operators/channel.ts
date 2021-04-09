@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
+import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
 import Channel from '@typings/database/channel';
 import ChannelInfo from '@typings/database/channel_info';
 import {
@@ -24,13 +24,13 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * operateChannelRecord: Prepares record of entity 'CHANNEL' from the SERVER database for update or create actions.
+ * prepareChannelRecord: Prepares record of entity 'CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateChannelRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareChannelRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawChannel;
     const record = value.record as Channel;
     const isCreateAction = action === OperationType.CREATE;
@@ -48,7 +48,7 @@ export const operateChannelRecord = ({action, database, value}: DataFactoryArgs)
         channel.type = raw.type;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: CHANNEL,
@@ -58,13 +58,13 @@ export const operateChannelRecord = ({action, database, value}: DataFactoryArgs)
 };
 
 /**
- * operateMyChannelSettingsRecord: Prepares record of entity 'MY_CHANNEL_SETTINGS' from the SERVER database for update or create actions.
+ * prepareMyChannelSettingsRecord: Prepares record of entity 'MY_CHANNEL_SETTINGS' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateMyChannelSettingsRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareMyChannelSettingsRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawMyChannelSettings;
     const record = value.record as MyChannelSettings;
     const isCreateAction = action === OperationType.CREATE;
@@ -75,7 +75,7 @@ export const operateMyChannelSettingsRecord = ({action, database, value}: DataFa
         myChannelSetting.notifyProps = raw.notify_props;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: MY_CHANNEL_SETTINGS,
@@ -85,13 +85,13 @@ export const operateMyChannelSettingsRecord = ({action, database, value}: DataFa
 };
 
 /**
- * operateChannelInfoRecord: Prepares record of entity 'CHANNEL_INFO' from the SERVER database for update or create actions.
+ * prepareChannelInfoRecord: Prepares record of entity 'CHANNEL_INFO' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateChannelInfoRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareChannelInfoRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawChannelInfo;
     const record = value.record as ChannelInfo;
     const isCreateAction = action === OperationType.CREATE;
@@ -106,7 +106,7 @@ export const operateChannelInfoRecord = ({action, database, value}: DataFactoryA
         channelInfo.purpose = raw.purpose;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: CHANNEL_INFO,
@@ -116,13 +116,13 @@ export const operateChannelInfoRecord = ({action, database, value}: DataFactoryA
 };
 
 /**
- * operateMyChannelRecord: Prepares record of entity 'MY_CHANNEL' from the SERVER database for update or create actions.
+ * prepareMyChannelRecord: Prepares record of entity 'MY_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateMyChannelRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareMyChannelRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawMyChannel;
     const record = value.record as MyChannel;
     const isCreateAction = action === OperationType.CREATE;
@@ -137,7 +137,7 @@ export const operateMyChannelRecord = ({action, database, value}: DataFactoryArg
         myChannel.lastViewedAt = raw.last_viewed_at;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: MY_CHANNEL,

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
+import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
 import ChannelMembership from '@typings/database/channel_membership';
 import {DataFactoryArgs, RawChannelMembership, RawPreference, RawReaction, RawUser} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
@@ -18,13 +18,13 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * operateReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
+ * prepareReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateReactionRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareReactionRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawReaction;
     const record = value.record as Reaction;
     const isCreateAction = action === OperationType.CREATE;
@@ -38,7 +38,7 @@ export const operateReactionRecord = ({action, database, value}: DataFactoryArgs
         reaction.createAt = raw.create_at;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: REACTION,
@@ -48,13 +48,13 @@ export const operateReactionRecord = ({action, database, value}: DataFactoryArgs
 };
 
 /**
- * operateUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
+ * prepareUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateUserRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareUserRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawUser;
     const record = value.record as User;
     const isCreateAction = action === OperationType.CREATE;
@@ -81,7 +81,7 @@ export const operateUserRecord = ({action, database, value}: DataFactoryArgs) =>
         user.isBot = raw.is_bot;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: USER,
@@ -91,13 +91,13 @@ export const operateUserRecord = ({action, database, value}: DataFactoryArgs) =>
 };
 
 /**
- * operatePreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
+ * preparePreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operatePreferenceRecord = ({action, database, value}: DataFactoryArgs) => {
+export const preparePreferenceRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawPreference;
     const record = value.record as Preference;
     const isCreateAction = action === OperationType.CREATE;
@@ -111,7 +111,7 @@ export const operatePreferenceRecord = ({action, database, value}: DataFactoryAr
         preference.value = raw.value;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: PREFERENCE,
@@ -121,13 +121,13 @@ export const operatePreferenceRecord = ({action, database, value}: DataFactoryAr
 };
 
 /**
- * operateChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
+ * prepareChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateChannelMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareChannelMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawChannelMembership;
     const record = value.record as ChannelMembership;
     const isCreateAction = action === OperationType.CREATE;
@@ -139,7 +139,7 @@ export const operateChannelMembershipRecord = ({action, database, value}: DataFa
         channelMember.userId = raw.user_id;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: CHANNEL_MEMBERSHIP,

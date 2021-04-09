@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {
-    operateChannelMembershipRecord,
-    operatePreferenceRecord,
-    operateReactionRecord, operateUserRecord,
+    prepareChannelMembershipRecord,
+    preparePreferenceRecord,
+    prepareReactionRecord,
+    prepareUserRecord,
 } from '@database/admin/data_operator/operators/user';
 
 // See LICENSE.txt for license information.
@@ -11,13 +12,13 @@ import {createConnection} from '@database/admin/data_operator/operators/utils';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** USER Prepare Records Test ***', () => {
-    it('=> operateChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
+    it('=> prepareChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
         expect.assertions(3);
 
         const database = await createConnection('user_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateChannelMembershipRecord({
+        const preparedRecords = await prepareChannelMembershipRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -49,13 +50,13 @@ describe('*** USER Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('ChannelMembership');
     });
 
-    it('=> operatePreferenceRecord: should return an array of type Preference', async () => {
+    it('=> preparePreferenceRecord: should return an array of type Preference', async () => {
         expect.assertions(3);
 
         const database = await createConnection('user_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operatePreferenceRecord({
+        const preparedRecords = await preparePreferenceRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -68,13 +69,13 @@ describe('*** USER Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Preference');
     });
 
-    it('=> operateReactionRecord: should return an array of type Reaction', async () => {
+    it('=> prepareReactionRecord: should return an array of type Reaction', async () => {
         expect.assertions(3);
 
         const database = await createConnection('user_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateReactionRecord({
+        const preparedRecords = await prepareReactionRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -95,13 +96,13 @@ describe('*** USER Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Reaction');
     });
 
-    it('=> operateUserRecord: should return an array of type User', async () => {
+    it('=> prepareUserRecord: should return an array of type User', async () => {
         expect.assertions(3);
 
         const database = await createConnection('user_prepare_records');
         expect(database).toBeTruthy();
 
-        const preparedRecords = await operateUserRecord({
+        const preparedRecords = await prepareUserRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

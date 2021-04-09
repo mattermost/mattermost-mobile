@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
+import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
 import {
     DataFactoryArgs,
     RawGroup,
@@ -24,13 +24,13 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * operateGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
+ * prepareGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateGroupMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareGroupMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupMembership;
     const record = value.record as GroupMembership;
     const isCreateAction = action === OperationType.CREATE;
@@ -42,7 +42,7 @@ export const operateGroupMembershipRecord = ({action, database, value}: DataFact
         groupMember.userId = raw.user_id;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: GROUP_MEMBERSHIP,
@@ -52,13 +52,13 @@ export const operateGroupMembershipRecord = ({action, database, value}: DataFact
 };
 
 /**
- * operateGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
+ * prepareGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateGroupRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareGroupRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroup;
     const record = value.record as Group;
     const isCreateAction = action === OperationType.CREATE;
@@ -70,7 +70,7 @@ export const operateGroupRecord = ({action, database, value}: DataFactoryArgs) =
         group.displayName = raw.display_name;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: GROUP,
@@ -80,13 +80,13 @@ export const operateGroupRecord = ({action, database, value}: DataFactoryArgs) =
 };
 
 /**
- * operateGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * prepareGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateGroupsInTeamRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareGroupsInTeamRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupsInTeam;
     const record = value.record as GroupsInTeam;
     const isCreateAction = action === OperationType.CREATE;
@@ -97,7 +97,7 @@ export const operateGroupsInTeamRecord = ({action, database, value}: DataFactory
         groupsInTeam.groupId = raw.group_id;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: GROUPS_IN_TEAM,
@@ -107,13 +107,13 @@ export const operateGroupsInTeamRecord = ({action, database, value}: DataFactory
 };
 
 /**
- * operateGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_CHANNEL' from the SERVER database for update or create actions.
+ * prepareGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateGroupsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareGroupsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGroupsInChannel;
     const record = value.record as GroupsInChannel;
     const isCreateAction = action === OperationType.CREATE;
@@ -126,7 +126,7 @@ export const operateGroupsInChannelRecord = ({action, database, value}: DataFact
         groupsInChannel.timezoneCount = raw.timezone_count;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: GROUPS_IN_CHANNEL,

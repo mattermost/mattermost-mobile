@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
+import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
 import App from '@typings/database/app';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -32,13 +32,13 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * operateAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
+ * prepareAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateAppRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareAppRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawApp;
     const record = value.record as App;
     const isCreateAction = action === OperationType.CREATE;
@@ -50,7 +50,7 @@ export const operateAppRecord = ({action, database, value}: DataFactoryArgs) => 
         app.versionNumber = raw?.version_number;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         generator,
@@ -60,13 +60,13 @@ export const operateAppRecord = ({action, database, value}: DataFactoryArgs) => 
 };
 
 /**
- * operateGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
+ * prepareGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateGlobalRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareGlobalRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawGlobal;
     const record = value.record as Global;
     const isCreateAction = action === OperationType.CREATE;
@@ -77,7 +77,7 @@ export const operateGlobalRecord = ({action, database, value}: DataFactoryArgs) 
         global.value = raw?.value;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         generator,
@@ -87,13 +87,13 @@ export const operateGlobalRecord = ({action, database, value}: DataFactoryArgs) 
 };
 
 /**
- * operateServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
+ * prepareServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateServersRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareServersRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawServers;
     const record = value.record as Servers;
     const isCreateAction = action === OperationType.CREATE;
@@ -107,7 +107,7 @@ export const operateServersRecord = ({action, database, value}: DataFactoryArgs)
         servers.url = raw?.url;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: SERVERS,
@@ -117,13 +117,13 @@ export const operateServersRecord = ({action, database, value}: DataFactoryArgs)
 };
 
 /**
- * operateCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
+ * prepareCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateCustomEmojiRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareCustomEmojiRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawCustomEmoji;
     const record = value.record as CustomEmoji;
     const isCreateAction = action === OperationType.CREATE;
@@ -134,7 +134,7 @@ export const operateCustomEmojiRecord = ({action, database, value}: DataFactoryA
         emoji.name = raw.name;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: CUSTOM_EMOJI,
@@ -144,13 +144,13 @@ export const operateCustomEmojiRecord = ({action, database, value}: DataFactoryA
 };
 
 /**
- * operateRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
+ * prepareRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateRoleRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareRoleRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawRole;
     const record = value.record as Role;
     const isCreateAction = action === OperationType.CREATE;
@@ -162,7 +162,7 @@ export const operateRoleRecord = ({action, database, value}: DataFactoryArgs) =>
         role.permissions = raw?.permissions;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: ROLE,
@@ -172,13 +172,13 @@ export const operateRoleRecord = ({action, database, value}: DataFactoryArgs) =>
 };
 
 /**
- * operateSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
+ * prepareSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateSystemRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareSystemRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawSystem;
     const record = value.record as System;
     const isCreateAction = action === OperationType.CREATE;
@@ -190,7 +190,7 @@ export const operateSystemRecord = ({action, database, value}: DataFactoryArgs) 
         system.value = raw?.value;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: SYSTEM,
@@ -200,13 +200,13 @@ export const operateSystemRecord = ({action, database, value}: DataFactoryArgs) 
 };
 
 /**
- * operateTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
+ * prepareTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateTermsOfServiceRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareTermsOfServiceRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTermsOfService;
     const record = value.record as TermsOfService;
     const isCreateAction = action === OperationType.CREATE;
@@ -217,7 +217,7 @@ export const operateTermsOfServiceRecord = ({action, database, value}: DataFacto
         tos.acceptedAt = raw?.accepted_at;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: TERMS_OF_SERVICE,

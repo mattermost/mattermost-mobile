@@ -3,7 +3,7 @@
 import {MM_TABLES} from '@constants/database';
 
 // See LICENSE.txt for license information.
-import {operateBaseRecord} from '@database/admin/data_operator/operators/index';
+import {prepareBaseRecord} from '@database/admin/data_operator/operators/index';
 import {
     DataFactoryArgs,
     RawMyTeam,
@@ -31,13 +31,13 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * operatePreferenceRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
+ * preparePreferenceRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateTeamMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareTeamMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeamMembership;
     const record = value.record as TeamMembership;
     const isCreateAction = action === OperationType.CREATE;
@@ -49,7 +49,7 @@ export const operateTeamMembershipRecord = ({action, database, value}: DataFacto
         teamMembership.userId = raw.user_id;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: TEAM_MEMBERSHIP,
@@ -59,13 +59,13 @@ export const operateTeamMembershipRecord = ({action, database, value}: DataFacto
 };
 
 /**
- * operateTeamRecord: Prepares record of entity 'TEAM' from the SERVER database for update or create actions.
+ * prepareTeamRecord: Prepares record of entity 'TEAM' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateTeamRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareTeamRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeam;
     const record = value.record as Team;
     const isCreateAction = action === OperationType.CREATE;
@@ -84,7 +84,7 @@ export const operateTeamRecord = ({action, database, value}: DataFactoryArgs) =>
         team.lastTeamIconUpdatedAt = raw.last_team_icon_update;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: TEAM,
@@ -94,13 +94,13 @@ export const operateTeamRecord = ({action, database, value}: DataFactoryArgs) =>
 };
 
 /**
- * operateTeamChannelHistoryRecord: Prepares record of entity 'TEAM_CHANNEL_HISTORY' from the SERVER database for update or create actions.
+ * prepareTeamChannelHistoryRecord: Prepares record of entity 'TEAM_CHANNEL_HISTORY' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateTeamChannelHistoryRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareTeamChannelHistoryRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeamChannelHistory;
     const record = value.record as TeamChannelHistory;
     const isCreateAction = action === OperationType.CREATE;
@@ -111,7 +111,7 @@ export const operateTeamChannelHistoryRecord = ({action, database, value}: DataF
         teamChannelHistory.channelIds = raw.channel_ids;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: TEAM_CHANNEL_HISTORY,
@@ -121,13 +121,13 @@ export const operateTeamChannelHistoryRecord = ({action, database, value}: DataF
 };
 
 /**
- * operateTeamSearchHistoryRecord: Prepares record of entity 'TEAM_SEARCH_HISTORY' from the SERVER database for update or create actions.
+ * prepareTeamSearchHistoryRecord: Prepares record of entity 'TEAM_SEARCH_HISTORY' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateTeamSearchHistoryRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareTeamSearchHistoryRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawTeamSearchHistory;
     const record = value.record as TeamSearchHistory;
     const isCreateAction = action === OperationType.CREATE;
@@ -140,7 +140,7 @@ export const operateTeamSearchHistoryRecord = ({action, database, value}: DataFa
         teamSearchHistory.teamId = raw.team_id;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: TEAM_SEARCH_HISTORY,
@@ -150,13 +150,13 @@ export const operateTeamSearchHistoryRecord = ({action, database, value}: DataFa
 };
 
 /**
- * operateSlashCommandRecord: Prepares record of entity 'SLASH_COMMAND' from the SERVER database for update or create actions.
+ * prepareSlashCommandRecord: Prepares record of entity 'SLASH_COMMAND' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateSlashCommandRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareSlashCommandRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawSlashCommand;
     const record = value.record as SlashCommand;
     const isCreateAction = action === OperationType.CREATE;
@@ -175,7 +175,7 @@ export const operateSlashCommandRecord = ({action, database, value}: DataFactory
         slashCommand.updateAt = raw.update_at;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: SLASH_COMMAND,
@@ -185,13 +185,13 @@ export const operateSlashCommandRecord = ({action, database, value}: DataFactory
 };
 
 /**
- * operateMyTeamRecord: Prepares record of entity 'MY_TEAM' from the SERVER database for update or create actions.
+ * prepareMyTeamRecord: Prepares record of entity 'MY_TEAM' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {MatchExistingRecord} operator.value
  * @returns {Promise<Model>}
  */
-export const operateMyTeamRecord = ({action, database, value}: DataFactoryArgs) => {
+export const prepareMyTeamRecord = ({action, database, value}: DataFactoryArgs) => {
     const raw = value.raw as RawMyTeam;
     const record = value.record as MyTeam;
     const isCreateAction = action === OperationType.CREATE;
@@ -204,7 +204,7 @@ export const operateMyTeamRecord = ({action, database, value}: DataFactoryArgs) 
         myTeam.mentionsCount = raw.mentions_count;
     };
 
-    return operateBaseRecord({
+    return prepareBaseRecord({
         action,
         database,
         tableName: MY_TEAM,
