@@ -713,6 +713,8 @@ export const operateGroupsInTeamRecord = ({action, database, value}: DataFactory
     const record = value.record as GroupsInTeam;
     const isCreateAction = action === OperationType.CREATE;
 
+    // FIXME : should include memberCount and timezoneCount or will it be by update action?
+
     const generator = (groupsInTeam: GroupsInTeam) => {
         groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record?.id;
         groupsInTeam.teamId = raw.team_id;
@@ -740,6 +742,7 @@ export const operateGroupsInChannelRecord = ({action, database, value}: DataFact
     const record = value.record as GroupsInChannel;
     const isCreateAction = action === OperationType.CREATE;
 
+    // FIXME : should include memberCount and timezoneCount or will it be by update action?
     const generator = (groupsInChannel: GroupsInChannel) => {
         groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record?.id;
         groupsInChannel.channelId = raw.channel_id;

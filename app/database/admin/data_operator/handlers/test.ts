@@ -1213,12 +1213,95 @@ describe('*** DataOperator: Handlers tests ***', () => {
                         team_id: '',
                         team_type: '',
                         update_at: 0,
+                        member_count: 0,
+                        timezone_count: 0,
                     },
                 },
             ],
             tableName: 'GroupsInChannel',
             updateRaws: [],
             recordOperator: operateGroupsInChannelRecord,
+        });
+    });
+
+    it('=> HandleTeam: should write to TEAM entity', async () => {
+        expect.assertions(2);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleTeam([
+            {
+                id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                create_at: 1445538153952,
+                update_at: 1588876392150,
+                delete_at: 0,
+                display_name: 'Contributors',
+                name: 'core',
+                description: '',
+                email: '',
+                type: 'O',
+                company_name: '',
+                allowed_domains: '',
+                invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                allow_open_invite: true,
+                last_team_icon_update: 1525181587639,
+                scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                group_constrained: null,
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
+            createRaws: [
+                {
+                    raw: {
+                        id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                        create_at: 1445538153952,
+                        update_at: 1588876392150,
+                        delete_at: 0,
+                        display_name: 'Contributors',
+                        name: 'core',
+                        description: '',
+                        email: '',
+                        type: 'O',
+                        company_name: '',
+                        allowed_domains: '',
+                        invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                        allow_open_invite: true,
+                        last_team_icon_update: 1525181587639,
+                        scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                        group_constrained: null,
+                    },
+                },
+            ],
+            tableName: 'Team',
+            updateRaws: [],
+            recordOperator: operateTeamRecord,
+        });
+    });
+
+    it('=> HandleTeamChannelHistory: should write to TEAM_CHANNEL_HISTORY entity', async () => {
+        expect.assertions(2);
+
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
+
+        await createConnection(true);
+
+        await DataOperator.handleTeamChannelHistory([
+            {
+                team_id: 'a',
+                channel_ids: ['ca', 'cb'],
+            },
+        ]);
+
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
+        expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
+            createRaws: [{raw: {team_id: 'a', channel_ids: ['ca', 'cb']}}],
+            tableName: 'TeamChannelHistory',
+            updateRaws: [],
+            recordOperator: operateTeamChannelHistoryRecord,
         });
     });
 
