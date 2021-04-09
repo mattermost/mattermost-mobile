@@ -42,7 +42,13 @@ import {
 } from '@database/operator/prepareRecords/user';
 import DatabaseManager from '@database/manager';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {RawApp, RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
+import {
+    RawApp,
+    RawGlobal,
+    RawRole,
+    RawServers,
+    RawTermsOfService,
+} from '@typings/database/database';
 import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 import {
@@ -101,7 +107,11 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.APP, values});
+        await DataOperator.handleIsolatedEntity({
+            tableName: IsolatedEntities.APP,
+            values,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
@@ -127,7 +137,11 @@ describe('*** DataOperator: Handlers tests ***', () => {
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
         const values: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
 
-        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.GLOBAL, values});
+        await DataOperator.handleIsolatedEntity({
+            tableName: IsolatedEntities.GLOBAL,
+            values,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
@@ -145,6 +159,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(defaultDB).toBeTruthy();
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+
         const values: RawServers[] = [
             {
                 db_path: 'server.db',
@@ -154,7 +169,12 @@ describe('*** DataOperator: Handlers tests ***', () => {
                 url: 'https://community.mattermost.com',
             },
         ];
-        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SERVERS, values});
+
+        await DataOperator.handleIsolatedEntity({
+            tableName: IsolatedEntities.SERVERS,
+            values,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'url',
@@ -180,6 +200,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(database).toBeTruthy();
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+
         const values: RawRole[] = [
             {
                 id: 'custom-emoji-id-1',
@@ -191,6 +212,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.ROLE,
             values,
+            prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
@@ -215,8 +237,14 @@ describe('*** DataOperator: Handlers tests ***', () => {
         expect(database).toBeTruthy();
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+
         const values = [{id: 'system-id-1', name: 'system-1', value: 'system-1'}];
-        await DataOperator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values});
+
+        await DataOperator.handleIsolatedEntity({
+            tableName: IsolatedEntities.SYSTEM,
+            values,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
@@ -248,6 +276,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
         await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
             values,
+            prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
@@ -297,7 +326,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                     user_id: 'ooumoqgq3bfiijzwbn8badznwc',
                 },
             ],
-            prepareRowsOnly: false,
+            prepareRecordsOnly: false,
         });
 
         // Called twice:  Once for Reaction record and once for CustomEmoji record
@@ -339,7 +368,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        await DataOperator.handleDraft(values);
+        await DataOperator.handleDraft({drafts: values, prepareRecordsOnly: false});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
@@ -378,7 +407,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                     has_preview_image: false,
                 },
             ],
-            prepareRowsOnly: false,
+            prepareRecordsOnly: false,
         });
 
         expect(spyOnPrepareRecords).toHaveBeenCalledTimes(1);
@@ -607,12 +636,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
                     embed: [
                         {
                             type: 'opengraph',
-                            url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                            url:
+                'https://github.com/mickmister/mattermost-plugin-default-theme',
                             data: {
                                 type: 'object',
-                                url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
+                                url:
+                  'https://github.com/mickmister/mattermost-plugin-default-theme',
                                 title: 'mickmister/mattermost-plugin-default-theme',
-                                description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
+                                description:
+                  'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
                                 determiner: '',
                                 site_name: 'GitHub',
                                 locale: '',
@@ -620,7 +652,8 @@ describe('*** DataOperator: Handlers tests ***', () => {
                                 images: [
                                     {
                                         url: '',
-                                        secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
+                                        secure_url:
+                      'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
                                         type: '',
                                         width: 0,
                                         height: 0,
@@ -704,7 +737,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                     channel: true,
                     auto_responder_active: false,
                     auto_responder_message:
-              'Hello, I am out of office and unable to respond to messages.',
+            'Hello, I am out of office and unable to respond to messages.',
                     comments: 'never',
                     desktop_notification_sound: 'Hello',
                     push_status: 'online',
@@ -720,14 +753,11 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnExecuteInDatabase = jest.spyOn(
-        DataOperator as any,
-        'executeInDatabase',
-        );
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
-        await DataOperator.handleUsers(users);
+        await DataOperator.handleUsers({users, prepareRecordsOnly: false});
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -759,7 +789,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                             channel: true,
                             auto_responder_active: false,
                             auto_responder_message:
-                  'Hello, I am out of office and unable to respond to messages.',
+                'Hello, I am out of office and unable to respond to messages.',
                             comments: 'never',
                             desktop_notification_sound: 'Hello',
                             push_status: 'online',
@@ -816,7 +846,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handlePreferences(preferences);
+        await DataOperator.handlePreferences({preferences, prepareRecordsOnly: false});
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -843,7 +873,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                         category: 'theme',
                         name: '',
                         value:
-                  '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
+              '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
                     },
                 },
                 {
@@ -864,7 +894,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
     it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
         expect.assertions(2);
 
-        const teamMembership = [
+        const teamMemberships = [
             {
                 team_id: 'a',
                 user_id: 'ab',
@@ -877,14 +907,14 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnExecuteInDatabase = jest.spyOn(
-        DataOperator as any,
-        'executeInDatabase',
-        );
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
-        await DataOperator.handleTeamMemberships(teamMembership);
+        await DataOperator.handleTeamMemberships({
+            teamMemberships,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -921,16 +951,14 @@ describe('*** DataOperator: Handlers tests ***', () => {
             },
         ];
 
-        const spyOnExecuteInDatabase = jest.spyOn(
-        DataOperator as any,
-        'executeInDatabase',
-        );
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
         await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.CUSTOM_EMOJI,
             values: emojis,
+            prepareRecordsOnly: false,
         });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
@@ -966,7 +994,10 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleGroupMembership(groupMemberships);
+        await DataOperator.handleGroupMembership({
+            groupMemberships,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1033,7 +1064,10 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleChannelMembership(channelMemberships);
+        await DataOperator.handleChannelMembership({
+            channelMemberships,
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1092,27 +1126,27 @@ describe('*** DataOperator: Handlers tests ***', () => {
     it('=> HandleGroup: should write to GROUP entity', async () => {
         expect.assertions(2);
 
-        const spyOnExecuteInDatabase = jest.spyOn(
-        DataOperator as any,
-        'executeInDatabase',
-        );
+        const spyOnExecuteInDatabase = jest.spyOn(DataOperator as any, 'executeInDatabase');
 
         await createConnection(true);
 
-        await DataOperator.handleGroup([
-            {
-                id: 'id_groupdfjdlfkjdkfdsf',
-                name: 'mobile_team',
-                display_name: 'mobile team',
-                description: '',
-                source: '',
-                remote_id: '',
-                create_at: 0,
-                update_at: 0,
-                delete_at: 0,
-                has_syncables: true,
-            },
-        ]);
+        await DataOperator.handleGroup({
+            groups: [
+                {
+                    id: 'id_groupdfjdlfkjdkfdsf',
+                    name: 'mobile_team',
+                    display_name: 'mobile team',
+                    description: '',
+                    source: '',
+                    remote_id: '',
+                    create_at: 0,
+                    update_at: 0,
+                    delete_at: 0,
+                    has_syncables: true,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1145,18 +1179,21 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleGroupsInTeam([
-            {
-                team_id: 'team_899',
-                team_display_name: '',
-                team_type: '',
-                group_id: 'group_id89',
-                auto_add: true,
-                create_at: 0,
-                delete_at: 0,
-                update_at: 0,
-            },
-        ]);
+        await DataOperator.handleGroupsInTeam({
+            groupsInTeams: [
+                {
+                    team_id: 'team_899',
+                    team_display_name: '',
+                    team_type: '',
+                    group_id: 'group_id89',
+                    auto_add: true,
+                    create_at: 0,
+                    delete_at: 0,
+                    update_at: 0,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1187,23 +1224,26 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleGroupsInChannel([
-            {
-                auto_add: true,
-                channel_display_name: '',
-                channel_id: 'channelid',
-                channel_type: '',
-                create_at: 0,
-                delete_at: 0,
-                group_id: 'groupId',
-                team_display_name: '',
-                team_id: '',
-                team_type: '',
-                update_at: 0,
-                member_count: 0,
-                timezone_count: 0,
-            },
-        ]);
+        await DataOperator.handleGroupsInChannel({
+            groupsInChannels: [
+                {
+                    auto_add: true,
+                    channel_display_name: '',
+                    channel_id: 'channelid',
+                    channel_type: '',
+                    create_at: 0,
+                    delete_at: 0,
+                    group_id: 'groupId',
+                    team_display_name: '',
+                    team_id: '',
+                    team_type: '',
+                    update_at: 0,
+                    member_count: 0,
+                    timezone_count: 0,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1239,26 +1279,29 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleTeam([
-            {
-                id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
-                create_at: 1445538153952,
-                update_at: 1588876392150,
-                delete_at: 0,
-                display_name: 'Contributors',
-                name: 'core',
-                description: '',
-                email: '',
-                type: 'O',
-                company_name: '',
-                allowed_domains: '',
-                invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
-                allow_open_invite: true,
-                last_team_icon_update: 1525181587639,
-                scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
-                group_constrained: null,
-            },
-        ]);
+        await DataOperator.handleTeam({
+            teams: [
+                {
+                    id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                    create_at: 1445538153952,
+                    update_at: 1588876392150,
+                    delete_at: 0,
+                    display_name: 'Contributors',
+                    name: 'core',
+                    description: '',
+                    email: '',
+                    type: 'O',
+                    company_name: '',
+                    allowed_domains: '',
+                    invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                    allow_open_invite: true,
+                    last_team_icon_update: 1525181587639,
+                    scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                    group_constrained: null,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1297,12 +1340,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleTeamChannelHistory([
-            {
-                team_id: 'a',
-                channel_ids: ['ca', 'cb'],
-            },
-        ]);
+        await DataOperator.handleTeamChannelHistory({
+            teamChannelHistories: [
+                {
+                    team_id: 'a',
+                    channel_ids: ['ca', 'cb'],
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1320,26 +1366,29 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleTeam([
-            {
-                id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
-                create_at: 1445538153952,
-                update_at: 1588876392150,
-                delete_at: 0,
-                display_name: 'Contributors',
-                name: 'core',
-                description: '',
-                email: '',
-                type: 'O',
-                company_name: '',
-                allowed_domains: '',
-                invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
-                allow_open_invite: true,
-                last_team_icon_update: 1525181587639,
-                scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
-                group_constrained: null,
-            },
-        ]);
+        await DataOperator.handleTeam({
+            teams: [
+                {
+                    id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                    create_at: 1445538153952,
+                    update_at: 1588876392150,
+                    delete_at: 0,
+                    display_name: 'Contributors',
+                    name: 'core',
+                    description: '',
+                    email: '',
+                    type: 'O',
+                    company_name: '',
+                    allowed_domains: '',
+                    invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                    allow_open_invite: true,
+                    last_team_icon_update: 1525181587639,
+                    scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                    group_constrained: null,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1378,12 +1427,15 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleTeamChannelHistory([
-            {
-                team_id: 'a',
-                channel_ids: ['ca', 'cb'],
-            },
-        ]);
+        await DataOperator.handleTeamChannelHistory({
+            teamChannelHistories: [
+                {
+                    team_id: 'a',
+                    channel_ids: ['ca', 'cb'],
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1401,14 +1453,17 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleTeamSearchHistory([
-            {
-                team_id: 'a',
-                term: 'termA',
-                display_term: 'termA',
-                created_at: 1445538153952,
-            },
-        ]);
+        await DataOperator.handleTeamSearchHistory({
+            teamSearchHistories: [
+                {
+                    team_id: 'a',
+                    term: 'termA',
+                    display_term: 'termA',
+                    created_at: 1445538153952,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1435,27 +1490,30 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleSlashCommand([
-            {
-                id: 'command_1',
-                auto_complete: true,
-                auto_complete_desc: 'mock_command',
-                auto_complete_hint: 'hint',
-                create_at: 1445538153952,
-                creator_id: 'creator_id',
-                delete_at: 1445538153952,
-                description: 'description',
-                display_name: 'display_name',
-                icon_url: 'display_name',
-                method: 'get',
-                team_id: 'teamA',
-                token: 'token',
-                trigger: 'trigger',
-                update_at: 1445538153953,
-                url: 'url',
-                username: 'userA',
-            },
-        ]);
+        await DataOperator.handleSlashCommand({
+            slashCommands: [
+                {
+                    id: 'command_1',
+                    auto_complete: true,
+                    auto_complete_desc: 'mock_command',
+                    auto_complete_hint: 'hint',
+                    create_at: 1445538153952,
+                    creator_id: 'creator_id',
+                    delete_at: 1445538153952,
+                    description: 'description',
+                    display_name: 'display_name',
+                    icon_url: 'display_name',
+                    method: 'get',
+                    team_id: 'teamA',
+                    token: 'token',
+                    trigger: 'trigger',
+                    update_at: 1445538153953,
+                    url: 'url',
+                    username: 'userA',
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1495,14 +1553,17 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleMyTeam([
-            {
-                team_id: 'teamA',
-                roles: 'roleA, roleB, roleC',
-                is_unread: true,
-                mentions_count: 3,
-            },
-        ]);
+        await DataOperator.handleMyTeam({
+            myTeams: [
+                {
+                    team_id: 'teamA',
+                    roles: 'roleA, roleB, roleC',
+                    is_unread: true,
+                    mentions_count: 3,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1529,28 +1590,31 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleChannel([
-            {
-                id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
-                create_at: 1600185541285,
-                update_at: 1604401077256,
-                delete_at: 0,
-                team_id: '',
-                type: 'D',
-                display_name: '',
-                name: 'gh781zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
-                header: '(https://mattermost',
-                purpose: '',
-                last_post_at: 1617311494451,
-                total_msg_count: 585,
-                extra_update_at: 0,
-                creator_id: '',
-                scheme_id: null,
-                props: null,
-                group_constrained: null,
-                shared: null,
-            },
-        ]);
+        await DataOperator.handleChannel({
+            channels: [
+                {
+                    id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
+                    create_at: 1600185541285,
+                    update_at: 1604401077256,
+                    delete_at: 0,
+                    team_id: '',
+                    type: 'D',
+                    display_name: '',
+                    name: 'gh781zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
+                    header: '(https://mattermost',
+                    purpose: '',
+                    last_post_at: 1617311494451,
+                    total_msg_count: 585,
+                    extra_update_at: 0,
+                    creator_id: '',
+                    scheme_id: null,
+                    props: null,
+                    group_constrained: null,
+                    shared: null,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1564,8 +1628,7 @@ describe('*** DataOperator: Handlers tests ***', () => {
                         team_id: '',
                         type: 'D',
                         display_name: '',
-                        name:
-                  'gh781zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
+                        name: 'gh781zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
                         header: '(https://mattermost',
                         purpose: '',
                         last_post_at: 1617311494451,
@@ -1592,20 +1655,23 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleMyChannelSettings([
-            {
-                channel_id: 'c',
-                notify_props: {
-                    desktop: 'all',
-                    desktop_sound: true,
-                    email: true,
-                    first_name: true,
-                    mention_keys: '',
-                    push: 'mention',
-                    channel: true,
+        await DataOperator.handleMyChannelSettings({
+            settings: [
+                {
+                    channel_id: 'c',
+                    notify_props: {
+                        desktop: 'all',
+                        desktop_sound: true,
+                        email: true,
+                        first_name: true,
+                        mention_keys: '',
+                        push: 'mention',
+                        channel: true,
+                    },
                 },
-            },
-        ]);
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1638,16 +1704,19 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleChannelInfo([
-            {
-                channel_id: 'c',
-                guest_count: 10,
-                header: 'channel info header',
-                member_count: 10,
-                pinned_post_count: 3,
-                purpose: 'sample channel ',
-            },
-        ]);
+        await DataOperator.handleChannelInfo({
+            channelInfos: [
+                {
+                    channel_id: 'c',
+                    guest_count: 10,
+                    header: 'channel info header',
+                    member_count: 10,
+                    pinned_post_count: 3,
+                    purpose: 'sample channel ',
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({
@@ -1676,16 +1745,19 @@ describe('*** DataOperator: Handlers tests ***', () => {
 
         await createConnection(true);
 
-        await DataOperator.handleMyChannel([
-            {
-                channel_id: 'c',
-                last_post_at: 1617311494451,
-                last_viewed_at: 1617311494451,
-                mentions_count: 3,
-                message_count: 10,
-                roles: 'guest',
-            },
-        ]);
+        await DataOperator.handleMyChannel({
+            myChannels: [
+                {
+                    channel_id: 'c',
+                    last_post_at: 1617311494451,
+                    last_viewed_at: 1617311494451,
+                    mentions_count: 3,
+                    message_count: 10,
+                    roles: 'guest',
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
 
         expect(spyOnExecuteInDatabase).toHaveBeenCalledTimes(1);
         expect(spyOnExecuteInDatabase).toHaveBeenCalledWith({

@@ -96,7 +96,7 @@ describe('DataOperator: Utils tests', () => {
                     delete_at: 0,
                 },
             ],
-            prepareRowsOnly: true,
+            prepareRecordsOnly: true,
         });
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here

@@ -357,16 +357,16 @@ export type RawTeam = {
 };
 
 export type RawTeamChannelHistory = {
-team_id: string;
-channel_ids: string[]
-}
+  team_id: string;
+  channel_ids: string[];
+};
 
 export type RawTeamSearchHistory = {
   created_at: number;
   display_term: string;
   term: string;
   team_id: string;
-}
+};
 
 export type RawSlashCommand = {
   id: string;
@@ -419,9 +419,9 @@ export type RawChannel = {
 };
 
 export type RawMyChannelSettings = {
-  notify_props: NotifyProps,
+  notify_props: NotifyProps;
   channel_id: string;
-}
+};
 
 export type RawChannelInfo = {
   channel_id: string;
@@ -430,7 +430,7 @@ export type RawChannelInfo = {
   member_count: number;
   pinned_post_count: number;
   purpose: string;
-}
+};
 
 export type RawMyChannel = {
   channel_id: string;
@@ -439,7 +439,7 @@ export type RawMyChannel = {
   mentions_count: number;
   message_count: number;
   roles: string;
-}
+};
 
 export type RawValue =
   | RawApp
@@ -500,6 +500,7 @@ export type BatchOperationsArgs = { database: Database; models: Model[] };
 export type HandleIsolatedEntityArgs = {
   tableName: IsolatedEntities;
   values: RawValue[];
+  prepareRecordsOnly: boolean;
 };
 
 export type Models = Class<Model>[];
@@ -517,19 +518,19 @@ export type ActiveServerDatabaseArgs = {
 };
 
 export type HandleReactionsArgs = {
-  prepareRowsOnly: boolean;
+  prepareRecordsOnly: boolean;
   reactions: RawReaction[];
 };
 
 export type HandleFilesArgs = {
   files: RawFile[];
-  prepareRowsOnly: boolean;
+  prepareRecordsOnly: boolean;
 };
 
 export type HandlePostMetadataArgs = {
   embeds?: { embed: RawEmbed[]; postId: string }[];
   images?: { images: Dictionary<PostImage>; postId: string }[];
-  prepareRowsOnly: boolean;
+  prepareRecordsOnly: boolean;
 };
 
 export type HandlePostsArgs = {
@@ -580,6 +581,7 @@ export type HandleEntityRecordsArgs = {
   operator: (DataFactoryArgs) => Promise<Model>;
   rawValues: RawValue[];
   tableName: string;
+  prepareRecordsOnly: boolean;
 };
 
 export type DatabaseInstances = {
@@ -595,4 +597,88 @@ export type RangeOfValueArgs = {
 export type RecordPair = {
   record?: Model;
   raw: RawValue;
+};
+
+export type HandleMyChannelArgs = {
+  myChannels: RawMyChannel[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleChannelInfoArgs = {
+  channelInfos: RawChannelInfo[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleMyChannelSettingsArgs = {
+  settings: RawMyChannelSettings[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleChannelArgs = {
+  channels: RawChannel[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleMyTeamArgs = {
+  myTeams: RawMyTeam[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleSlashCommandArgs = {
+  slashCommands: RawSlashCommand[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamSearchHistoryArgs = {
+  teamSearchHistories: RawTeamSearchHistory[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamChannelHistoryArgs = {
+  teamChannelHistories: RawTeamChannelHistory[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamArgs = { teams: RawTeam[]; prepareRecordsOnly: boolean };
+
+export type HandleGroupsInChannelArgs = {
+  groupsInChannels: RawGroupsInChannel[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleGroupsInTeamArgs = {
+  groupsInTeams: RawGroupsInTeam[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleGroupArgs = {
+  groups: RawGroup[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleChannelMembershipArgs = {
+  channelMemberships: RawChannelMembership[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleGroupMembershipArgs = {
+  groupMemberships: RawGroupMembership[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamMembershipArgs = {
+  teamMemberships: RawTeamMembership[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandlePreferencesArgs = {
+  preferences: RawPreference[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleUsersArgs = { users: RawUser[]; prepareRecordsOnly: boolean };
+
+export type HandleDraftArgs = {
+  drafts: RawDraft[];
+  prepareRecordsOnly: boolean;
 };
