@@ -84,14 +84,19 @@ export default class MenuBinding extends PureComponent<Props, State> {
 
         const res = await actions.doAppCall(call, AppCallTypes.SUBMIT, this.context.intl);
 
-        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id, res.data?.app_metadata?.bot_user_id);
+        const ephemeral = (response: AppCallResponse, message: string) => this.props.actions.sendEphemeralPost(
+            message,
+            this.props.post.channel_id,
+            this.props.post.root_id || this.props.post.id,
+            response.app_metadata?.bot_user_id,
+        );
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
-            ephemeral(errorMessage);
+            ephemeral(res.error, errorMessage);
             return;
         }
 
@@ -99,7 +104,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                ephemeral(callResp.markdown);
+                ephemeral(callResp, callResp.markdown);
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
@@ -112,7 +117,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
             }, {
                 type: callResp.type,
             });
-            ephemeral(errorMessage);
+            ephemeral(callResp, errorMessage);
         }
         }
     };

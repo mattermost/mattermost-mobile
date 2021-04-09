@@ -118,11 +118,16 @@ class Option extends React.PureComponent<OptionProps> {
         }
 
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => sendEphemeralPost(message, post.channel_id, post.root_id || post.id, callResp.app_metadata?.bot_user_id);
+        const ephemeral = (response: AppCallResponse, message: string) => sendEphemeralPost(
+            message,
+            post.channel_id,
+            post.root_id || post.id,
+            response.app_metadata?.bot_user_id,
+        );
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                ephemeral(callResp.markdown);
+                ephemeral(callResp, callResp.markdown);
             }
             break;
         case AppCallResponseTypes.NAVIGATE:

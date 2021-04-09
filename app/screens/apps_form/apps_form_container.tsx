@@ -77,11 +77,18 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             return res;
         }
 
+        const ephemeral = (response: AppCallResponse, message: string) => this.props.actions.sendEphemeralPost(
+            message,
+            call.context.channel_id,
+            call.context.root_id || call.context.post_id,
+            response.app_metadata?.bot_user_id,
+        );
+
         const callResp = res.data!;
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                this.props.actions.sendEphemeralPost(callResp.markdown, call.context.channel_id, call.context.root_id || call.context.post_id, callResp.app_metadata?.bot_user_id);
+                ephemeral(callResp, callResp.markdown);
             }
             break;
         case AppCallResponseTypes.FORM:
