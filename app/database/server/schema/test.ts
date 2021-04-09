@@ -74,6 +74,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         name: {name: 'name', type: 'string', isIndexed: true},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         type: {name: 'type', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
+
                     },
                     columnArray: [
                         {name: 'create_at', type: 'number'},
@@ -84,6 +86,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'name', type: 'string', isIndexed: true},
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'type', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [CHANNEL_MEMBERSHIP]: {

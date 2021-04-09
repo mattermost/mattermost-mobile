@@ -34,6 +34,9 @@ export default class Channel extends Model {
     /** delete_at : The deletion/archived date of this channel */
     deleteAt: number;
 
+    /** update_at : The timestamp to when this channel was last updated on the server */
+   updateAt!: number;
+
     /** display_name : The channel display name (e.g. Town Square ) */
     displayName: string;
 

@@ -31,24 +31,21 @@ export type DefaultNewServerArgs = {
 export type DatabaseInstance = Database | undefined;
 
 export type RawApp = {
-  buildNumber: string;
-  createdAt: number;
-  id: string;
-  versionNumber: string;
+  build_number: string;
+  created_at: number;
+  version_number: string;
 };
 
 export type RawGlobal = {
-  id: string;
   name: string;
   value: string;
 };
 
 export type RawServers = {
-  dbPath: string;
-  displayName: string;
-  id: string;
-  mentionCount: number;
-  unreadCount: number;
+  db_path: string;
+  display_name: string;
+  mention_count: number;
+  unread_count: number;
   url: string;
 };
 
@@ -78,7 +75,7 @@ export type RawSystem = {
 
 export type RawTermsOfService = {
   id: string;
-  acceptedAt: number;
+  accepted_at: number;
   create_at: number;
   user_id: string;
   text: string;
@@ -191,8 +188,6 @@ export type RawPost = {
   };
 };
 
-export type ChannelType = 'D' | 'O' | 'G' | 'P';
-
 export type RawUser = {
   id: string;
   auth_service: string;
@@ -294,27 +289,6 @@ export type RawChannelMembers = {
   scheme_guest: boolean;
   scheme_user: boolean;
   user_id: string;
-};
-
-export type RawChannel = {
-  create_at: number;
-  creator_id: string;
-  delete_at: number;
-  display_name: string;
-  extra_update_at: number;
-  group_constrained: boolean | null;
-  header: string;
-  id: string;
-  last_post_at: number;
-  name: string;
-  props: null;
-  purpose: string;
-  scheme_id: null;
-  shared: null;
-  team_id: string;
-  total_msg_count: number;
-  type: ChannelType;
-  update_at: number;
 };
 
 export type RawPostsInThread = {
@@ -419,8 +393,56 @@ export type RawMyTeam = {
   mentions_count: number;
 };
 
+export type ChannelType = 'D' | 'O' | 'G' | 'P';
+
+export type RawChannel = {
+  create_at: number;
+  creator_id: string;
+  delete_at: number;
+  display_name: string;
+  extra_update_at: number;
+  group_constrained: boolean | null;
+  header: string;
+  id: string;
+  last_post_at: number;
+  name: string;
+  props: null;
+  purpose: string;
+  scheme_id: null;
+  shared: null;
+  team_id: string;
+  total_msg_count: number;
+  type: ChannelType;
+  update_at: number;
+};
+
+export type RawMyChannelSettings = {
+  notify_props: NotifyProps,
+  channel_id: string;
+}
+
+export type RawChannelInfo = {
+  channel_id: string;
+  guest_count: number;
+  header: string;
+  member_count: number;
+  pinned_post_count: number;
+  purpose: string;
+}
+
+export type RawMyChannel = {
+  channel_id: string;
+  last_post_at: number;
+  last_viewed_at: number;
+  mentions_count: number;
+  message_count: number;
+  roles: string;
+}
+
 export type RawValue =
   | RawApp
+  | RawChannel
+  | RawChannelInfo
   | RawChannelMembership
   | RawCustomEmoji
   | RawDraft
@@ -430,6 +452,8 @@ export type RawValue =
   | RawGroupMembership
   | RawGroupsInChannel
   | RawGroupsInTeam
+  | RawMyChannel
+  | RawMyChannelSettings
   | RawMyTeam
   | RawPost
   | RawPostMetadata

@@ -6,11 +6,15 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import App from '@typings/database/app';
+import Channel from '@typings/database/channel';
+import ChannelInfo from '@typings/database/channel_info';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
     DataFactoryArgs,
     RawApp,
+    RawChannel,
+    RawChannelInfo,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -20,6 +24,8 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannel,
+    RawMyChannelSettings,
     RawMyTeam,
     RawPost,
     RawPostMetadata,
@@ -46,6 +52,8 @@ import Group from '@typings/database/group';
 import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyChannel from '@typings/database/my_channel';
+import MyChannelSettings from '@typings/database/my_channel_settings';
 import MyTeam from '@typings/database/my_team';
 import Post from '@typings/database/post';
 import PostMetadata from '@typings/database/post_metadata';
@@ -66,6 +74,8 @@ import User from '@typings/database/user';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {
+    CHANNEL,
+    CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -74,6 +84,8 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL,
+    MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
@@ -106,9 +118,9 @@ export const operateAppRecord = async ({action, database, value}: DataFactoryArg
 
     const generator = (app: App) => {
         app._raw.id = isCreateAction ? app.id : record.id;
-        app.buildNumber = raw?.buildNumber;
-        app.createdAt = raw?.createdAt;
-        app.versionNumber = raw?.versionNumber;
+        app.buildNumber = raw?.build_number;
+        app.createdAt = raw?.created_at;
+        app.versionNumber = raw?.version_number;
     };
 
     return operateBaseRecord({
@@ -161,10 +173,10 @@ export const operateServersRecord = async ({action, database, value}: DataFactor
 
     const generator = (servers: Servers) => {
         servers._raw.id = isCreateAction ? servers.id : record.id;
-        servers.dbPath = raw?.dbPath;
-        servers.displayName = raw?.displayName;
-        servers.mentionCount = raw?.mentionCount;
-        servers.unreadCount = raw?.unreadCount;
+        servers.dbPath = raw?.db_path;
+        servers.displayName = raw?.display_name;
+        servers.mentionCount = raw?.mention_count;
+        servers.unreadCount = raw?.unread_count;
         servers.url = raw?.url;
     };
 
@@ -275,7 +287,7 @@ export const operateTermsOfServiceRecord = async ({action, database, value}: Dat
     // id of TOS comes from server response
     const generator = (tos: TermsOfService) => {
         tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record?.id;
-        tos.acceptedAt = raw?.acceptedAt;
+        tos.acceptedAt = raw?.accepted_at;
     };
 
     return operateBaseRecord({
@@ -849,6 +861,7 @@ export const operateSlashCommandRecord = async ({action, database, value}: DataF
     const record = value.record as SlashCommand;
     const isCreateAction = action === OperationType.CREATE;
 
+    // id of team comes from server response
     const generator = (slashCommand: SlashCommand) => {
         slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record?.id;
         slashCommand.isAutoComplete = raw.auto_complete;
@@ -895,6 +908,129 @@ export const operateMyTeamRecord = async ({action, database, value}: DataFactory
         action,
         database,
         tableName: MY_TEAM,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateChannelRecord: Prepares record of entity 'CHANNEL' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawChannel;
+    const record = value.record as Channel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // id of team comes from server response
+    const generator = (channel: Channel) => {
+        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record?.id;
+        channel.createAt = raw.create_at;
+        channel.creatorId = raw.creator_id;
+        channel.deleteAt = raw.delete_at;
+        channel.displayName = raw.display_name;
+        channel.isGroupConstrained = Boolean(raw.group_constrained);
+        channel.name = raw.name;
+        channel.teamId = raw.team_id;
+        channel.type = raw.type;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: CHANNEL,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateMyChannelSettingsRecord: Prepares record of entity 'MY_CHANNEL_SETTINGS' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateMyChannelSettingsRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawMyChannelSettings;
+    const record = value.record as MyChannelSettings;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (myChannelSetting: MyChannelSettings) => {
+        myChannelSetting._raw.id = isCreateAction ? myChannelSetting.id : record?.id;
+        myChannelSetting.channelId = raw.channel_id;
+        myChannelSetting.notifyProps = raw.notify_props;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: MY_CHANNEL_SETTINGS,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateChannelInfoRecord: Prepares record of entity 'CHANNEL_INFO' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateChannelInfoRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawChannelInfo;
+    const record = value.record as ChannelInfo;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (channelInfo: ChannelInfo) => {
+        channelInfo._raw.id = isCreateAction ? channelInfo.id : record?.id;
+        channelInfo.channelId = raw.channel_id;
+        channelInfo.guestCount = raw.guest_count;
+        channelInfo.header = raw.header;
+        channelInfo.memberCount = raw.member_count;
+        channelInfo.pinned_post_count = raw.pinned_post_count;
+        channelInfo.purpose = raw.purpose;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: CHANNEL_INFO,
+        value,
+        generator,
+    });
+};
+
+/**
+ * operateMyChannelRecord: Prepares record of entity 'MY_CHANNEL' from the SERVER database for update or create actions.
+ * @param {DataFactory} operator
+ * @param {Database} operator.database
+ * @param {MatchExistingRecord} operator.value
+ * @returns {Promise<Model>}
+ */
+export const operateMyChannelRecord = async ({action, database, value}: DataFactoryArgs) => {
+    const raw = value.raw as RawMyChannel;
+    const record = value.record as MyChannel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    const generator = (myChannel: MyChannel) => {
+        myChannel._raw.id = isCreateAction ? myChannel.id : record?.id;
+        myChannel.channelId = raw.channel_id;
+        myChannel.roles = raw.roles;
+        myChannel.messageCount = raw.message_count;
+        myChannel.mentionsCount = raw.mentions_count;
+        myChannel.lastPostAt = raw.last_post_at;
+        myChannel.lastViewedAt = raw.last_viewed_at;
+    };
+
+    return operateBaseRecord({
+        action,
+        database,
+        tableName: MY_CHANNEL,
         value,
         generator,
     });

@@ -78,6 +78,9 @@ export default class Channel extends Model {
     /** creator_id : The user who created this channel */
     @field('creator_id') creatorId!: string;
 
+    /** update_at : The timestamp to when this channel was last updated on the server */
+    @field('update_at') updateAt!: number;
+
     /** delete_at : The deletion/archived date of this channel */
     @field('delete_at') deleteAt!: number;
 

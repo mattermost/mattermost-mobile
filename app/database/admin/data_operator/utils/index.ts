@@ -5,11 +5,13 @@ import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import Channel from '@typings/database/channel';
 import {
     ChainPostsArgs,
     IdenticalRecordArgs,
     MatchExistingRecord,
     RangeOfValueArgs,
+    RawChannel,
     RawPost,
     RawReaction,
     RawSlashCommand,
@@ -27,7 +29,7 @@ import SlashCommand from '@typings/database/slash_command';
 import Team from '@typings/database/team';
 import User from '@typings/database/user';
 
-const {POST, REACTION, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
+const {CHANNEL, POST, REACTION, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -166,11 +168,11 @@ export const retrieveRecords = async ({database, tableName, condition}: Retrieve
  * @returns {boolean}
  */
 export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
-    const guardTables = [POST, SLASH_COMMAND, TEAM, USER];
+    const guardTables = [CHANNEL, POST, SLASH_COMMAND, TEAM, USER];
 
     if (guardTables.includes(tableName)) {
-        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand
-        type ExistingRecord = Post | User | Team | SlashCommand
+        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand | RawChannel
+        type ExistingRecord = Post | User | Team | SlashCommand | Channel
 
         return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
     }

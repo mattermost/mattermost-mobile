@@ -7,6 +7,8 @@ import Model from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {
     isRecordAppEqualToRaw,
+    isRecordChannelEqualToRaw,
+    isRecordChannelInfoEqualToRaw,
     isRecordChannelMembershipEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
     isRecordDraftEqualToRaw,
@@ -15,6 +17,8 @@ import {
     isRecordGroupMembershipEqualToRaw,
     isRecordGroupsInChannelEqualToRaw,
     isRecordGroupsInTeamEqualToRaw,
+    isRecordMyChannelEqualToRaw,
+    isRecordMyChannelSettingsEqualToRaw,
     isRecordMyTeamEqualToRaw,
     isRecordPostEqualToRaw,
     isRecordPreferenceEqualToRaw,
@@ -45,6 +49,8 @@ import {
     PrepareForDatabaseArgs,
     PrepareRecordsArgs,
     ProcessInputsArgs,
+    RawChannel,
+    RawChannelInfo,
     RawChannelMembership,
     RawCustomEmoji,
     RawDraft,
@@ -54,6 +60,8 @@ import {
     RawGroupMembership,
     RawGroupsInChannel,
     RawGroupsInTeam,
+    RawMyChannel,
+    RawMyChannelSettings,
     RawMyTeam,
     RawPost,
     RawPostMetadata,
@@ -80,7 +88,9 @@ import DataOperatorException from '../../exceptions/data_operator_exception';
 import DatabaseConnectionException from '../../exceptions/database_connection_exception';
 import {
     operateAppRecord,
+    operateChannelInfoRecord,
     operateChannelMembershipRecord,
+    operateChannelRecord,
     operateCustomEmojiRecord,
     operateDraftRecord,
     operateFileRecord,
@@ -89,6 +99,8 @@ import {
     operateGroupRecord,
     operateGroupsInChannelRecord,
     operateGroupsInTeamRecord,
+    operateMyChannelRecord,
+    operateMyChannelSettingsRecord,
     operateMyTeamRecord,
     operatePostInThreadRecord,
     operatePostMetadataRecord,
@@ -119,6 +131,8 @@ import {
 } from '../utils';
 
 const {
+    CHANNEL,
+    CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -127,6 +141,8 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL,
+    MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
     POSTS_IN_CHANNEL,
@@ -141,8 +157,6 @@ const {
     TEAM_SEARCH_HISTORY,
     USER,
 } = MM_TABLES.SERVER;
-
-// TODO : We assume that we are receiving clean&correct data from the server.  Hence, we can never have two posts in an array with the same post_id. This should be confirmed.
 
 class DataOperator {
     /**
@@ -185,9 +199,9 @@ class DataOperator {
             }
             case IsolatedEntities.CUSTOM_EMOJI: {
                 findMatchingRecordBy = isRecordCustomEmojiEqualToRaw;
-                fieldName = 'name';
+                fieldName = 'id';
                 operator = operateCustomEmojiRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.GLOBAL: {
@@ -199,30 +213,30 @@ class DataOperator {
             }
             case IsolatedEntities.ROLE: {
                 findMatchingRecordBy = isRecordRoleEqualToRaw;
-                fieldName = 'name';
+                fieldName = 'id';
                 operator = operateRoleRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.SERVERS: {
                 findMatchingRecordBy = isRecordServerEqualToRaw;
-                fieldName = 'db_path';
+                fieldName = 'url';
                 operator = operateServersRecord;
                 rawValues = getUniqueRawsBy({raws: values, key: 'displayName'});
                 break;
             }
             case IsolatedEntities.SYSTEM: {
                 findMatchingRecordBy = isRecordSystemEqualToRaw;
-                fieldName = 'name';
+                fieldName = 'id';
                 operator = operateSystemRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'name'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             case IsolatedEntities.TERMS_OF_SERVICE: {
                 findMatchingRecordBy = isRecordTermsOfServiceEqualToRaw;
-                fieldName = 'accepted_at';
+                fieldName = 'id';
                 operator = operateTermsOfServiceRecord;
-                rawValues = getUniqueRawsBy({raws: values, key: 'acceptedAt'});
+                rawValues = getUniqueRawsBy({raws: values, key: 'id'});
                 break;
             }
             default: {
@@ -1052,6 +1066,102 @@ class DataOperator {
             operator: operateMyTeamRecord,
             rawValues,
             tableName: MY_TEAM,
+        });
+    };
+
+    /**
+     * handleChannel: Handler responsible for the Create/Update operations occurring on the CHANNEL entity from the 'Server' schema
+     * @param {RawChannel[]} channels
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleChannel = async (channels: RawChannel[]) => {
+        if (!channels.length) {
+            throw new DataOperatorException(
+                'An empty "channels" array has been passed to the handleChannel method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordChannelEqualToRaw,
+            fieldName: 'id',
+            operator: operateChannelRecord,
+            rawValues,
+            tableName: CHANNEL,
+        });
+    };
+
+    /**
+     * handleMyChannelSettings: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL_SETTINGS entity from the 'Server' schema
+     * @param {RawMyChannelSettings[]} settings
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyChannelSettings = async (settings: RawMyChannelSettings[]) => {
+        if (!settings.length) {
+            throw new DataOperatorException(
+                'An empty "settings" array has been passed to the handleMyChannelSettings method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateMyChannelSettingsRecord,
+            rawValues,
+            tableName: MY_CHANNEL_SETTINGS,
+        });
+    };
+
+    /**
+     * handleChannelInfo: Handler responsible for the Create/Update operations occurring on the CHANNEL_INFO entity from the 'Server' schema
+     * @param {RawChannelInfo[]} channelInfos
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleChannelInfo = async (channelInfos: RawChannelInfo[]) => {
+        if (!channelInfos.length) {
+            throw new DataOperatorException(
+                'An empty "channelInfos" array has been passed to the handleMyChannelSettings method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: channelInfos, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateChannelInfoRecord,
+            rawValues,
+            tableName: CHANNEL_INFO,
+        });
+    };
+
+    /**
+     * handleMyChannel: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL entity from the 'Server' schema
+     * @param {RawMyChannel[]} myChannels
+     * @throws DataOperatorException
+     * @returns {Promise<null|void>}
+     */
+    handleMyChannel = async (myChannels: RawMyChannel[]) => {
+        if (!myChannels.length) {
+            throw new DataOperatorException(
+                'An empty "myChannels" array has been passed to the handleMyChannel method',
+            );
+        }
+
+        const rawValues = getUniqueRawsBy({raws: myChannels, key: 'channel_id'});
+
+        await this.handleEntityRecords({
+            findMatchingRecordBy: isRecordMyChannelEqualToRaw,
+            fieldName: 'channel_id',
+            operator: operateMyChannelRecord,
+            rawValues,
+            tableName: MY_CHANNEL,
         });
     };
 
