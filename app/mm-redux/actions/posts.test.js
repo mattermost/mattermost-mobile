@@ -9,7 +9,7 @@ import * as Actions from '@mm-redux/actions/posts';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {login} from '@mm-redux/actions/users';
 import {createCustomEmoji} from '@mm-redux/actions/emojis';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {Preferences, Posts, RequestStatus} from '../constants';
 import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
 import TestHelper from 'test/test_helper';
@@ -341,31 +341,6 @@ describe('Actions.Posts', () => {
         reactions = store.getState().entities.posts.reactions;
         assert.ok(reactions);
         assert.ok(!reactions[post1.id]);
-    });
-
-    it('getPostsUnread', async () => {
-        const {dispatch, getState} = store;
-        const channelId = TestHelper.basicChannel.id;
-        const post = TestHelper.fakePostWithId(channelId);
-        const userId = getState().entities.users.currentUserId;
-        const response = {
-            posts: {
-                [post.id]: post,
-            },
-            order: [post.id],
-            next_post_id: '',
-            prev_post_id: '',
-        };
-
-        nock(Client4.getUsersRoute()).
-            get(`/${userId}/channels/${channelId}/posts/unread`).
-            query(true).
-            reply(200, response);
-
-        await Actions.getPostsUnread(channelId)(dispatch, getState);
-        const {posts} = getState().entities.posts;
-
-        assert.ok(posts[post.id]);
     });
 
     it('getPostThread', async () => {

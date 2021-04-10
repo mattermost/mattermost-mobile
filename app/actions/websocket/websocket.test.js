@@ -11,7 +11,7 @@ import configureMockStore from 'redux-mock-store';
 
 import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
 import {notVisibleUsersActions} from '@mm-redux/actions/helpers';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Posts, RequestStatus} from '@mm-redux/constants';
 
 import * as Actions from '@actions/websocket';

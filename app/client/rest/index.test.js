@@ -4,7 +4,8 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import {ClientError, HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
+import {HEADER_X_VERSION_ID} from '@client/rest/constants';
+import ClientError from '@client/rest/error';
 import TestHelper from 'test/test_helper';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 

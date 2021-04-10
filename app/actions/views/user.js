@@ -8,7 +8,7 @@ import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';

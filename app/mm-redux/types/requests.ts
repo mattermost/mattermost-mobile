@@ -39,7 +39,6 @@ export type UsersRequestsStatuses = {
 };
 
 export type EmojisRequestsStatuses = {
-    createCustomEmoji: RequestStatusType;
     getCustomEmojis: RequestStatusType;
     deleteCustomEmoji: RequestStatusType;
     getAllCustomEmojis: RequestStatusType;
@@ -53,15 +52,6 @@ export type FilesRequestsStatuses = {
 export type RolesRequestsStatuses = {
     getRolesByNames: RequestStatusType;
     getRoleByName: RequestStatusType;
-    getRole: RequestStatusType;
-    editRole: RequestStatusType;
-};
-
-export type JobsRequestsStatuses = {
-    createJob: RequestStatusType;
-    getJob: RequestStatusType;
-    getJobs: RequestStatusType;
-    cancelJob: RequestStatusType;
 };
 
 export type SearchRequestsStatuses = {

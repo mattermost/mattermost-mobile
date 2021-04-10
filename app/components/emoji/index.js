@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';

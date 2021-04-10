@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
