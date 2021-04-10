@@ -141,15 +141,30 @@ export function openGalleryAtIndex(index, files) {
                 push: {
                     waitForRender: true,
                     sharedElementTransitions,
-                    ...Platform.select({ios: {
-                        content: contentPush,
-                    }}),
-                },
-                pop: {
-                    content: contentPop,
                 },
             },
         };
+
+        if (Object.keys(contentPush).length) {
+            options.animations.push = {
+                ...options.animations.push,
+                ...Platform.select({
+                    android: contentPush,
+                    ios: {
+                        content: contentPush,
+                    },
+                }),
+            };
+        }
+
+        if (Object.keys(contentPop).length) {
+            options.animations.pop = Platform.select({
+                android: contentPop,
+                ios: {
+                    content: contentPop,
+                },
+            });
+        }
 
         goToScreen(screen, '', passProps, options);
     });

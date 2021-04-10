@@ -516,7 +516,7 @@ export default class PostList extends PureComponent {
                     onScrollToIndexFailed={this.handleScrollToIndexFailed}
                     ref={this.flatListRef}
                     refreshControl={refreshControl}
-                    removeClippedSubviews={false}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}

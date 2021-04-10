@@ -266,6 +266,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 extraData={this.state}
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
+                removeClippedSubviews={true}
                 renderItem={this.renderItem}
                 nestedScrollEnabled={nestedScrollEnabled}
             />
