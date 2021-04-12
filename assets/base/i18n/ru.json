@@ -22,7 +22,7 @@
   "apps.error.form.no_lookup_call": "performLookupCall props.call не определено",
   "apps.error.form.refresh": "Произошла ошибка при извлечении выбранных полей. Свяжитесь с разработчиком приложения. Подробности: {details}",
   "apps.error.form.refresh_no_refresh": "Вызывается \"Обновить\" для необновляемого поля.",
-  "apps.error.form.submit.pretext": "Произошла ошибка при отправке модального. Свяжитесь с разработчиком приложения. Подробности: {details}",
+  "apps.error.form.submit.pretext": "Произошла ошибка при отправке формы. Свяжитесь с разработчиком приложения. Подробности: {details}",
   "apps.error.lookup.error_preparing_request": "Ошибка при подготовке запроса на поиск: {errorMessage}",
   "apps.error.parser": "Ошибка разбора: {error}",
   "apps.error.parser.empty_value": "пустые значения не допускаются",
