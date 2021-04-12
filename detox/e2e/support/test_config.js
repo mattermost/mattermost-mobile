@@ -4,6 +4,8 @@
 module.exports = {
     serverUrl: process.env.SITE_URL || (process.env.IOS ? 'http://localhost:8065' : 'http://10.0.2.2:8065'),
     siteUrl: process.env.SITE_URL || 'http://localhost:8065',
+    smtpUrl: process.env.SMTP_URL || 'http://localhost:10080',
+    adminEmail: process.env.ADMIN_EMAIL || 'sysadmin@sample.mattermost.com',
     adminUsername: process.env.ADMIN_USERNAME || 'sysadmin',
     adminPassword: process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1',
     ldapServer: process.env.LDAP_SERVER || 'localhost',

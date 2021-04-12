@@ -380,12 +380,10 @@ class FilteredList extends Component {
         const {styles, testID} = this.props;
         const dataSource = this.buildData(this.props);
         return (
-            <View
-                testID={testID}
-                style={styles.container}
-            >
+            <View style={styles.container}>
                 <SectionList
                     sections={dataSource}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}
@@ -393,6 +391,7 @@ class FilteredList extends Component {
                     keyboardShouldPersistTaps={'always'}
                     maxToRenderPerBatch={10}
                     stickySectionHeadersEnabled={true}
+                    testID={testID}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             </View>

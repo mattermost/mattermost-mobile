@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {Animated, ImageBackground, Image, Platform, View, StyleSheet} from 'react-native';
 
 import thumb from '@assets/images/thumb.png';
-import CustomPropTypes from '@constants/custom_prop_types';
 import RetriableFastImage from '@components/retriable_fast_image';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -17,15 +16,15 @@ export default class ProgressiveImage extends PureComponent {
     static propTypes = {
         id: PropTypes.string,
         isBackgroundImage: PropTypes.bool,
-        children: CustomPropTypes.Children,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         defaultSource: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.number]), // this should be provided by the component
         imageUri: PropTypes.string,
-        imageStyle: CustomPropTypes.Style,
+        imageStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         inViewPort: PropTypes.bool,
         onError: PropTypes.func,
         resizeMethod: PropTypes.string,
         resizeMode: PropTypes.string,
-        style: CustomPropTypes.Style,
+        style: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         theme: PropTypes.object.isRequired,
         thumbnailUri: PropTypes.string,
         tintDefaultSource: PropTypes.bool,
@@ -224,6 +223,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         defaultImageContainer: {
             alignItems: 'center',
             justifyContent: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         defaultImageTint: {
             flex: 1,

@@ -120,6 +120,7 @@ exports[`channel_info_header should match snapshot 1`] = `
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -453,6 +454,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -758,6 +760,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -1091,6 +1094,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -1396,6 +1400,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>
@@ -1750,6 +1755,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
               "lineHeight": 20,
             }
           }
+          testID="channel_info.header.purpose"
         >
           Purpose string
         </Text>

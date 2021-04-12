@@ -36,6 +36,7 @@ export default class ChannelBase extends PureComponent {
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string,
+        currentUserId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
         isSupportedServer: PropTypes.bool,
         isSystemAdmin: PropTypes.bool,
@@ -130,6 +131,10 @@ export default class ChannelBase extends PureComponent {
                     setNavigatorStyles(componentId, this.props.theme);
                 }
             });
+        }
+
+        if (this.props.currentUserId && prevProps.currentTeamId && !this.props.currentTeamId) {
+            this.props.actions.selectDefaultTeam();
         }
 
         if (this.props.currentTeamId &&

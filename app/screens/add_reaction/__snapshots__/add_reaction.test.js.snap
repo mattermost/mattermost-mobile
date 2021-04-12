@@ -12,6 +12,7 @@ exports[`AddReaction should match snapshot 1`] = `
   <Connect(EmojiPicker)
     deviceWidth={750}
     onEmojiPress={[Function]}
+    testID="add_reaction.emoji_picker"
   />
 </View>
 `;

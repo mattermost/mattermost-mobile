@@ -22,6 +22,7 @@ import Channel from './channel';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
+    const currentUserId = getCurrentUserId(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const serverVersion = Client4.getServerVersion() || getServerVersion(state);
@@ -36,14 +37,18 @@ function mapStateToProps(state) {
         );
     }
 
+    const currentTeamId = currentTeam?.delete_at === 0 ? currentTeam?.id : '';
+    const currentChannelId = currentTeam?.delete_at === 0 ? getCurrentChannelId(state) : '';
+
     return {
-        currentTeamId: currentTeam?.id,
-        currentChannelId: getCurrentChannelId(state),
+        currentChannelId,
+        currentTeamId,
+        currentUserId,
         isSupportedServer,
         isSystemAdmin,
+        showTermsOfService: shouldShowTermsOfService(state),
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
-        showTermsOfService: shouldShowTermsOfService(state),
     };
 }
 

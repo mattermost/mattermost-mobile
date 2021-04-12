@@ -8,24 +8,26 @@ class PermalinkScreen {
     testID = {
         permalinkScreenPrefix: 'permalink.',
         permalinkScreen: 'permalink.screen',
+        permalinkPostList: 'permalink.post_list',
         searchJump: 'permalink.search.jump',
     }
 
     permalinkScreen = element(by.id(this.testID.permalinkScreen));
+    permalinkPostList = element(by.id(this.testID.permalinkPostList));
     searchJump = element(by.id(this.testID.searchJump));
 
     postList = new PostList(this.testID.permalinkScreenPrefix);
 
-    getLongPostItem = (postId, text) => {
-        return LongPostScreen.getPost(postId, text);
+    getLongPostItem = (postId, text, postProfileOptions = {}) => {
+        return LongPostScreen.getPost(postId, text, postProfileOptions);
     }
 
     getLongPostMessage = () => {
         return LongPostScreen.getPostMessage();
     }
 
-    getPostListPostItem = (postId, text) => {
-        return this.postList.getPost(postId, text);
+    getPostListPostItem = (postId, text, postProfileOptions = {}) => {
+        return this.postList.getPost(postId, text, postProfileOptions);
     }
 
     getPostMessageAtIndex = (index) => {

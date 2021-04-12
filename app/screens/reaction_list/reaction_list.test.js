@@ -5,7 +5,7 @@ import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import SlideUpPanel from 'app/components/slide_up_panel';
+import SlideUpPanel from '@components/slide_up_panel';
 
 import ReactionList from './reaction_list';
 

@@ -251,15 +251,16 @@ export default class AtMention extends PureComponent {
 
         return (
             <SectionList
-                testID='at_mention_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
-                style={[style.listView, {maxHeight: maxListHeight}]}
-                sections={sections}
-                renderItem={this.renderItem}
-                renderSectionHeader={this.renderSectionHeader}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
+                removeClippedSubviews={true}
+                renderItem={this.renderItem}
+                renderSectionHeader={this.renderSectionHeader}
+                style={[style.listView, {maxHeight: maxListHeight}]}
+                sections={sections}
+                testID='at_mention_suggestion.list'
             />
         );
     }

@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {
-    Image,
     Switch,
     Text,
     TouchableHighlight,
@@ -14,6 +13,8 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {Theme} from '@mm-redux/types/preferences';
+import FastImage, {Source} from 'react-native-fast-image';
+import {isValidUrl} from '@utils/url';
 
 function createTouchableComponent(children: JSX.Element, action: () => void) {
     return (
@@ -30,8 +31,7 @@ type Props = {
     detail?: string | number | boolean,
     icon?: string,
     iconColor?: string,
-    image?: number,
-    imageTintColor?: string,
+    image?: Source | null,
     isLandscape?: boolean,
     rightArrow?: boolean,
     textId: string,
@@ -42,7 +42,7 @@ type Props = {
 }
 
 function channelInfoRow(props: Props) {
-    const {testID, action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender} = props;
+    const {testID, action, defaultMessage, detail, icon, iconColor, image, rightArrow, textColor, textId, togglable, theme, shouldRender} = props;
 
     if (!shouldRender) {
         return null;
@@ -51,7 +51,7 @@ function channelInfoRow(props: Props) {
     const style = getStyleSheet(theme);
 
     let iconElement = null;
-    if (image == null) {
+    if (!image) {
         iconElement = (
             <CompassIcon
                 name={icon || ''}
@@ -59,11 +59,11 @@ function channelInfoRow(props: Props) {
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.64)}
             />
         );
-    } else {
-        iconElement = (
-            <Image
+    } else if (image.uri) {
+        iconElement = isValidUrl(image.uri) && (
+            <FastImage
                 source={image}
-                style={{width: 15, height: 15, tintColor: imageTintColor || changeOpacity(theme.centerChannelColor, 0.5)}}
+                style={{width: 24, height: 24}}
             />
         );
     }

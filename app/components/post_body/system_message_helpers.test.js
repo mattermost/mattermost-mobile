@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Posts} from '@mm-redux/constants';
-import {renderWithRedux} from 'test/testing_library';
+import {renderWithRedux} from '@test/testing_library';
 
 import * as SystemMessageHelpers from './system_message_helpers';
 

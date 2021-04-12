@@ -8,7 +8,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {intlShape} from 'react-intl';
 
-import SlideUpPanel from 'app/components/slide_up_panel';
+import SlideUpPanel from '@components/slide_up_panel';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {
     generateUserProfilesById,

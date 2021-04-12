@@ -15,15 +15,10 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
     }
     testID="test-id"
   >
-    <Image
-      source={1}
-      style={
-        Object {
-          "height": 15,
-          "tintColor": "#ffffff",
-          "width": 15,
-        }
-      }
+    <CompassIcon
+      color="#ababab"
+      name="icon"
+      size={24}
     />
     <FormattedText
       defaultMessage="default-message"

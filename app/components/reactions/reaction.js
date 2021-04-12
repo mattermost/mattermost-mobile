@@ -51,8 +51,14 @@ export default class Reaction extends PureComponent {
                     textStyle={{color: 'black', fontWeight: 'bold'}}
                     customEmojiStyle={{marginHorizontal: 3}}
                     padding={5}
+                    testID={`reaction.emoji.${emojiName}`}
                 />
-                <Text style={styles.count}>{count}</Text>
+                <Text
+                    style={styles.count}
+                    testID={`reaction.emoji.${emojiName}.count`}
+                >
+                    {count}
+                </Text>
             </TouchableWithFeedback>
         );
     }

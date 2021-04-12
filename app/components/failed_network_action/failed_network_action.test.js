@@ -3,7 +3,7 @@
 import React from 'react';
 
 import FailedNetworkAction from './failed_network_action';
-import {renderWithReduxIntl} from 'test/testing_library';
+import {renderWithReduxIntl} from '@test/testing_library';
 import Preferences from '@mm-redux/constants/preferences';
 import {waitFor} from '@testing-library/react-native';
 

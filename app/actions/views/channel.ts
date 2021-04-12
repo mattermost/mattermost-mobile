@@ -45,6 +45,8 @@ import {GlobalState} from '@mm-redux/types/store';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
 import {Role} from '@mm-redux/types/roles';
 import {AnyAction} from 'redux';
+import {fetchAppBindings} from '@mm-redux/actions/apps';
+import {appsEnabled} from '@utils/apps';
 
 const MAX_RETRIES = 3;
 
@@ -197,6 +199,7 @@ export function handleSelectChannel(channelId: string) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const dt = Date.now();
         const state = getState();
+        const {currentUserId} = state.entities.users;
         const {channels, currentChannelId, myMembers} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
         const channel = channels[channelId];
@@ -223,6 +226,10 @@ export function handleSelectChannel(channelId: string) {
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
+            if (appsEnabled(state)) {
+                //TODO improve sync method
+                dispatch(fetchAppBindings(currentUserId, channelId));
+            }
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
 

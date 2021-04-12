@@ -189,7 +189,10 @@ export default class ChannelInfoHeader extends React.PureComponent<Props> {
                                     id='channel_info.purpose'
                                     defaultMessage='Purpose'
                                 />
-                                <Text style={baseTextStyle}>
+                                <Text
+                                    style={baseTextStyle}
+                                    testID={`${testID}.purpose`}
+                                >
                                     {purpose}
                                 </Text>
                             </View>

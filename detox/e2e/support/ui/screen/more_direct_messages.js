@@ -8,8 +8,8 @@ import {
 
 class MoreDirectMessagesScreen {
     testID = {
+        moreDirectMessagesScreenPrefix: 'more_direct_messages.',
         moreDirectMessagesScreen: 'more_direct_messages.screen',
-        moreDirectMessagesPrefix: 'more_direct_messages.',
         startButton: 'more_direct_messages.start.button',
         usersList: 'more_direct_messages.custom_list',
         userItem: 'more_direct_messages.custom_list.user_item',
@@ -21,10 +21,10 @@ class MoreDirectMessagesScreen {
     usersList = element(by.id(this.testID.usersList));
 
     // convenience props
-    searchBar = SearchBar.getSearchBar(this.testID.moreDirectMessagesPrefix);
-    searchInput = SearchBar.getSearchInput(this.testID.moreDirectMessagesPrefix);
-    cancelButton = SearchBar.getCancelButton(this.testID.moreDirectMessagesPrefix);
-    clearButton = SearchBar.getClearButton(this.testID.moreDirectMessagesPrefix);
+    searchBar = SearchBar.getSearchBar(this.testID.moreDirectMessagesScreenPrefix);
+    searchInput = SearchBar.getSearchInput(this.testID.moreDirectMessagesScreenPrefix);
+    cancelButton = SearchBar.getCancelButton(this.testID.moreDirectMessagesScreenPrefix);
+    clearButton = SearchBar.getClearButton(this.testID.moreDirectMessagesScreenPrefix);
 
     getUser = (userId, diplayUsername) => {
         const userItemTestID = `${this.testID.userItem}.${userId}`;

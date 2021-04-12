@@ -4,7 +4,7 @@
 import React from 'react';
 import moment from 'moment-timezone';
 
-import {renderWithIntl} from 'test/testing_library';
+import {renderWithIntl} from '@test/testing_library';
 
 import FormattedTime from './formatted_time';
 

@@ -15,7 +15,6 @@ interface PinnedProps {
     channelId: string;
     pinnedCount: number;
     theme: Theme;
-    userId: string;
 }
 
 export default class Pinned extends PureComponent<PinnedProps> {

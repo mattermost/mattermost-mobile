@@ -47,6 +47,7 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
@@ -62,6 +63,7 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -119,6 +121,7 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
@@ -134,6 +137,7 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -187,6 +191,7 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
@@ -243,6 +248,7 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -295,6 +301,7 @@ exports[`PostHeader should match snapshot when post is from system message 1`] =
               },
             ]
           }
+          testID="post_header.display_name"
         />
       </View>
       <FormattedTime
@@ -308,6 +315,7 @@ exports[`PostHeader should match snapshot when post is from system message 1`] =
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -363,6 +371,7 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
@@ -378,6 +387,7 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -424,8 +434,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
+      <View
         style={
           Array [
             Object {
@@ -438,7 +447,6 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             },
           ]
         }
-        type="opacity"
       >
         <Text
           ellipsizeMode="tail"
@@ -452,10 +460,11 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
-      </TouchableWithFeedbackIOS>
+      </View>
       <BotTag
         style={
           Object {
@@ -505,6 +514,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -577,8 +587,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
+      <View
         style={
           Array [
             Object {
@@ -591,7 +600,6 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             },
           ]
         }
-        type="opacity"
       >
         <Text
           ellipsizeMode="tail"
@@ -605,10 +613,11 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
-      </TouchableWithFeedbackIOS>
+      </View>
       <BotTag
         style={
           Object {
@@ -658,6 +667,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -756,6 +766,7 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
@@ -771,6 +782,7 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />
@@ -843,6 +855,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
               "paddingVertical": 2,
             }
           }
+          testID="post_header.display_name"
         >
           John Smith
         </Text>
@@ -858,6 +871,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
             "opacity": 0.5,
           }
         }
+        testID="post_header.date_time"
         timeZone=""
         value={0}
       />

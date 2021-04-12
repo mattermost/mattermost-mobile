@@ -94,7 +94,8 @@ export function openGalleryAtIndex(index, files) {
             sharedElementTransitions.push({
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
-                interpolation: {mode: 'overshoot'},
+                duration: 300,
+                interpolation: {type: 'accelerateDecelerate', factor: 9},
             });
         } else {
             contentPush.y = {
@@ -140,15 +141,30 @@ export function openGalleryAtIndex(index, files) {
                 push: {
                     waitForRender: true,
                     sharedElementTransitions,
-                    ...Platform.select({ios: {
-                        content: contentPush,
-                    }}),
-                },
-                pop: {
-                    content: contentPop,
                 },
             },
         };
+
+        if (Object.keys(contentPush).length) {
+            options.animations.push = {
+                ...options.animations.push,
+                ...Platform.select({
+                    android: contentPush,
+                    ios: {
+                        content: contentPush,
+                    },
+                }),
+            };
+        }
+
+        if (Object.keys(contentPop).length) {
+            options.animations.pop = Platform.select({
+                android: contentPop,
+                ios: {
+                    content: contentPop,
+                },
+            });
+        }
 
         goToScreen(screen, '', passProps, options);
     });

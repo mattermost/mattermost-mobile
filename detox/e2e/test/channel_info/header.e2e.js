@@ -52,7 +52,7 @@ describe('Channel Info Header', () => {
         await ChannelInfoScreen.open();
 
         // * Verify GM member count is 3
-        await expect(ChannelInfoScreen.headerChannelIconGMMemberCount).toHaveText('3');
+        await expect(ChannelInfoScreen.channelIconGMMemberCount).toHaveText('3');
 
         // # Close channel info screen
         await ChannelInfoScreen.close();

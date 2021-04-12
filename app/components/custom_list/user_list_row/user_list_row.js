@@ -66,6 +66,7 @@ export default class UserListRow extends React.PureComponent {
         const testID = this.props.testID;
         const itemTestID = `${testID}.${id}`;
         const displayUsernameTestID = `${testID}.display_username`;
+        const profilePictureTestID = `${itemTestID}.profile_picture`;
 
         return (
             <View style={style.container}>
@@ -82,6 +83,7 @@ export default class UserListRow extends React.PureComponent {
                             userId={id}
                             size={32}
                             iconSize={24}
+                            testID={profilePictureTestID}
                         />
                     </View>
                     <View

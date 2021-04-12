@@ -20,6 +20,7 @@ import GroupTypes from './groups';
 import BotTypes from './bots';
 import PluginTypes from './plugins';
 import ChannelCategoryTypes from './channel_categories';
+import AppsTypes from './apps';
 
 export {
     ErrorTypes,
@@ -41,4 +42,5 @@ export {
     BotTypes,
     PluginTypes,
     ChannelCategoryTypes,
+    AppsTypes,
 };

@@ -29,6 +29,7 @@ import ManageMembers from './manage_members';
 import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
+import Bindings from './bindings';
 import {Channel} from '@mm-redux/types/channels';
 import {Theme} from '@mm-redux/types/preferences';
 
@@ -43,7 +44,7 @@ type Props = {
     currentChannelCreatorName?: string,
     currentChannelGuestCount?: number,
     currentChannelMemberCount?: number,
-    currentUserId?: string,
+    currentUserId: string,
     isBot: boolean,
     isLandscape: boolean,
     isTeammateGuest: boolean,
@@ -159,6 +160,9 @@ export default class ChannelInfo extends PureComponent<Props> {
                 />
                 <EditChannel
                     testID='channel_info.edit_channel.action'
+                    theme={theme}
+                />
+                <Bindings
                     theme={theme}
                 />
             </>

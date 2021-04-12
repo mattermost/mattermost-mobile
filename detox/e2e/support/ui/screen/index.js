@@ -3,9 +3,13 @@
 
 import AddReactionScreen from './add_reaction';
 import ChannelInfoScreen from './channel_info';
+import ChannelAddMembersScreen from './channel_add_members';
+import ChannelMembersScreen from './channel_members';
 import ChannelNotificationPreferenceScreen from './channel_notification_preference';
 import ChannelScreen from './channel';
+import ClockDisplaySettingsScreen from './clock_display_settings';
 import CreateChannelScreen from './create_channel';
+import DisplaySettingsScreen from './display_settings';
 import EditChannelScreen from './edit_channel';
 import EditPostScreen from './edit_post';
 import GeneralSettingsScreen from './general_settings';
@@ -14,6 +18,7 @@ import LongPostScreen from './long_post';
 import MoreChannelsScreen from './more_channels';
 import MoreDirectMessagesScreen from './more_direct_messages';
 import NotificationScreen from './notification';
+import NotificationSettingsEmailScreen from './notification_settings_email';
 import NotificationSettingsMobileScreen from './notification_settings_mobile';
 import NotificationSettingsScreen from './notification_settings';
 import PermalinkScreen from './permalink';
@@ -29,9 +34,13 @@ import ThreadScreen from './thread';
 export {
     AddReactionScreen,
     ChannelInfoScreen,
+    ChannelAddMembersScreen,
+    ChannelMembersScreen,
     ChannelNotificationPreferenceScreen,
     ChannelScreen,
+    ClockDisplaySettingsScreen,
     CreateChannelScreen,
+    DisplaySettingsScreen,
     EditChannelScreen,
     EditPostScreen,
     GeneralSettingsScreen,
@@ -40,6 +49,7 @@ export {
     MoreChannelsScreen,
     MoreDirectMessagesScreen,
     NotificationScreen,
+    NotificationSettingsEmailScreen,
     NotificationSettingsMobileScreen,
     NotificationSettingsScreen,
     PermalinkScreen,

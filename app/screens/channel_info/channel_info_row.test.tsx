@@ -16,8 +16,6 @@ describe('ChannelInfoRow', () => {
         detail: 'detail',
         icon: 'icon',
         iconColor: '#ababab',
-        image: 1,
-        imageTintColor: '#ffffff',
         rightArrow: true,
         textId: 'text-id',
         togglable: false,

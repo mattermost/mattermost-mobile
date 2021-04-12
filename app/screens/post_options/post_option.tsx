@@ -14,11 +14,13 @@ import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {Theme} from '@mm-redux/types/preferences';
+import {isValidUrl} from '@utils/url';
+import FastImage, {Source} from 'react-native-fast-image';
 
 type Props = {
     testID?: string,
     destructive?: boolean,
-    icon: string,
+    icon: string | Source,
     onPress: () => void,
     text: string,
     theme: Theme,
@@ -50,6 +52,31 @@ const PostOption = (props: Props) => {
         },
     });
 
+    const imageStyle = [style.icon, destructive ? style.destructive : null];
+    let image;
+    let iconStyle = [style.iconContainer];
+    if (typeof icon === 'object') {
+        if (icon.uri) {
+            imageStyle.push({width: 24, height: 24});
+            image = isValidUrl(icon.uri) && (
+                <FastImage
+                    source={icon}
+                    style={imageStyle}
+                />
+            );
+        } else {
+            iconStyle = [style.noIconContainer];
+        }
+    } else {
+        image = (
+            <CompassIcon
+                name={icon}
+                size={24}
+                style={[style.icon, destructive ? style.destructive : null]}
+            />
+        );
+    }
+
     return (
         <View
             testID={testID}
@@ -61,12 +88,8 @@ const PostOption = (props: Props) => {
                 style={style.row}
             >
                 <View style={style.row}>
-                    <View style={[style.iconContainer]}>
-                        <CompassIcon
-                            name={icon}
-                            size={24}
-                            style={[style.icon, destructive ? style.destructive : null]}
-                        />
+                    <View style={iconStyle}>
+                        {image}
                     </View>
                     <View style={style.textContainer}>
                         <Text style={[style.text, destructive ? style.destructive : null]}>

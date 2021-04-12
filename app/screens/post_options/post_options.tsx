@@ -19,6 +19,7 @@ import {preventDoubleTap} from '@utils/tap';
 
 import PostOption from './post_option';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import Bindings from './bindings';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 
@@ -43,6 +44,7 @@ type Props = {
     canEdit?: boolean,
     canMarkAsUnread?: boolean, //#backwards-compatibility:5.18v
     canEditUntil: number,
+    showAppOptions: boolean,
     currentTeamUrl: string,
     currentUserId: string,
     deviceHeight: number,
@@ -56,7 +58,8 @@ export default class PostOptions extends PureComponent<Props> {
         intl: intlShape.isRequired,
     };
 
-    slideUpPanel: typeof SlideUpPanel;
+    // TODO: Remove any. Currently, high order component mess with types
+    private slideUpPanel?: any;
 
     close = async (cb?: () => void) => {
         await dismissModal();
@@ -237,6 +240,17 @@ export default class PostOptions extends PureComponent<Props> {
         return null;
     };
 
+    getAppsOptions = () => {
+        const {post} = this.props;
+        return (
+            <Bindings
+                key='bindings'
+                post={post}
+                closeWithAnimation={this.closeWithAnimation}
+            />
+        );
+    }
+
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
@@ -247,6 +261,7 @@ export default class PostOptions extends PureComponent<Props> {
             this.getPinOption(),
             this.getEditOption(),
             this.getDeleteOption(),
+            this.getAppsOptions(),
         ];
 
         return actions.filter((a) => a !== null);
@@ -388,7 +403,7 @@ export default class PostOptions extends PureComponent<Props> {
         });
     };
 
-    refSlideUpPanel = (r: typeof SlideUpPanel) => {
+    refSlideUpPanel = (r: any) => {
         this.slideUpPanel = r;
     };
 

@@ -16,6 +16,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
       id="user.settings.notifications.email.send"
     />
   }
+  testID="notification_settings_email.send.action"
   theme={
     Object {
       "awayIndicator": "#ffbc42",
@@ -49,14 +50,16 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
 `;
 
 exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
-<Component
+<Modal
   animationType="slide"
   hardwareAccelerated={false}
   onRequestClose={[Function]}
   transparent={true}
   visible={false}
 >
-  <View>
+  <View
+    testID="notification_settings_email.send.modal"
+  >
     <View
       style={Object {}}
     >
@@ -80,11 +83,13 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
               Object {
                 "checked": true,
                 "label": "Immediately",
+                "testID": "notification_settings_email.immediately.action",
                 "value": "30",
               },
               Object {
                 "checked": false,
                 "label": "Never",
+                "testID": "notification_settings_email.never.action",
                 "value": "0",
               },
             ]
@@ -108,6 +113,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
           <ForwardRef
             onPress={[Function]}
             style={Object {}}
+            testID="notification_settings_email.send_modal_cancel.button"
           >
             <FormattedText
               defaultMessage="CANCEL"
@@ -126,6 +132,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             <ForwardRef
               onPress={[Function]}
               style={Object {}}
+              testID="notification_settings_email.send_modal_save.button"
             >
               <FormattedText
                 defaultMessage="SAVE"
@@ -138,5 +145,5 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
       </View>
     </View>
   </View>
-</Component>
+</Modal>
 `;

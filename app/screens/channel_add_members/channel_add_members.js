@@ -73,6 +73,7 @@ export default class ChannelAddMembers extends PureComponent {
             text: context.intl.formatMessage({id: 'integrations.add', defaultMessage: 'Add'}),
             color: props.theme.sidebarHeaderTextColor,
             showAsAction: 'always',
+            testID: 'channel_add_members.add.button',
         };
 
         setButtons(props.componentId, {
@@ -369,6 +370,7 @@ export default class ChannelAddMembers extends PureComponent {
                         onLoadMore={this.getProfiles}
                         onRowPress={this.handleSelectProfile}
                         renderItem={this.renderItem}
+                        testID='channel_add_members.custom_list'
                         theme={theme}
                     />
                 </SafeAreaView>

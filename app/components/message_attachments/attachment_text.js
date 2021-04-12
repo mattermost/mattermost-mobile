@@ -5,15 +5,14 @@ import React, {PureComponent} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Markdown from 'app/components/markdown';
-import ShowMoreButton from 'app/components/show_more_button';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import Markdown from '@components/markdown';
+import ShowMoreButton from '@components/show_more_button';
 
 const SHOW_MORE_HEIGHT = 60;
 
 export default class AttachmentText extends PureComponent {
     static propTypes = {
-        baseTextStyle: CustomPropTypes.Style.isRequired,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         hasThumbnail: PropTypes.bool,

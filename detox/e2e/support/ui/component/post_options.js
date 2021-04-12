@@ -37,7 +37,7 @@ class PostOptions {
     slideUpPanel = element(by.id(this.testID.slideUpPanel));
 
     toBeVisible = async () => {
-        await expect(this.postOptions).toBeVisible();
+        await expect(this.postOptions).toExist();
 
         return postOptions;
     }
@@ -47,7 +47,7 @@ class PostOptions {
         await expect(this.postOptions).not.toBeVisible();
     }
 
-    deletePost = async (confirm = true) => {
+    deletePost = async ({confirm = true} = {}) => {
         // # Swipe up panel on Android
         if (isAndroid()) {
             await this.slideUpPanel.swipe('up');
@@ -60,13 +60,18 @@ class PostOptions {
             deleteButton,
         } = Alert;
         await expect(deletePostTitle).toBeVisible();
+        await expect(cancelButton).toBeVisible();
+        await expect(deleteButton).toBeVisible();
         if (confirm) {
             deleteButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.postOptions).not.toBeVisible();
         } else {
             cancelButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.postOptions).toBeVisible();
+            await this.close();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.postOptions).not.toBeVisible();
     }
 }
 

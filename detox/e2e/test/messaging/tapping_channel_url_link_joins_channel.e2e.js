@@ -7,18 +7,45 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Alert, MainSidebar} from '@support/ui/component';
-import {ChannelScreen, CreateChannelScreen, PermalinkScreen} from '@support/ui/screen';
-
-import {Channel, Post, Setup, Team, User} from '@support/server_api';
-import {adminUsername, adminPassword, serverUrl} from '@support/test_config';
-import {getRandomId} from '@support/utils';
+import {
+    Alert,
+    MainSidebar,
+    TeamsList,
+} from '@support/ui/component';
+import {
+    ChannelScreen,
+    CreateChannelScreen,
+    PermalinkScreen,
+} from '@support/ui/screen';
+import {
+    Channel,
+    Post,
+    Setup,
+    Team,
+    User,
+} from '@support/server_api';
+import {
+    serverUrl,
+} from '@support/test_config';
+import {
+    getAdminAccount,
+    getRandomId,
+    timeouts,
+    wait,
+} from '@support/utils';
 
 describe('Messaging', () => {
+    const {
+        channelNavBarTitle,
+        goToChannel,
+        logout,
+        openTeamSidebar,
+        postMessage,
+    } = ChannelScreen;
     let testChannel;
     let testTeam;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit();
         testChannel = channel;
         testTeam = team;
@@ -26,19 +53,13 @@ describe('Messaging', () => {
         await ChannelScreen.open(user);
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await ChannelScreen.logout();
     });
 
     it('MM-T3471 Tapping channel URL link joins public channel', async () => {
-        const {
-            channelNavBarTitle,
-            logout,
-            postMessage,
-        } = ChannelScreen;
-
         // # Go to the Town Square channel
-        await gotoChannel('Town Square');
+        await goToChannel('Town Square');
 
         // # There's no way to get a channel permalink on mobile so we make one manually
         const channelPermalink = `${serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
@@ -52,7 +73,7 @@ describe('Messaging', () => {
         await Team.apiAddUserToTeam(otherUser.id, testTeam.id);
         await logout();
         await ChannelScreen.open(otherUser);
-        await gotoChannel('Town Square');
+        await goToChannel('Town Square');
 
         // # As this new user, tap the channel permalink we posted earlier
         await tapLink(channelPermalink);
@@ -66,11 +87,6 @@ describe('Messaging', () => {
     // - Post a message in second channel and post the permalink of it in the public channel
     // - Confirm the prompt and join the channel
     it('MM-30237 System admins prompted before joining private channel via permalink', async () => {
-        const {
-            logout,
-            openTeamSidebar,
-            postMessage,
-        } = ChannelScreen;
         const {getTeamByDisplayName} = MainSidebar;
 
         // # Create Private Channel 1
@@ -89,11 +105,11 @@ describe('Messaging', () => {
         const {post} = await Post.apiGetLastPostInChannel(privateChannel2.id);
 
         // # Go to the Town Square channel
-        await gotoChannel('Town Square');
+        await goToChannel('Town Square');
 
         // # Post Private Channel 1 Permalink
         const message1 = `${serverUrl}/${testTeam.name}/channels/${privateChannel1Name}`;
-        await postMessage(message1);
+        await postMessage(message1, {quickReplace: true});
 
         // * Check that message is successfully posted
         await expect(element(by.text(message1))).toExist();
@@ -107,16 +123,14 @@ describe('Messaging', () => {
 
         // # Logout and login as sysadmin
         await logout();
-        await ChannelScreen.open({
-            username: adminUsername,
-            password: adminPassword,
-        });
+        await ChannelScreen.open(getAdminAccount());
 
         // * Verify channel screen is visible
         await ChannelScreen.toBeVisible();
 
         // # Go to the team
         await openTeamSidebar();
+        await waitFor(getTeamByDisplayName(testTeam.display_name)).toBeVisible().whileElement(by.id(TeamsList.testID.teamsList)).scroll(500, 'down');
         await getTeamByDisplayName(testTeam.display_name).tap();
 
         // # Press on message 1
@@ -129,7 +143,7 @@ describe('Messaging', () => {
         await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + privateChannel1Name);
 
         // # Go to Townsquare
-        await gotoChannel('Town Square');
+        await goToChannel('Town Square');
 
         // # Press on message 2
         await tapLink(message2);
@@ -150,7 +164,7 @@ describe('Messaging', () => {
 });
 
 async function createPrivateChannel(channelName) {
-    // # Open Mainside bar and press on private channels more button
+    // # Open create private channel screen
     await ChannelScreen.openMainSidebar();
     await MainSidebar.openCreatePrivateChannelButton.tap();
 
@@ -166,13 +180,6 @@ async function createPrivateChannel(channelName) {
     await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + channelName);
 }
 
-async function gotoChannel(name) {
-    await ChannelScreen.openMainSidebar();
-    const channelItem = MainSidebar.getChannelByDisplayName(name);
-    await channelItem.tap();
-    await expect(ChannelScreen.channelNavBarTitle).toHaveText(name);
-}
-
 async function joinPrivateChannel() {
     await expect(Alert.joinPrivateChannelTitle).toBeVisible();
     await Alert.joinButton.tap();
@@ -181,4 +188,5 @@ async function joinPrivateChannel() {
 async function tapLink(message) {
     const permalinkPost = element(by.text(message));
     await permalinkPost.tap({x: 5, y: 10});
+    await wait(timeouts.ONE_SEC);
 }
