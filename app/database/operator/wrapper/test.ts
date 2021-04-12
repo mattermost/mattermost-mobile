@@ -253,7 +253,7 @@ describe('*** DataOperator Wrapper ***', () => {
                     delete_at: 0,
                 },
             ],
-            prepareRowsOnly: true,
+            prepareRecordsOnly: true,
         });
 
         expect(spyOnHandleFiles).toHaveBeenCalledTimes(1);
@@ -277,7 +277,7 @@ describe('*** DataOperator Wrapper ***', () => {
                         '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
                 },
             ],
-            prepareRowsOnly: true,
+            prepareRecordsOnly: true,
         });
 
         expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
@@ -327,12 +327,13 @@ describe('*** DataOperator Wrapper ***', () => {
                     postId: '8swgtrrdiff89jnsiwiip3y1eoe',
                 },
             ],
-            prepareRowsOnly: true,
+            prepareRecordsOnly: true,
         });
 
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
             tableName: 'CustomEmoji',
+            prepareRecordsOnly: false,
             values: [
                 {
                     id: 'dgwyadacdbbwjc8t357h6hwsrh',

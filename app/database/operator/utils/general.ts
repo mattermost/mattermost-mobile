@@ -79,9 +79,7 @@ export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
  */
 export const getUniqueRawsBy = ({raws, key}:{ raws: RawValue[], key: string}) => {
     return [...new Map(raws.map((item) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const curItemKey = item[key];
+        const curItemKey = item[key as keyof typeof item];
         return [curItemKey, item];
     })).values()];
 };
