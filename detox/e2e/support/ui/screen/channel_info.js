@@ -79,7 +79,7 @@ class ChannelInfoScreen {
         await expect(this.channelInfoScreen).not.toBeVisible();
     }
 
-    archiveChannel = async (confirm = true) => {
+    archiveChannel = async ({confirm = true} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.archiveAction.tap();
         const {
@@ -88,13 +88,17 @@ class ChannelInfoScreen {
             yesButton,
         } = Alert;
         await expect(archivePublicChannelTitle).toBeVisible();
+        await expect(noButton).toBeVisible();
+        await expect(yesButton).toBeVisible();
         if (confirm) {
             yesButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).not.toBeVisible();
         } else {
             noButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toBeVisible();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.channelInfoScreen).not.toBeVisible();
     }
 }
 

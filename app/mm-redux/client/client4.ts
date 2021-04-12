@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
 import {UserCustomStatus, UserProfile, UserStatus} from '@mm-redux/types/users';

@@ -5,13 +5,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Text} from 'react-native';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {popToRoot, showSearchModal, dismissAllModals} from 'app/actions/navigation';
+import {popToRoot, showSearchModal, dismissAllModals} from '@actions/navigation';
 
 export default class Hashtag extends React.PureComponent {
     static propTypes = {
         hashtag: PropTypes.string.isRequired,
-        linkStyle: CustomPropTypes.Style.isRequired,
+        linkStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         onHashtagPress: PropTypes.func,
     };
 

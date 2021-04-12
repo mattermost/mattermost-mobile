@@ -23,7 +23,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "12.0.0"
+      xcode: "12.1.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
@@ -550,14 +550,14 @@ workflows:
             - test
           filters:
             branches:
-              only: /^build-pr-.*/
+              only: /^(build|android)-pr-.*/
       - build-ios-pr:
           context: mattermost-mobile-ios-pr
           requires:
             - test
           filters:
             branches:
-              only: /^build-pr-.*/
+              only: /^(build|ios)-pr-.*/
 
       - build-android-unsigned:
           context: mattermost-mobile-unsigned

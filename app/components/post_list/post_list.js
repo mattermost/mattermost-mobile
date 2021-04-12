@@ -481,6 +481,7 @@ export default class PostList extends PureComponent {
             initialIndex,
             deepLinkURL,
             showMoreMessagesButton,
+            testID,
         } = this.props;
 
         const refreshControl = (
@@ -516,7 +517,7 @@ export default class PostList extends PureComponent {
                     onScrollToIndexFailed={this.handleScrollToIndexFailed}
                     ref={this.flatListRef}
                     refreshControl={refreshControl}
-                    removeClippedSubviews={false}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
@@ -526,6 +527,7 @@ export default class PostList extends PureComponent {
                         minimumViewTime: 100,
                     }}
                     onViewableItemsChanged={this.onViewableItemsChanged}
+                    testID={testID}
                 />
                 {showMoreMessagesButton &&
                     <MoreMessagesButton

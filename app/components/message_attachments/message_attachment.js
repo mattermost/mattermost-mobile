@@ -5,9 +5,8 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {getStatusColors} from 'app/utils/message_attachment_colors';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {getStatusColors} from '@utils/message_attachment_colors';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AttachmentActions from './attachment_actions';
 import AttachmentAuthor from './attachment_author';
@@ -22,7 +21,7 @@ import AttachmentFooter from './attachment_footer';
 export default class MessageAttachment extends PureComponent {
     static propTypes = {
         attachment: PropTypes.object.isRequired,
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,

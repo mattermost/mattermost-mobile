@@ -584,8 +584,9 @@ export class AppCommandParser {
         const result: AutocompleteSuggestion[] = [];
 
         const bindings = this.getCommandBindings();
+
         for (const binding of bindings) {
-            let base = binding.app_id;
+            let base = binding.label;
             if (!base) {
                 continue;
             }
@@ -593,10 +594,11 @@ export class AppCommandParser {
             if (base[0] !== '/') {
                 base = '/' + base;
             }
+
             if (base.startsWith(command)) {
                 result.push({
+                    Complete: binding.label,
                     Suggestion: base,
-                    Complete: base.substring(1),
                     Description: binding.description || '',
                     Hint: binding.hint || '',
                     IconData: binding.icon || '',
@@ -847,7 +849,7 @@ export class AppCommandParser {
     isAppCommand = (pretext: string): boolean => {
         const command = pretext.toLowerCase();
         for (const binding of this.getCommandBindings()) {
-            let base = binding.app_id;
+            let base = binding.label;
             if (!base) {
                 continue;
             }
