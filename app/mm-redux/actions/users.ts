@@ -258,7 +258,6 @@ export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SI
 
         try {
             profiles = await Client4.getProfiles(page, perPage, options);
-            removeUserFromList(currentUserId, profiles);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -267,7 +266,7 @@ export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SI
 
         dispatch({
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: profiles,
+            data: removeUserFromList(currentUserId, [...profiles]),
         });
 
         return {data: profiles};
@@ -323,7 +322,6 @@ export function getProfilesByIds(userIds: Array<string>, options?: any): ActionF
 
         try {
             profiles = await Client4.getProfilesByIds(userIds, options);
-            removeUserFromList(currentUserId, profiles);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -332,7 +330,7 @@ export function getProfilesByIds(userIds: Array<string>, options?: any): ActionF
 
         dispatch({
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: profiles,
+            data: removeUserFromList(currentUserId, [...profiles]),
         });
 
         return {data: profiles};
@@ -346,7 +344,6 @@ export function getProfilesByUsernames(usernames: Array<string>): ActionFunc {
 
         try {
             profiles = await Client4.getProfilesByUsernames(usernames);
-            removeUserFromList(currentUserId, profiles);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -355,7 +352,7 @@ export function getProfilesByUsernames(usernames: Array<string>): ActionFunc {
 
         dispatch({
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: profiles,
+            data: removeUserFromList(currentUserId, [...profiles]),
         });
 
         return {data: profiles};
