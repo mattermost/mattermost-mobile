@@ -33,4 +33,26 @@ describe('Markdown', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('MM-32254 should not crash when given string with deeply nested asterisks', () => {
+        const props = {
+            ...baseProps,
+            value: '**'.repeat(50) + 'test' + '**'.repeat(50) + 'test',
+        };
+
+        shallow(
+            <Markdown {...props}/>,
+        );
+    });
+
+    test('should not crash when given a non-string value', () => {
+        const props = {
+            ...baseProps,
+            value: 10,
+        };
+
+        shallow(
+            <Markdown {...props}/>,
+        );
+    });
 });

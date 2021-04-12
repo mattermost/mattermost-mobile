@@ -36,6 +36,13 @@ export default class DialogElement extends PureComponent {
         this.state = {
             selected: null,
         };
+
+        if (props.type === 'select' && props.value) {
+            const selected = props.options.find((option) => option.value === props.value);
+            if (selected) {
+                this.state.selected = selected;
+            }
+        }
     }
 
     onChange = (name, value) => {

@@ -18,6 +18,10 @@ describe('Settings SelectTimezone', () => {
         isLandscape: false,
     };
 
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(<SelectTimezone {...baseProps}/>);
 

@@ -6,16 +6,7 @@ import PropTypes from 'prop-types';
 import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
 import Emoji from 'app/components/emoji';
 import {getEmoticonName} from 'app/utils/emoji_utils';
-
-// reEmoji matches an emoji (eg. :taco:) at the start of a string.
-const reEmoji = /^:([a-z0-9_\-+]+):\B/i;
-
-// reEmoticon matches an emoticon (eg. :D) at the start of a string.
-const reEmoticon = /^(?:(:-?\))|(;-?\))|(:o)|(:-o)|(:-?])|(:-?d)|(x-d)|(:-?p)|(:-?[[@])|(:-?\()|(:['’]-?\()|(:-?\/)|(:-?s)|(:-?\|)|(:-?\$)|(:-x)|(<3|&lt;3)|(<\/3|&lt;\/3)|(:[`'’]-?\(|:&#x27;\(|:&#39;\())(?=$|\s|[*_~?])/i;
-
-// reMain matches some amount of plain text, starting at the beginning of the string and hopefully stopping right
-// before the next emoji by looking for any character that could start an emoji (:, ;, x, or <)
-const reMain = /^[\s\S]+?(?=[:;x<]|$)/i;
+import {reEmoji, reEmoticon, reMain} from 'app/constants/emoji';
 
 export default function ActionButtonText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
     const components = [] as JSX.Element[];

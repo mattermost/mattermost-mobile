@@ -28,24 +28,24 @@ describe('Images calculateDimensions', () => {
         });
     });
 
-    it('image smaller than 50x50 should return 50x50', () => {
-        const {height, width} = calculateDimensions(20, 20, PORTRAIT_VIEWPORT);
+    it('image smaller than 16x16 should return 16x16', () => {
+        const {height, width} = calculateDimensions(15, 15, PORTRAIT_VIEWPORT);
         expect(height).toEqual(IMAGE_MIN_DIMENSION);
         expect(width).toEqual(IMAGE_MIN_DIMENSION);
     });
 
-    it('images with height below 50 should return height of 50', () => {
-        const {height} = calculateDimensions(45, 100, PORTRAIT_VIEWPORT);
+    it('images with height below 16 should return height of 16', () => {
+        const {height} = calculateDimensions(15, 100, PORTRAIT_VIEWPORT);
         expect(height).toEqual(IMAGE_MIN_DIMENSION);
     });
 
-    it('images with width below 50 should return width of 50', () => {
-        const {width} = calculateDimensions(100, 45, PORTRAIT_VIEWPORT);
+    it('images with width below 16 should return width of 16', () => {
+        const {width} = calculateDimensions(100, 15, PORTRAIT_VIEWPORT);
         expect(width).toEqual(IMAGE_MIN_DIMENSION);
     });
 
-    it('images with that are 50x50 should return the same size', () => {
-        const {height, width} = calculateDimensions(50, 50, PORTRAIT_VIEWPORT);
+    it('images with that are 16x16 should return the same size', () => {
+        const {height, width} = calculateDimensions(16, 16, PORTRAIT_VIEWPORT);
         expect(height).toEqual(IMAGE_MIN_DIMENSION);
         expect(width).toEqual(IMAGE_MIN_DIMENSION);
     });
@@ -77,9 +77,9 @@ describe('Images calculateDimensions', () => {
         expect(height).toEqual(340);
     });
 
-    it('images with height below 50 but setting to 50 will make the width exceed the view port width should remain as is', () => {
-        const {height, width} = calculateDimensions(45, 310, PORTRAIT_VIEWPORT);
-        expect(height).toEqual(45);
+    it('images with height below 16 but setting to 50 will make the width exceed the view port width should remain as is', () => {
+        const {height, width} = calculateDimensions(15, 310, PORTRAIT_VIEWPORT);
+        expect(height).toEqual(15);
         expect(width).toEqual(310);
     });
 

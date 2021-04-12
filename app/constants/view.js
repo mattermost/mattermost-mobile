@@ -77,7 +77,9 @@ const ViewTypes = keyMirror({
     REMOVE_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
+    GOOGLE: null,
     OFFICE365: null,
+    OPENID: null,
     SAML: null,
 
     SET_INITIAL_POST_VISIBILITY: null,
@@ -110,9 +112,9 @@ const ViewTypes = keyMirror({
 });
 
 const RequiredServer = {
-    FULL_VERSION: 5.25,
+    FULL_VERSION: 5.31,
     MAJOR_VERSION: 5,
-    MIN_VERSION: 25,
+    MIN_VERSION: 31,
     PATCH_VERSION: 0,
 };
 
@@ -135,6 +137,7 @@ export default {
     PROFILE_PICTURE_EMOJI_SIZE: 28,
     DATA_SOURCE_USERS: 'users',
     DATA_SOURCE_CHANNELS: 'channels',
+    DATA_SOURCE_DYNAMIC: 'dynamic',
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,

@@ -3,11 +3,18 @@
 
 class RecentItem {
     testID = {
-        recentItemPrefix: 'search.recent_item.',
+        recentSearchItemPrefix: 'search.recent_item.',
+        recentSearchItemRemoveButtonSuffix: '.remove.button',
     }
 
-    getRecentItem = (searchTerms) => {
-        return element(by.id(`${this.testID.recentItemPrefix}${searchTerms}`));
+    getRecentSearchItem = (searchTerms) => {
+        const recentSearchItemTestID = `${this.testID.recentSearchItemPrefix}${searchTerms}`;
+        const recentSearchItemRemoveButtonTestID = `${recentSearchItemTestID}${this.testID.recentSearchItemRemoveButtonSuffix}`;
+
+        return {
+            recentSearchItem: element(by.id(recentSearchItemTestID)),
+            recentSearchItemRemoveButton: element(by.id(recentSearchItemRemoveButtonTestID)),
+        };
     }
 }
 

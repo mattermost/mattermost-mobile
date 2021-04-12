@@ -7,6 +7,7 @@ import * as Animatable from 'react-native-animatable';
 import {Navigation} from 'react-native-navigation';
 import {PanGestureHandler} from 'react-native-gesture-handler';
 import {useDispatch} from 'react-redux';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {popToRoot, dismissAllModals, dismissOverlay} from '@actions/navigation';
 import {loadFromPushNotification} from '@actions/views/root';
@@ -44,6 +45,7 @@ const initialAnimation: SlideAnimation = {
 
 const Notification = ({componentId, notification}: NotificationProps) => {
     const [animation, setAnimation] = useState<SlideAnimation>(initialAnimation);
+    const insets = useSafeAreaInsets();
     const dispatch = useDispatch();
     const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
     const tapped = useRef<boolean>(false);
@@ -121,7 +123,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
         >
             <Animatable.View
                 duration={250}
-                style={styles.container}
+                style={[styles.container, {height: (styles.container.height || 0) + (insets.top / 2), paddingTop: (insets.top / 2)}]}
                 useNativeDriver={true}
                 animation={animation}
                 testID='in_app_notification.screen'
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         ...Platform.select({
             android: {
-                marginTop: 17,
+                marginTop: 5,
                 height: 50,
             },
             ios: {

@@ -19,6 +19,7 @@ import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import tracker from '@utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import telemetry from '@telemetry';
+import {CHANNEL} from '@constants/screen';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -209,6 +210,7 @@ export default class ChannelPostList extends PureComponent {
                     scrollViewNativeID={channelId}
                     loadMorePostsVisible={this.props.loadMorePostsVisible}
                     showMoreMessagesButton={true}
+                    location={CHANNEL}
                 />
             );
         }

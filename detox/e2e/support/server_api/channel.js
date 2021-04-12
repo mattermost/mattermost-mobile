@@ -41,6 +41,44 @@ export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'cha
 };
 
 /**
+ * Create a direct message channel.
+ * See https://api.mattermost.com/#tag/channels/paths/~1channels~1direct/post
+ * @param {Array} userIds - the two user IDs to be in the direct message
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateDirectChannel = async (userIds = []) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels/direct',
+            userIds,
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Create a group message channel.
+ * See https://api.mattermost.com/#tag/channels/paths/~1channels~1group/post
+ * @param {Array} userIds - user IDs to be in the group message channel
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateGroupChannel = async (userIds = []) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels/group',
+            userIds,
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get a channel by name and team name.
  * See https://api.mattermost.com/#tag/channels/paths/~1teams~1name~1{team_name}~1channels~1name~1{channel_name}/get
  * @param {string} teamName - team name
@@ -129,6 +167,8 @@ function generateRandomChannel(teamId, type, prefix) {
 export const Channel = {
     apiAddUserToChannel,
     apiCreateChannel,
+    apiCreateDirectChannel,
+    apiCreateGroupChannel,
     apiDeleteUserFromChannel,
     apiGetChannelByName,
     apiGetChannelsForUser,

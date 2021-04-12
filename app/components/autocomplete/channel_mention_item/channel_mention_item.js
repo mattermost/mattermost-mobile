@@ -47,6 +47,7 @@ const ChannelMentionItem = (props) => {
         isGuest,
         name,
         onPress,
+        testID,
         theme,
         type,
     } = props;
@@ -77,6 +78,7 @@ const ChannelMentionItem = (props) => {
                 key={channelId}
                 onPress={completeMention}
                 style={[style.row, margins]}
+                testID={testID}
                 type={'opacity'}
             >
                 <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
@@ -97,6 +99,7 @@ const ChannelMentionItem = (props) => {
                 onPress={completeMention}
                 style={margins}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                testID={testID}
                 type={'native'}
             >
                 <View style={style.row}>

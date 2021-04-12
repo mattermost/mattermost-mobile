@@ -3,6 +3,7 @@
 
 import Alert from './alert';
 import Autocomplete from './autocomplete';
+import BottomSheet from './bottom_sheet';
 import CameraQuickAction from './camera_quick_action';
 import EditChannelInfo from './edit_channel_info';
 import FileQuickAction from './file_quick_action';
@@ -15,6 +16,7 @@ import Post from './post';
 import PostDraft from './post_draft';
 import PostList from './post_list';
 import PostOptions from './post_options';
+import ProfilePicture from './profile_picture';
 import RecentItem from './recent_item';
 import SearchBar from './search_bar';
 import SendButton from './send_button';
@@ -23,6 +25,7 @@ import SettingsSidebar from './settings_sidebar';
 export {
     Alert,
     Autocomplete,
+    BottomSheet,
     CameraQuickAction,
     EditChannelInfo,
     FileQuickAction,
@@ -35,6 +38,7 @@ export {
     PostDraft,
     PostList,
     PostOptions,
+    ProfilePicture,
     RecentItem,
     SearchBar,
     SendButton,

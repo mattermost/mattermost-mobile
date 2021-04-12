@@ -14,12 +14,17 @@ import {
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
+import FastImage from 'react-native-fast-image';
+import {isValidUrl} from '@utils/url';
 
 export default class PostOption extends PureComponent {
     static propTypes = {
         testID: PropTypes.string,
         destructive: PropTypes.bool,
-        icon: PropTypes.string.isRequired,
+        icon: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.object,
+        ]).isRequired,
         onPress: PropTypes.func.isRequired,
         text: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -50,6 +55,31 @@ export default class PostOption extends PureComponent {
             },
         });
 
+        const imageStyle = [style.icon, destructive ? style.destructive : null];
+        let image;
+        let iconStyle = [style.iconContainer];
+        if (typeof icon === 'object') {
+            if (icon.uri) {
+                imageStyle.push({width: 24, height: 24});
+                image = isValidUrl(icon.uri) && (
+                    <FastImage
+                        source={icon}
+                        style={imageStyle}
+                    />
+                );
+            } else {
+                iconStyle = [style.noIconContainer];
+            }
+        } else {
+            image = (
+                <CompassIcon
+                    name={icon}
+                    size={24}
+                    style={[style.icon, destructive ? style.destructive : null]}
+                />
+            );
+        }
+
         return (
             <View
                 testID={testID}
@@ -61,12 +91,8 @@ export default class PostOption extends PureComponent {
                     style={style.row}
                 >
                     <View style={style.row}>
-                        <View style={[style.iconContainer]}>
-                            <CompassIcon
-                                name={icon}
-                                size={24}
-                                style={[style.icon, destructive ? style.destructive : null]}
-                            />
+                        <View style={iconStyle}>
+                            {image}
                         </View>
                         <View style={style.textContainer}>
                             <Text style={[style.text, destructive ? style.destructive : null]}>
@@ -99,6 +125,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 50,
             justifyContent: 'center',
             width: 60,
+        },
+        noIconContainer: {
+            height: 50,
+            width: 18,
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),

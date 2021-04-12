@@ -30,6 +30,7 @@ import ManageMembers from './manage_members';
 import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
+import Bindings from './bindings';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
@@ -158,6 +159,9 @@ export default class ChannelInfo extends PureComponent {
                     testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
+                <Bindings
+                    theme={theme}
+                />
             </>
         );
     };
@@ -186,6 +190,7 @@ export default class ChannelInfo extends PureComponent {
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
+                    testID='channel_info.scroll_view'
                 >
                     {Boolean(currentChannel?.id) &&
                     <ChannelInfoHeader
@@ -204,6 +209,7 @@ export default class ChannelInfo extends PureComponent {
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        testID='channel_info.header'
                     />
                     }
                     <View style={style.rowsContainer}>
@@ -212,10 +218,12 @@ export default class ChannelInfo extends PureComponent {
                     <View style={style.footer}>
                         <Leave
                             close={this.close}
+                            testID='channel_info.leave.action'
                             theme={theme}
                         />
                         <Archive
                             close={this.close}
+                            testID='channel_info.archive.action'
                             theme={theme}
                         />
                     </View>

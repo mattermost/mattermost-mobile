@@ -206,6 +206,7 @@ export default class ChannelMention extends PureComponent {
             <ChannelMentionItem
                 channelId={item}
                 onPress={this.completeMention}
+                testID={`autocomplete.channel_mention.item.${item}`}
             />
         );
     };
@@ -224,15 +225,16 @@ export default class ChannelMention extends PureComponent {
 
         return (
             <SectionList
-                testID='channel_mention_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
-                style={[style.listView, {maxHeight: maxListHeight}]}
-                sections={sections}
-                renderItem={this.renderItem}
-                renderSectionHeader={this.renderSectionHeader}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
+                removeClippedSubviews={true}
+                renderItem={this.renderItem}
+                renderSectionHeader={this.renderSectionHeader}
+                style={[style.listView, {maxHeight: maxListHeight}]}
+                sections={sections}
+                testID='channel_mention_suggestion.list'
             />
         );
     }

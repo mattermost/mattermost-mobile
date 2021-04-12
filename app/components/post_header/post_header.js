@@ -142,6 +142,7 @@ export default class PostHeader extends PureComponent {
             displayName,
             enablePostUsernameOverride,
             fromWebHook,
+            isBot,
             isSystemMessage,
             fromAutoResponder,
             overrideUsername,
@@ -153,7 +154,7 @@ export default class PostHeader extends PureComponent {
         const displayNameWidth = this.calcNameWidth();
         const displayNameStyle = [style.displayNameContainer, displayNameWidth];
 
-        if (fromAutoResponder || fromWebHook) {
+        if (fromAutoResponder || fromWebHook || isBot) {
             let name = displayName;
             if (overrideUsername && enablePostUsernameOverride) {
                 name = overrideUsername;
@@ -165,6 +166,7 @@ export default class PostHeader extends PureComponent {
                         style={style.displayName}
                         ellipsizeMode={'tail'}
                         numberOfLines={1}
+                        testID='post_header.display_name'
                     >
                         {name}
                     </Text>
@@ -177,6 +179,7 @@ export default class PostHeader extends PureComponent {
                         id='post_info.system'
                         defaultMessage='System'
                         style={[style.displayName]}
+                        testID='post_header.display_name'
                     />
                 </View>
             );
@@ -191,6 +194,7 @@ export default class PostHeader extends PureComponent {
                         style={style.displayName}
                         ellipsizeMode={'tail'}
                         numberOfLines={1}
+                        testID='post_header.display_name'
                     >
                         {displayName}
                     </Text>
@@ -204,6 +208,7 @@ export default class PostHeader extends PureComponent {
                     id='channel_loader.someone'
                     defaultMessage='Someone'
                     style={style.displayName}
+                    testID='post_header.display_name'
                 />
             </View>
         );
@@ -266,6 +271,7 @@ export default class PostHeader extends PureComponent {
             return (
                 <GuestTag
                     style={style.tag}
+                    testID='post_header.guest_tag'
                     theme={theme}
                 />
             );
@@ -302,6 +308,7 @@ export default class PostHeader extends PureComponent {
                     timeZone={userTimezone}
                     value={createAt}
                     style={style.time}
+                    testID='post_header.date_time'
                 />
             );
         } else {
@@ -311,6 +318,7 @@ export default class PostHeader extends PureComponent {
                     hour12={!militaryTime}
                     value={createAt}
                     style={style.time}
+                    testID='post_header.date_time'
                 />
             );
         }

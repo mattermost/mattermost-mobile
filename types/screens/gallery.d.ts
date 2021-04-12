@@ -48,7 +48,7 @@ export interface PrepareFileRef {
 }
 
 export interface FooterProps {
-    intl: typeof intlShape;
+    intl?: typeof intlShape;
     file: FileInfo;
 }
 

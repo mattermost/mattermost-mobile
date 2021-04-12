@@ -5,7 +5,7 @@ import React from 'react';
 import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import {getStatusColors} from '@utils/message_attachment_colors';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
 
 import AttachmentActions from './attachment_actions';

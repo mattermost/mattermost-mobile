@@ -84,6 +84,7 @@ export default class PostPreHeader extends PureComponent {
                     <FormattedText
                         {...text}
                         style={style.text}
+                        testID='post_pre_header.text'
                     />
                 </View>
             </View>

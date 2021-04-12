@@ -111,8 +111,6 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
         }
 
         mentionKeys = mentionKeys.join(',');
-        Reflect.deleteProperty(notifyProps, 'showKeywordsModal');
-        Reflect.deleteProperty(notifyProps, 'showReplyModal');
 
         this.props.onBack({
             ...notifyProps,

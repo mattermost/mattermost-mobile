@@ -7,7 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelNotificationPreferenceScreen,
@@ -32,8 +31,7 @@ describe('Channel Notification Preference - Default', () => {
 
     beforeEach(async () => {
         // # Go to channel
-        await ChannelScreen.openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
+        await ChannelScreen.goToChannel(testChannel.display_name);
     });
 
     afterAll(async () => {
@@ -91,6 +89,13 @@ describe('Channel Notification Preference - Default', () => {
 });
 
 async function setGlobalNotificationsTo(pushKey) {
+    const {
+        getPushActionFor,
+        pushAction,
+        pushModal,
+        pushModalSaveButton,
+    } = NotificationSettingsMobileScreen;
+
     // # Open notifications settings mobile screen
     await ChannelScreen.openSettingsSidebar();
     await GeneralSettingsScreen.open();
@@ -99,16 +104,16 @@ async function setGlobalNotificationsTo(pushKey) {
 
     // # Tap on Send Notifications option if Android
     if (isAndroid()) {
-        await NotificationSettingsMobileScreen.pushAction.tap();
-        await expect(NotificationSettingsMobileScreen.pushModal).toBeVisible();
+        await pushAction.tap();
+        await expect(pushModal).toBeVisible();
     }
 
     // # Tap on push activity option
-    await NotificationSettingsMobileScreen.getPushActionFor(pushKey).tap();
+    await getPushActionFor(pushKey).tap();
 
     // # Tap on Save button if Android
     if (isAndroid()) {
-        await NotificationSettingsMobileScreen.pushModalSaveButton.tap();
+        await pushModalSaveButton.tap();
     }
 
     // # Navigate back to channel screen

@@ -14,7 +14,6 @@ import * as RNPlaceholder from 'rn-placeholder';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
-import CustomPropTypes from '@constants/custom_prop_types';
 import {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -39,7 +38,7 @@ export default class ChannelLoader extends PureComponent {
     static propTypes = {
         backgroundColor: PropTypes.string,
         channelIsLoading: PropTypes.bool.isRequired,
-        style: CustomPropTypes.Style,
+        style: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
         retryLoad: PropTypes.func,

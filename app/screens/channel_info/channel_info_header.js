@@ -42,6 +42,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         isTeammateGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
+        testID: PropTypes.string,
         timeZone: PropTypes.string,
     };
 
@@ -140,6 +141,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isBot,
             isGroupConstrained,
+            testID,
             timeZone,
         } = this.props;
 
@@ -162,11 +164,13 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         type={type}
                         isArchived={isArchived}
                         isBot={isBot}
+                        testID={`${testID}.channel_icon`}
                     />
                     <Text
                         ellipsizeMode='tail'
                         numberOfLines={1}
                         style={style.channelName}
+                        testID={`${testID}.display_name`}
                     >
                         {displayName}
                     </Text>
@@ -184,7 +188,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     id='channel_info.purpose'
                                     defaultMessage='Purpose'
                                 />
-                                <Text style={baseTextStyle}>
+                                <Text
+                                    style={baseTextStyle}
+                                    testID={`${testID}.purpose`}
+                                >
                                     {purpose}
                                 </Text>
                             </View>
@@ -212,6 +219,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     value={header}
                                     onChannelLinkPress={popToRoot}
                                     disableAtChannelMentionHighlight={true}
+                                    testID={`${testID}.header`}
                                 />
                             </View>
                         </TouchableHighlight>

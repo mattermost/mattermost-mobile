@@ -9,11 +9,11 @@ import {Client4} from '@mm-redux/client';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
-import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
+import {Command, CommandArgs, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
@@ -189,7 +189,7 @@ export function getAutocompleteCommands(teamId: string, page = 0, perPage: numbe
     });
 }
 
-export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: any): ActionFunc {
+export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: CommandArgs): ActionFunc {
     return async (dispatch: DispatchFunc) => {
         let data: any = null;
         try {
@@ -236,7 +236,7 @@ export function editCommand(command: Command): ActionFunc {
     });
 }
 
-export function executeCommand(command: Command, args: Array<string>): ActionFunc {
+export function executeCommand(command: string, args: CommandArgs): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.executeCommand,
         params: [
@@ -424,7 +424,7 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
         if (match) {
             switch (match.type) {
             case DeepLinkTypes.CHANNEL:
-                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl)));
+                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl), intl));
                 break;
             case DeepLinkTypes.PERMALINK: {
                 const {error} = await dispatch(loadChannelsByTeamName(match.teamName, () => permalinkBadTeam(intl)));
@@ -457,7 +457,7 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
                 break;
             }
         } else {
-            const {formatMessage} = this.context.intl;
+            const {formatMessage} = intl;
             const onError = () => Alert.alert(
                 formatMessage({
                     id: 'mobile.server_link.error.title',

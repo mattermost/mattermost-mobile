@@ -4,8 +4,8 @@
 import React, {PureComponent} from 'react';
 import {LayoutChangeEvent, ScrollView, StyleProp, StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 
-import Markdown from 'app/components/markdown';
-import ShowMoreButton from 'app/components/show_more_button';
+import Markdown from '@components/markdown';
+import ShowMoreButton from '@components/show_more_button';
 import {PostMetadata} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 

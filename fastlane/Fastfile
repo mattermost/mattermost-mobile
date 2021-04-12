@@ -11,6 +11,8 @@ is_build_pr = false
 
 # Executes before anything else use to setup the script
 before_all do
+  ENV['SPACESHIP_SKIP_2FA_UPGRADE'] = '1'
+
   is_build_pr = ENV['BUILD_PR'] == 'true'
   if is_build_pr && ENV['CIRCLECI'] == 'true'
     ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
@@ -82,11 +84,11 @@ lane :set_app_version do
   unless version_number.nil? || version_number.empty?
     package = load_config_json('../package.json')
     package['version'] = version_number
-    save_config_json('../package.json', package)
+    save_json_as_file('../package.json', package)
 
     lock = load_config_json('../package-lock.json')
     lock['version'] = version_number
-    save_config_json('../package-lock.json', lock)
+    save_json_as_file('../package-lock.json', lock)
 
     android_set_version_name(
         gradle_file: './android/app/build.gradle',
@@ -164,7 +166,7 @@ lane :configure do
   end
 
   # Save the config.json file
-  save_config_json('../dist/assets/config.json', json)
+  save_json_as_file('../dist/assets/config.json', json)
 
   configured = true
 end
@@ -429,12 +431,13 @@ platform :ios do
 
     # Set the deep link prefix
     app_scheme = ENV['APP_SCHEME'] || 'mattermost'
+    app_auth_scheme = ENV['BETA_BUILD'] == 'true' ? 'mmauthbeta' : 'mmauth'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
         block: proc do |plist|
           urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.mattermost"}
-          urlScheme[:CFBundleURLSchemes] = [app_scheme]
+          urlScheme[:CFBundleURLSchemes] = [app_scheme, app_auth_scheme]
         end
     )
 
@@ -627,7 +630,7 @@ platform :android do
       json['TelemetryEnabled'] = true
       json['TelemetryUrl'] = ENV['TELEMETRY_URL']
       json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
-      save_config_json('../dist/assets/config.json', json)
+      save_json_as_file('../dist/assets/config.json', json)
 
       beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
 
@@ -659,6 +662,14 @@ platform :android do
       old_string: 'scheme="mattermost"',
       new_string: "scheme=\'#{app_scheme}\'"
     )
+
+    if ENV['BETA_BUILD'] != 'true'
+      find_replace_string(
+          path_to_file: "./android/app/src/main/AndroidManifest.xml",
+          old_string: 'scheme="mmauthbeta"',
+          new_string: 'scheme="mmauth"',
+      )
+    end
 
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
     release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
@@ -754,13 +765,21 @@ platform :android do
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
     apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-    outputJson = load_config_json(lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH])
+    json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+
+    if json_path.nil? || json_path.empty?
+      dir_name = File.dirname(apks.first)
+      json_path = Dir.glob(File.join(dir_name, '*.json')).first
+    end
+
+    UI.message("JSON PATH APK #{json_path}")
+    outputJson = load_config_json(json_path)
     paths = []
     apks.each do |apk|
       filename = File.basename(apk)
-      output = outputJson.find { |o| o["path"] === filename }
+      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
       unless output.nil?
-        filterName = output["apkData"]["filterName"]
+        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
         name = "#{app_name_sub}"
         unless filterName.nil? || filterName.empty?
           name += "-#{filterName}"
@@ -798,7 +817,7 @@ def load_config_json(json_path)
   JSON.parse(config_file)
 end
 
-def save_config_json(json_path, json)
+def save_json_as_file(json_path, json)
   File.open(json_path, 'w') do |f|
     f.write(JSON.pretty_generate(json))
     f.write("\n")
@@ -838,9 +857,37 @@ def submit_to_testflight(ipa_path)
 
   if !ipa.nil?
     UI.success("ipa file #{ipa}")
-    pilot(
-        ipa: ipa
-    )
+    unless ENV['IOS_API_KEY_ID'].nil? || ENV['IOS_API_KEY_ID'].empty? ||
+    ENV['IOS_API_ISSUER_ID'].nil? || ENV['IOS_API_ISSUER_ID'].empty? ||
+    ENV['IOS_API_KEY'].nil? || ENV['IOS_API_KEY'].empty?
+      api_key_path = "#{ENV['IOS_API_KEY_ID']}.p8"
+      File.open("../#{api_key_path}", 'w') do |f|
+        key_string = ENV['IOS_API_KEY']
+        p8_array = key_string.split('\n')
+        p8_array.each_with_index do |value, index|
+          f.write(value)
+          f.write("\n") unless index == p8_array.length - 1
+        end
+      end
+    
+      api_key = app_store_connect_api_key(
+        key_id: ENV['IOS_API_KEY_ID'],
+        issuer_id: ENV['IOS_API_ISSUER_ID'],
+        key_filepath: "./#{api_key_path}",
+        in_house: ENV['IOS_IN_HOUSE'] == 'true', # optional but may be required if using match/sigh
+      )
+    
+      File.delete("../#{api_key_path}")
+      pilot(
+        ipa: ipa,
+        api_key: api_key
+      )
+    else
+      UI.success("Uploading with Username / Password")
+      pilot(
+          ipa: ipa
+      )
+    end
   else
     UI.user_error! "ipa file does not exist #{ipa}"
     return

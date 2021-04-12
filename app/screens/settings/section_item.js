@@ -40,6 +40,7 @@ function sectionItem(props) {
             <CompassIcon
                 name='check'
                 style={selectStyle}
+                testID={`${testID}.selected`}
             />
         );
     } else if (actionType === ActionTypes.TOGGLE) {
@@ -60,14 +61,20 @@ function sectionItem(props) {
 
     const labelComponent = React.cloneElement(
         label,
-        {style: style.label},
+        {
+            style: style.label,
+            testID: `${testID}.label`,
+        },
     );
 
     let descriptionComponent;
     if (description) {
         descriptionComponent = React.cloneElement(
             description,
-            {style: style.description},
+            {
+                style: style.description,
+                testID: `${testID}.description`,
+            },
         );
     }
 

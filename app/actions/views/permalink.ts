@@ -28,6 +28,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                     onClose: () => {
                         dispatch(closePermalink());
                     },
+                    teamName,
                 };
 
                 const options = {
