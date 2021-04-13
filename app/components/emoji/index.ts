@@ -12,7 +12,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
 
 import Emoji from './emoji';
-import { GlobalState } from '@mm-redux/types/store';
+import {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     emojiName: string;

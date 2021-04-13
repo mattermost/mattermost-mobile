@@ -9,9 +9,10 @@ import {
     Text,
     TextStyle,
 } from 'react-native';
-import FastImage, { ImageStyle } from 'react-native-fast-image';
+import FastImage, {ImageStyle} from 'react-native-fast-image';
 
 type Props = {
+
     /*
          * Emoji text name.
          */
