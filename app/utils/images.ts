@@ -146,6 +146,7 @@ export function openGalleryAtIndex(index: number, files: FileInfo[]) {
                     waitForRender: true,
                     sharedElementTransitions,
                 },
+                pop: undefined,
             },
         };
 
