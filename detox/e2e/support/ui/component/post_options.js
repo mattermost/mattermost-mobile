@@ -43,7 +43,7 @@ class PostOptions {
     }
 
     close = async () => {
-        await this.postOptions.tap();
+        await this.postOptions.tap({x: 5, y: 10});
         await expect(this.postOptions).not.toBeVisible();
     }
 
