@@ -8,7 +8,7 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {hapticFeedback} from 'app/utils/general';
 import {

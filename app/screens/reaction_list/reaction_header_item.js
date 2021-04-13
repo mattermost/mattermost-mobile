@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FormattedText from 'app/components/formatted_text';

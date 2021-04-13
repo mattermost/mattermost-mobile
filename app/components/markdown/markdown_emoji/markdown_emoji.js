@@ -7,7 +7,7 @@ import React, {PureComponent} from 'react';
 import {Platform, Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 import FormattedText from 'app/components/formatted_text';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
 

@@ -8,7 +8,7 @@ import {
     Text,
 } from 'react-native';
 
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 

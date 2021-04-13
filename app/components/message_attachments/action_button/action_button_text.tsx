@@ -4,7 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 import {getEmoticonName} from 'app/utils/emoji_utils';
 import {reEmoji, reEmoticon, reMain} from 'app/constants/emoji';
 
