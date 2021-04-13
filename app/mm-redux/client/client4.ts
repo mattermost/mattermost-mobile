@@ -3066,9 +3066,16 @@ export default class Client4 {
         );
     }
 
-    getAppsBindings = async (userID: string, channelID: string) => {
+    getAppsBindings = async (userID: string, channelID: string, teamID: String) => {
+        const params = {
+            user_id: userID,
+            channel_id: channelID,
+            team_id: teamID,
+            user_agent: 'mobile',
+        };
+
         return this.doFetch(
-            this.getAppsProxyRoute() + `/api/v1/bindings?user_id=${userID}&channel_id=${channelID}&user_agent_type=mobile`,
+            `${this.getAppsProxyRoute()}/api/v1/bindings${buildQueryString(params)}`,
             {method: 'get'},
         );
     }
