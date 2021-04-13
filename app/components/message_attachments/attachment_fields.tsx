@@ -81,7 +81,8 @@ export default function AttachmentFields(props: Props) {
                     key={`attachment__field-${i}__${nrTables}`}
                 >
                     <Markdown
-                        baseTextStyle={baseTextStyle}
+                        //TODO: remove conversion when markdown is migrated to typescript
+                        baseTextStyle={baseTextStyle as any}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         disableGallery={true}

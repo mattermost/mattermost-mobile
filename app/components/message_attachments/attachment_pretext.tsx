@@ -32,7 +32,8 @@ export default function AttachmentPreText(props: Props) {
     return (
         <View style={style.container}>
             <Markdown
-                baseTextStyle={baseTextStyle}
+                // TODO: remove any when migrating Markdown to typescript
+                baseTextStyle={baseTextStyle as any}
                 textStyles={textStyles}
                 blockStyles={blockStyles}
                 disableGallery={true}

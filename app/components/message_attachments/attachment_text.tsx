@@ -98,7 +98,8 @@ export default class AttachmentText extends PureComponent<Props, State> {
                         removeClippedSubviews={isLongText && collapsed}
                     >
                         <Markdown
-                            baseTextStyle={baseTextStyle}
+                            // TODO: remove any when migrating Markdown to typescript
+                            baseTextStyle={baseTextStyle as any}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
                             disableGallery={true}

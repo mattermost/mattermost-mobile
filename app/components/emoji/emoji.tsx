@@ -2,44 +2,44 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
     Platform,
+    StyleProp,
     StyleSheet,
     Text,
+    TextStyle,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage, { ImageStyle } from 'react-native-fast-image';
 
-export default class Emoji extends React.PureComponent {
-    static propTypes = {
-
-        /*
+type Props = {
+    /*
          * Emoji text name.
          */
-        emojiName: PropTypes.string.isRequired,
+    emojiName: string;
 
-        /*
-         * Image URL for the emoji.
-         */
-        imageUrl: PropTypes.string.isRequired,
+    /*
+     * Image URL for the emoji.
+     */
+    imageUrl: string;
 
-        /*
-         * Set if this is a custom emoji.
-         */
-        isCustomEmoji: PropTypes.bool.isRequired,
+    /*
+     * Set if this is a custom emoji.
+     */
+    isCustomEmoji: boolean;
 
-        /*
-         * Set to render only the text and no image.
-         */
-        displayTextOnly: PropTypes.bool,
-        literal: PropTypes.string,
-        size: PropTypes.number,
-        textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-        unicode: PropTypes.string,
-        customEmojiStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-        testID: PropTypes.string,
-    };
+    /*
+     * Set to render only the text and no image.
+     */
+    displayTextOnly?: boolean;
+    literal?: string;
+    size?: number;
+    textStyle?: StyleProp<TextStyle>;
+    unicode?: string;
+    customEmojiStyle?: StyleProp<ImageStyle>;
+    testID?: string;
+}
 
+export default class Emoji extends React.PureComponent<Props> {
     static defaultProps = {
         customEmojis: new Map(),
         literal: '',
@@ -108,7 +108,6 @@ export default class Emoji extends React.PureComponent {
                 key={key}
                 style={[customEmojiStyle, {width, height}]}
                 source={{uri: imageUrl}}
-                onError={this.onError}
                 resizeMode={FastImage.resizeMode.contain}
                 testID={testID}
             />
