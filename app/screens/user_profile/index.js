@@ -18,7 +18,6 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import UserProfile from './user_profile';
 
 function mapStateToProps(state, ownProps) {
-    // console.log(state.entities.remoteCluster);
     const config = getConfig(state);
     const {createChannel: createChannelRequest} = state.requests.channels;
     const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
