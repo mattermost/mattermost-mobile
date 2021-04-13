@@ -182,7 +182,7 @@ export default class ProfilePicture extends PureComponent {
         return (
             <View
                 style={[style.container, containerStyle]}
-                testID={`${testID}.${user.id}`}
+                testID={`${testID}.${user?.id}`}
             >
                 {image}
                 {(showStatus || edit) && (user && !user.is_bot) &&

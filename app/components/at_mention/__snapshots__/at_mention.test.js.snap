@@ -9,14 +9,7 @@ exports[`AtMention should match snapshot, no highlight 1`] = `
   }
 >
   <Text
-    style={
-      Array [
-        Object {
-          "backgroundColor": "#ffe577",
-          "color": "#145dbf",
-        },
-      ]
-    }
+    style={Array []}
   >
     @John.Smith
   </Text>

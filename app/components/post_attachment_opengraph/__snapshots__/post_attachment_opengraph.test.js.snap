@@ -298,3 +298,77 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
   </TouchableWithFeedbackIOS>
 </View>
 `;
+
+exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 3`] = `
+<View
+  style={
+    Object {
+      "borderColor": "rgba(61,60,64,0.2)",
+      "borderRadius": 3,
+      "borderWidth": 1,
+      "flex": 1,
+      "marginTop": 10,
+      "padding": 10,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.5)",
+          "fontSize": 12,
+          "marginBottom": 10,
+        }
+      }
+    >
+      Mattermost
+    </Text>
+  </View>
+  <View
+    style={
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+  >
+    <TouchableWithFeedbackIOS
+      onPress={[Function]}
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+      type="opacity"
+    >
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={3}
+        style={
+          Array [
+            Object {
+              "color": "#2389d7",
+              "fontSize": 14,
+              "marginBottom": 10,
+            },
+            Object {
+              "marginRight": 0,
+            },
+          ]
+        }
+      >
+        Title
+      </Text>
+    </TouchableWithFeedbackIOS>
+  </View>
+</View>
+`;

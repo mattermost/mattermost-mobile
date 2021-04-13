@@ -99,6 +99,7 @@ NotificationSettings {
     "updateMeRequest": Object {},
   },
   "refs": Object {},
+  "sanitizeNotificationProps": [Function],
   "saveAutoResponder": [Function],
   "saveNotificationProps": [Function],
   "setState": [Function],
