@@ -200,12 +200,11 @@ describe('Actions.Views.Channel', () => {
         expect(selectedChannel).toBe(true);
     });
 
-    test('handleSelectChannelByName failure from null currentTeamName', async () => {
+    test('handleSelectChannelByName failure from falsey currentTeamName', async () => {
         const failStoreObj = {...storeObj};
         failStoreObj.entities.teams.currentTeamId = 'not-in-current-teams';
         store = mockStore(failStoreObj);
 
-        // Should it accept null? Should this testcase be renamed?
         await store.dispatch(handleSelectChannelByName(currentChannelName, ''));
 
         const storeActions = store.getActions();

@@ -69,4 +69,19 @@ export type GlobalState = {
     };
     views: any;
     websocket: WebSocketState;
+    device: {
+        connection: boolean;
+        dimension: {
+            deviceHeight: number;
+            deviceWidth: number;
+        };
+        isTablet: boolean;
+        orientation: string;
+        statusBarHeight: number;
+    };
+    app: {
+        build: string;
+        version: string;
+        previousVersion: string;
+    };
 };

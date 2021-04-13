@@ -5,11 +5,10 @@ import Config from '@assets/config.json';
 import {GlobalState} from '@mm-redux/types/store';
 
 const state = {
-
-    // app: {
-    //     version: '',
-    //     build: '',
-    // },
+    app: {
+        version: '',
+        build: '',
+    },
     entities: {
         general: {
             appState: false,
@@ -127,10 +126,9 @@ const state = {
             },
         },
     },
-
-    // device: {
-    //     connection: true,
-    // },
+    device: {
+        connection: true,
+    },
     views: {
         channel: {
             drafts: {},
