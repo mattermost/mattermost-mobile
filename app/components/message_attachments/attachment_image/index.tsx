@@ -166,7 +166,7 @@ export default class AttachmentImage extends PureComponent<Props, State> {
                 />
             );
         } else {
-            progressiveImage = (<View style={{width: width, height: height}}/>);
+            progressiveImage = (<View style={{width, height}}/>);
         }
 
         return (

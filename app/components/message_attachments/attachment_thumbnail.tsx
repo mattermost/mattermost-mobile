@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { isValidUrl } from '@utils/url';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+
+import {isValidUrl} from '@utils/url';
 
 type Props = {
     url?: string;

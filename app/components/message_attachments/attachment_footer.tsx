@@ -4,12 +4,10 @@
 import React from 'react';
 import {Text, View, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import truncate from 'lodash/truncate';
 
 import {Theme} from '@mm-redux/types/preferences';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {MAX_ATTACHMENT_FOOTER_LENGTH} from '@constants/attachment';
 
 type Props = {
     text?: string;
@@ -42,8 +40,10 @@ export default function AttachmentFooter(props: Props) {
             <Text
                 key='footer_text'
                 style={style.text}
+                ellipsizeMode='tail'
+                numberOfLines={1}
             >
-                {truncate(text, {length: MAX_ATTACHMENT_FOOTER_LENGTH, omission: '…'})}
+                {text}
             </Text>
         </View>
     );
