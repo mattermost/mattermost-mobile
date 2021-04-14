@@ -110,11 +110,8 @@ export default class AttachmentImage extends PureComponent<Props, State> {
     }
 
     handlePreviewImage = () => {
-        const file = this.getFileInfo();
-        if (!file) {
-            return;
-        }
-        openGalleryAtIndex(0, [file]);
+        const files = [this.getFileInfo()];
+        openGalleryAtIndex(0, files);
     };
 
     setImageDimensions = (imageUri: string | null, dimensions: {width: number | null; height: number | null;}, originalWidth: number, originalHeight: number) => {
