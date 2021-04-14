@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React from 'react';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
