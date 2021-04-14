@@ -61,5 +61,5 @@ export default function AttachmentActions(props: Props) {
         }
     });
 
-    return content.length ? (<>{content}</>) : null;
+    return content.length ? {content} : null;
 }
