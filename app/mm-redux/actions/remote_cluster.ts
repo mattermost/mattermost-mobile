@@ -7,9 +7,7 @@ import {bindClientFunc} from './helpers';
 export function getRemoteClusterInfo(remote_id: string) {
     return bindClientFunc({
         clientFunc: Client4.getRemoteClusterInfo,
-        onRequest: RemoteClusterTypes.REMOTE_CLUSTER_INFO_REQUEST,
-        onSuccess: [RemoteClusterTypes.REMOTE_CLUSTER_INFO_SUCCESS, RemoteClusterTypes.REMOTE_CLUSTER_INFO_RECEIVED],
-        onFailure: RemoteClusterTypes.REMOTE_CLUSTER_INFO_FAILURE,
+        onSuccess: [RemoteClusterTypes.REMOTE_CLUSTER_INFO_RECEIVED],
         params: [
             remote_id,
         ],
