@@ -106,4 +106,14 @@ describe('ChannelBase', () => {
         EventEmitter.emit(General.REMOVED_FROM_CHANNEL);
         expect(alert).toHaveBeenCalled();
     });
+
+    test('should call selectDefault team when the current team is archived', () => {
+        const wrapper = shallow(
+            <ChannelBase {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        wrapper.setProps({currentTeamId: '', currentChannelId: ''});
+        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalledTimes(1);
+    });
 });

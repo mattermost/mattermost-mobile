@@ -9,16 +9,14 @@ import {
     View,
 } from 'react-native';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-
 export default class MarkdownListItem extends PureComponent {
     static propTypes = {
-        children: CustomPropTypes.Children.isRequired,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         ordered: PropTypes.bool.isRequired,
         continue: PropTypes.bool,
         index: PropTypes.number.isRequired,
         bulletWidth: PropTypes.number,
-        bulletStyle: CustomPropTypes.Style,
+        bulletStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         level: PropTypes.number,
     };
 

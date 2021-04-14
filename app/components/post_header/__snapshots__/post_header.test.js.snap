@@ -434,8 +434,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
+      <View
         style={
           Array [
             Object {
@@ -448,7 +447,6 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             },
           ]
         }
-        type="opacity"
       >
         <Text
           ellipsizeMode="tail"
@@ -466,7 +464,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         >
           John Smith
         </Text>
-      </TouchableWithFeedbackIOS>
+      </View>
       <BotTag
         style={
           Object {
@@ -589,8 +587,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         }
       }
     >
-      <TouchableWithFeedbackIOS
-        onPress={[Function]}
+      <View
         style={
           Array [
             Object {
@@ -603,7 +600,6 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             },
           ]
         }
-        type="opacity"
       >
         <Text
           ellipsizeMode="tail"
@@ -621,7 +617,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
         >
           John Smith
         </Text>
-      </TouchableWithFeedbackIOS>
+      </View>
       <BotTag
         style={
           Object {

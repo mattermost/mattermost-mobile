@@ -16,12 +16,20 @@ import com.mattermost.react_native_interface.KeysReadableArray;
 
 public class MattermostCredentialsHelper {
     static final String CURRENT_SERVER_URL = "@currentServerUrl";
+    static KeychainModule keychainModule;
+    static AsyncStorageHelper asyncStorage;
 
     public static void getCredentialsForCurrentServer(ReactApplicationContext context, ResolvePromise promise) {
-        final KeychainModule keychainModule = new KeychainModule(context);
-        final AsyncStorageHelper asyncStorage = new AsyncStorageHelper(context);
         final ArrayList<String> keys = new ArrayList<String>(1);
         keys.add(CURRENT_SERVER_URL);
+
+        if (keychainModule == null) {
+            keychainModule = new KeychainModule(context);
+        }
+
+        if (asyncStorage == null) {
+            asyncStorage = new AsyncStorageHelper(context);
+        }
         KeysReadableArray asyncStorageKeys = new KeysReadableArray() {
             @Override
             public int size() {

@@ -132,7 +132,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
-        versionCode 348
+        versionCode 351
         versionName "1.42.0"
         multiDexEnabled = true
         testBuildType System.getProperty('testBuildType', 'debug')
@@ -189,6 +189,10 @@ android {
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
+    }
+
+    packagingOptions {
+        pickFirst '**/*.so'
     }
 
 }

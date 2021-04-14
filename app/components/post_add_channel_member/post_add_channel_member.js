@@ -7,14 +7,11 @@ import {intlShape} from 'react-intl';
 
 import {Text} from 'react-native';
 
+import AtMention from '@components/at_mention';
+import FormattedText from '@components/formatted_text';
 import {General} from '@mm-redux/constants';
-
-import {concatStyles} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-
-import AtMention from 'app/components/at_mention';
-import FormattedText from 'app/components/formatted_text';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import {t} from '@utils/i18n';
+import {concatStyles} from '@utils/theme';
 
 export default class PostAddChannelMember extends React.PureComponent {
     static propTypes = {
@@ -23,7 +20,7 @@ export default class PostAddChannelMember extends React.PureComponent {
             removePost: PropTypes.func.isRequired,
             sendAddToChannelEphemeralPost: PropTypes.func.isRequired,
         }).isRequired,
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         currentUser: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         post: PropTypes.object.isRequired,
