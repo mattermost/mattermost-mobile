@@ -19,6 +19,12 @@ describe('Client4', () => {
         nock.restore();
     });
 
+    it('should remove trailing slash while trying to setUrl', () => {
+        const client = TestHelper.createClient();
+        client.setUrl('http://localhost:8065/');
+        expect(client.url).toBe('http://localhost:8065');
+    });
+
     describe('doFetchWithResponse', () => {
         it('serverVersion should be set from response header', async () => {
             const client = TestHelper.createClient();
