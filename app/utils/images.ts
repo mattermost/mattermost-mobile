@@ -20,10 +20,7 @@ import {isImage} from './file';
 
 export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
-        return {
-            height: null,
-            width: null,
-        };
+        return {};
     }
 
     const ratio = height / width;

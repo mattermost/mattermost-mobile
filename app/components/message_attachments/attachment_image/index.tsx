@@ -31,8 +31,8 @@ export type State = {
     imageUri: string | null;
     originalHeight?: number;
     originalWidth?: number;
-    height?: number | null;
-    width?: number | null;
+    height?: number;
+    width?: number;
 }
 
 export default class AttachmentImage extends PureComponent<Props, State> {
@@ -114,7 +114,7 @@ export default class AttachmentImage extends PureComponent<Props, State> {
         openGalleryAtIndex(0, files);
     };
 
-    setImageDimensions = (imageUri: string | null, dimensions: {width: number | null; height: number | null;}, originalWidth: number, originalHeight: number) => {
+    setImageDimensions = (imageUri: string | null, dimensions: {width?: number; height?: number;}, originalWidth: number, originalHeight: number) => {
         if (this.mounted) {
             this.setState({
                 ...dimensions,
@@ -166,7 +166,7 @@ export default class AttachmentImage extends PureComponent<Props, State> {
                 />
             );
         } else {
-            progressiveImage = (<View style={{width: width || 0, height: height || 0}}/>);
+            progressiveImage = (<View style={{width: width, height: height}}/>);
         }
 
         return (
