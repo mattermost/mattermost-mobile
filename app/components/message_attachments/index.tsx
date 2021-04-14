@@ -5,10 +5,10 @@ import React from 'react';
 import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
-
-import MessageAttachment from './message_attachment';
 import {PostMetadata} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
+
+import MessageAttachment from './message_attachment';
 
 type Props = {
     attachments: MessageAttachmentType[],

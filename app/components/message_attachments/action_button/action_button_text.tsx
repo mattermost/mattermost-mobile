@@ -4,9 +4,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
+
 import Emoji from '@components/emoji';
-import {getEmoticonName} from 'app/utils/emoji_utils';
-import {reEmoji, reEmoticon, reMain} from 'app/constants/emoji';
+import {reEmoji, reEmoticon, reMain} from '@constants/emoji';
+import {getEmoticonName} from '@utils/emoji_utils';
 
 export default function ActionButtonText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
     const components = [] as JSX.Element[];

@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 
 import Emoji from '@components/emoji';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Reaction extends PureComponent {
     static propTypes = {

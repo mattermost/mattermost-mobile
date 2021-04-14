@@ -8,6 +8,7 @@ import {intlShape} from 'react-intl';
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+
 import {Theme} from '@mm-redux/types/preferences';
 
 type Props = {

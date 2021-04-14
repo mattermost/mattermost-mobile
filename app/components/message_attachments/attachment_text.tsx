@@ -6,6 +6,7 @@ import {LayoutChangeEvent, ScrollView, StyleProp, StyleSheet, TextStyle, View, V
 
 import Markdown from '@components/markdown';
 import ShowMoreButton from '@components/show_more_button';
+
 import {PostMetadata} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 

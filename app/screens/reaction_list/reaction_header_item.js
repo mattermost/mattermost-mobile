@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 
 import Emoji from '@components/emoji';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 
-import {ALL_EMOJIS} from 'app/constants/emoji';
+import {ALL_EMOJIS} from '@constants/emoji';
 
 export default class ReactionHeaderItem extends PureComponent {
     static propTypes = {

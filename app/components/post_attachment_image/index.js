@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import ProgressiveImage from 'app/components/progressive_image';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import ProgressiveImage from '@components/progressive_image';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {isGifTooLarge} from '@utils/images';
 
 export default class PostAttachmentImage extends React.PureComponent {

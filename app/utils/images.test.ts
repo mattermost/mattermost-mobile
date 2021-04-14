@@ -5,7 +5,7 @@ import {calculateDimensions, isGifTooLarge} from '@utils/images';
 import {
     IMAGE_MAX_HEIGHT,
     IMAGE_MIN_DIMENSION,
-} from 'app/constants/image';
+} from '@constants/image';
 
 const PORTRAIT_VIEWPORT = 315;
 

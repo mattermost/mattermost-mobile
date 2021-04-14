@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleProp, StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 
 import Markdown from '@components/markdown';
+
 import {PostMetadata} from '@mm-redux/types/posts';
 
 type Props = {

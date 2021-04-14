@@ -40,78 +40,77 @@ type Props = {
     testID?: string;
 }
 
-export default class Emoji extends React.PureComponent<Props> {
-    static defaultProps = {
-        customEmojis: new Map(),
-        literal: '',
-        imageUrl: '',
-        isCustomEmoji: false,
-    };
+const Emoji: React.FC<Props> = (props: Props) => {
+    const {
+        customEmojiStyle,
+        displayTextOnly,
+        imageUrl,
+        literal,
+        unicode,
+        testID,
+        textStyle,
+    } = props;
 
-    render() {
-        const {
-            customEmojiStyle,
-            displayTextOnly,
-            imageUrl,
-            literal,
-            unicode,
-            testID,
-            textStyle,
-        } = this.props;
+    let size = props.size;
+    let fontSize = size;
+    if (!size && textStyle) {
+        const flatten = StyleSheet.flatten(textStyle);
+        fontSize = flatten.fontSize;
+        size = fontSize;
+    }
 
-        let size = this.props.size;
-        let fontSize = size;
-        if (!size && textStyle) {
-            const flatten = StyleSheet.flatten(textStyle);
-            fontSize = flatten.fontSize;
-            size = fontSize;
-        }
+    if (displayTextOnly) {
+        return (
+            <Text
+                style={textStyle}
+                testID={testID}
+            >
+                {literal}
+            </Text>);
+    }
 
-        if (displayTextOnly) {
-            return (
-                <Text
-                    style={textStyle}
-                    testID={testID}
-                >
-                    {literal}
-                </Text>);
-        }
+    const width = size;
+    const height = size;
 
-        const width = size;
-        const height = size;
+    // Android can't change the size of an image after its first render, so
+    // force a new image to be rendered when the size changes
+    const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
 
-        // Android can't change the size of an image after its first render, so
-        // force a new image to be rendered when the size changes
-        const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
-
-        if (unicode && !imageUrl) {
-            const codeArray = unicode.split('-');
-            const code = codeArray.reduce((acc, c) => {
-                return acc + String.fromCodePoint(parseInt(c, 16));
-            }, '');
-
-            return (
-                <Text
-                    style={[textStyle, {fontSize: size}]}
-                    testID={testID}
-                >
-                    {code}
-                </Text>
-            );
-        }
-
-        if (!imageUrl) {
-            return null;
-        }
+    if (unicode && !imageUrl) {
+        const codeArray = unicode.split('-');
+        const code = codeArray.reduce((acc, c) => {
+            return acc + String.fromCodePoint(parseInt(c, 16));
+        }, '');
 
         return (
-            <FastImage
-                key={key}
-                style={[customEmojiStyle, {width, height}]}
-                source={{uri: imageUrl}}
-                resizeMode={FastImage.resizeMode.contain}
+            <Text
+                style={[textStyle, {fontSize: size}]}
                 testID={testID}
-            />
+            >
+                {code}
+            </Text>
         );
     }
-}
+
+    if (!imageUrl) {
+        return null;
+    }
+
+    return (
+        <FastImage
+            key={key}
+            style={[customEmojiStyle, {width, height}]}
+            source={{uri: imageUrl}}
+            resizeMode={FastImage.resizeMode.contain}
+            testID={testID}
+        />
+    );
+};
+
+Emoji.defaultProps = {
+    literal: '',
+    imageUrl: '',
+    isCustomEmoji: false,
+};
+
+export default Emoji;

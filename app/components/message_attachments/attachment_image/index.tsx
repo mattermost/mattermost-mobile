@@ -9,6 +9,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {generateId} from '@utils/file';
 import {isGifTooLarge, openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
 import {Theme} from '@mm-redux/types/preferences';
 import {PostImage} from '@mm-redux/types/posts';
 import {FileInfo} from '@mm-redux/types/files';

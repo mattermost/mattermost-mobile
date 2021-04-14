@@ -4,10 +4,12 @@
 import React, {PureComponent} from 'react';
 import Button from 'react-native-button';
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {getStatusColors} from '@utils/message_attachment_colors';
 import ActionButtonText from './action_button_text';
+
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {getStatusColors} from '@utils/message_attachment_colors';
+
 import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
 

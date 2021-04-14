@@ -8,11 +8,11 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {GlobalState} from '@mm-redux/types/store';
 
-import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from 'app/utils/emojis';
+import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from '@utils/emojis';
 
 import Emoji from './emoji';
-import {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     emojiName: string;

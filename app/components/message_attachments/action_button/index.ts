@@ -4,10 +4,10 @@
 import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 
+import ActionButton from './action_button';
+
 import {doPostActionWithCookie} from '@mm-redux/actions/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import ActionButton from './action_button';
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult} from '@mm-redux/types/actions';
 

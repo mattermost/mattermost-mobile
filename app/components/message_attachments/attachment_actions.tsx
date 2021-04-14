@@ -5,6 +5,7 @@ import React from 'react';
 
 import ActionMenu from './action_menu';
 import ActionButton from './action_button';
+
 import {PostAction} from '@mm-redux/types/integration_actions';
 
 type Props = {

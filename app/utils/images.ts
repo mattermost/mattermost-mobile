@@ -12,9 +12,11 @@ import {
     VIEWPORT_IMAGE_OFFSET,
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
-import {isImage} from './file';
+
 import {PostImage} from '@mm-redux/types/posts';
 import {FileInfo} from '@mm-redux/types/files';
+
+import {isImage} from './file';
 
 export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {

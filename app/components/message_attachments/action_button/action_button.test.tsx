@@ -3,8 +3,10 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+
 import ActionButton from './action_button';
-import {changeOpacity} from 'app/utils/theme';
+
+import {changeOpacity} from '@utils/theme';
 import {getStatusColors} from '@utils/message_attachment_colors';
 
 import Preferences from '@mm-redux/constants/preferences';
