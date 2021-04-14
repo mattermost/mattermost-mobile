@@ -6,6 +6,7 @@ import {isAndroid} from '@support/utils';
 class Alert {
     // alert titles
     archivePublicChannelTitle = isAndroid() ? element(by.text('Archive Public Channel')) : element(by.label('Archive Public Channel')).atIndex(0);
+    deleteDocumentsAndDataTitle = isAndroid() ? element(by.text('Delete Documents & Data')) : element(by.label('Delete Documents & Data')).atIndex(0);
     deletePostTitle = isAndroid() ? element(by.text('Delete Post')) : element(by.label('Delete Post')).atIndex(0);
     joinPrivateChannelTitle = isAndroid() ? element(by.text('Join private channel')) : element(by.label('Join private channel')).atIndex(0);
     removeMembersTitle = isAndroid() ? element(by.text('Remove Members')) : element(by.label('Remove Members')).atIndex(0);

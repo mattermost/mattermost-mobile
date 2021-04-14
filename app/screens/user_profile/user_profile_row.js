@@ -57,7 +57,7 @@ function createTouchableComponent(children, action) {
 }
 
 function userProfileRow(props) {
-    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconSize, shouldRender = true} = props;
+    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconSize, shouldRender = true, testID} = props;
 
     if (!shouldRender) {
         return null;
@@ -74,7 +74,10 @@ function userProfileRow(props) {
     );
 
     const RowComponent = (
-        <View style={style.wrapper}>
+        <View
+            style={style.wrapper}
+            testID={testID}
+        >
             <View style={style.container}>
                 {iconComponent}
                 <FormattedText

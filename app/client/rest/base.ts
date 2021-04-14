@@ -126,7 +126,7 @@ export default class ClientBase {
     }
 
     setUrl(url: string) {
-        this.url = url;
+        this.url = url.replace(/\/+$/, '');
     }
 
     // Routes
