@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import { isValidUrl } from '@utils/url';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
@@ -11,7 +12,7 @@ type Props = {
 export default function AttachmentThumbnail(props: Props) {
     const {url: uri} = props;
 
-    if (!uri) {
+    if (!isValidUrl(uri)) {
         return null;
     }
 
