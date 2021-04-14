@@ -21,13 +21,13 @@ type Props = {
 }
 
 const ActionMenu: React.FC<Props> = (props: Props) => {
-    const [selected, setSelected] = useState<PostActionOption | undefined>();
-    if (props.defaultOption && props.options && !props.selected) {
-        setSelected(props.options.find((option) => option.value === props.defaultOption));
+    let selected: PostActionOption | undefined;
+    if (props.defaultOption && props.options) {
+        selected = props.options.find((option) => option.value === props.defaultOption);
     }
 
-    if (props.selected && props.selected !== selected) {
-        setSelected(props.selected);
+    if (props.selected) {
+        selected = props.selected;
     }
 
     const handleSelect = (selectedItem?: PostActionOption) => {
