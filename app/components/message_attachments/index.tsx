@@ -36,7 +36,7 @@ export default function MessageAttachments(props: Props) {
         theme,
         textStyles,
     } = props;
-    const content = [] as JSX.Element[];
+    const content = [] as React.ReactNode[];
 
     attachments.forEach((attachment, i) => {
         content.push(

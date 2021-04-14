@@ -22,7 +22,7 @@ export default function AttachmentActions(props: Props) {
         return null;
     }
 
-    const content = [] as JSX.Element[];
+    const content = [] as React.ReactNode[];
 
     actions.forEach((action) => {
         if (!action.id || !action.name) {

@@ -10,7 +10,7 @@ import {reEmoji, reEmoticon, reMain} from '@constants/emoji';
 import {getEmoticonName} from '@utils/emoji_utils';
 
 export default function ActionButtonText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
-    const components = [] as JSX.Element[];
+    const components = [] as React.ReactNode[];
 
     let text = message;
     while (text) {

@@ -39,7 +39,7 @@ export default function AttachmentFields(props: Props) {
     const style = getStyleSheet(theme);
     const fieldTables = [];
 
-    let fieldInfos = [] as JSX.Element[];
+    let fieldInfos = [] as React.ReactNode[];
     let rowPos = 0;
     let lastWasLong = false;
     let nrTables = 0;
