@@ -9,7 +9,7 @@ import semver from 'semver';
 import LocalConfig from '@assets/config.json';
 import {Navigation} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
-import * as analytics from '@init/analytics.ts';
+import * as analytics from '@init/analytics';
 import {getAppCredentials, removeAppCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import {deleteFileCache} from '@utils/file';

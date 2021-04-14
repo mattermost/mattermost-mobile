@@ -246,7 +246,7 @@ class DataOperator {
             }
         }
 
-        if (operator && fieldName && findMatchingRecordBy) {
+        if (fieldName && findMatchingRecordBy) {
             await this.handleEntityRecords({
                 findMatchingRecordBy,
                 fieldName,
