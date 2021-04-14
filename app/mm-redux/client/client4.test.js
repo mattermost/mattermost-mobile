@@ -21,8 +21,12 @@ describe('Client4', () => {
 
     it('should remove trailing slash while trying to setUrl', () => {
         const client = TestHelper.createClient();
+
         client.setUrl('http://localhost:8065/');
         expect(client.url).toBe('http://localhost:8065');
+
+        client.setUrl('http://localhost:8065/company/mattermost/');
+        expect(client.url).toBe('http://localhost:8065/company/mattermost');
     });
 
     describe('doFetchWithResponse', () => {
