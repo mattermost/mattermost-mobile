@@ -68,7 +68,7 @@ export default class Client4 {
     }
 
     setUrl(url: string) {
-        this.url = url;
+        this.url = url.replace(/\/+$/, '');
     }
 
     setUserAgent(userAgent: string) {
