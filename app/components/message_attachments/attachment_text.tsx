@@ -27,13 +27,17 @@ type Props = {
 type State = {
     collapsed: boolean;
     isLongText: boolean;
-    maxHeight?: number;
+    maxHeight: number;
+}
+
+function getMaxHeight(deviceHeight: number) {
+    return Math.round((deviceHeight * 0.4) + SHOW_MORE_HEIGHT);
 }
 
 export default class AttachmentText extends PureComponent<Props, State> {
     static getDerivedStateFromProps(nextProps: Props, prevState: State) {
         const {deviceHeight} = nextProps;
-        const maxHeight = Math.round((deviceHeight * 0.4) + SHOW_MORE_HEIGHT);
+        const maxHeight = getMaxHeight(deviceHeight);
 
         if (maxHeight !== prevState.maxHeight) {
             return {
@@ -47,9 +51,11 @@ export default class AttachmentText extends PureComponent<Props, State> {
     constructor(props: Props) {
         super(props);
 
+        const maxHeight = getMaxHeight(props.deviceHeight);
         this.state = {
             collapsed: true,
             isLongText: false,
+            maxHeight,
         };
     }
 
@@ -57,7 +63,7 @@ export default class AttachmentText extends PureComponent<Props, State> {
         const {height} = event.nativeEvent.layout;
         const {maxHeight} = this.state;
 
-        if (height >= (maxHeight || 0)) {
+        if (height >= maxHeight) {
             this.setState({
                 isLongText: true,
             });
