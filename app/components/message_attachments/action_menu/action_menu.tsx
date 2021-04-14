@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {useState} from 'react';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
@@ -20,36 +20,18 @@ type Props = {
     disabled?: boolean;
 }
 
-type State = {
-    selected?: PostActionOption;
-}
-
-export default class ActionMenu extends PureComponent<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        let selected;
-        if (props.defaultOption && props.options) {
-            selected = props.options.find((option) => option.value === props.defaultOption);
-        }
-
-        this.state = {
-            selected,
-        };
+const ActionMenu: React.FC<Props> = (props: Props) => {
+    const [selected, setSelected] = useState<PostActionOption | undefined>();
+    if (props.defaultOption && props.options && !props.selected) {
+        setSelected(props.options.find((option) => option.value === props.defaultOption));
     }
 
-    static getDerivedStateFromProps(props: Props, state: State) {
-        if (props.selected && props.selected !== state.selected) {
-            return {
-                selected: props.selected,
-            };
-        }
-
-        return null;
+    if (props.selected && props.selected !== selected) {
+        setSelected(props.selected);
     }
 
-    handleSelect = (selected?: PostActionOption) => {
-        if (!selected) {
+    const handleSelect = (selectedItem?: PostActionOption) => {
+        if (!selectedItem) {
             return;
         }
 
@@ -57,29 +39,28 @@ export default class ActionMenu extends PureComponent<Props, State> {
             actions,
             id,
             postId,
-        } = this.props;
+        } = props;
 
-        actions.selectAttachmentMenuAction(postId, id, selected.text, selected.value);
+        actions.selectAttachmentMenuAction(postId, id, selectedItem.text, selectedItem.value);
     };
 
-    render() {
-        const {
-            name,
-            dataSource,
-            options,
-            disabled,
-        } = this.props;
-        const {selected} = this.state;
+    const {
+        name,
+        dataSource,
+        options,
+        disabled,
+    } = props;
 
-        return (
-            <AutocompleteSelector
-                placeholder={name}
-                dataSource={dataSource}
-                options={options}
-                selected={selected}
-                onSelected={this.handleSelect}
-                disabled={disabled}
-            />
-        );
-    }
-}
+    return (
+        <AutocompleteSelector
+            placeholder={name}
+            dataSource={dataSource}
+            options={options}
+            selected={selected}
+            onSelected={handleSelect}
+            disabled={disabled}
+        />
+    );
+};
+
+export default ActionMenu;
