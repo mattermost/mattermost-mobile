@@ -17,8 +17,9 @@ import {PostImage} from '@mm-redux/types/posts';
 import {FileInfo} from '@mm-redux/types/files';
 
 import {isImage} from './file';
+import {Options, SharedElementTransition, StackAnimationOptions, ViewAnimationOptions} from 'react-native-navigation';
 
-export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
         return {};
     }
@@ -86,11 +87,10 @@ export function openGalleryAtIndex(index: number, files: FileInfo[]) {
             files,
         };
         const windowHeight = Dimensions.get('window').height;
-        const sharedElementTransitions = [];
+        const sharedElementTransitions: SharedElementTransition[] = [];
 
-        // TODO figure more concrete types
-        const contentPush = {} as any;
-        const contentPop = {} as any;
+        const contentPush = {} as ViewAnimationOptions;
+        const contentPop = {} as ViewAnimationOptions;
         const file = files[index];
 
         if (isImage(file)) {
@@ -98,14 +98,14 @@ export function openGalleryAtIndex(index: number, files: FileInfo[]) {
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
                 duration: 300,
-                interpolation: {type: 'accelerateDecelerate', factor: 9},
+                interpolation: {type: 'accelerateDecelerate'},
             });
         } else {
             contentPush.y = {
                 from: windowHeight,
                 to: 0,
                 duration: 300,
-                interpolation: {mode: 'decelerate'},
+                interpolation: {type: 'decelerate'},
             };
 
             if (Platform.OS === 'ios') {
@@ -128,7 +128,7 @@ export function openGalleryAtIndex(index: number, files: FileInfo[]) {
             }
         }
 
-        const options = {
+        const options: Options = {
             layout: {
                 backgroundColor: '#000',
                 componentBackgroundColor: '#000',
@@ -145,14 +145,13 @@ export function openGalleryAtIndex(index: number, files: FileInfo[]) {
                     waitForRender: true,
                     sharedElementTransitions,
                 },
-                pop: undefined,
             },
         };
 
         if (Object.keys(contentPush).length) {
-            options.animations.push = {
-                ...options.animations.push,
-                ...Platform.select({
+            options.animations!.push = {
+                ...options.animations!.push,
+                ...Platform.select<ViewAnimationOptions | StackAnimationOptions>({
                     android: contentPush,
                     ios: {
                         content: contentPush,
@@ -162,7 +161,7 @@ export function openGalleryAtIndex(index: number, files: FileInfo[]) {
         }
 
         if (Object.keys(contentPop).length) {
-            options.animations.pop = Platform.select({
+            options.animations!.pop = Platform.select<ViewAnimationOptions | StackAnimationOptions>({
                 android: contentPop,
                 ios: {
                     content: contentPop,
