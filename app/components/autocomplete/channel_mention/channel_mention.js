@@ -17,7 +17,6 @@ import {t} from 'app/utils/i18n';
 export default class ChannelMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            searchChannels: PropTypes.func.isRequired,
             autocompleteChannelsForSearch: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
@@ -229,7 +228,7 @@ export default class ChannelMention extends PureComponent {
                 keyExtractor={this.keyExtractor}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
-                removeClippedSubviews={true}
+                removeClippedSubviews={Platform.OS === 'android'}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
                 style={[style.listView, {maxHeight: maxListHeight}]}
