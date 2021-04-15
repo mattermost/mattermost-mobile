@@ -28,7 +28,6 @@ describe('Saved Messages', () => {
         postMessage,
     } = ChannelScreen;
     const {
-        postOptions,
         reactionPickerAction,
         saveAction,
         unsaveAction,
@@ -101,7 +100,7 @@ describe('Saved Messages', () => {
         await SavedMessagesScreen.open();
         await SavedMessagesScreen.openPostOptionsFor(post.id, message);
         await expect(reactionPickerAction).not.toBeVisible();
-        await postOptions.tap();
+        await PostOptions.close();
 
         // # Close saved messages screen
         await SavedMessagesScreen.close();
