@@ -8,10 +8,13 @@ export type GeneralState = {
     appState: boolean;
     credentials: any;
     config: Partial<Config>;
-    dataRetentionPolicy: {
-        channelPolicies: ChannelDataRetentionPolicy[];
-        globalPolicy: GlobalDataRetentionPolicy;
-        teamPolicies: TeamDataRetentionPolicy[];
+    dataRetention: {
+        policies: {
+            channels: ChannelDataRetentionPolicy[];
+            global: GlobalDataRetentionPolicy;
+            teams: TeamDataRetentionPolicy[];
+        };
+        lastCleanUpAt: Date;
     };
     deviceToken: string;
     license: any;

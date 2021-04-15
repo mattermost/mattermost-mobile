@@ -189,10 +189,12 @@ describe('cleanUpState', () => {
                     fileIdsByPostId: {},
                 },
                 general: {
-                    dataRetentionPolicy: {
-                        globalPolicy: {
-                            message_deletion_enabled: true,
-                            message_retention_cutoff: 1000,
+                    dataRetention: {
+                        policies: {
+                            global: {
+                                message_deletion_enabled: true,
+                                message_retention_cutoff: 1000,
+                            },
                         },
                     },
                 },
@@ -251,18 +253,20 @@ describe('cleanUpState', () => {
                     fileIdsByPostId: {},
                 },
                 general: {
-                    dataRetentionPolicy: {
-                        teamPolicies: [{
-                            post_duration: 5,
-                            team_id: 'team1',
-                        }, {
-                            post_duration: 10,
-                            team_id: 'team2',
-                        }],
-                        channelPolicies: [{
-                            post_duration: 2,
-                            channel_id: 'team1_channel1',
-                        }],
+                    dataRetention: {
+                        policies: {
+                            teams: [{
+                                post_duration: 5,
+                                team_id: 'team1',
+                            }, {
+                                post_duration: 10,
+                                team_id: 'team2',
+                            }],
+                            channels: [{
+                                post_duration: 2,
+                                channel_id: 'team1_channel1',
+                            }],
+                        },
                     },
                 },
                 posts: {

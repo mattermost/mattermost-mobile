@@ -173,11 +173,11 @@ describe('Actions.General', () => {
         await store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '5.35.0'});
         await Actions.getDataRetentionPolicy()(store.dispatch, store.getState);
         await TestHelper.wait(100);
-        const {dataRetentionPolicy} = store.getState().entities.general;
-        assert.deepEqual(dataRetentionPolicy, {
-            globalPolicy: globalPolicyResponse,
-            channelPolicies: [...channelPoliciesResponse1.policies, ...channelPoliciesResponse2.policies],
-            teamPolicies: [...teamPoliciesResponse1.policies, ...teamPoliciesResponse2.policies],
+        const {dataRetention} = store.getState().entities.general;
+        assert.deepEqual(dataRetention.policies, {
+            global: globalPolicyResponse,
+            channels: [...channelPoliciesResponse1.policies, ...channelPoliciesResponse2.policies],
+            teams: [...teamPoliciesResponse1.policies, ...teamPoliciesResponse2.policies],
         });
     });
 

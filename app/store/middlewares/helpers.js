@@ -39,19 +39,28 @@ export function cleanUpState(payload, keepCurrent = false) {
             files: {},
             fileIdsByPostId: {},
         },
+        general: {
+            ...payload.entities?.general,
+            dataRetention: {
+                ...payload.entities?.general?.dataRetention,
+            },
+        },
     };
 
     let globalRetentionCutoff = 0;
     const channelsRetentionCutoff = {};
 
-    const {dataRetentionPolicy} = payload.entities?.general || {};
-    if (dataRetentionPolicy) {
-        if (dataRetentionPolicy?.globalPolicy?.message_deletion_enabled) {
-            globalRetentionCutoff = dataRetentionPolicy.globalPolicy.message_retention_cutoff;
+    const {policies, lastCleanUpAt} = payload.entities?.general?.dataRetention || {};
+
+    // 1: has policies
+    // 2: was never cleaned up earlier (or) date is not today (run only once a day)
+    if (policies && (!lastCleanUpAt || (new Date(lastCleanUpAt).toDateString() !== new Date().toDateString()))) {
+        if (policies?.global?.message_deletion_enabled) {
+            globalRetentionCutoff = policies.global.message_retention_cutoff;
         }
 
         // Channels from team policies
-        dataRetentionPolicy?.teamPolicies?.forEach((policy) => {
+        policies?.teams?.forEach((policy) => {
             const channels = payload.entities?.channels?.channelsInTeam?.[policy.team_id];
             if (channels) {
                 const cutoff = getRetentionCutoffFromPolicy(policy);
@@ -62,9 +71,14 @@ export function cleanUpState(payload, keepCurrent = false) {
         });
 
         // Add/Override from channels only policies
-        dataRetentionPolicy?.channelPolicies?.forEach((policy) => {
+        policies?.channels?.forEach((policy) => {
             channelsRetentionCutoff[policy.channel_id] = getRetentionCutoffFromPolicy(policy);
         });
+
+        // Update the last cleanup date only when we have atleast one policy
+        if (globalRetentionCutoff || Object.keys(channelsRetentionCutoff).length) {
+            nextEntities.general.dataRetention.lastCleanUpAt = new Date();
+        }
     }
 
     const postIdsToKeep = [];

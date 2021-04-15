@@ -95,9 +95,9 @@ export function getDataRetentionPolicy(): ActionFunc {
                 });
             }
             data = {
-                globalPolicy,
-                teamPolicies,
-                channelPolicies,
+                global: globalPolicy,
+                teams: teamPolicies,
+                channels: channelPolicies,
             };
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
