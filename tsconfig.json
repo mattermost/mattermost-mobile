@@ -34,6 +34,7 @@
         "paths": {
             "@actions/*": ["app/actions/*"],
             "@assets/*": ["dist/assets/*"],
+            "@client/*": ["app/client/*"],
             "@components/*": ["app/components/*"],
             "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],

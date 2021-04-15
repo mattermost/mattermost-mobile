@@ -33,7 +33,7 @@ import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {t} from '@utils/i18n';

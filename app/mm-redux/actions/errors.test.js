@@ -5,7 +5,7 @@ import assert from 'assert';
 import nock from 'nock';
 
 import {logError} from '@mm-redux/actions/errors';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
