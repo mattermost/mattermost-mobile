@@ -44,9 +44,7 @@ describe('channelInfo', () => {
         currentChannelMemberCount: 2,
         currentChannelGuestCount: 0,
         currentUserId: '1234',
-        status: 'status',
         theme: Preferences.THEMES.default,
-        isBot: false,
         isTeammateGuest: false,
         isDirectMessage: false,
         actions: {

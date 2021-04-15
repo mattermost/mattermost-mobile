@@ -34,11 +34,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
         header: PropTypes.string,
         onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
-        status: PropTypes.string,
+        teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
-        isBot: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
@@ -135,11 +134,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
             memberCount,
             onPermalinkPress,
             purpose,
-            status,
+            teammateId,
             theme,
             type,
             isArchived,
-            isBot,
             isGroupConstrained,
             testID,
             timeZone,
@@ -148,9 +146,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
-        const baseTextStyle = Platform.OS === 'ios' ?
-            {...style.detail, lineHeight: 20} :
-            style.detail;
+        const baseTextStyle = Platform.select({
+            ios: {...style.detail, lineHeight: 20},
+            android: style.detail,
+        });
 
         return (
             <View style={style.container}>
@@ -159,11 +158,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         isInfo={true}
                         membersCount={memberCount}
                         size={24}
-                        status={status}
+                        userId={teammateId}
                         theme={theme}
                         type={type}
                         isArchived={isArchived}
-                        isBot={isBot}
                         testID={`${testID}.channel_icon`}
                     />
                     <Text

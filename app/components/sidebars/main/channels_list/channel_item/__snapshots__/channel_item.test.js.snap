@@ -37,12 +37,10 @@ exports[`ChannelItem should match snapshot 1`] = `
         hasDraft={false}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -153,12 +151,10 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         hasDraft={false}
         isActive={true}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -213,7 +209,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         }
         testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
-        {displayname} (you)
+        display_name
       </Text>
     </View>
   </View>
@@ -268,12 +264,10 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         hasDraft={false}
         isActive={true}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -383,12 +377,10 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         hasDraft={false}
         isActive={true}
         isArchived={true}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -487,12 +479,10 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         hasDraft={false}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -592,12 +582,10 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         hasDraft={false}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -697,12 +685,10 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         hasDraft={false}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -806,12 +792,10 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         hasDraft={true}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -913,12 +897,10 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         hasDraft={false}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {

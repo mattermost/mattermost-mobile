@@ -29,12 +29,10 @@ exports[`channel_info_header should match snapshot 1`] = `
     <ChannelIcon
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -336,12 +334,10 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
     <ChannelIcon
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -671,12 +667,10 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
     <ChannelIcon
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -978,12 +972,10 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
     <ChannelIcon
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -1313,12 +1305,10 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
     <ChannelIcon
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -1641,12 +1631,10 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
     <ChannelIcon
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {

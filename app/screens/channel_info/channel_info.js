@@ -45,11 +45,9 @@ export default class ChannelInfo extends PureComponent {
         currentChannelGuestCount: PropTypes.number,
         currentChannelMemberCount: PropTypes.number,
         currentUserId: PropTypes.string,
-        isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
-        status: PropTypes.string,
+        teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
@@ -172,9 +170,8 @@ export default class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             currentChannelGuestCount,
-            status,
+            teammateId,
             theme,
-            isBot,
             isTeammateGuest,
         } = this.props;
 
@@ -201,11 +198,10 @@ export default class ChannelInfo extends PureComponent {
                         memberCount={currentChannelMemberCount}
                         onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
-                        status={status}
+                        teammateId={teammateId}
                         theme={theme}
                         type={currentChannel.type}
                         isArchived={channelIsArchived}
-                        isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}

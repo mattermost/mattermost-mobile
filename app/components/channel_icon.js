@@ -11,6 +11,7 @@ import {
 import {General} from '@mm-redux/constants';
 
 import CompassIcon from '@components/compass_icon';
+import ProfilePicture from '@components/profile_picture';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ChannelIcon extends React.PureComponent {
@@ -21,12 +22,11 @@ export default class ChannelIcon extends React.PureComponent {
         hasDraft: PropTypes.bool,
         membersCount: PropTypes.number,
         size: PropTypes.number,
-        status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
-        isBot: PropTypes.bool.isRequired,
         testID: PropTypes.string,
+        userId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -44,11 +44,9 @@ export default class ChannelIcon extends React.PureComponent {
             hasDraft,
             membersCount,
             size,
-            status,
             theme,
             type,
             isArchived,
-            isBot,
             testID,
         } = this.props;
         const style = getStyleSheet(theme);
@@ -59,7 +57,6 @@ export default class ChannelIcon extends React.PureComponent {
         let unreadGroupBox;
         let activeGroup;
         let unreadGroup;
-        let offlineColor = changeOpacity(theme.sidebarText, 0.5);
 
         if (isUnread) {
             unreadIcon = style.iconUnread;
@@ -77,24 +74,16 @@ export default class ChannelIcon extends React.PureComponent {
             activeIcon = style.iconInfo;
             activeGroupBox = style.groupBoxInfo;
             activeGroup = style.groupInfo;
-            offlineColor = changeOpacity(theme.centerChannelColor, 0.5);
         }
 
         let icon;
+        let extraStyle;
         if (isArchived) {
             icon = (
                 <CompassIcon
                     name='archive-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
                     testID={`${testID}.archive`}
-                />
-            );
-        } else if (isBot) {
-            icon = (
-                <CompassIcon
-                    name='robot-happy'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: -1.5, top: -1}]}
-                    testID={`${testID}.bot`}
                 />
             );
         } else if (hasDraft) {
@@ -122,9 +111,10 @@ export default class ChannelIcon extends React.PureComponent {
                 />
             );
         } else if (type === General.GM_CHANNEL) {
-            const fontSize = (size - 10);
+            const fontSize = (size - 12);
+            const boxSize = (size);
             icon = (
-                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
+                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: boxSize, height: boxSize}]}>
                     <Text
                         style={[style.group, unreadGroup, activeGroup, {fontSize}]}
                         testID={`${testID}.gm_member_count`}
@@ -134,48 +124,19 @@ export default class ChannelIcon extends React.PureComponent {
                 </View>
             );
         } else if (type === General.DM_CHANNEL) {
-            switch (status) {
-            case General.AWAY:
-                icon = (
-                    <CompassIcon
-                        name='clock'
-                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
-                        testID={`${testID}.away`}
-                    />
-                );
-                break;
-            case General.DND:
-                icon = (
-                    <CompassIcon
-                        name='minus-circle'
-                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
-                        testID={`${testID}.dnd`}
-                    />
-                );
-                break;
-            case General.ONLINE:
-                icon = (
-                    <CompassIcon
-                        name='check-circle'
-                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
-                        testID={`${testID}.online`}
-                    />
-                );
-                break;
-            default:
-                icon = (
-                    <CompassIcon
-                        name='circle-outline'
-                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
-                        testID={`${testID}.offline`}
-                    />
-                );
-                break;
-            }
+            extraStyle = {marginRight: 6};
+            icon = (
+                <ProfilePicture
+                    size={size}
+                    statusSize={10}
+                    userId={this.props.userId}
+                    testID={testID}
+                />
+            );
         }
 
         return (
-            <View style={[style.container, {height: size}]}>
+            <View style={[style.container, extraStyle, {height: size}, {borderColor: 'red', borderWidth: 0}]}>
                 {icon}
             </View>
         );
@@ -187,6 +148,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             marginRight: 8,
             alignItems: 'center',
+            justifyContent: 'center',
         },
         icon: {
             color: changeOpacity(theme.sidebarText, 0.4),
@@ -201,7 +163,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
         },
         groupBox: {
-            alignSelf: 'flex-start',
             alignItems: 'center',
             backgroundColor: changeOpacity(theme.sidebarText, 0.3),
             borderColor: changeOpacity(theme.sidebarText, 0.3),
