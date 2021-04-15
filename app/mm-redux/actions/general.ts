@@ -79,16 +79,21 @@ export function getDataRetentionPolicy(): ActionFunc {
             const userId = getCurrentUserId(state);
             const globalPolicy = await Client4.getGlobalDataRetentionPolicy();
 
-            const perPage = 1;
-            const teamPolicies = await getAllGranularDataRetentionPolicies({
-                perPage,
-                userId,
-            });
-            const channelPolicies = await getAllGranularDataRetentionPolicies({
-                isChannel: true,
-                perPage,
-                userId,
-            });
+            let teamPolicies: TeamDataRetentionPolicy[] = [];
+            let channelPolicies: ChannelDataRetentionPolicy[] = [];
+
+            if (isMinimumServerVersion(getServerVersion(getState()), 5, 35)) {
+                const perPage = 1;
+                teamPolicies = await getAllGranularDataRetentionPolicies({
+                    perPage,
+                    userId,
+                });
+                channelPolicies = await getAllGranularDataRetentionPolicies({
+                    isChannel: true,
+                    perPage,
+                    userId,
+                });
+            }
             data = {
                 globalPolicy,
                 teamPolicies,

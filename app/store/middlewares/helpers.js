@@ -41,18 +41,37 @@ export function cleanUpState(payload, keepCurrent = false) {
         },
     };
 
-    let retentionPeriod = 0;
-    if (payload.entities?.general?.dataRetentionPolicy?.message_deletion_enabled) {
-        retentionPeriod = payload.entities.general.dataRetentionPolicy.message_retention_cutoff;
+    let globalRetentionCutoff = 0;
+    const channelsRetentionCutoff = {};
+
+    const {dataRetentionPolicy} = payload.entities?.general || {};
+    if (dataRetentionPolicy) {
+        if (dataRetentionPolicy?.globalPolicy?.message_deletion_enabled) {
+            globalRetentionCutoff = dataRetentionPolicy.globalPolicy.message_retention_cutoff;
+        }
+
+        // Channels from team policies
+        dataRetentionPolicy?.teamPolicies?.forEach((policy) => {
+            const channels = payload.entities?.channels?.channelsInTeam?.[policy.team_id];
+            if (channels) {
+                const cutoff = getRetentionCutoffFromPolicy(policy);
+                channels.forEach((channel_id) => {
+                    channelsRetentionCutoff[channel_id] = cutoff;
+                });
+            }
+        });
+
+        // Add/Override from channels only policies
+        dataRetentionPolicy?.channelPolicies?.forEach((policy) => {
+            channelsRetentionCutoff[policy.channel_id] = getRetentionCutoffFromPolicy(policy);
+        });
     }
 
     const postIdsToKeep = [];
 
     // Keep the last 60 posts in each recently viewed channel
-    //console.log(JSON.stringify(payload.entities.posts?.postsInChannel));
     nextEntities.posts.postsInChannel = cleanUpPostsInChannel(payload.entities.posts?.postsInChannel, lastChannelForTeam, keepCurrent ? currentChannelId : '');
 
-    //console.log(JSON.stringify(nextEntities.posts.postsInChannel));
     postIdsToKeep.push(...getAllFromPostsInChannel(nextEntities.posts.postsInChannel));
 
     // Keep any posts that appear in search results
@@ -88,7 +107,7 @@ export function cleanUpState(payload, keepCurrent = false) {
             const post = payload.entities.posts.posts[postId];
 
             if (post) {
-                if (retentionPeriod && post.create_at < retentionPeriod) {
+                if (shouldRemovePost(globalRetentionCutoff, channelsRetentionCutoff, post)) {
                     // This post has been removed by data retention, so don't keep it
                     removeFromPostsInChannel(nextEntities.posts.postsInChannel, post.channel_id, postId);
 
@@ -226,6 +245,23 @@ export function getAllFromPostsInChannel(postsInChannel) {
     }
 
     return postIds;
+}
+
+// Returns cutoff time for the policy
+function getRetentionCutoffFromPolicy(policy) {
+    const periodDate = new Date();
+    periodDate.setDate(periodDate.getDate() - policy.post_duration);
+    return periodDate.getTime();
+}
+
+function shouldRemovePost(globalRetentionCutoff, channelsRetentionCutoff, post) {
+    // If cutoff is found for the channel
+    if (channelsRetentionCutoff[post.channel_id]) {
+        return post.create_at < channelsRetentionCutoff[post.channel_id];
+    } else if (globalRetentionCutoff) {
+        return post.create_at < globalRetentionCutoff;
+    }
+    return false;
 }
 
 function removeFromPostsInChannel(postsInChannel, channelId, postId) {
