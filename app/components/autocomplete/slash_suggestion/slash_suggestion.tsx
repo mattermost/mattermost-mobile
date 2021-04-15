@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import {analytics} from '@init/analytics';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';

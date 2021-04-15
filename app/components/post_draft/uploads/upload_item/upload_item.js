@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import FileAttachmentImage from '@components/file_attachment_list/file_attachment_image';

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Server, WebSocket as MockWebSocket} from 'mock-socket';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';

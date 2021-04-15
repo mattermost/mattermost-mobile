@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {ErrorTypes} from '@mm-redux/action_types';
 import {serializeError, ErrorObject} from 'serialize-error';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {DispatchFunc, ActionFunc} from '@mm-redux/types/actions';
 import {Error} from '@mm-redux/types/errors';

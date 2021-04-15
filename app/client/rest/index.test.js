@@ -4,7 +4,8 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import {ClientError, HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
+import {HEADER_X_VERSION_ID} from '@client/rest/constants';
+import ClientError from '@client/rest/error';
 import TestHelper from 'test/test_helper';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
@@ -17,6 +18,16 @@ describe('Client4', () => {
 
     afterAll(() => {
         nock.restore();
+    });
+
+    it('should remove trailing slash while trying to setUrl', () => {
+        const client = TestHelper.createClient();
+
+        client.setUrl('http://localhost:8065/');
+        expect(client.url).toBe('http://localhost:8065');
+
+        client.setUrl('http://localhost:8065/company/mattermost/');
+        expect(client.url).toBe('http://localhost:8065/company/mattermost');
     });
 
     describe('doFetchWithResponse', () => {

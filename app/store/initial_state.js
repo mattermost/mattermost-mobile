@@ -21,7 +21,6 @@ const state = {
         users: {
             currentUserId: '',
             mySessions: [],
-            myAudits: [],
             profiles: {},
             profilesInTeam: {},
             profilesInChannel: {},

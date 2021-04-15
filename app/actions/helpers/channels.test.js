@@ -3,7 +3,7 @@
 
 /* eslint-disable no-import-assign */
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import {Preferences} from '@mm-redux/constants';
 import {PreferenceTypes} from '@mm-redux/action_types';
