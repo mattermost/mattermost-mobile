@@ -13,7 +13,7 @@ import {scheduleExpiredNotification} from '@actions/views/session';
 import {ssoLogin} from '@actions/views/user';
 import emmProvider from '@init/emm_provider';
 import {DispatchFunc} from '@mm-redux/types/actions';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {ErrorApi} from '@mm-redux/types/client4';

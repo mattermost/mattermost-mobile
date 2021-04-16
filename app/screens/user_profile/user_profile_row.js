@@ -77,7 +77,10 @@ function userProfileRow(props) {
     );
 
     const RowComponent = (
-        <View style={style.wrapper}>
+        <View
+            style={style.wrapper}
+            testID={testID}
+        >
             <View style={style.container}>
                 {iconComponent}
                 <FormattedText

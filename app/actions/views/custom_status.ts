@@ -3,7 +3,7 @@
 import {UserCustomStatus} from '@mm-redux/types/users';
 import {ActionFunc, DispatchFunc, batchActions, GetStateFunc} from '@mm-redux/types/actions';
 import {bindClientFunc} from '@mm-redux/actions/helpers';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {UserTypes} from '@mm-redux/action_types';
 import {logError} from '@mm-redux/actions/errors';
 import {getCurrentUser} from '@mm-redux/selectors/entities/common';

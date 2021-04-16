@@ -2064,17 +2064,12 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        Array [
-          Object {
-            "color": "#3d3c40",
-            "flex": 1,
-            "fontSize": 15,
-            "fontWeight": "600",
-          },
-          Object {
-            "width": "80%",
-          },
-        ]
+        Object {
+          "color": "#3d3c40",
+          "flex": 1,
+          "fontSize": 15,
+          "width": "80%",
+        }
       }
     >
       In a meeting

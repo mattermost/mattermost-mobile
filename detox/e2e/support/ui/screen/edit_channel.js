@@ -28,6 +28,7 @@ class EditChannelScreen {
 
     open = async () => {
         // # Open edit channel screen
+        await ChannelInfoScreen.channelInfoScrollView.scrollTo('bottom');
         await ChannelInfoScreen.editChannelAction.tap();
 
         return this.toBeVisible();

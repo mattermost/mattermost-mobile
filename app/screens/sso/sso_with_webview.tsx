@@ -10,7 +10,7 @@ import {WebView} from 'react-native-webview';
 import {WebViewErrorEvent, WebViewMessageEvent, WebViewNavigation, WebViewNavigationEvent} from 'react-native-webview/lib/WebViewTypes';
 import urlParse from 'url-parse';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import type {Theme} from '@mm-redux/types/preferences';
 
 import Loading from 'app/components/loading';

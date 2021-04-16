@@ -44,10 +44,6 @@ export function getUserSessions(state: GlobalState): Array<any> {
     return state.entities.users.mySessions;
 }
 
-export function getUserAudits(state: GlobalState): Array<any> {
-    return state.entities.users.myAudits;
-}
-
 export function getUser(state: GlobalState, id: $ID<UserProfile>): UserProfile {
     return state.entities.users.profiles[id];
 }
@@ -289,10 +285,6 @@ export const getProfilesWithoutTeam: (a: GlobalState, filters?: Filters) => Arra
 );
 export function getStatusForUserId(state: GlobalState, userId: $ID<UserProfile>): string {
     return getUserStatuses(state)[userId];
-}
-
-export function getTotalUsersStats(state: GlobalState): any {
-    return state.entities.users.stats;
 }
 
 export function searchProfiles(state: GlobalState, term: string, skipCurrent = false, filters?: Filters): Array<UserProfile> {

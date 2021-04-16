@@ -50,7 +50,7 @@ describe('Guest Experience', () => {
         await expect(postListPostItemHeaderGuestTag).not.toBeVisible();
     });
 
-    xit('MM-T1397 Guest tag in search in:', async () => { // Disabled due to https://mattermost.atlassian.net/browse/MM-33854
+    it('MM-T1397 Guest tag in search in:', async () => {
         const {
             getSearchResultPostItem,
             searchInSection,

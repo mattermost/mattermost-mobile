@@ -71,7 +71,9 @@ exports[`user_profile should match snapshot 1`] = `
         }
       }
     >
-      <View>
+      <View
+        testID="user_profile.display_block"
+      >
         <Text
           style={
             Object {
@@ -83,6 +85,7 @@ exports[`user_profile should match snapshot 1`] = `
               "textTransform": "uppercase",
             }
           }
+          testID="user_profile.display_block.nickname.label"
         />
         <Text
           style={
@@ -91,6 +94,7 @@ exports[`user_profile should match snapshot 1`] = `
               "fontSize": 15,
             }
           }
+          testID="user_profile.display_block.nickname.value"
         >
           nick
         </Text>
@@ -276,7 +280,9 @@ exports[`user_profile should match snapshot with custom status 1`] = `
           </Text>
         </View>
       </View>
-      <View>
+      <View
+        testID="user_profile.display_block"
+      >
         <Text
           style={
             Object {
@@ -288,6 +294,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
               "textTransform": "uppercase",
             }
           }
+          testID="user_profile.display_block.nickname.label"
         />
         <Text
           style={
@@ -296,6 +303,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
               "fontSize": 15,
             }
           }
+          testID="user_profile.display_block.nickname.value"
         >
           nick
         </Text>
@@ -524,7 +532,9 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
           </View>
         </View>
       </View>
-      <View>
+      <View
+        testID="user_profile.display_block"
+      >
         <Text
           style={
             Object {
@@ -536,6 +546,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               "textTransform": "uppercase",
             }
           }
+          testID="user_profile.display_block.nickname.label"
         />
         <Text
           style={
@@ -544,6 +555,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               "fontSize": 15,
             }
           }
+          testID="user_profile.display_block.nickname.value"
         >
           nick
         </Text>
