@@ -30,7 +30,7 @@ const mockConfigRequest = (config = {}) => {
 
 const mockChanelsRequest = (teamId, channels = []) => {
     nock(Client4.getUserRoute('me')).
-        get(`/teams/${teamId}/channels?include_deleted=true`).
+        get(`/teams/${teamId}/channels?include_deleted=true&last_delete_at=0`).
         reply(200, channels);
 };
 
