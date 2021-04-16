@@ -130,7 +130,7 @@ export default class ChannelIcon extends React.PureComponent {
                     size={size}
                     statusSize={10}
                     userId={this.props.userId}
-                    testID={testID}
+                    testID={`${testID}.profile_picture`}
                 />
             );
         }
