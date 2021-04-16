@@ -12,6 +12,9 @@ export function setCustomStatus(customStatus: UserCustomStatus): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const user = getCurrentUser(getState());
         const oldCustomStatus = user?.props?.customStatus;
+        if (!user.props) {
+            user.props = {};
+        }
         user.props.customStatus = JSON.stringify(customStatus);
         dispatch({type: UserTypes.RECEIVED_ME, data: user});
 

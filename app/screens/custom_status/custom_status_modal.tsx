@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {View, Text, TouchableOpacity, TextInput, Keyboard} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options} from 'react-native-navigation';
 
 import StatusBar from '@components/status_bar';
@@ -14,7 +13,7 @@ import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {Theme} from '@mm-redux/types/preferences';
-import {CustomStatus} from '@constants';
+import {CustomStatus, DeviceTypes} from '@constants';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
@@ -39,6 +38,7 @@ interface Props extends NavigationComponentProps {
     theme: Theme;
     customStatus: UserCustomStatus;
     recentCustomStatuses: UserCustomStatus[];
+    isLandscape: boolean;
     actions: {
         setCustomStatus: (customStatus: UserCustomStatus) => void;
         unsetCustomStatus: () => void;
@@ -231,7 +231,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {emoji, text} = this.state;
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
 
         const isStatusSet = emoji || text;
         const style = getStyleSheet(theme);
@@ -291,21 +291,33 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             </View>
         );
 
+        let keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 110 : 60;
+        if (isLandscape) {
+            keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 10;
+        }
+
         return (
             <SafeAreaView
                 testID='custom_status.screen'
                 style={style.container}
             >
-                <StatusBar/>
-                <KeyboardAwareScrollView
-                    bounces={false}
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={style.container}
+                    keyboardVerticalOffset={keyboardOffset}
+                    enabled={Platform.OS === 'ios'}
                 >
-                    <View style={style.scrollView}>
-                        {customStatusInput}
-                        {this.renderRecentCustomStatuses()}
-                        {this.renderCustomStatusSuggestions()}
-                    </View>
-                </KeyboardAwareScrollView>
+                    <ScrollView
+                        bounces={false}
+                    >
+                        <StatusBar/>
+                        <View style={style.scrollView}>
+                            {customStatusInput}
+                            {this.renderRecentCustomStatuses()}
+                            {this.renderCustomStatusSuggestions()}
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </SafeAreaView>
         );
     }

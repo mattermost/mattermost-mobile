@@ -10,6 +10,7 @@ import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@act
 
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {GenericAction} from '@mm-redux/types/actions';
+import {isLandscape} from '@selectors/device';
 
 function mapStateToProps(state: GlobalState) {
     const getCustomStatus = makeGetCustomStatus();
@@ -21,6 +22,7 @@ function mapStateToProps(state: GlobalState) {
         customStatus,
         recentCustomStatuses,
         theme,
+        isLandscape: isLandscape(state),
     };
 }
 

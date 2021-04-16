@@ -195,7 +195,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             />
                         </Text>
                         <Text
-                            style={[style.channelName, style.customStatusText]}
+                            style={style.customStatusText}
                             ellipsizeMode='tail'
                             numberOfLines={1}
                         >
@@ -308,6 +308,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 10,
         },
         customStatusText: {
+            flex: 1,
+            fontSize: 15,
+            color: theme.centerChannelColor,
             width: '80%',
         },
         channelNameContainer: {

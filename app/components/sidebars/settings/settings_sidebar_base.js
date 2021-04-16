@@ -61,13 +61,18 @@ export default class SettingsSidebarBase extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {setStatusRequestStatus, clearStatusRequestStatus} = this.props;
+        const {setStatusRequestStatus, clearStatusRequestStatus, customStatus} = this.props;
+
         if (prevProps.clearStatusRequestStatus !== clearStatusRequestStatus) {
             this.handleClearStatusRequestStatusChange();
         }
 
         if (prevProps.setStatusRequestStatus !== setStatusRequestStatus) {
             this.handleSetStatusRequestStatusChange();
+        }
+
+        if (prevProps.clearStatusRequestStatus === clearStatusRequestStatus && prevProps.setStatusRequestStatus === setStatusRequestStatus) {
+            this.handleCustomStatusChange(prevProps.customStatus, customStatus);
         }
     }
 
@@ -103,6 +108,19 @@ export default class SettingsSidebarBase extends PureComponent {
                 showStatus: true,
                 showRetryMessage: true,
             });
+        }
+    }
+
+    handleCustomStatusChange = (prevCustomStatus, customStatus) => {
+        const isStatusSet = customStatus.emoji;
+        if (isStatusSet) {
+            const isStatusChanged = prevCustomStatus.emoji !== customStatus.emoji || prevCustomStatus.text !== customStatus.text;
+            if (isStatusChanged) {
+                this.setState({
+                    showStatus: true,
+                    showRetryMessage: false,
+                });
+            }
         }
     }
 
@@ -264,7 +282,7 @@ export default class SettingsSidebarBase extends PureComponent {
             return null;
         }
 
-        const isStatusSet = customStatus && customStatus.emoji && showStatus;
+        const isStatusSet = customStatus.emoji && showStatus;
         const labelComponent = isStatusSet ? (
             <CustomStatusText
                 text={customStatus.text}
