@@ -16,7 +16,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import FastImage, {Source} from 'react-native-fast-image';
 import {isValidUrl} from '@utils/url';
 
-function createTouchableComponent(children: JSX.Element, action: () => void) {
+function createTouchableComponent(children: React.ReactNode, action: () => void) {
     return (
         <TouchableHighlight onPress={action}>
             {children}

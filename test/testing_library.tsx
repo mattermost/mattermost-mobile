@@ -15,7 +15,7 @@ import {GlobalState} from '@mm-redux/types/store';
 const mockStore = configureMockStore<GlobalState, AnyAction>([thunk]);
 const defaultStore = mockStore(intitialState);
 
-export function renderWithIntl(component: JSX.Element, locale = 'en') {
+export function renderWithIntl(component: React.ReactNode, locale = 'en') {
     return render(
         <IntlProvider locale={locale}>
             {component}
@@ -23,7 +23,7 @@ export function renderWithIntl(component: JSX.Element, locale = 'en') {
     );
 }
 
-export function renderWithRedux(component: JSX.Element, store = defaultStore) {
+export function renderWithRedux(component: React.ReactNode, store = defaultStore) {
     return render(
         <Provider store={store}>
             {component}
@@ -31,7 +31,7 @@ export function renderWithRedux(component: JSX.Element, store = defaultStore) {
     );
 }
 
-export function renderWithReduxIntl(component: JSX.Element, store: Store<GlobalState, AnyAction> = defaultStore, locale = 'en') {
+export function renderWithReduxIntl(component: React.ReactNode, store: Store<GlobalState, AnyAction> = defaultStore, locale = 'en') {
     return render(
         <Provider store={store}>
             <IntlProvider locale={locale}>
