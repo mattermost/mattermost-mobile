@@ -72,10 +72,6 @@ const Emoji: React.FC<Props> = (props: Props) => {
     const width = size;
     const height = size;
 
-    // Android can't change the size of an image after its first render, so
-    // force a new image to be rendered when the size changes
-    const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
-
     if (unicode && !imageUrl) {
         const codeArray = unicode.split('-');
         const code = codeArray.reduce((acc, c) => {
@@ -95,6 +91,10 @@ const Emoji: React.FC<Props> = (props: Props) => {
     if (!imageUrl) {
         return null;
     }
+
+    // Android can't change the size of an image after its first render, so
+    // force a new image to be rendered when the size changes
+    const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
 
     return (
         <FastImage

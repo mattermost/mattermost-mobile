@@ -11,8 +11,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     text?: string;
-        icon?: string;
-        theme: Theme;
+    icon?: string;
+    theme: Theme;
 }
 
 export default function AttachmentFooter(props: Props) {
