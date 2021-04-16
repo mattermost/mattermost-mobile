@@ -7,8 +7,9 @@ import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
 import LocalConfig from '@assets/config';
-import {Client4} from '@mm-redux/client';
-import {ClientError, HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
+import {Client4} from '@client/rest';
+import {HEADER_TOKEN, HEADER_X_CLUSTER_ID, HEADER_X_VERSION_ID} from '@client/rest/constants';
+import ClientError from '@client/rest/error';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
 import {t} from '@utils/i18n';
@@ -18,8 +19,6 @@ import mattermostManaged from 'app/mattermost_managed';
 
 /* eslint-disable no-throw-literal */
 
-export const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
-export const HEADER_TOKEN = 'Token';
 const DEFAULT_TIMEOUT = 10000;
 
 let managedConfig;

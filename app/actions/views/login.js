@@ -7,7 +7,7 @@ import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {GeneralTypes} from '@mm-redux/action_types';
 import {getSessions} from '@mm-redux/actions/users';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';

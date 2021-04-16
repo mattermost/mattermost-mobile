@@ -15,7 +15,7 @@ import {
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {getLicense} from '@mm-redux/selectors/entities/general';
 import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';

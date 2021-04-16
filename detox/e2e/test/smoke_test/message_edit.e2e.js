@@ -18,6 +18,17 @@ import {
 } from '@support/server_api';
 
 describe('Message Edit', () => {
+    const testMessage = Date.now().toString();
+    const additionalText = ' additional text';
+    const {
+        getPostListPostItem,
+        openPostOptionsFor,
+        postMessage,
+    } = ChannelScreen;
+    const {
+        messageInput,
+        saveButton,
+    } = EditPostScreen;
     let testChannel;
 
     beforeAll(async () => {
@@ -33,19 +44,8 @@ describe('Message Edit', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T3228 should be able to edit a message and save', async () => {
-        const {
-            getPostListPostItem,
-            openPostOptionsFor,
-            postMessage,
-        } = ChannelScreen;
-        const {
-            messageInput,
-            saveButton,
-        } = EditPostScreen;
-
+    it('MM-T3227 should be able to edit a message and cancel', async () => {
         // # Post a message
-        const testMessage = Date.now().toString();
         await postMessage(testMessage);
 
         // # Open edit post screen
@@ -53,8 +53,25 @@ describe('Message Edit', () => {
         await openPostOptionsFor(post.id, testMessage);
         await EditPostScreen.open();
 
+        // # Edit post and cancel
+        await messageInput.tap();
+        await messageInput.typeText(additionalText);
+        await EditPostScreen.close();
+
+        // * Verify post is not edited
+        await ChannelScreen.toBeVisible();
+        const {postListPostItem} = await getPostListPostItem(post.id, testMessage);
+        await expect(postListPostItem).toBeVisible();
+    });
+
+    it('MM-T3228 should be able to edit a message and save', async () => {
+        // # Open edit post screen
+        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        await openPostOptionsFor(post.id, testMessage);
+        await EditPostScreen.open();
+
         // # Edit post and save
-        const additionalText = ' additional text';
+        await messageInput.tap();
         await messageInput.typeText(additionalText);
         await saveButton.tap();
 

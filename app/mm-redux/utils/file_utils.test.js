@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import * as FileUtils from '@mm-redux/utils/file_utils';
 

@@ -2,11 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {
-    Alert,
     MainSidebar,
     SearchBar,
 } from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
 
 class ChannelAddMembersScreen {
     testID = {
@@ -70,31 +68,6 @@ class ChannelAddMembersScreen {
     back = async () => {
         await this.backButton.tap();
         await expect(this.channelAddMembersScreen).not.toBeVisible();
-    }
-
-    removeMembers = async (displayUsernameList, {confirm = true} = {}) => {
-        displayUsernameList.forEach(async (displayUsername) => {
-            await this.getUserByDisplayUsername(`@${displayUsername}`).tap();
-        });
-        await wait(timeouts.ONE_SEC);
-        await this.removeButton.tap();
-        const {
-            removeMembersTitle,
-            noButton,
-            yesButton,
-        } = Alert;
-        await expect(removeMembersTitle).toBeVisible();
-        await expect(noButton).toBeVisible();
-        await expect(yesButton).toBeVisible();
-        if (confirm) {
-            yesButton.tap();
-            await wait(timeouts.ONE_SEC);
-            await expect(this.channelAddMembersScreen).not.toBeVisible();
-        } else {
-            noButton.tap();
-            await wait(timeouts.ONE_SEC);
-            await expect(this.channelAddMembersScreen).toBeVisible();
-        }
     }
 
     hasUserDisplayUsernameAtIndex = async (index, displayUsername) => {

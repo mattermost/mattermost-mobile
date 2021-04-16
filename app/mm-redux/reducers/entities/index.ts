@@ -14,10 +14,8 @@ import typing from './typing';
 import integrations from './integrations';
 import emojis from './emojis';
 import gifs from './gifs';
-import jobs from './jobs';
 import search from './search';
 import roles from './roles';
-import schemes from './schemes';
 import groups from './groups';
 import bots from './bots';
 import channelCategories from './channel_categories';
@@ -35,10 +33,8 @@ export default combineReducers({
     integrations,
     emojis,
     gifs,
-    jobs,
     search,
     roles,
-    schemes,
     groups,
     bots,
     channelCategories,

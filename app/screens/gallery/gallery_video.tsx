@@ -9,7 +9,7 @@ import {TapGestureHandler, State, TapGestureHandlerStateChangeEvent} from 'react
 import Video, {OnLoadData, OnProgressData} from 'react-native-video';
 
 import {DeviceTypes} from '@constants';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getLocalPath} from '@utils/file';
 
 import {GalleryItemProps} from 'types/screens/gallery';

@@ -6,7 +6,7 @@ import nock from 'nock';
 
 import * as Actions from '@mm-redux/actions/preferences';
 import {login} from '@mm-redux/actions/users';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {Preferences} from '../constants';
 
 import TestHelper from 'test/test_helper';

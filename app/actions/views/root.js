@@ -10,7 +10,7 @@ import {fetchMyChannelsAndMembers, getChannelAndMyMember} from '@mm-redux/action
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import initialState from '@store/initial_state';

@@ -3,17 +3,17 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {SectionList} from 'react-native';
+import {Platform, SectionList} from 'react-native';
 
+import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
+import AtMentionItem from '@components/autocomplete/at_mention_item';
+import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
+import SpecialMentionItem from '@components/autocomplete/special_mention_item';
+import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import {RequestStatus} from '@mm-redux/constants';
-
-import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
-import AtMentionItem from 'app/components/autocomplete/at_mention_item';
-import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
-import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
-import GroupMentionItem from 'app/components/autocomplete/at_mention_group/at_mention_group';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
+import {debounce} from '@mm-redux/actions/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
 
 export default class AtMention extends PureComponent {
     static propTypes = {
@@ -54,9 +54,15 @@ export default class AtMention extends PureComponent {
             sections: [],
         };
     }
+
+    runSearch = debounce((currentTeamId, channelId, matchTerm) => {
+        this.props.actions.autocompleteUsers(matchTerm, currentTeamId, channelId);
+    }, 200);
+
     updateSections(sections) {
         this.setState({sections});
     }
+
     componentDidUpdate(prevProps, prevState) {
         if (this.props.matchTerm !== prevProps.matchTerm) {
             if (this.props.matchTerm === null) {
@@ -68,9 +74,9 @@ export default class AtMention extends PureComponent {
                 this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
 
                 // Update user autocomplete list with results of server request
-                const {currentTeamId, currentChannelId} = this.props;
+                const {currentTeamId, currentChannelId, matchTerm} = this.props;
                 const channelId = this.props.isSearch ? '' : currentChannelId;
-                this.props.actions.autocompleteUsers(this.props.matchTerm, currentTeamId, channelId);
+                this.runSearch(currentTeamId, channelId, matchTerm);
             }
         }
         if (this.props.matchTerm !== null && this.props.matchTerm === prevProps.matchTerm) {
@@ -255,7 +261,7 @@ export default class AtMention extends PureComponent {
                 keyExtractor={this.keyExtractor}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
-                removeClippedSubviews={true}
+                removeClippedSubviews={Platform.OS === 'android'}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
                 style={[style.listView, {maxHeight: maxListHeight}]}

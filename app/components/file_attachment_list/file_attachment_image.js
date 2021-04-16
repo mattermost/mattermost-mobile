@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import ProgressiveImage from '@components/progressive_image';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {changeOpacity} from '@utils/theme';
 
 import FileAttachmentIcon from './file_attachment_icon';
