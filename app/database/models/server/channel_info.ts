@@ -45,5 +45,5 @@ export default class ChannelInfo extends Model {
     @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

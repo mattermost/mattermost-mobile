@@ -34,7 +34,7 @@ const {
  * preparePreferenceRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareTeamMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -62,7 +62,7 @@ export const prepareTeamMembershipRecord = ({action, database, value}: DataFacto
  * prepareTeamRecord: Prepares record of entity 'TEAM' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareTeamRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -97,7 +97,7 @@ export const prepareTeamRecord = ({action, database, value}: DataFactoryArgs) =>
  * prepareTeamChannelHistoryRecord: Prepares record of entity 'TEAM_CHANNEL_HISTORY' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareTeamChannelHistoryRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -124,7 +124,7 @@ export const prepareTeamChannelHistoryRecord = ({action, database, value}: DataF
  * prepareTeamSearchHistoryRecord: Prepares record of entity 'TEAM_SEARCH_HISTORY' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareTeamSearchHistoryRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -153,7 +153,7 @@ export const prepareTeamSearchHistoryRecord = ({action, database, value}: DataFa
  * prepareSlashCommandRecord: Prepares record of entity 'SLASH_COMMAND' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareSlashCommandRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -188,7 +188,7 @@ export const prepareSlashCommandRecord = ({action, database, value}: DataFactory
  * prepareMyTeamRecord: Prepares record of entity 'MY_TEAM' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareMyTeamRecord = ({action, database, value}: DataFactoryArgs) => {

@@ -27,7 +27,7 @@ const {
  * prepareChannelRecord: Prepares record of entity 'CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareChannelRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -61,7 +61,7 @@ export const prepareChannelRecord = ({action, database, value}: DataFactoryArgs)
  * prepareMyChannelSettingsRecord: Prepares record of entity 'MY_CHANNEL_SETTINGS' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareMyChannelSettingsRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -88,7 +88,7 @@ export const prepareMyChannelSettingsRecord = ({action, database, value}: DataFa
  * prepareChannelInfoRecord: Prepares record of entity 'CHANNEL_INFO' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareChannelInfoRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -119,7 +119,7 @@ export const prepareChannelInfoRecord = ({action, database, value}: DataFactoryA
  * prepareMyChannelRecord: Prepares record of entity 'MY_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareMyChannelRecord = ({action, database, value}: DataFactoryArgs) => {

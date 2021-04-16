@@ -10,7 +10,7 @@ import {
     prepareSystemRecord,
     prepareTermsOfServiceRecord,
 } from '@database/operator/prepareRecords/general';
-import {createConnection} from '@database/operator/prepareRecords/utils';
+import {createConnection} from '@database/operator/utils/create_connection';
 import DatabaseManager from '@database/manager';
 import {OperationType} from '@typings/database/enums';
 
@@ -85,7 +85,7 @@ describe('*** Isolated Prepare Records Test ***', () => {
     it('=> prepareRoleRecord: should return an array of type Role', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('isolated_prepare_records');
+        const database = await createConnection({databaseName: 'isolated_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareRoleRecord({
@@ -108,7 +108,7 @@ describe('*** Isolated Prepare Records Test ***', () => {
     it('=> prepareSystemRecord: should return an array of type System', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('isolated_prepare_records');
+        const database = await createConnection({databaseName: 'isolated_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareSystemRecord({
@@ -127,7 +127,7 @@ describe('*** Isolated Prepare Records Test ***', () => {
     it('=> prepareTermsOfServiceRecord: should return an array of type TermsOfService', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('isolated_prepare_records');
+        const database = await createConnection({databaseName: 'isolated_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareTermsOfServiceRecord({
@@ -146,15 +146,13 @@ describe('*** Isolated Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe(
-            'TermsOfService',
-        );
+        expect(preparedRecords!.collection.modelClass.name).toBe('TermsOfService');
     });
 
     it('=> prepareCustomEmojiRecord: should return an array of type CustomEmoji', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('isolated_prepare_records');
+        const database = await createConnection({databaseName: 'isolated_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareCustomEmojiRecord({

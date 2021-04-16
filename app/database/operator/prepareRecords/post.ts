@@ -34,7 +34,7 @@ const {
  * preparePostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const preparePostRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -74,7 +74,7 @@ export const preparePostRecord = ({action, database, value}: DataFactoryArgs) =>
  * preparePostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const preparePostInThreadRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -101,7 +101,7 @@ export const preparePostInThreadRecord = ({action, database, value}: DataFactory
  * prepareFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareFileRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -136,7 +136,7 @@ export const prepareFileRecord = ({action, database, value}: DataFactoryArgs) =>
  * preparePostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const preparePostMetadataRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -164,7 +164,7 @@ export const preparePostMetadataRecord = ({action, database, value}: DataFactory
  * prepareDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareDraftRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -193,7 +193,7 @@ export const prepareDraftRecord = ({action, database, value}: DataFactoryArgs) =
  * preparePostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const preparePostsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {

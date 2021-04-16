@@ -3,7 +3,7 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {MatchExistingRecord, SanitizeReactionsArgs} from '@typings/database/database';
+import {RecordPair, SanitizeReactionsArgs} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 const {REACTION} = MM_TABLES.SERVER;
@@ -27,7 +27,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
     const similarObjects: Reaction[] = [];
 
-    const createReactions: MatchExistingRecord[] = [];
+    const createReactions: RecordPair[] = [];
 
     const emojiSet = new Set();
 

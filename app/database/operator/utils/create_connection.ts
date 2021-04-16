@@ -6,7 +6,7 @@ import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
-export const createConnection = async (databaseName: string) => {
+export const createConnection = async ({databaseName = 'db_name', setActive = false}) => {
     const serverUrl = 'https://appv2.mattermost.com';
     const database = await DatabaseManager.createDatabaseConnection({
         shouldAddToDefaultDatabase: true,
@@ -17,6 +17,13 @@ export const createConnection = async (databaseName: string) => {
             serverUrl,
         },
     });
+
+    if (setActive) {
+        await DatabaseManager.setActiveServerDatabase({
+            displayName: databaseName,
+            serverUrl,
+        });
+    }
 
     return database;
 };

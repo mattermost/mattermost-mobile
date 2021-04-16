@@ -44,10 +44,10 @@ export default class TeamMembership extends Model {
     /**
      * getAllTeamsForUser - Retrieves all the teams that the user is part of
      */
-    @lazy getAllTeamsForUser = this.collections.get(TEAM).query(Q.on(USER, 'id', this.userId)) as Query<Team>
+    @lazy getAllTeamsForUser = this.collections.get(TEAM).query(Q.on(USER, 'id', this.userId)) as Query<Team>;
 
     /**
      * getAllUsersInTeam - Retrieves all the users who are part of this team
      */
-    @lazy getAllUsersInTeam = this.collections.get(USER).query(Q.on(TEAM, 'id', this.teamId)) as Query<User>
+    @lazy getAllUsersInTeam = this.collections.get(USER).query(Q.on(TEAM, 'id', this.teamId)) as Query<User>;
 }

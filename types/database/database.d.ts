@@ -474,8 +474,6 @@ export type RawValue =
   | RawTermsOfService
   | RawUser;
 
-export type MatchExistingRecord = { record?: Model; raw: RawValue };
-
 export type DataFactoryArgs = {
   action: string;
   database: Database;

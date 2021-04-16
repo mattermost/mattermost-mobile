@@ -27,7 +27,7 @@ const {
  * prepareGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareGroupMembershipRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -55,7 +55,7 @@ export const prepareGroupMembershipRecord = ({action, database, value}: DataFact
  * prepareGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareGroupRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -83,7 +83,7 @@ export const prepareGroupRecord = ({action, database, value}: DataFactoryArgs) =
  * prepareGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareGroupsInTeamRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -110,7 +110,7 @@ export const prepareGroupsInTeamRecord = ({action, database, value}: DataFactory
  * prepareGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_CHANNEL' from the SERVER database for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareGroupsInChannelRecord = ({action, database, value}: DataFactoryArgs) => {

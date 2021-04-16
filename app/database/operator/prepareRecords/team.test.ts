@@ -9,14 +9,14 @@ import {
     prepareTeamRecord,
     prepareTeamSearchHistoryRecord,
 } from '@database/operator/prepareRecords/team';
-import {createConnection} from '@database/operator/prepareRecords/utils';
+import {createConnection} from '@database/operator/utils/create_connection';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** TEAM Prepare Records Test ***', () => {
     it('=> prepareSlashCommandRecord: should return an array of type SlashCommand', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('team_prepare_records');
+        const database = await createConnection({databaseName: 'team_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareSlashCommandRecord({
@@ -53,7 +53,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
     it('=> prepareMyTeamRecord: should return an array of type MyTeam', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('team_prepare_records');
+        const database = await createConnection({databaseName: 'team_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareMyTeamRecord({
@@ -77,7 +77,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
     it('=> prepareTeamRecord: should return an array of type Team', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('team_prepare_records');
+        const database = await createConnection({databaseName: 'team_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareTeamRecord({
@@ -113,7 +113,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
     it('=> prepareTeamChannelHistoryRecord: should return an array of type Team', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('team_prepare_records');
+        const database = await createConnection({databaseName: 'team_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareTeamChannelHistoryRecord({
@@ -135,7 +135,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
     it('=> prepareTeamSearchHistoryRecord: should return an array of type TeamSearchHistory', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('team_prepare_records');
+        const database = await createConnection({databaseName: 'team_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareTeamSearchHistoryRecord({
@@ -159,7 +159,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
     it('=> prepareTeamMembershipRecord: should return an array of type TeamMembership', async () => {
         expect.assertions(3);
 
-        const database = await createConnection('team_prepare_records');
+        const database = await createConnection({databaseName: 'team_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareTeamMembershipRecord({

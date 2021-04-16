@@ -44,10 +44,10 @@ export default class ChannelMembership extends Model {
     /**
      * getAllChannelsForUser - Retrieves all the channels that the user is part of
      */
-    @lazy getAllChannelsForUser = this.collections.get(CHANNEL).query(Q.on(USER, 'id', this.userId)) as Query<Channel>
+    @lazy getAllChannelsForUser = this.collections.get(CHANNEL).query(Q.on(USER, 'id', this.userId)) as Query<Channel>;
 
     /**
      * getAllUsersInChannel - Retrieves all the users who are part of this channel
      */
-    @lazy getAllUsersInChannel = this.collections.get(USER).query(Q.on(CHANNEL, 'id', this.channelId)) as Query<User>
+    @lazy getAllUsersInChannel = this.collections.get(USER).query(Q.on(CHANNEL, 'id', this.channelId)) as Query<User>;
 }

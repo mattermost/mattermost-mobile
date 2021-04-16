@@ -35,7 +35,7 @@ const {
  * prepareAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareAppRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -63,7 +63,7 @@ export const prepareAppRecord = ({action, database, value}: DataFactoryArgs) => 
  * prepareGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareGlobalRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -90,7 +90,7 @@ export const prepareGlobalRecord = ({action, database, value}: DataFactoryArgs) 
  * prepareServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareServersRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -120,7 +120,7 @@ export const prepareServersRecord = ({action, database, value}: DataFactoryArgs)
  * prepareCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareCustomEmojiRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -147,7 +147,7 @@ export const prepareCustomEmojiRecord = ({action, database, value}: DataFactoryA
  * prepareRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareRoleRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -175,7 +175,7 @@ export const prepareRoleRecord = ({action, database, value}: DataFactoryArgs) =>
  * prepareSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareSystemRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -203,7 +203,7 @@ export const prepareSystemRecord = ({action, database, value}: DataFactoryArgs) 
  * prepareTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareTermsOfServiceRecord = ({action, database, value}: DataFactoryArgs) => {

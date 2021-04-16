@@ -21,7 +21,7 @@ const {
  * prepareReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareReactionRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -51,7 +51,7 @@ export const prepareReactionRecord = ({action, database, value}: DataFactoryArgs
  * prepareUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareUserRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -94,7 +94,7 @@ export const prepareUserRecord = ({action, database, value}: DataFactoryArgs) =>
  * preparePreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const preparePreferenceRecord = ({action, database, value}: DataFactoryArgs) => {
@@ -124,7 +124,7 @@ export const preparePreferenceRecord = ({action, database, value}: DataFactoryAr
  * prepareChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
  * @param {DataFactoryArgs} operator
  * @param {Database} operator.database
- * @param {MatchExistingRecord} operator.value
+ * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
 export const prepareChannelMembershipRecord = ({action, database, value}: DataFactoryArgs) => {

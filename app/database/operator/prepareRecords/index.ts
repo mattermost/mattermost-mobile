@@ -12,7 +12,7 @@ import {OperationType} from '@typings/database/enums';
  * @param {DataFactoryArgs} operatorBase
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
- * @param {MatchExistingRecord} operatorBase.value
+ * @param {RecordPair} operatorBase.value
  * @param {((DataFactoryArgs) => void)} operatorBase.generator
  * @returns {Promise<Model>}
  */

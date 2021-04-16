@@ -44,10 +44,10 @@ export default class GroupMembership extends Model {
     /**
      * getAllGroupsForUser : Retrieves all the groups that the user is part of
      */
-    @lazy getAllGroupsForUser = this.collections.get(GROUP).query(Q.on(USER, 'id', this.userId)) as Query<Group>
+    @lazy getAllGroupsForUser = this.collections.get(GROUP).query(Q.on(USER, 'id', this.userId)) as Query<Group>;
 
     /**
      * getAllUsersInGroup : Retrieves all the users who are part of this group
      */
-    @lazy getAllUsersInGroup = this.collections.get(USER).query(Q.on(GROUP, 'id', this.groupId)) as Query<User>
+    @lazy getAllUsersInGroup = this.collections.get(USER).query(Q.on(GROUP, 'id', this.groupId)) as Query<User>;
 }

@@ -3,7 +3,7 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import DataOperator from '@database/operator/data_operator';
+import {Operator} from '@database/operator/index';
 import DatabaseManager from '@database/manager';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 
@@ -27,7 +27,10 @@ export const createDataOperator = async (serverUrl: string) => {
 
         const connection = connections[index].dbInstance as Database;
 
-        return new DataOperator(connection);
+        const operator = new Operator();
+        operator.setActiveDatabase(connection);
+
+        return operator;
     }
 
     throw new DatabaseConnectionException(

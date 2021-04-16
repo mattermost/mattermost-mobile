@@ -43,5 +43,5 @@ export default class MyChannel extends Model {
     @field('roles') roles!: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

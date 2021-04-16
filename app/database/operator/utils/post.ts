@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChainPostsArgs, MatchExistingRecord, RawPost, SanitizePostsArgs} from '@typings/database/database';
+import {ChainPostsArgs, RawPost, RecordPair, SanitizePostsArgs} from '@typings/database/database';
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -38,7 +38,7 @@ export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
  * @returns {RawPost[]}
  */
 export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPostsArgs) => {
-    const posts: MatchExistingRecord[] = [];
+    const posts: RecordPair[] = [];
 
     rawPosts.forEach((post) => {
         const postId = post.id;
