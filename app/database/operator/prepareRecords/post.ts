@@ -45,20 +45,20 @@ export const preparePostRecord = ({action, database, value}: DataFactoryArgs) =>
     // id of post comes from server response
     const generator = (post: Post) => {
         post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record?.id;
-        post.channelId = raw?.channel_id;
-        post.createAt = raw?.create_at;
-        post.deleteAt = raw?.delete_at || raw?.delete_at === 0 ? raw?.delete_at : 0;
-        post.editAt = raw?.edit_at;
-        post.updateAt = raw?.update_at;
-        post.isPinned = raw!.is_pinned!;
-        post.message = Q.sanitizeLikeString(raw?.message);
-        post.userId = raw?.user_id;
-        post.originalId = raw?.original_id ?? '';
-        post.pendingPostId = raw?.pending_post_id ?? '';
-        post.previousPostId = raw?.prev_post_id ?? '';
-        post.rootId = raw?.root_id ?? '';
-        post.type = raw?.type ?? '';
-        post.props = raw?.props ?? {};
+        post.channelId = raw.channel_id;
+        post.createAt = raw.create_at;
+        post.deleteAt = raw.delete_at || raw.delete_at === 0 ? raw?.delete_at : 0;
+        post.editAt = raw.edit_at;
+        post.updateAt = raw.update_at;
+        post.isPinned = Boolean(raw.is_pinned);
+        post.message = Q.sanitizeLikeString(raw.message);
+        post.userId = raw.user_id;
+        post.originalId = raw.original_id;
+        post.pendingPostId = raw.pending_post_id;
+        post.previousPostId = raw.prev_post_id ?? '';
+        post.rootId = raw.root_id;
+        post.type = raw.type ?? '';
+        post.props = raw.props ?? {};
     };
 
     return prepareBaseRecord({

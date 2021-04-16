@@ -435,7 +435,7 @@ class DataOperator {
 
             // Starts extracting information from each post to build up for related entities' data
             for (let i = 0; i < postsOrdered.length; i++) {
-                const post = postsOrdered[i] as RawPost;
+                const post = postsOrdered[i];
 
                 // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
                 if (!post.root_id) {
@@ -480,21 +480,21 @@ class DataOperator {
 
             if (files.length) {
                 // calls handler for Files
-                const postFiles = (await this.handleFiles({
+                const postFiles = await this.handleFiles({
                     files,
                     prepareRecordsOnly: true,
-                })) as File[];
+                });
 
                 batch = batch.concat(postFiles);
             }
 
             if (images.length || embeds.length) {
                 // calls handler for postMetadata ( embeds and images )
-                const postMetadata = (await this.handlePostMetadata({
+                const postMetadata = await this.handlePostMetadata({
                     images,
                     embeds,
                     prepareRecordsOnly: true,
-                })) as PostMetadata[];
+                });
 
                 batch = batch.concat(postMetadata);
             }
@@ -644,14 +644,9 @@ class DataOperator {
 
         // The aim here is to find the last reply in that thread; hence the latest create_at value
         rootPosts.forEach((rootPost) => {
-            const childPosts = [];
             let maxCreateAt = 0;
             for (let i = 0; i < threads.length; i++) {
                 const thread = threads[i];
-                if (thread?.rootId === rootPost.post_id) {
-                    // Creates a sub-array of threads relating to rootPost.post_id
-                    childPosts.push(thread);
-                }
 
                 // Retrieves max createAt date of all posts whose root_id is rootPost.post_id
                 maxCreateAt = thread.createAt > maxCreateAt ? thread.createAt : maxCreateAt;
@@ -1295,13 +1290,13 @@ class DataOperator {
         });
         const database = await this.getDatabase(tableName);
 
-        const models = (await this.prepareRecords({
+        const models = await this.prepareRecords({
             database,
             tableName,
             createRaws,
             updateRaws,
             recordOperator: operator,
-        })) as Model[];
+        });
 
         if (prepareRecordsOnly) {
             return models;
@@ -1333,13 +1328,13 @@ class DataOperator {
             database,
             tableName,
             condition: Q.where(fieldName, Q.oneOf(columnValues)),
-        })) as Model[];
+        }));
 
         const createRaws: MatchExistingRecord[] = [];
         const updateRaws: MatchExistingRecord[] = [];
 
         if (existingRecords.length > 0) {
-            rawValues.map((newElement: RawValue) => {
+            rawValues.forEach((newElement: RawValue) => {
                 const findIndex = existingRecords.findIndex((existing) => {
                     return findMatchingRecordBy(existing, newElement);
                 });
@@ -1459,13 +1454,13 @@ class DataOperator {
     private executeInDatabase = async ({createRaws, recordOperator, tableName, updateRaws}: PrepareForDatabaseArgs) => {
         const database = await this.getDatabase(tableName);
 
-        const models = (await this.prepareRecords({
+        const models = await this.prepareRecords({
             database,
             tableName,
             createRaws,
             updateRaws,
             recordOperator,
-        })) as Model[];
+        });
 
         if (models?.length > 0) {
             await this.batchOperations({database, models});

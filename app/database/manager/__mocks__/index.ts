@@ -177,7 +177,7 @@ class DatabaseManager {
    * @param {String} serverUrl
    * @returns {Promise<boolean>}
    */
-  isServerPresent = async (serverUrl: String) => {
+  isServerPresent = async (serverUrl: string) => {
       const allServers = await this.getAllServers();
       const existingServer = allServers?.filter((server) => {
           return server.url === serverUrl;

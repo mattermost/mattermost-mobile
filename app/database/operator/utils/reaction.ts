@@ -3,7 +3,7 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {MatchExistingRecord, RawReaction, SanitizeReactionsArgs} from '@typings/database/database';
+import {MatchExistingRecord, SanitizeReactionsArgs} from '@typings/database/database';
 import Reaction from '@typings/database/reaction';
 
 const {REACTION} = MM_TABLES.SERVER;
@@ -32,7 +32,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
     const emojiSet = new Set();
 
     for (let i = 0; i < rawReactions.length; i++) {
-        const rawReaction = rawReactions[i] as RawReaction;
+        const rawReaction = rawReactions[i];
 
         // Do we have a similar value of rawReaction in the REACTION table?
         const idxPresent = reactions.findIndex((value) => {

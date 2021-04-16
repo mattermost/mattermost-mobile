@@ -12,7 +12,8 @@ import {
     RawTeam,
     RawUser,
     RawValue,
-    RecordPair, RetrieveRecordsArgs,
+    RecordPair,
+    RetrieveRecordsArgs,
 } from '@typings/database/database';
 import Post from '@typings/database/post';
 import SlashCommand from '@typings/database/slash_command';
@@ -34,8 +35,8 @@ export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: Identi
     const guardTables = [CHANNEL, POST, SLASH_COMMAND, TEAM, USER];
 
     if (guardTables.includes(tableName)) {
-        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand | RawChannel
-        type ExistingRecord = Post | User | Team | SlashCommand | Channel
+        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand | RawChannel;
+        type ExistingRecord = Post | User | Team | SlashCommand | Channel;
 
         return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
     }
