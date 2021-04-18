@@ -49,7 +49,7 @@
   "apps.error.unknown": "Произошла неизвестная ошибка.",
   "apps.suggestion.dynamic.error": "Ошибка динамического выбора",
   "apps.suggestion.errors.parser_error": "Ошибка разбора",
-  "apps.suggestion.no_dynamic": "Для динамических предложений данные не возвращались",
+  "apps.suggestion.no_dynamic": "Нет данных для динамических предложений",
   "apps.suggestion.no_static": "Нет подходящих вариантов.",
   "apps.suggestion.no_suggestion": "Никаких подходящих предложений.",
   "archivedChannelMessage": "Вы просматриваете **архивированный канал**. Создание новых сообщений запрещено.",
