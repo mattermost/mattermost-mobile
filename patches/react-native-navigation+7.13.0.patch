@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 3bfbc0b..cdb0d05 100644
+index 4e4f498..b7ddd86 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 @@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
@@ -29,7 +29,7 @@ index 3bfbc0b..cdb0d05 100644
              }
          });
      }
-@@ -196,8 +200,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -201,8 +205,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -44,11 +44,34 @@ index 3bfbc0b..cdb0d05 100644
              }
          });
      }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
+index 815e1c6..a35a087 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
+@@ -1,5 +1,7 @@
+ #import "RNNOverlayWindow.h"
+ #import "RNNReactView.h"
++#import <react-native-safe-area-context/RNCSafeAreaView.h>
++#import <react-native-safe-area-context/RNCSafeAreaProvider.h>
+ 
+ @implementation RNNOverlayWindow
+ 
+@@ -7,7 +9,9 @@
+     UIView *hitTestResult = [super hitTest:point withEvent:event];
+ 
+     if ([hitTestResult isKindOfClass:[UIWindow class]] ||
+-        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class]) {
++        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
++        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
++        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]]) {
+         return nil;
+     }
+ 
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-index f5187d9..d97e766 100644
+index 6b9981d..f725701 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-@@ -32,11 +32,7 @@ - (CGFloat)getClippedCornerRadius:(UIView *)view {
+@@ -31,11 +31,7 @@
  
  - (CATransform3D)getTransform:(UIView *)view {
      if (view) {

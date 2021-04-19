@@ -1,8 +1,8 @@
 {
   "extends": [
+    "plugin:mattermost/react",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:mattermost/react"
+    "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
@@ -12,7 +12,7 @@
   "settings": {
     "react": {
       "pragma": "React",
-      "version": "16.5"
+      "version": "17.0"
     }
   },
   "env": {
@@ -22,8 +22,10 @@
     "__DEV__": true
   },
   "rules": {
+    "eol-last": ["error", "always"],
     "global-require": 0,
     "no-undefined": 0,
+    "no-shadow": "off",
     "react/display-name": [2, { "ignoreTranspilerName": false }],
     "react/jsx-filename-extension": 0,
     "camelcase": [
@@ -41,7 +43,9 @@
         "args": "after-used"
       }
     ],
+    "@typescript-eslint/no-shadow": ["error"],
     "@typescript-eslint/no-explicit-any": "warn",
+    "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/explicit-function-return-type": 0,

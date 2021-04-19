@@ -12,7 +12,7 @@ public class Credentials {
 
     public static void getCredentialsForCurrentServer(ReactApplicationContext context, ResolvePromise promise) {
         final KeychainModule keychainModule = new KeychainModule(context);
-        final AsyncStorage asyncStorage = new AsyncStorage(context);
+        final AsyncStorageHelper asyncStorage = new AsyncStorageHelper(context);
         final ArrayList<String> keys = new ArrayList<String>(1);
         keys.add(CURRENT_SERVER_URL);
         KeysReadableArray asyncStorageKeys = new KeysReadableArray() {
@@ -29,7 +29,14 @@ public class Credentials {
 
         HashMap<String, String> asyncStorageResults = asyncStorage.multiGet(asyncStorageKeys);
         String serverUrl = asyncStorageResults.get(CURRENT_SERVER_URL);
+        final WritableMap options = Arguments.createMap();
+        // KeyChain module fails if `authenticationPrompt` is not set
+        final WritableMap authPrompt = Arguments.createMap();
+        authPrompt.putString("title", "Authenticate to retrieve secret");
+        authPrompt.putString("cancel", "Cancel");
+        options.putMap("authenticationPrompt", authPrompt);
+        options.putString("service", serverUrl);
 
-        keychainModule.getGenericPasswordForOptions(serverUrl, promise);
+        keychainModule.getGenericPasswordForOptions(options, promise);
     }
 }
