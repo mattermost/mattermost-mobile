@@ -246,7 +246,7 @@ PODS:
     - React-Core
   - react-native-local-auth (1.6.0):
     - React
-  - react-native-mmkv-storage (0.5.3):
+  - react-native-mmkv-storage (0.4.4):
     - MMKV (= 1.2.7)
     - React-Core
   - react-native-netinfo (6.0.0):
@@ -683,7 +683,7 @@ SPEC CHECKSUMS:
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 32d1ad2c0024ca36161ae0d5c2117e2d6c441f11
   react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
-  react-native-mmkv-storage: b8c0ce10551ecf9c270477606aa2cab763011097
+  react-native-mmkv-storage: 5ed53d7c4ac98f1ef184404e781f63a998f98121
   react-native-netinfo: 34f4d7a42f49157f3b45c14217d256bce7dc9682
   react-native-notifications: e914ff49de3b2268cfa1b5e2ad21fd27c36d5b7b
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
