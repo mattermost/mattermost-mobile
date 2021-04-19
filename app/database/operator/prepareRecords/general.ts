@@ -128,7 +128,7 @@ export const prepareCustomEmojiRecord = ({action, database, value}: DataFactoryA
     const record = value.record as CustomEmoji;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of emoji comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (emoji: CustomEmoji) => {
         emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record.id;
         emoji.name = raw.name;
@@ -155,7 +155,7 @@ export const prepareRoleRecord = ({action, database, value}: DataFactoryArgs) =>
     const record = value.record as Role;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of role comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (role: Role) => {
         role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record.id;
         role.name = raw?.name;
@@ -183,9 +183,9 @@ export const prepareSystemRecord = ({action, database, value}: DataFactoryArgs) 
     const record = value.record as System;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of system comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (system: System) => {
-        system._raw.id = isCreateAction ? (raw?.id ?? system.id) : record?.id;
+        system._raw.id = isCreateAction ? (raw?.id ?? system.id) : record.id;
         system.name = raw?.name;
         system.value = raw?.value;
     };
@@ -211,9 +211,9 @@ export const prepareTermsOfServiceRecord = ({action, database, value}: DataFacto
     const record = value.record as TermsOfService;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of TOS comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (tos: TermsOfService) => {
-        tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record?.id;
+        tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record.id;
         tos.acceptedAt = raw?.accepted_at;
     };
 

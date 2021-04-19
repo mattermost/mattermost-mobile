@@ -42,9 +42,9 @@ export const prepareTeamMembershipRecord = ({action, database, value}: DataFacto
     const record = value.record as TeamMembership;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of preference comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (teamMembership: TeamMembership) => {
-        teamMembership._raw.id = isCreateAction ? teamMembership.id : record?.id;
+        teamMembership._raw.id = isCreateAction ? teamMembership.id : record.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
     };
@@ -70,9 +70,9 @@ export const prepareTeamRecord = ({action, database, value}: DataFactoryArgs) =>
     const record = value.record as Team;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of team comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (team: Team) => {
-        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record?.id;
+        team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record.id;
         team.isAllowOpenInvite = raw.allow_open_invite;
         team.description = raw.description;
         team.displayName = raw.display_name;
@@ -106,7 +106,7 @@ export const prepareTeamChannelHistoryRecord = ({action, database, value}: DataF
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (teamChannelHistory: TeamChannelHistory) => {
-        teamChannelHistory._raw.id = isCreateAction ? (teamChannelHistory.id) : record?.id;
+        teamChannelHistory._raw.id = isCreateAction ? (teamChannelHistory.id) : record.id;
         teamChannelHistory.teamId = raw.team_id;
         teamChannelHistory.channelIds = raw.channel_ids;
     };
@@ -133,7 +133,7 @@ export const prepareTeamSearchHistoryRecord = ({action, database, value}: DataFa
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (teamSearchHistory: TeamSearchHistory) => {
-        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record?.id;
+        teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record.id;
         teamSearchHistory.createdAt = raw.created_at;
         teamSearchHistory.displayTerm = raw.display_term;
         teamSearchHistory.term = raw.term;
@@ -161,9 +161,9 @@ export const prepareSlashCommandRecord = ({action, database, value}: DataFactory
     const record = value.record as SlashCommand;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of team comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (slashCommand: SlashCommand) => {
-        slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record?.id;
+        slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record.id;
         slashCommand.isAutoComplete = raw.auto_complete;
         slashCommand.description = raw.description;
         slashCommand.displayName = raw.display_name;
@@ -197,7 +197,7 @@ export const prepareMyTeamRecord = ({action, database, value}: DataFactoryArgs) 
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (myTeam: MyTeam) => {
-        myTeam._raw.id = isCreateAction ? myTeam.id : record?.id;
+        myTeam._raw.id = isCreateAction ? myTeam.id : record.id;
         myTeam.teamId = raw.team_id;
         myTeam.roles = raw.roles;
         myTeam.isUnread = raw.is_unread;

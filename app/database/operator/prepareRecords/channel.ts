@@ -35,9 +35,9 @@ export const prepareChannelRecord = ({action, database, value}: DataFactoryArgs)
     const record = value.record as Channel;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of team comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (channel: Channel) => {
-        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record?.id;
+        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record.id;
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
@@ -70,7 +70,7 @@ export const prepareMyChannelSettingsRecord = ({action, database, value}: DataFa
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (myChannelSetting: MyChannelSettings) => {
-        myChannelSetting._raw.id = isCreateAction ? myChannelSetting.id : record?.id;
+        myChannelSetting._raw.id = isCreateAction ? myChannelSetting.id : record.id;
         myChannelSetting.channelId = raw.channel_id;
         myChannelSetting.notifyProps = raw.notify_props;
     };
@@ -97,7 +97,7 @@ export const prepareChannelInfoRecord = ({action, database, value}: DataFactoryA
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (channelInfo: ChannelInfo) => {
-        channelInfo._raw.id = isCreateAction ? channelInfo.id : record?.id;
+        channelInfo._raw.id = isCreateAction ? channelInfo.id : record.id;
         channelInfo.channelId = raw.channel_id;
         channelInfo.guestCount = raw.guest_count;
         channelInfo.header = raw.header;
@@ -128,7 +128,7 @@ export const prepareMyChannelRecord = ({action, database, value}: DataFactoryArg
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (myChannel: MyChannel) => {
-        myChannel._raw.id = isCreateAction ? myChannel.id : record?.id;
+        myChannel._raw.id = isCreateAction ? myChannel.id : record.id;
         myChannel.channelId = raw.channel_id;
         myChannel.roles = raw.roles;
         myChannel.messageCount = raw.message_count;

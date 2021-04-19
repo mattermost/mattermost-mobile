@@ -42,9 +42,9 @@ export const preparePostRecord = ({action, database, value}: DataFactoryArgs) =>
     const record = value.record as Post;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of post comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (post: Post) => {
-        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record?.id;
+        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record.id;
         post.channelId = raw.channel_id;
         post.createAt = raw.create_at;
         post.deleteAt = raw.delete_at || raw.delete_at === 0 ? raw?.delete_at : 0;
@@ -109,9 +109,9 @@ export const prepareFileRecord = ({action, database, value}: DataFactoryArgs) =>
     const record = value.record as File;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of file comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (file: File) => {
-        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record?.id;
+        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record.id;
         file.postId = raw.post_id;
         file.name = raw.name;
         file.extension = raw.extension;
@@ -171,7 +171,7 @@ export const prepareDraftRecord = ({action, database, value}: DataFactoryArgs) =
     const emptyFileInfo: FileInfo[] = [];
     const raw = value.raw as RawDraft;
 
-    // Draft is client side only; plus you would only be creating/deleting one
+    // We use the raw id as  Draft is client side only and  we would only be creating/deleting drafts
     const generator = (draft: Draft) => {
         draft._raw.id = draft.id;
         draft.rootId = raw?.root_id ?? '';

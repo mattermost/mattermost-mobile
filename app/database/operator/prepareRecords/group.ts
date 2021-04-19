@@ -35,9 +35,9 @@ export const prepareGroupMembershipRecord = ({action, database, value}: DataFact
     const record = value.record as GroupMembership;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of preference comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (groupMember: GroupMembership) => {
-        groupMember._raw.id = isCreateAction ? groupMember.id : record?.id;
+        groupMember._raw.id = isCreateAction ? groupMember.id : record.id;
         groupMember.groupId = raw.group_id;
         groupMember.userId = raw.user_id;
     };
@@ -63,9 +63,9 @@ export const prepareGroupRecord = ({action, database, value}: DataFactoryArgs) =
     const record = value.record as Group;
     const isCreateAction = action === OperationType.CREATE;
 
-    // id of preference comes from server response
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (group: Group) => {
-        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record?.id;
+        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record.id;
         group.name = raw.name;
         group.displayName = raw.display_name;
     };
@@ -92,7 +92,7 @@ export const prepareGroupsInTeamRecord = ({action, database, value}: DataFactory
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (groupsInTeam: GroupsInTeam) => {
-        groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record?.id;
+        groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record.id;
         groupsInTeam.teamId = raw.team_id;
         groupsInTeam.groupId = raw.group_id;
     };
@@ -119,7 +119,7 @@ export const prepareGroupsInChannelRecord = ({action, database, value}: DataFact
     const isCreateAction = action === OperationType.CREATE;
 
     const generator = (groupsInChannel: GroupsInChannel) => {
-        groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record?.id;
+        groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record.id;
         groupsInChannel.channelId = raw.channel_id;
         groupsInChannel.groupId = raw.group_id;
         groupsInChannel.memberCount = raw.member_count;
