@@ -114,7 +114,6 @@ describe('*** GROUP Prepare Records Test ***', () => {
                 raw: {
                     user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
                     group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
-
                 },
             },
         });

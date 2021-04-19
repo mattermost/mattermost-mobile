@@ -44,7 +44,7 @@ export const prepareTeamMembershipRecord = ({action, database, value}: DataFacto
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (teamMembership: TeamMembership) => {
-        teamMembership._raw.id = isCreateAction ? teamMembership.id : record.id;
+        teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
     };

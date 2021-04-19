@@ -31,7 +31,7 @@ export const prepareReactionRecord = ({action, database, value}: DataFactoryArgs
 
     // id of reaction comes from server response
     const generator = (reaction: Reaction) => {
-        reaction._raw.id = isCreateAction ? reaction.id : record.id;
+        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record.id;
         reaction.userId = raw.user_id;
         reaction.postId = raw.post_id;
         reaction.emojiName = raw.emoji_name;
@@ -104,7 +104,7 @@ export const preparePreferenceRecord = ({action, database, value}: DataFactoryAr
 
     // id of preference comes from server response
     const generator = (preference: Preference) => {
-        preference._raw.id = isCreateAction ? preference.id : record.id;
+        preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record.id;
         preference.category = raw.category;
         preference.name = raw.name;
         preference.userId = raw.user_id;
@@ -134,7 +134,7 @@ export const prepareChannelMembershipRecord = ({action, database, value}: DataFa
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (channelMember: ChannelMembership) => {
-        channelMember._raw.id = isCreateAction ? channelMember.id : record.id;
+        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
     };

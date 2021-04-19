@@ -120,6 +120,7 @@ export type RawFile = {
 };
 
 export type RawReaction = {
+  id? : string;
   create_at: number;
   delete_at: number;
   emoji_name: string;
@@ -233,6 +234,7 @@ export type RawUser = {
 };
 
 export type RawPreference = {
+  id? : string;
   category: string;
   name: string;
   user_id: string;
@@ -240,6 +242,7 @@ export type RawPreference = {
 };
 
 export type RawTeamMembership = {
+  id? : string;
   delete_at: number;
   explicit_roles: string;
   roles: string;
@@ -251,11 +254,13 @@ export type RawTeamMembership = {
 };
 
 export type RawGroupMembership = {
+  id?: string;
   user_id: string;
   group_id: string;
 };
 
 export type RawChannelMembership = {
+  id? : string;
   channel_id: string;
   user_id: string;
   roles: string;

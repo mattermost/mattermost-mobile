@@ -37,7 +37,7 @@ export const prepareGroupMembershipRecord = ({action, database, value}: DataFact
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const generator = (groupMember: GroupMembership) => {
-        groupMember._raw.id = isCreateAction ? groupMember.id : record.id;
+        groupMember._raw.id = isCreateAction ? (raw?.id ?? groupMember.id) : record.id;
         groupMember.groupId = raw.group_id;
         groupMember.userId = raw.user_id;
     };
