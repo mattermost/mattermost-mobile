@@ -7,14 +7,14 @@ import {
     prepareMyChannelRecord,
     prepareMyChannelSettingsRecord,
 } from '@database/operator/prepareRecords/channel';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** CHANNEL Prepare Records Test ***', () => {
     it('=> prepareChannelRecord: should return an array of type Channel', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'channel_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareChannelRecord({
@@ -52,7 +52,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
     it('=> prepareMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'channel_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareMyChannelSettingsRecord({
@@ -82,7 +82,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
     it('=> prepareChannelInfoRecord: should return an array of type ChannelInfo', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'channel_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareChannelInfoRecord({
@@ -108,7 +108,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
     it('=> prepareMyChannelRecord: should return an array of type MyChannel', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'channel_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareMyChannelRecord({

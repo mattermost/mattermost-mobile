@@ -4,7 +4,7 @@
 import {DataOperator} from '@database/operator';
 import {isRecordDraftEqualToRaw} from '@database/operator/comparators';
 import {prepareDraftRecord} from '@database/operator/prepareRecords/post';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
 jest.mock('@database/manager');
 
@@ -14,7 +14,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
     it('=> HandleDraft: should write to the Draft entity', async () => {
         expect.assertions(1);
 
-        await createConnection({databaseName: 'post_handler', setActive: true});
+        await createTestConnection({databaseName: 'post_handler', setActive: true});
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
         const values = [
@@ -213,7 +213,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
         const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
         const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
 
-        await createConnection({databaseName: 'post_handler', setActive: true});
+        await createTestConnection({databaseName: 'post_handler', setActive: true});
 
         // handlePosts will in turn call handlePostsInThread
         await DataOperator.handlePosts({

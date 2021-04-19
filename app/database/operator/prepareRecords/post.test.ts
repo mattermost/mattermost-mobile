@@ -9,7 +9,7 @@ import {
     preparePostRecord,
     preparePostsInChannelRecord,
 } from '@database/operator/prepareRecords/post';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -18,7 +18,7 @@ describe('***  POST Prepare Records Test ***', () => {
     it('=> preparePostRecord: should return an array of type Post', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'post_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await preparePostRecord({
@@ -58,7 +58,7 @@ describe('***  POST Prepare Records Test ***', () => {
     it('=> preparePostInThreadRecord: should return an array of type PostsInThread', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'post_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await preparePostInThreadRecord({
@@ -84,7 +84,7 @@ describe('***  POST Prepare Records Test ***', () => {
     it('=> prepareFileRecord: should return an array of type File', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'post_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareFileRecord({
@@ -113,7 +113,7 @@ describe('***  POST Prepare Records Test ***', () => {
     it('=> preparePostMetadataRecord: should return an array of type PostMetadata', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'post_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await preparePostMetadataRecord({
@@ -137,7 +137,7 @@ describe('***  POST Prepare Records Test ***', () => {
     it('=> prepareDraftRecord: should return an array of type Draft', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'post_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareDraftRecord({
@@ -162,7 +162,7 @@ describe('***  POST Prepare Records Test ***', () => {
     it('=> preparePostsInChannelRecord: should return an array of type PostsInChannel', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'post_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await preparePostsInChannelRecord({

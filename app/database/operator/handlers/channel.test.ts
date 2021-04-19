@@ -14,7 +14,7 @@ import {
     prepareMyChannelRecord,
     prepareMyChannelSettingsRecord,
 } from '@database/operator/prepareRecords/channel';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
 jest.mock('@database/manager');
 
@@ -26,7 +26,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'channel_handler', setActive: true});
+        await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
         await DataOperator.handleChannel({
             channels: [
@@ -91,7 +91,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'channel_handler', setActive: true});
+        await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
         await DataOperator.handleMyChannelSettings({
             settings: [
@@ -140,7 +140,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'channel_handler', setActive: true});
+        await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
         await DataOperator.handleChannelInfo({
             channelInfos: [
@@ -182,7 +182,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'channel_handler', setActive: true});
+        await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
         await DataOperator.handleMyChannel({
             myChannels: [

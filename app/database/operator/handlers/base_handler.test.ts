@@ -22,8 +22,8 @@ import {
     prepareSystemRecord,
     prepareTermsOfServiceRecord,
 } from '@database/operator/prepareRecords/general';
-import {createConnection} from '@database/operator/utils/create_connection';
-import {RawApp, RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
+import {RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 
 jest.mock('@database/manager');
@@ -39,22 +39,20 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        const values: RawApp[] = [
-            {
-                build_number: 'build-10x',
-                created_at: 1,
-                version_number: 'version-10',
-            },
-            {
-                build_number: 'build-11y',
-                created_at: 1,
-                version_number: 'version-11',
-            },
-        ];
-
         await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.APP,
-            values,
+            values: [
+                {
+                    build_number: 'build-10x',
+                    created_at: 1,
+                    version_number: 'version-10',
+                },
+                {
+                    build_number: 'build-11y',
+                    created_at: 1,
+                    version_number: 'version-11',
+                },
+            ],
             prepareRecordsOnly: false,
         });
 
@@ -64,6 +62,11 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             operator: prepareAppRecord,
             findMatchingRecordBy: isRecordAppEqualToRaw,
             rawValues: [
+                {
+                    build_number: 'build-10x',
+                    created_at: 1,
+                    version_number: 'version-10',
+                },
                 {
                     build_number: 'build-11y',
                     created_at: 1,
@@ -145,7 +148,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> HandleRole: should write to ROLE entity', async () => {
         expect.assertions(1);
 
-        await createConnection({databaseName: 'base_handler', setActive: true});
+        await createTestConnection({databaseName: 'base_handler', setActive: true});
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
@@ -181,24 +184,23 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
     it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
         expect.assertions(2);
-        const emojis = [
-            {
-                id: 'i',
-                create_at: 1580913641769,
-                update_at: 1580913641769,
-                delete_at: 0,
-                creator_id: '4cprpki7ri81mbx8efixcsb8jo',
-                name: 'boomI',
-            },
-        ];
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'base_handler', setActive: true});
+        await createTestConnection({databaseName: 'base_handler', setActive: true});
 
         await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.CUSTOM_EMOJI,
-            values: emojis,
+            values: [
+                {
+                    id: 'i',
+                    create_at: 1580913641769,
+                    update_at: 1580913641769,
+                    delete_at: 0,
+                    creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                    name: 'boomI',
+                },
+            ],
             prepareRecordsOnly: false,
         });
 
@@ -225,7 +227,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> HandleSystem: should write to SYSTEM entity', async () => {
         expect.assertions(1);
 
-        await createConnection({databaseName: 'base_handler', setActive: true});
+        await createTestConnection({databaseName: 'base_handler', setActive: true});
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
@@ -250,7 +252,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> HandleTermsOfService: should write to TERMS_OF_SERVICE entity', async () => {
         expect.assertions(1);
 
-        await createConnection({databaseName: 'base_handler', setActive: true});
+        await createTestConnection({databaseName: 'base_handler', setActive: true});
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 

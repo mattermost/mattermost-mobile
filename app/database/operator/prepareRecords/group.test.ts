@@ -7,14 +7,14 @@ import {
     prepareGroupsInChannelRecord,
     prepareGroupsInTeamRecord,
 } from '@database/operator/prepareRecords/group';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** GROUP Prepare Records Test ***', () => {
     it('=> prepareGroupRecord: should return an array of type Group', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'group_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareGroupRecord({
@@ -44,7 +44,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
     it('=> prepareGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'group_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareGroupsInTeamRecord({
@@ -72,7 +72,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
     it('=> prepareGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'group_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareGroupsInChannelRecord({
@@ -103,7 +103,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
     it('=> prepareGroupMembershipRecord: should return an array of type GroupMembership', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'group_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareGroupMembershipRecord({

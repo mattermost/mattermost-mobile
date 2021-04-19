@@ -64,11 +64,7 @@ import User from '@typings/database/user';
  */
 
 export const isRecordAppEqualToRaw = (record: App, raw: RawApp) => {
-    return (
-        raw.build_number === record.buildNumber &&
-        raw.created_at === record.createdAt &&
-        raw.version_number === record.versionNumber
-    );
+    return (raw.build_number === record.buildNumber && raw.version_number === record.versionNumber);
 };
 
 export const isRecordGlobalEqualToRaw = (record: Global, raw: RawGlobal) => {

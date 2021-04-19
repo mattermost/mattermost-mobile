@@ -12,7 +12,7 @@ import {
     preparePreferenceRecord,
     prepareUserRecord,
 } from '@database/operator/prepareRecords/user';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
 jest.mock('@database/manager');
 
@@ -22,7 +22,7 @@ describe('*** Operator: User Handlers tests ***', () => {
     it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
         expect.assertions(2);
 
-        await createConnection({databaseName: 'user_handler', setActive: true});
+        await createTestConnection({databaseName: 'user_handler', setActive: true});
 
         const spyOnPrepareRecords = jest.spyOn(DataOperator as any, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
@@ -95,7 +95,7 @@ describe('*** Operator: User Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'user_handler', setActive: true});
+        await createTestConnection({databaseName: 'user_handler', setActive: true});
 
         await DataOperator.handleUsers({users, prepareRecordsOnly: false});
 
@@ -153,40 +153,38 @@ describe('*** Operator: User Handlers tests ***', () => {
     it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
         expect.assertions(2);
 
-        const preferences = [
-            {
-                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
-                category: 'group_channel_show',
-                name: 'qj91hepgjfn6xr4acm5xzd8zoc',
-                value: 'true',
-            },
-            {
-                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
-                category: 'notifications',
-                name: 'email_interval',
-                value: '30',
-            },
-            {
-                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
-                category: 'theme',
-                name: '',
-                value:
-                    '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
-            },
-            {
-                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
-                category: 'tutorial_step',
-                name: '9ciscaqbrpd6d8s68k76xb9bte',
-                value: '2',
-            },
-        ];
-
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'user_handler', setActive: true});
+        await createTestConnection({databaseName: 'user_handler', setActive: true});
 
         await DataOperator.handlePreferences({
-            preferences,
+            preferences: [
+                {
+                    user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    category: 'group_channel_show',
+                    name: 'qj91hepgjfn6xr4acm5xzd8zoc',
+                    value: 'true',
+                },
+                {
+                    user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    category: 'notifications',
+                    name: 'email_interval',
+                    value: '30',
+                },
+                {
+                    user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    category: 'theme',
+                    name: '',
+                    value:
+                        '{"awayIndicator":"#c1b966","buttonBg":"#4cbba4","buttonColor":"#ffffff","centerChannelBg":"#2f3e4e","centerChannelColor":"#dddddd","codeTheme":"solarized-dark","dndIndicator":"#e81023","errorTextColor":"#ff6461","image":"/static/files/0b8d56c39baf992e5e4c58d74fde0fd6.png","linkColor":"#a4ffeb","mentionBg":"#b74a4a","mentionColor":"#ffffff","mentionHighlightBg":"#984063","mentionHighlightLink":"#a4ffeb","newMessageSeparator":"#5de5da","onlineIndicator":"#65dcc8","sidebarBg":"#1b2c3e","sidebarHeaderBg":"#1b2c3e","sidebarHeaderTextColor":"#ffffff","sidebarText":"#ffffff","sidebarTextActiveBorder":"#66b9a7","sidebarTextActiveColor":"#ffffff","sidebarTextHoverBg":"#4a5664","sidebarUnreadText":"#ffffff","type":"Mattermost Dark"}',
+                },
+                {
+                    user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    category: 'tutorial_step',
+                    name: '9ciscaqbrpd6d8s68k76xb9bte',
+                    value: '2',
+                },
+            ],
             prepareRecordsOnly: false,
         });
 
@@ -273,7 +271,7 @@ describe('*** Operator: User Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'user_handler', setActive: true});
+        await createTestConnection({databaseName: 'user_handler', setActive: true});
 
         await DataOperator.handleChannelMembership({
             channelMemberships,

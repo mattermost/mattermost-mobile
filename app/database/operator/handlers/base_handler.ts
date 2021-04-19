@@ -114,7 +114,7 @@ class BaseHandler {
               findMatchingRecordBy = isRecordAppEqualToRaw;
               fieldName = 'version_number';
               operator = prepareAppRecord;
-              rawValues = getUniqueRawsBy({raws: values, key: 'versionNumber'});
+              rawValues = getUniqueRawsBy({raws: values, key: 'version_number'});
               break;
           }
           case IsolatedEntities.CUSTOM_EMOJI: {
@@ -142,7 +142,7 @@ class BaseHandler {
               findMatchingRecordBy = isRecordServerEqualToRaw;
               fieldName = 'url';
               operator = prepareServersRecord;
-              rawValues = getUniqueRawsBy({raws: values, key: 'displayName'});
+              rawValues = getUniqueRawsBy({raws: values, key: 'display_name'});
               break;
           }
           case IsolatedEntities.SYSTEM: {

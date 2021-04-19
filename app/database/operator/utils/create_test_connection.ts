@@ -4,9 +4,10 @@
 import DatabaseManager from '@database/manager';
 import {DatabaseType} from '@typings/database/enums';
 
+// NOTE: uncomment the below line if you are manually testing the database
 jest.mock('@database/manager');
 
-export const createConnection = async ({databaseName = 'db_name', setActive = false}) => {
+export const createTestConnection = async ({databaseName = 'db_name', setActive = false}) => {
     const serverUrl = 'https://appv2.mattermost.com';
     const database = await DatabaseManager.createDatabaseConnection({
         shouldAddToDefaultDatabase: true,

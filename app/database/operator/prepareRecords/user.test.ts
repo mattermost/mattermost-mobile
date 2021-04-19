@@ -8,14 +8,14 @@ import {
 } from '@database/operator/prepareRecords/user';
 
 // See LICENSE.txt for license information.
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 
 describe('*** USER Prepare Records Test ***', () => {
     it('=> prepareChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'user_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'user_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareChannelMembershipRecord({
@@ -53,7 +53,7 @@ describe('*** USER Prepare Records Test ***', () => {
     it('=> preparePreferenceRecord: should return an array of type Preference', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'user_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'user_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await preparePreferenceRecord({
@@ -72,7 +72,7 @@ describe('*** USER Prepare Records Test ***', () => {
     it('=> prepareReactionRecord: should return an array of type Reaction', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'user_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'user_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareReactionRecord({
@@ -99,7 +99,7 @@ describe('*** USER Prepare Records Test ***', () => {
     it('=> prepareUserRecord: should return an array of type User', async () => {
         expect.assertions(3);
 
-        const database = await createConnection({databaseName: 'user_prepare_records', setActive: true});
+        const database = await createTestConnection({databaseName: 'user_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareUserRecord({

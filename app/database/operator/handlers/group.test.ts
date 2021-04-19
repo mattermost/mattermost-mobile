@@ -14,7 +14,7 @@ import {
     prepareGroupsInChannelRecord,
     prepareGroupsInTeamRecord,
 } from '@database/operator/prepareRecords/group';
-import {createConnection} from '@database/operator/utils/create_connection';
+import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
 jest.mock('@database/manager');
 
@@ -26,7 +26,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'group_handler', setActive: true});
+        await createTestConnection({databaseName: 'group_handler', setActive: true});
 
         await DataOperator.handleGroup({
             groups: [
@@ -75,7 +75,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'group_handler', setActive: true});
+        await createTestConnection({databaseName: 'group_handler', setActive: true});
 
         await DataOperator.handleGroupsInTeam({
             groupsInTeams: [
@@ -120,7 +120,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'group_handler', setActive: true});
+        await createTestConnection({databaseName: 'group_handler', setActive: true});
 
         await DataOperator.handleGroupsInChannel({
             groupsInChannels: [
@@ -172,19 +172,18 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
     it('=> HandleGroupMembership: should write to GROUP_MEMBERSHIP entity', async () => {
         expect.assertions(2);
-        const groupMemberships = [
-            {
-                user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
-                group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
-            },
-        ];
 
         const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
 
-        await createConnection({databaseName: 'group_handler', setActive: true});
+        await createTestConnection({databaseName: 'group_handler', setActive: true});
 
         await DataOperator.handleGroupMembership({
-            groupMemberships,
+            groupMemberships: [
+                {
+                    user_id: 'u4cprpki7ri81mbx8efixcsb8jo',
+                    group_id: 'g4cprpki7ri81mbx8efixcsb8jo',
+                },
+            ],
             prepareRecordsOnly: false,
         });
 
