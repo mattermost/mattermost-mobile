@@ -83,14 +83,11 @@ export function getDataRetentionPolicy(): ActionFunc {
             let channelPolicies: ChannelDataRetentionPolicy[] = [];
 
             if (isMinimumServerVersion(getServerVersion(getState()), 5, 36)) {
-                const perPage = 1;
                 teamPolicies = await getAllGranularDataRetentionPolicies({
-                    perPage,
                     userId,
                 });
                 channelPolicies = await getAllGranularDataRetentionPolicies({
                     isChannel: true,
-                    perPage,
                     userId,
                 });
             }
@@ -122,13 +119,12 @@ export function getDataRetentionPolicy(): ActionFunc {
 async function getAllGranularDataRetentionPolicies(options: {
     isChannel?: boolean;
     page?: number;
-    perPage: number;
     policies?: TeamDataRetentionPolicy[] | ChannelDataRetentionPolicy[];
     userId: string;
 }): Promise<TeamDataRetentionPolicy[] | ChannelDataRetentionPolicy[]> {
-    const {isChannel, page = 0, perPage, policies = [], userId} = options;
+    const {isChannel, page = 0, policies = [], userId} = options;
     const api = isChannel ? 'getChannelDataRetentionPolicies' : 'getTeamDataRetentionPolicies';
-    const data = await Client4[api](userId, page, perPage);
+    const data = await Client4[api](userId, page);
     policies.push(...data.policies);
     if (policies.length < data.total_count) {
         await getAllGranularDataRetentionPolicies({...options, policies, page: page + 1});

@@ -8,6 +8,7 @@ import {FormattedError} from './helpers.ts';
 import {GeneralTypes} from '@mm-redux/action_types';
 import * as Actions from '@mm-redux/actions/general';
 import {Client4} from '@client/rest';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
@@ -148,25 +149,25 @@ describe('Actions.General', () => {
             get(`/users/${userId}/data_retention/channel_policies`).
             query({
                 page: 0,
-                per_page: 1,
+                per_page: PER_PAGE_DEFAULT,
             }).
             reply(200, channelPoliciesResponse1).
             get(`/users/${userId}/data_retention/channel_policies`).
             query({
                 page: 1,
-                per_page: 1,
+                per_page: PER_PAGE_DEFAULT,
             }).
             reply(200, channelPoliciesResponse2).
             get(`/users/${userId}/data_retention/team_policies`).
             query({
                 page: 0,
-                per_page: 1,
+                per_page: PER_PAGE_DEFAULT,
             }).
             reply(200, teamPoliciesResponse1).
             get(`/users/${userId}/data_retention/team_policies`).
             query({
                 page: 1,
-                per_page: 1,
+                per_page: PER_PAGE_DEFAULT,
             }).
             reply(200, teamPoliciesResponse2);
 
