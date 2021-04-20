@@ -37,6 +37,10 @@ describe('MoreChannels', () => {
         canShowArchivedChannels: true,
     };
 
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
     test('should match snapshot', () => {
         const wrapper = shallow(
             <MoreChannels {...baseProps}/>,

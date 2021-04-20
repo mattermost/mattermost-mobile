@@ -18,4 +18,6 @@
     <string name="timeout_description">How long in milliseconds the mobile app should wait for the server to respond.</string>
     <string name="vendor_title">EMM Vendor or Company Name</string>
     <string name="vendor_description">Name of the EMM vendor or company deploying the app. Used in help text when prompting for passcodes so users are aware why the app is being protected.</string>
+    <string name="inAppSessionAuth_title">In-App Session Auth</string>
+    <string name="inAppSessionAuth_description">Instead of default flow from the mobile browser, enforce SSO with the WebView.</string>
 </resources>

@@ -5,14 +5,12 @@ import React, {PureComponent} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-
 import MessageAttachment from './message_attachment';
 
 export default class MessageAttachments extends PureComponent {
     static propTypes = {
         attachments: PropTypes.array.isRequired,
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,

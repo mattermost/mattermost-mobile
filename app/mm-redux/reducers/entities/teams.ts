@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {ChannelTypes, TeamTypes, UserTypes, SchemeTypes, GroupTypes} from '@mm-redux/action_types';
+import {ChannelTypes, TeamTypes, UserTypes, GroupTypes} from '@mm-redux/action_types';
 import {teamListToMap} from '@mm-redux/utils/team_utils';
 import {Team, TeamMembership, TeamUnread} from '@mm-redux/types/teams';
 import {UserProfile} from '@mm-redux/types/users';
@@ -21,7 +21,6 @@ function currentTeamId(state = '', action: GenericAction) {
 function teams(state: IDMappedObjects<Team> = {}, action: GenericAction) {
     switch (action.type) {
     case TeamTypes.RECEIVED_TEAMS_LIST:
-    case SchemeTypes.RECEIVED_SCHEME_TEAMS:
         return Object.assign({}, state, teamListToMap(action.data));
     case UserTypes.LOGIN: // Used by the mobile app
         return Object.assign({}, state, teamListToMap(action.data.teams));
@@ -46,17 +45,6 @@ function teams(state: IDMappedObjects<Team> = {}, action: GenericAction) {
         }
 
         return state;
-    }
-
-    case TeamTypes.UPDATED_TEAM_SCHEME: {
-        const {teamId, schemeId} = action.data;
-        const team = state[teamId];
-
-        if (!team) {
-            return state;
-        }
-
-        return {...state, [teamId]: {...team, scheme_id: schemeId}};
     }
 
     default:
@@ -205,10 +193,6 @@ function myMembers(state: RelationOneToOne<Team, TeamMembership> = {}, action: G
         Reflect.deleteProperty(nextState, data.id);
         return nextState;
     }
-    case TeamTypes.UPDATED_TEAM_MEMBER_SCHEME_ROLES: {
-        return updateMyTeamMemberSchemeRoles(state, action);
-    }
-
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         const {teamId, deltaMsgs, mentionCount, msgCount} = action.data;
 
@@ -318,9 +302,6 @@ function membersInTeam(state: RelationOneToOne<Team, RelationOneToOne<UserProfil
 
         return state;
     }
-    case TeamTypes.UPDATED_TEAM_MEMBER_SCHEME_ROLES: {
-        return updateTeamMemberSchemeRoles(state, action);
-    }
     default:
         return state;
     }
@@ -386,44 +367,6 @@ function groupsAssociatedToTeam(state: RelationOneToOne<Team, {ids: string[]; to
     default:
         return state;
     }
-}
-
-function updateTeamMemberSchemeRoles(state: RelationOneToOne<Team, RelationOneToOne<UserProfile, TeamMembership>>, action: GenericAction) {
-    const {teamId, userId, isSchemeUser, isSchemeAdmin} = action.data;
-    const team = state[teamId];
-    if (team) {
-        const member = team[userId];
-        if (member) {
-            return {
-                ...state,
-                [teamId]: {
-                    ...state[teamId],
-                    [userId]: {
-                        ...state[teamId][userId],
-                        scheme_user: isSchemeUser,
-                        scheme_admin: isSchemeAdmin,
-                    },
-                },
-            };
-        }
-    }
-    return state;
-}
-
-function updateMyTeamMemberSchemeRoles(state: RelationOneToOne<Team, TeamMembership>, action: GenericAction) {
-    const {teamId, isSchemeUser, isSchemeAdmin} = action.data;
-    const member = state[teamId];
-    if (member) {
-        return {
-            ...state,
-            [teamId]: {
-                ...state[teamId],
-                scheme_user: isSchemeUser,
-                scheme_admin: isSchemeAdmin,
-            },
-        };
-    }
-    return state;
 }
 
 function totalCount(state = 0, action: GenericAction) {

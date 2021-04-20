@@ -2,20 +2,20 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {LayoutChangeEvent, ScrollView, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, ScrollView, StyleProp, View} from 'react-native';
 
-import Markdown from 'app/components/markdown';
-import ShowMoreButton from 'app/components/show_more_button';
+import Markdown from '@components/markdown';
+import ShowMoreButton from '@components/show_more_button';
 import {Theme} from '@mm-redux/types/preferences';
 
 const SHOW_MORE_HEIGHT = 60;
 
 type Props = {
-    baseTextStyle: StyleProp<TextStyle>,
-    blockStyles?: StyleProp<ViewStyle>[],
+    baseTextStyle: StyleProp<any>,
+    blockStyles?: StyleProp<any>[],
     deviceHeight: number,
     onPermalinkPress?: () => void,
-    textStyles?: StyleProp<TextStyle>[],
+    textStyles?: StyleProp<any>[],
     theme?: Theme,
     value?: string,
 }

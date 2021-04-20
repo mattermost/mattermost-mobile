@@ -5,7 +5,10 @@ import {Team} from './teams';
 import {PostType} from './posts';
 import {$ID, IDMappedObjects, RelationOneToMany, RelationOneToOne} from './utilities';
 export type UserNotifyProps = {
+    auto_responder_active?: 'true' | 'false';
+    auto_responder_message?: string;
     desktop: 'default' | 'all' | 'mention' | 'none';
+    desktop_notification_sound?: string;
     desktop_sound: 'true' | 'false';
     email: 'true' | 'false';
     mark_unread: 'all' | 'mention';
@@ -15,6 +18,7 @@ export type UserNotifyProps = {
     first_name: 'true' | 'false';
     channel: 'true' | 'false';
     mention_keys: string;
+    user_id?: string;
 };
 export type UserProfile = {
     id: string;
@@ -44,7 +48,6 @@ export type UsersState = {
     currentUserId: string;
     isManualStatus: RelationOneToOne<UserProfile, boolean>;
     mySessions: Array<any>;
-    myAudits: Array<any>;
     profiles: IDMappedObjects<UserProfile>;
     profilesInTeam: RelationOneToMany<Team, UserProfile>;
     profilesNotInTeam: RelationOneToMany<Team, UserProfile>;

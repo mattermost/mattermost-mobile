@@ -18,7 +18,6 @@ import ImageViewPort from '@components/image_viewport';
 import PostAttachmentImage from '@components/post_attachment_image';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import CustomPropTypes from '@constants/custom_prop_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
@@ -36,7 +35,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
         }).isRequired,
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -396,7 +395,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         if (app_bindings && app_bindings.length) {
             return (
                 <EmbeddedBindings
-                    embed={app_bindings}
+                    embeds={app_bindings}
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}
                     deviceHeight={deviceHeight}
@@ -532,13 +531,13 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     render() {
         let {link} = this.props;
-        const {openGraphData, postProps, expandedLink} = this.props;
+        const {openGraphData, postProps, expandedLink, appsEnabled} = this.props;
         const {linkLoadError} = this.state;
         if (expandedLink) {
             link = expandedLink;
         }
 
-        const {attachments, app_bindings, appsEnabled} = postProps;
+        const {attachments, app_bindings} = postProps;
 
         if (!link && !attachments && !(appsEnabled && app_bindings)) {
             return null;

@@ -2,97 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {IntegrationTypes, ChannelTypes} from '@mm-redux/action_types';
+import {IntegrationTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
-import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp, AutocompleteSuggestion} from '@mm-redux/types/integrations';
+import {Command, AutocompleteSuggestion} from '@mm-redux/types/integrations';
 import {Dictionary, IDMappedObjects} from '@mm-redux/types/utilities';
-
-function incomingHooks(state: IDMappedObjects<IncomingWebhook> = {}, action: GenericAction) {
-    switch (action.type) {
-    case IntegrationTypes.RECEIVED_INCOMING_HOOK: {
-        const nextState = {...state};
-        nextState[action.data.id] = action.data;
-        return nextState;
-    }
-    case IntegrationTypes.RECEIVED_INCOMING_HOOKS: {
-        const nextState = {...state};
-        for (const hook of action.data) {
-            nextState[hook.id] = hook;
-        }
-        return nextState;
-    }
-    case IntegrationTypes.DELETED_INCOMING_HOOK: {
-        const nextState = {...state};
-        Reflect.deleteProperty(nextState, action.data.id);
-        return nextState;
-    }
-    case ChannelTypes.RECEIVED_CHANNEL_DELETED: {
-        const nextState = {...state};
-        let deleted = false;
-        Object.keys(nextState).forEach((id) => {
-            if (nextState[id].channel_id === action.data.id) {
-                deleted = true;
-                Reflect.deleteProperty(nextState, id);
-            }
-        });
-
-        if (deleted) {
-            return nextState;
-        }
-
-        return state;
-    }
-
-    default:
-        return state;
-    }
-}
-
-function outgoingHooks(state: IDMappedObjects<OutgoingWebhook> = {}, action: GenericAction) {
-    switch (action.type) {
-    case IntegrationTypes.RECEIVED_OUTGOING_HOOK: {
-        const nextState = {...state};
-        nextState[action.data.id] = action.data;
-        return nextState;
-    }
-    case IntegrationTypes.RECEIVED_OUTGOING_HOOKS: {
-        const nextState = {...state};
-        for (const hook of action.data) {
-            nextState[hook.id] = hook;
-        }
-        return nextState;
-    }
-    case IntegrationTypes.DELETED_OUTGOING_HOOK: {
-        const nextState = {...state};
-        Reflect.deleteProperty(nextState, action.data.id);
-        return nextState;
-    }
-    case ChannelTypes.RECEIVED_CHANNEL_DELETED: {
-        const nextState = {...state};
-        let deleted = false;
-        Object.keys(nextState).forEach((id) => {
-            if (nextState[id].channel_id === action.data.id) {
-                deleted = true;
-                Reflect.deleteProperty(nextState, id);
-            }
-        });
-
-        if (deleted) {
-            return nextState;
-        }
-
-        return state;
-    }
-
-    default:
-        return state;
-    }
-}
 
 function commands(state: IDMappedObjects<Command> = {}, action: GenericAction) {
     switch (action.type) {
-    case IntegrationTypes.RECEIVED_COMMANDS:
-    case IntegrationTypes.RECEIVED_CUSTOM_TEAM_COMMANDS: {
+    case IntegrationTypes.RECEIVED_COMMANDS: {
         const nextState = {...state};
         for (const command of action.data) {
             if (command.id) {
@@ -170,31 +87,6 @@ function commandAutocompleteSuggestions(state: Array<AutocompleteSuggestion> = [
     }
 }
 
-function oauthApps(state: IDMappedObjects<OAuthApp> = {}, action: GenericAction) {
-    switch (action.type) {
-    case IntegrationTypes.RECEIVED_OAUTH_APPS: {
-        const nextState = {...state};
-        for (const app of action.data) {
-            nextState[app.id] = app;
-        }
-        return nextState;
-    }
-    case IntegrationTypes.RECEIVED_OAUTH_APP:
-        return {
-            ...state,
-            [action.data.id]: action.data,
-        };
-    case IntegrationTypes.DELETED_OAUTH_APP: {
-        const nextState = {...state};
-        Reflect.deleteProperty(nextState, action.data.id);
-        return nextState;
-    }
-
-    default:
-        return state;
-    }
-}
-
 function dialogTriggerId(state = '', action: GenericAction) {
     switch (action.type) {
     case IntegrationTypes.RECEIVED_DIALOG_TRIGGER_ID:
@@ -215,17 +107,8 @@ function dialog(state = '', action: GenericAction) {
 
 export default combineReducers({
 
-    // object where every key is the hook id and has an object with the incoming hook details
-    incomingHooks,
-
-    // object where every key is the hook id and has an object with the outgoing hook details
-    outgoingHooks,
-
     // object to represent installed slash commands for a current team
     commands,
-
-    // object to represent registered oauth apps with app id as the key
-    oauthApps,
 
     // object to represent built-in slash commands
     systemCommands,

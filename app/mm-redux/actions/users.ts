@@ -3,7 +3,7 @@
 import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {UserProfile, UserStatus} from '@mm-redux/types/users';
 import {TeamMembership} from '@mm-redux/types/teams';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '../constants';
 import {UserTypes, TeamTypes} from '@mm-redux/action_types';
 import {getAllCustomEmojis} from './emojis';
@@ -22,7 +22,7 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 export function checkMfa(loginId: string): ActionFunc {
     return async (dispatch: DispatchFunc) => {
@@ -39,15 +39,6 @@ export function checkMfa(loginId: string): ActionFunc {
             return {error};
         }
     };
-}
-
-export function generateMfaSecret(userId: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.generateMfaSecret,
-        params: [
-            userId,
-        ],
-    });
 }
 
 export function createUser(user: UserProfile, token: string, inviteId: string): ActionFunc {
@@ -93,7 +84,7 @@ export function login(loginId: string, password: string, mfaToken = '', ldapOnly
             return {error};
         }
 
-        return completeLogin(data)(dispatch, getState);
+        return dispatch(completeLogin(data));
     };
 }
 
@@ -117,7 +108,7 @@ export function loginById(id: string, password: string, mfaToken = ''): ActionFu
             return {error};
         }
 
-        return completeLogin(data)(dispatch, getState);
+        return dispatch(completeLogin(data));
     };
 }
 
@@ -244,13 +235,6 @@ export function loadMe(): ActionFunc {
     };
 }
 
-export function getTotalUsersStats(): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.getTotalUsersStats,
-        onSuccess: UserTypes.RECEIVED_USER_STATS,
-    });
-}
-
 export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, options: any = {}): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
@@ -285,8 +269,8 @@ export function getMissingProfilesByIds(userIds: Array<string>): ActionFunc {
         });
 
         if (missingIds.length > 0) {
-            getStatusesByIds(missingIds)(dispatch, getState);
-            return getProfilesByIds(missingIds)(dispatch, getState);
+            dispatch(getStatusesByIds(missingIds));
+            return dispatch(getProfilesByIds(missingIds));
         }
 
         return {data: []};
@@ -309,7 +293,7 @@ export function getMissingProfilesByUsernames(usernames: Array<string>): ActionF
         });
 
         if (missingUsernames.length > 0) {
-            return getProfilesByUsernames(missingUsernames)(dispatch, getState);
+            return dispatch(getProfilesByUsernames(missingUsernames));
         }
 
         return {data: []};
@@ -605,26 +589,10 @@ export function getTermsOfService(): ActionFunc {
     });
 }
 
-export function promoteGuestToUser(userId: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.promoteGuestToUser,
-        params: [userId],
-    });
-}
-
 export function demoteUserToGuest(userId: string): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.demoteUserToGuest,
         params: [userId],
-    });
-}
-
-export function createTermsOfService(text: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.createTermsOfService,
-        params: [
-            text,
-        ],
     });
 }
 
@@ -665,8 +633,8 @@ export function getUserByEmail(email: string): ActionFunc {
 // statuses, we are only making one call for 75 ids.
 // We could maybe clean it up somewhat by storing the array of ids in redux state possbily?
 let ids: Array<string> = [];
-const debouncedGetStatusesByIds = debounce(async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-    getStatusesByIds([...new Set(ids)])(dispatch, getState);
+const debouncedGetStatusesByIds = debounce(async (dispatch: DispatchFunc) => {
+    dispatch(getStatusesByIds([...new Set(ids)]));
 }, 20, false, () => {
     ids = [];
 });
@@ -724,64 +692,6 @@ export function getSessions(userId: string): ActionFunc {
     });
 }
 
-export function revokeSession(userId: string, sessionId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.revokeSession(userId, sessionId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        dispatch({
-            type: UserTypes.RECEIVED_REVOKED_SESSION,
-            sessionId,
-            data: null,
-        });
-
-        return {data: true};
-    };
-}
-
-export function revokeAllSessionsForUser(userId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.revokeAllSessionsForUser(userId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-        const data = {isCurrentUser: userId === getCurrentUserId(getState())};
-        dispatch(batchActions([
-            {
-                type: UserTypes.REVOKE_ALL_USER_SESSIONS_SUCCESS,
-                data,
-            },
-        ]));
-
-        return {data: true};
-    };
-}
-
-export function revokeSessionsForAllUsers(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.revokeSessionsForAllUsers();
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-        dispatch({
-            type: UserTypes.REVOKE_SESSIONS_FOR_ALL_USERS_SUCCESS,
-            data: null,
-        });
-        return {data: true};
-    };
-}
-
 export function loadProfilesForDirect(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
@@ -802,29 +712,17 @@ export function loadProfilesForDirect(): ActionFunc {
                 if (member.mention_count > 0 && isDirectChannel(channel)) {
                     const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
                     if (!isDirectChannelVisible(profiles[otherUserId] || otherUserId, config, myPreferences, channel)) {
-                        makeDirectChannelVisibleIfNecessary(otherUserId)(dispatch, getState);
+                        dispatch(makeDirectChannelVisibleIfNecessary(otherUserId));
                     }
                 } else if ((member.mention_count > 0 || member.msg_count < channel.total_msg_count) &&
                            isGroupChannel(channel) && !isGroupChannelVisible(config, myPreferences, channel)) {
-                    makeGroupMessageVisibleIfNecessary(channel.id)(dispatch, getState);
+                    dispatch(makeGroupMessageVisibleIfNecessary(channel.id));
                 }
             }
         }
 
         return {data: true};
     };
-}
-
-export function getUserAudits(userId: string, page = 0, perPage: number = General.AUDITS_CHUNK_SIZE): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.getUserAudits,
-        onSuccess: UserTypes.RECEIVED_AUDITS,
-        params: [
-            userId,
-            page,
-            perPage,
-        ],
-    });
 }
 
 export function autocompleteUsers(term: string, teamId = '', channelId = '', options: {
@@ -967,7 +865,7 @@ export function startPeriodicStatusUpdates(): ActionFunc {
                     return;
                 }
 
-                getStatusesByIds(userIds)(dispatch, getState);
+                dispatch(getStatusesByIds(userIds));
             },
             General.STATUS_INTERVAL,
         );
@@ -1027,106 +925,6 @@ export function patchUser(user: UserProfile): ActionFunc {
     };
 }
 
-export function updateUserRoles(userId: string, roles: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.updateUserRoles(userId, roles);
-        } catch (error) {
-            return {error};
-        }
-
-        const profile = getState().entities.users.profiles[userId];
-        if (profile) {
-            dispatch({type: UserTypes.RECEIVED_PROFILE, data: {...profile, roles}});
-        }
-
-        return {data: true};
-    };
-}
-
-export function updateUserMfa(userId: string, activate: boolean, code = ''): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.updateUserMfa(userId, activate, code);
-        } catch (error) {
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const profile = getState().entities.users.profiles[userId];
-        if (profile) {
-            dispatch({type: UserTypes.RECEIVED_PROFILE, data: {...profile, mfa_active: activate}});
-        }
-
-        return {data: true};
-    };
-}
-
-export function updateUserPassword(userId: string, currentPassword: string, newPassword: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.updateUserPassword(userId, currentPassword, newPassword);
-        } catch (error) {
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const profile = getState().entities.users.profiles[userId];
-        if (profile) {
-            dispatch({type: UserTypes.RECEIVED_PROFILE, data: {...profile, last_password_update_at: new Date().getTime()}});
-        }
-
-        return {data: true};
-    };
-}
-
-export function updateUserActive(userId: string, active: boolean): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.updateUserActive(userId, active);
-        } catch (error) {
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const profile = getState().entities.users.profiles[userId];
-        if (profile) {
-            const deleteAt = active ? 0 : new Date().getTime();
-            dispatch({type: UserTypes.RECEIVED_PROFILE, data: {...profile, delete_at: deleteAt}});
-        }
-
-        return {data: true};
-    };
-}
-
-export function verifyUserEmail(token: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.verifyUserEmail,
-        params: [
-            token,
-        ],
-    });
-}
-
-export function sendVerificationEmail(email: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.sendVerificationEmail,
-        params: [
-            email,
-        ],
-    });
-}
-
-export function resetUserPassword(token: string, newPassword: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.resetUserPassword,
-        params: [
-            token,
-            newPassword,
-        ],
-    });
-}
-
 export function sendPasswordResetEmail(email: string): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.sendPasswordResetEmail,
@@ -1154,239 +952,6 @@ export function setDefaultProfileImage(userId: string): ActionFunc {
     };
 }
 
-export function uploadProfileImage(userId: string, imageData: any): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.uploadProfileImage(userId, imageData);
-        } catch (error) {
-            return {error};
-        }
-
-        const profile = getState().entities.users.profiles[userId];
-        if (profile) {
-            dispatch({type: UserTypes.RECEIVED_PROFILE, data: {...profile, last_picture_update: new Date().getTime()}});
-        }
-
-        return {data: true};
-    };
-}
-
-export function switchEmailToOAuth(service: string, email: string, password: string, mfaCode = ''): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.switchEmailToOAuth,
-        params: [
-            service,
-            email,
-            password,
-            mfaCode,
-        ],
-    });
-}
-
-export function switchOAuthToEmail(currentService: string, email: string, password: string): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.switchOAuthToEmail,
-        params: [
-            currentService,
-            email,
-            password,
-        ],
-    });
-}
-
-export function switchEmailToLdap(email: string, emailPassword: string, ldapId: string, ldapPassword: string, mfaCode = ''): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.switchEmailToLdap,
-        params: [
-            email,
-            emailPassword,
-            ldapId,
-            ldapPassword,
-            mfaCode,
-        ],
-    });
-}
-
-export function switchLdapToEmail(ldapPassword: string, email: string, emailPassword: string, mfaCode = ''): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.switchLdapToEmail,
-        params: [
-            ldapPassword,
-            email,
-            emailPassword,
-            mfaCode,
-        ],
-    });
-}
-
-export function createUserAccessToken(userId: string, description: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let data;
-
-        try {
-            data = await Client4.createUserAccessToken(userId, description);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const actions: Action[] = [];
-
-        const {currentUserId} = getState().entities.users;
-        if (userId === currentUserId) {
-            actions.push(
-                {
-                    type: UserTypes.RECEIVED_MY_USER_ACCESS_TOKEN,
-                    data: {...data, token: ''},
-                },
-            );
-        }
-
-        dispatch(batchActions(actions));
-
-        return {data};
-    };
-}
-
-export function getUserAccessToken(tokenId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let data;
-        try {
-            data = await Client4.getUserAccessToken(tokenId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const actions: Action[] = [];
-
-        const {currentUserId} = getState().entities.users;
-        if (data.user_id === currentUserId) {
-            actions.push(
-                {
-                    type: UserTypes.RECEIVED_MY_USER_ACCESS_TOKEN,
-                    data,
-                },
-            );
-        }
-
-        dispatch(batchActions(actions));
-
-        return {data};
-    };
-}
-
-export function getUserAccessTokens(page = 0, perPage: number = General.PROFILE_CHUNK_SIZE): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let data;
-
-        try {
-            data = await Client4.getUserAccessTokens(page, perPage);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        return {data};
-    };
-}
-
-export function getUserAccessTokensForUser(userId: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let data;
-        try {
-            data = await Client4.getUserAccessTokensForUser(userId, page, perPage);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const actions: Action[] = [];
-
-        const {currentUserId} = getState().entities.users;
-        if (userId === currentUserId) {
-            actions.push(
-                {
-                    type: UserTypes.RECEIVED_MY_USER_ACCESS_TOKENS,
-                    data,
-                },
-            );
-        }
-
-        dispatch(batchActions(actions));
-
-        return {data};
-    };
-}
-
-export function revokeUserAccessToken(tokenId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.revokeUserAccessToken(tokenId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        dispatch({
-            type: UserTypes.REVOKED_USER_ACCESS_TOKEN,
-            data: tokenId,
-        });
-
-        return {data: true};
-    };
-}
-
-export function disableUserAccessToken(tokenId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.disableUserAccessToken(tokenId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        dispatch({
-            type: UserTypes.DISABLED_USER_ACCESS_TOKEN,
-            data: tokenId,
-        });
-
-        return {data: true};
-    };
-}
-
-export function enableUserAccessToken(tokenId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.enableUserAccessToken(tokenId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        dispatch({
-            type: UserTypes.ENABLED_USER_ACCESS_TOKEN,
-            data: tokenId,
-        });
-
-        return {data: true};
-    };
-}
-
-export function clearUserAccessTokens(): ActionFunc {
-    return async (dispatch) => {
-        dispatch({type: UserTypes.CLEAR_MY_USER_ACCESS_TOKENS, data: null});
-        return {data: true};
-    };
-}
-
 export function checkForModifiedUsers() {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
@@ -1405,7 +970,6 @@ export function checkForModifiedUsers() {
 
 export default {
     checkMfa,
-    generateMfaSecret,
     login,
     getProfiles,
     getProfilesByIds,
@@ -1418,37 +982,13 @@ export default {
     getStatus,
     getStatusesByIds,
     getSessions,
-    getTotalUsersStats,
     loadProfilesForDirect,
-    revokeSession,
-    revokeAllSessionsForUser,
-    revokeSessionsForAllUsers,
-    getUserAudits,
     searchProfiles,
     startPeriodicStatusUpdates,
     stopPeriodicStatusUpdates,
     updateMe,
-    updateUserRoles,
-    updateUserMfa,
-    updateUserPassword,
-    updateUserActive,
-    verifyUserEmail,
-    sendVerificationEmail,
-    resetUserPassword,
     sendPasswordResetEmail,
-    uploadProfileImage,
-    switchEmailToOAuth,
-    switchOAuthToEmail,
-    switchEmailToLdap,
-    switchLdapToEmail,
     getTermsOfService,
-    createTermsOfService,
     updateMyTermsOfServiceStatus,
-    createUserAccessToken,
-    getUserAccessToken,
-    getUserAccessTokensForUser,
-    revokeUserAccessToken,
-    disableUserAccessToken,
-    enableUserAccessToken,
     checkForModifiedUsers,
 };
