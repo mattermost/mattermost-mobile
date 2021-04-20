@@ -45,7 +45,6 @@ module.exports = {
             safe: false,
             allowUndefined: true,
         }],
-        'react-native-reanimated/plugin',
     ],
     exclude: ['**/*.png', '**/*.jpg', '**/*.gif'],
 };

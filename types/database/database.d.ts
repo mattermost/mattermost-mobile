@@ -491,7 +491,7 @@ export type PrepareForDatabaseArgs = {
   tableName: string;
   createRaws?: MatchExistingRecord[];
   updateRaws?: MatchExistingRecord[];
-  recordOperator: (dataArgs: DataFactoryArgs) => void;
+  recordOperator: (DataFactoryArgs) => Promise<Model>;
 };
 
 export type PrepareRecordsArgs = PrepareForDatabaseArgs & {
@@ -581,7 +581,7 @@ export type ProcessInputsArgs = {
 export type HandleEntityRecordsArgs = {
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
-  operator: (dataArgs: DataFactoryArgs) => Promise<Model | null>;
+  operator: (DataFactoryArgs) => Promise<Model>;
   rawValues: RawValue[];
   tableName: string;
   prepareRecordsOnly: boolean;
