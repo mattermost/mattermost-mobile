@@ -48,7 +48,6 @@ import org.unimodules.adapters.react.ModuleRegistryAdapter;
 import org.unimodules.adapters.react.ReactModuleRegistryProvider;
 import org.unimodules.core.interfaces.SingletonModule;
 
-import com.nozbe.watermelondb.WatermelonDBPackage;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
@@ -82,7 +81,6 @@ public class MainApplication extends NavigationApplication implements INotificat
         // Packages that cannot be autolinked yet can be added manually here, for example:
         // packages.add(new MyReactNativePackage());
         packages.add(new RNNotificationsPackage(MainApplication.this));
-        packages.add(new WatermelonDBPackage());
 
         // Add unimodules
         List<ReactPackage> unimodules = Arrays.<ReactPackage>asList(
@@ -231,7 +229,7 @@ public class MainApplication extends NavigationApplication implements INotificat
          We use reflection here to pick up the class that initializes Flipper,
         since Flipper library is not available in release mode
         */
-        Class<?> aClass = Class.forName("com.rndiffapp.ReactNativeFlipper");
+        Class<?> aClass = Class.forName("com.rn.ReactNativeFlipper");
         aClass
             .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);

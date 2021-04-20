@@ -455,10 +455,6 @@ workflows:
   build:
     jobs:
       - test
-      - check-deps:
-          context: sast-webhook
-          requires:
-            - test
 
       - build-android-release:
           context: mattermost-mobile-android-release

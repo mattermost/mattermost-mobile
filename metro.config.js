@@ -17,9 +17,7 @@ const config = {
             console.log('BUILDING MODULES FOR', platform);
             const moduleMap = {};
             let modulePaths = [];
-            if (platform === 'android') {
-                modulePaths = require('./packager/modules.android');
-            } else {
+            if (platform === 'ios') {
                 modulePaths = require('./packager/modules.ios');
             }
             modulePaths.forEach((path) => {

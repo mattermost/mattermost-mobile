@@ -3,7 +3,9 @@ package com.mattermost.helpers;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableMap;
 import com.oblador.keychain.KeychainModule;
 
 
@@ -12,7 +14,7 @@ public class Credentials {
 
     public static void getCredentialsForCurrentServer(ReactApplicationContext context, ResolvePromise promise) {
         final KeychainModule keychainModule = new KeychainModule(context);
-        final AsyncStorageHelper asyncStorage = new AsyncStorageHelper(context);
+        final AsyncStorage asyncStorage = new AsyncStorage(context);
         final ArrayList<String> keys = new ArrayList<String>(1);
         keys.add(CURRENT_SERVER_URL);
         KeysReadableArray asyncStorageKeys = new KeysReadableArray() {
