@@ -347,6 +347,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         input: {
             color: theme.centerChannelColor,
+            width: '100%',
             fontSize: 17,
             paddingHorizontal: 52,
             textAlignVertical: 'center',
