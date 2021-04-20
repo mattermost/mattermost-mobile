@@ -7,7 +7,7 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import ProfilePictureButton from './profile_picture_button.js';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 describe('profile_picture_button', () => {
     const baseProps = {

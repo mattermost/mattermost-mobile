@@ -127,6 +127,22 @@ export default class NotificationSettings extends PureComponent {
         });
     };
 
+    saveAutoResponder = (notifyProps) => {
+        const {intl} = this.context;
+
+        if (!notifyProps.auto_responder_message) {
+            notifyProps.auto_responder_message = intl.formatMessage({
+                id: 'mobile.notification_settings.auto_responder.default_message',
+                defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
+            });
+        }
+
+        if (this.shouldSaveAutoResponder(notifyProps)) {
+            const notify_props = this.sanitizeNotificationProps(notifyProps);
+            this.props.actions.updateMe({notify_props});
+        }
+    };
+
     saveNotificationProps = (notifyProps) => {
         const {currentUser} = this.props;
         const prevProps = getNotificationProps(currentUser);
@@ -136,9 +152,21 @@ export default class NotificationSettings extends PureComponent {
         };
 
         if (!deepEqual(prevProps, notifyProps)) {
-            this.props.actions.updateMe({notify_props: updatedProps});
+            const notify_props = this.sanitizeNotificationProps(updatedProps);
+            this.props.actions.updateMe({notify_props});
         }
     };
+
+    sanitizeNotificationProps = (notifyProps) => {
+        const sanitized = {...notifyProps};
+        Reflect.deleteProperty(sanitized, 'showKeywordsModal');
+        Reflect.deleteProperty(sanitized, 'showReplyModal');
+        Reflect.deleteProperty(sanitized, 'androidKeywords');
+        Reflect.deleteProperty(sanitized, 'newReplyValue');
+        Reflect.deleteProperty(sanitized, 'user_id');
+
+        return sanitized;
+    }
 
     /**
      * shouldSaveAutoResponder
@@ -150,28 +178,15 @@ export default class NotificationSettings extends PureComponent {
      * for some reason the update does not get received on mobile, it does for web
      */
     shouldSaveAutoResponder = (notifyProps) => {
-        const {currentUserStatus} = this.props;
+        const {currentUser, currentUserStatus} = this.props;
         const {auto_responder_active: autoResponderActive} = notifyProps;
+        const prevProps = getNotificationProps(currentUser);
 
         const enabling = currentUserStatus !== General.OUT_OF_OFFICE && autoResponderActive === 'true';
         const disabling = currentUserStatus === General.OUT_OF_OFFICE && autoResponderActive === 'false';
+        const updatedMsg = prevProps.auto_responder_message !== notifyProps.auto_responder_message;
 
-        return enabling || disabling;
-    };
-
-    saveAutoResponder = (notifyProps) => {
-        const {intl} = this.context;
-
-        if (!notifyProps.auto_responder_message || notifyProps.auto_responder_message === '') {
-            notifyProps.auto_responder_message = intl.formatMessage({
-                id: 'mobile.notification_settings.auto_responder.default_message',
-                defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
-            });
-        }
-
-        if (this.shouldSaveAutoResponder(notifyProps)) {
-            this.props.actions.updateMe({notify_props: notifyProps});
-        }
+        return enabling || disabling || updatedMsg;
     };
 
     render() {

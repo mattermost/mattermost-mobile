@@ -101,7 +101,7 @@ export function openGalleryAtIndex(index, files) {
             contentPush.y = {
                 from: windowHeight,
                 to: 0,
-                duration: 150,
+                duration: 300,
                 interpolation: {mode: 'decelerate'},
             };
 
@@ -109,13 +109,13 @@ export function openGalleryAtIndex(index, files) {
                 contentPop.translationY = {
                     from: 0,
                     to: windowHeight,
-                    duration: 150,
+                    duration: 300,
                 };
             } else {
                 contentPop.y = {
                     from: 0,
                     to: windowHeight,
-                    duration: 150,
+                    duration: 300,
                 };
                 contentPop.alpha = {
                     from: 1,
@@ -141,15 +141,30 @@ export function openGalleryAtIndex(index, files) {
                 push: {
                     waitForRender: true,
                     sharedElementTransitions,
-                    ...Platform.select({ios: {
-                        content: contentPush,
-                    }}),
-                },
-                pop: {
-                    content: contentPop,
                 },
             },
         };
+
+        if (Object.keys(contentPush).length) {
+            options.animations.push = {
+                ...options.animations.push,
+                ...Platform.select({
+                    android: contentPush,
+                    ios: {
+                        content: contentPush,
+                    },
+                }),
+            };
+        }
+
+        if (Object.keys(contentPop).length) {
+            options.animations.pop = Platform.select({
+                android: contentPop,
+                ios: {
+                    content: contentPop,
+                },
+            });
+        }
 
         goToScreen(screen, '', passProps, options);
     });

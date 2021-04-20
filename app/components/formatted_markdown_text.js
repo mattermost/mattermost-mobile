@@ -10,7 +10,6 @@ import {injectIntl, intlShape} from 'react-intl';
 
 import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getMarkdownTextStyles} from 'app/utils/markdown';
-import CustomPropTypes from 'app/constants/custom_prop_types';
 
 import AtMention from 'app/components/at_mention';
 import MarkdownLink from 'app/components/markdown/markdown_link';
@@ -32,11 +31,11 @@ const TARGET_BLANK_URL_PREFIX = '!';
 */
 class FormattedMarkdownText extends React.PureComponent {
     static propTypes = {
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         defaultMessage: PropTypes.string.isRequired,
         id: PropTypes.string.isRequired,
         onPostPress: PropTypes.func,
-        style: CustomPropTypes.Style,
+        style: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
         values: PropTypes.object,

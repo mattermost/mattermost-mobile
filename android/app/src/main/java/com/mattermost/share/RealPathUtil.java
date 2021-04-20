@@ -72,7 +72,11 @@ public class RealPathUtil {
                         split[1]
                 };
 
-                return getDataColumn(context, contentUri, selection, selectionArgs);
+                if (contentUri != null) {
+                    return getDataColumn(context, contentUri, selection, selectionArgs);
+                } else {
+                    return getPathFromSavingTempFile(context, uri);
+                }
             }
         }
 

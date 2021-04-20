@@ -74,7 +74,6 @@ export type ChannelsState = {
     groupsAssociatedToChannel: any;
     totalCount: number;
     manuallyUnread: RelationOneToOne<Channel, boolean>;
-    channelModerations: RelationOneToOne<Channel, Array<ChannelModeration>>;
     channelMemberCountsByGroup: RelationOneToOne<Channel, ChannelMemberCountsByGroup>;
 };
 

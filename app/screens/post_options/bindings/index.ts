@@ -8,7 +8,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
 import {AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
-import {ActionResult, GenericAction, ActionFunc} from '@mm-redux/types/actions';
+import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
@@ -21,6 +21,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {sendEphemeralPost} from '@actions/views/post';
 import {Post} from '@mm-redux/types/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {SendEphemeralPost} from 'types/actions/posts';
 
 type OwnProps = {
     post: Post;
@@ -43,7 +44,7 @@ function mapStateToProps(state: GlobalState, props: OwnProps) {
 
 type Actions = {
     doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-    sendEphemeralPost: (message: any, channelId?: string, parentId?: string) => Promise<ActionResult>;
+    sendEphemeralPost: SendEphemeralPost;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {

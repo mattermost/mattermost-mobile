@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-
 export default class Emoji extends React.PureComponent {
     static propTypes = {
 
@@ -36,9 +34,9 @@ export default class Emoji extends React.PureComponent {
         displayTextOnly: PropTypes.bool,
         literal: PropTypes.string,
         size: PropTypes.number,
-        textStyle: CustomPropTypes.Style,
+        textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         unicode: PropTypes.string,
-        customEmojiStyle: CustomPropTypes.Style,
+        customEmojiStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         testID: PropTypes.string,
     };
 

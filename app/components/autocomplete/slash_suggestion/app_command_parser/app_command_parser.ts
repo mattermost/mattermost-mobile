@@ -66,7 +66,7 @@ export const ParseState = keyMirror({
 });
 
 interface FormsCache {
-    getForm: (location: string, binding: AppBinding) => Promise<AppForm | undefined>;
+    getForm: (location: string, binding: AppBinding) => Promise<{form?: AppForm, error?: string} | undefined>;
 }
 
 interface Intl {
@@ -215,7 +215,11 @@ export class ParsedCommand {
 
         this.form = this.binding.form;
         if (!this.form) {
-            this.form = await this.formsCache.getForm(this.location, this.binding);
+            const fetched = await this.formsCache.getForm(this.location, this.binding);
+            if (fetched?.error) {
+                return this.asError(fetched.error);
+            }
+            this.form = fetched?.form;
         }
 
         return this;
@@ -263,9 +267,7 @@ export class ParsedCommand {
                     if (!field) {
                         return this.asError(this.intl.formatMessage({
                             id: 'apps.error.parser.no_argument_pos_x',
-                            defaultMessage: 'Command does not accept {positionX} positional arguments.',
-                        }, {
-                            positionX: this.position,
+                            defaultMessage: 'Unable to identify argument.',
                         }));
                     }
                     this.field = field;
@@ -582,8 +584,9 @@ export class AppCommandParser {
         const result: AutocompleteSuggestion[] = [];
 
         const bindings = this.getCommandBindings();
+
         for (const binding of bindings) {
-            let base = binding.app_id;
+            let base = binding.label;
             if (!base) {
                 continue;
             }
@@ -591,10 +594,11 @@ export class AppCommandParser {
             if (base[0] !== '/') {
                 base = '/' + base;
             }
+
             if (base.startsWith(command)) {
                 result.push({
+                    Complete: binding.label,
                     Suggestion: base,
-                    Complete: base.substring(1),
                     Description: binding.description || '',
                     Hint: binding.hint || '',
                     IconData: binding.icon || '',
@@ -608,6 +612,7 @@ export class AppCommandParser {
     // getSuggestions returns suggestions for subcommands and/or form arguments
     public getSuggestions = async (pretext: string): Promise<AutocompleteSuggestion[]> => {
         let parsed = new ParsedCommand(pretext, this, this.intl);
+        let suggestions: AutocompleteSuggestion[] = [];
 
         const commandBindings = this.getCommandBindings();
         if (!commandBindings) {
@@ -615,13 +620,19 @@ export class AppCommandParser {
         }
 
         parsed = await parsed.matchBinding(commandBindings, true);
-        let suggestions: AutocompleteSuggestion[] = [];
+        if (parsed.state === ParseState.Error) {
+            suggestions = this.getErrorSuggestion(parsed);
+        }
+
         if (parsed.state === ParseState.Command) {
             suggestions = this.getCommandSuggestions(parsed);
         }
 
         if (parsed.form || parsed.incomplete) {
             parsed = parsed.parseForm(true);
+            if (parsed.state === ParseState.Error) {
+                suggestions = this.getErrorSuggestion(parsed);
+            }
             const argSuggestions = await this.getParameterSuggestions(parsed);
             suggestions = suggestions.concat(argSuggestions);
         }
@@ -644,9 +655,36 @@ export class AppCommandParser {
             if (execute) {
                 suggestions = [execute, ...suggestions];
             }
+        } else if (suggestions.length === 0 && (parsed.field?.type !== AppFieldTypes.USER && parsed.field?.type !== AppFieldTypes.CHANNEL)) {
+            suggestions = this.getNoMatchingSuggestion();
         }
-
         return suggestions.map((suggestion) => this.decorateSuggestionComplete(parsed, suggestion));
+    }
+
+    getNoMatchingSuggestion = () => {
+        return [{
+            Complete: '',
+            Suggestion: '',
+            Hint: this.intl.formatMessage({
+                id: 'apps.suggestion.no_suggestion',
+                defaultMessage: 'No matching suggestions.',
+            }),
+            IconData: 'error',
+            Description: '',
+        }];
+    }
+
+    getErrorSuggestion = (parsed: ParsedCommand) => {
+        return [{
+            Complete: '',
+            Suggestion: '',
+            Hint: this.intl.formatMessage({
+                id: 'apps.suggestion.errors.parser_error',
+                defaultMessage: 'Parsing error',
+            }),
+            IconData: 'error',
+            Description: parsed.error,
+        }];
     }
 
     // composeCallFromParsed creates the form submission call
@@ -779,7 +817,7 @@ export class AppCommandParser {
             goBackSpace = 1;
         }
         let complete = parsed.command.substring(0, parsed.incompleteStart - goBackSpace);
-        complete += choice.Complete || choice.Suggestion;
+        complete += choice.Complete === undefined ? choice.Suggestion : choice.Complete;
         choice.Hint = choice.Hint || '';
         complete = complete.substring(1);
 
@@ -811,7 +849,7 @@ export class AppCommandParser {
     isAppCommand = (pretext: string): boolean => {
         const command = pretext.toLowerCase();
         for (const binding of this.getCommandBindings()) {
-            let base = binding.app_id;
+            let base = binding.label;
             if (!base) {
                 continue;
             }
@@ -847,7 +885,7 @@ export class AppCommandParser {
     }
 
     // fetchForm unconditionaly retrieves the form for the given binding (subcommand)
-    fetchForm = async (binding: AppBinding): Promise<AppForm | undefined> => {
+    fetchForm = async (binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
         if (!binding.call) {
             return undefined;
         }
@@ -860,11 +898,10 @@ export class AppCommandParser {
         const res = await this.store.dispatch(doAppCall(payload, AppCallTypes.FORM, this.intl));
         if (res.error) {
             const errorResponse = res.error as AppCallResponse;
-            this.displayError(errorResponse.error || this.intl.formatMessage({
+            return {error: errorResponse.error || this.intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error.',
-            }));
-            return undefined;
+            })};
         }
 
         const callResponse = res.data as AppCallResponse;
@@ -873,35 +910,33 @@ export class AppCommandParser {
             break;
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.OK:
-            this.displayError(this.intl.formatMessage({
+            return {error: this.intl.formatMessage({
                 id: 'apps.error.responses.unexpected_type',
                 defaultMessage: 'App response type was not expected. Response type: {type}',
             }, {
                 type: callResponse.type,
-            }));
-            return undefined;
+            })};
         default:
-            this.displayError(this.intl.formatMessage({
+            return {error: this.intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
             }, {
                 type: callResponse.type,
-            }));
-            return undefined;
+            })};
         }
 
-        return callResponse.form;
+        return {form: callResponse.form};
     }
 
-    getForm = async (location: string, binding: AppBinding): Promise<AppForm | undefined> => {
+    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
         const form = this.forms[location];
         if (form) {
-            return form;
+            return {form};
         }
 
         const fetched = await this.fetchForm(binding);
-        if (fetched) {
-            this.forms[location] = fetched;
+        if (fetched?.form) {
+            this.forms[location] = fetched.form;
         }
         return fetched;
     }
@@ -1044,7 +1079,7 @@ export class AppCommandParser {
 
         return [{
             Complete: complete,
-            Suggestion: parsed.incomplete,
+            Suggestion: `${parsed.field.label || parsed.field.name}: ${delimiter || '"'}${parsed.incomplete}${delimiter || '"'}`,
             Description: f.description || '',
             Hint: '',
             IconData: parsed.binding?.icon || '',
@@ -1059,12 +1094,12 @@ export class AppCommandParser {
             return [{
                 Complete: '',
                 Suggestion: '',
-                Hint: '',
-                Description: this.intl.formatMessage({
+                Hint: this.intl.formatMessage({
                     id: 'apps.suggestion.no_static',
                     defaultMessage: 'No matching options.',
                 }),
-                IconData: '',
+                Description: '',
+                IconData: 'error',
             }];
         }
         return opts.map((opt) => {
@@ -1089,7 +1124,7 @@ export class AppCommandParser {
         const f = parsed.field;
         if (!f) {
             // Should never happen
-            return this.makeSuggestionError(this.intl.formatMessage({
+            return this.makeDynamicSelectSuggestionError(this.intl.formatMessage({
                 id: 'apps.error.parser.unexpected_error',
                 defaultMessage: 'Unexpected error.',
             }));
@@ -1097,7 +1132,7 @@ export class AppCommandParser {
 
         const {call, errorMessage} = await this.composeCallFromParsed(parsed);
         if (!call) {
-            return this.makeSuggestionError(this.intl.formatMessage({
+            return this.makeDynamicSelectSuggestionError(this.intl.formatMessage({
                 id: 'apps.error.lookup.error_preparing_request',
                 defaultMessage: 'Error preparing lookup request: {errorMessage}',
             }, {
@@ -1111,7 +1146,7 @@ export class AppCommandParser {
         const res = await this.store.dispatch(doAppCall<ResponseType>(call, AppCallTypes.LOOKUP, this.intl));
         if (res.error) {
             const errorResponse = res.error as AppCallResponse;
-            return this.makeSuggestionError(errorResponse.error || this.intl.formatMessage({
+            return this.makeDynamicSelectSuggestionError(errorResponse.error || this.intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error.',
             }));
@@ -1123,14 +1158,14 @@ export class AppCommandParser {
             break;
         case AppCallResponseTypes.NAVIGATE:
         case AppCallResponseTypes.FORM:
-            return this.makeSuggestionError(this.intl.formatMessage({
+            return this.makeDynamicSelectSuggestionError(this.intl.formatMessage({
                 id: 'apps.error.responses.unexpected_type',
                 defaultMessage: 'App response type was not expected. Response type: {type}',
             }, {
                 type: callResponse.type,
             }));
         default:
-            return this.makeSuggestionError(this.intl.formatMessage({
+            return this.makeDynamicSelectSuggestionError(this.intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
             }, {
@@ -1143,7 +1178,10 @@ export class AppCommandParser {
             return [{
                 Complete: '',
                 Suggestion: '',
-                Hint: '',
+                Hint: this.intl.formatMessage({
+                    id: 'apps.suggestion.no_static',
+                    defaultMessage: 'No matching options.',
+                }),
                 IconData: '',
                 Description: this.intl.formatMessage({
                     id: 'apps.suggestion.no_dynamic',
@@ -1169,7 +1207,7 @@ export class AppCommandParser {
         });
     }
 
-    makeSuggestionError = (message: string): AutocompleteSuggestion[] => {
+    makeDynamicSelectSuggestionError = (message: string): AutocompleteSuggestion[] => {
         const errMsg = this.intl.formatMessage({
             id: 'apps.error',
             defaultMessage: 'Error: {error}',
@@ -1178,9 +1216,12 @@ export class AppCommandParser {
         });
         return [{
             Complete: '',
-            Suggestion: '',
+            Suggestion: this.intl.formatMessage({
+                id: 'apps.suggestion.dynamic.error',
+                defaultMessage: 'Dynamic select error',
+            }),
             Hint: '',
-            IconData: '',
+            IconData: 'error',
             Description: errMsg,
         }];
     }

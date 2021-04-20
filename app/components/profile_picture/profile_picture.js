@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
@@ -19,18 +19,19 @@ const STATUS_BUFFER = Platform.select({
 
 export default class ProfilePicture extends PureComponent {
     static propTypes = {
-        isCurrentUser: PropTypes.bool.isRequired,
+        isCurrentUser: PropTypes.bool,
         size: PropTypes.number,
         statusSize: PropTypes.number,
         iconSize: PropTypes.number,
         user: PropTypes.object,
+        userId: PropTypes.string,
         showStatus: PropTypes.bool,
         status: PropTypes.string,
         edit: PropTypes.bool,
         imageUri: PropTypes.string,
         profileImageUri: PropTypes.string,
         profileImageRemove: PropTypes.bool,
-        theme: PropTypes.object.isRequired,
+        theme: PropTypes.object,
         testID: PropTypes.string,
         actions: PropTypes.shape({
             getStatusForId: PropTypes.func.isRequired,
@@ -181,7 +182,7 @@ export default class ProfilePicture extends PureComponent {
         return (
             <View
                 style={[style.container, containerStyle]}
-                testID={`${testID}.${user.id}`}
+                testID={`${testID}.${user?.id}`}
             >
                 {image}
                 {(showStatus || edit) && (user && !user.is_bot) &&

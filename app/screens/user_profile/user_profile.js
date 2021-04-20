@@ -160,9 +160,19 @@ export default class UserProfile extends PureComponent {
             }
 
             return (
-                <View>
-                    <Text style={style.header}>{label}</Text>
-                    <Text style={style.text}>{user[property]}</Text>
+                <View testID='user_profile.display_block'>
+                    <Text
+                        style={style.header}
+                        testID={`user_profile.display_block.${property}.label`}
+                    >
+                        {label}
+                    </Text>
+                    <Text
+                        style={style.text}
+                        testID={`user_profile.display_block.${property}.value`}
+                    >
+                        {user[property]}
+                    </Text>
                 </View>
             );
         }
@@ -186,12 +196,14 @@ export default class UserProfile extends PureComponent {
                     id='mobile.routes.user_profile.local_time'
                     defaultMessage='LOCAL TIME'
                     style={style.header}
+                    testID='user_profile.timezone_block.local_time.label'
                 />
                 <Text style={style.text}>
                     <FormattedTime
                         timeZone={currentTimezone}
                         hour12={!militaryTime}
                         value={nowDate}
+                        testID='user_profile.timezone_block.local_time.value'
                     />
                 </Text>
             </View>
@@ -287,6 +299,7 @@ export default class UserProfile extends PureComponent {
                     icon={l.icon}
                     theme={this.props.theme}
                     iconSize={l.iconSize}
+                    testID='user_profile.additional_options.action'
                 />
             );
         });
@@ -331,11 +344,15 @@ export default class UserProfile extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
+            <SafeAreaView
+                style={style.container}
+                testID='user_profile.screen'
+            >
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.contentContainer}
+                    testID='user_profile.scroll_view'
                 >
                     <View style={style.top}>
                         <ProfilePicture
@@ -359,6 +376,7 @@ export default class UserProfile extends PureComponent {
                         iconSize={24}
                         textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
+                        testID='user_profile.send_message.action'
                     />
                     {this.renderAdditionalOptions()}
                 </ScrollView>

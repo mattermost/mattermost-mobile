@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Preferences} from '@mm-redux/constants';
 import {getCurrentChannelId, getRedirectChannelNameForTeam, getChannelsNameMapInTeam} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';

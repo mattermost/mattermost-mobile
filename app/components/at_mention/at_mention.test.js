@@ -3,6 +3,9 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+
+import {Preferences} from '@mm-redux/constants';
+
 import AtMention from './at_mention.js';
 
 describe('AtMention', () => {
@@ -13,7 +16,7 @@ describe('AtMention', () => {
         mentionName: 'John.Smith',
         mentionStyle: {color: '#ff0000'},
         textStyle: {backgroundColor: 'yellow'},
-        theme: {},
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot, no highlight', () => {

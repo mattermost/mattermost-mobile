@@ -765,13 +765,21 @@ platform :android do
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
     apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-    outputJson = load_config_json(lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH])
+    json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+
+    if json_path.nil? || json_path.empty?
+      dir_name = File.dirname(apks.first)
+      json_path = Dir.glob(File.join(dir_name, '*.json')).first
+    end
+
+    UI.message("JSON PATH APK #{json_path}")
+    outputJson = load_config_json(json_path)
     paths = []
     apks.each do |apk|
       filename = File.basename(apk)
-      output = outputJson.find { |o| o["path"] === filename }
+      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
       unless output.nil?
-        filterName = output["apkData"]["filterName"]
+        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
         name = "#{app_name_sub}"
         unless filterName.nil? || filterName.empty?
           name += "-#{filterName}"

@@ -11,7 +11,7 @@ import DocumentPicker from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';

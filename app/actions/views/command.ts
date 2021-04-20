@@ -30,6 +30,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
         };
 
         let msg = message;
+        msg = filterEmDashForCommand(msg);
 
         let cmdLength = msg.indexOf(' ');
         if (cmdLength < 0) {
@@ -43,7 +44,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
         if (appsAreEnabled) {
             const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.root_id);
             if (parser.isAppCommand(msg)) {
-                const {call, errorMessage} = await parser.composeCallFromCommand(message);
+                const {call, errorMessage} = await parser.composeCallFromCommand(msg);
                 const createErrorMessage = (errMessage: string) => {
                     return {error: {message: errMessage}};
                 };
@@ -64,7 +65,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                 switch (callResp.type) {
                 case AppCallResponseTypes.OK:
                     if (callResp.markdown) {
-                        dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id));
+                        dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id, callResp.app_metadata?.bot_user_id));
                     }
                     return {data: {}};
                 case AppCallResponseTypes.FORM:
@@ -90,3 +91,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
         return {data, error};
     };
 }
+
+const filterEmDashForCommand = (command: string): string => {
+    return command.replace(/\u2014/g, '--');
+};

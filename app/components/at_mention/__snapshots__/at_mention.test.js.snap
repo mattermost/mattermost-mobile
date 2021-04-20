@@ -2,16 +2,14 @@
 
 exports[`AtMention should match snapshot, no highlight 1`] = `
 <Text
-  style={Object {}}
+  style={
+    Object {
+      "backgroundColor": "yellow",
+    }
+  }
 >
   <Text
-    style={
-      Array [
-        Object {
-          "backgroundColor": "yellow",
-        },
-      ]
-    }
+    style={Array []}
   >
     @John.Smith
   </Text>
@@ -22,7 +20,11 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
 <Text
   onLongPress={[Function]}
   onPress={[Function]}
-  style={Object {}}
+  style={
+    Object {
+      "backgroundColor": "yellow",
+    }
+  }
 >
   <Text
     style={
@@ -31,7 +33,8 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
           "color": "#ff0000",
         },
         Object {
-          "backgroundColor": "yellow",
+          "backgroundColor": "#ffe577",
+          "color": "#145dbf",
         },
       ]
     }
@@ -45,7 +48,11 @@ exports[`AtMention should match snapshot, without highlight 1`] = `
 <Text
   onLongPress={[Function]}
   onPress={[Function]}
-  style={Object {}}
+  style={
+    Object {
+      "backgroundColor": "yellow",
+    }
+  }
 >
   <Text
     style={
