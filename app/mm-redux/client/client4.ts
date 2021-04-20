@@ -167,10 +167,6 @@ export default class Client4 {
         return `${this.getChannelRoute(channelId)}/scheme`;
     }
 
-    getSharedChannelsRoute() {
-        return `${this.getBaseRoute()}/sharedchannels`;
-    }
-
     getPostsRoute() {
         return `${this.getBaseRoute()}/posts`;
     }
@@ -3045,25 +3041,6 @@ export default class Client4 {
         return this.doFetch(
             `${this.getBaseRoute()}/saml/certificate/idp`,
             request,
-        );
-    };
-
-    // Remote - Shared Channel Routes
-    getRemoteClusterInfo = async (remote_id: string) => {
-        const response = await this.doFetch(
-            `${this.getSharedChannelsRoute()}/remote_info/${remote_id}`,
-            {method: 'get'},
-        );
-        return {
-            ...response,
-            remote_id,
-        };
-    };
-
-    getSharedChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
-        return this.doFetch(
-            `${this.getSharedChannelsRoute()}/${teamId}${buildQueryString({page, per_page: perPage})}`,
-            {method: 'get'},
         );
     };
 
