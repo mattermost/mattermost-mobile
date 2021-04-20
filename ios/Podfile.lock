@@ -3,10 +3,10 @@ PODS:
   - BVLinearGradient (2.5.6):
     - React
   - DoubleConversion (1.1.6)
-  - EXConstants (10.1.2):
+  - EXConstants (10.1.3):
     - UMConstantsInterface
     - UMCore
-  - EXFileSystem (11.0.1):
+  - EXFileSystem (11.0.2):
     - UMCore
     - UMFileSystemInterface
   - FBLazyVector (0.64.0)
@@ -29,9 +29,9 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - Permission-Camera (3.0.1):
+  - Permission-Camera (3.0.2):
     - RNPermissions
-  - Permission-PhotoLibrary (3.0.1):
+  - Permission-PhotoLibrary (3.0.2):
     - RNPermissions
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
@@ -239,8 +239,6 @@ PODS:
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (2.3.4):
-    - React-Core
   - react-native-netinfo (6.0.0):
     - React-Core
   - react-native-notifications (3.4.2):
@@ -255,7 +253,7 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webview (11.3.2):
+  - react-native-webview (11.4.0):
     - React-Core
   - React-perflogger (0.64.0)
   - React-RCTActionSheet (0.64.0):
@@ -340,7 +338,7 @@ PODS:
     - React-Core
   - RNCMaskedView (0.1.10):
     - React
-  - RNDeviceInfo (8.1.0):
+  - RNDeviceInfo (8.1.2):
     - React-Core
   - RNDevMenu (4.0.2):
     - React-Core
@@ -354,11 +352,11 @@ PODS:
     - React-Core
   - RNGestureHandler (1.10.3):
     - React-Core
-  - RNKeychain (6.2.0):
-    - React
-  - RNLocalize (2.0.2):
+  - RNKeychain (7.0.0):
     - React-Core
-  - RNPermissions (3.0.1):
+  - RNLocalize (2.0.3):
+    - React-Core
+  - RNPermissions (3.0.2):
     - React-Core
   - RNReactNativeHapticFeedback (1.11.0):
     - React-Core
@@ -394,16 +392,16 @@ PODS:
   - RNRudderSdk (1.0.0):
     - React
     - Rudder
-  - RNSentry (2.4.0):
+  - RNSentry (2.4.1):
     - React-Core
     - Sentry (= 6.1.4)
-  - RNShare (5.2.2):
+  - RNShare (6.0.0):
     - React-Core
-  - RNSVG (12.1.1-0):
+  - RNSVG (12.1.1):
     - React
   - RNVectorIcons (8.1.0):
     - React-Core
-  - Rudder (1.0.9)
+  - Rudder (1.0.11)
   - SDWebImage (5.9.4):
     - SDWebImage/Core (= 5.9.4)
   - SDWebImage/Core (5.9.4)
@@ -428,7 +426,7 @@ PODS:
   - UMImageLoaderInterface (6.1.0)
   - UMPermissionsInterface (6.1.0):
     - UMCore
-  - UMReactNativeAdapter (6.2.1):
+  - UMReactNativeAdapter (6.2.2):
     - React-Core
     - UMCore
     - UMFontInterface
@@ -473,7 +471,6 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-emm (from `../node_modules/@mattermost/react-native-emm`)"
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
-  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - "react-native-paste-input (from `../node_modules/@mattermost/react-native-paste-input`)"
@@ -598,8 +595,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/react-native-emm"
   react-native-hw-keyboard-event:
     :path: "../node_modules/react-native-hw-keyboard-event"
-  react-native-image-picker:
-    :path: "../node_modules/react-native-image-picker"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
@@ -713,15 +708,15 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
-  EXConstants: 9d38f1a67f2bfcb222bb1d108a7070cf38132891
-  EXFileSystem: b3857957f9ca86c8743c6c60cc27fa078ac2992b
+  EXConstants: c00cd53a17a65b2e53ddb3890e4e74d3418e406e
+  EXFileSystem: 35769beb727d5341d1276fd222710f9704f7164e
   FBLazyVector: 49cbe4b43e445b06bf29199b6ad2057649e4c8f5
   FBReactNativeSpec: a804c9d6c798f94831713302354003ee54ea18cb
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   jail-monkey: 80c9e34da2cd54023e5ad08bf7051ec75bd43d5b
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  Permission-Camera: 0d2d15352e9c54c3ea8686c8c21fb1a9edf3431b
-  Permission-PhotoLibrary: e5d0500209f22e2a5b281501cd3744a965747726
+  Permission-Camera: 4eb4a67be32698c5927cb12313c3c1f23ee5b7b2
+  Permission-PhotoLibrary: 5b198e177c0bc5c91c20e66ae7202d0183c78b87
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: 2f8cb5b7533219bf4218a045f92768129cf7050a
   RCTTypeSafety: 512728b73549e72ad7330b92f3d42936f2a4de5b
@@ -739,13 +734,12 @@ SPEC CHECKSUMS:
   react-native-document-picker: d2b8fa4d9b268a316515b1f631236f7a87813df6
   react-native-emm: 480fc1cf19a8f3cd2b7e96d15ae3a238307bd534
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: 32d1ad2c0024ca36161ae0d5c2117e2d6c441f11
   react-native-netinfo: 34f4d7a42f49157f3b45c14217d256bce7dc9682
   react-native-notifications: e914ff49de3b2268cfa1b5e2ad21fd27c36d5b7b
   react-native-paste-input: 003693cff6fcea476066172e66901beb7ef25670
   react-native-safe-area-context: e471852c5ed67eea4b10c5d9d43c1cebae3b231d
   react-native-video: 1574074179ecaf6a9dd067116c8f31bf9fec15c8
-  react-native-webview: aea3233f26253f5c360164ee87d01ef9f7b9a27f
+  react-native-webview: fdd3c7c2ad173e8ca8c82729ed05f3fda2491a82
   React-perflogger: 9c547d8f06b9bf00cb447f2b75e8d7f19b7e02af
   React-RCTActionSheet: 3080b6e12e0e1a5b313c8c0050699b5c794a1b11
   React-RCTAnimation: 3f96f21a497ae7dabf4d2f150ee43f906aaf516f
@@ -764,22 +758,22 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: cb9a623793918c6699586281f0b51cbc38f046f9
   RNCClipboard: 5e299c6df8e0c98f3d7416b86ae563d3a9f768a3
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
-  RNDeviceInfo: 77944ee74f4464aa4672b62e3239e4fa69ab534f
+  RNDeviceInfo: 4f480456c7ac8c9919448375399c1a6f14479549
   RNDevMenu: 9f80d65b80ba1fa84e5361d017b8c854a2f05005
   RNFastImage: d4870d58f5936111c56218dbd7fcfc18e65b58ff
   RNFileViewer: 83cc066ad795b1f986791d03b56fe0ee14b6a69f
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  RNKeychain: b8e0711b959a19c5b057d1e970d3c83d159b6da5
-  RNLocalize: 47e22ef8c36df1d572e42a87c8ae22e3fcf551dd
-  RNPermissions: eb94f9fdc0a8ecd02fcce0676d56ffb1395d41e1
+  RNKeychain: f75b8c8b2f17d3b2aa1f25b4a0ac5b83d947ff8f
+  RNLocalize: 29e84ea169d3bca6c3b83584536c7f586a07fb98
+  RNPermissions: 84ffe5ee7d608e037d9ed1db846ffb1d5d4e1dba
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: b8c8004b43446e3c2709fe64b2b41072f87428ad
   RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
-  RNSentry: b0d55027200c96f52e26b9bfb20296d47fc5051d
-  RNShare: 5cfe16bfd42cd2c4869a7692462181ac8cc15a6d
-  RNSVG: 1a8855adeb20c5beb0a808281608315fc1092d15
+  RNSentry: 824a6a0ec885428163fe6827aa08014f9962f223
+  RNShare: 31fa0cedbd06c2744a78e0d2b7ba364778aa3506
+  RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
-  Rudder: 90ed801a09c73017184e6fc901370be1754eb182
+  Rudder: ef340f877a39653f19e69124dffae12fde3f881b
   SDWebImage: b69257f4ab14e9b6a2ef53e910fdf914d8f757c1
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   Sentry: 9d055e2de30a77685e86b219acf02e59b82091fc
@@ -794,7 +788,7 @@ SPEC CHECKSUMS:
   UMFontInterface: 81a951117d03f57aa636fba3992adefd0191f200
   UMImageLoaderInterface: 5cd09b41630dc8aef7619fabc497c01c0f6b715c
   UMPermissionsInterface: 4351145563e703c521fe2299e08227bc3584b94a
-  UMReactNativeAdapter: 7e15ed07bf2d7290e997e5d892e31bd276d4f4f1
+  UMReactNativeAdapter: 7b458ca3d4497b5114e6bb766b223432bad22d8a
   UMSensorsInterface: 50439b47826e716a514cbd7384aebe9ab4fde5f4
   UMTaskManagerInterface: 482155764886069beb1bc7fcf6036f12e4ad0751
   WatermelonDB: e6706a0fac2221e2be4bdc93ff0e3990231d91bd

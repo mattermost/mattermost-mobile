@@ -17,7 +17,9 @@ const config = {
             console.log('BUILDING MODULES FOR', platform);
             const moduleMap = {};
             let modulePaths = [];
-            if (platform === 'ios') {
+            if (platform === 'android') {
+                modulePaths = require('./packager/modules.android');
+            } else {
                 modulePaths = require('./packager/modules.ios');
             }
             modulePaths.forEach((path) => {
@@ -35,7 +37,7 @@ const config = {
                 preloadedModules: moduleMap,
                 transform: {
                     inlineRequires: {
-                        blacklist: moduleMap,
+                        blockList: moduleMap,
                     },
                 },
             };
