@@ -7,6 +7,7 @@ import {sanitizeReactions} from '@database/operator/utils/reaction';
 import DatabaseManager from '@database/manager';
 import {DatabaseType} from '@typings/database/enums';
 import {RawPost} from '@typings/database/database';
+import Reaction from '@typings/database/reaction';
 
 import {mockedPosts, mockedReactions} from './mock';
 
@@ -97,7 +98,7 @@ describe('DataOperator: Utils tests', () => {
                 },
             ],
             prepareRecordsOnly: true,
-        });
+        }) as Reaction[];
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here
         // eslint-disable-next-line max-nested-callbacks
