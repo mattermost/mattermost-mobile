@@ -8,9 +8,9 @@ import {DatabaseInstance} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import IServers from '@typings/database/servers';
 
-import DatabaseManager from './index';
+import DatabaseManager from '@database/manager';
 
-jest.mock('./index');
+jest.mock('@database/manager');
 
 const {SERVERS} = MM_TABLES.DEFAULT;
 
@@ -27,6 +27,7 @@ describe('*** Database Manager tests ***', () => {
         const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager as any, 'addServerToDefaultDatabase');
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
+
         expect(defaultDB).toBeInstanceOf(Database);
         expect(spyOnAddServerToDefaultDatabase).not.toHaveBeenCalledTimes(1);
     });

@@ -133,6 +133,8 @@ class DatabaseManager {
               dbName: databaseName,
               migrations,
               schema,
+              useWebWorker: false,
+              useIncrementalIndexedDB: true,
           });
 
           // Registers the new server connection into the DEFAULT database
@@ -145,7 +147,7 @@ class DatabaseManager {
           }
           return new Database({adapter, actionsEnabled, modelClasses});
       } catch (e) {
-      // console.log(e);
+          // console.log(e);
       }
 
       return undefined;
