@@ -147,7 +147,8 @@ class DatabaseManager {
           }
           return new Database({adapter, actionsEnabled, modelClasses});
       } catch (e) {
-          // console.log(e);
+          // eslint-disable-next-line no-console
+          console.log('ERROR ==========================\n', e);
       }
 
       return undefined;
