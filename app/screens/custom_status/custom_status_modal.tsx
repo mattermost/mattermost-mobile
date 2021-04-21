@@ -262,19 +262,21 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             <View style={style.inputContainer}>
                 <TextInput
                     testID='custom_status.input'
-                    value={text}
-                    placeholder={this.props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={this.handleTextChange}
-                    style={style.input}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    maxLength={CustomStatus.CUSTOM_STATUS_TEXT_CHARACTER_LIMIT}
-                    underlineColorAndroid='transparent'
+                    blurOnSubmit={false}
                     disableFullscreenUI={true}
-                    keyboardType={'default'}
-                    secureTextEntry={false}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    keyboardType='default'
+                    maxLength={CustomStatus.CUSTOM_STATUS_TEXT_CHARACTER_LIMIT}
+                    onChangeText={this.handleTextChange}
+                    placeholder={this.props.intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'})}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    returnKeyType='go'
+                    style={style.input}
+                    secureTextEntry={false}
+                    underlineColorAndroid='transparent'
+                    value={text}
                 />
                 {customStatusEmoji}
                 {isStatusSet ? (
@@ -346,6 +348,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
         },
         input: {
+            alignSelf: 'stretch',
             color: theme.centerChannelColor,
             width: '100%',
             fontSize: 17,

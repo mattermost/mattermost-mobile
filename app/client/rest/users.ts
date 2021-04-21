@@ -409,14 +409,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUserRoute('me')}/status/custom`,
             {method: 'delete'},
         );
-    }
+    };
 
     removeRecentCustomStatus = (customStatus: UserCustomStatus) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/status/custom/recent/delete`,
             {method: 'post', body: JSON.stringify(customStatus)},
         );
-    }
+    };
 };
 
 export default ClientUsers;
