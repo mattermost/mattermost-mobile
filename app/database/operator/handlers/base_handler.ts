@@ -166,7 +166,7 @@ class BaseHandler {
           }
       }
 
-      if (operator && fieldName && findMatchingRecordBy) {
+      if (fieldName && findMatchingRecordBy) {
           const records = await this.handleEntityRecords({
               fieldName,
               findMatchingRecordBy,
