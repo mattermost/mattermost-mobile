@@ -7,10 +7,16 @@ If you've found a bug--something appears unintentional--please follow these step
 
 1. Confirm you’re filing a new issue. [Search existing tickets in Jira](https://mattermost.atlassian.net/jira/software/c/projects/MM/issues/) to ensure that the ticket does not already exist.
 2. Confirm your issue does not involve security. Otherwise, please see our [Responsible Disclosure Policy](https://about.mattermost.com/report-security-issue/).
-3. [File a new issue](https://github.com/mattermost/mattermost-server/issues/new) using the format below. Mattermost will confirm steps to reproduce and file in Jira, or ask for more details if there is trouble reproducing it. If there's already an existing bug in Jira, it will be linked back to the GitHub issue so you can track when it gets fixed.
+3. [File a new issue](https://github.com/mattermost/mattermost-mobile/issues/new) using the format below. Mattermost will confirm steps to reproduce and file in Jira, or ask for more details if there is trouble reproducing it. If there's already an existing bug in Jira, it will be linked back to the GitHub issue so you can track when it gets fixed.
 
 #### Summary
 Bug report in one concise sentence
+
+### Environment Information
+  - Device Name:
+  - OS Version:
+  - Mattermost App Version:
+  - Mattermost Server Version:
 
 #### Steps to reproduce
 How can we reproduce the issue (what version are you using?)
@@ -24,8 +30,3 @@ What did you see happen? Please include relevant error messages, screenshots and
 #### Possible fixes
 If you can, link to the line of code that might be responsible for the problem
 
-### Environment Information
-Device Name:
-OS Version:
-Mattermost App Version:
-Mattermost Server Version:
