@@ -120,6 +120,7 @@ export type RawFile = {
 };
 
 export type RawReaction = {
+  id? : string;
   create_at: number;
   delete_at: number;
   emoji_name: string;
@@ -233,6 +234,7 @@ export type RawUser = {
 };
 
 export type RawPreference = {
+  id? : string;
   category: string;
   name: string;
   user_id: string;
@@ -240,6 +242,7 @@ export type RawPreference = {
 };
 
 export type RawTeamMembership = {
+  id? : string;
   delete_at: number;
   explicit_roles: string;
   roles: string;
@@ -251,11 +254,13 @@ export type RawTeamMembership = {
 };
 
 export type RawGroupMembership = {
+  id?: string;
   user_id: string;
   group_id: string;
 };
 
 export type RawChannelMembership = {
+  id? : string;
   channel_id: string;
   user_id: string;
   roles: string;
@@ -333,6 +338,8 @@ export type RawGroupsInChannel = {
   team_id: string;
   team_type: string;
   update_at: number;
+  member_count: number;
+  timezone_count: number;
 };
 
 export type RawTeam = {
@@ -355,16 +362,16 @@ export type RawTeam = {
 };
 
 export type RawTeamChannelHistory = {
-team_id: string;
-channel_ids: string[]
-}
+  team_id: string;
+  channel_ids: string[];
+};
 
 export type RawTeamSearchHistory = {
   created_at: number;
   display_term: string;
   term: string;
   team_id: string;
-}
+};
 
 export type RawSlashCommand = {
   id: string;
@@ -417,9 +424,9 @@ export type RawChannel = {
 };
 
 export type RawMyChannelSettings = {
-  notify_props: NotifyProps,
+  notify_props: NotifyProps;
   channel_id: string;
-}
+};
 
 export type RawChannelInfo = {
   channel_id: string;
@@ -428,7 +435,7 @@ export type RawChannelInfo = {
   member_count: number;
   pinned_post_count: number;
   purpose: string;
-}
+};
 
 export type RawMyChannel = {
   channel_id: string;
@@ -437,7 +444,7 @@ export type RawMyChannel = {
   mentions_count: number;
   message_count: number;
   roles: string;
-}
+};
 
 export type RawValue =
   | RawApp
@@ -472,8 +479,6 @@ export type RawValue =
   | RawTermsOfService
   | RawUser;
 
-export type MatchExistingRecord = { record?: Model; raw: RawValue };
-
 export type DataFactoryArgs = {
   action: string;
   database: Database;
@@ -486,7 +491,7 @@ export type PrepareForDatabaseArgs = {
   tableName: string;
   createRaws?: MatchExistingRecord[];
   updateRaws?: MatchExistingRecord[];
-  recordOperator: (dataArgs: DataFactoryArgs) => void;
+  recordOperator: (DataFactoryArgs) => Promise<Model>;
 };
 
 export type PrepareRecordsArgs = PrepareForDatabaseArgs & {
@@ -498,6 +503,7 @@ export type BatchOperationsArgs = { database: Database; models: Model[] };
 export type HandleIsolatedEntityArgs = {
   tableName: IsolatedEntities;
   values: RawValue[];
+  prepareRecordsOnly: boolean;
 };
 
 export type Models = Class<Model>[];
@@ -515,19 +521,19 @@ export type ActiveServerDatabaseArgs = {
 };
 
 export type HandleReactionsArgs = {
-  prepareRowsOnly: boolean;
+  prepareRecordsOnly: boolean;
   reactions: RawReaction[];
 };
 
 export type HandleFilesArgs = {
   files: RawFile[];
-  prepareRowsOnly: boolean;
+  prepareRecordsOnly: boolean;
 };
 
 export type HandlePostMetadataArgs = {
   embeds?: { embed: RawEmbed[]; postId: string }[];
   images?: { images: Dictionary<PostImage>; postId: string }[];
-  prepareRowsOnly: boolean;
+  prepareRecordsOnly: boolean;
 };
 
 export type HandlePostsArgs = {
@@ -575,9 +581,10 @@ export type ProcessInputsArgs = {
 export type HandleEntityRecordsArgs = {
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
-  operator: (dataArgs: DataFactoryArgs) => Promise<Model | null>;
+  operator: (DataFactoryArgs) => Promise<Model>;
   rawValues: RawValue[];
   tableName: string;
+  prepareRecordsOnly: boolean;
 };
 
 export type DatabaseInstances = {
@@ -593,4 +600,88 @@ export type RangeOfValueArgs = {
 export type RecordPair = {
   record?: Model;
   raw: RawValue;
+};
+
+export type HandleMyChannelArgs = {
+  myChannels: RawMyChannel[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleChannelInfoArgs = {
+  channelInfos: RawChannelInfo[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleMyChannelSettingsArgs = {
+  settings: RawMyChannelSettings[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleChannelArgs = {
+  channels: RawChannel[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleMyTeamArgs = {
+  myTeams: RawMyTeam[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleSlashCommandArgs = {
+  slashCommands: RawSlashCommand[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamSearchHistoryArgs = {
+  teamSearchHistories: RawTeamSearchHistory[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamChannelHistoryArgs = {
+  teamChannelHistories: RawTeamChannelHistory[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamArgs = { teams: RawTeam[]; prepareRecordsOnly: boolean };
+
+export type HandleGroupsInChannelArgs = {
+  groupsInChannels: RawGroupsInChannel[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleGroupsInTeamArgs = {
+  groupsInTeams: RawGroupsInTeam[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleGroupArgs = {
+  groups: RawGroup[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleChannelMembershipArgs = {
+  channelMemberships: RawChannelMembership[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleGroupMembershipArgs = {
+  groupMemberships: RawGroupMembership[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleTeamMembershipArgs = {
+  teamMemberships: RawTeamMembership[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandlePreferencesArgs = {
+  preferences: RawPreference[];
+  prepareRecordsOnly: boolean;
+};
+
+export type HandleUsersArgs = { users: RawUser[]; prepareRecordsOnly: boolean };
+
+export type HandleDraftArgs = {
+  drafts: RawDraft[];
+  prepareRecordsOnly: boolean;
 };
