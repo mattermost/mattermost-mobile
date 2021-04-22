@@ -12,8 +12,7 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 
 import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
@@ -546,9 +545,9 @@ export function fetchMyChannelsAndMembers(teamId: string): ActionFunc {
         let channels;
         let channelMembers;
         const state = getState();
-        const shouldFetchArchived = isMinimumServerVersion(getServerVersion(state), 5, 21);
+        const lastConnectAt = state.websocket?.lastConnectAt || 0;
         try {
-            const channelRequest = Client4.getMyChannels(teamId, shouldFetchArchived);
+            const channelRequest = Client4.getMyChannels(teamId, true, lastConnectAt);
             const memberRequest = Client4.getMyChannelMembers(teamId);
             channels = await channelRequest;
             channelMembers = await memberRequest;
@@ -577,7 +576,6 @@ export function fetchMyChannelsAndMembers(teamId: string): ActionFunc {
             {
                 type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS,
                 data: channelMembers,
-                sync: !shouldFetchArchived,
                 channels,
                 remove: getChannelsIdForTeam(state, teamId),
                 currentUserId,

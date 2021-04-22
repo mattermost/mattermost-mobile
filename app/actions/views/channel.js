@@ -717,6 +717,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
+        const lastConnectAt = state.websocket?.lastConnectAt || 0;
         const data = {
             sync: true,
             teamId,
@@ -724,13 +725,12 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         };
 
         const actions = [];
-
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
-                    console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
+                    console.log('Fetching channels attempt', (i + 1), teamId, 'include deleted since', lastConnectAt); //eslint-disable-line no-console
                     const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                        Client4.getMyChannels(teamId, true),
+                        Client4.getMyChannels(teamId, true, lastConnectAt),
                         Client4.getMyChannelMembers(teamId),
                     ]);
 
