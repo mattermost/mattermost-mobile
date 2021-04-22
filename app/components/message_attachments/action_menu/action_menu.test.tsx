@@ -29,7 +29,7 @@ describe('ActionMenu', () => {
     test('should start with nothing selected when no default is selected', () => {
         const wrapper = shallow(<ActionMenu {...baseProps}/>);
 
-        expect(wrapper.state('selected')).toBeUndefined();
+        expect(wrapper.props().selected).toBeUndefined();
     });
 
     test('should set selected based on default option', () => {
@@ -39,7 +39,7 @@ describe('ActionMenu', () => {
         };
         const wrapper = shallow(<ActionMenu {...props}/>);
 
-        expect(wrapper.state('selected')).toBe(props.options[1]);
+        expect(wrapper.props().selected).toBe(props.options[1]);
     });
 
     test('should start with previous value selected', () => {
@@ -50,7 +50,7 @@ describe('ActionMenu', () => {
         };
         const wrapper = shallow(<ActionMenu {...props}/>);
 
-        expect(wrapper.state('selected')).toBe(props.selected);
+        expect(wrapper.props().selected).toBe(props.selected);
     });
 
     test('disabled works', () => {
