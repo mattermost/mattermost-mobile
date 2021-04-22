@@ -41,6 +41,12 @@ exports[`ChannelItem should match snapshot 1`] = `
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -85,6 +91,7 @@ exports[`ChannelItem should match snapshot 1`] = `
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -155,6 +162,12 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -199,6 +212,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -268,6 +282,12 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -312,6 +332,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -381,6 +402,12 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -425,6 +452,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -483,6 +511,12 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -527,6 +561,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -586,6 +621,12 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -630,6 +671,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -689,6 +731,12 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -733,6 +781,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -796,6 +845,12 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -840,6 +895,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
@@ -901,6 +957,12 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         isUnread={true}
         membersCount={1}
         size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -945,6 +1007,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },

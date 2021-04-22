@@ -17,6 +17,7 @@ module.exports = {
                 '@client': './app/client',
                 '@components': './app/components',
                 '@constants': './app/constants',
+                '@hooks': './app/hooks',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
                 '@mm-redux': './app/mm-redux',

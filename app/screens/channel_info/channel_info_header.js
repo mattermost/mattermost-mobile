@@ -12,18 +12,17 @@ import {
 import {intlShape} from 'react-intl';
 import Clipboard from '@react-native-community/clipboard';
 
+import {popToRoot} from '@actions/navigation';
+import ChannelIcon from '@components/channel_icon';
+import FormattedDate from '@components/formatted_date';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
 import {General} from '@mm-redux/constants';
-
-import ChannelIcon from 'app/components/channel_icon';
-import FormattedDate from 'app/components/formatted_date';
-import FormattedText from 'app/components/formatted_text';
-import Markdown from 'app/components/markdown';
+import BottomSheet from '@utils/bottom_sheet';
+import {t} from '@utils/i18n';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
-import BottomSheet from 'app/utils/bottom_sheet';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {popToRoot} from 'app/actions/navigation';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -266,6 +265,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             fontWeight: '600',
             color: theme.centerChannelColor,
+            marginLeft: 13,
         },
         channelNameContainer: {
             flexDirection: 'row',

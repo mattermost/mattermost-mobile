@@ -161,6 +161,7 @@ export default class ChannelItem extends PureComponent {
                 isUnread={isUnread}
                 hasDraft={hasDraft && channelId !== currentChannelId}
                 membersCount={displayName.split(',').length}
+                statusStyle={{backgroundColor: theme.sidebarBg, borderColor: 'transparent'}}
                 size={24}
                 theme={theme}
                 type={channel.type}
@@ -230,6 +231,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
+            marginLeft: 13,
             maxWidth: '80%',
             flex: 1,
             alignSelf: 'center',
