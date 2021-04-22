@@ -21,7 +21,7 @@ export default function EmbeddedSubBindings(props: Props) {
         return null;
     }
 
-    const content = [] as JSX.Element[];
+    const content = [] as React.ReactNode[];
 
     bindings.forEach((binding) => {
         if (!binding.app_id || !binding.call) {

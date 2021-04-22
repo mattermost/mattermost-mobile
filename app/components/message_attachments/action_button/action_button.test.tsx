@@ -3,9 +3,11 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+
 import ActionButton from './action_button';
-import {changeOpacity} from 'app/utils/theme';
-import {getStatusColors} from 'app/utils/message_attachment_colors';
+
+import {changeOpacity} from '@utils/theme';
+import {getStatusColors} from '@utils/message_attachment_colors';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -106,7 +108,6 @@ describe('ActionButton', () => {
             cookie: '',
             name: buttonConfig.name,
             postId: buttonConfig.id,
-            buttonColor: buttonConfig.style,
             theme: Preferences.THEMES.default,
             actions: {
                 doPostActionWithCookie: jest.fn(),

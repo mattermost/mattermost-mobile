@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
+
 import ActionButtonText from './action_button_text';
 
 describe('ActionButtonText emojis', () => {

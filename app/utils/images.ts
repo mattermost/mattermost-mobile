@@ -12,14 +12,16 @@ import {
     VIEWPORT_IMAGE_OFFSET,
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
-import {isImage} from './file';
 
-export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
+import {PostImage} from '@mm-redux/types/posts';
+import {FileInfo} from '@mm-redux/types/files';
+
+import {isImage} from './file';
+import {Options, SharedElementTransition, StackAnimationOptions, ViewAnimationOptions} from 'react-native-navigation';
+
+export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
-        return {
-            height: null,
-            width: null,
-        };
+        return {};
     }
 
     const ratio = height / width;
@@ -61,7 +63,7 @@ export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHe
     };
 };
 
-export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
+export function getViewPortWidth(isReplyPost: boolean, permanentSidebar = false) {
     const {width, height} = Dimensions.get('window');
     let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
 
@@ -76,7 +78,7 @@ export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
     return portraitPostWidth;
 }
 
-export function openGalleryAtIndex(index, files) {
+export function openGalleryAtIndex(index: number, files: FileInfo[]) {
     Keyboard.dismiss();
     requestAnimationFrame(() => {
         const screen = 'Gallery';
@@ -85,9 +87,10 @@ export function openGalleryAtIndex(index, files) {
             files,
         };
         const windowHeight = Dimensions.get('window').height;
-        const sharedElementTransitions = [];
-        const contentPush = {};
-        const contentPop = {};
+        const sharedElementTransitions: SharedElementTransition[] = [];
+
+        const contentPush = {} as ViewAnimationOptions;
+        const contentPop = {} as ViewAnimationOptions;
         const file = files[index];
 
         if (isImage(file)) {
@@ -95,14 +98,14 @@ export function openGalleryAtIndex(index, files) {
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
                 duration: 300,
-                interpolation: {type: 'accelerateDecelerate', factor: 9},
+                interpolation: {type: 'accelerateDecelerate'},
             });
         } else {
             contentPush.y = {
                 from: windowHeight,
                 to: 0,
                 duration: 300,
-                interpolation: {mode: 'decelerate'},
+                interpolation: {type: 'decelerate'},
             };
 
             if (Platform.OS === 'ios') {
@@ -125,7 +128,7 @@ export function openGalleryAtIndex(index, files) {
             }
         }
 
-        const options = {
+        const options: Options = {
             layout: {
                 backgroundColor: '#000',
                 componentBackgroundColor: '#000',
@@ -146,9 +149,9 @@ export function openGalleryAtIndex(index, files) {
         };
 
         if (Object.keys(contentPush).length) {
-            options.animations.push = {
-                ...options.animations.push,
-                ...Platform.select({
+            options.animations!.push = {
+                ...options.animations!.push,
+                ...Platform.select<ViewAnimationOptions | StackAnimationOptions>({
                     android: contentPush,
                     ios: {
                         content: contentPush,
@@ -158,7 +161,7 @@ export function openGalleryAtIndex(index, files) {
         }
 
         if (Object.keys(contentPop).length) {
-            options.animations.pop = Platform.select({
+            options.animations!.pop = Platform.select<ViewAnimationOptions | StackAnimationOptions>({
                 android: contentPop,
                 ios: {
                     content: contentPop,
@@ -172,7 +175,7 @@ export function openGalleryAtIndex(index, files) {
 
 // isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered
 // based on the image's dimensions and frame count.
-export function isGifTooLarge(imageMetadata) {
+export function isGifTooLarge(imageMetadata?: PostImage) {
     if (imageMetadata?.format !== 'gif') {
         // Not a gif or from an older server that doesn't count frames
         return false;
@@ -181,5 +184,5 @@ export function isGifTooLarge(imageMetadata) {
     const {frame_count: frameCount, height, width} = imageMetadata;
 
     // Try to estimate the in-memory size of the gif to prevent the device out of memory
-    return width * height * frameCount > MAX_GIF_SIZE;
+    return width * height * (frameCount || 1) > MAX_GIF_SIZE;
 }

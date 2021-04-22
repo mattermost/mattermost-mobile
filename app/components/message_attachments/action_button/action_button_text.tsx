@@ -3,13 +3,14 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text, View, StyleSheet} from 'react-native';
-import Emoji from 'app/components/emoji';
-import {getEmoticonName} from 'app/utils/emoji_utils';
-import {reEmoji, reEmoticon, reMain} from 'app/constants/emoji';
+import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
 
-export default function ActionButtonText({message, style}) {
-    const components = [];
+import Emoji from '@components/emoji';
+import {reEmoji, reEmoticon, reMain} from '@constants/emoji';
+import {getEmoticonName} from '@utils/emoji_utils';
+
+export default function ActionButtonText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
+    const components = [] as React.ReactNode[];
 
     let text = message;
     while (text) {
@@ -49,6 +50,9 @@ export default function ActionButtonText({message, style}) {
         // This is plain text, so capture as much text as possible until we hit the next possible emoji. Note that
         // reMain always captures at least one character, so text will always be getting shorter
         match = text.match(reMain);
+        if (!match) {
+            continue;
+        }
 
         components.push(
             <Text
