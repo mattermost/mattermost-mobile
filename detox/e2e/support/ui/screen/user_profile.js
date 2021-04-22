@@ -1,10 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {
+    ProfilePicture,
+    SettingsSidebar,
+} from '@support/ui/component';
+
 class UserProfileScreen {
     testID = {
+        userProfilePicturePrefix: 'user_profile.profile_picture.',
         userProfileScreen: 'user_profile.screen',
         userProfileScrollView: 'user_profile.scroll_view',
+        closeSettingsButton: 'close.settings.button',
+        editButton: 'user_profile.edit.button',
+        userProfileBotTag: 'user_profile.bot_tag',
+        userProfileDisplayName: 'user_profile.display_name',
+        userProfileGuestTag: 'user_profile.bot_tag',
+        userProfileUsername: 'user_profile.username',
         emailLabel: 'user_profile.display_block.email.label',
         emailValue: 'user_profile.display_block.email.value',
         firstNameLabel: 'user_profile.display_block.first_name.label',
@@ -23,6 +35,12 @@ class UserProfileScreen {
 
     userProfileScreen = element(by.id(this.testID.userProfileScreen));
     userProfileScrollView = element(by.id(this.testID.userProfileScrollView));
+    closeSettingsButton = element(by.id(this.testID.closeSettingsButton));
+    editButton = element(by.id(this.testID.editButton));
+    userProfileBotTag = element(by.id(this.testID.userProfileBotTag));
+    userProfileDisplayName = element(by.id(this.testID.userProfileDisplayName));
+    userProfileGuestTag = element(by.id(this.testID.userProfileGuestTag));
+    userProfileUsername = element(by.id(this.testID.userProfileUsername));
     emailLabel = element(by.id(this.testID.emailLabel));
     emailValue = element(by.id(this.testID.emailValue));
     firstNameLabel = element(by.id(this.testID.firstNameLabel));
@@ -38,10 +56,27 @@ class UserProfileScreen {
     additionalOptionsAction = element(by.id(this.testID.additionalOptionsAction));
     sendMessageAction = element(by.id(this.testID.sendMessageAction));
 
+    getProfilePicture = (userId) => {
+        const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.userProfilePicturePrefix, userId);
+        return element(profilePictureItemMatcher);
+    }
+
     toBeVisible = async () => {
         await expect(this.userProfileScreen).toBeVisible();
 
         return this.userProfileScreen;
+    }
+
+    open = async () => {
+        // # Open user profile screen
+        await SettingsSidebar.userInfoAction.tap();
+
+        return this.toBeVisible();
+    }
+
+    close = async () => {
+        await this.closeSettingsButton.tap();
+        await expect(this.userProfileScreen).not.toBeVisible();
     }
 }
 

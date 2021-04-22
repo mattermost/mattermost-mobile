@@ -61,6 +61,7 @@ export default class UserProfile extends PureComponent {
     rightButton = {
         id: 'edit-profile',
         showAsAction: 'always',
+        testID: 'user_profile.edit.button',
     };
 
     constructor(props, context) {
@@ -117,15 +118,20 @@ export default class UserProfile extends PureComponent {
         if (displayName && (config.ShowFullName === 'true' || user.is_bot || showGuest)) {
             return (
                 <View style={style.indicatorContainer}>
-                    <Text style={style.displayName}>
+                    <Text
+                        style={style.displayName}
+                        testID='user_profile.display_name'
+                    >
                         {displayName}
                     </Text>
                     <BotTag
                         show={Boolean(user.is_bot)}
+                        testID='user_profile.bot_tag'
                         theme={theme}
                     />
                     <GuestTag
                         show={showGuest}
+                        testID='user_profile.guest_tag'
                         theme={theme}
                     />
                 </View>
@@ -198,12 +204,14 @@ export default class UserProfile extends PureComponent {
                     style={style.header}
                     testID='user_profile.timezone_block.local_time.label'
                 />
-                <Text style={style.text}>
+                <Text
+                    style={style.text}
+                    testID='user_profile.timezone_block.local_time.value'
+                >
                     <FormattedTime
                         timeZone={currentTimezone}
                         hour12={!militaryTime}
                         value={nowDate}
-                        testID='user_profile.timezone_block.local_time.value'
                     />
                 </Text>
             </View>
@@ -364,7 +372,12 @@ export default class UserProfile extends PureComponent {
                             testID='user_profile.profile_picture'
                         />
                         {this.getDisplayName()}
-                        <Text style={style.username}>{`@${user.username}`}</Text>
+                        <Text
+                            style={style.username}
+                            testID='user_profile.username'
+                        >
+                            {`@${user.username}`}
+                        </Text>
                     </View>
                     <View style={style.divider}/>
                     {this.renderDetailsBlock(style)}
