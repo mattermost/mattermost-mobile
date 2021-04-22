@@ -1,7 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+
 import {MM_TABLES} from '@constants/database';
+import DataOperatorException from '@database/exceptions/data_operator_exception';
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import {
     isRecordAppEqualToRaw,
@@ -21,9 +26,13 @@ import {
     prepareSystemRecord,
     prepareTermsOfServiceRecord,
 } from '@database/operator/prepareRecords/general';
-import {Database, Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
-
+import {
+    getRangeOfValues,
+    getRawRecordPairs,
+    getUniqueRawsBy,
+    hasSimilarUpdateAt,
+    retrieveRecords,
+} from '@database/operator/utils/general';
 import {
     BatchOperationsArgs,
     DatabaseInstance,
@@ -36,16 +45,6 @@ import {
     RecordPair,
 } from '@typings/database/database';
 import {IsolatedEntities, OperationType} from '@typings/database/enums';
-
-import DataOperatorException from '../../exceptions/data_operator_exception';
-import DatabaseConnectionException from '../../exceptions/database_connection_exception';
-import {
-    getRangeOfValues,
-    getRawRecordPairs,
-    getUniqueRawsBy,
-    hasSimilarUpdateAt,
-    retrieveRecords,
-} from '../utils/general';
 
 export interface BaseHandlerMix {
   activeDatabase: Database;

@@ -14,7 +14,7 @@ export const createDataOperator = async (serverUrl: string) => {
     ]);
 
     if (connections?.length) {
-    // finds the connection that corresponds to the serverUrl value
+        // finds the connection that corresponds to the serverUrl value
         const index = connections.findIndex((databaseInstance) => {
             return databaseInstance.url === serverUrl;
         });
