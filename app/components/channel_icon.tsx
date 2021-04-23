@@ -134,7 +134,7 @@ const ChannelIcon = (props: Props) => {
         icon = (
             <CompassIcon
                 name='lock-outline'
-                style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: -1.5}]}
+                style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: 0.5}]}
                 testID={`${props.testID}.private`}
             />
         );
