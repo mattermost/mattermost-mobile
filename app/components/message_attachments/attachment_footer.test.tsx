@@ -4,7 +4,6 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import {MAX_ATTACHMENT_FOOTER_LENGTH} from 'app/constants/attachment';
 import AttachmentFooter from './attachment_footer';
 
 import Preferences from '@mm-redux/constants/preferences';
@@ -49,16 +48,6 @@ describe('AttachmentFooter', () => {
 
     test('it matches snapshot when both footer and footer_icon are provided', () => {
         const wrapper = shallow(<AttachmentFooter {...baseProps}/>);
-        expect(wrapper).toMatchSnapshot();
-    });
-
-    test('it matches snapshot when the footer is longer than the maximum length', () => {
-        const props = {
-            ...baseProps,
-            text: 'a'.repeat(MAX_ATTACHMENT_FOOTER_LENGTH + 1),
-        };
-
-        const wrapper = shallow(<AttachmentFooter {...props}/>);
         expect(wrapper).toMatchSnapshot();
     });
 });

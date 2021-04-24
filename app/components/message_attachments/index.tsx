@@ -4,28 +4,33 @@
 import React from 'react';
 import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
-import EmbeddedBinding from './embedded_binding';
+import {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
+import {PostMetadata} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppBinding} from '@mm-redux/types/apps';
+
+import MessageAttachment from './message_attachment';
 
 type Props = {
-    embeds: AppBinding[],
-    baseTextStyle?: StyleProp<TextStyle>,
-    blockStyles?: StyleProp<ViewStyle>[],
-    deviceHeight: number,
-    deviceWidth: number,
-    postId: string,
-    onPermalinkPress?: () => void,
-    theme: Theme,
-    textStyles?: StyleProp<TextStyle>[],
+    attachments: MessageAttachmentType[],
+        baseTextStyle?: StyleProp<TextStyle>,
+        blockStyles?: StyleProp<ViewStyle>[],
+        deviceHeight: number,
+        deviceWidth: number,
+        postId: string,
+        metadata?: PostMetadata,
+        onPermalinkPress?: () => void,
+        theme: Theme,
+        textStyles?: StyleProp<TextStyle>[],
 }
 
-export default function EmbeddedBindings(props: Props) {
+export default function MessageAttachments(props: Props) {
     const {
-        embeds,
+        attachments,
         baseTextStyle,
         blockStyles,
         deviceHeight,
+        deviceWidth,
+        metadata,
         onPermalinkPress,
         postId,
         theme,
@@ -33,14 +38,16 @@ export default function EmbeddedBindings(props: Props) {
     } = props;
     const content = [] as React.ReactNode[];
 
-    embeds.forEach((embed, i) => {
+    attachments.forEach((attachment, i) => {
         content.push(
-            <EmbeddedBinding
-                embed={embed}
+            <MessageAttachment
+                attachment={attachment}
                 baseTextStyle={baseTextStyle}
                 blockStyles={blockStyles}
                 deviceHeight={deviceHeight}
+                deviceWidth={deviceWidth}
                 key={'att_' + i}
+                metadata={metadata}
                 onPermalinkPress={onPermalinkPress}
                 postId={postId}
                 theme={theme}
