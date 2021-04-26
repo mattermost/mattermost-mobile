@@ -52,9 +52,8 @@ export function cleanUpState(payload, keepCurrent = false) {
 
     const {policies, lastCleanUpAt} = payload.entities?.general?.dataRetention || {};
 
-    // 1: has policies
-    // 2: was never cleaned up earlier (or) date is not today (run only once a day)
-    if (policies && (!lastCleanUpAt || (new Date(lastCleanUpAt).toDateString() !== new Date().toDateString()))) {
+    const lastCleanedToday = new Date(lastCleanUpAt).toDateString() === new Date().toDateString());
+    if (policies && (!lastCleanUpAt || !lastCleanedToday) {
         if (policies?.global?.message_deletion_enabled) {
             globalRetentionCutoff = policies.global.message_retention_cutoff;
         }
