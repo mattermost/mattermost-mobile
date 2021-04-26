@@ -87,7 +87,8 @@
     "serialize-error": "8.0.1",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.1"
+    "url-parse": "1.5.1",
+    "validator": "13.6.0"
   },
   "devDependencies": {
     "@babel/cli": "7.13.14",
@@ -114,6 +115,7 @@
     "@types/shallow-equals": "1.0.0",
     "@types/tinycolor2": "1.4.2",
     "@types/url-parse": "1.4.3",
+    "@types/validator": "13.1.3",
     "@typescript-eslint/eslint-plugin": "4.20.0",
     "@typescript-eslint/parser": "4.20.0",
     "babel-eslint": "10.1.0",
