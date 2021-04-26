@@ -45,7 +45,7 @@ export function handleSuccessfulLogin() {
             },
         });
 
-        if (license && license.IsLicensed === 'true' && license.DataRetention === 'true') {
+        if (license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
             dispatch(getDataRetentionPolicy());
         } else {
             dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
