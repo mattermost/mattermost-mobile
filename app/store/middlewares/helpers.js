@@ -54,7 +54,7 @@ export function cleanUpState(payload, keepCurrent = false) {
 
     const lastCleanedToday = new Date(lastCleanUpAt).toDateString() === new Date().toDateString());
     if (policies && (!lastCleanUpAt || !lastCleanedToday) {
-        if (policies?.global?.message_deletion_enabled) {
+        if (policies.global?.message_deletion_enabled) {
             globalRetentionCutoff = policies.global.message_retention_cutoff;
         }
 
