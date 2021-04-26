@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import Preferences from '@mm-redux/constants/preferences';

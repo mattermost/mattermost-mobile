@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {Alert, Text, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 import {intlShape} from 'react-intl';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -64,6 +64,7 @@ export default class AttachmentAuthor extends PureComponent<Props> {
                     source={{uri: icon}}
                     key='author_icon'
                     style={style.icon}
+                    renderOnError={true}
                 />
                 }
                 {Boolean(name) &&

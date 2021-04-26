@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity} from '@mm-redux/utils/theme_utils';
@@ -30,6 +30,7 @@ const Avatar = ({avatarUri, theme}: AvatarProps) => {
             <FastImage
                 source={{uri: avatarUri}}
                 style={[styles.avatar, styles.avatarRadius]}
+                renderOnError={true}
             />
         );
     } else {

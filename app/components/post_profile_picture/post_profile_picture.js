@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, StyleSheet, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
@@ -71,6 +71,7 @@ export default class PostProfilePicture extends PureComponent {
                             height: pictureSize,
                             width: pictureSize,
                         }}
+                        renderOnError={true}
                     />
                 );
             } else {

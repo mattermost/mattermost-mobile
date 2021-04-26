@@ -94,8 +94,9 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       onPress={[Function]}
       type="none"
     >
-      <FastImage
+      <RetriableFastImage
         nativeID="image-123"
+        renderOnError={true}
         resizeMode="contain"
         source={
           Object {
@@ -275,8 +276,9 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
     onPress={[Function]}
     type="none"
   >
-    <FastImage
+    <RetriableFastImage
       nativeID="image-123"
+      renderOnError={true}
       resizeMode="contain"
       source={
         Object {

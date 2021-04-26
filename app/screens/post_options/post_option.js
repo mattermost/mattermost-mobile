@@ -14,7 +14,7 @@ import {
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 import {isValidUrl} from '@utils/url';
 
 export default class PostOption extends PureComponent {
@@ -65,6 +65,7 @@ export default class PostOption extends PureComponent {
                     <FastImage
                         source={icon}
                         style={imageStyle}
+                        renderOnError={true}
                     />
                 );
             } else {

@@ -10,8 +10,9 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
     }
   }
 >
-  <FastImage
+  <RetriableFastImage
     key="footer_icon"
+    renderOnError={true}
     source={
       Object {
         "uri": "https://images.com/image.png",

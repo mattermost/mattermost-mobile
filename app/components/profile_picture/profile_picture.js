@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import {Client4} from '@client/rest';
 
@@ -162,6 +162,7 @@ export default class ProfilePicture extends PureComponent {
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={source}
+                    renderOnError={true}
                 />
             );
         } else {

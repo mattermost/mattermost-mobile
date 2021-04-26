@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 import {useSelector} from 'react-redux';
 
 import CompassIcon from '@components/compass_icon';
@@ -35,6 +35,7 @@ const NotificationIcon = ({fromWebhook, overrideIconUrl, senderId, useUserIcon}:
                 <FastImage
                     source={source}
                     style={styles.icon}
+                    renderOnError={true}
                 />
             );
         } else {
@@ -59,6 +60,7 @@ const NotificationIcon = ({fromWebhook, overrideIconUrl, senderId, useUserIcon}:
             <FastImage
                 source={logo}
                 style={styles.icon}
+                renderOnError={true}
             />
         );
     }

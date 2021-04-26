@@ -9,7 +9,7 @@ import {Theme} from '@mm-redux/types/preferences';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
 const bangIcon = require('@assets/images/autocomplete/slash_command_error.png');
 
@@ -111,6 +111,7 @@ const SlashSuggestionItem = (props: Props) => {
     } else if (props.icon && props.icon.startsWith('http')) {
         image = (
             <FastImage
+                renderOnError={true}
                 source={{uri: props.icon}}
                 style={{width: 16, height: 16}}
             />

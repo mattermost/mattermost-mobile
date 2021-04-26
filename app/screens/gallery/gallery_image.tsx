@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 import Animated from 'react-native-reanimated';
 
 import {DeviceTypes} from '@constants';

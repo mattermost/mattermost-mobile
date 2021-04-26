@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Text, View, Platform} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import {Theme} from '@mm-redux/types/preferences';
 
@@ -35,6 +35,7 @@ export default function AttachmentFooter(props: Props) {
                     source={{uri: icon}}
                     key='footer_icon'
                     style={style.icon}
+                    renderOnError={true}
                 />
             }
             <Text

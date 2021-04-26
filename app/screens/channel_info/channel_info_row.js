@@ -14,7 +14,7 @@ import {
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 import {isValidUrl} from '@utils/url';
 
 function createTouchableComponent(children, action) {
@@ -48,6 +48,7 @@ function channelInfoRow(props) {
             <FastImage
                 source={image}
                 style={{width: 24, height: 24}}
+                renderOnError={true}
             />
         );
     } else {

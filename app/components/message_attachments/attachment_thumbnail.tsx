@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import {isValidUrl} from '@utils/url';
 
@@ -23,6 +23,7 @@ export default function AttachmentThumbnail(props: Props) {
                 source={{uri}}
                 resizeMode='contain'
                 style={style.image}
+                renderOnError={true}
             />
         </View>
     );

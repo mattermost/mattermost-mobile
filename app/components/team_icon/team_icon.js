@@ -4,7 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {Text, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@components/retriable_fast_image';
 
 import {Client4} from '@client/rest';
 
@@ -81,6 +81,7 @@ export default class TeamIcon extends React.PureComponent {
                     style={[styles.image, styleImage]}
                     source={{uri: Client4.getTeamIconUrl(teamId, lastIconUpdate)}}
                     onError={this.handleImageError}
+                    renderOnError={true}
                 />
             );
         }
