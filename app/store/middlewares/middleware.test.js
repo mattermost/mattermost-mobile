@@ -234,6 +234,28 @@ describe('cleanUpState', () => {
         expect(result.entities.search.flagged).toEqual(['post1', 'post2', 'post3']);
     });
 
+    test('should migrate dataRetentionPolicy key to granular data retention structure', () => {
+        const dataRetentionPolicy = {
+            file_deletion_enabled: false,
+            file_retention_cutoff: 0,
+            message_deletion_enabled: false,
+            message_retention_cutoff: 0,
+        };
+
+        const state = {
+            entities: {
+                general: {
+                    dataRetentionPolicy,
+                },
+            },
+        };
+
+        const result = cleanUpState(state);
+
+        expect(result.entities.general.dataRetentionPolicy).toBeUndefined();
+        expect(result.entities.general.dataRetention.policies.global).toEqual(dataRetentionPolicy);
+    });
+
     test('should remove post because of granular data retention', () => {
         const getCreateAtBeforeDays = (days) => {
             const date = new Date();

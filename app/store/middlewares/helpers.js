@@ -47,10 +47,22 @@ export function cleanUpState(payload, keepCurrent = false) {
         },
     };
 
+    // Migrate old data retention policy value to the granular structure
+    if (nextEntities.general.dataRetentionPolicy) {
+        nextEntities.general.dataRetention = {
+            ...nextEntities.general.dataRetention,
+            policies: {
+                ...nextEntities.general.dataRetention?.policies?.global,
+                global: nextEntities.general.dataRetentionPolicy,
+            },
+        };
+        delete nextEntities.general.dataRetentionPolicy;
+    }
+
     let globalRetentionCutoff = 0;
     const channelsRetentionCutoff = {};
 
-    const {policies, lastCleanUpAt} = payload.entities?.general?.dataRetention || {};
+    const {policies, lastCleanUpAt} = nextEntities.general.dataRetention || {};
 
     const lastCleanedToday = new Date(lastCleanUpAt).toDateString() === new Date().toDateString();
     if (policies && (!lastCleanUpAt || !lastCleanedToday)) {
