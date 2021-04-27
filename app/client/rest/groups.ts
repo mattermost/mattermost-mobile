@@ -15,9 +15,9 @@ export interface ClientGroupsMix {
 }
 
 const ClientGroups = (superclass: any) => class extends superclass {
-    getGroups = async (filterAllowReference = false, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getGroups = async (filterAllowReference = false, page = 0, perPage = PER_PAGE_DEFAULT, since = 0) => {
         return this.doFetch(
-            `${this.getBaseRoute()}/groups${buildQueryString({filter_allow_reference: filterAllowReference, page, per_page: perPage})}`,
+            `${this.getBaseRoute()}/groups${buildQueryString({filter_allow_reference: filterAllowReference, page, per_page: perPage, since})}`,
             {method: 'get'},
         );
     };

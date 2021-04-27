@@ -5,19 +5,18 @@ import React, {PureComponent} from 'react';
 import {Alert, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {intlShape} from 'react-intl';
-import PropTypes from 'prop-types';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class AttachmentAuthor extends PureComponent {
-    static propTypes = {
-        icon: PropTypes.string,
-        link: PropTypes.string,
-        name: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-    };
-
+type Props = {
+    icon?: string;
+    link?: string;
+    name?: string;
+    theme: Theme;
+}
+export default class AttachmentAuthor extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -81,7 +80,7 @@ export default class AttachmentAuthor extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,

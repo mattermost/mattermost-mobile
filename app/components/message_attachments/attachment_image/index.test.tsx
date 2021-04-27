@@ -6,7 +6,7 @@ import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import AttachmentImage from './index';
+import AttachmentImage, {State, Props} from './index';
 
 describe('AttachmentImage', () => {
     const baseProps = {
@@ -15,7 +15,7 @@ describe('AttachmentImage', () => {
         imageMetadata: {width: 32, height: 32},
         imageUrl: 'https://images.com/image.png',
         theme: Preferences.THEMES.default,
-    };
+    } as Props;
 
     test('it matches snapshot', () => {
         const wrapper = shallow(<AttachmentImage {...baseProps}/>);
@@ -23,7 +23,7 @@ describe('AttachmentImage', () => {
     });
 
     test('it sets state based on props', () => {
-        const wrapper = shallow(<AttachmentImage {...baseProps}/>);
+        const wrapper = shallow<AttachmentImage, Props, State>(<AttachmentImage {...baseProps}/>);
 
         const state = wrapper.state();
         expect(state.hasImage).toBe(true);
@@ -32,8 +32,11 @@ describe('AttachmentImage', () => {
     });
 
     test('it does not render image if no imageUrl is provided', () => {
-        const props = {...baseProps, imageUrl: null, imageMetadata: null};
-        const wrapper = shallow(<AttachmentImage {...props}/>);
+        const props = {...baseProps};
+        delete props.imageUrl;
+        delete props.imageMetadata;
+
+        const wrapper = shallow<AttachmentImage, Props, State>(<AttachmentImage {...props}/>);
 
         const state = wrapper.state();
         expect(state.hasImage).toBe(false);
@@ -41,7 +44,7 @@ describe('AttachmentImage', () => {
     });
 
     test('it updates image when imageUrl prop changes', () => {
-        const wrapper = shallow(<AttachmentImage {...baseProps}/>);
+        const wrapper = shallow<AttachmentImage, Props, State>(<AttachmentImage {...baseProps}/>);
 
         wrapper.setProps({
             imageUrl: 'https://someothersite.com/picture.png',
@@ -58,7 +61,7 @@ describe('AttachmentImage', () => {
     });
 
     test('it does not update image when an unrelated prop changes', () => {
-        const wrapper = shallow(<AttachmentImage {...baseProps}/>);
+        const wrapper = shallow<AttachmentImage, Props, State>(<AttachmentImage {...baseProps}/>);
 
         wrapper.setProps({
             theme: {...Preferences.THEMES.default},

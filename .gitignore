@@ -95,6 +95,7 @@ coverage
 mattermost-license.txt
 *.mattermost-license
 detox/artifacts
+detox/detox_pixel_4_xl_api_30
 
 # Bundle artifact
 *.jsbundle

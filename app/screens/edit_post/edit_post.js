@@ -250,7 +250,7 @@ export default class EditPost extends PureComponent {
             }
         }
 
-        const height = Platform.OS === 'android' ? (deviceHeight / 2) - 40 : (deviceHeight / 2);
+        const height = Platform.OS === 'android' ? (deviceHeight / 2) - 40 : (deviceHeight / 2) - 30;
         const autocompleteStyles = [
             style.autocompleteContainer,
             {flex: autocompleteVisible ? 1 : 0},
