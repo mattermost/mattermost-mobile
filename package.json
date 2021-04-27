@@ -162,6 +162,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "start:reset-cache": "react-native start -- --reset-cache",
     "check": "npm run lint && npm run tsc",
     "clean": "./scripts/clean.sh",
     "ios-gems": "cd ios && bundle install",
