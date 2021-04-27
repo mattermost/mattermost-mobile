@@ -22,7 +22,7 @@ export interface ClientGeneralMix {
         policies: TeamDataRetentionPolicy[];
         total_count: number;
     }>;
-    getChannelDataRetentionPolicies: (userId: string, page: number, perPage?: number) => Promise<{
+    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<{
         policies: ChannelDataRetentionPolicy[];
         total_count: number;
     }>;
