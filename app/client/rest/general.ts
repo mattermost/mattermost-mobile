@@ -18,7 +18,7 @@ export interface ClientGeneralMix {
     getClientLicenseOld: () => Promise<any>;
     getTimezones: () => Promise<string[]>;
     getGlobalDataRetentionPolicy: () => Promise<GlobalDataRetentionPolicy[]>;
-    getTeamDataRetentionPolicies: (userId: string, page: number, perPage?: number) => Promise<{
+    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<{
         policies: TeamDataRetentionPolicy[];
         total_count: number;
     }>;
