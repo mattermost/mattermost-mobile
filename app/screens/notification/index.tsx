@@ -123,7 +123,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
         >
             <Animatable.View
                 duration={250}
-                style={[styles.container, {height: styles.container.height + (insets.top / 2), paddingTop: (insets.top / 2)}]}
+                style={[styles.container, {height: (styles.container.height || 0) + (insets.top / 2), paddingTop: (insets.top / 2)}]}
                 useNativeDriver={true}
                 animation={animation}
                 testID='in_app_notification.screen'

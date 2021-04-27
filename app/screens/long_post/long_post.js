@@ -135,6 +135,7 @@ export default class LongPost extends PureComponent {
                             <TouchableOpacity
                                 style={style.close}
                                 onPress={this.handleClose}
+                                testID='close.long_post.button'
                             >
                                 <CompassIcon
                                     name='close'

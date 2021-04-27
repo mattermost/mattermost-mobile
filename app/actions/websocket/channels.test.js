@@ -12,7 +12,7 @@ import configureMockStore from 'redux-mock-store';
 import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
 import * as ChannelActions from '@mm-redux/actions/channels';
 import * as TeamActions from '@mm-redux/actions/teams';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 
 import * as Actions from '@actions/websocket';

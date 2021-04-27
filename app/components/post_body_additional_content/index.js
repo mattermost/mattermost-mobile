@@ -14,6 +14,7 @@ import {ViewTypes} from 'app/constants';
 import {getDimensions} from 'app/selectors/device';
 
 import PostBodyAdditionalContent from './post_body_additional_content';
+import {appsEnabled} from '@utils/apps';
 
 function selectOpenGraphData(metadata, url) {
     if (!metadata || !metadata.embeds) {
@@ -27,7 +28,7 @@ function selectOpenGraphData(metadata, url) {
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
-    const link = ownProps.metadata.embeds[0]?.url || '';
+    const link = ownProps.metadata?.embeds?.[0]?.url || '';
     let expandedLink;
     if (link) {
         expandedLink = selectExpandedLink(state, link);
@@ -54,6 +55,7 @@ function mapStateToProps(state, ownProps) {
         openGraphData,
         showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true' && !removeLinkPreview,
         theme: getTheme(state),
+        appsEnabled: appsEnabled(state),
     };
 }
 

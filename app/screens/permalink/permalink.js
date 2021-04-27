@@ -29,8 +29,10 @@ import SafeAreaView from '@components/safe_area_view';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import {privateChannelJoinPrompt} from '@utils/channels';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {PERMALINK} from '@constants/screen';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -52,12 +54,15 @@ Animatable.initializeRegistryWithDefinitions({
 export default class Permalink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addUserToTeam: PropTypes.func.isRequired,
             getPostsAround: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
+            getTeamByName: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            removeUserFromTeam: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -68,9 +73,12 @@ export default class Permalink extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
-        myMembers: PropTypes.object.isRequired,
+        myChannelMemberships: PropTypes.object.isRequired,
+        myTeamMemberships: PropTypes.object.isRequired,
         onClose: PropTypes.func,
         postIds: PropTypes.array,
+        team: PropTypes.object,
+        teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         error: PropTypes.string,
     };
@@ -96,6 +104,7 @@ export default class Permalink extends PureComponent {
         this.state = {
             title: '',
             loading,
+            joinChannelPromptVisible: false,
             error: error || '',
             retry: false,
         };
@@ -240,13 +249,60 @@ export default class Permalink extends PureComponent {
                 return;
             }
 
-            if (!channelId) {
+            if (!focusChannelId) {
                 const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
                 focusChannelId = focusedPost ? focusedPost.channel_id : '';
-                if (focusChannelId) {
-                    const {data: channel} = await actions.getChannel(focusChannelId);
-                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+            }
+
+            if (focusChannelId) {
+                const {teamName} = this.props;
+                let {team} = this.props;
+                let joinedNewTeam = false;
+
+                // teamname is only passed for permalinks and not post previews in mentions, search & pinned posts
+                if (teamName) {
+                    if (!team) {
+                        const teamResponse = await actions.getTeamByName(teamName);
+                        if (teamResponse.error) {
+                            this.setState({error: teamResponse.error.message, loading: false});
+                            return;
+                        }
+                        team = teamResponse.data;
+                    }
+                    if (!this.props.myTeamMemberships[team.id]) {
+                        const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
+                        if (teamJoinResponse.error) {
+                            this.setState({error: teamJoinResponse.error.message, loading: false});
+                            return;
+                        }
+                        joinedNewTeam = true;
+                    }
+                }
+
+                if (!this.props.myChannelMemberships[focusChannelId]) {
+                    const {error: channelError, data: channel} = await actions.getChannel(focusChannelId);
+                    if (channelError) {
+                        this.setState({error: channelError.message, loading: false});
+                    } else {
+                        if (channel.type === General.PRIVATE_CHANNEL) {
+                            this.setState({joinChannelPromptVisible: true});
+                            const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
+                            if (!join) {
+                                if (joinedNewTeam) {
+                                    await actions.removeUserFromTeam(team.id, currentUserId);
+                                }
+                                this.handleClose();
+                                return;
+                            }
+                            this.setState({joinChannelPromptVisible: false});
+                        }
+
+                        // Join Open/Private channel
+                        const channelJoinResponse = await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                        if (channelJoinResponse.error) {
+                            this.setState({error: channelJoinResponse.error.message, loading: false});
+                            return;
+                        }
                     }
                 }
             }
@@ -286,7 +342,7 @@ export default class Permalink extends PureComponent {
 
     render() {
         const {channelName, currentUserId, focusedPostId, postIds, theme} = this.props;
-        const {error, loading, retry, title} = this.state;
+        const {error, joinChannelPromptVisible, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
         let postList;
@@ -306,7 +362,7 @@ export default class Permalink extends PureComponent {
                 </View>
             );
         } else if (loading) {
-            postList = <Loading color={theme.centerChannelColor}/>;
+            postList = joinChannelPromptVisible ? null : <Loading color={theme.centerChannelColor}/>;
         } else {
             postList = (
                 <PostList
@@ -323,6 +379,7 @@ export default class Permalink extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}
+                    location={PERMALINK}
                 />
             );
         }

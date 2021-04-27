@@ -8,9 +8,9 @@ import {
     Text,
 } from 'react-native';
 
-import Emoji from 'app/components/emoji';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import Emoji from '@components/emoji';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Reaction extends PureComponent {
     static propTypes = {
@@ -51,8 +51,14 @@ export default class Reaction extends PureComponent {
                     textStyle={{color: 'black', fontWeight: 'bold'}}
                     customEmojiStyle={{marginHorizontal: 3}}
                     padding={5}
+                    testID={`reaction.emoji.${emojiName}`}
                 />
-                <Text style={styles.count}>{count}</Text>
+                <Text
+                    style={styles.count}
+                    testID={`reaction.emoji.${emojiName}.count`}
+                >
+                    {count}
+                </Text>
             </TouchableWithFeedback>
         );
     }

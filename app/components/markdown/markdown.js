@@ -11,14 +11,13 @@ import {
     View,
 } from 'react-native';
 
-import AtMention from 'app/components/at_mention';
-import ChannelLink from 'app/components/channel_link';
-import Emoji from 'app/components/emoji';
-import FormattedText from 'app/components/formatted_text';
-import Hashtag from 'app/components/markdown/hashtag';
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getScheme} from 'app/utils/url';
+import AtMention from '@components/at_mention';
+import ChannelLink from '@components/channel_link';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
+import Hashtag from '@components/markdown/hashtag';
+import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {getScheme} from '@utils/url';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
@@ -39,23 +38,23 @@ import {
 
 export default class Markdown extends PureComponent {
     static propTypes = {
-        autolinkedUrlSchemes: PropTypes.array.isRequired,
-        baseTextStyle: CustomPropTypes.Style,
+        autolinkedUrlSchemes: PropTypes.array,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         blockStyles: PropTypes.object,
         channelMentions: PropTypes.object,
         imagesMetadata: PropTypes.object,
         isEdited: PropTypes.bool,
         isReplyPost: PropTypes.bool,
         isSearchResult: PropTypes.bool,
-        mentionKeys: PropTypes.array.isRequired,
-        minimumHashtagLength: PropTypes.number.isRequired,
+        mentionKeys: PropTypes.array,
+        minimumHashtagLength: PropTypes.number,
         onChannelLinkPress: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         postId: PropTypes.string,
         textStyles: PropTypes.object,
-        theme: PropTypes.object.isRequired,
+        theme: PropTypes.object,
         value: PropTypes.string.isRequired,
         disableHashtags: PropTypes.bool,
         disableAtMentions: PropTypes.bool,
@@ -73,6 +72,7 @@ export default class Markdown extends PureComponent {
         disableChannelLink: false,
         disableAtChannelMentionHighlight: false,
         disableGallery: false,
+        value: '',
     };
 
     constructor(props) {
@@ -154,7 +154,8 @@ export default class Markdown extends PureComponent {
     };
 
     computeTextStyle = (baseStyle, context) => {
-        return concatStyles(baseStyle, context.map((type) => this.props.textStyles[type]));
+        const contextStyles = context.map((type) => this.props.textStyles[type]).filter((f) => f !== undefined);
+        return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
     renderText = ({context, literal}) => {
@@ -258,6 +259,7 @@ export default class Markdown extends PureComponent {
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
+                testID='markdown_emoji'
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );
@@ -287,6 +289,7 @@ export default class Markdown extends PureComponent {
         if (!first) {
             blockStyle.push(this.props.blockStyles.adjacentParagraph);
         }
+
         return (
             <View style={blockStyle}>
                 <Text>
@@ -444,7 +447,7 @@ export default class Markdown extends PureComponent {
     };
 
     render() {
-        let ast = this.parser.parse(this.props.value);
+        let ast = this.parser.parse(this.props.value.toString());
 
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);

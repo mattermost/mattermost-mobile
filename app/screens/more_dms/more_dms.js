@@ -364,7 +364,7 @@ export default class MoreDirectMessages extends PureComponent {
                 selectable={true}
                 selected={selected}
                 enabled={true}
-                testID='more_direct_messages.user'
+                testID='more_direct_messages.custom_list.user_item'
             />
         );
     };
@@ -516,7 +516,7 @@ export default class MoreDirectMessages extends PureComponent {
                         onLoadMore={this.getProfiles}
                         onRowPress={this.handleSelectProfile}
                         renderItem={this.renderItem}
-                        testID='more_direct_messages.list'
+                        testID='more_direct_messages.custom_list'
                         theme={theme}
                     />
                 </KeyboardLayout>

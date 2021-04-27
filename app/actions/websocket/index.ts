@@ -7,7 +7,7 @@ import {loadMe} from '@actions/views/user';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
@@ -46,6 +46,7 @@ import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from 
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
 import {getChannelSinceValue} from '@utils/channels';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {handleRefreshAppsBindings} from './apps';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -377,6 +378,9 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleOpenDialogEvent(msg));
         case WebsocketEvents.RECEIVED_GROUP:
             return dispatch(handleGroupUpdatedEvent(msg));
+        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS: {
+            return dispatch(handleRefreshAppsBindings());
+        }
         }
 
         return {data: true};

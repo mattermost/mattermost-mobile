@@ -49,6 +49,10 @@ export function alertErrorIfInvalidPermissions(result) {
     }
 }
 
+export function emptyErrorHandlingFunction(e) { // eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
+
+}
+
 export function emptyFunction() { // eslint-disable-line no-empty-function
 
 }

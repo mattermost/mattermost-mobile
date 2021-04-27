@@ -51,6 +51,7 @@ export default class UserInfo extends PureComponent {
                 id={i18nId}
                 defaultMessage={defaultMessage}
                 style={style.label}
+                testID={`user_status.label.${status}`}
             />
         );
     }

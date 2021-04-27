@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import Client4 from '@mm-redux/client/client4';
+import {Client} from '@client/rest';
 
 import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
 
@@ -11,7 +11,7 @@ describe('utils/sentry', () => {
     describe('cleanUrlForLogging', () => {
         const baseUrl = 'https://mattermost.example.com/subpath';
 
-        const client = new Client4();
+        const client = new Client();
         client.setUrl(baseUrl);
 
         const tests = [{

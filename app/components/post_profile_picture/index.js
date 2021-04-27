@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';

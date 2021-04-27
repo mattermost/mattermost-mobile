@@ -23,7 +23,7 @@ import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';

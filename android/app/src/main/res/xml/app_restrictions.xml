@@ -8,6 +8,12 @@
             android:restrictionType="string"
             android:defaultValue="false" />
     <restriction
+            android:key="inAppSessionAuth"
+            android:title="@string/inAppSessionAuth_title"
+            android:description="@string/inAppSessionAuth_description"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
             android:key="blurApplicationScreen"
             android:title="@string/blurApplicationScreen_title"
             android:description="@string/blurApplicationScreen_description"

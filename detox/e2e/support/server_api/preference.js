@@ -18,6 +18,7 @@ import {getResponseFromError} from './common';
 
 /**
  * Save the user's preferences.
+ * See https://api.mattermost.com/#tag/preferences/paths/~1users~1{user_id}~1preferences/put
  * @param {string} userId - the user ID
  * @param {Array} preferences - a list of user's preferences
  * @return {string} returns {status} on success or {error, status} on error
@@ -33,6 +34,23 @@ export const apiSaveUserPreferences = async (userId, preferences = []) => {
     } catch (err) {
         return getResponseFromError(err);
     }
+};
+
+/**
+ * Save the user's favorite channel preference.
+ * @param {string} userId - the user ID
+ * @param {string} channelId - the channel id to be favorited
+ * @return {string} returns {status} on success or {error, status} on error
+ */
+export const apiSaveFavoriteChannelPreference = (userId, channelId) => {
+    const preference = {
+        user_id: userId,
+        category: 'favorite_channel',
+        name: channelId,
+        value: 'true',
+    };
+
+    return apiSaveUserPreferences(userId, [preference]);
 };
 
 /**
@@ -53,8 +71,9 @@ export const apiSaveTeamsOrderPreference = (userId, orderedTeamIds = []) => {
 };
 
 export const Preference = {
-    apiSaveUserPreferences,
+    apiSaveFavoriteChannelPreference,
     apiSaveTeamsOrderPreference,
+    apiSaveUserPreferences,
 };
 
 export default Preference;

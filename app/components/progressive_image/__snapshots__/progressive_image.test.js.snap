@@ -6,6 +6,7 @@ exports[`ProgressiveImage should match snapshot for BackgroundImage 1`] = `
     Array [
       Object {
         "alignItems": "center",
+        "backgroundColor": "rgba(61,60,64,0.08)",
         "justifyContent": "center",
       },
       Object {},
@@ -41,6 +42,7 @@ exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
     Array [
       Object {
         "alignItems": "center",
+        "backgroundColor": "rgba(61,60,64,0.08)",
         "justifyContent": "center",
       },
       Object {},
@@ -76,6 +78,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
     Array [
       Object {
         "alignItems": "center",
+        "backgroundColor": "rgba(61,60,64,0.08)",
         "justifyContent": "center",
       },
       Object {},

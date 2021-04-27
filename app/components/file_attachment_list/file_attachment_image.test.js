@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import FileAttachmentImage from './file_attachment_image.js';
 

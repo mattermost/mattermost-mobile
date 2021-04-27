@@ -27,13 +27,23 @@ import defaultServerConfig from './default_config.json';
 
 /**
  * Check system health.
- * See https://api.mattermost.com/#tag/system/paths/~1system~1ping/get
- * @return {Object} returns {data} on success or {error, status} on error
  */
 export const apiCheckSystemHealth = async () => {
+    const {data} = await apiPingServerStatus();
+    jestExpect(data.status).toEqual('OK');
+    jestExpect(data.database_status).toEqual('OK');
+    jestExpect(data.filestore_status).toEqual('OK');
+};
+
+/**
+ * Send a test email.
+ * See https://api.mattermost.com/#tag/system/paths/~1email~1test/post
+ * @return {Object} returns response on success or {error, status} on error
+ */
+export const apiEmailTest = async () => {
     try {
-        const response = await client.get('/api/v4/system/ping?get_server_status=true');
-        return {data: response.data};
+        const response = await client.post('/api/v4/email/test');
+        return response;
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -42,6 +52,7 @@ export const apiCheckSystemHealth = async () => {
 /**
  * Get configuration.
  * See https://api.mattermost.com/#tag/system/paths/~1config/get
+ * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiGetConfig = async () => {
     try {
@@ -57,6 +68,7 @@ export const apiGetConfig = async () => {
  * Update configuration.
  * See https://api.mattermost.com/#tag/system/paths/~1config/put
  * @param {Object} newConfig - specific config to update
+ * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiUpdateConfig = async (newConfig = {}) => {
     try {
@@ -99,6 +111,28 @@ export const apiGetClientLicense = async () => {
     } catch (err) {
         return getResponseFromError(err);
     }
+};
+
+/**
+ * Ping server status.
+ * See https://api.mattermost.com/#tag/system/paths/~1system~1ping/get
+ * @return {Object} returns {data} on success or {error, status} on error
+ */
+export const apiPingServerStatus = async () => {
+    try {
+        const response = await client.get('/api/v4/system/ping?get_server_status=true');
+        return {data: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Require SMTP server to be running.
+ */
+export const apiRequireSMTPServer = async () => {
+    const {status} = await apiEmailTest();
+    jestExpect(status).toEqual(200);
 };
 
 /**
@@ -147,6 +181,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
 
 /**
  * Upload server license with file expected at "/detox/e2e/support/fixtures/mattermost-license.txt"
+ * @return {Object} returns response on success or {error, status} on error
  */
 export const apiUploadLicense = async () => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');
@@ -158,6 +193,7 @@ export const apiUploadLicense = async () => {
 /**
  * Get client license.
  * If no license, try to upload if license file is available at "/support/fixtures/mattermost-license.txt".
+ * @return {Object} returns {license} on success or upload when no license or get updated license.
  */
 async function getClientLicense() {
     const {license} = await apiGetClientLicense();
@@ -179,11 +215,13 @@ async function getClientLicense() {
 
 export const System = {
     apiCheckSystemHealth,
-    apiGetConfig,
-    apiUpdateConfig,
+    apiEmailTest,
     apiGetClientLicense,
+    apiGetConfig,
     apiRequireLicense,
     apiRequireLicenseForFeature,
+    apiRequireSMTPServer,
+    apiUpdateConfig,
     apiUploadLicense,
 };
 

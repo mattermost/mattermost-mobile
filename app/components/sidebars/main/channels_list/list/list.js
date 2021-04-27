@@ -404,7 +404,6 @@ export default class List extends PureComponent {
 
         return (
             <View
-                testID={testID}
                 style={styles.container}
                 onLayout={this.onLayout}
             >
@@ -412,6 +411,7 @@ export default class List extends PureComponent {
                     ref={this.setListRef}
                     sections={sections}
                     contentContainerStyle={{paddingBottom}}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyboardShouldPersistTaps={'always'}
@@ -419,6 +419,7 @@ export default class List extends PureComponent {
                     onViewableItemsChanged={this.updateUnreadIndicators}
                     maxToRenderPerBatch={10}
                     stickySectionHeadersEnabled={true}
+                    testID={testID}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                     {...this.keyboardDismissProp}
                 />

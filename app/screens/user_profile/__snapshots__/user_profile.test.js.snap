@@ -7,6 +7,7 @@ exports[`user_profile should match snapshot 1`] = `
       "flex": 1,
     }
   }
+  testID="user_profile.screen"
 >
   <Connect(StatusBar) />
   <ScrollView
@@ -21,6 +22,7 @@ exports[`user_profile should match snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="user_profile.scroll_view"
   >
     <View
       style={
@@ -36,6 +38,7 @@ exports[`user_profile should match snapshot 1`] = `
         size={153}
         statusBorderWidth={6}
         statusSize={36}
+        testID="user_profile.profile_picture"
         userId="4hzdnk6mg7gepe7yze6m3domnc"
       />
       <Text
@@ -68,7 +71,9 @@ exports[`user_profile should match snapshot 1`] = `
         }
       }
     >
-      <View>
+      <View
+        testID="user_profile.display_block"
+      >
         <Text
           style={
             Object {
@@ -80,6 +85,7 @@ exports[`user_profile should match snapshot 1`] = `
               "textTransform": "uppercase",
             }
           }
+          testID="user_profile.display_block.nickname.label"
         />
         <Text
           style={
@@ -88,6 +94,7 @@ exports[`user_profile should match snapshot 1`] = `
               "fontSize": 15,
             }
           }
+          testID="user_profile.display_block.nickname.value"
         >
           nick
         </Text>
@@ -109,6 +116,7 @@ exports[`user_profile should match snapshot 1`] = `
       icon="send"
       iconColor="rgba(0, 0, 0, 0.7)"
       iconSize={24}
+      testID="user_profile.send_message.action"
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={

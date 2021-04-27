@@ -49,6 +49,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
         />
       }
       selected={true}
+      testID="notification_settings_email.immediately.action"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -100,6 +101,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
         />
       }
       selected={false}
+      testID="notification_settings_email.never.action"
       theme={
         Object {
           "awayIndicator": "#ffbc42",

@@ -3,7 +3,7 @@
 
 import {logout} from '@actions/views/user';
 import {UserTypes} from '@mm-redux/action_types';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {Client4Error} from '@mm-redux/types/client4';
 import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
 import {batchActions, Action, ActionFunc, GenericAction, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -111,7 +111,7 @@ export function bindClientFunc({
 
 // Debounce function based on underscores modified to use es6 and a cb
 
-export function debounce(func: (...args: any) => unknown, wait: number, immediate: boolean, cb: () => unknown) {
+export function debounce(func: (...args: any) => unknown, wait: number, immediate?: boolean, cb?: () => unknown) {
     let timeout: NodeJS.Timeout|null;
     return function fx(...args: Array<any>) {
         const runLater = () => {

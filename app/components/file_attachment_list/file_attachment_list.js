@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {StyleSheet, View, DeviceEventEmitter} from 'react-native';
 
 import ImageViewPort from '@components/image_viewport';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {isDocument, isGif, isImage, isVideo} from '@utils/file';
 import {getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {preventDoubleTap} from '@utils/tap';

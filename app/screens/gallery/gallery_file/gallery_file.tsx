@@ -69,7 +69,7 @@ const getStyles = makeStyleSheetFromTheme(({deviceHeight, deviceWidth, theme}: G
     },
 }));
 
-const GalleryVideo = (props: GalleryFileProps) => {
+const GalleryFile = (props: GalleryFileProps) => {
     const {canDownloadFiles, file, intl, theme} = props;
     const [enabled, setEnabled] = useState(true);
     const styles = getStyles(props);
@@ -174,4 +174,4 @@ const GalleryVideo = (props: GalleryFileProps) => {
     );
 };
 
-export default injectIntl(GalleryVideo);
+export default injectIntl(GalleryFile);

@@ -4,7 +4,7 @@
 import {Platform} from 'react-native';
 
 import Config from '@assets/config';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {getCurrentTeam, getCurrentTeamMembership} from '@mm-redux/selectors/entities/teams';
@@ -291,7 +291,7 @@ export function cleanUrlForLogging(original) {
         'files', 'preferences', 'hooks', 'incoming', 'outgoing', 'oauth', 'apps', 'emoji', 'brand', 'image',
         'data_retention', 'jobs', 'plugins', 'roles', 'system', 'timezones', 'schemes', 'redirect_location', 'patch',
         'mfa', 'password', 'reset', 'send', 'active', 'verify', 'terms_of_service', 'login', 'logout', 'ids',
-        'usernames', 'me', 'username', 'email', 'default', 'sessions', 'revoke', 'all', 'audits', 'device', 'status',
+        'usernames', 'me', 'username', 'email', 'default', 'sessions', 'revoke', 'all', 'device', 'status',
         'search', 'switch', 'authorized', 'authorize', 'deauthorize', 'tokens', 'disable', 'enable', 'exists', 'unread',
         'invite', 'batch', 'stats', 'import', 'schemeRoles', 'direct', 'group', 'convert', 'view', 'search_autocomplete',
         'thread', 'info', 'flagged', 'pinned', 'pin', 'unpin', 'opengraph', 'actions', 'thumbnail', 'preview', 'link',

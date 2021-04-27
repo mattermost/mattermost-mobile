@@ -22,7 +22,7 @@ export default class ChannelItem extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
-        displayName: PropTypes.string.isRequired,
+        displayName: PropTypes.string,
         isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
         isManualUnread: PropTypes.bool,
@@ -167,6 +167,7 @@ export default class ChannelItem extends PureComponent {
                 type={channel.type}
                 isArchived={isArchived}
                 isBot={isBot}
+                testID={`${testID}.channel_icon`}
             />
         );
 

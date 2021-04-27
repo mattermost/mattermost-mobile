@@ -141,16 +141,6 @@ function mySessions(state: Array<{id: string}> = [], action: GenericAction) {
     }
 }
 
-function myAudits(state = [], action: GenericAction) {
-    switch (action.type) {
-    case UserTypes.RECEIVED_AUDITS:
-        return [...action.data];
-
-    default:
-        return state;
-    }
-}
-
 function profiles(state: IDMappedObjects<UserProfile> = {}, action: GenericAction) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME:
@@ -518,20 +508,6 @@ function myUserAccessTokens(state: any = {}, action: GenericAction) {
     }
 }
 
-function stats(state = {}, action: GenericAction) {
-    switch (action.type) {
-    case UserTypes.RECEIVED_USER_STATS: {
-        const stat = action.data;
-        return {
-            ...state,
-            ...stat,
-        };
-    }
-    default:
-        return state;
-    }
-}
-
 export default combineReducers({
 
     // the current selected user
@@ -539,9 +515,6 @@ export default combineReducers({
 
     // array with the user's sessions
     mySessions,
-
-    // array with the user's audits
-    myAudits,
 
     // object where every key is the token id and has a user access token as a value
     myUserAccessTokens,
@@ -569,7 +542,4 @@ export default combineReducers({
 
     // object where every key is the user id and has a value with a flag determining if their status was set manually
     isManualStatus,
-
-    // Total user stats
-    stats,
 });

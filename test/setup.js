@@ -141,7 +141,7 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-device-info', () => {

@@ -8,7 +8,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 
 import Url from 'url-parse';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import {DeviceTypes} from 'app/constants';
 import {

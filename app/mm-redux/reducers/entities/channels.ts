@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {ChannelTypes, UserTypes, SchemeTypes, GroupTypes} from '@mm-redux/action_types';
+import {ChannelTypes, UserTypes, GroupTypes} from '@mm-redux/action_types';
 import {General} from '../../constants';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Channel, ChannelMembership, ChannelStats, ChannelMemberCountByGroup, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
@@ -59,8 +59,7 @@ function channels(state: IDMappedObjects<Channel> = {}, action: GenericAction) {
             [action.data.id]: action.data,
         };
     case ChannelTypes.RECEIVED_CHANNELS:
-    case ChannelTypes.RECEIVED_ALL_CHANNELS:
-    case SchemeTypes.RECEIVED_SCHEME_CHANNELS: {
+    case ChannelTypes.RECEIVED_ALL_CHANNELS: {
         const nextState = {...state};
 
         for (const channel of action.data) {
@@ -155,17 +154,6 @@ function channels(state: IDMappedObjects<Channel> = {}, action: GenericAction) {
             },
         };
     }
-    case ChannelTypes.UPDATED_CHANNEL_SCHEME: {
-        const {channelId, schemeId} = action.data;
-        const channel = state[channelId];
-
-        if (!channel) {
-            return state;
-        }
-
-        return {...state, [channelId]: {...channel, scheme_id: schemeId}};
-    }
-
     case ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS: { // Used by the mobile app
         const nextState = {...state};
         const myChannels: Array<Channel> = action.data.channels;
@@ -349,9 +337,6 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
 
         return state;
     }
-    case ChannelTypes.UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: {
-        return updateChannelMemberSchemeRoles(state, action);
-    }
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         const data = action.data;
         const channelState = state[data.channelId];
@@ -454,9 +439,6 @@ function membersInChannel(state: RelationOneToOne<Channel, UserIDMappedObjects<C
         }
 
         return state;
-    }
-    case ChannelTypes.UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: {
-        return updateChannelMemberSchemeRoles(state, action);
     }
     default:
         return state;
@@ -599,28 +581,6 @@ function groupsAssociatedToChannel(state: any = {}, action: GenericAction) {
     }
 }
 
-function updateChannelMemberSchemeRoles(state: any, action: GenericAction) {
-    const {channelId, userId, isSchemeUser, isSchemeAdmin} = action.data;
-    const channel = state[channelId];
-    if (channel) {
-        const member = channel[userId];
-        if (member) {
-            return {
-                ...state,
-                [channelId]: {
-                    ...state[channelId],
-                    [userId]: {
-                        ...state[channelId][userId],
-                        scheme_user: isSchemeUser,
-                        scheme_admin: isSchemeAdmin,
-                    },
-                },
-            };
-        }
-    }
-    return state;
-}
-
 function totalCount(state = 0, action: GenericAction) {
     switch (action.type) {
     case ChannelTypes.RECEIVED_TOTAL_CHANNEL_COUNT: {
@@ -644,20 +604,6 @@ export function manuallyUnread(state: RelationOneToOne<Channel, boolean> = {}, a
     case ChannelTypes.ADD_MANUALLY_UNREAD:
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         return {...state, [action.data.channelId]: true};
-    }
-    default:
-        return state;
-    }
-}
-
-export function channelModerations(state: any = {}, action: GenericAction) {
-    switch (action.type) {
-    case ChannelTypes.RECEIVED_CHANNEL_MODERATIONS: {
-        const {channelId, moderations} = action.data;
-        return {
-            ...state,
-            [channelId]: moderations,
-        };
     }
     default:
         return state;
@@ -717,9 +663,6 @@ export default combineReducers({
 
     // object where every key is the channel id, if present means a user requested to mark that channel as unread.
     manuallyUnread,
-
-    // object where every key is the channel id and has an object with the channel moderations
-    channelModerations,
 
     // object where every key is the channel id containing one or several object(s) with a mapping of <group_id: ChannelMemberCountByGroup>
     channelMemberCountsByGroup,

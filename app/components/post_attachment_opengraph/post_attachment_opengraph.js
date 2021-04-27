@@ -15,7 +15,7 @@ import {generateId} from '@utils/file';
 import {openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
+import {tryOpenURL, isValidUrl} from '@utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
 const VIEWPORT_IMAGE_OFFSET = 93;
@@ -93,7 +93,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
 
         return {
-            hasImage: true,
+            hasImage: Boolean(isValidUrl(imageUrl) && (ogImage.width && ogImage.height)),
             ...dimensions,
             openGraphImageUrl: imageUrl,
         };
