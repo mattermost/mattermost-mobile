@@ -46,6 +46,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         super(reactContext);
         mApplication = application;
     }
+
     private File tempFolder;
 
     @Override
@@ -125,8 +126,6 @@ public class ShareModule extends ReactContextBaseJavaModule {
         promise.resolve(map);
     }
 
-
-
     public WritableArray processIntent() {
         WritableMap map = Arguments.createMap();
         WritableArray items = Arguments.createArray();
@@ -157,8 +156,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
             } else if (Intent.ACTION_SEND.equals(action)) {
                 Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 if (uri != null) {
-                    text = "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri);
-                    map.putString("value", text);
+                    map.putString("value", "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri));
 
                     if (type.equals("image/*")) {
                         type = "image/jpeg";
@@ -227,7 +225,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
             MultipartBody.Builder builder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
 
-            for(int i = 0 ; i < files.size() ; i++) {
+            for (int i = 0; i < files.size(); i++) {
                 ReadableMap file = files.getMap(i);
                 String filePath = file.getString("fullPath").replaceFirst("file://", "");
                 File fileInfo = new File(filePath);
@@ -251,7 +249,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     JSONObject responseJson = new JSONObject(responseData);
                     JSONArray fileInfoArray = responseJson.getJSONArray("file_infos");
                     JSONArray file_ids = new JSONArray();
-                    for(int i = 0 ; i < fileInfoArray.length() ; i++) {
+                    for (int i = 0; i < fileInfoArray.length(); i++) {
                         JSONObject fileInfo = fileInfoArray.getJSONObject(i);
                         file_ids.put(fileInfo.getString("id"));
                     }
