@@ -632,7 +632,7 @@ function setLoadMorePostsVisible(visible) {
     };
 }
 
-function loadGroupData() {
+function loadGroupData(isReconnect = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const actions = [];
@@ -665,9 +665,10 @@ function loadGroupData() {
                             });
                         }
                     } else {
+                        const getGroupsSince = isReconnect ? (state.websocket?.lastDisconnectAt || 0) : undefined;
                         const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
-                            Client4.getGroups(true, 0, 0),
+                            Client4.getGroups(false, 0, 0, getGroupsSince),
                         ]);
 
                         if (getAllGroupsAssociatedToChannelsInTeam.groups) {
@@ -713,7 +714,7 @@ function loadGroupData() {
     };
 }
 
-export function loadChannelsForTeam(teamId, skipDispatch = false) {
+export function loadChannelsForTeam(teamId, skipDispatch = false, isReconnect = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
@@ -784,7 +785,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
 
-            dispatch(loadGroupData());
+            dispatch(loadGroupData(isReconnect));
         }
 
         return {data};
