@@ -27,6 +27,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -124,6 +125,8 @@ public class ShareModule extends ReactContextBaseJavaModule {
         promise.resolve(map);
     }
 
+
+
     public WritableArray processIntent() {
         WritableMap map = Arguments.createMap();
         WritableArray items = Arguments.createArray();
@@ -131,6 +134,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         String text = "";
         String type = "";
         String action = "";
+        String extra = "";
 
         Activity currentActivity = getCurrentActivity();
 
@@ -139,14 +143,16 @@ public class ShareModule extends ReactContextBaseJavaModule {
             Intent intent = currentActivity.getIntent();
             action = intent.getAction();
             type = intent.getType();
+            extra = intent.getStringExtra(Intent.EXTRA_TEXT);
+
             if (type == null) {
                 type = "";
             }
 
-            if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
-                text = intent.getStringExtra(Intent.EXTRA_TEXT);
-                map.putString("value", text);
+            if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type) && extra != null) {
+                map.putString("value", extra);
                 map.putString("type", type);
+                map.putBoolean("isString", true);
                 items.pushMap(map);
             } else if (Intent.ACTION_SEND.equals(action)) {
                 Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -161,17 +167,16 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     }
 
                     map.putString("type", type);
+                    map.putBoolean("isString", false);
                     items.pushMap(map);
                 }
             } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                for (Uri uri : uris) {
-                    String filePath = RealPathUtil.getRealPathFromURI(currentActivity, uri);
+                for (Uri uri : Objects.requireNonNull(uris)) {
                     map = Arguments.createMap();
-                    text = "file://" + filePath;
-                    map.putString("value", text);
-
+                    map.putString("value", "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri));
                     type = RealPathUtil.getMimeTypeFromUri(currentActivity, uri);
+
                     if (type != null) {
                         if (type.equals("image/*")) {
                             type = "image/jpeg";
@@ -182,6 +187,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
                         type = "application/octet-stream";
                     }
                     map.putString("type", type);
+                    map.putBoolean("isString", false);
                     items.pushMap(map);
                 }
             }
