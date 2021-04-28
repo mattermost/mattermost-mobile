@@ -6,7 +6,7 @@ export {thunk};
 const configureStore = require('redux-mock-store').default;
 export {configureStore};
 
-export {Client4} from '@mm-redux/client';
+export {Client4} from '@client/rest';
 
 export type {AppBinding, AppForm} from '@mm-redux/types/apps';
 export {AppFieldTypes} from '@mm-redux/constants/apps';

@@ -53,6 +53,7 @@ export default class ReactionRow extends React.PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };

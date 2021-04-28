@@ -145,11 +145,13 @@ class AdvancedSettings extends Component {
             <SafeAreaView
                 edges={['left', 'right']}
                 style={style.container}
+                testID='advanced_settings.screen'
             >
                 <StatusBar/>
                 <ScrollView
                     contentContainerStyle={style.wrapper}
                     alwaysBounceVertical={false}
+                    testID='advanced_settings.scroll_view'
                 >
                     <View style={style.divider}/>
                     <SettingsItem
@@ -162,6 +164,7 @@ class AdvancedSettings extends Component {
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}
                         theme={theme}
+                        testID='advanced_settings.delete_documents_and_data.action'
                     />
                     <View style={style.divider}/>
                     {this.renderSentryDebugOptions()}

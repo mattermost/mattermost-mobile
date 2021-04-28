@@ -13,6 +13,7 @@ import {calculateDimensions, isGifTooLarge, openGalleryAtIndex} from '@utils/ima
 import {generateId} from '@utils/file';
 
 import type {PostImage} from '@mm-redux/types/posts';
+import {FileInfo} from '@mm-redux/types/files';
 
 type MarkdownTableImageProps = {
     disable: boolean;
@@ -78,8 +79,11 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
             return;
         }
 
-        const files = [getFileInfo()];
-        openGalleryAtIndex(0, files);
+        const file = getFileInfo() as FileInfo;
+        if (!file) {
+            return;
+        }
+        openGalleryAtIndex(0, [file]);
     }, []);
 
     const onLoadFailed = useCallback(() => {

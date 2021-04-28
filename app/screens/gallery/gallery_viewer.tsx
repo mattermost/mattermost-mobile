@@ -95,7 +95,7 @@ const GalleryViewer = (props: GalleryProps) => {
     const imgHeight = currentFile.height || height;
     const imgWidth = currentFile.width || width;
     const calculatedDimensions = calculateDimensions(imgHeight, imgWidth, width, height);
-    const imgCanvas = vec.create(calculatedDimensions.width, calculatedDimensions.height);
+    const imgCanvas = vec.create(calculatedDimensions.width || 0, calculatedDimensions.height || 0);
     const minImgVec = vec.min(vec.multiply(-0.5, imgCanvas, sub(scale, 1)), 0);
     const maxImgVec = vec.max(vec.minus(minImgVec), 0);
 

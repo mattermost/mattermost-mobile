@@ -61,6 +61,7 @@ export default class UserProfile extends PureComponent {
     rightButton = {
         id: 'edit-profile',
         showAsAction: 'always',
+        testID: 'user_profile.edit.button',
     };
 
     constructor(props, context) {
@@ -117,15 +118,20 @@ export default class UserProfile extends PureComponent {
         if (displayName && (config.ShowFullName === 'true' || user.is_bot || showGuest)) {
             return (
                 <View style={style.indicatorContainer}>
-                    <Text style={style.displayName}>
+                    <Text
+                        style={style.displayName}
+                        testID='user_profile.display_name'
+                    >
                         {displayName}
                     </Text>
                     <BotTag
                         show={Boolean(user.is_bot)}
+                        testID='user_profile.bot_tag'
                         theme={theme}
                     />
                     <GuestTag
                         show={showGuest}
+                        testID='user_profile.guest_tag'
                         theme={theme}
                     />
                 </View>
@@ -160,9 +166,19 @@ export default class UserProfile extends PureComponent {
             }
 
             return (
-                <View>
-                    <Text style={style.header}>{label}</Text>
-                    <Text style={style.text}>{user[property]}</Text>
+                <View testID='user_profile.display_block'>
+                    <Text
+                        style={style.header}
+                        testID={`user_profile.display_block.${property}.label`}
+                    >
+                        {label}
+                    </Text>
+                    <Text
+                        style={style.text}
+                        testID={`user_profile.display_block.${property}.value`}
+                    >
+                        {user[property]}
+                    </Text>
                 </View>
             );
         }
@@ -186,8 +202,12 @@ export default class UserProfile extends PureComponent {
                     id='mobile.routes.user_profile.local_time'
                     defaultMessage='LOCAL TIME'
                     style={style.header}
+                    testID='user_profile.timezone_block.local_time.label'
                 />
-                <Text style={style.text}>
+                <Text
+                    style={style.text}
+                    testID='user_profile.timezone_block.local_time.value'
+                >
                     <FormattedTime
                         timeZone={currentTimezone}
                         hour12={!militaryTime}
@@ -287,6 +307,7 @@ export default class UserProfile extends PureComponent {
                     icon={l.icon}
                     theme={this.props.theme}
                     iconSize={l.iconSize}
+                    testID='user_profile.additional_options.action'
                 />
             );
         });
@@ -331,11 +352,15 @@ export default class UserProfile extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
+            <SafeAreaView
+                style={style.container}
+                testID='user_profile.screen'
+            >
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.contentContainer}
+                    testID='user_profile.scroll_view'
                 >
                     <View style={style.top}>
                         <ProfilePicture
@@ -347,7 +372,12 @@ export default class UserProfile extends PureComponent {
                             testID='user_profile.profile_picture'
                         />
                         {this.getDisplayName()}
-                        <Text style={style.username}>{`@${user.username}`}</Text>
+                        <Text
+                            style={style.username}
+                            testID='user_profile.username'
+                        >
+                            {`@${user.username}`}
+                        </Text>
                     </View>
                     <View style={style.divider}/>
                     {this.renderDetailsBlock(style)}
@@ -359,6 +389,7 @@ export default class UserProfile extends PureComponent {
                         iconSize={24}
                         textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
+                        testID='user_profile.send_message.action'
                     />
                     {this.renderAdditionalOptions()}
                 </ScrollView>

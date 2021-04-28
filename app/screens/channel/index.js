@@ -9,7 +9,7 @@ import {recordLoadTime} from '@actions/views/root';
 import {selectDefaultTeam} from '@actions/views/select_team';
 import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -22,6 +22,7 @@ import Channel from './channel';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
+    const currentUserId = getCurrentUserId(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const serverVersion = Client4.getServerVersion() || getServerVersion(state);
@@ -42,6 +43,7 @@ function mapStateToProps(state) {
     return {
         currentChannelId,
         currentTeamId,
+        currentUserId,
         isSupportedServer,
         isSystemAdmin,
         showTermsOfService: shouldShowTermsOfService(state),

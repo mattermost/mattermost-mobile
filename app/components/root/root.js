@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {IntlProvider} from 'react-intl';
 import {Platform} from 'react-native';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {resetToTeams} from 'app/actions/navigation';

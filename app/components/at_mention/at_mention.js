@@ -64,6 +64,7 @@ export default class AtMention extends React.PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -174,12 +175,12 @@ export default class AtMention extends React.PureComponent {
             } else {
                 const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
                 const mentionMatch = pattern.exec(mentionName);
-                highlighted = true;
 
                 if (mentionMatch) {
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
                     isMention = true;
+                    highlighted = true;
                 } else {
                     mention = mentionName;
                 }

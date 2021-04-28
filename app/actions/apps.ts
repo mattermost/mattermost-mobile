@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
+
 import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppForm, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
+
 import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {showModal} from './navigation';

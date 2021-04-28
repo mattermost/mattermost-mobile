@@ -158,19 +158,14 @@ describe('Search', () => {
     });
 
     it('MM-T3240 should not be able to add a reaction on search results', async () => {
-        const {
-            postOptions,
-            reactionPickerAction,
-        } = PostOptions;
-
         // # Post message and search on text
         await postMessageAndSearchText(testMessage, testPartialSearchTerm);
 
         // * Verify add a reaction is not visible
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
         await SearchScreen.openPostOptionsFor(lastPost.post.id, testMessage);
-        await expect(reactionPickerAction).not.toBeVisible();
-        await postOptions.tap();
+        await expect(PostOptions.reactionPickerAction).not.toBeVisible();
+        await PostOptions.close();
 
         // # Go back to channel
         await SearchScreen.cancel();
