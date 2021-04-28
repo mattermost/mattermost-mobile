@@ -204,6 +204,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
             "marginTop": 15,
           }
         }
+        testID="user_profile.username"
       >
         @fred
       </Text>
@@ -413,6 +414,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
             "marginTop": 15,
           }
         }
+        testID="user_profile.username"
       >
         @fred
       </Text>
