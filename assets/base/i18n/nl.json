@@ -49,7 +49,7 @@
   "apps.error.unknown": "Onbekende fout opgetreden.",
   "apps.suggestion.dynamic.error": "Dynamische selectiefout",
   "apps.suggestion.errors.parser_error": "Fout bij het parsen",
-  "apps.suggestion.no_dynamic": "Geen gegevens ontvangen voor dynamische suggesties.",
+  "apps.suggestion.no_dynamic": "Geen gegevens ontvangen voor dynamische suggesties",
   "apps.suggestion.no_static": "Geen passende opties.",
   "apps.suggestion.no_suggestion": "Geen passende suggesties.",
   "archivedChannelMessage": "Je bekijkt een **gearchiveerd kanaal**. Er kunnen geen nieuwe berichten worden geplaatst.",
