@@ -31,7 +31,7 @@ export default function EmbeddedBindings(props: Props) {
         theme,
         textStyles,
     } = props;
-    const content = [] as JSX.Element[];
+    const content = [] as React.ReactNode[];
 
     embeds.forEach((embed, i) => {
         content.push(

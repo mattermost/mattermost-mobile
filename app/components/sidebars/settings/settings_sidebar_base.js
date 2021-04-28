@@ -229,9 +229,9 @@ export default class SettingsSidebarBase extends PureComponent {
         const options = {
             topBar: {
                 leftButtons: [{
-                    testID: 'close.settings.button',
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };

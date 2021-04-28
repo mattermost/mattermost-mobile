@@ -24,7 +24,7 @@
     "uuid": "8.3.2"
   },
   "scripts": {
-    "e2e:android-create-emulator": "avdmanager create avd -n detox_emu_api_30 -k 'system-images;android-30;google_apis;x86' -g google_apis -d 'pixel'",
+    "e2e:android-create-emulator": "./create_android_emulator.sh",
     "e2e:android-build": "detox build -c android.emu.debug",
     "e2e:android-test": "detox test -c android.emu.debug",
     "e2e:android-build-release": "detox build -c android.emu.release",

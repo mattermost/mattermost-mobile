@@ -15,6 +15,7 @@ import CustomStatusScreen from './custom_status';
 import DisplaySettingsScreen from './display_settings';
 import EditChannelScreen from './edit_channel';
 import EditPostScreen from './edit_post';
+import EditProfileScreen from './edit_profile';
 import GeneralSettingsScreen from './general_settings';
 import LoginScreen from './login';
 import LongPostScreen from './long_post';
@@ -50,6 +51,7 @@ export {
     DisplaySettingsScreen,
     EditChannelScreen,
     EditPostScreen,
+    EditProfileScreen,
     GeneralSettingsScreen,
     LoginScreen,
     LongPostScreen,

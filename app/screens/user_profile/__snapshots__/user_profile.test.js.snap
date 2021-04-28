@@ -49,6 +49,7 @@ exports[`user_profile should match snapshot 1`] = `
             "marginTop": 15,
           }
         }
+        testID="user_profile.username"
       >
         @fred
       </Text>

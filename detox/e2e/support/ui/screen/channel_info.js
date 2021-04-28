@@ -79,15 +79,47 @@ class ChannelInfoScreen {
         await expect(this.channelInfoScreen).not.toBeVisible();
     }
 
-    archiveChannel = async ({confirm = true} = {}) => {
+    archiveChannel = async ({confirm = true, publicChannel = true} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.archiveAction.tap();
         const {
+            archivePrivateChannelTitle,
             archivePublicChannelTitle,
             noButton,
             yesButton,
         } = Alert;
-        await expect(archivePublicChannelTitle).toBeVisible();
+        if (publicChannel) {
+            await expect(archivePublicChannelTitle).toBeVisible();
+        } else {
+            await expect(archivePrivateChannelTitle).toBeVisible();
+        }
+        await expect(noButton).toBeVisible();
+        await expect(yesButton).toBeVisible();
+        if (confirm) {
+            yesButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).not.toBeVisible();
+        } else {
+            noButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toBeVisible();
+        }
+    }
+
+    leaveChannel = async ({confirm = true, publicChannel = true} = {}) => {
+        await this.channelInfoScrollView.scrollTo('bottom');
+        await this.leaveAction.tap();
+        const {
+            leavePrivateChannelTitle,
+            leavePublicChannelTitle,
+            noButton,
+            yesButton,
+        } = Alert;
+        if (publicChannel) {
+            await expect(leavePublicChannelTitle).toBeVisible();
+        } else {
+            await expect(leavePrivateChannelTitle).toBeVisible();
+        }
         await expect(noButton).toBeVisible();
         await expect(yesButton).toBeVisible();
         if (confirm) {
