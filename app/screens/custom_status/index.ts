@@ -11,14 +11,19 @@ import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@act
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {GenericAction} from '@mm-redux/types/actions';
 import {isLandscape} from '@selectors/device';
+import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 function mapStateToProps(state: GlobalState) {
     const getCustomStatus = makeGetCustomStatus();
     const customStatus = getCustomStatus(state) || {};
     const recentCustomStatuses = getRecentCustomStatuses(state);
     const theme = getTheme(state);
+    const currentUserId = getCurrentUserId(state);
+    const userTimezone = getUserTimezone(state, currentUserId);
 
     return {
+        userTimezone,
         customStatus,
         recentCustomStatuses,
         theme,

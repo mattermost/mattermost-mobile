@@ -8,7 +8,7 @@ import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBar
 
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
-import {UserCustomStatus} from '@mm-redux/types/users';
+import {CustomStatusDuration, ExpiryMenuItems, UserCustomStatus} from '@mm-redux/types/users';
 import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -18,25 +18,33 @@ import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggest
 import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
+import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
+import moment from 'moment';
 
 type DefaultUserCustomStatus = {
     emoji: string;
     message: string;
     messageDefault: string;
+    durationDefault: string;
 };
 
 const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
-    {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting'},
-    {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch'},
-    {emoji: 'sneezing_face', message: t('custom_status.suggestions.out_sick'), messageDefault: 'Out sick'},
-    {emoji: 'house', message: t('custom_status.suggestions.working_from_home'), messageDefault: 'Working from home'},
-    {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation'},
+    {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting', durationDefault: CustomStatusDuration.ONE_HOUR},
+    {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch', durationDefault: CustomStatusDuration.THIRTY_MINUTES},
+    {emoji: 'sneezing_face', message: t('custom_status.suggestions.out_sick'), messageDefault: 'Out sick', durationDefault: CustomStatusDuration.TODAY},
+    {emoji: 'house', message: t('custom_status.suggestions.working_from_home'), messageDefault: 'Working from home', durationDefault: CustomStatusDuration.TODAY},
+    {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation', durationDefault: CustomStatusDuration.THIS_WEEK},
 ];
 
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
     theme: Theme;
     customStatus: UserCustomStatus;
+    userTimezone: {
+        useAutomaticTimezone: boolean;
+        automaticTimezone: string;
+        manualTimezone: string;
+    }
     recentCustomStatuses: UserCustomStatus[];
     isLandscape: boolean;
     actions: {
@@ -49,6 +57,8 @@ interface Props extends NavigationComponentProps {
 type State = {
     emoji: string;
     text: string;
+    duration: string;
+    expires_at: Date;
 }
 
 class CustomStatusModal extends NavigationComponent<Props, State> {
@@ -58,6 +68,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         enabled: true,
         showAsAction: 'always',
     };
+    leftButton: OptionsTopBarButton = {
+        id: 'cancel-custom-status',
+        enabled: true,
+        showAsAction: 'always',
+    }
 
     static options(): Options {
         return {
@@ -71,6 +86,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
+        const {customStatus, userTimezone} = props;
 
         this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
@@ -80,12 +96,28 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 rightButtons: [this.rightButton],
             },
         };
-
         mergeNavigationOptions(props.componentId, options);
 
+        let currentTime = new Date();
+        let timezone: string | undefined;
+        timezone = userTimezone.manualTimezone;
+        if (userTimezone.useAutomaticTimezone) {
+            timezone = userTimezone.automaticTimezone;
+        }
+        currentTime = getCurrentDateAndTimeForTimezone(timezone);
+
+        let initialCustomExpiryTime: Date = currentTime;
+
+        const isCurrentCustomStatusSet = customStatus.text || customStatus.emoji;
+        if (isCurrentCustomStatusSet && customStatus.duration === CustomStatusDuration.DATE_AND_TIME) {
+            initialCustomExpiryTime = new Date(customStatus.expires_at);
+        }
+
         this.state = {
-            emoji: props.customStatus.emoji,
+            emoji: props.customStatus.emoji || '',
             text: props.customStatus.text || '',
+            duration: props.customStatus?.duration || CustomStatusDuration.DONT_CLEAR,
+            expires_at: initialCustomExpiryTime,
         };
     }
 
@@ -98,7 +130,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     handleSetStatus = () => {
-        const {emoji, text} = this.state;
+        const {emoji, text, duration} = this.state;
         const isStatusSet = emoji || text;
         const {customStatus} = this.props;
         if (isStatusSet) {
@@ -107,6 +139,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 const status = {
                     emoji: emoji || 'speech_balloon',
                     text: text.trim(),
+                    duration,
+                    expires_at: this.calculateExpiryTime(duration),
                 };
                 this.props.actions.setCustomStatus(status);
             }
@@ -117,33 +151,59 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         dismissModal();
     };
 
+    calculateExpiryTime = (duration: string): string => {
+        const {expires_at} = this.state;
+        switch (duration) {
+        case CustomStatusDuration.DONT_CLEAR:
+            return '';
+        case CustomStatusDuration.THIRTY_MINUTES:
+            return moment().add(30, 'minutes').seconds(0).milliseconds(0).toISOString();
+        case CustomStatusDuration.ONE_HOUR:
+            return moment().add(1, 'hour').seconds(0).milliseconds(0).toISOString();
+        case CustomStatusDuration.FOUR_HOURS:
+            return moment().add(4, 'hours').seconds(0).milliseconds(0).toISOString();
+        case CustomStatusDuration.TODAY:
+            return moment().endOf('day').toISOString();
+        case CustomStatusDuration.THIS_WEEK:
+            return moment().endOf('week').toISOString();
+        case CustomStatusDuration.DATE_AND_TIME:
+            return expires_at.toISOString();
+        default:
+            return '';
+        }
+    };
+
     handleTextChange = (value: string) => this.setState({text: value});
 
     handleRecentCustomStatusClear = (status: UserCustomStatus) => this.props.actions.removeRecentCustomStatus(status);
 
     clearHandle = () => {
-        this.setState({emoji: '', text: ''});
+        this.setState({emoji: '', text: '', duration: CustomStatusDuration.DONT_CLEAR});
     };
 
-    handleSuggestionClick = (status: UserCustomStatus) => {
-        const {emoji, text} = status;
-        this.setState({emoji, text});
+    handleSuggestionClick = (status: { emoji: string, text: string, duration: string }) => {
+        const {emoji, text, duration} = status;
+        this.setState({emoji, text, duration});
     };
 
     renderRecentCustomStatuses = () => {
         const {recentCustomStatuses, theme} = this.props;
         const style = getStyleSheet(theme);
-        const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
-            <CustomStatusSuggestion
-                key={status.text}
-                handleSuggestionClick={this.handleSuggestionClick}
-                handleClear={this.handleRecentCustomStatusClear}
-                emoji={status.emoji}
-                text={status.text}
-                theme={theme}
-                separator={index !== recentCustomStatuses.length - 1}
-            />
-        ));
+        const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => {
+            return (
+                <CustomStatusSuggestion
+                    key={status.text}
+                    handleSuggestionClick={this.handleSuggestionClick}
+                    handleClear={this.handleRecentCustomStatusClear}
+                    emoji={status.emoji}
+                    text={status.text}
+                    theme={theme}
+                    separator={index !== recentCustomStatuses.length - 1}
+                    duration={status.duration}
+                    expires_at={status.expires_at}
+                />
+            );
+        });
 
         if (recentStatuses.length <= 0) {
             return null;
@@ -175,6 +235,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             map((status) => ({
                 emoji: status.emoji,
                 text: status.messageDefault,
+                duration: status.durationDefault,
             })).
             filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
             map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
@@ -185,6 +246,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     text={status.text}
                     theme={theme}
                     separator={index !== arr.length - 1}
+                    duration={status.duration}
                 />
             ));
 
@@ -229,9 +291,25 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.setState({emoji});
     }
 
+    handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) => {
+        dismissModal();
+        this.setState({duration});
+        if (duration === CustomStatusDuration.DATE_AND_TIME) {
+            this.setState({expires_at: new Date(expires_at)});
+        }
+    };
+
+    openClearAfterModal = () => {
+        const {intl} = this.props;
+        const screen = 'ClearAfter';
+        const title = intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'});
+        const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration};
+        showModal(screen, title, passProps);
+    };
+
     render() {
         const {emoji, text} = this.state;
-        const {theme, isLandscape} = this.props;
+        const {theme, isLandscape, intl} = this.props;
 
         const isStatusSet = emoji || text;
         const style = getStyleSheet(theme);
@@ -255,6 +333,20 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                         style={style.icon}
                     />
                 )}
+            </TouchableOpacity>
+        );
+
+        const clearAfter = (
+            <TouchableOpacity onPress={this.openClearAfterModal}>
+                <View style={style.inputContainer}>
+                    <Text style={style.expiryTime}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
+                    {this.state.duration ? <Text style={style.expiryTimeShow}>{ExpiryMenuItems[this.state.duration].value}</Text> : null}
+                    <CompassIcon
+                        name='chevron-right'
+                        size={24}
+                        style={style.rightIcon}
+                    />
+                </View>
             </TouchableOpacity>
         );
 
@@ -315,6 +407,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                         <StatusBar/>
                         <View style={style.scrollView}>
                             {customStatusInput}
+                            {clearAfter}
                             {this.renderRecentCustomStatuses()}
                             {this.renderCustomStatusSuggestions()}
                         </View>
@@ -331,10 +424,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         scrollView: {
             flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
             paddingTop: 32,
         },
         inputContainer: {
@@ -347,6 +440,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
             backgroundColor: theme.centerChannelBg,
         },
+
         input: {
             alignSelf: 'stretch',
             color: theme.centerChannelColor,
@@ -386,6 +480,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             top: 3,
             right: 14,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
+            marginHorizontal: 16,
+        },
+        expiryTime: {
+            fontSize: 17,
+            paddingLeft: 16,
+            height: 48,
+            textAlignVertical: 'center',
+        },
+        expiryTimeShow: {
+            position: 'absolute',
+            right: 30,
+        },
+        rightIcon: {
+            position: 'absolute',
+            right: 6,
+            color: changeOpacity(theme.centerChannelColor, 0.32),
         },
     };
 });

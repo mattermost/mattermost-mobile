@@ -3,7 +3,7 @@
 import Emoji from '@components/emoji';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {UserCustomStatus} from '@mm-redux/types/users';
+import {ExpiryMenuItems, UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useCallback} from 'react';
 import {View, TouchableOpacity, Text} from 'react-native';
@@ -11,28 +11,30 @@ import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
-    handleSuggestionClick: (status: UserCustomStatus) => void;
+    handleSuggestionClick: (status: { emoji: string, text: string, duration: string }) => void;
     emoji: string;
     text: string;
     handleClear?: (status: UserCustomStatus) => void;
     theme: Theme;
     separator: boolean;
+    duration: string;
+    expires_at?: string;
 };
 
 const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, theme, separator, handleClear} = props;
+    const {handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at} = props;
     const style = getStyleSheet(theme);
 
     const divider = separator ? <View style={style.divider}/> : null;
 
     const handleClick = useCallback(preventDoubleTap(() => {
-        handleSuggestionClick({emoji, text});
-    }), [handleSuggestionClick, emoji, text]);
+        handleSuggestionClick({emoji, text, duration});
+    }), [handleSuggestionClick, emoji, text, duration]);
 
-    const clearButton = handleClear ?
+    const clearButton = handleClear && expires_at ?
         (
             <ClearButton
-                handlePress={() => handleClear({emoji, text})}
+                handlePress={() => handleClear({emoji, text, duration, expires_at})}
                 theme={theme}
                 iconName='close'
                 size={18}
@@ -59,6 +61,13 @@ const CustomStatusSuggestion = (props: Props) => {
                             theme={theme}
                             textStyle={{color: theme.centerChannelColor}}
                         />
+                        {duration && (
+                            <CustomStatusText
+                                text={ExpiryMenuItems[duration].value}
+                                theme={theme}
+                                textStyle={{color: theme.centerChannelColor}}
+                            />
+                        )}
                     </View>
                     {clearButton && (
                         <View style={style.clearButtonContainer}>
@@ -97,7 +106,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         textContainer: {
             marginBottom: 2,
             alignItems: 'center',
-            width: '70%',
             flex: 1,
             flexDirection: 'row',
         },
@@ -109,6 +117,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
+            marginRight: 16,
         },
     };
 });

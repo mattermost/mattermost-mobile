@@ -209,6 +209,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'CustomStatus':
         screen = require('@screens/custom_status').default;
         break;
+    case 'ClearAfter':
+        screen = require('@screens/custom_status_clear_after').default;
+        break;
     }
 
     if (screen) {
