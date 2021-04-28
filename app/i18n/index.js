@@ -28,11 +28,6 @@ function loadTranslation(locale) {
             localeData = require('react-intl/locale-data/de');
             momentData = require('moment/locale/de');
             break;
-        case 'en-AU':
-            translations = require('@assets/i18n/en-AU.json');
-            localeData = require('react-intl/locale-data/en');
-            momentData = require('moment/locale/en-AU');
-            break;
         case 'es':
             translations = require('@assets/i18n/es.json');
             localeData = require('react-intl/locale-data/es');
@@ -45,7 +40,7 @@ function loadTranslation(locale) {
             break;
         case 'hu':
             translations = require('@assets/i18n/hu.json');
-            localeData = require('react-intl/locale-data/it');
+            localeData = require('react-intl/locale-data/hu');
             momentData = require('moment/locale/hu');
             break;
         case 'it':
