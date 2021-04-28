@@ -179,6 +179,7 @@ export default class TeamsList extends PureComponent {
                     extraData={this.state.serverUrl}
                     contentContainerStyle={this.listContentPadding()}
                     data={teamIds}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
                     viewabilityConfig={VIEWABILITY_CONFIG}

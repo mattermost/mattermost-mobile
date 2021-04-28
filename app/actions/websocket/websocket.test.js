@@ -11,7 +11,7 @@ import configureMockStore from 'redux-mock-store';
 
 import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
 import {notVisibleUsersActions} from '@mm-redux/actions/helpers';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Posts, RequestStatus} from '@mm-redux/constants';
 
 import * as Actions from '@actions/websocket';
@@ -30,7 +30,7 @@ const mockConfigRequest = (config = {}) => {
 
 const mockChanelsRequest = (teamId, channels = []) => {
     nock(Client4.getUserRoute('me')).
-        get(`/teams/${teamId}/channels?include_deleted=true`).
+        get(`/teams/${teamId}/channels?include_deleted=true&last_delete_at=0`).
         reply(200, channels);
 };
 

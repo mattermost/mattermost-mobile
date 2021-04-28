@@ -52,7 +52,7 @@ export default class Post extends PureComponent {
         hasComments: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         commentedOnPost: PropTypes.object,
-        managedConfig: PropTypes.object.isRequired,
+        managedConfig: PropTypes.object,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         shouldRenderReplyButton: PropTypes.bool,
@@ -109,6 +109,7 @@ export default class Post extends PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };

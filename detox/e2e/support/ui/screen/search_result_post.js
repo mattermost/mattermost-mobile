@@ -11,6 +11,7 @@ class SearchResultPostScreen {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
@@ -25,6 +26,7 @@ class SearchResultPostScreen {
 
         return {
             searchResultPostItem: postItem,
+            searchResultPostItemEmoji: postItemEmoji,
             searchResultPostItemHeaderDateTime: postItemHeaderDateTime,
             searchResultPostItemHeaderDisplayName: postItemHeaderDisplayName,
             searchResultPostItemHeaderGuestTag: postItemHeaderGuestTag,

@@ -33,6 +33,7 @@ describe('Search', () => {
         getSearchResultPostItem,
         searchFromModifier,
         searchInModifier,
+        searchInput,
     } = SearchScreen;
     let testMessage;
     let testPartialSearchTerm;
@@ -157,19 +158,44 @@ describe('Search', () => {
     });
 
     it('MM-T3240 should not be able to add a reaction on search results', async () => {
-        const {
-            postOptions,
-            reactionPickerAction,
-        } = PostOptions;
-
         // # Post message and search on text
         await postMessageAndSearchText(testMessage, testPartialSearchTerm);
 
         // * Verify add a reaction is not visible
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
         await SearchScreen.openPostOptionsFor(lastPost.post.id, testMessage);
-        await expect(reactionPickerAction).not.toBeVisible();
-        await postOptions.tap();
+        await expect(PostOptions.reactionPickerAction).not.toBeVisible();
+        await PostOptions.close();
+
+        // # Go back to channel
+        await SearchScreen.cancel();
+    });
+
+    it('MM-T3239 should be able to scroll through long list of search results', async () => {
+        // # Post messages
+        const keyword = 'qa';
+        const firstMessage = `${Date.now().toString()} ${keyword} first`;
+        const firstPost = await Post.apiCreatePost({
+            channelId: testChannel.id,
+            message: firstMessage,
+        });
+        [...Array(50).keys()].forEach(async () => {
+            const message = `${Date.now().toString()} ${keyword}`;
+            await Post.apiCreatePost({
+                channelId: testChannel.id,
+                message,
+            });
+        });
+
+        // # Perform search on keyword
+        await SearchScreen.open();
+        await searchInput.clearText();
+        await searchInput.typeText(keyword);
+        await searchInput.tapReturnKey();
+
+        // * Verify user can scroll down multiple times until first matching post is seen
+        const {searchResultPostItem} = await getSearchResultPostItem(firstPost.post.id, firstMessage);
+        await waitFor(searchResultPostItem).toBeVisible().whileElement(by.id(SearchScreen.testID.searchResultsList)).scroll(1000, 'down');
 
         // # Go back to channel
         await SearchScreen.cancel();

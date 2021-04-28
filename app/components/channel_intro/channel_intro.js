@@ -53,6 +53,7 @@ class ChannelIntro extends PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };

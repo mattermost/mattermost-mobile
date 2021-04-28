@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {EmojiTypes} from '@mm-redux/action_types';
 import {addReaction as serviceAddReaction, getNeededCustomEmojis} from '@mm-redux/actions/posts';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getPostIdsInCurrentChannel, makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 
 import {ViewTypes} from 'app/constants';

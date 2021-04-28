@@ -7,14 +7,13 @@ import React, {PureComponent} from 'react';
 import {Platform, Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Emoji from 'app/components/emoji';
-import FormattedText from 'app/components/formatted_text';
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
+import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class MarkdownEmoji extends PureComponent {
     static propTypes = {
-        baseTextStyle: CustomPropTypes.Style,
+        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         isEdited: PropTypes.bool,
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
@@ -59,6 +58,7 @@ export default class MarkdownEmoji extends PureComponent {
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
+                testID='markdown_emoji'
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
             />
         );

@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AboutScreen from './about';
+import AdvancedSettingsScreen from './advanced_settings';
 import AddReactionScreen from './add_reaction';
 import ChannelInfoScreen from './channel_info';
+import ChannelAddMembersScreen from './channel_add_members';
 import ChannelMembersScreen from './channel_members';
 import ChannelNotificationPreferenceScreen from './channel_notification_preference';
 import ChannelScreen from './channel';
@@ -11,6 +14,7 @@ import CreateChannelScreen from './create_channel';
 import DisplaySettingsScreen from './display_settings';
 import EditChannelScreen from './edit_channel';
 import EditPostScreen from './edit_post';
+import EditProfileScreen from './edit_profile';
 import GeneralSettingsScreen from './general_settings';
 import LoginScreen from './login';
 import LongPostScreen from './long_post';
@@ -29,10 +33,14 @@ import SearchScreen from './search';
 import SelectServerScreen from './select_server';
 import SelectTeamScreen from './select_team';
 import ThreadScreen from './thread';
+import UserProfileScreen from './user_profile';
 
 export {
+    AboutScreen,
+    AdvancedSettingsScreen,
     AddReactionScreen,
     ChannelInfoScreen,
+    ChannelAddMembersScreen,
     ChannelMembersScreen,
     ChannelNotificationPreferenceScreen,
     ChannelScreen,
@@ -41,6 +49,7 @@ export {
     DisplaySettingsScreen,
     EditChannelScreen,
     EditPostScreen,
+    EditProfileScreen,
     GeneralSettingsScreen,
     LoginScreen,
     LongPostScreen,
@@ -59,4 +68,5 @@ export {
     SelectServerScreen,
     SelectTeamScreen,
     ThreadScreen,
+    UserProfileScreen,
 };

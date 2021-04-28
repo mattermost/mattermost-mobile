@@ -7,7 +7,7 @@ import {injectIntl} from 'react-intl';
 import Clipboard from '@react-native-community/clipboard';
 
 import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, FooterRef, ShowToast, ToastRef} from 'types/screens/gallery';
@@ -30,7 +30,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const opacity = useRef(new Animated.Value(1)).current;
     const downloadingOpacitity = useRef(new Animated.Value(0)).current;
     const prepareRef = useRef<PrepareFileRef>(null);
-    const toastRef = useRef<ToastRef>();
+    const toastRef = useRef<ToastRef>(null);
 
     const animate = (value: Animated.Value, show: boolean, callback?: () => void): Animated.CompositeAnimation => {
         const animation = Animated.timing(value, {

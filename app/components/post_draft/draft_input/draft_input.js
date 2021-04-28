@@ -303,7 +303,7 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
-        const {data, error} = await executeCommand(msg, channelId, rootId);
+        const {data, error} = await executeCommand(msg, channelId, rootId, intl);
         this.setState({sendingMessage: false});
 
         if (error) {

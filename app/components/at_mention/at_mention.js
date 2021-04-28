@@ -10,7 +10,6 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
-import CustomPropTypes from '@constants/custom_prop_types';
 import BottomSheet from '@utils/bottom_sheet';
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -19,9 +18,9 @@ export default class AtMention extends React.PureComponent {
         isSearchResult: PropTypes.bool,
         mentionKeys: PropTypes.array.isRequired,
         mentionName: PropTypes.string.isRequired,
-        mentionStyle: CustomPropTypes.Style,
+        mentionStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         onPostPress: PropTypes.func,
-        textStyle: CustomPropTypes.Style,
+        textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired,
@@ -65,6 +64,7 @@ export default class AtMention extends React.PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -139,7 +139,7 @@ export default class AtMention extends React.PureComponent {
     }
 
     render() {
-        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
+        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys, theme} = this.props;
         const {user} = this.state;
         const mentionTextStyle = [];
 
@@ -155,9 +155,8 @@ export default class AtMention extends React.PureComponent {
         let styleText;
 
         if (textStyle) {
-            const {backgroundColor: bg, ...otherStyles} = StyleSheet.flatten(textStyle);
-            backgroundColor = bg;
-            styleText = otherStyles;
+            backgroundColor = theme.mentionHighlightBg;
+            styleText = textStyle;
         }
 
         if (user?.username) {
@@ -176,12 +175,12 @@ export default class AtMention extends React.PureComponent {
             } else {
                 const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
                 const mentionMatch = pattern.exec(mentionName);
-                highlighted = true;
 
                 if (mentionMatch) {
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
                     isMention = true;
+                    highlighted = true;
                 } else {
                     mention = mentionName;
                 }
@@ -194,7 +193,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (suffix) {
-            const suffixStyle = {...styleText, color: this.props.theme.centerChannelColor};
+            const suffixStyle = {...StyleSheet.flatten(styleText), color: theme.centerChannelColor};
             suffixElement = (
                 <Text style={suffixStyle}>
                     {suffix}
@@ -207,7 +206,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (highlighted) {
-            mentionTextStyle.push({backgroundColor});
+            mentionTextStyle.push({backgroundColor, color: theme.mentionColor});
         }
 
         return (

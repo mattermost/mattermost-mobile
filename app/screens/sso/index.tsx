@@ -11,8 +11,9 @@ import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {ssoLogin} from '@actions/views/user';
+import emmProvider from '@init/emm_provider';
 import {DispatchFunc} from '@mm-redux/types/actions';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {ErrorApi} from '@mm-redux/types/client4';
@@ -112,18 +113,19 @@ function SSO({intl, ssoType}: SSOProps) {
         theme,
     };
 
-    if (isSSOWithRedirectURLAvailable) {
+    if (!isSSOWithRedirectURLAvailable || emmProvider.inAppSessionAuth === true) {
         return (
-            <SSOWithRedirectURL {...props}/>
+            <SSOWithWebView
+                {...props}
+                completeUrlPath={completeUrlPath}
+                serverUrl={serverUrl}
+                ssoType={ssoType}
+            />
         );
     }
+
     return (
-        <SSOWithWebView
-            {...props}
-            completeUrlPath={completeUrlPath}
-            serverUrl={serverUrl}
-            ssoType={ssoType}
-        />
+        <SSOWithRedirectURL {...props}/>
     );
 }
 

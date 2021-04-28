@@ -63,6 +63,7 @@ describe('Channels', () => {
         ({channel: nonJoinedChannel} = await Channel.apiCreateChannel({type: 'O', prefix: '1-non-joined-channel', teamId: team.id}));
 
         ({user: dmOtherUser} = await User.apiCreateUser({prefix: 'testchannel-1'}));
+        await Team.apiAddUserToTeam(dmOtherUser.id, team.id);
         ({channel: directMessageChannel} = await Channel.apiCreateDirectChannel([user.id, dmOtherUser.id]));
         await Post.apiCreatePost({
             channelId: directMessageChannel.id,

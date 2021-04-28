@@ -30,6 +30,8 @@ import {
 import {
     getAdminAccount,
     getRandomId,
+    timeouts,
+    wait,
 } from '@support/utils';
 
 describe('Messaging', () => {
@@ -63,7 +65,7 @@ describe('Messaging', () => {
         const channelPermalink = `${serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
 
         // # Post the channel permalink to the test channel in Town Square
-        await postMessage(channelPermalink, {quickReplace: true});
+        await postMessage(channelPermalink);
         await expect(element(by.text(channelPermalink))).toBeVisible();
 
         // # Create another user in the same team, log in and go to town square
@@ -114,7 +116,7 @@ describe('Messaging', () => {
 
         // # Post Private Channel 2's POST Permalink
         const message2 = `${serverUrl}/${testTeam.name}/pl/${post.id}`;
-        await postMessage(message2, {quickReplace: true});
+        await postMessage(message2);
 
         // * Check that message is successfully posted
         await expect(element(by.text(message2))).toExist();
@@ -186,4 +188,5 @@ async function joinPrivateChannel() {
 async function tapLink(message) {
     const permalinkPost = element(by.text(message));
     await permalinkPost.tap({x: 5, y: 10});
+    await wait(timeouts.ONE_SEC);
 }

@@ -9,13 +9,12 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
         continue: PropTypes.bool,
-        iconStyle: CustomPropTypes.Style,
-        children: CustomPropTypes.Children.isRequired,
+        iconStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
     };
 
     render() {

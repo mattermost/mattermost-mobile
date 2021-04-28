@@ -10,7 +10,6 @@ import urlParse from 'url-parse';
 
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
-import CustomPropTypes from '@constants/custom_prop_types';
 import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
@@ -24,7 +23,7 @@ export default class MarkdownLink extends PureComponent {
         actions: PropTypes.shape({
             handleSelectChannelByName: PropTypes.func.isRequired,
         }).isRequired,
-        children: CustomPropTypes.Children.isRequired,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         href: PropTypes.string.isRequired,
         onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string,

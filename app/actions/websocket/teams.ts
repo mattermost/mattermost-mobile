@@ -3,7 +3,7 @@
 
 import {RoleTypes, TeamTypes} from '@mm-redux/action_types';
 import {notVisibleUsersActions} from '@mm-redux/actions/helpers';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getCurrentTeamId, getTeams as getTeamsSelector} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
