@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
+import Badge from '@components/badge';
+import ChannelIcon from '@components/channel_icon';
 import {General} from '@mm-redux/constants';
-import Badge from 'app/components/badge';
-import ChannelIcon from 'app/components/channel_icon';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
@@ -33,10 +33,10 @@ export default class ChannelItem extends PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         shouldHideChannel: PropTypes.bool,
         showUnreadForMsgs: PropTypes.bool.isRequired,
+        teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
-        isBot: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -77,7 +77,7 @@ export default class ChannelItem extends PureComponent {
             theme,
             isSearchResult,
             channel,
-            isBot,
+            teammateId,
         } = this.props;
 
         // Only ever show an archived channel if it's the currently viewed channel.
@@ -103,7 +103,7 @@ export default class ChannelItem extends PureComponent {
             if (isSearchResult) {
                 isCurrenUser = channel.id === currentUserId;
             } else {
-                isCurrenUser = channel.teammate_id === currentUserId;
+                isCurrenUser = teammateId === currentUserId;
             }
         }
         if (isCurrenUser) {
@@ -161,13 +161,13 @@ export default class ChannelItem extends PureComponent {
                 isUnread={isUnread}
                 hasDraft={hasDraft && channelId !== currentChannelId}
                 membersCount={displayName.split(',').length}
-                size={16}
-                status={channel.status}
+                statusStyle={{backgroundColor: theme.sidebarBg, borderColor: 'transparent'}}
+                size={24}
                 theme={theme}
                 type={channel.type}
                 isArchived={isArchived}
-                isBot={isBot}
                 testID={`${testID}.channel_icon`}
+                userId={teammateId}
             />
         );
 
@@ -231,6 +231,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 16,
             lineHeight: 24,
             paddingRight: 10,
+            marginLeft: 13,
             maxWidth: '80%',
             flex: 1,
             alignSelf: 'center',
