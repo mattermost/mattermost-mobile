@@ -27,6 +27,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -45,6 +46,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         super(reactContext);
         mApplication = application;
     }
+
     private File tempFolder;
 
     @Override
@@ -131,6 +133,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         String text = "";
         String type = "";
         String action = "";
+        String extra = "";
 
         Activity currentActivity = getCurrentActivity();
 
@@ -139,20 +142,21 @@ public class ShareModule extends ReactContextBaseJavaModule {
             Intent intent = currentActivity.getIntent();
             action = intent.getAction();
             type = intent.getType();
+            extra = intent.getStringExtra(Intent.EXTRA_TEXT);
+
             if (type == null) {
                 type = "";
             }
 
-            if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
-                text = intent.getStringExtra(Intent.EXTRA_TEXT);
-                map.putString("value", text);
+            if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type) && extra != null) {
+                map.putString("value", extra);
                 map.putString("type", type);
+                map.putBoolean("isString", true);
                 items.pushMap(map);
             } else if (Intent.ACTION_SEND.equals(action)) {
                 Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 if (uri != null) {
-                    text = "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri);
-                    map.putString("value", text);
+                    map.putString("value", "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri));
 
                     if (type.equals("image/*")) {
                         type = "image/jpeg";
@@ -161,17 +165,16 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     }
 
                     map.putString("type", type);
+                    map.putBoolean("isString", false);
                     items.pushMap(map);
                 }
             } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                for (Uri uri : uris) {
-                    String filePath = RealPathUtil.getRealPathFromURI(currentActivity, uri);
+                for (Uri uri : Objects.requireNonNull(uris)) {
                     map = Arguments.createMap();
-                    text = "file://" + filePath;
-                    map.putString("value", text);
-
+                    map.putString("value", "file://" + RealPathUtil.getRealPathFromURI(currentActivity, uri));
                     type = RealPathUtil.getMimeTypeFromUri(currentActivity, uri);
+
                     if (type != null) {
                         if (type.equals("image/*")) {
                             type = "image/jpeg";
@@ -182,6 +185,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
                         type = "application/octet-stream";
                     }
                     map.putString("type", type);
+                    map.putBoolean("isString", false);
                     items.pushMap(map);
                 }
             }
@@ -221,7 +225,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
             MultipartBody.Builder builder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM);
 
-            for(int i = 0 ; i < files.size() ; i++) {
+            for (int i = 0; i < files.size(); i++) {
                 ReadableMap file = files.getMap(i);
                 String filePath = file.getString("fullPath").replaceFirst("file://", "");
                 File fileInfo = new File(filePath);
@@ -245,7 +249,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
                     JSONObject responseJson = new JSONObject(responseData);
                     JSONArray fileInfoArray = responseJson.getJSONArray("file_infos");
                     JSONArray file_ids = new JSONArray();
-                    for(int i = 0 ; i < fileInfoArray.length() ; i++) {
+                    for (int i = 0; i < fileInfoArray.length(); i++) {
                         JSONObject fileInfo = fileInfoArray.getJSONObject(i);
                         file_ids.put(fileInfo.getString("id"));
                     }
