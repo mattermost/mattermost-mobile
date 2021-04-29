@@ -838,12 +838,16 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
         hasDraft={false}
         isActive={false}
         isArchived={false}
-        isBot={false}
         isInfo={false}
         isUnread={true}
         membersCount={1}
-        size={16}
-        status="online"
+        size={24}
+        statusStyle={
+          Object {
+            "backgroundColor": "#145dbf",
+            "borderColor": "transparent",
+          }
+        }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
@@ -875,6 +879,7 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
           }
         }
         type="O"
+        userId="currentUser"
       />
       <Text
         ellipsizeMode="tail"
@@ -887,6 +892,7 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
               "fontFamily": "Open Sans",
               "fontSize": 16,
               "lineHeight": 24,
+              "marginLeft": 13,
               "maxWidth": "80%",
               "paddingRight": 10,
             },
