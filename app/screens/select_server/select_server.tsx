@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
+import {IntlShape} from 'react-intl';
 import {
     ActivityIndicator,
     Alert,
@@ -74,7 +74,7 @@ export default class SelectServer extends PureComponent {
     };
 
     static contextTypes = {
-        intl: intlShape.isRequired,
+        intl: IntlShape.isRequired,
     };
 
     constructor(props) {
@@ -87,6 +87,7 @@ export default class SelectServer extends PureComponent {
         };
 
         this.cancelPing = null;
+        this.navigationEventListener = null;
     }
 
     static getDerivedStateFromProps(props, state) {

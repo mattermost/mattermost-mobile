@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 
-import SelectServer from './select_server.js';
+import SelectServer from './select_server.ts';
 import {renderWithReduxIntl} from 'test/testing_library';
 import {fireEvent, waitFor} from '@testing-library/react-native';
 
