@@ -8,13 +8,13 @@ import {intlShape, injectIntl} from 'react-intl';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostOption from '../post_option';
-import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
+import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
 import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
-import {SendEphemeralPost} from 'types/actions/posts';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 type Props = {
     bindings: AppBinding[],
@@ -26,8 +26,8 @@ type Props = {
     appsEnabled: boolean,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall;
+        postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
     }
 }
 
@@ -72,15 +72,15 @@ type OptionProps = {
     closeWithAnimation: () => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall;
+        postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
     },
 }
 
 class Option extends React.PureComponent<OptionProps> {
     onPress = async () => {
         const {closeWithAnimation, post, teamID, binding, intl} = this.props;
-        const {doAppCall, sendEphemeralPost} = this.props.actions;
+        const {doAppCall, postEphemeralCallResponseForPost} = this.props.actions;
 
         if (!binding.call) {
             return;
@@ -118,11 +118,10 @@ class Option extends React.PureComponent<OptionProps> {
         }
 
         const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => sendEphemeralPost(message, post.channel_id, post.root_id || post.id, callResp.app_metadata?.bot_user_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                ephemeral(callResp.markdown);
+                postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
             }
             break;
         case AppCallResponseTypes.NAVIGATE:
