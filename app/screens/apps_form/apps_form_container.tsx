@@ -5,18 +5,18 @@ import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData, AppCallType, AppLookupResponse} from '@mm-redux/types/apps';
+import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData, AppLookupResponse} from '@mm-redux/types/apps';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import AppsFormComponent from './apps_form_component';
 import {makeCallErrorResponse} from '@utils/apps';
-import {SendEphemeralPost} from 'types/actions/posts';
+import {DoAppCall, DoAppCallResult, PostEphemeralCallResponseForContext} from 'types/actions/apps';
 
 export type Props = {
     form?: AppForm;
     call?: AppCallRequest;
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse<any>, error?: AppCallResponse<any>}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall<any>;
+        postEphemeralCallResponseForContext: PostEphemeralCallResponseForContext;
     };
     theme: Theme;
     componentId: string;
@@ -81,7 +81,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                this.props.actions.sendEphemeralPost(callResp.markdown, call.context.channel_id, call.context.root_id || call.context.post_id, callResp.app_metadata?.bot_user_id);
+                this.props.actions.postEphemeralCallResponseForContext(callResp, callResp.markdown, call.context);
             }
             break;
         case AppCallResponseTypes.FORM:
@@ -102,7 +102,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         return res;
     }
 
-    refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<{data?: AppCallResponse<FormResponseData>, error?: AppCallResponse<FormResponseData>}> => {
+    refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
         const intl = this.context.intl;
         const makeErrorMsg = (message: string) => intl.formatMessage(
             {
@@ -171,7 +171,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         return res;
     };
 
-    performLookupCall = async (field: AppField, values: AppFormValues, userInput: string): Promise<{data?: AppCallResponse<AppLookupResponse>, error?: AppCallResponse<AppLookupResponse>}> => {
+    performLookupCall = async (field: AppField, values: AppFormValues, userInput: string): Promise<DoAppCallResult<AppLookupResponse>> => {
         const intl = this.context.intl;
         const makeErrorMsg = (message: string) => intl.formatMessage(
             {

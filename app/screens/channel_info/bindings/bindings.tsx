@@ -8,13 +8,13 @@ import {intlShape, injectIntl} from 'react-intl';
 import Separator from '@screens/channel_info/separator';
 
 import ChannelInfoRow from '../channel_info_row';
-import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
+import {AppBinding} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {dismissModal} from '@actions/navigation';
 import {createCallContext, createCallRequest} from '@utils/apps';
-import {SendEphemeralPost} from 'types/actions/posts';
+import {DoAppCall, PostEphemeralCallResponseForChannel} from 'types/actions/apps';
 
 type Props = {
     bindings: AppBinding[];
@@ -24,8 +24,8 @@ type Props = {
     intl: typeof intlShape;
     currentTeamId: string;
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall;
+        postEphemeralCallResponseForChannel: PostEphemeralCallResponseForChannel;
     }
 }
 
@@ -63,8 +63,8 @@ type OptionProps = {
     intl: typeof intlShape;
     currentTeamId: string;
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall;
+        postEphemeralCallResponseForChannel: PostEphemeralCallResponseForChannel;
     },
 }
 
@@ -79,7 +79,7 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
 
     onPress = async () => {
         const {binding, currentChannel, currentTeamId, intl} = this.props;
-        const {doAppCall, sendEphemeralPost} = this.props.actions;
+        const {doAppCall, postEphemeralCallResponseForChannel} = this.props.actions;
 
         if (this.state.submitting) {
             return;
@@ -121,11 +121,10 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
         }
 
         const callResp = res.data!;
-        const ephemeral = (message: string) => sendEphemeralPost(message, currentChannel.id, '', callResp.app_metadata?.bot_user_id);
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                ephemeral(callResp.markdown);
+                postEphemeralCallResponseForChannel(callResp, callResp.markdown, currentChannel.id);
             }
             break;
         case AppCallResponseTypes.NAVIGATE:
