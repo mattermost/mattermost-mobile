@@ -14,12 +14,17 @@ import {unsetCustomStatus} from '@actions/views/custom_status';
 import SettingsSidebar from './settings_sidebar';
 import {isCustomStatusEnabled, makeGetCustomStatus} from '@selectors/custom_status';
 
+import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state) || {};
     const status = getStatusForUserId(state, currentUser.id);
     const getCustomStatus = makeGetCustomStatus();
-
+    const currentUserId = getCurrentUserId(state);
+    const userTimezone = getUserTimezone(state, currentUserId);
     return {
+        userTimezone,
         currentUser,
         locale: currentUser?.locale,
         status,

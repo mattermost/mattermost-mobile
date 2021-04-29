@@ -24,6 +24,7 @@ import CustomStatusText from '@components/custom_status/custom_status_text';
 import ClearButton from '@components/custom_status/clear_button';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity} from '@utils/theme';
+import { CustomStatusDuration } from '@mm-redux/types/users';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
@@ -114,7 +115,7 @@ export default class SettingsSidebarBase extends PureComponent {
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
         const isStatusSet = customStatus.emoji;
         if (isStatusSet) {
-            const isStatusChanged = prevCustomStatus.emoji !== customStatus.emoji || prevCustomStatus.text !== customStatus.text;
+            const isStatusChanged = prevCustomStatus.emoji !== customStatus.emoji || prevCustomStatus.text !== customStatus.text || prevCustomStatus.expires_at !== customStatus.expires_at;
             if (isStatusChanged) {
                 this.setState({
                     showStatus: true,
@@ -307,6 +308,14 @@ export default class SettingsSidebarBase extends PureComponent {
                 )}
             </View>
         );
+        // TO DO
+        const customStatusExpiryTime = isStatusSet && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ? 
+        (
+            <CustomStatusText
+                text={new Date(customStatus.expires_at).toString()}
+                theme={theme}
+            />
+        ) : null;
 
         const clearButton = isStatusSet ?
             (
@@ -336,7 +345,8 @@ export default class SettingsSidebarBase extends PureComponent {
                 separator={false}
                 onPress={this.goToCustomStatus}
                 theme={theme}
-                labelSibling={clearButton}
+                labelFirstSibling={customStatusExpiryTime}
+                labelSecondSibling={clearButton}
                 failureText={retryMessage}
             />
         );

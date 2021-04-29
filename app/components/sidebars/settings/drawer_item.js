@@ -18,7 +18,8 @@ export default class DrawerItem extends PureComponent {
         iconName: PropTypes.string,
         isDestructor: PropTypes.bool,
         labelComponent: PropTypes.node,
-        labelSibling: PropTypes.node,
+        labelFirstSibling: PropTypes.node,
+        labelSecondSibling: PropTypes.node,
         failureText: PropTypes.node,
         leftComponent: PropTypes.node,
         onPress: PropTypes.func,
@@ -45,7 +46,8 @@ export default class DrawerItem extends PureComponent {
             onPress,
             separator,
             theme,
-            labelSibling,
+            labelFirstSibling,
+            labelSecondSibling,
             failureText,
         } = this.props;
         const style = getStyleSheet(theme);
@@ -98,11 +100,18 @@ export default class DrawerItem extends PureComponent {
                     )}
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
+                            <View>
                             {label}
+                            </View>
                         </View>
-                        {labelSibling && (
-                            <View style={style.labelSiblingContainer}>
-                                {labelSibling}
+                        {labelFirstSibling && (
+                            <View style={style.labelContainer}>
+                                {labelFirstSibling}
+                            </View>
+                            )}
+                        {labelSecondSibling && (
+                            <View style={style.labelSecondSiblingContainer}>
+                                {labelSecondSibling}
                             </View>
                         )}
                         {failureText}
@@ -142,7 +151,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
         },
-        labelSiblingContainer: {
+        labelSecondSiblingContainer: {
             position: 'absolute',
             top: 3,
             right: 14,

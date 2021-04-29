@@ -1,20 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {SafeAreaView, View, StatusBar, Keyboard} from 'react-native';
-import React, {useEffect} from 'react';
+import { SafeAreaView, View, StatusBar, Keyboard } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import {
     Navigation,
+    NavigationComponent,
     NavigationComponentProps,
     Options,
     OptionsTopBarButton,
 } from 'react-native-navigation';
-import {Theme} from '@mm-redux/types/preferences';
-import {intlShape, injectIntl} from 'react-intl';
-import {dismissModal, mergeNavigationOptions} from 'app/actions/navigation';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import { Theme } from '@mm-redux/types/preferences';
+import { intlShape, injectIntl } from 'react-intl';
+import { dismissModal, mergeNavigationOptions } from 'app/actions/navigation';
+import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
 import ClearAfterSuggestion from './clear_after_suggestions';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {CustomStatusDuration} from '@mm-redux/types/users';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
+import { CustomStatusDuration } from '@mm-redux/types/users';
 
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
@@ -23,72 +24,90 @@ interface Props extends NavigationComponentProps {
     initialDuration: CustomStatusDuration;
 }
 
-const ClearAfterModal = (props: Props) => {
-    useEffect(() => {
-        const rightButton: OptionsTopBarButton = {
-            id: 'update-custom-status-clear-after',
-            testID: 'custom_status-clear-after.done.button',
-            enabled: true,
-            showAsAction: 'always',
+type State = {
+    duration: CustomStatusDuration;
+    expiresAt: string;
+}
+
+class ClearAfterModal extends NavigationComponent<Props, State>{
+    rightButton: OptionsTopBarButton = {
+        id: 'update-custom-status-clear-after',
+        testID: 'custom_status-clear-after.done.button',
+        enabled: true,
+        showAsAction: 'always',
+    };
+
+    static options(): Options {
+        return {
+            topBar: {
+                title: {
+                    alignment: 'center',
+                },
+            },
         };
-        rightButton.text = props.intl.formatMessage({
+    }
+
+    constructor(props: Props) {
+        super(props);
+        this.rightButton.text = props.intl.formatMessage({
             id: 'mobile.custom_status.modal_confirm',
             defaultMessage: 'Done',
         });
 
-        rightButton.color = props.theme.sidebarHeaderTextColor;
+        this.rightButton.color = props.theme.sidebarHeaderTextColor;
 
         const options: Options = {
             topBar: {
-                rightButtons: [rightButton],
+                rightButtons: [this.rightButton],
             },
         };
 
         mergeNavigationOptions(props.componentId, options);
 
-        const listener = {
-            navigationButtonPressed: (button: {
-                buttonId: string,
-            }) => {
-                if (button.buttonId === 'update-custom-status-clear-after') {
-                    onDone();
-                }
-            },
+        this.state = {
+            duration: props.initialDuration,
+            expiresAt: ''
         };
+    }
 
-        const unsubscribe = Navigation.events().registerComponentListener(listener, props.componentId);
+    componentDidMount() {
+        Navigation.events().bindComponent(this);
+    }
 
-        return () => {
-            // Make sure to unregister the listener during cleanup
-            unsubscribe.remove();
-        };
-    }, []);
-    const {theme} = props;
-    const style = getStyleSheet(theme);
-    let duration: CustomStatusDuration = props.initialDuration;
-    let expiresAt = '';
-    const onDone = () => {
+    navigationButtonPressed = (button: {
+        buttonId: string,
+    }) => {
+        if (button.buttonId === 'update-custom-status-clear-after') {
+            this.onDone();
+        }
+    }
+
+    onDone = () => {
         Keyboard.dismiss();
-        props.handleClearAfterClick(duration, expiresAt);
+        this.props.handleClearAfterClick(this.state.duration, this.state.expiresAt);
         dismissModal();
     };
 
-    const handleSuggestionClick = (durationArg: CustomStatusDuration, expiresAtArg: string) => {
-        duration = durationArg;
-        expiresAt = expiresAtArg;
+    handleSuggestionClick = (duration: CustomStatusDuration, expiresAt: string) => {
+        this.setState({ duration, expiresAt });
     };
 
-    const renderClearAfterSuggestions = () => {
+    renderClearAfterSuggestions = () => {
+        const { theme } = this.props;
+        const style = getStyleSheet(theme);
+        const { duration } = this.state;
+
         const clearAfterSuggestions = Object.values(CustomStatusDuration).map(
             (item, index, arr) => {
                 if (index !== arr.length - 1) {
                     return (
                         <ClearAfterSuggestion
                             key={item}
-                            handleSuggestionClick={handleSuggestionClick}
+                            handleSuggestionClick={this.handleSuggestionClick}
                             duration={item}
                             theme={theme}
                             separator={index !== arr.length - 2}
+                            isSelected={duration === item}
                         />
                     );
                 }
@@ -106,35 +125,35 @@ const ClearAfterModal = (props: Props) => {
             </View>
         );
     };
-    return (
-        <SafeAreaView
-            testID='clear_after.screen'
-            style={style.container}
-        >
-            <StatusBar/>
-            <KeyboardAwareScrollView bounces={false}>
-                <View style={style.scrollView}>
-                    {renderClearAfterSuggestions()}
-                </View>
-                <View style={style.block}>
-                    <ClearAfterSuggestion
-                        handleSuggestionClick={handleSuggestionClick}
-                        duration={CustomStatusDuration.DATE_AND_TIME}
-                        theme={theme}
-                        separator={false}
-                    />
-                </View>
-            </KeyboardAwareScrollView>
-        </SafeAreaView>
-    );
-};
 
-ClearAfterModal.options = {
-    topBar: {
-        title: {
-            alignment: 'center',
-        },
-    },
+    render() {
+        const { theme } = this.props;
+        const style = getStyleSheet(theme);
+        const { duration } = this.state;
+
+        return (
+            <SafeAreaView
+                testID='clear_after.screen'
+                style={style.container}
+            >
+                <StatusBar />
+                <KeyboardAwareScrollView bounces={false}>
+                    <View style={style.scrollView}>
+                        {this.renderClearAfterSuggestions()}
+                    </View>
+                    <View style={style.block}>
+                        <ClearAfterSuggestion
+                            handleSuggestionClick={this.handleSuggestionClick}
+                            duration={CustomStatusDuration.DATE_AND_TIME}
+                            theme={theme}
+                            separator={false}
+                            isSelected={duration === CustomStatusDuration.DATE_AND_TIME}
+                        />
+                    </View>
+                </KeyboardAwareScrollView>
+            </SafeAreaView>
+        );
+    };
 };
 
 export default injectIntl(ClearAfterModal);

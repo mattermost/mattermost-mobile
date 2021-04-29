@@ -138,7 +138,7 @@ export const ExpiryMenuItems: { [key: string]: ExpiryMenuItem } = {
         value: localizeMessage('expiry_dropdown.this_week', 'This week'),
     },
     [DATE_AND_TIME]: {
-        text: localizeMessage('expiry_dropdown.choose_date_and_time', 'Choose date and time'),
+        text: localizeMessage('expiry_dropdown.choose_date_and_time', 'Custom'),
         value: localizeMessage('expiry_dropdown.date_and_time', 'Date and Time'),
     },
 };

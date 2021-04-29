@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 import Emoji from '@components/emoji';
 import CustomStatusText from '@components/custom_status/custom_status_text';
-import {Theme} from '@mm-redux/types/preferences';
-import {ExpiryMenuItems, UserCustomStatus} from '@mm-redux/types/users';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import React, {useCallback} from 'react';
-import {View, TouchableOpacity, Text} from 'react-native';
+import { Theme } from '@mm-redux/types/preferences';
+import { ExpiryMenuItems, UserCustomStatus } from '@mm-redux/types/users';
+import { changeOpacity, makeStyleSheetFromTheme } from '@utils/theme';
+import React, { useCallback } from 'react';
+import { View, TouchableOpacity, Text } from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
-import {preventDoubleTap} from '@utils/tap';
+import { preventDoubleTap } from '@utils/tap';
 
 type Props = {
     handleSuggestionClick: (status: { emoji: string, text: string, duration: string }) => void;
@@ -22,21 +22,21 @@ type Props = {
 };
 
 const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at} = props;
+    const { handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at } = props;
     const style = getStyleSheet(theme);
 
-    const divider = separator ? <View style={style.divider}/> : null;
+    const divider = separator ? <View style={style.divider} /> : null;
 
     const handleClick = useCallback(preventDoubleTap(() => {
-        handleSuggestionClick({emoji, text, duration});
+        handleSuggestionClick({ emoji, text, duration });
     }), [handleSuggestionClick, emoji, text, duration]);
 
     const clearButton = handleClear && expires_at ?
         (
             <ClearButton
-                handlePress={() => handleClear({emoji, text, duration, expires_at})}
+                handlePress={() => handleClear({ emoji, text, duration, expires_at })}
                 theme={theme}
-                iconName='close'
+                iconName='close-circle'
                 size={18}
                 testID='custom_status_suggestion.clear.button'
             />
@@ -56,18 +56,22 @@ const CustomStatusSuggestion = (props: Props) => {
                 </Text>
                 <View style={style.wrapper}>
                     <View style={style.textContainer}>
-                        <CustomStatusText
-                            text={text}
-                            theme={theme}
-                            textStyle={{color: theme.centerChannelColor}}
-                        />
-                        {duration && (
+                        <View>
                             <CustomStatusText
-                                text={ExpiryMenuItems[duration].value}
+                                text={text}
                                 theme={theme}
-                                textStyle={{color: theme.centerChannelColor}}
+                                textStyle={{ color: theme.centerChannelColor }}
                             />
-                        )}
+                        </View>
+                        <View style={style.expiryTimeContainer}>
+                            {duration && (
+                                <CustomStatusText
+                                    text={ExpiryMenuItems[duration].value}
+                                    theme={theme}
+                                    textStyle={{ color: changeOpacity(theme.centerChannelColor, 0.6) }}
+                                />
+                            )}
+                        </View>
                     </View>
                     {clearButton && (
                         <View style={style.clearButtonContainer}>
@@ -106,8 +110,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         textContainer: {
             marginBottom: 2,
             alignItems: 'center',
+            width: '70%',
             flex: 1,
             flexDirection: 'row',
+        },
+        expiryTimeContainer: {
+            marginLeft: 10,
         },
         clearButtonContainer: {
             position: 'absolute',

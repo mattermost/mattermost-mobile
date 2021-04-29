@@ -9,7 +9,6 @@ import ClearAfterModal from '@screens/custom_status_clear_after/clear_after_moda
 
 function mapStateToProps(state: GlobalState) {
     const theme = getTheme(state);
-
     return {
         theme,
     };
