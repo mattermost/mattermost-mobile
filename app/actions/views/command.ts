@@ -8,13 +8,13 @@ import {executeCommand as executeCommandService} from '@mm-redux/actions/integra
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
+import {CommandArgs} from '@mm-redux/types/integrations';
 
 import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 
-import {doAppCall} from '@actions/apps';
+import {doAppCall, postEphemeralCallResponseForCommandArgs} from '@actions/apps';
 import {appsEnabled} from '@utils/apps';
 import {AppCallResponse} from '@mm-redux/types/apps';
-import {sendEphemeralPost} from './post';
 
 export function executeCommand(message: string, channelId: string, rootId: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -22,7 +22,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
 
         const teamId = getCurrentTeamId(state);
 
-        const args = {
+        const args: CommandArgs = {
             channel_id: channelId,
             team_id: teamId,
             root_id: rootId,
@@ -65,7 +65,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                 switch (callResp.type) {
                 case AppCallResponseTypes.OK:
                     if (callResp.markdown) {
-                        dispatch(sendEphemeralPost(callResp.markdown, args.channel_id, args.parent_id, callResp.app_metadata?.bot_user_id));
+                        dispatch(postEphemeralCallResponseForCommandArgs(callResp, callResp.markdown, args));
                     }
                     return {data: {}};
                 case AppCallResponseTypes.FORM:

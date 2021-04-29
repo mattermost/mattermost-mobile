@@ -11,18 +11,18 @@ import {getStatusColors} from '@utils/message_attachment_colors';
 import ButtonBindingText from './button_binding_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
-import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
+import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {Channel} from '@mm-redux/types/channels';
-import {SendEphemeralPost} from 'types/actions/posts';
 
 type Props = {
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
+        doAppCall: DoAppCall;
         getChannel: (channelId: string) => Promise<ActionResult>;
-        sendEphemeralPost: SendEphemeralPost;
+        postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
     };
     post: Post;
     binding: AppBinding;
@@ -72,14 +72,13 @@ export default class ButtonBinding extends PureComponent<Props> {
             this.setState({executing: false});
         }
 
-        const ephemeral = (message: string) => this.props.actions.sendEphemeralPost(message, this.props.post.channel_id, this.props.post.root_id, res.data?.app_metadata?.bot_user_id);
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage(
                 {id: 'apps.error.unknown',
                     defaultMessage: 'Unknown error occurred.',
                 });
-            ephemeral(errorMessage);
+            this.props.actions.postEphemeralCallResponseForPost(errorResponse, errorMessage, post);
             return;
         }
 
@@ -88,7 +87,7 @@ export default class ButtonBinding extends PureComponent<Props> {
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
             if (callResp.markdown) {
-                ephemeral(callResp.markdown);
+                this.props.actions.postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
@@ -104,7 +103,7 @@ export default class ButtonBinding extends PureComponent<Props> {
                     type: callResp.type,
                 },
             );
-            ephemeral(errorMessage);
+            this.props.actions.postEphemeralCallResponseForPost(callResp, errorMessage, post);
         }
         }
     }, 4000);

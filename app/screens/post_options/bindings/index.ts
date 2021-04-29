@@ -7,21 +7,19 @@ import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {GlobalState} from '@mm-redux/types/store';
-import {AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
 import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import {doAppCall} from '@actions/apps';
+import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
 import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {sendEphemeralPost} from '@actions/views/post';
 import {Post} from '@mm-redux/types/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {SendEphemeralPost} from 'types/actions/posts';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 type OwnProps = {
     post: Post;
@@ -43,15 +41,15 @@ function mapStateToProps(state: GlobalState, props: OwnProps) {
 }
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-    sendEphemeralPost: SendEphemeralPost;
+    doAppCall: DoAppCall;
+    postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
 }
 
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
-            sendEphemeralPost,
+            postEphemeralCallResponseForPost,
         }, dispatch),
     };
 }
