@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Preferences, Posts} from '@mm-redux/constants';
 import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
@@ -723,33 +723,6 @@ export function getPosts(channelId: string, page = 0, perPage = Posts.POST_CHUNK
             receivedPosts(posts),
             receivedPostsInChannel(posts, channelId, page === 0, posts.prev_post_id === ''),
         ]));
-
-        return {data: posts};
-    };
-}
-
-export function getPostsUnread(channelId: string) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const userId = getCurrentUserId(getState());
-        let posts;
-        try {
-            posts = await Client4.getPostsUnread(channelId, userId);
-            getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        dispatch(batchActions([
-            receivedPosts(posts),
-            receivedPostsInChannel(posts, channelId, posts.next_post_id === '', posts.prev_post_id === ''),
-        ]));
-        dispatch({
-            type: PostTypes.RECEIVED_POSTS,
-            data: posts,
-            channelId,
-        });
 
         return {data: posts};
     };

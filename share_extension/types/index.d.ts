@@ -17,6 +17,7 @@ interface ShareFileInfo {
 interface ShareItem {
     type: string;
     value: string;
+    isString: boolean;
 }
 
 interface ShareState {

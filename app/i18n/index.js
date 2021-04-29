@@ -38,6 +38,11 @@ function loadTranslation(locale) {
             localeData = require('react-intl/locale-data/fr');
             momentData = require('moment/locale/fr');
             break;
+        case 'hu':
+            translations = require('@assets/i18n/hu.json');
+            localeData = require('react-intl/locale-data/hu');
+            momentData = require('moment/locale/hu');
+            break;
         case 'it':
             translations = require('@assets/i18n/it.json');
             localeData = require('react-intl/locale-data/it');

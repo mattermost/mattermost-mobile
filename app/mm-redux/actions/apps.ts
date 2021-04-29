@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {AppsTypes} from '@mm-redux/action_types';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import {ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {getChannel} from '@mm-redux/selectors/entities/channels';

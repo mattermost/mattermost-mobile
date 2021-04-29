@@ -10,13 +10,11 @@ import * as files from './files';
 import * as general from './general';
 import * as groups from './groups';
 import * as integrations from './integrations';
-import * as jobs from './jobs';
 import * as posts from './posts';
 import * as preferences from './preferences';
 import * as reactions from './reactions';
 import * as requests from './requests';
 import * as roles from './roles';
-import * as schemes from './schemes';
 import * as search from './search';
 import * as store from './store';
 import * as teams from './teams';
@@ -41,13 +39,11 @@ export {
     groups,
     typing,
     integrations,
-    jobs,
     utilities,
     posts,
     preferences,
     roles,
     client4,
-    schemes,
     search,
     teams,
     requests,

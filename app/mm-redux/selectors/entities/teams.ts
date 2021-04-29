@@ -110,7 +110,7 @@ export const getMyTeams = reselect.createSelector(
     getTeams,
     getTeamMemberships,
     (teams, members) => {
-        return Object.values(teams).filter((t) => members[t.id] && t.delete_at === 0);
+        return Object.values(teams).filter((t) => t && members[t.id] && t.delete_at === 0);
     },
 );
 

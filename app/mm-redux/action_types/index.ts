@@ -12,10 +12,8 @@ import PreferenceTypes from './preferences';
 import IntegrationTypes from './integrations';
 import EmojiTypes from './emojis';
 import GifTypes from './gifs';
-import JobTypes from './jobs';
 import SearchTypes from './search';
 import RoleTypes from './roles';
-import SchemeTypes from './schemes';
 import GroupTypes from './groups';
 import BotTypes from './bots';
 import PluginTypes from './plugins';
@@ -34,10 +32,8 @@ export {
     IntegrationTypes,
     EmojiTypes,
     GifTypes,
-    JobTypes,
     SearchTypes,
     RoleTypes,
-    SchemeTypes,
     GroupTypes,
     BotTypes,
     PluginTypes,

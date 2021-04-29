@@ -43,19 +43,16 @@ export default async function getStorage(identifier = 'default') {
         ): Promise<string | Error> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key);
-                MMKV.getString(key, (error: Error, result: string) => {
-                    if (error) {
-                        if (callback) {
-                            callback(error, null);
-                        }
-                        reject(error);
-                        return;
-                    }
-
+                MMKV.getStringAsync(key).then((result: string) => {
                     if (callback) {
                         callback(null, result);
                     }
                     resolve(JSON.parse(result));
+                }).catch((error: Error) => {
+                    if (callback) {
+                        callback(error, null);
+                    }
+                    reject(error);
                 });
             });
         },
@@ -67,14 +64,19 @@ export default async function getStorage(identifier = 'default') {
                 error: Error | null
             ) => void | null | undefined,
         ): Promise<null | Error> => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 checkValidInput(key, value);
-                MMKV.setString(key, JSON.stringify(value));
-                if (callback) {
-                    callback(null);
-                }
-
-                resolve(null);
+                MMKV.setStringAsync(key, JSON.stringify(value)).then(() => {
+                    if (callback) {
+                        callback(null);
+                    }
+                    resolve(null);
+                }).catch((error: Error) => {
+                    if (callback) {
+                        callback(error);
+                    }
+                    reject(error);
+                });
             });
         },
 

@@ -64,11 +64,10 @@ export async function getSharedItems(items: Array<ShareItem>, intl: typeof intlS
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        switch (item.type) {
-        case 'text/plain':
+
+        if (item.isString) {
             text.push(item.value);
-            break;
-        default: {
+        } else {
             let fileSize = {size: 0};
             const fullPath = item.value;
             try {
@@ -96,8 +95,6 @@ export async function getSharedItems(items: Array<ShareItem>, intl: typeof intlS
                 size: getFormattedFileSize(fileSize as FileInfo),
                 type: item.type,
             });
-            break;
-        }
         }
     }
 

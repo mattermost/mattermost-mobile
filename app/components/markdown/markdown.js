@@ -11,13 +11,13 @@ import {
     View,
 } from 'react-native';
 
-import AtMention from 'app/components/at_mention';
-import ChannelLink from 'app/components/channel_link';
-import Emoji from 'app/components/emoji';
-import FormattedText from 'app/components/formatted_text';
-import Hashtag from 'app/components/markdown/hashtag';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getScheme} from 'app/utils/url';
+import AtMention from '@components/at_mention';
+import ChannelLink from '@components/channel_link';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
+import Hashtag from '@components/markdown/hashtag';
+import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {getScheme} from '@utils/url';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
