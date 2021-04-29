@@ -31,13 +31,15 @@ const CustomStatusSuggestion = (props: Props) => {
 
     const clearButton = handleClear ?
         (
-            <ClearButton
-                handlePress={() => handleClear({emoji, text})}
-                theme={theme}
-                iconName='close'
-                size={18}
-                testID='custom_status_suggestion.clear.button'
-            />
+            <View style={style.clearButtonContainer}>
+                <ClearButton
+                    handlePress={() => handleClear({emoji, text})}
+                    theme={theme}
+                    iconName='close'
+                    size={18}
+                    testID='custom_status_suggestion.clear.button'
+                />
+            </View>
         ) : null;
 
     return (
@@ -60,12 +62,8 @@ const CustomStatusSuggestion = (props: Props) => {
                             textStyle={{color: theme.centerChannelColor}}
                         />
                     </View>
-                    {clearButton && (
-                        <View style={style.clearButtonContainer}>
-                            {clearButton}
-                        </View>
-                    )}
-                    {divider}
+                    {clearButton}
+                    {separator && <View style={style.divider}/>}
                 </View>
             </View>
         </TouchableOpacity>

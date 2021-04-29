@@ -26,7 +26,7 @@ describe('components/custom_status/custom_status_text', () => {
         const wrapper = shallow(
             <CustomStatusText
                 {...baseProps}
-                text=''
+                text={''}
             />,
         );
 

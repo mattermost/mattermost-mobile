@@ -80,6 +80,6 @@ export type UserStatus = {
 }
 
 export type UserCustomStatus = {
-	emoji: string;
+    emoji: string;
     text: string;
 }

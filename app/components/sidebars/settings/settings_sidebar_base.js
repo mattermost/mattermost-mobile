@@ -112,7 +112,7 @@ export default class SettingsSidebarBase extends PureComponent {
     }
 
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
-        const isStatusSet = customStatus.emoji;
+        const isStatusSet = Boolean(customStatus.emoji);
         if (isStatusSet) {
             const isStatusChanged = prevCustomStatus.emoji !== customStatus.emoji || prevCustomStatus.text !== customStatus.text;
             if (isStatusChanged) {
@@ -278,6 +278,7 @@ export default class SettingsSidebarBase extends PureComponent {
     renderCustomStatus = () => {
         const {isCustomStatusEnabled, customStatus, theme} = this.props;
         const {showStatus, showRetryMessage} = this.state;
+        
         if (!isCustomStatusEnabled) {
             return null;
         }
@@ -289,6 +290,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 theme={theme}
             />
         ) : null;
+        
         const customStatusEmoji = (
             <View
                 testID={`custom_status.emoji.${isStatusSet ? customStatus.emoji : 'default'}`}

@@ -14,14 +14,14 @@ interface ComponentProps {
     testID?: string;
 }
 
-const CustomStatusEmoji = (props: ComponentProps) => {
+const CustomStatusEmoji = ({emojiSize, userID, style, testID}: ComponentProps) => {
     const getCustomStatus = makeGetCustomStatus();
-    const {emojiSize, userID, style, testID} = props;
     const customStatusEnabled = useSelector(isCustomStatusEnabled);
     const customStatus = useSelector((state: GlobalState) => {
         return getCustomStatus(state, userID);
     });
     const emojiExists = customStatusEnabled && customStatus && customStatus.emoji;
+
     if (!emojiExists) {
         return null;
     }

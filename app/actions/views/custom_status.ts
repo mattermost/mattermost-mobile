@@ -12,13 +12,15 @@ export function setCustomStatus(customStatus: UserCustomStatus): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const user = getCurrentUser(getState());
         const oldCustomStatus = user?.props?.customStatus;
+        
         if (!user.props) {
             user.props = {};
         }
+        
         user.props.customStatus = JSON.stringify(customStatus);
         dispatch({type: UserTypes.RECEIVED_ME, data: user});
-
         dispatch({type: UserTypes.SET_CUSTOM_STATUS_REQUEST});
+        
         try {
             await Client4.updateCustomStatus(customStatus);
         } catch (error) {

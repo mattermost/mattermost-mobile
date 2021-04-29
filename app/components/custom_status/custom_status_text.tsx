@@ -11,16 +11,11 @@ interface ComponentProps {
     textStyle?: TextStyle
 }
 
-const CustomStatusLabel = (props: ComponentProps) => {
-    const {text, theme, textStyle} = props;
-    const style = getStyleSheet(theme);
-
-    return (
-        <Text style={[style.label, textStyle]}>
-            {text}
-        </Text>
-    );
-};
+const CustomStatusLabel = ({text, theme, textStyle}: ComponentProps) => (
+    <Text style={[getStyleSheet(theme).label, textStyle]}>
+        {text}
+    </Text>
+);
 
 export default CustomStatusLabel;
 
