@@ -50,6 +50,7 @@
             "@typings/*": ["types/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
+            "@requests/*": ["app/requests/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"],
             "react-native-redash/lib/module/v1": [

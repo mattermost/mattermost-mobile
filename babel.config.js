@@ -35,6 +35,7 @@ module.exports = {
                 '@telemetry': './app/telemetry',
                 '@typings': './types',
                 '@utils': './app/utils',
+                '@requests': './app/requests',
                 '@websocket': './app/client/websocket',
             },
         }],
