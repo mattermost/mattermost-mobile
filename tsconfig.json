@@ -34,6 +34,7 @@
         "baseUrl": ".",
         "paths": {
             "@assets/*": ["dist/assets/*"],
+            "@app/*": ["app/*"],
             "@components/*": ["app/components/*"],
             "@constants": ["app/constants/index"],
             "@constants/*": ["app/constants/*"],

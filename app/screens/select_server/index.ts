@@ -44,4 +44,7 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
+//todo: Create HOC to pass extra props ( previously known as actions ) to the screen/component (mapDispatchToProps)
+//todo: wrap screen/component with `withObservable` HOC for it to observe changes in the DB ( mapStateToProps )
+
 export default connect(mapStateToProps, mapDispatchToProps)(SelectServer);

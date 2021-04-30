@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ErrorText should match snapshot 1`] = `
+<Text
+  style={
+    Array [
+      Object {
+        "color": "red",
+        "fontSize": 12,
+        "marginBottom": 15,
+        "marginTop": 15,
+        "textAlign": "left",
+      },
+      Object {
+        "color": "#fd5960",
+      },
+      Object {
+        "fontSize": 14,
+        "marginHorizontal": 15,
+      },
+    ]
+  }
+  testID="error.text"
+>
+  Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols
+</Text>
+`;

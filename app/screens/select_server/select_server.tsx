@@ -1,9 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import {Navigation} from 'react-native-navigation';
+import {goToScreen, resetToChannel} from '@actions/navigation';
+
+import mattermostBucket from '@app/mattermost_bucket';
+import {GlobalStyles} from '@app/styles';
+import telemetry from '@app/telemetry';
+import LocalConfig from '@assets/config';
+import {Client4} from '@client/rest';
+import AppVersion from '@components/app_version';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import fetchConfig from '@init/fetch';
+import globalEventHandler from '@init/global_event_handler';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+import tracker from '@utils/time_tracker';
+import {isValidUrl, stripTrailingSlashes} from '@utils/url';
+import merge from 'deepmerge';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
 import {
     ActivityIndicator,
@@ -21,52 +40,32 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
+import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
-import merge from 'deepmerge';
 import urlParse from 'url-parse';
-
-import {resetToChannel, goToScreen} from '@actions/navigation';
-import LocalConfig from '@assets/config';
-import AppVersion from '@components/app_version';
-import ErrorText from '@components/error_text';
-import FormattedText from '@components/formatted_text';
-import fetchConfig from '@init/fetch';
-import globalEventHandler from '@init/global_event_handler';
-import {Client4} from '@client/rest';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
-import {t} from '@utils/i18n';
-import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity} from '@utils/theme';
-import tracker from '@utils/time_tracker';
-import {isValidUrl, stripTrailingSlashes} from '@utils/url';
-
-import mattermostBucket from 'app/mattermost_bucket';
-import {GlobalStyles} from 'app/styles';
-import telemetry from 'app/telemetry';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            scheduleExpiredNotification: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
+            scheduleExpiredNotification: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
         currentVersion: PropTypes.string,
+        deepLinkURL: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
         latestVersion: PropTypes.string,
         license: PropTypes.object,
         minVersion: PropTypes.string,
         serverUrl: PropTypes.string.isRequired,
-        deepLinkURL: PropTypes.string,
     };
 
     static defaultProps = {
@@ -91,7 +90,11 @@ export default class SelectServer extends PureComponent {
     }
 
     static getDerivedStateFromProps(props, state) {
-        if (state.url === undefined && props.allowOtherServers && props.deepLinkURL) {
+        if (
+            state.url === undefined &&
+            props.allowOtherServers &&
+            props.deepLinkURL
+        ) {
             const url = urlParse(props.deepLinkURL).host;
             return {url};
         } else if (state.url === undefined && props.serverUrl) {
@@ -114,19 +117,33 @@ export default class SelectServer extends PureComponent {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
 
-        this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
-        this.sslProblemListener = DeviceEventEmitter.addListener('RNFetchBlobSslProblem', this.handleSslProblem);
+        this.certificateListener = DeviceEventEmitter.addListener(
+            'RNFetchBlobCertificate',
+            this.selectCertificate,
+        );
+        this.sslProblemListener = DeviceEventEmitter.addListener(
+            'RNFetchBlobSslProblem',
+            this.handleSslProblem,
+        );
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
+        if (
+            this.state.connected &&
+            this.props.hasConfigAndLicense &&
+            !(prevState.connected && prevProps.hasConfigAndLicense)
+        ) {
             if (LocalConfig.EnableMobileClientUpgrade) {
                 this.props.actions.setLastUpgradeCheck();
                 const {currentVersion, minVersion, latestVersion} = this.props;
-                const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
+                const upgradeType = checkUpgradeType(
+                    currentVersion,
+                    minVersion,
+                    latestVersion,
+                );
                 if (isUpgradeAvailable(upgradeType)) {
                     this.handleShowClientUpgrade(upgradeType);
                 } else {
@@ -167,7 +184,8 @@ export default class SelectServer extends PureComponent {
         try {
             const resp = await fetch(url, {method: 'HEAD'});
             if (resp?.rnfbRespInfo?.redirects?.length) {
-                url = resp.rnfbRespInfo.redirects[resp.rnfbRespInfo.redirects.length - 1];
+                url =
+                    resp.rnfbRespInfo.redirects[resp.rnfbRespInfo.redirects.length - 1];
             }
         } catch {
             // do nothing
@@ -200,69 +218,33 @@ export default class SelectServer extends PureComponent {
         this.blur();
     };
 
-    handleConnect = preventDoubleTap(async () => {
-        Keyboard.dismiss();
-
-        if (this.state.connecting || this.state.connected) {
-            this.cancelPing();
-
-            return;
-        }
-
-        if (!this.state.url || this.state.url.trim() === '') {
-            this.setState({
-                error: {
-                    intl: {
-                        id: t('mobile.server_url.empty'),
-                        defaultMessage: 'Please enter a valid server URL',
-                    },
-                },
-            });
-
-            return;
-        }
-
-        if (!isValidUrl(this.sanitizeUrl(this.state.url))) {
-            this.setState({
-                error: {
-                    intl: {
-                        id: t('mobile.server_url.invalid_format'),
-                        defaultMessage: 'URL must start with http:// or https://',
-                    },
-                },
-            });
-
-            return;
-        }
-
-        await globalEventHandler.resetState();
-        if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
-            RNFetchBlob.cba.selectCertificate((certificate) => {
-                if (certificate) {
-                    mattermostBucket.setPreference('cert', certificate);
-                    window.fetch = new RNFetchBlob.polyfill.Fetch({
-                        auto: true,
-                        certificate,
-                    }).build();
-                    this.pingServer(this.state.url);
-                }
-            });
-        } else {
-            this.pingServer(this.state.url);
-        }
-    });
-
     handleLoginOptions = async (props = this.props) => {
         const {formatMessage} = this.context.intl;
         const {config, license} = props;
-        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
+        const samlEnabled =
+            config.EnableSaml === 'true' &&
+            license.IsLicensed === 'true' &&
+            license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
+        const googleEnabled =
+            config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
+        const o365Enabled =
+            config.EnableSignUpWithOffice365 === 'true' &&
+            license.IsLicensed === 'true' &&
+            license.Office365OAuth === 'true';
+        const openIdEnabled =
+            config.EnableSignUpWithOpenId === 'true' &&
+            license.IsLicensed === 'true' &&
+            isMinimumServerVersion(config.Version, 5, 33, 0);
 
         let options = 0;
-        if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
+        if (
+            samlEnabled ||
+            gitlabEnabled ||
+            googleEnabled ||
+            o365Enabled ||
+            openIdEnabled
+        ) {
             options += 1;
         }
 
@@ -270,17 +252,26 @@ export default class SelectServer extends PureComponent {
         let title;
         if (options) {
             screen = 'LoginOptions';
-            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
+            title = formatMessage({
+                id: 'mobile.routes.loginOptions',
+                defaultMessage: 'Login Chooser',
+            });
         } else {
             screen = 'Login';
-            title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
+            title = formatMessage({
+                id: 'mobile.routes.login',
+                defaultMessage: 'Login',
+            });
         }
 
         this.props.actions.resetPing();
         await globalEventHandler.configureAnalytics();
 
         if (Platform.OS === 'ios') {
-            if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
+            if (
+                config.ExperimentalClientSideCertEnable === 'true' &&
+                config.ExperimentalClientSideCertCheck === 'primary'
+            ) {
                 // log in automatically and send directly to the channel screen
                 this.loginWithCertificate();
                 return;
@@ -297,7 +288,10 @@ export default class SelectServer extends PureComponent {
     handleShowClientUpgrade = (upgradeType) => {
         const {formatMessage} = this.context.intl;
         const screen = 'ClientUpgrade';
-        const title = formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'});
+        const title = formatMessage({
+            id: 'mobile.client_upgrade',
+            defaultMessage: 'Client Upgrade',
+        });
         const passProps = {
             closeAction: this.handleLoginOptions,
             upgradeType,
@@ -402,8 +396,62 @@ export default class SelectServer extends PureComponent {
         if (preUrl.protocol === 'http:' && !useHttp) {
             preUrl.protocol = 'https:';
         }
-        return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
-    }
+        return stripTrailingSlashes(
+            preUrl.protocol + '//' + preUrl.host + preUrl.pathname,
+        );
+    };
+
+    handleConnect = preventDoubleTap(async () => {
+        Keyboard.dismiss();
+
+        if (this.state.connecting || this.state.connected) {
+            this.cancelPing();
+
+            return;
+        }
+
+        if (!this.state.url || this.state.url.trim() === '') {
+            this.setState({
+                error: {
+                    intl: {
+                        id: t('mobile.server_url.empty'),
+                        defaultMessage: 'Please enter a valid server URL',
+                    },
+                },
+            });
+
+            return;
+        }
+
+        if (!isValidUrl(this.sanitizeUrl(this.state.url))) {
+            this.setState({
+                error: {
+                    intl: {
+                        id: t('mobile.server_url.invalid_format'),
+                        defaultMessage: 'URL must start with http:// or https://',
+                    },
+                },
+            });
+
+            return;
+        }
+
+        await globalEventHandler.resetState();
+        if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
+            RNFetchBlob.cba.selectCertificate((certificate) => {
+                if (certificate) {
+                    mattermostBucket.setPreference('cert', certificate);
+                    window.fetch = new RNFetchBlob.polyfill.Fetch({
+                        auto: true,
+                        certificate,
+                    }).build();
+                    this.pingServer(this.state.url);
+                }
+            });
+        } else {
+            this.pingServer(this.state.url);
+        }
+    });
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;
@@ -428,16 +476,17 @@ export default class SelectServer extends PureComponent {
                 defaultMessage: 'Untrusted Certificate',
             }),
 
-            formatMessage({
-                id: 'mobile.server_ssl.error.text',
-                defaultMessage: 'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
-            },
-            {
-                host,
-            }),
-            [
-                {text: 'OK'},
-            ],
+            formatMessage(
+                {
+                    id: 'mobile.server_ssl.error.text',
+                    defaultMessage:
+                        'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
+                },
+                {
+                    host,
+                },
+            ),
+            [{text: 'OK'}],
             {cancelable: false},
         );
         return null;
@@ -458,12 +507,7 @@ export default class SelectServer extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {allowOtherServers} = this.props;
-        const {
-            connected,
-            connecting,
-            error,
-            url,
-        } = this.state;
+        const {connected, connecting, error, url} = this.state;
 
         let buttonIcon;
         let buttonText;
@@ -553,12 +597,13 @@ export default class SelectServer extends PureComponent {
                             <Button
                                 testID='select_server.connect.button'
                                 onPress={this.handleConnect}
-                                containerStyle={[GlobalStyles.signupButton, style.connectButton]}
+                                containerStyle={[
+                                    GlobalStyles.signupButton,
+                                    style.connectButton,
+                                ]}
                             >
                                 {buttonIcon}
-                                <Text style={GlobalStyles.signupButtonText}>
-                                    {buttonText}
-                                </Text>
+                                <Text style={GlobalStyles.signupButtonText}>{buttonText}</Text>
                             </Button>
                             <View>
                                 <ErrorText
