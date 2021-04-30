@@ -1,25 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {goToScreen, resetToChannel} from '@actions/navigation';
-
-import mattermostBucket from '@app/mattermost_bucket';
-import {GlobalStyles} from '@app/styles';
-import telemetry from '@app/telemetry';
-import LocalConfig from '@assets/config';
-import {Client4} from '@client/rest';
-import AppVersion from '@components/app_version';
-import ErrorText from '@components/error_text';
-import FormattedText from '@components/formatted_text';
-import fetchConfig from '@init/fetch';
-import globalEventHandler from '@init/global_event_handler';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
-import {t} from '@utils/i18n';
-import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity} from '@utils/theme';
-import tracker from '@utils/time_tracker';
-import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 import merge from 'deepmerge';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -44,6 +25,25 @@ import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
+
+import {goToScreen, resetToChannel} from '@actions/navigation';
+import mattermostBucket from '@app/mattermost_bucket';
+import {GlobalStyles} from '@app/styles';
+import telemetry from '@app/telemetry';
+import LocalConfig from '@assets/config';
+import {Client4} from '@client/rest';
+import AppVersion from '@components/app_version';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import fetchConfig from '@init/fetch';
+import globalEventHandler from '@init/global_event_handler';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+import tracker from '@utils/time_tracker';
+import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
