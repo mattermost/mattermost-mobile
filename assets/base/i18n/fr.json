@@ -250,7 +250,6 @@
   "mobile.emoji_picker.people": "PERSONNES",
   "mobile.emoji_picker.places": "LIEUX",
   "mobile.emoji_picker.recent": "UTILISÉ RÉCEMMENT",
-  "mobile.emoji_picker.search.not_found_description": "",
   "mobile.emoji_picker.search.not_found_title": "Aucun résultat trouvé pour \"{searchTerm}\"",
   "mobile.emoji_picker.symbols": "SYMBOLES",
   "mobile.error_handler.button": "Relancer",
