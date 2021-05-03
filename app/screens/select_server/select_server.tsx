@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Config} from '@typings/database/config';
 import merge from 'deepmerge';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -46,8 +47,26 @@ import {changeOpacity} from '@utils/theme';
 import tracker from '@utils/time_tracker';
 import {preventDoubleTap} from '@utils/tap';
 import {isValidUrl, stripTrailingSlashes} from '@utils/url';
+import withObservables from '@nozbe/with-observables';
 
-export default class SelectServer extends PureComponent {
+import {getClientUpgrade, getClientUpgrade, getConfig, getLicense, getLicense} from '@queries/system';
+import {Database} from '@nozbe/watermelondb';
+import DatabaseManager from '@database/manager';
+
+//todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
+
+type ScreenProps = {
+    config: Partial<Config>,
+    allowOtherServers: boolean
+}
+
+type ScreenState ={
+    connected: boolean,
+    connecting: boolean,
+    error: null | Error,
+}
+
+class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   static propTypes = {
       actions: PropTypes.shape({
           getPing: PropTypes.func.isRequired,
@@ -84,98 +103,95 @@ export default class SelectServer extends PureComponent {
   private navigationEventListener: EventSubscription | undefined;
   private certificateListener: EmitterSubscription | undefined;
   private sslProblemListener: EmitterSubscription | undefined;
-  private textInput: any;
+  private textInput: TextInput;
 
-  constructor(props) {
-      super(props);
-      this.state = {
-          connected: false,
-          connecting: false,
-          error: null,
-      };
-  }
+    state: ScreenState = {
+        connected: false,
+        connecting: false,
+        error: null,
+    }
 
-  static getDerivedStateFromProps(props, state) {
-      if (
-          state.url === undefined &&
+    static getDerivedStateFromProps(props, state) {
+        if (
+            state.url === undefined &&
       props.allowOtherServers &&
       props.deepLinkURL
-      ) {
-          const url = urlParse(props.deepLinkURL).host;
-          return {url};
-      } else if (state.url === undefined && props.serverUrl) {
-          return {url: props.serverUrl};
-      }
-      return null;
-  }
+        ) {
+            const url = urlParse(props.deepLinkURL).host;
+            return {url};
+        } else if (state.url === undefined && props.serverUrl) {
+            return {url: props.serverUrl};
+        }
+        return null;
+    }
 
-  componentDidMount() {
-      this.navigationEventListener = Navigation.events().bindComponent(this);
+    componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
 
-      const {allowOtherServers, serverUrl} = this.props;
-      if (!allowOtherServers && serverUrl) {
-      // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
-      // we automatically trigger the ping to move to the next screen
-          this.handleConnect();
-      }
+        const {allowOtherServers, serverUrl} = this.props;
+        if (!allowOtherServers && serverUrl) {
+            // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
+            // we automatically trigger the ping to move to the next screen
+            this.handleConnect();
+        }
 
-      if (Platform.OS === 'android') {
-          Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-      }
+        if (Platform.OS === 'android') {
+            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
 
-      this.certificateListener = DeviceEventEmitter.addListener(
-          'RNFetchBlobCertificate',
-          this.selectCertificate,
-      );
-      this.sslProblemListener = DeviceEventEmitter.addListener(
-          'RNFetchBlobSslProblem',
-          this.handleSslProblem,
-      );
+        this.certificateListener = DeviceEventEmitter.addListener(
+            'RNFetchBlobCertificate',
+            this.selectCertificate,
+        );
+        this.sslProblemListener = DeviceEventEmitter.addListener(
+            'RNFetchBlobSslProblem',
+            this.handleSslProblem,
+        );
 
-      telemetry.end(['start:select_server_screen']);
-      telemetry.save();
-  }
+        telemetry.end(['start:select_server_screen']);
+        telemetry.save();
+    }
 
-  componentDidUpdate(prevProps, prevState) {
-      if (
-          this.state.connected &&
+    componentDidUpdate(prevProps, prevState) {
+        if (
+            this.state.connected &&
       this.props.hasConfigAndLicense &&
       !(prevState.connected && prevProps.hasConfigAndLicense)
-      ) {
-          if (LocalConfig.EnableMobileClientUpgrade) {
-              this.props.actions.setLastUpgradeCheck();
-              const {currentVersion, minVersion, latestVersion} = this.props;
-              const upgradeType = checkUpgradeType(
-                  currentVersion,
-                  minVersion,
-                  latestVersion,
-              );
-              if (isUpgradeAvailable(upgradeType)) {
-                  this.handleShowClientUpgrade(upgradeType);
-              } else {
-                  this.handleLoginOptions(this.props);
-              }
-          } else {
-              this.handleLoginOptions(this.props);
-          }
-      }
-  }
+        ) {
+            if (LocalConfig.EnableMobileClientUpgrade) {
+                this.props.actions.setLastUpgradeCheck();
+                const {currentVersion, minVersion, latestVersion} = this.props;
+                const upgradeType = checkUpgradeType(
+                    currentVersion,
+                    minVersion,
+                    latestVersion,
+                );
+                if (isUpgradeAvailable(upgradeType)) {
+                    this.handleShowClientUpgrade(upgradeType);
+                } else {
+                    this.handleLoginOptions(this.props);
+                }
+            } else {
+                this.handleLoginOptions(this.props);
+            }
+        }
+    }
 
-  componentWillUnmount() {
-      if (Platform.OS === 'android') {
-          Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
-      }
+    componentWillUnmount() {
+        if (Platform.OS === 'android') {
+            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+        }
 
-      this.certificateListener?.remove();
-      this.sslProblemListener?.remove();
-      this.navigationEventListener?.remove();
-  }
+        this.certificateListener?.remove();
+        this.sslProblemListener?.remove();
+        this.navigationEventListener?.remove();
+    }
 
-  componentDidDisappear() {
-      this.setState({
-          connected: false,
-      });
-  }
+    componentDidDisappear() {
+        this.setState({
+            connected: false,
+        });
+    }
 
   //fixme: too much repetition
   blur = () => {
@@ -224,7 +240,7 @@ export default class SelectServer extends PureComponent {
       this.blur();
   };
 
-  handleLoginOptions = async (props = this.props) => {
+  handleLoginOptions = async () => {
       const {formatMessage} = this.context.intl;
       const {config, license} = this.props;
 
@@ -232,7 +248,8 @@ export default class SelectServer extends PureComponent {
       const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
       const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
       const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-      const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
+      const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' &&
+          isMinimumServerVersion(config.Version, 5, 33, 0);
 
       let options = 0;
       if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
@@ -628,3 +645,22 @@ const style = StyleSheet.create({
         marginRight: 5,
     },
 });
+
+//todo:  is this the correct way of calling the database ?
+const withObserver = withObservables([], async () => {
+    const database = DatabaseManager.getActiveServerDatabase() as Database;
+
+    const {currentVersion, latestVersion, minVersion} = await getClientUpgrade(database);
+    const config = await getConfig(database);
+    const license = await getLicense(database);
+
+    return {
+        config,
+        currentVersion,
+        latestVersion,
+        license,
+        minVersion,
+    };
+});
+
+export default withObserver(SelectServer);

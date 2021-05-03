@@ -90,7 +90,7 @@ export const getUniqueRawsBy = ({raws, key}:{ raws: RawValue[], key: string}) =>
  * @param {RetrieveRecordsArgs} records
  * @param {Database} records.database
  * @param {string} records.tableName
- * @param {any} records.condition
+ * @param {Clause} records.condition
  * @returns {Promise<Model[]>}
  */
 export const retrieveRecords = ({database, tableName, condition}: RetrieveRecordsArgs) => {
