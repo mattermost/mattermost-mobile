@@ -13,7 +13,9 @@ import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
 import withObservables from '@nozbe/with-observables';
+import {getClientUpgrade} from '@queries/helpers';
 import {goToScreen, resetToChannel} from '@requests/local/navigation';
+import System from '@typings/database/system';
 import {Styles} from '@typings/utils';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -46,11 +48,15 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
+import {getClientUpgrade} from '@app/queries/helpers';
 import {getSystems} from '@queries/system';
 
 //todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
 
-type ScreenProps = {};
+type ScreenProps = {
+    systems: System[];
+    allowOtherServers: boolean
+};
 
 type ScreenState = {
   connected: boolean;
@@ -70,32 +76,18 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           setLastUpgradeCheck: PropTypes.func.isRequired,
           setServerVersion: PropTypes.func.isRequired,
       }).isRequired,
-      allowOtherServers: PropTypes.bool,
-      config: PropTypes.object,
-      currentVersion: PropTypes.string,
-      deepLinkURL: PropTypes.string,
-      hasConfigAndLicense: PropTypes.bool.isRequired,
-      latestVersion: PropTypes.string,
-      license: PropTypes.object,
-      minVersion: PropTypes.string,
-      serverUrl: PropTypes.string.isRequired,
   };
 
-  //fixme:  From which table would this value normally come from ?
   static defaultProps = {
       allowOtherServers: true,
   };
 
-  //fixme: ??
-  // static contextTypes = {
-  //     intl: IntlShape.isRequired,
-  // };
-
-  private cancelPing: (() => void) | null | undefined;
-  private navigationEventListener: EventSubscription | undefined;
-  private certificateListener: EmitterSubscription | undefined;
-  private sslProblemListener: EmitterSubscription | undefined;
-  private textInput: TextInput | undefined;
+  private cancelPing!: (() => void);
+  private navigationEventListener!: EventSubscription;
+  private certificateListener!: EmitterSubscription;
+  private sslProblemListener!: EmitterSubscription;
+  private textInput!: TextInput;
+  private nextScreenTimer!: NodeJS.Timeout;
 
   state: ScreenState = {
       connected: false,
@@ -103,13 +95,13 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       error: null,
   };
 
+  //fixme: do we need getDerivedStateFromProps ?
   static getDerivedStateFromProps(props, state) {
-      if (
-          state.url === undefined &&
-      props.allowOtherServers &&
-      props.deepLinkURL
-      ) {
-          const url = urlParse(props.deepLinkURL).host;
+      const {systems} = props;
+      const rootRecord = systems.find((systemRecord: System) => systemRecord.name === 'root') as System;
+      const {deepLinkURL} = rootRecord.value;
+      if (state.url === undefined && props.allowOtherServers && deepLinkURL) {
+          const url = urlParse(deepLinkURL).host;
           return {url};
       } else if (state.url === undefined && props.serverUrl) {
           return {url: props.serverUrl};
@@ -119,8 +111,9 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   componentDidMount() {
       this.navigationEventListener = Navigation.events().bindComponent(this);
+      const {selectServer: {serverUrl}} = this.getSystemsValues();
 
-      const {allowOtherServers, serverUrl} = this.props;
+      const {allowOtherServers} = this.props;
       if (!allowOtherServers && serverUrl) {
       // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
       // we automatically trigger the ping to move to the next screen
@@ -144,27 +137,41 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       telemetry.save();
   }
 
+  getSystemsValues = () => {
+      const {systems} = this.props;
+      const configRecord = systems.find((systemRecord: System) => systemRecord.name === 'config') as System;
+      const licenseRecord = systems.find((systemRecord: System) => systemRecord.name === 'license') as System;
+      const selectServerRecord = systems.find((systemRecord: System) => systemRecord.name === 'selectServer') as System;
+      const rootRecord = systems.find((systemRecord: System) => systemRecord.name === 'root') as System;
+
+      return {
+          config: configRecord.value,
+          license: licenseRecord.value,
+          selectServer: selectServerRecord.value,
+          root: rootRecord.value,
+      };
+  }
+
   componentDidUpdate(prevProps, prevState) {
-      if (
-          this.state.connected &&
-      this.props.hasConfigAndLicense &&
-      !(prevState.connected && prevProps.hasConfigAndLicense)
-      ) {
+      const {config, license} = this.getSystemsValues();
+      const hasConfigAndLicense = Object.keys(config).length > 0 && Object.keys(license).length > 0;
+
+      //todo: need to recheck this logic here as we are retrieving hasConfigAndLicense from the database now
+      if (this.state.connected && hasConfigAndLicense && !(prevState.connected && hasConfigAndLicense)) {
           if (LocalConfig.EnableMobileClientUpgrade) {
               this.props.actions.setLastUpgradeCheck();
-              const {currentVersion, minVersion, latestVersion} = this.props;
-              const upgradeType = checkUpgradeType(
-                  currentVersion,
-                  minVersion,
-                  latestVersion,
-              );
+
+              const {currentVersion, minVersion, latestVersion} = getClientUpgrade(config);
+
+              const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
+
               if (isUpgradeAvailable(upgradeType)) {
                   this.handleShowClientUpgrade(upgradeType);
               } else {
-                  this.handleLoginOptions(this.props);
+                  this.handleLoginOptions();
               }
           } else {
-              this.handleLoginOptions(this.props);
+              this.handleLoginOptions();
           }
       }
   }
@@ -177,6 +184,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       this.certificateListener?.remove();
       this.sslProblemListener?.remove();
       this.navigationEventListener?.remove();
+      clearTimeout(this.nextScreenTimer);
   }
 
   componentDidDisappear() {
@@ -239,32 +247,29 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   handleLoginOptions = async () => {
       const {formatMessage} = this.context.intl;
-      const {config, license} = this.props;
+      const {config, license} = this.getSystemsValues();
 
-      const samlEnabled =
-      config.EnableSaml === 'true' &&
-      license.IsLicensed === 'true' &&
-      license.SAML === 'true';
-      const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-      const googleEnabled =
-      config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
-      const o365Enabled =
-      config.EnableSignUpWithOffice365 === 'true' &&
-      license.IsLicensed === 'true' &&
-      license.Office365OAuth === 'true';
-      const openIdEnabled =
-      config.EnableSignUpWithOpenId === 'true' &&
-      license.IsLicensed === 'true' &&
-      isMinimumServerVersion(config.Version, 5, 33, 0);
+      const {
+          EnableSaml,
+          EnableSignUpWithGitLab,
+          EnableSignUpWithGoogle,
+          EnableSignUpWithOffice365,
+          EnableSignUpWithOpenId,
+          Version,
+          ExperimentalClientSideCertEnable,
+          ExperimentalClientSideCertCheck,
+      } = config;
+
+      const {IsLicensed, SAML, Office365OAuth} = license;
+
+      const samlEnabled = EnableSaml === 'true' && IsLicensed === 'true' && SAML === 'true';
+      const gitlabEnabled = EnableSignUpWithGitLab === 'true';
+      const googleEnabled = EnableSignUpWithGoogle === 'true' && IsLicensed === 'true';
+      const o365Enabled = EnableSignUpWithOffice365 === 'true' && IsLicensed === 'true' && Office365OAuth === 'true';
+      const openIdEnabled = EnableSignUpWithOpenId === 'true' && IsLicensed === 'true' && isMinimumServerVersion(Version, 5, 33, 0);
 
       let options = 0;
-      if (
-          samlEnabled ||
-      gitlabEnabled ||
-      googleEnabled ||
-      o365Enabled ||
-      openIdEnabled
-      ) {
+      if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
           options += 1;
       }
 
@@ -288,17 +293,14 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       await globalEventHandler.configureAnalytics();
 
       if (Platform.OS === 'ios') {
-          if (
-              config.ExperimentalClientSideCertEnable === 'true' &&
-        config.ExperimentalClientSideCertCheck === 'primary'
-          ) {
+          if (ExperimentalClientSideCertEnable === 'true' && ExperimentalClientSideCertCheck === 'primary') {
               // log in automatically and send directly to the channel screen
               this.loginWithCertificate();
               return;
           }
 
           //fixme: clear this timeout
-          setTimeout(() => {
+          this.nextScreenTimer = setTimeout(() => {
               this.goToNextScreen(screen, title);
           }, 350);
       } else {
@@ -661,7 +663,6 @@ const style = StyleSheet.create({
     },
 });
 
-//todo:  is this the correct way of calling the database ?
 const withObserver = withObservables([], async () => {
     return {
         systems: getSystems(),

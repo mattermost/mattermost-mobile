@@ -3,6 +3,8 @@
 
 import {NativeModules, Platform} from 'react-native';
 
+//todo: need to remove this file altogether
+
 // TODO: Remove platform specific once android is implemented
 const MattermostBucket = Platform.OS === 'ios' ? NativeModules.MattermostBucketModule : null;
 
