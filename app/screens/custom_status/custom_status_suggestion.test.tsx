@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {shallow} from 'enzyme';
 import React from 'react';
+import {TouchableOpacity} from 'react-native';
+
 import Preferences from '@mm-redux/constants/preferences';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {shallow} from 'enzyme';
-import {TouchableOpacity} from 'react-native';
 
 describe('screens/custom_status_suggestion', () => {
     const baseProps = {

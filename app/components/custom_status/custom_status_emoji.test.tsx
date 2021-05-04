@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 
-import * as CustomStatusSelectors from '@selectors/custom_status';
-
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
+import * as CustomStatusSelectors from '@selectors/custom_status';
 import {renderWithRedux} from 'test/testing_library';
 
 jest.mock('@selectors/custom_status');

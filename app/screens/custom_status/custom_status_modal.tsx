@@ -1,23 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
-import {View, Text, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView} from 'react-native';
-import {intlShape, injectIntl} from 'react-intl';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options} from 'react-native-navigation';
 
-import StatusBar from '@components/status_bar';
-import {t} from '@utils/i18n';
-import {UserCustomStatus} from '@mm-redux/types/users';
+import React from 'react';
+import {intlShape, injectIntl} from 'react-intl';
+import {View, Text, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleProp, ViewStyle} from 'react-native';
+import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options, NavigationButtonPressedEvent} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
+import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
-import {Theme} from '@mm-redux/types/preferences';
-import {CustomStatus, DeviceTypes} from '@constants';
-import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import ClearButton from '@components/custom_status/clear_button';
+import StatusBar from '@components/status_bar';
+import {CustomStatus, DeviceTypes} from '@constants';
+import {ActionFunc} from '@mm-redux/types/actions';
+import {Theme} from '@mm-redux/types/preferences';
+import {UserCustomStatus} from '@mm-redux/types/users';
+import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
+import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -40,9 +42,9 @@ interface Props extends NavigationComponentProps {
     recentCustomStatuses: UserCustomStatus[];
     isLandscape: boolean;
     actions: {
-        setCustomStatus: (customStatus: UserCustomStatus) => void;
-        unsetCustomStatus: () => void;
-        removeRecentCustomStatus: (customStatus: UserCustomStatus) => void;
+        setCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
+        unsetCustomStatus: () => ActionFunc;
+        removeRecentCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
     };
 }
 
@@ -84,8 +86,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         mergeNavigationOptions(props.componentId, options);
 
         this.state = {
-            emoji: props.customStatus.emoji,
-            text: props.customStatus.text || '',
+            emoji: props.customStatus?.emoji,
+            text: props.customStatus?.text || '',
         };
     }
 
@@ -93,16 +95,20 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         Navigation.events().bindComponent(this);
     }
 
-    navigationButtonPressed() {
-        this.handleSetStatus();
+    navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
+        switch (buttonId) {
+        case 'update-custom-status':
+            this.handleSetStatus();
+            break;
+        }
     }
 
-    handleSetStatus = () => {
+    handleSetStatus = async () => {
         const {emoji, text} = this.state;
         const isStatusSet = emoji || text;
         const {customStatus} = this.props;
         if (isStatusSet) {
-            const isStatusSame = customStatus.emoji === emoji && customStatus.text === text;
+            const isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text;
             if (!isStatusSame) {
                 const status = {
                     emoji: emoji || 'speech_balloon',
@@ -110,7 +116,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 };
                 this.props.actions.setCustomStatus(status);
             }
-        } else if (customStatus && customStatus.emoji) {
+        } else if (customStatus?.emoji) {
             this.props.actions.unsetCustomStatus();
         }
         Keyboard.dismiss();
@@ -130,9 +136,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.setState({emoji, text});
     };
 
-    renderRecentCustomStatuses = () => {
+    renderRecentCustomStatuses = (style: Record<string, StyleProp<ViewStyle>>) => {
         const {recentCustomStatuses, theme} = this.props;
-        const style = getStyleSheet(theme);
         const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
             <CustomStatusSuggestion
                 key={status.text}
@@ -145,7 +150,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             />
         ));
 
-        if (recentStatuses.length <= 0) {
+        if (recentStatuses.length === 0) {
             return null;
         }
 
@@ -167,9 +172,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         );
     };
 
-    renderCustomStatusSuggestions = () => {
+    renderCustomStatusSuggestions = (style: Record<string, StyleProp<ViewStyle>>) => {
         const {recentCustomStatuses, theme} = this.props;
-        const style = getStyleSheet(theme);
         const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
         const customStatusSuggestions = defaultCustomStatusSuggestions.
             map((status) => ({
@@ -188,7 +192,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 />
             ));
 
-        if (customStatusSuggestions.length <= 0) {
+        if (customStatusSuggestions.length === 0) {
             return null;
         }
 
@@ -220,7 +224,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 onEmojiPress: this.handleEmojiClick,
             };
 
-            requestAnimationFrame(() => showModal(screen, title, passProps));
+            showModal(screen, title, passProps);
         });
     };
 
@@ -315,8 +319,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                         <StatusBar/>
                         <View style={style.scrollView}>
                             {customStatusInput}
-                            {this.renderRecentCustomStatuses()}
-                            {this.renderCustomStatusSuggestions()}
+                            {this.renderRecentCustomStatuses(style)}
+                            {this.renderCustomStatusSuggestions(style)}
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>

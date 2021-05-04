@@ -3,6 +3,7 @@
 
 import AttachmentTypes from './attachment';
 import CustomPropTypes from './custom_prop_types';
+import * as CustomStatus from './custom_status';
 import DeepLinkTypes from './deep_linking';
 import DeviceTypes from './device';
 import ListTypes from './list';
@@ -10,7 +11,6 @@ import NavigationTypes from './navigation';
 import Types from './types';
 import ViewTypes, {UpgradeTypes} from './view';
 import WebsocketEvents from './websocket';
-import * as CustomStatus from './custom_status';
 
 export {
     AttachmentTypes,

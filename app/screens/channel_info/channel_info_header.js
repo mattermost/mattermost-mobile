@@ -14,6 +14,7 @@ import Clipboard from '@react-native-community/clipboard';
 
 import {popToRoot} from '@actions/navigation';
 import ChannelIcon from '@components/channel_icon';
+import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
@@ -22,8 +23,8 @@ import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
 import mattermostManaged from 'app/mattermost_managed';
-import Emoji from '@components/emoji';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -177,20 +178,17 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus.emoji &&
+                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji &&
                     <View
                         style={[style.row, style.customStatusContainer]}
                         testID={`${testID}.custom_status`}
                     >
-                        <Text
-                            style={style.iconContainer}
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                            textStyle={style.iconContainer}
                             testID={`custom_status.emoji.${customStatus.emoji}`}
-                        >
-                            <Emoji
-                                emojiName={customStatus.emoji}
-                                size={20}
-                            />
-                        </Text>
+                        />
                         <Text
                             style={style.customStatusText}
                             ellipsizeMode='tail'

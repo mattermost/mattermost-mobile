@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Text} from 'react-native';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
 import DrawerItem from './drawer_item';
-import {Text} from 'react-native';
 
 describe('DrawerItem', () => {
     const baseProps = {

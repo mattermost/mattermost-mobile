@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 import {shallow} from 'enzyme';
 import React from 'react';
-import Preferences from '@mm-redux/constants/preferences';
 
 import CustomStatusText from '@components/custom_status/custom_status_text';
+import Preferences from '@mm-redux/constants/preferences';
 
 describe('components/custom_status/custom_status_text', () => {
     const baseProps = {

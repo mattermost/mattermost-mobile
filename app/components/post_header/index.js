@@ -18,6 +18,7 @@ import {isGuest} from 'app/utils/users';
 import {isLandscape} from 'app/selectors/device';
 
 import PostHeader from './post_header';
+import {isCustomStatusEnabled} from '@selectors/custom_status';
 
 function makeMapStateToProps() {
     const getCommentCountForPost = makeGetCommentCountForPost();
@@ -60,6 +61,7 @@ function makeMapStateToProps() {
             isGuest: isGuest(user),
             isLandscape: isLandscape(state),
             userTimezone,
+            customStatusEnabled: isCustomStatusEnabled(state),
         };
     };
 }

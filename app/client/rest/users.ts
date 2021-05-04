@@ -11,7 +11,7 @@ import {PER_PAGE_DEFAULT} from './constants';
 export interface ClientUsersMix {
     createUser: (user: UserProfile, token: string, inviteId: string) => Promise<UserProfile>;
     patchMe: (userPatch: Partial<UserProfile>) => Promise<UserProfile>;
-    patchUser: (userPatch: Partial<UserProfile> & { id: string }) => Promise<UserProfile>;
+    patchUser: (userPatch: Partial<UserProfile> & {id: string}) => Promise<UserProfile>;
     updateUser: (user: UserProfile) => Promise<UserProfile>;
     demoteUserToGuest: (userId: string) => Promise<any>;
     getKnownUsers: () => Promise<string[]>;
@@ -27,7 +27,7 @@ export interface ClientUsersMix {
     getProfilesNotInTeam: (teamId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesWithoutTeam: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesInChannel: (channelId: string, page?: number, perPage?: number, sort?: string) => Promise<UserProfile[]>;
-    getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{ [x: string]: UserProfile[] }>;
+    getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: () => Promise<UserProfile>;
     getUser: (userId: string) => Promise<UserProfile>;
@@ -35,17 +35,17 @@ export interface ClientUsersMix {
     getUserByEmail: (email: string) => Promise<UserProfile>;
     getProfilePictureUrl: (userId: string, lastPictureUpdate: number) => string;
     getDefaultProfilePictureUrl: (userId: string) => string;
-    autocompleteUsers: (name: string, teamId: string, channelId: string, options?: Record<string, any>) => Promise<{ users: UserProfile[], out_of_channel?: UserProfile[] }>;
+    autocompleteUsers: (name: string, teamId: string, channelId: string, options?: Record<string, any>) => Promise<{users: UserProfile[], out_of_channel?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<any>;
-    checkUserMfa: (loginId: string) => Promise<{ mfa_required: boolean }>;
+    checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     attachDevice: (deviceId: string) => Promise<any>;
     searchUsers: (term: string, options: any) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string) => Promise<UserStatus>;
     updateStatus: (status: UserStatus) => Promise<UserStatus>;
-    updateCustomStatus: (customStatus: UserCustomStatus) => Promise<any>;
-    unsetCustomStatus: () => Promise<any>;
-    removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<any>;
+    updateCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
+    unsetCustomStatus: () => Promise<{status: string}>;
+    removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
 }
 
 const ClientUsers = (superclass: any) => class extends superclass {

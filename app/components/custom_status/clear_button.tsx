@@ -1,31 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
+import {TouchableOpacity} from 'react-native';
+
 import CompassIcon from '@components/compass_icon';
 import {Theme} from '@mm-redux/types/preferences';
-
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-import {TouchableOpacity} from 'react-native';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface Props {
     handlePress: () => void;
     size?: number;
+    containerSize?: number;
     theme: Theme;
     testID?: string;
     iconName: string,
 }
 
-const ClearButton = (props: Props) => {
-    // Note: We need a default iconName as the defaultProps
-    // don't get applied initially when the value is undefined
-    const {handlePress, iconName = 'close-circle', size, theme, testID} = props;
+const ClearButton = ({handlePress, iconName, size, containerSize, theme, testID}: Props) => {
     const style = getStyleSheet(theme);
 
     return (
         <TouchableOpacity
             onPress={preventDoubleTap(handlePress)}
-            style={style.container}
+            style={[style.container, {height: containerSize, width: containerSize}]}
             testID={testID}
         >
             <CompassIcon
@@ -39,6 +38,7 @@ const ClearButton = (props: Props) => {
 
 ClearButton.defaultProps = {
     size: 20,
+    containerSize: 40,
     iconName: 'close-circle',
 };
 
@@ -47,8 +47,6 @@ export default ClearButton;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: 40,
-            width: 40,
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center',

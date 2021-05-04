@@ -13,10 +13,10 @@ import {
 import {General} from '@mm-redux/constants';
 
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-import {t} from '@utils/i18n';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
+import FormattedText from '@components/formatted_text';
+import {t} from '@utils/i18n';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
@@ -32,6 +32,7 @@ export default class ChannelTitle extends PureComponent {
         canHaveSubtitle: PropTypes.bool.isRequired,
         isSelfDMChannel: PropTypes.bool.isRequired,
         teammateId: PropTypes.string,
+        customStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -154,7 +155,7 @@ export default class ChannelTitle extends PureComponent {
             wrapperWidth -= 10;
         }
 
-        const customStatus = this.props.channelType === General.DM_CHANNEL ?
+        const customStatus = this.props.channelType === General.DM_CHANNEL && this.props.customStatusEnabled ?
             (
                 <CustomStatusEmoji
                     userID={this.props.teammateId}

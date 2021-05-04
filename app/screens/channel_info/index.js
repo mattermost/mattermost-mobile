@@ -14,13 +14,14 @@ import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/ent
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {makeGetCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
 import ChannelInfo from './channel_info';
-import {makeGetCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
+
+const getCustomStatus = makeGetCustomStatus();
 
 function mapStateToProps(state) {
-    const getCustomStatus = makeGetCustomStatus();
     const currentChannel = getCurrentChannel(state) || {};
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
@@ -32,6 +33,7 @@ function mapStateToProps(state) {
 
     let teammateId;
     let isTeammateGuest = false;
+    let customStatusEnabled;
     let customStatus;
     const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
 
@@ -42,7 +44,8 @@ function mapStateToProps(state) {
             isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
-        customStatus = getCustomStatus(state, teammateId) || {};
+        customStatusEnabled = isCustomStatusEnabled(state);
+        customStatus = customStatusEnabled ? getCustomStatus(state, teammateId) : undefined;
     }
 
     if (currentChannel.type === General.GM_CHANNEL) {
@@ -60,7 +63,7 @@ function mapStateToProps(state) {
         teammateId,
         theme: getTheme(state),
         customStatus,
-        isCustomStatusEnabled: isCustomStatusEnabled(state),
+        isCustomStatusEnabled: customStatusEnabled,
     };
 }
 

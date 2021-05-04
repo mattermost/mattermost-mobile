@@ -15,6 +15,7 @@ import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entit
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {isCustomStatusEnabled} from '@selectors/custom_status';
 import {getDraftForChannel} from '@selectors/views';
 import {isGuest as isGuestUser} from '@utils/users';
 
@@ -85,6 +86,7 @@ function makeMapStateToProps() {
             teammateId,
             theme: getTheme(state),
             unreadMsgs,
+            customStatusEnabled: isCustomStatusEnabled(state),
         };
     };
 }

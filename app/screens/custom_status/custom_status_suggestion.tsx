@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import React, {useCallback} from 'react';
+import {View, TouchableOpacity, Text} from 'react-native';
+
 import Emoji from '@components/emoji';
+import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import React, {useCallback} from 'react';
-import {View, TouchableOpacity, Text} from 'react-native';
-import ClearButton from '@components/custom_status/clear_button';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     handleSuggestionClick: (status: UserCustomStatus) => void;
@@ -23,11 +25,9 @@ const CustomStatusSuggestion = (props: Props) => {
     const {handleSuggestionClick, emoji, text, theme, separator, handleClear} = props;
     const style = getStyleSheet(theme);
 
-    const divider = separator ? <View style={style.divider}/> : null;
-
     const handleClick = useCallback(preventDoubleTap(() => {
         handleSuggestionClick({emoji, text});
-    }), [handleSuggestionClick, emoji, text]);
+    }), [emoji, text]);
 
     const clearButton = handleClear ?
         (

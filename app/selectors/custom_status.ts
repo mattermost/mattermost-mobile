@@ -1,20 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {GlobalState} from '@mm-redux/types/store';
-import {UserCustomStatus} from '@mm-redux/types/users';
 
 import {createSelector} from 'reselect';
-import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
-import {get} from '@mm-redux/selectors/entities/preferences';
+
 import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {get} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
+import {UserCustomStatus} from '@mm-redux/types/users';
+import {GlobalState} from '@mm-redux/types/store';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => UserCustomStatus {
     return createSelector(
         (state: GlobalState, userID?: string) => (userID ? getUser(state, userID) : getCurrentUser(state)),
         (user) => {
             const userProps = user?.props || {};
-            return userProps.customStatus && JSON.parse(userProps.customStatus);
+            if (userProps.customStatus) {
+                return JSON.parse(userProps.customStatus) || undefined;
+            }
+
+            return undefined;
         },
     );
 }
@@ -28,5 +34,6 @@ export const getRecentCustomStatuses = createSelector(
 
 export function isCustomStatusEnabled(state: GlobalState) {
     const config = getConfig(state);
-    return config && config.EnableCustomUserStatuses === 'true';
+    const serverVersion = state.entities.general.serverVersion;
+    return config && config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(serverVersion, 5, 36);
 }
