@@ -49,6 +49,8 @@ import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 import {getClientUpgrade} from '@app/queries/helpers';
 import {getSystems} from '@queries/system';
+import {setLastUpgradeCheck} from '@app/requests/local/systems';
+import {getPing} from '@requests/remote/general';
 
 //todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
 
@@ -67,11 +69,10 @@ type ScreenState = {
 class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   static propTypes = {
       actions: PropTypes.shape({
-          getPing: PropTypes.func.isRequired,
-          handleServerUrlChanged: PropTypes.func.isRequired,
+          handleServerUrlChanged: PropTypes.func.isRequired, // ??
           loadConfigAndLicense: PropTypes.func.isRequired,
           login: PropTypes.func.isRequired,
-          resetPing: PropTypes.func.isRequired,
+          resetPing: PropTypes.func.isRequired, // ??
           scheduleExpiredNotification: PropTypes.func.isRequired,
           setLastUpgradeCheck: PropTypes.func.isRequired,
           setServerVersion: PropTypes.func.isRequired,
@@ -154,18 +155,24 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           license: licenseRecord.value,
           selectServer: selectServerRecord.value,
           root: rootRecord.value,
+          records: {
+              configRecord,
+              licenseRecord,
+              selectServerRecord,
+              rootRecord,
+          },
       };
   };
 
-  componentDidUpdate(prevProps, prevState) {
-      const {config, license} = this.getSystemsValues();
-      const hasConfigAndLicense =
-      Object.keys(config).length > 0 && Object.keys(license).length > 0;
+  //fixme: Is this life-cycle method necessary ?
+  componentDidUpdate(prevProps: ScreenProps, prevState: ScreenState) {
+      const {config, license, records: {configRecord}} = this.getSystemsValues();
+      const hasConfigAndLicense = Object.keys(config).length > 0 && Object.keys(license).length > 0;
 
       //todo: need to recheck this logic here as we are retrieving hasConfigAndLicense from the database now
       if (this.state.connected && hasConfigAndLicense && !(prevState.connected && hasConfigAndLicense)) {
           if (LocalConfig.EnableMobileClientUpgrade) {
-              this.props.actions.setLastUpgradeCheck();
+              setLastUpgradeCheck(configRecord);
 
               const {currentVersion, minVersion = '', latestVersion = ''} = getClientUpgrade(config);
               const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
@@ -336,7 +343,6 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   pingServer = async (url: string, retryWithHttp = true) => {
       const {
-          getPing,
           handleServerUrlChanged,
           loadConfigAndLicense,
           setServerVersion,

@@ -9,17 +9,19 @@ import DatabaseManager from '@database/manager';
 
 //todo: review how the licence, config, etc... are being stored in the database.
 
+const {SYSTEM} = MM_TABLES.SERVER;
+
 export const getSystems = () => {
-    const connection = DatabaseManager.getActiveServerDatabase();
-    if (!connection) {
+    const database = DatabaseManager.getActiveServerDatabase();
+    if (!database) {
         return {
             systems: of([]),
         };
     }
 
     return {
-        systems: connection.collections.
-            get(MM_TABLES.SERVER.SYSTEM).
+        systems: database.collections.
+            get(SYSTEM).
             query(
                 Q.where('name', Q.oneOf(['config', 'license', 'root', 'selectServer'])),
             ),

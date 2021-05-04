@@ -1,12 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+//fixme:  substitute with network client
+import {Client4} from '@client/rest';
+
 export const getPing = async () => {
     let data;
-    let pingError = new FormattedError(
-        'mobile.server_ping_failed',
-        'Cannot connect to the server. Please check your server URL and internet connection.',
-    );
+    let pingError = {
+        id: 'mobile.server_ping_failed',
+        defaultMessage: 'Cannot connect to the server. Please check your server URL and internet connection.',
+    };
+
     try {
         data = await Client4.ping();
         if (data.status !== 'OK') {
