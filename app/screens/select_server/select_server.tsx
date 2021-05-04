@@ -13,8 +13,7 @@ import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
 import withObservables from '@nozbe/with-observables';
-import {getClientUpgrade} from '@queries/helpers';
-import {goToScreen, resetToChannel} from '@requests/local/navigation';
+import {goToScreen, resetToChannel} from '@app/navigation';
 import System from '@typings/database/system';
 import {Styles} from '@typings/utils';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
@@ -62,6 +61,7 @@ type ScreenState = {
   connected: boolean;
   connecting: boolean;
   error: null | Error;
+  url: string;
 };
 
 class SelectServer extends PureComponent<ScreenProps, ScreenState> {
@@ -82,7 +82,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       allowOtherServers: true,
   };
 
-  private cancelPing!: (() => void);
+  private cancelPing: (() => void | null) | undefined;
   private navigationEventListener!: EventSubscription;
   private certificateListener!: EmitterSubscription;
   private sslProblemListener!: EmitterSubscription;
@@ -93,12 +93,15 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       connected: false,
       connecting: false,
       error: null,
+      url: '',
   };
 
   //fixme: do we need getDerivedStateFromProps ?
   static getDerivedStateFromProps(props, state) {
       const {systems} = props;
-      const rootRecord = systems.find((systemRecord: System) => systemRecord.name === 'root') as System;
+      const rootRecord = systems.find(
+          (systemRecord: System) => systemRecord.name === 'root',
+      ) as System;
       const {deepLinkURL} = rootRecord.value;
       if (state.url === undefined && props.allowOtherServers && deepLinkURL) {
           const url = urlParse(deepLinkURL).host;
@@ -111,7 +114,9 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   componentDidMount() {
       this.navigationEventListener = Navigation.events().bindComponent(this);
-      const {selectServer: {serverUrl}} = this.getSystemsValues();
+      const {
+          selectServer: {serverUrl},
+      } = this.getSystemsValues();
 
       const {allowOtherServers} = this.props;
       if (!allowOtherServers && serverUrl) {
@@ -121,7 +126,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       }
 
       if (Platform.OS === 'android') {
-          Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+          Keyboard.addListener('keyboardDidHide', this.blur);
       }
 
       this.certificateListener = DeviceEventEmitter.addListener(
@@ -150,20 +155,31 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           selectServer: selectServerRecord.value,
           root: rootRecord.value,
       };
-  }
+  };
 
   componentDidUpdate(prevProps, prevState) {
       const {config, license} = this.getSystemsValues();
-      const hasConfigAndLicense = Object.keys(config).length > 0 && Object.keys(license).length > 0;
+      const hasConfigAndLicense =
+      Object.keys(config).length > 0 && Object.keys(license).length > 0;
 
       //todo: need to recheck this logic here as we are retrieving hasConfigAndLicense from the database now
-      if (this.state.connected && hasConfigAndLicense && !(prevState.connected && hasConfigAndLicense)) {
+      if (
+          this.state.connected &&
+      hasConfigAndLicense &&
+      !(prevState.connected && hasConfigAndLicense)
+      ) {
           if (LocalConfig.EnableMobileClientUpgrade) {
               this.props.actions.setLastUpgradeCheck();
 
-              const {currentVersion, minVersion, latestVersion} = getClientUpgrade(config);
+              const {currentVersion, minVersion, latestVersion} = getClientUpgrade(
+                  config,
+              );
 
-              const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
+              const upgradeType = checkUpgradeType(
+                  currentVersion,
+                  minVersion,
+                  latestVersion,
+              );
 
               if (isUpgradeAvailable(upgradeType)) {
                   this.handleShowClientUpgrade(upgradeType);
@@ -178,7 +194,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   componentWillUnmount() {
       if (Platform.OS === 'android') {
-          Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+          Keyboard.removeListener('keyboardDidHide', this.blur);
       }
 
       this.certificateListener?.remove();
@@ -193,21 +209,13 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       });
   }
 
-  //fixme: too much repetition
-  blur = () => {
-      if (this.textInput) {
-          this.textInput.blur();
-      }
-  };
-
-  getUrl = async (serverUrl: string, useHttp = false) => {
+  getUrl = async (serverUrl?: string, useHttp = false) => {
       let url = this.sanitizeUrl(serverUrl, useHttp);
 
       try {
           const resp = await fetch(url, {method: 'HEAD'});
           if (resp?.rnfbRespInfo?.redirects?.length) {
-              url =
-          resp.rnfbRespInfo.redirects[resp.rnfbRespInfo.redirects.length - 1];
+              url = resp.rnfbRespInfo.redirects[resp.rnfbRespInfo.redirects.length - 1];
           }
       } catch {
       // do nothing
@@ -216,12 +224,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       return this.sanitizeUrl(url, useHttp);
   };
 
-  goToNextScreen = (
-      screen: string,
-      title: string,
-      passProps = {},
-      navOptions = {},
-  ) => {
+  goToNextScreen = (screen: string, title: string, passProps = {}, navOptions = {}) => {
       const {allowOtherServers} = this.props;
       let visible = !LocalConfig.AutoSelectServerUrl;
 
@@ -241,8 +244,10 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       goToScreen(screen, title, passProps, options);
   };
 
-  handleAndroidKeyboard = () => {
-      this.blur();
+  blur = () => {
+      if (this.textInput) {
+          this.textInput.blur();
+      }
   };
 
   handleLoginOptions = async () => {
@@ -277,16 +282,10 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       let title: string;
       if (options) {
           screen = 'LoginOptions';
-          title = formatMessage({
-              id: 'mobile.routes.loginOptions',
-              defaultMessage: 'Login Chooser',
-          });
+          title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
       } else {
           screen = 'Login';
-          title = formatMessage({
-              id: 'mobile.routes.login',
-              defaultMessage: 'Login',
-          });
+          title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
       }
 
       this.props.actions.resetPing();
@@ -299,7 +298,6 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
               return;
           }
 
-          //fixme: clear this timeout
           this.nextScreenTimer = setTimeout(() => {
               this.goToNextScreen(screen, title);
           }, 350);
@@ -419,6 +417,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       if (preUrl.protocol === 'http:' && !useHttp) {
           preUrl.protocol = 'https:';
       }
+
       return stripTrailingSlashes(
           `${preUrl.protocol}//${preUrl.host}${preUrl.pathname}`,
       );
@@ -502,8 +501,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           formatMessage(
               {
                   id: 'mobile.server_ssl.error.text',
-                  defaultMessage:
-            'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
+                  defaultMessage: 'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
               },
               {
                   host,
@@ -558,8 +556,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           );
       }
 
-      const barStyle =
-      Platform.OS === 'android' ? 'light-content' : 'dark-content';
+      const barStyle = Platform.OS === 'android' ? 'light-content' : 'dark-content';
 
       const inputDisabled = !allowOtherServers || connected || connecting;
 

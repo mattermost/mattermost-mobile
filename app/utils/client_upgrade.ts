@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import semver from 'semver';
 
-import LocalConfig from '@assets/config';
+import LocalConfig from '@assets/config.json';
 import {UpgradeTypes} from '@constants';
 
 export function checkUpgradeType(
