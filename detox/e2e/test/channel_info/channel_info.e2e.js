@@ -167,7 +167,7 @@ describe('Channel Info', () => {
         }
     });
 
-    it('MM-TT1733 should not render markdown in channel purpose', async () => {
+    it('MM-T1733 should not render markdown in channel purpose', async () => {
         // # Edit channel purpose
         const expectedPurpose = '[Mattermost](https://mattermost.com)';
         await goToChannel(townSquareChannel.display_name);
