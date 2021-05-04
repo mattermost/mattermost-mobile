@@ -4,7 +4,7 @@
 import mattermostBucket from '@app/mattermost_bucket';
 import {GlobalStyles} from '@app/styles';
 import telemetry from '@app/telemetry';
-import LocalConfig from '@assets/config';
+import LocalConfig from '@assets/config.json';
 import {Client4} from '@client/rest';
 import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
@@ -60,7 +60,7 @@ type ScreenProps = {
 type ScreenState = {
   connected: boolean;
   connecting: boolean;
-  error: null | Error;
+  error: null | {};
   url: string;
 };
 
@@ -163,23 +163,12 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       Object.keys(config).length > 0 && Object.keys(license).length > 0;
 
       //todo: need to recheck this logic here as we are retrieving hasConfigAndLicense from the database now
-      if (
-          this.state.connected &&
-      hasConfigAndLicense &&
-      !(prevState.connected && hasConfigAndLicense)
-      ) {
+      if (this.state.connected && hasConfigAndLicense && !(prevState.connected && hasConfigAndLicense)) {
           if (LocalConfig.EnableMobileClientUpgrade) {
               this.props.actions.setLastUpgradeCheck();
 
-              const {currentVersion, minVersion, latestVersion} = getClientUpgrade(
-                  config,
-              );
-
-              const upgradeType = checkUpgradeType(
-                  currentVersion,
-                  minVersion,
-                  latestVersion,
-              );
+              const {currentVersion, minVersion = '', latestVersion = ''} = getClientUpgrade(config);
+              const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
 
               if (isUpgradeAvailable(upgradeType)) {
                   this.handleShowClientUpgrade(upgradeType);
@@ -252,7 +241,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   handleLoginOptions = async () => {
       const {formatMessage} = this.context.intl;
-      const {config, license} = this.getSystemsValues();
+      const {config, license, selectServer: {serverUrl = ''}} = this.getSystemsValues();
 
       const {
           EnableSaml,
@@ -289,7 +278,9 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       }
 
       this.props.actions.resetPing();
-      await globalEventHandler.configureAnalytics();
+
+      //todo: confirm if we should pass in the serverUrl here
+      await globalEventHandler.configureAnalytics(serverUrl);
 
       if (Platform.OS === 'ios') {
           if (ExperimentalClientSideCertEnable === 'true' && ExperimentalClientSideCertCheck === 'primary') {
@@ -409,17 +400,18 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   sanitizeUrl = (url: string, useHttp = false) => {
       let preUrl = urlParse(url, true);
+      let protocol = preUrl.protocol;
 
       if (!preUrl.host || preUrl.protocol === 'file:') {
           preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
       }
 
       if (preUrl.protocol === 'http:' && !useHttp) {
-          preUrl.protocol = 'https:';
+          protocol = 'https:';
       }
 
       return stripTrailingSlashes(
-          `${preUrl.protocol}//${preUrl.host}${preUrl.pathname}`,
+          `${protocol}//${preUrl.host}${preUrl.pathname}`,
       );
   };
 

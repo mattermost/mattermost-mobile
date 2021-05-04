@@ -3,37 +3,36 @@
 import semver from 'semver';
 
 import LocalConfig from '@assets/config.json';
-import {UpgradeTypes} from '@constants';
+import {Upgrade} from '@constants/view';
 
 export function checkUpgradeType(
-    currentVersion,
-    minVersion,
-    latestVersion,
-    logError,
+    currentVersion: string,
+    minVersion: string,
+    latestVersion: string,
 ) {
-    let upgradeType = UpgradeTypes.NO_UPGRADE;
+    let upgradeType = Upgrade.NO_UPGRADE;
 
     try {
         if (semver.gt(currentVersion, latestVersion)) {
-            upgradeType = UpgradeTypes.IS_BETA;
+            upgradeType = Upgrade.IS_BETA;
         } else if (minVersion && semver.lt(currentVersion, minVersion)) {
-            upgradeType = UpgradeTypes.MUST_UPGRADE;
+            upgradeType = Upgrade.MUST_UPGRADE;
         } else if (latestVersion && semver.lt(currentVersion, latestVersion)) {
             if (LocalConfig.EnableForceMobileClientUpgrade) {
-                upgradeType = UpgradeTypes.MUST_UPGRADE;
+                upgradeType = Upgrade.MUST_UPGRADE;
             } else {
-                upgradeType = UpgradeTypes.CAN_UPGRADE;
+                upgradeType = Upgrade.CAN_UPGRADE;
             }
         }
     } catch (error) {
-        logError(error.message);
+        //todo: sentry reporting ?
     }
 
     return upgradeType;
 }
 
-export function isUpgradeAvailable(upgradeType) {
-    return [UpgradeTypes.CAN_UPGRADE, UpgradeTypes.MUST_UPGRADE].includes(
+export function isUpgradeAvailable(upgradeType: string) {
+    return [Upgrade.CAN_UPGRADE, Upgrade.MUST_UPGRADE].includes(
         upgradeType,
     );
 }
