@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+import {Platform} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import {of} from 'rxjs';
+
 import LocalConfig from '@assets/config.json';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {Q} from '@nozbe/watermelondb';
 import {Config} from '@typings/database/config';
-import {Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 
 //todo: review how the licence, config, etc... are being stored in the database.
 
@@ -15,7 +17,7 @@ export const getSystems = () => {
     const connection = DatabaseManager.getActiveServerDatabase();
     if (!connection) {
         return {
-            systems: [],
+            systems: of([]),
         };
     }
 
