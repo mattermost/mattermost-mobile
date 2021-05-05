@@ -3,8 +3,9 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
-import Preferences from '@mm-redux/constants/preferences';
+
 import ClearButton from '@components/custom_status/clear_button';
+import Preferences from '@mm-redux/constants/preferences';
 
 describe('components/custom_status/clear_button', () => {
     const baseProps = {

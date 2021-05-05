@@ -10,11 +10,16 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import ClearButton from '@components/custom_status/clear_button';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
 import UserStatus from '@components/user_status';
 import {NavigationTypes} from '@constants';
+import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {preventDoubleTap} from '@utils/tap';
-import {t} from '@utils/i18n';
+import {changeOpacity} from '@utils/theme';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -47,7 +52,6 @@ export default class SettingsSidebarBase extends PureComponent {
     static defaultProps = {
         currentUser: {},
         status: 'offline',
-        customStatus: {},
     };
 
     constructor(props) {
@@ -115,7 +119,7 @@ export default class SettingsSidebarBase extends PureComponent {
     }
 
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
-        const isStatusSet = customStatus.emoji;
+        const isStatusSet = Boolean(customStatus?.emoji);
         if (isStatusSet) {
             const isStatusChanged = prevCustomStatus.emoji !== customStatus.emoji || prevCustomStatus.text !== customStatus.text || prevCustomStatus.expires_at !== customStatus.expires_at;
             if (isStatusChanged) {
@@ -232,9 +236,9 @@ export default class SettingsSidebarBase extends PureComponent {
         const options = {
             topBar: {
                 leftButtons: [{
-                    testID: 'close.settings.button',
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -281,17 +285,19 @@ export default class SettingsSidebarBase extends PureComponent {
     renderCustomStatus = (style) => {
         const {isCustomStatusEnabled, customStatus, theme, userTimezone} = this.props;
         const {showStatus, showRetryMessage} = this.state;
+
         if (!isCustomStatusEnabled) {
             return null;
         }
 
-        const isStatusSet = customStatus.emoji && showStatus;
+        const isStatusSet = customStatus?.emoji && showStatus;
         const labelComponent = isStatusSet ? (
             <CustomStatusText
                 text={customStatus.text}
                 theme={theme}
             />
         ) : null;
+
         const customStatusEmoji = (
             <View
                 testID={`custom_status.emoji.${isStatusSet ? customStatus.emoji : 'default'}`}

@@ -188,6 +188,7 @@ function generateRandomUser(prefix) {
         first_name: `First${randomId}`,
         last_name: `Last${randomId}`,
         nickname: `Nickname${randomId}`,
+        position: `Position${randomId}`,
     };
 }
 

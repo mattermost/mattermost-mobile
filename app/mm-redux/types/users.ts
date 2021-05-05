@@ -91,7 +91,7 @@ export enum CustomStatusDuration {
 }
 
 export type UserCustomStatus = {
-	emoji: string;
+    emoji: string;
     text: string;
     expires_at?: string;
     duration: CustomStatusDuration;

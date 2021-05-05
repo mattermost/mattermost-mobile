@@ -11,10 +11,9 @@ import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {General} from '@mm-redux/constants';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
-import {isLandscape} from '@selectors/device';
 import {isGuest} from '@utils/users';
 
 import ChannelInfo from './channel_info';
@@ -32,23 +31,21 @@ function mapStateToProps(state) {
     const currentUserId = getCurrentUserId(state);
     const userTimezone = getCurrentUserTimezone(state);
 
-    let status;
-    let isBot = false;
+    let teammateId;
     let isTeammateGuest = false;
+    let customStatusEnabled;
     let customStatus;
     const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
+
     if (isDirectMessage) {
-        const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
+        teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
-        status = getStatusForUserId(state, teammateId);
-        if (teammate && teammate.is_bot) {
-            isBot = true;
-        }
         if (isGuest(teammate)) {
             isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
-        customStatus = getCustomStatus(state, teammateId) || {};
+        customStatusEnabled = isCustomStatusEnabled(state);
+        customStatus = customStatusEnabled ? getCustomStatus(state, teammateId) : undefined;
     }
 
     if (currentChannel.type === General.GM_CHANNEL) {
@@ -62,14 +59,12 @@ function mapStateToProps(state) {
         currentChannelGuestCount,
         currentChannelMemberCount,
         currentUserId,
-        isBot,
-        isLandscape: isLandscape(state),
         isTeammateGuest,
         isDirectMessage,
-        status,
+        teammateId,
         theme: getTheme(state),
         customStatus,
-        isCustomStatusEnabled: isCustomStatusEnabled(state),
+        isCustomStatusEnabled: customStatusEnabled,
     };
 }
 

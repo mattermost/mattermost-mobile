@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import FormattedDate from '@components/formatted_date';
@@ -17,7 +18,6 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {emptyFunction} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
@@ -48,6 +48,7 @@ export default class PostHeader extends PureComponent {
         post: PropTypes.object,
         beforePrevPostUserId: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
+        customStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -149,6 +150,7 @@ export default class PostHeader extends PureComponent {
             overrideUsername,
             theme,
             post,
+            customStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -202,12 +204,16 @@ export default class PostHeader extends PureComponent {
                             {displayName}
                         </Text>
                     </TouchableWithFeedback>
-                    <View style={style.customStatusEmojiContainer}>
+                    {customStatusEnabled &&
                         <CustomStatusEmoji
                             userID={post.user_id}
-                            style={{color: theme.centerChannelColor}}
+                            style={{
+                                color: theme.centerChannelColor,
+                                marginRight: 4,
+                                marginTop: 1,
+                            }}
                         />
-                    </View>
+                    }
                 </>
             );
         }
@@ -421,10 +427,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         displayNameContainerLandscapeBotReplyWidth: {
             maxWidth: '70%',
-        },
-        customStatusEmojiContainer: {
-            marginRight: 4,
-            marginTop: 1,
         },
     };
 });

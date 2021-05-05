@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import shallowEqual from 'shallow-equals';
 
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 
 export default class EmojiPickerRow extends Component {
     static propTypes = {

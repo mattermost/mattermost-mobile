@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import React, { useCallback } from 'react';
+import { View, TouchableOpacity, Text } from 'react-native';
+
 import Emoji from '@components/emoji';
-import CustomStatusText from '@components/custom_status/custom_status_text';
-import {Theme} from '@mm-redux/types/preferences';
-import {CustomStatusDuration, ExpiryMenuItems, UserCustomStatus} from '@mm-redux/types/users';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import React, {useCallback} from 'react';
-import {View, TouchableOpacity, Text} from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
-import {preventDoubleTap} from '@utils/tap';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import { Theme } from '@mm-redux/types/preferences';
+import { CustomStatusDuration, ExpiryMenuItems, UserCustomStatus } from '@mm-redux/types/users';
+import { changeOpacity, makeStyleSheetFromTheme } from '@utils/theme';
+import { preventDoubleTap } from '@utils/tap';
 
 type Props = {
     handleSuggestionClick: (status: UserCustomStatus) => void;
@@ -22,24 +24,24 @@ type Props = {
 };
 
 const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at} = props;
+    const { handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at } = props;
     const style = getStyleSheet(theme);
 
-    const divider = separator ? <View style={style.divider}/> : null;
-
     const handleClick = useCallback(preventDoubleTap(() => {
-        handleSuggestionClick({emoji, text, duration});
-    }), [handleSuggestionClick, emoji, text, duration]);
+        handleSuggestionClick({ emoji, text, duration });
+    }), [emoji, text, duration]);
 
     const clearButton = handleClear && expires_at ?
         (
-            <ClearButton
-                handlePress={() => handleClear({emoji, text, duration, expires_at})}
-                theme={theme}
-                iconName='close-circle'
-                size={18}
-                testID='custom_status_suggestion.clear.button'
-            />
+            <View style={style.clearButtonContainer}>
+                <ClearButton
+                    handlePress={() => handleClear({ emoji, text, duration, expires_at })}
+                    theme={theme}
+                    iconName='close-circle'
+                    size={18}
+                    testID='custom_status_suggestion.clear.button'
+                />
+            </View>
         ) : null;
 
     return (
@@ -60,7 +62,7 @@ const CustomStatusSuggestion = (props: Props) => {
                             <CustomStatusText
                                 text={text}
                                 theme={theme}
-                                textStyle={{color: theme.centerChannelColor}}
+                                textStyle={{ color: theme.centerChannelColor }}
                             />
                         </View>
                         <View style={style.expiryTimeContainer}>
@@ -68,17 +70,13 @@ const CustomStatusSuggestion = (props: Props) => {
                                 <CustomStatusText
                                     text={ExpiryMenuItems[duration].value}
                                     theme={theme}
-                                    textStyle={{color: changeOpacity(theme.centerChannelColor, 0.6)}}
+                                    textStyle={{ color: changeOpacity(theme.centerChannelColor, 0.6) }}
                                 />
                             )}
                         </View>
                     </View>
-                    {clearButton && (
-                        <View style={style.clearButtonContainer}>
-                            {clearButton}
-                        </View>
-                    )}
-                    {divider}
+                    {clearButton}
+                    {separator && <View style={style.divider} />}
                 </View>
             </View>
         </TouchableOpacity>

@@ -12,12 +12,18 @@ import {
 import {intlShape} from 'react-intl';
 import Clipboard from '@react-native-community/clipboard';
 
+import {popToRoot} from '@actions/navigation';
+import ChannelIcon from '@components/channel_icon';
+import Emoji from '@components/emoji';
+import FormattedDate from '@components/formatted_date';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
 import {General} from '@mm-redux/constants';
+import BottomSheet from '@utils/bottom_sheet';
+import {t} from '@utils/i18n';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import ChannelIcon from 'app/components/channel_icon';
-import FormattedDate from 'app/components/formatted_date';
-import FormattedText from 'app/components/formatted_text';
-import Markdown from 'app/components/markdown';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
@@ -37,11 +43,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
         header: PropTypes.string,
         onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
-        status: PropTypes.string,
+        teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
-        isBot: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
@@ -140,11 +145,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
             memberCount,
             onPermalinkPress,
             purpose,
-            status,
+            teammateId,
             theme,
             type,
             isArchived,
-            isBot,
             isGroupConstrained,
             testID,
             timeZone,
@@ -155,9 +159,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
-        const baseTextStyle = Platform.OS === 'ios' ?
-            {...style.detail, lineHeight: 20} :
-            style.detail;
+        const baseTextStyle = Platform.select({
+            ios: {...style.detail, lineHeight: 20},
+            android: style.detail,
+        });
 
         const customStatusExpiry = customStatus.emoji && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
@@ -179,11 +184,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         isInfo={true}
                         membersCount={memberCount}
                         size={24}
-                        status={status}
+                        userId={teammateId}
                         theme={theme}
                         type={type}
                         isArchived={isArchived}
-                        isBot={isBot}
                         testID={`${testID}.channel_icon`}
                     />
                     <Text
@@ -195,20 +199,17 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus.emoji &&
+                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji &&
                     <View
                         style={[style.row, style.customStatusContainer]}
                         testID={`${testID}.custom_status`}
                     >
-                        <Text
-                            style={style.iconContainer}
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                            textStyle={style.iconContainer}
                             testID={`custom_status.emoji.${customStatus.emoji}`}
-                        >
-                            <Emoji
-                                emojiName={customStatus.emoji}
-                                size={20}
-                            />
-                        </Text>
+                        />
 
                         <View style={style.customStatusText}>
                             <Text
@@ -320,6 +321,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             fontWeight: '600',
             color: theme.centerChannelColor,
+            marginLeft: 13,
         },
         iconContainer: {
             marginRight: 8,

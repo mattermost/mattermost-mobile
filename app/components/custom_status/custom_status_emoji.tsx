@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
-import { getCustomStatus, isCustomStatusEnabled } from '@selectors/custom_status';
-import { useSelector } from 'react-redux';
-import { GlobalState } from '@mm-redux/types/store';
-import Emoji from '@components/emoji';
 import { Text, TextStyle } from 'react-native';
+import { useSelector } from 'react-redux';
+
+import Emoji from '@components/emoji';
+import { GlobalState } from '@mm-redux/types/store';
+import { getCustomStatus } from '@selectors/custom_status';
 
 interface ComponentProps {
     emojiSize?: number;
@@ -14,13 +16,12 @@ interface ComponentProps {
     testID?: string;
 }
 
-const CustomStatusEmoji = (props: ComponentProps) => {
-    const { emojiSize, userID, style, testID } = props;
-    const customStatusEnabled = useSelector(isCustomStatusEnabled);
+const CustomStatusEmoji = ({ emojiSize, userID, style, testID }: ComponentProps) => {
     const customStatus = useSelector((state: GlobalState) => {
         return getCustomStatus(state, userID);
     });
-    const emojiExists = customStatusEnabled && customStatus && customStatus.emoji;
+    const emojiExists = customStatus && customStatus.emoji;
+
     if (!emojiExists) {
         return null;
     }
