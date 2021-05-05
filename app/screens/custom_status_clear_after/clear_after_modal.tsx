@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import { SafeAreaView, View, StatusBar, Keyboard } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import {SafeAreaView, View, StatusBar, Keyboard} from 'react-native';
+import React from 'react';
 import {
     Navigation,
     NavigationComponent,
@@ -9,13 +9,13 @@ import {
     Options,
     OptionsTopBarButton,
 } from 'react-native-navigation';
-import { Theme } from '@mm-redux/types/preferences';
-import { intlShape, injectIntl } from 'react-intl';
-import { dismissModal, mergeNavigationOptions } from 'app/actions/navigation';
-import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
+import {Theme} from '@mm-redux/types/preferences';
+import {intlShape, injectIntl} from 'react-intl';
+import {dismissModal, mergeNavigationOptions} from 'app/actions/navigation';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import ClearAfterSuggestion from './clear_after_suggestions';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
-import { CustomStatusDuration } from '@mm-redux/types/users';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import {CustomStatusDuration} from '@mm-redux/types/users';
 
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
@@ -29,7 +29,7 @@ type State = {
     expiresAt: string;
 }
 
-class ClearAfterModal extends NavigationComponent<Props, State>{
+class ClearAfterModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
         id: 'update-custom-status-clear-after',
         testID: 'custom_status-clear-after.done.button',
@@ -55,7 +55,6 @@ class ClearAfterModal extends NavigationComponent<Props, State>{
         });
 
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
-
         const options: Options = {
             topBar: {
                 rightButtons: [this.rightButton],
@@ -66,7 +65,7 @@ class ClearAfterModal extends NavigationComponent<Props, State>{
 
         this.state = {
             duration: props.initialDuration,
-            expiresAt: ''
+            expiresAt: '',
         };
     }
 
@@ -79,6 +78,8 @@ class ClearAfterModal extends NavigationComponent<Props, State>{
     }) => {
         if (button.buttonId === 'update-custom-status-clear-after') {
             this.onDone();
+        } else if (button.buttonId === 'close-clear-after') {
+            this.onCancel();
         }
     }
 
@@ -88,14 +89,19 @@ class ClearAfterModal extends NavigationComponent<Props, State>{
         dismissModal();
     };
 
+    onCancel = async () => {
+        Keyboard.dismiss();
+        dismissModal();
+    }
+
     handleSuggestionClick = (duration: CustomStatusDuration, expiresAt: string) => {
-        this.setState({ duration, expiresAt });
+        this.setState({duration, expiresAt});
     };
 
     renderClearAfterSuggestions = () => {
-        const { theme } = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
-        const { duration } = this.state;
+        const {duration} = this.state;
 
         const clearAfterSuggestions = Object.values(CustomStatusDuration).map(
             (item, index, arr) => {
@@ -127,16 +133,16 @@ class ClearAfterModal extends NavigationComponent<Props, State>{
     };
 
     render() {
-        const { theme } = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
-        const { duration } = this.state;
+        const {duration} = this.state;
 
         return (
             <SafeAreaView
                 testID='clear_after.screen'
                 style={style.container}
             >
-                <StatusBar />
+                <StatusBar/>
                 <KeyboardAwareScrollView bounces={false}>
                     <View style={style.scrollView}>
                         {this.renderClearAfterSuggestions()}
@@ -153,8 +159,8 @@ class ClearAfterModal extends NavigationComponent<Props, State>{
                 </KeyboardAwareScrollView>
             </SafeAreaView>
         );
-    };
-};
+    }
+}
 
 export default injectIntl(ClearAfterModal);
 

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, View, Text} from 'react-native';
 
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -24,7 +24,8 @@ import CustomStatusText from '@components/custom_status/custom_status_text';
 import ClearButton from '@components/custom_status/clear_button';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity} from '@utils/theme';
-import { CustomStatusDuration } from '@mm-redux/types/users';
+import {CustomStatusDuration} from '@mm-redux/types/users';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
@@ -40,6 +41,7 @@ export default class SettingsSidebarBase extends PureComponent {
         customStatus: PropTypes.object,
         setStatusRequestStatus: PropTypes.string,
         clearStatusRequestStatus: PropTypes.string,
+        userTimezone: PropTypes.string,
     };
 
     static defaultProps = {
@@ -276,8 +278,8 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
-    renderCustomStatus = () => {
-        const {isCustomStatusEnabled, customStatus, theme} = this.props;
+    renderCustomStatus = (style) => {
+        const {isCustomStatusEnabled, customStatus, theme, userTimezone} = this.props;
         const {showStatus, showRetryMessage} = this.state;
         if (!isCustomStatusEnabled) {
             return null;
@@ -308,14 +310,21 @@ export default class SettingsSidebarBase extends PureComponent {
                 )}
             </View>
         );
-        // TO DO
-        const customStatusExpiryTime = isStatusSet && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ? 
-        (
-            <CustomStatusText
-                text={new Date(customStatus.expires_at).toString()}
-                theme={theme}
-            />
-        ) : null;
+
+        const timezone = userTimezone;
+
+        const customStatusExpiryTime = isStatusSet && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
+            (
+                <View style={style.labelContainer}>
+                    <Text>{' (Until '}</Text>
+                    <CustomStatusExpiry
+                        time={customStatus.expires_at}
+                        timezone={timezone}
+                        theme={theme}
+                    />
+                    <Text>{')'}</Text>
+                </View>
+            ) : null;
 
         const clearButton = isStatusSet ?
             (
@@ -378,7 +387,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             onPress={this.handleSetStatus}
                             theme={theme}
                         />
-                        {this.renderCustomStatus()}
+                        {this.renderCustomStatus(style)}
                     </View>
                     <View style={style.separator}/>
                     <View style={style.block}>

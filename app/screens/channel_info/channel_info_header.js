@@ -25,6 +25,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {popToRoot} from 'app/actions/navigation';
 import Emoji from '@components/emoji';
+import {CustomStatusDuration} from '@mm-redux/types/users';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -157,6 +159,19 @@ export default class ChannelInfoHeader extends React.PureComponent {
             {...style.detail, lineHeight: 20} :
             style.detail;
 
+        const customStatusExpiry = customStatus.emoji && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
+            (
+                <View style={style.labelContainer}>
+                    <Text>{' (Until '}</Text>
+                    <CustomStatusExpiry
+                        time={customStatus.expires_at}
+                        timezone={timeZone}
+                        theme={theme}
+                    />
+                    <Text>{')'}</Text>
+                </View>
+            ) : null;
+
         return (
             <View style={style.container}>
                 <View style={[style.channelNameContainer, style.row]}>
@@ -194,13 +209,22 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                 size={20}
                             />
                         </Text>
-                        <Text
-                            style={style.customStatusText}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                        >
-                            {customStatus.text}
-                        </Text>
+
+                        <View style={style.customStatusText}>
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {customStatus.text}
+                            </Text>
+                            <Text
+                                style={style.customStatusExpiry}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {customStatusExpiry}
+                            </Text>
+                        </View>
                     </View>
                 }
                 {this.renderHasGuestText(style)}
@@ -309,9 +333,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         customStatusText: {
             flex: 1,
+            flexDirection: 'row',
             fontSize: 15,
             color: theme.centerChannelColor,
             width: '80%',
+        },
+        customStatusExpiry: {
+            marginLeft: 10,
         },
         channelNameContainer: {
             flexDirection: 'row',
@@ -340,6 +368,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         row: {
             paddingHorizontal: 15,
+        },
+        labelContainer: {
+            alignItems: 'center',
+            width: '70%',
+            flex: 1,
+            flexDirection: 'row',
         },
     };
 });

@@ -18,10 +18,10 @@ import {isLandscape} from '@selectors/device';
 import {isGuest} from '@utils/users';
 
 import ChannelInfo from './channel_info';
-import {makeGetCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
+import {getCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
+import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 
 function mapStateToProps(state) {
-    const getCustomStatus = makeGetCustomStatus();
     const currentChannel = getCurrentChannel(state) || {};
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
@@ -30,6 +30,7 @@ function mapStateToProps(state) {
     let currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentUserId = getCurrentUserId(state);
+    const userTimezone = getCurrentUserTimezone(state);
 
     let status;
     let isBot = false;
@@ -55,6 +56,7 @@ function mapStateToProps(state) {
     }
 
     return {
+        userTimezone,
         currentChannel,
         currentChannelCreatorName,
         currentChannelGuestCount,

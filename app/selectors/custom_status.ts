@@ -8,20 +8,18 @@ import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {get} from '@mm-redux/selectors/entities/preferences';
 import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
+import { getCurrentDateAndTimeForTimezone } from '@utils/timezone';
 
-export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => UserCustomStatus {
-    return createSelector(
-        (state: GlobalState, userID?: string) => (userID ? getUser(state, userID) : getCurrentUser(state)),
-        (user) => {
-            const userProps = user?.props || {};
-            const customStatus = userProps.customStatus ? JSON.parse(userProps.customStatus) : {};
-            const expiryTime = new Date(customStatus?.expires_at);
-            if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || new Date() < expiryTime) {
-                return customStatus;
-            }
-            return {};
-        },
-    );
+export function getCustomStatus(state: GlobalState, userID?: string): UserCustomStatus | undefined {
+    const user = userID ? getUser(state, userID) : getCurrentUser(state);
+    const userProps = user?.props || {};
+    const customStatus = userProps.customStatus ? JSON.parse(userProps.customStatus) : undefined;
+    const expiryTime = new Date(customStatus?.expires_at);
+    const timezone = getCurrentUserTimezone(state);
+    const currentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : new Date();
+    return (customStatus?.duration === CustomStatusDuration.DONT_CLEAR || currentTime < expiryTime) ? customStatus : undefined;
 }
 
 export const getRecentCustomStatuses = createSelector(
@@ -36,16 +34,12 @@ export function isCustomStatusEnabled(state: GlobalState) {
     return config && config.EnableCustomUserStatuses === 'true';
 }
 
-function showCustomStatusPulsatingDotAndPostHeader(state: GlobalState) {
-    const customStatusTutorialState = get(state, Preferences.CATEGORY_CUSTOM_STATUS, Preferences.NAME_CUSTOM_STATUS_TUTORIAL_STATE);
-    const modalAlreadyViewed = customStatusTutorialState && JSON.parse(customStatusTutorialState)[Preferences.CUSTOM_STATUS_MODAL_VIEWED];
-    return !modalAlreadyViewed;
-}
-
-export function showStatusDropdownPulsatingDot(state: GlobalState) {
-    return showCustomStatusPulsatingDotAndPostHeader(state);
-}
-
-export function showPostHeaderUpdateStatusButton(state: GlobalState) {
-    return showCustomStatusPulsatingDotAndPostHeader(state);
-}
+export const getCurrentUserTimezone = createSelector(
+    getCurrentUserId,
+    (state) => (userId: string) => getUserTimezone(state, userId),
+    (userId, getTimezone) => {
+        const userTimezone = getTimezone(userId);
+        const timezone = userTimezone.useAutomaticTimezone ? userTimezone.automaticTimezone : userTimezone.manualTimezone;
+        return timezone;
+    },
+);

@@ -101,14 +101,14 @@ export default class DrawerItem extends PureComponent {
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
                             <View>
-                            {label}
+                                {label}
                             </View>
                         </View>
                         {labelFirstSibling && (
                             <View style={style.labelContainer}>
                                 {labelFirstSibling}
                             </View>
-                            )}
+                        )}
                         {labelSecondSibling && (
                             <View style={style.labelSecondSiblingContainer}>
                                 {labelSecondSibling}

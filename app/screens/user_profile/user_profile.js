@@ -36,6 +36,8 @@ import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
 import ClearButton from '@components/custom_status/clear_button';
+import {CustomStatusDuration} from '@mm-redux/types/users';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {
@@ -56,6 +58,7 @@ export default class UserProfile extends PureComponent {
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
         customStatus: PropTypes.object,
+        userTimezone: PropTypes.string,
     };
 
     static contextTypes = {
@@ -186,7 +189,7 @@ export default class UserProfile extends PureComponent {
 
     buildCustomStatusBlock = () => {
         const {formatMessage} = this.context.intl;
-        const {customStatus, theme, isMyUser} = this.props;
+        const {customStatus, theme, isMyUser, userTimezone} = this.props;
         const style = createStyleSheet(theme);
         const isStatusSet = customStatus.emoji || customStatus.text;
 
@@ -195,6 +198,27 @@ export default class UserProfile extends PureComponent {
         }
 
         const label = formatMessage({id: 'user.settings.general.status', defaultMessage: 'Status'});
+
+        const timezone = userTimezone;
+
+        const customStatusExpiryTime = isStatusSet && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
+            (
+                <View style={style.labelContainer}>
+                    <Text>{' ('}</Text>
+                    <FormattedText
+                        id='custom_status.until'
+                        defaultMessage='Until'
+                    />
+                    <Text>{' '}</Text>
+                    <CustomStatusExpiry
+                        time={customStatus.expires_at}
+                        timezone={timezone}
+                        theme={theme}
+                    />
+                    <Text>{')'}</Text>
+                </View>
+            ) : null;
+
         return (
             <View
                 testID='user_profile.custom_status'
@@ -210,7 +234,10 @@ export default class UserProfile extends PureComponent {
                             size={20}
                         />
                     </Text>
-                    <Text style={[style.text, style.customStatusText]}>{customStatus.text}</Text>
+                    <Text style={[style.text, style.customStatusText]}>
+                        <Text>{customStatus.text}</Text>
+                        {customStatusExpiryTime}
+                    </Text>
                     {isMyUser && (
                         <View style={style.clearButton}>
                             <ClearButton
@@ -442,7 +469,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         customStatus: {
             position: 'relative',
             flexDirection: 'row',
-            alignItems: 'center',
         },
         customStatusText: {
             width: '80%',
@@ -498,6 +524,12 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 16,
             marginRight: 22,
             backgroundColor: '#EBEBEC',
+        },
+        labelContainer: {
+            alignItems: 'center',
+            width: '70%',
+            flex: 1,
+            flexDirection: 'row',
         },
     };
 });

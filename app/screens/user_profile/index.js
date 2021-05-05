@@ -8,12 +8,12 @@ import {setChannelDisplayName} from '@actions/views/channel';
 import {makeDirectChannel} from '@actions/views/more_dms';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme, getBool} from '@mm-redux/selectors/entities/preferences';
-import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import Preferences from '@mm-redux/constants/preferences';
 import {loadBot} from '@mm-redux/actions/bots';
 import {getBotAccounts} from '@mm-redux/selectors/entities/bots';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {makeGetCustomStatus} from '@selectors/custom_status';
+import {getCustomStatus} from '@selectors/custom_status';
 import {unsetCustomStatus} from '@actions/views/custom_status';
 
 import UserProfile from './user_profile';
@@ -23,9 +23,10 @@ function mapStateToProps(state, ownProps) {
     const {createChannel: createChannelRequest} = state.requests.channels;
     const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
     const enableTimezone = isTimezoneEnabled(state);
-    const getCustomStatus = makeGetCustomStatus();
+    const userTimezone = getCurrentUserTimezone(state);
 
     return {
+        userTimezone,
         config,
         createChannelRequest,
         currentDisplayName: state.views.channel.displayName,

@@ -113,5 +113,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         separator: {
             marginTop: 35,
         },
+        labelContainer: {
+            alignItems: 'center',
+            width: '70%',
+            flex: 1,
+            flexDirection: 'row',
+        },
     };
 });

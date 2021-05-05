@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import CustomStatusText from '@components/custom_status/custom_status_text';
-import { Theme } from '@mm-redux/types/preferences';
-import { changeOpacity, makeStyleSheetFromTheme } from '@utils/theme';
-import React, { useCallback, useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import { preventDoubleTap } from '@utils/tap';
+import {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import React, {useCallback, useState} from 'react';
+import {View, TouchableOpacity} from 'react-native';
+import {preventDoubleTap} from '@utils/tap';
 import DateTimePicker from './date_time_selector';
-import { CustomStatusDuration, ExpiryMenuItems } from '@mm-redux/types/users';
+import {CustomStatusDuration, ExpiryMenuItems} from '@mm-redux/types/users';
 import CompassIcon from '@components/compass_icon';
 
 type Props = {
@@ -19,10 +19,10 @@ type Props = {
 };
 
 const ClearAfterSuggestion = (props: Props) => {
-    const { handleSuggestionClick, duration, theme, separator, isSelected } = props;
+    const {handleSuggestionClick, duration, theme, separator, isSelected} = props;
     const style = getStyleSheet(theme);
 
-    const divider = separator ? <View style={style.divider} /> : null;
+    const divider = separator ? <View style={style.divider}/> : null;
     const [showDateAndTimePicker, setShowDateAndTimePicker] = useState(false);
     const handleClick = useCallback(
         preventDoubleTap(() => {
@@ -51,11 +51,11 @@ const ClearAfterSuggestion = (props: Props) => {
                         <CustomStatusText
                             text={ExpiryMenuItems[duration].text}
                             theme={theme}
-                            textStyle={{ color: theme.centerChannelColor }}
+                            textStyle={{color: theme.centerChannelColor}}
                         />
                         {isSelected && <View style={style.selectButton}>
                             <CompassIcon
-                                name={'close-circle'}
+                                name={'check'}
                                 size={24}
                                 style={style.button}
                             />
@@ -64,7 +64,7 @@ const ClearAfterSuggestion = (props: Props) => {
                 </View>
                 {divider}
             </TouchableOpacity>
-            {showDateAndTimePicker && <DateTimePicker handleChange={handleCustomExpiresAtChange} />}
+            {showDateAndTimePicker && <DateTimePicker handleChange={handleCustomExpiresAtChange}/>}
         </View>
     );
 };
@@ -86,7 +86,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: '70%',
             flex: 1,
             flexDirection: 'row',
-            position: 'relative'
+            position: 'relative',
         },
         selectButton: {
             position: 'absolute',
@@ -100,7 +100,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         button: {
             borderRadius: 1000,
-            color: changeOpacity(theme.centerChannelColor, 0.52),
+            color: theme.sidebarHeaderBg,
         },
     };
 });

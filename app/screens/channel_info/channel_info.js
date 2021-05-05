@@ -53,6 +53,7 @@ export default class ChannelInfo extends PureComponent {
         theme: PropTypes.object.isRequired,
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
+        userTimezone: PropTypes.string,
     };
 
     static defaultProps = {
@@ -170,6 +171,7 @@ export default class ChannelInfo extends PureComponent {
 
     render() {
         const {
+            userTimezone,
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
@@ -184,6 +186,8 @@ export default class ChannelInfo extends PureComponent {
 
         const style = getStyleSheet(theme);
         const channelIsArchived = currentChannel.delete_at !== 0;
+
+        const timezone = userTimezone;
 
         return (
             <SafeAreaView
@@ -216,6 +220,7 @@ export default class ChannelInfo extends PureComponent {
                         testID='channel_info.header'
                         customStatus={customStatus}
                         isCustomStatusEnabled={isCustomStatusEnabled}
+                        timeZone={timezone}
                     />
                     }
                     <View style={style.rowsContainer}>

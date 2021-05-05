@@ -5,22 +5,19 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {GlobalState} from '@mm-redux/types/store';
-import {getRecentCustomStatuses, makeGetCustomStatus} from '@selectors/custom_status';
+import {getRecentCustomStatuses, getCustomStatus} from '@selectors/custom_status';
 import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@actions/views/custom_status';
 
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {GenericAction} from '@mm-redux/types/actions';
 import {isLandscape} from '@selectors/device';
-import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 
 function mapStateToProps(state: GlobalState) {
-    const getCustomStatus = makeGetCustomStatus();
     const customStatus = getCustomStatus(state) || {};
     const recentCustomStatuses = getRecentCustomStatuses(state);
     const theme = getTheme(state);
-    const currentUserId = getCurrentUserId(state);
-    const userTimezone = getUserTimezone(state, currentUserId);
+    const userTimezone = getCurrentUserTimezone(state);
 
     return {
         userTimezone,

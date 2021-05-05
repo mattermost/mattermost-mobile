@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {makeGetCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
-import {useSelector} from 'react-redux';
-import {GlobalState} from '@mm-redux/types/store';
+import { getCustomStatus, isCustomStatusEnabled } from '@selectors/custom_status';
+import { useSelector } from 'react-redux';
+import { GlobalState } from '@mm-redux/types/store';
 import Emoji from '@components/emoji';
-import {Text, TextStyle} from 'react-native';
+import { Text, TextStyle } from 'react-native';
 
 interface ComponentProps {
     emojiSize?: number;
@@ -15,8 +15,7 @@ interface ComponentProps {
 }
 
 const CustomStatusEmoji = (props: ComponentProps) => {
-    const getCustomStatus = makeGetCustomStatus();
-    const {emojiSize, userID, style, testID} = props;
+    const { emojiSize, userID, style, testID } = props;
     const customStatusEnabled = useSelector(isCustomStatusEnabled);
     const customStatus = useSelector((state: GlobalState) => {
         return getCustomStatus(state, userID);
@@ -28,15 +27,17 @@ const CustomStatusEmoji = (props: ComponentProps) => {
 
     const testIdPrefix = testID ? `${testID}.` : '';
     return (
-        <Text
-            style={style}
-            testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
-        >
-            <Emoji
-                size={emojiSize}
-                emojiName={customStatus.emoji}
-            />
-        </Text>
+        customStatus && (
+            <Text
+                style={style}
+                testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
+            >
+                <Emoji
+                    size={emojiSize}
+                    emojiName={customStatus.emoji}
+                />
+            </Text>
+        )
     );
 };
 

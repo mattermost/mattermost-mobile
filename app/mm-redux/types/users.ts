@@ -93,8 +93,8 @@ export enum CustomStatusDuration {
 export type UserCustomStatus = {
 	emoji: string;
     text: string;
-    expires_at: string;
-    duration: string;
+    expires_at?: string;
+    duration: CustomStatusDuration;
 }
 
 export type ExpiryMenuItem = {

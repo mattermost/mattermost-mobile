@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, { useState } from 'react';
-import { StyleSheet, View, Button, Platform } from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, View, Button, Platform} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useSelector } from 'react-redux';
-import { GlobalState } from '@mm-redux/types/store';
-import { getCurrentUserId } from '@mm-redux/selectors/entities/users';
-import { getUserTimezone } from '@mm-redux/selectors/entities/timezone';
-import { getCurrentDateAndTimeForTimezone } from '@utils/timezone';
+import {useSelector} from 'react-redux';
+import {GlobalState} from '@mm-redux/types/store';
+import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
+import {getBool} from '@mm-redux/selectors/entities/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 type Props = {
     handleChange: (currentDate: Date) => void;
@@ -16,15 +17,14 @@ type Props = {
 type AndroidMode = 'date' | 'time';
 
 const DateTimeSelector = (props: Props) => {
-    const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
-    const userTimezone = useSelector((state: GlobalState) => getUserTimezone(state, currentUserId));
+    const enableTimezone = useSelector((state: GlobalState) => isTimezoneEnabled(state));
+    const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
+    const timezone = useSelector((state: GlobalState) => getCurrentUserTimezone(state));
     let currentTime = new Date();
-    let timezone: string | undefined;
-    timezone = userTimezone.manualTimezone;
-    if (userTimezone.useAutomaticTimezone) {
-        timezone = userTimezone.automaticTimezone;
+
+    if (enableTimezone) {
+        currentTime = getCurrentDateAndTimeForTimezone(timezone);
     }
-    currentTime = getCurrentDateAndTimeForTimezone(timezone);
     const [date, setDate] = useState<Date>(currentTime);
     const [mode, setMode] = useState<AndroidMode>('date');
     const [show, setShow] = useState<boolean>(false);
@@ -68,7 +68,7 @@ const DateTimeSelector = (props: Props) => {
                     testID='dateTimePicker'
                     value={date}
                     mode={mode}
-                    is24Hour={true}
+                    is24Hour={militaryTime}
                     display='default'
                     onChange={onChange}
                 />
