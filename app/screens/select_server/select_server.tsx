@@ -50,9 +50,11 @@ import urlParse from 'url-parse';
 import {getClientUpgrade} from '@app/queries/helpers';
 import {getSystems} from '@queries/system';
 import {handleServerUrlChanged, setLastUpgradeCheck} from '@app/requests/local/systems';
+import {loadConfigAndLicense} from '@app/requests/remote/systems';
 import {getPing} from '@requests/remote/general';
 
 //todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
+//todo: review all substituted actions
 
 type ScreenProps = {
     systems: System[];
@@ -66,10 +68,11 @@ type ScreenState = {
   url: string;
 };
 
+const NEXT_SCREEN_TIMEOUT = 350;
+
 class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   static propTypes = {
       actions: PropTypes.shape({
-          loadConfigAndLicense: PropTypes.func.isRequired,
           login: PropTypes.func.isRequired,
           resetPing: PropTypes.func.isRequired, // ??
           scheduleExpiredNotification: PropTypes.func.isRequired,
@@ -296,7 +299,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
           this.nextScreenTimer = setTimeout(() => {
               this.goToNextScreen(screen, title);
-          }, 350);
+          }, NEXT_SCREEN_TIMEOUT);
       } else {
           this.goToNextScreen(screen, title);
       }
@@ -341,7 +344,6 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   pingServer = async (url: string, retryWithHttp = true) => {
       const {
-          loadConfigAndLicense,
           setServerVersion,
       } = this.props.actions;
 
@@ -509,6 +511,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           [{text: 'OK'}],
           {cancelable: false},
       );
+
       return null;
   };
 
