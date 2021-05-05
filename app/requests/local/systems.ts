@@ -19,3 +19,37 @@ export const setLastUpgradeCheck = async (configRecord: System) => {
         });
     }
 };
+
+type ServerUrlChangedArgs = {
+  configRecord: System;
+  licenseRecord: System;
+  selectServerRecord: System;
+  serverUrl: string;
+};
+
+export const handleServerUrlChanged = async ({
+    configRecord,
+    licenseRecord,
+    selectServerRecord,
+    serverUrl,
+}: ServerUrlChangedArgs) => {
+    const database = DatabaseManager.getActiveServerDatabase();
+
+    if (database) {
+        await database.action(async () => {
+            await database.batch(
+                ...[
+                    configRecord.prepareUpdate((config: System) => {
+                        config.value = {};
+                    }),
+                    licenseRecord.prepareUpdate((license: System) => {
+                        license.value = {};
+                    }),
+                    selectServerRecord.prepareUpdate((server: System) => {
+                        server.value = {...server.value, serverUrl};
+                    }),
+                ],
+            );
+        });
+    }
+};

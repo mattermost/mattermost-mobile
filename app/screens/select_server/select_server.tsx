@@ -49,7 +49,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 import {getClientUpgrade} from '@app/queries/helpers';
 import {getSystems} from '@queries/system';
-import {setLastUpgradeCheck} from '@app/requests/local/systems';
+import {handleServerUrlChanged, setLastUpgradeCheck} from '@app/requests/local/systems';
 import {getPing} from '@requests/remote/general';
 
 //todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
@@ -62,19 +62,17 @@ type ScreenProps = {
 type ScreenState = {
   connected: boolean;
   connecting: boolean;
-  error: null | {};
+  error: null | {} | undefined;
   url: string;
 };
 
 class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   static propTypes = {
       actions: PropTypes.shape({
-          handleServerUrlChanged: PropTypes.func.isRequired, // ??
           loadConfigAndLicense: PropTypes.func.isRequired,
           login: PropTypes.func.isRequired,
           resetPing: PropTypes.func.isRequired, // ??
           scheduleExpiredNotification: PropTypes.func.isRequired,
-          setLastUpgradeCheck: PropTypes.func.isRequired,
           setServerVersion: PropTypes.func.isRequired,
       }).isRequired,
   };
@@ -98,7 +96,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   };
 
   //fixme: do we need getDerivedStateFromProps ?
-  static getDerivedStateFromProps(props, state) {
+  static getDerivedStateFromProps(props: ScreenProps, state: ScreenState) {
       const {systems} = props;
       const rootRecord = systems.find(
           (systemRecord: System) => systemRecord.name === 'root',
@@ -343,7 +341,6 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
   pingServer = async (url: string, retryWithHttp = true) => {
       const {
-          handleServerUrlChanged,
           loadConfigAndLicense,
           setServerVersion,
       } = this.props.actions;
@@ -368,7 +365,9 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
 
       const serverUrl = await this.getUrl(url, !retryWithHttp);
       Client4.setUrl(serverUrl);
-      handleServerUrlChanged(serverUrl);
+
+      const {records: {configRecord, licenseRecord, selectServerRecord}} = this.getSystemsValues();
+      handleServerUrlChanged({serverUrl, configRecord, licenseRecord, selectServerRecord});
 
       try {
           const result = await getPing();
@@ -456,6 +455,8 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       }
 
       await globalEventHandler.resetState();
+
+      //fixme: ExperimentalClientSideCertEnable does not exist in LocalConfig...do we add it ?
       if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
           RNFetchBlob.cba.selectCertificate((certificate) => {
               if (certificate) {
@@ -511,9 +512,9 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
       return null;
   };
 
-  selectCertificate = () => {
+  selectCertificate = async () => {
       //fixme:  how does this work ?
-      const url = this.getUrl();
+      const url = await this.getUrl();
       RNFetchBlob.cba.selectCertificate((certificate) => {
           if (certificate) {
               mattermostBucket.setPreference('cert', certificate);
