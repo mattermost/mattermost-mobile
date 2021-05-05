@@ -61,6 +61,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'ChannelNotificationPreference':
         screen = require('@screens/channel_notification_preference').default;
         break;
+    case 'ClearAfter':
+        screen = require('@screens/custom_status_clear_after').default;
+        break;
     case 'ClientUpgrade':
         screen = require('@screens/client_upgrade').default;
         break;
@@ -208,12 +211,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'UserProfile':
         screen = require('@screens/user_profile').default;
-        break;
-    case 'CustomStatus':
-        screen = require('@screens/custom_status').default;
-        break;
-    case 'ClearAfter':
-        screen = require('@screens/custom_status_clear_after').default;
         break;
     }
 

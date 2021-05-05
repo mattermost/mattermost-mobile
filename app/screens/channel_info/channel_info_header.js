@@ -25,12 +25,6 @@ import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import mattermostManaged from 'app/mattermost_managed';
-import BottomSheet from 'app/utils/bottom_sheet';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {popToRoot} from 'app/actions/navigation';
-import Emoji from '@components/emoji';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 

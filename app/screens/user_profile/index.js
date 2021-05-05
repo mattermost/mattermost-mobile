@@ -18,8 +18,6 @@ import {getCustomStatus} from '@selectors/custom_status';
 
 import UserProfile from './user_profile';
 
-const getCustomStatus = makeGetCustomStatus();
-
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const {createChannel: createChannelRequest} = state.requests.channels;

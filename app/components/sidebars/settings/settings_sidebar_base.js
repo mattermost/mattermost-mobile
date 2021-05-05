@@ -24,11 +24,6 @@ import {changeOpacity} from '@utils/theme';
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
-import Emoji from '@components/emoji';
-import CustomStatusText from '@components/custom_status/custom_status_text';
-import ClearButton from '@components/custom_status/clear_button';
-import FormattedText from '@components/formatted_text';
-import {changeOpacity} from '@utils/theme';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 

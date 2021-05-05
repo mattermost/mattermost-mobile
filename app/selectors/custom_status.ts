@@ -9,7 +9,7 @@ import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
-import { getCurrentDateAndTimeForTimezone } from '@utils/timezone';
+import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
 
 import {get} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
