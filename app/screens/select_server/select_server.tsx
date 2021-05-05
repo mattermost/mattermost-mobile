@@ -56,12 +56,12 @@ import {getPing} from '@requests/remote/general';
 //todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
 //todo: review all substituted actions
 
-type ScreenProps = {
+type SelectServerProps = {
     systems: System[];
     allowOtherServers: boolean
 };
 
-type ScreenState = {
+type SelectServerState = {
   connected: boolean;
   connecting: boolean;
   error: null | {} | undefined;
@@ -70,11 +70,10 @@ type ScreenState = {
 
 const NEXT_SCREEN_TIMEOUT = 350;
 
-class SelectServer extends PureComponent<ScreenProps, ScreenState> {
+class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
   static propTypes = {
       actions: PropTypes.shape({
           login: PropTypes.func.isRequired,
-          resetPing: PropTypes.func.isRequired, // ??
           scheduleExpiredNotification: PropTypes.func.isRequired,
           setServerVersion: PropTypes.func.isRequired,
       }).isRequired,
@@ -91,7 +90,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   private textInput!: TextInput;
   private nextScreenTimer!: NodeJS.Timeout;
 
-  state: ScreenState = {
+  state: SelectServerState = {
       connected: false,
       connecting: false,
       error: null,
@@ -99,7 +98,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   };
 
   //fixme: do we need getDerivedStateFromProps ?
-  static getDerivedStateFromProps(props: ScreenProps, state: ScreenState) {
+  static getDerivedStateFromProps(props: SelectServerProps, state: SelectServerState) {
       const {systems} = props;
       const rootRecord = systems.find(
           (systemRecord: System) => systemRecord.name === 'root',
@@ -166,7 +165,7 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
   };
 
   //fixme: Is this life-cycle method necessary ?
-  componentDidUpdate(prevProps: ScreenProps, prevState: ScreenState) {
+  componentDidUpdate(prevProps: SelectServerProps, prevState: SelectServerState) {
       const {config, license, records: {configRecord}} = this.getSystemsValues();
       const hasConfigAndLicense = Object.keys(config).length > 0 && Object.keys(license).length > 0;
 
@@ -284,8 +283,6 @@ class SelectServer extends PureComponent<ScreenProps, ScreenState> {
           screen = 'Login';
           title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
       }
-
-      this.props.actions.resetPing();
 
       //todo: confirm if we should pass in the serverUrl here
       await globalEventHandler.configureAnalytics(serverUrl);
