@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -16,7 +17,6 @@ describe('components/custom_status/custom_status_emoji', () => {
         };
     };
     (CustomStatusSelectors.makeGetCustomStatus as jest.Mock).mockReturnValue(getCustomStatus);
-    (CustomStatusSelectors.isCustomStatusEnabled as jest.Mock).mockReturnValue(true);
     it('should match snapshot', () => {
         const wrapper = renderWithRedux(
             <CustomStatusEmoji/>,
@@ -34,17 +34,7 @@ describe('components/custom_status/custom_status_emoji', () => {
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
-    it('should not render when EnableCustomStatus in config is false', () => {
-        (CustomStatusSelectors.isCustomStatusEnabled as jest.Mock).mockReturnValue(false);
-        const wrapper = renderWithRedux(
-            <CustomStatusEmoji/>,
-        );
-
-        expect(wrapper.toJSON()).toBeNull();
-    });
-
     it('should not render when getCustomStatus returns null', () => {
-        (CustomStatusSelectors.isCustomStatusEnabled as jest.Mock).mockReturnValue(true);
         (CustomStatusSelectors.makeGetCustomStatus as jest.Mock).mockReturnValue(() => null);
         const wrapper = renderWithRedux(
             <CustomStatusEmoji/>,

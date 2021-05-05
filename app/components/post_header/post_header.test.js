@@ -37,6 +37,7 @@ describe('PostHeader', () => {
         beforePrevPostUserId: '0',
         onPress: jest.fn(),
         isFirstReply: true,
+        customStatusEnabled: true,
     };
 
     test('should match snapshot when just a base post', () => {

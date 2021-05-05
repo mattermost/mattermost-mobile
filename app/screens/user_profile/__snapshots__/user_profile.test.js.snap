@@ -499,6 +499,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
             }
           >
             <ClearButton
+              containerSize={40}
               handlePress={[MockFunction]}
               iconName="close-circle"
               size={20}

@@ -51,7 +51,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
           }
         }
       >
-        <CustomStatusLabel
+        <CustomStatusText
           text="In a meeting"
           textStyle={
             Object {
@@ -145,7 +145,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
           }
         }
       >
-        <CustomStatusLabel
+        <CustomStatusText
           text="In a meeting"
           textStyle={
             Object {
@@ -193,6 +193,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
         }
       >
         <ClearButton
+          containerSize={40}
           handlePress={[Function]}
           iconName="close"
           size={18}

@@ -2046,20 +2046,17 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
     }
     testID="channel_info.header.custom_status"
   >
-    <Text
-      style={
+    <Connect(Emoji)
+      emojiName="calendar"
+      size={20}
+      testID="custom_status.emoji.calendar"
+      textStyle={
         Object {
           "color": "#3d3c40",
           "marginRight": 8,
         }
       }
-      testID="custom_status.emoji.calendar"
-    >
-      <Connect(Emoji)
-        emojiName="calendar"
-        size={20}
-      />
-    </Text>
+    />
     <Text
       ellipsizeMode="tail"
       numberOfLines={1}

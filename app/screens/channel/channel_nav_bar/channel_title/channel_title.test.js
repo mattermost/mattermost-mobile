@@ -16,6 +16,7 @@ describe('ChannelTitle', () => {
         hasGuests: false,
         canHaveSubtitle: false,
         isSelfDMChannel: false,
+        customStatusEnabled: true,
     };
 
     test('should match snapshot', () => {

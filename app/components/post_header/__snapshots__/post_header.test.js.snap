@@ -54,23 +54,16 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
             John Smith
           </Text>
         </TouchableWithFeedbackIOS>
-        <View
+        <CustomStatusEmoji
+          emojiSize={16}
           style={
             Object {
+              "color": "#3d3c40",
               "marginRight": 4,
               "marginTop": 1,
             }
           }
-        >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
+        />
       </React.Fragment>
       <FormattedTime
         hour12={true}
@@ -148,23 +141,16 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
             John Smith
           </Text>
         </TouchableWithFeedbackIOS>
-        <View
+        <CustomStatusEmoji
+          emojiSize={16}
           style={
             Object {
+              "color": "#3d3c40",
               "marginRight": 4,
               "marginTop": 1,
             }
           }
-        >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
+        />
       </React.Fragment>
       <FormattedTime
         hour12={true}
@@ -420,23 +406,16 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
             John Smith
           </Text>
         </TouchableWithFeedbackIOS>
-        <View
+        <CustomStatusEmoji
+          emojiSize={16}
           style={
             Object {
+              "color": "#3d3c40",
               "marginRight": 4,
               "marginTop": 1,
             }
           }
-        >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
+        />
       </React.Fragment>
       <FormattedTime
         hour12={true}
@@ -837,23 +816,16 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
             John Smith
           </Text>
         </TouchableWithFeedbackIOS>
-        <View
+        <CustomStatusEmoji
+          emojiSize={16}
           style={
             Object {
+              "color": "#3d3c40",
               "marginRight": 4,
               "marginTop": 1,
             }
           }
-        >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
+        />
       </React.Fragment>
       <FormattedTime
         hour12={true}
@@ -946,23 +918,16 @@ exports[`PostHeader should match snapshot when post should display reply button 
             John Smith
           </Text>
         </TouchableWithFeedbackIOS>
-        <View
+        <CustomStatusEmoji
+          emojiSize={16}
           style={
             Object {
+              "color": "#3d3c40",
               "marginRight": 4,
               "marginTop": 1,
             }
           }
-        >
-          <CustomStatusEmoji
-            emojiSize={16}
-            style={
-              Object {
-                "color": "#3d3c40",
-              }
-            }
-          />
-        </View>
+        />
       </React.Fragment>
       <FormattedTime
         hour12={true}

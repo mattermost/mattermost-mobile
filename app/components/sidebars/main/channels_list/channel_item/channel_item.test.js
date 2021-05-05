@@ -40,6 +40,7 @@ describe('ChannelItem', () => {
         unreadMsgs: 1,
         isSearchResult: false,
         isBot: false,
+        customStatusEnabled: true,
     };
 
     test('should match snapshot', () => {
