@@ -7,7 +7,7 @@ import {View, Text, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView,
 import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options, NavigationButtonPressedEvent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {CustomStatusDuration, ExpiryMenuItems, UserCustomStatus} from '@mm-redux/types/users';
+import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
@@ -22,6 +22,9 @@ import {preventDoubleTap} from '@utils/tap';
 import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
 import moment from 'moment';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {Moment} from 'moment-timezone';
+import {durationValues} from '@constants/custom_status';
+import FormattedText from '@components/formatted_text';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -58,7 +61,7 @@ type State = {
     emoji: string;
     text: string;
     duration: CustomStatusDuration;
-    expires_at: Date;
+    expires_at: Moment;
 }
 
 class CustomStatusModal extends NavigationComponent<Props, State> {
@@ -93,22 +96,22 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         };
         mergeNavigationOptions(props.componentId, options);
 
-        let currentTime = new Date();
+        let currentTime = moment();
         const timezone = userTimezone;
 
         currentTime = getCurrentDateAndTimeForTimezone(timezone);
 
-        let initialCustomExpiryTime: Date = currentTime;
+        let initialCustomExpiryTime: Moment = currentTime;
 
-        const isCurrentCustomStatusSet = customStatus.text || customStatus.emoji;
-        if (isCurrentCustomStatusSet && customStatus.duration === CustomStatusDuration.DATE_AND_TIME && customStatus.expires_at) {
-            initialCustomExpiryTime = new Date(customStatus.expires_at);
+        const isCurrentCustomStatusSet = customStatus?.text || customStatus?.emoji;
+        if (isCurrentCustomStatusSet && customStatus?.duration === CustomStatusDuration.DATE_AND_TIME && customStatus?.expires_at) {
+            initialCustomExpiryTime = moment(customStatus?.expires_at);
         }
 
         this.state = {
-            emoji: props.customStatus.emoji || '',
-            text: props.customStatus.text || '',
-            duration: props.customStatus.duration || defaultDuration,
+            emoji: props.customStatus?.emoji || '',
+            text: props.customStatus?.text || '',
+            duration: props.customStatus?.duration || defaultDuration,
             expires_at: initialCustomExpiryTime,
         };
     }
@@ -150,7 +153,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     calculateExpiryTime = (duration: CustomStatusDuration): string => {
         const {userTimezone} = this.props;
         const timezone = userTimezone;
-        const currentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : new Date();
+        const currentTime = timezone ? moment().tz(timezone) : new Date();
         const {expires_at} = this.state;
         switch (duration) {
         case defaultDuration:
@@ -158,13 +161,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         case CustomStatusDuration.THIRTY_MINUTES:
             return moment(currentTime).add(30, 'minutes').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.ONE_HOUR:
-            return moment().add(1, 'hour').seconds(0).milliseconds(0).toISOString();
+            return moment(currentTime).add(1, 'hour').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.FOUR_HOURS:
-            return moment().add(4, 'hours').seconds(0).milliseconds(0).toISOString();
+            return moment(currentTime).add(4, 'hours').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.TODAY:
-            return moment().endOf('day').toISOString();
+            return moment(currentTime).endOf('day').toISOString();
         case CustomStatusDuration.THIS_WEEK:
-            return moment().endOf('week').toISOString();
+            return moment(currentTime).endOf('week').toISOString();
         case CustomStatusDuration.DATE_AND_TIME:
             return expires_at.toISOString();
         default:
@@ -194,7 +197,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     renderRecentCustomStatuses = (style: Record<string, StyleProp<ViewStyle>>) => {
-        const {recentCustomStatuses, theme} = this.props;
+        const {recentCustomStatuses, theme, intl} = this.props;
 
         const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
             <CustomStatusSuggestion
@@ -207,6 +210,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 separator={index !== recentCustomStatuses.length - 1}
                 duration={status.duration}
                 expires_at={status.expires_at}
+                intl={intl}
             />
         ));
 
@@ -233,7 +237,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     renderCustomStatusSuggestions = (style: Record<string, StyleProp<ViewStyle>>) => {
-        const {recentCustomStatuses, theme} = this.props;
+        const {recentCustomStatuses, theme, intl} = this.props;
         const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
         const customStatusSuggestions = defaultCustomStatusSuggestions.
             map((status) => ({
@@ -251,6 +255,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     theme={theme}
                     separator={index !== arr.length - 1}
                     duration={status.duration}
+                    intl={intl}
                 />
             ));
 
@@ -299,7 +304,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         dismissModal();
         this.setState({duration});
         if (duration === CustomStatusDuration.DATE_AND_TIME) {
-            this.setState({expires_at: new Date(expires_at)});
+            this.setState({expires_at: moment(expires_at)});
         }
     };
 
@@ -307,7 +312,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const {intl, theme} = this.props;
         const screen = 'ClearAfter';
         const title = intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'});
-        const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration};
+        const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration, intl};
         const backButton = await CompassIcon.getImageSource('chevron-left', 24, theme.sidebarHeaderTextColor);
 
         const options = {
@@ -322,7 +327,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     render() {
-        const {emoji, text} = this.state;
+        const {emoji, text, duration} = this.state;
         const {theme, isLandscape, intl} = this.props;
 
         const isStatusSet = emoji || text;
@@ -354,7 +359,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             <TouchableOpacity onPress={this.openClearAfterModal}>
                 <View style={style.inputContainer}>
                     <Text style={style.expiryTime}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
-                    {this.state.duration ? <Text style={style.expiryTimeShow}>{ExpiryMenuItems[this.state.duration].value}</Text> : null}
+                    {duration ? (
+                        <FormattedText
+                            id={durationValues[duration].id}
+                            defaultMessage={durationValues[duration].defaultMessage}
+                            style={style.expiryTimeShow}
+                        />
+                    ) : null}
                     <CompassIcon
                         name='chevron-right'
                         size={24}
@@ -509,6 +520,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         expiryTimeShow: {
             position: 'absolute',
             right: 30,
+            color: theme.centerChannelColor,
         },
         rightIcon: {
             position: 'absolute',

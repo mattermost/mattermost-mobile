@@ -14,14 +14,15 @@ import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
 import {get} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import moment from 'moment';
 
 export function getCustomStatus(state: GlobalState, userID?: string): UserCustomStatus | undefined {
     const user = userID ? getUser(state, userID) : getCurrentUser(state);
     const userProps = user?.props || {};
     const customStatus = userProps.customStatus ? JSON.parse(userProps.customStatus) : undefined;
-    const expiryTime = new Date(customStatus?.expires_at);
     const timezone = getCurrentUserTimezone(state);
-    const currentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : new Date();
+    const expiryTime = timezone ? moment(customStatus?.expires_at).tz(timezone) : moment(customStatus?.expires_at);
+    const currentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : moment();
     return (customStatus?.duration === CustomStatusDuration.DONT_CLEAR || currentTime < expiryTime) ? customStatus : undefined;
 }
 

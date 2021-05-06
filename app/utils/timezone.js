@@ -17,6 +17,5 @@ export function getUtcOffsetForTimeZone(timezone) {
 }
 
 export function getCurrentDateAndTimeForTimezone(timezone) {
-    const tztime = moment().tz(timezone);
-    return new Date(tztime);
+    return moment().tz(timezone);
 }

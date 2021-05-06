@@ -11,37 +11,47 @@ import {GlobalState} from '@mm-redux/types/store';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import Preferences from '@mm-redux/constants/preferences';
 import {useSelector} from 'react-redux';
-import {Text, View} from 'react-native';
+import {Text, TextStyle, View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {Theme} from '@mm-redux/types/preferences';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     timezone?: string;
     theme: Theme;
     time: Date;
+    styleProp?: TextStyle;
 }
 
 const CustomStatusExpiry = (props: Props) => {
-    const {timezone, time} = props;
+    const {timezone, time, theme, styleProp} = props;
+    const styles = createStyleSheet(theme);
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
-    const currentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : new Date();
-    const currentMomentTime = moment(currentTime);
+    const currentMomentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : moment();
 
     const expiryMomentTime = timezone ? moment(time).tz(timezone) : moment(time);
+
+    let currentMomentTimeClone = currentMomentTime.clone();
+    const plusSixDaysDayEndTime = currentMomentTimeClone.add(6, 'days').endOf('day');
+    currentMomentTimeClone = currentMomentTime.clone();
+    const tomorrowDayEndTime = currentMomentTimeClone.add(1, 'day').endOf('day');
+    currentMomentTimeClone = currentMomentTime.clone();
+    const todayEndTime = currentMomentTimeClone.endOf('day');
 
     let useTime = true;
     let useDay = false;
     let isTomorrow = false;
     let isToday = false;
-    if (moment(time).isSame(currentMomentTime.endOf('day'))) {
+
+    if (expiryMomentTime.isSame(todayEndTime)) {
         isToday = true;
     }
-    if (moment(time).isAfter(currentMomentTime.endOf('day')) && moment(time).isBefore(currentMomentTime.add(1, 'day').endOf('day'))) {
+    if (expiryMomentTime.isAfter(todayEndTime) && expiryMomentTime.isBefore(tomorrowDayEndTime)) {
         isTomorrow = true;
     }
-    if (moment(time).isSame(currentMomentTime.endOf('day')) || moment(time).isAfter(currentMomentTime.add(1, 'day').endOf('day'))) {
+    if (expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowDayEndTime)) {
         useTime = false;
     }
-    if (moment(time).isAfter(currentMomentTime.add(1, 'day').endOf('day')) && moment(time).isBefore(currentMomentTime.add(6, 'days'))) {
+    if (expiryMomentTime.isBetween(tomorrowDayEndTime, plusSixDaysDayEndTime)) {
         useDay = true;
     }
 
@@ -49,7 +59,8 @@ const CustomStatusExpiry = (props: Props) => {
         <FormattedDate
             format='dddd'
             timezone={timezone}
-            value={time}
+            value={expiryMomentTime}
+            style={styleProp || styles.text}
         />
     );
 
@@ -58,6 +69,7 @@ const CustomStatusExpiry = (props: Props) => {
             format='MMM DD, YYYY'
             timezone={timezone}
             value={expiryMomentTime}
+            style={styleProp || styles.text}
         />
     );
 
@@ -66,6 +78,7 @@ const CustomStatusExpiry = (props: Props) => {
             hour12={!militaryTime}
             timezone={timezone}
             value={expiryMomentTime}
+            style={styleProp || styles.text}
         />
     );
 
@@ -73,6 +86,7 @@ const CustomStatusExpiry = (props: Props) => {
         <FormattedText
             id='custom_status.expiry_time.tomorrow'
             defaultMessage='Tomorrow'
+            style={styleProp || styles.text}
         />
     );
 
@@ -80,24 +94,43 @@ const CustomStatusExpiry = (props: Props) => {
         <FormattedText
             id='custom_status.expiry_time.today'
             defaultMessage='Today'
+            style={styleProp || styles.text}
         />
     );
 
     return (
-        <View
-            style={{
-                alignItems: 'center',
-                flexDirection: 'row',
-            }}
-        >
+        <View style={styles.labelContainer}>
+            <Text style={styleProp || styles.text}>{' ('}</Text>
+            <FormattedText
+                id='custom_status.until'
+                defaultMessage='Until'
+                style={styleProp || styles.text}
+            />
+            <Text style={styleProp || styles.text}>{' '}</Text>
             {showToday}
             {showTomorrow}
             {isToday || isTomorrow ? <Text>{' '}</Text> : null}
             {showTime}
             {showDay}
             {showDate}
+            <Text style={styleProp || styles.text}>{')'}</Text>
         </View>
     );
 };
 
 export default CustomStatusExpiry;
+
+const createStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        labelContainer: {
+            alignItems: 'center',
+            width: '70%',
+            flex: 1,
+            flexDirection: 'row',
+        },
+        text: {
+            fontSize: 15,
+            color: theme.centerChannelColor,
+        },
+    };
+});

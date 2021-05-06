@@ -158,17 +158,13 @@ export default class ChannelInfoHeader extends React.PureComponent {
             android: style.detail,
         });
 
-        const customStatusExpiry = customStatus.emoji && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
+        const customStatusExpiry = customStatus?.emoji && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
-                <View style={style.labelContainer}>
-                    <Text>{' (Until '}</Text>
-                    <CustomStatusExpiry
-                        time={customStatus.expires_at}
-                        timezone={timeZone}
-                        theme={theme}
-                    />
-                    <Text>{')'}</Text>
-                </View>
+                <CustomStatusExpiry
+                    time={customStatus.expires_at}
+                    timezone={timeZone}
+                    theme={theme}
+                />
             ) : null;
 
         return (
@@ -199,21 +195,21 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         testID={`${testID}.custom_status`}
                     >
                         <Emoji
-                            emojiName={customStatus.emoji}
+                            emojiName={customStatus?.emoji}
                             size={20}
                             textStyle={style.iconContainer}
-                            testID={`custom_status.emoji.${customStatus.emoji}`}
+                            testID={`custom_status.emoji.${customStatus?.emoji}`}
                         />
 
-                        <View style={style.customStatusText}>
+                        <View style={style.customStatus}>
                             <Text
+                                style={style.customStatusText}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
-                                {customStatus.text}
+                                {customStatus?.text}
                             </Text>
                             <Text
-                                style={style.customStatusExpiry}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
@@ -327,15 +323,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             paddingVertical: 10,
         },
-        customStatusText: {
+        customStatus: {
             flex: 1,
             flexDirection: 'row',
-            fontSize: 15,
-            color: theme.centerChannelColor,
             width: '80%',
         },
-        customStatusExpiry: {
-            marginLeft: 10,
+        customStatusText: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
         },
         channelNameContainer: {
             flexDirection: 'row',
@@ -364,12 +359,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         row: {
             paddingHorizontal: 15,
-        },
-        labelContainer: {
-            alignItems: 'center',
-            width: '70%',
-            flex: 1,
-            flexDirection: 'row',
         },
     };
 });

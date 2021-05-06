@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {intlShape} from 'react-intl';
 import React, {useCallback} from 'react';
 import {View, TouchableOpacity, Text} from 'react-native';
 
@@ -8,11 +9,13 @@ import Emoji from '@components/emoji';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {CustomStatusDuration, ExpiryMenuItems, UserCustomStatus} from '@mm-redux/types/users';
+import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
+import {durationValues} from '@constants/custom_status';
 
 type Props = {
+    intl: typeof intlShape;
     handleSuggestionClick: (status: UserCustomStatus) => void;
     emoji: string;
     text: string;
@@ -24,7 +27,7 @@ type Props = {
 };
 
 const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at} = props;
+    const {handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at, intl} = props;
     const style = getStyleSheet(theme);
 
     const handleClick = useCallback(preventDoubleTap(() => {
@@ -68,7 +71,7 @@ const CustomStatusSuggestion = (props: Props) => {
                         <View style={style.expiryTimeContainer}>
                             {duration && (
                                 <CustomStatusText
-                                    text={ExpiryMenuItems[duration].value}
+                                    text={intl.formatMessage(durationValues[duration])}
                                     theme={theme}
                                     textStyle={{color: changeOpacity(theme.centerChannelColor, 0.6)}}
                                 />

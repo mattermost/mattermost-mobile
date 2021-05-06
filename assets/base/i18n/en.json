@@ -148,7 +148,7 @@
   "expiry_dropdown.four_hours": "4 hours",
   "expiry_dropdown.today": "Today",
   "expiry_dropdown.this_week": "This week",
-  "expiry_dropdown.choose_date_and_time": "Choose date and time",
+  "expiry_dropdown.custom": "Custom",
   "expiry_dropdown.date_and_time": "Date and Time",
   "file_upload.fileAbove": "Files must be less than {max}",
   "gallery.download_file": "Download file",

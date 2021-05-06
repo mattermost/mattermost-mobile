@@ -207,22 +207,13 @@ export default class UserProfile extends PureComponent {
 
         const timezone = userTimezone;
 
-        const customStatusExpiryTime = isStatusSet && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
+        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
-                <View style={style.labelContainer}>
-                    <Text>{' ('}</Text>
-                    <FormattedText
-                        id='custom_status.until'
-                        defaultMessage='Until'
-                    />
-                    <Text>{' '}</Text>
-                    <CustomStatusExpiry
-                        time={customStatus.expires_at}
-                        timezone={timezone}
-                        theme={theme}
-                    />
-                    <Text>{')'}</Text>
-                </View>
+                <CustomStatusExpiry
+                    time={customStatus?.expires_at}
+                    timezone={timezone}
+                    theme={theme}
+                />
             ) : null;
 
         return (
@@ -233,15 +224,15 @@ export default class UserProfile extends PureComponent {
                 <View style={style.customStatus}>
                     <Text
                         style={style.iconContainer}
-                        testID={`custom_status.emoji.${customStatus.emoji}`}
+                        testID={`custom_status.emoji.${customStatus?.emoji}`}
                     >
                         <Emoji
-                            emojiName={customStatus.emoji}
+                            emojiName={customStatus?.emoji}
                             size={20}
                         />
                     </Text>
                     <Text style={[style.text, style.customStatusText]}>
-                        <Text>{customStatus.text}</Text>
+                        <Text>{customStatus?.text}</Text>
                         {customStatusExpiryTime}
                     </Text>
                     {isMyUser && (
@@ -537,12 +528,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 16,
             marginRight: 22,
             backgroundColor: '#EBEBEC',
-        },
-        labelContainer: {
-            alignItems: 'center',
-            width: '70%',
-            flex: 1,
-            flexDirection: 'row',
         },
     };
 });

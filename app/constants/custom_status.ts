@@ -1,4 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CustomStatusDuration} from '@mm-redux/types/users';
+import {t} from '@utils/i18n';
+
 export const CUSTOM_STATUS_TEXT_CHARACTER_LIMIT = 100;
+
+const {
+    DONT_CLEAR,
+    THIRTY_MINUTES,
+    ONE_HOUR,
+    FOUR_HOURS,
+    TODAY,
+    THIS_WEEK,
+    DATE_AND_TIME,
+} = CustomStatusDuration;
+
+export const durationValues = {
+    [DONT_CLEAR]: {
+        id: t('expiry_dropdown.dont_clear'),
+        defaultMessage: "Don't clear",
+    },
+    [THIRTY_MINUTES]: {
+        id: t('expiry_dropdown.thirty_minutes'),
+        defaultMessage: '30 minutes',
+    },
+    [ONE_HOUR]: {
+        id: t('expiry_dropdown.one_hour'),
+        defaultMessage: '1 hour',
+    },
+    [FOUR_HOURS]: {
+        id: t('expiry_dropdown.four_hours'),
+        defaultMessage: '4 hours',
+    },
+    [TODAY]: {
+        id: t('expiry_dropdown.today'),
+        defaultMessage: 'Today',
+    },
+    [THIS_WEEK]: {
+        id: t('expiry_dropdown.this_week'),
+        defaultMessage: 'This week',
+    },
+    [DATE_AND_TIME]: {
+        id: t('expiry_dropdown.date_and_time'),
+        defaultMessage: 'Date and Time',
+    },
+};

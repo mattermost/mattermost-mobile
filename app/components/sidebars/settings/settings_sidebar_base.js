@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View, Text} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -19,7 +19,6 @@ import {NavigationTypes} from '@constants';
 import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity} from '@utils/theme';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -116,7 +115,7 @@ export default class SettingsSidebarBase extends PureComponent {
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
         const isStatusSet = Boolean(customStatus?.emoji);
         if (isStatusSet) {
-            const isStatusChanged = prevCustomStatus.emoji !== customStatus.emoji || prevCustomStatus.text !== customStatus.text || prevCustomStatus.expires_at !== customStatus.expires_at;
+            const isStatusChanged = prevCustomStatus?.emoji !== customStatus?.emoji || prevCustomStatus?.text !== customStatus?.text || prevCustomStatus?.expires_at !== customStatus?.expires_at;
             if (isStatusChanged) {
                 this.setState({
                     showStatus: true,
@@ -276,7 +275,6 @@ export default class SettingsSidebarBase extends PureComponent {
             <StatusLabel userId={userId}/>
         );
     };
-
     renderCustomStatus = (style) => {
         const {isCustomStatusEnabled, customStatus, theme, userTimezone} = this.props;
         const {showStatus, showRetryMessage} = this.state;
@@ -288,25 +286,25 @@ export default class SettingsSidebarBase extends PureComponent {
         const isStatusSet = customStatus?.emoji && showStatus;
         const labelComponent = isStatusSet ? (
             <CustomStatusText
-                text={customStatus.text}
+                text={customStatus?.text}
                 theme={theme}
             />
         ) : null;
 
         const customStatusEmoji = (
             <View
-                testID={`custom_status.emoji.${isStatusSet ? customStatus.emoji : 'default'}`}
+                testID={`custom_status.emoji.${isStatusSet ? customStatus?.emoji : 'default'}`}
             >
                 {isStatusSet ? (
                     <Emoji
-                        emojiName={customStatus.emoji}
+                        emojiName={customStatus?.emoji}
                         size={20}
                     />
                 ) : (
                     <CompassIcon
                         name='emoticon-happy-outline'
                         size={24}
-                        style={{color: changeOpacity(theme.centerChannelColor, 0.64)}}
+                        style={style.emoticonOutline}
                     />
                 )}
             </View>
@@ -314,17 +312,14 @@ export default class SettingsSidebarBase extends PureComponent {
 
         const timezone = userTimezone;
 
-        const customStatusExpiryTime = isStatusSet && customStatus.duration !== CustomStatusDuration.DONT_CLEAR ?
+        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
-                <View style={style.labelContainer}>
-                    <Text>{' (Until '}</Text>
-                    <CustomStatusExpiry
-                        time={customStatus.expires_at}
-                        timezone={timezone}
-                        theme={theme}
-                    />
-                    <Text>{')'}</Text>
-                </View>
+                <CustomStatusExpiry
+                    time={customStatus?.expires_at}
+                    timezone={timezone}
+                    theme={theme}
+                    styleProp={style.text}
+                />
             ) : null;
 
         const clearButton = isStatusSet ?
@@ -341,7 +336,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 <FormattedText
                     id='custom_status.failure_message'
                     defaultMessage='Failed to update status. Try again'
-                    style={{color: theme.errorTextColor}}
+                    style={style.errorText}
                 />
             ) : null;
 
