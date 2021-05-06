@@ -14,7 +14,6 @@ describe('SelectServer', () => {
         loadConfigAndLicense: jest.fn(),
         login: jest.fn(),
         resetPing: jest.fn(),
-        setLastUpgradeCheck: jest.fn(),
         setServerVersion: jest.fn(),
     };
 

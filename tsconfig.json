@@ -48,7 +48,7 @@
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
-            "@telemetry/*": ["/app/telemetry/*"],
+            "@telemetry": ["app/telemetry/index"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"],

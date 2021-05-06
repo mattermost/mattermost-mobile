@@ -18,8 +18,6 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 
-import telemetry from 'app/telemetry';
-
 const MIN_SWIPE_DISTANCE = 3;
 const VX_MAX = 0.1;
 
@@ -307,8 +305,6 @@ export default class DrawerLayout extends Component {
             }).start(() => {
                 this.handleOpenValueChanged({value: 1});
                 if (this.props.onDrawerOpen) {
-                    telemetry.end(['channel:open_drawer']);
-                    telemetry.save();
 
                     this.props.onDrawerOpen();
                 }
@@ -328,7 +324,6 @@ export default class DrawerLayout extends Component {
         }).start(() => {
             this.handleOpenValueChanged({value: 0});
             if (this.props.onDrawerClose) {
-                telemetry.end(['channel:close_drawer']);
                 this.props.onDrawerClose();
                 this.canClose = true;
             }

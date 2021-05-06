@@ -2,12 +2,10 @@
 // See LICENSE.txt for license information.
 
 import 'react-native/Libraries/Core/InitializeCore';
-import {DeviceEventEmitter, Platform, Text} from 'react-native';
+import {Platform, Text} from 'react-native';
 import 'react-native-gesture-handler';
 
-import LocalConfig from '@assets/config';
 import 'app/mattermost';
-import telemetry from 'app/telemetry';
 
 if (Platform.OS === 'android') {
     require('harmony-reflect');
@@ -18,7 +16,6 @@ if (__DEV__) {
     LogBox.ignoreLogs([
         'Warning: componentWillReceiveProps',
         'Warning: componentWillMount',
-        'Warning: StatusBarIOS',
         '`-[RCTRootView cancelTouches]`',
         'Animated',
 
@@ -58,19 +55,6 @@ if (Platform.OS === 'android') {
     const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
     setFontFamily();
-
-    if (LocalConfig.TelemetryEnabled) {
-        const metricsSubscription = DeviceEventEmitter.addListener('nativeMetrics', (metrics) => {
-            telemetry.setAppStartTime(metrics.appReload);
-            telemetry.include([
-                {name: 'start:process_packages', startTime: metrics.processPackagesStart, endTime: metrics.processPackagesEnd},
-                {name: 'start:content_appeared', startTime: metrics.appReload, endTime: metrics.appContentAppeared},
-            ]);
-            telemetry.start(['start:overall'], metrics.appReload);
-
-            DeviceEventEmitter.removeSubscription(metricsSubscription);
-        });
-    }
 }
 
 // Uncomment the snippet below if you want to update the modules

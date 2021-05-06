@@ -25,8 +25,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {showModalOverCurrentContext} from '@actions/navigation';
 
-import telemetry from '@telemetry';
-
 import {renderSystemMessage} from './system_message_helpers';
 
 let FileAttachmentList;
@@ -105,18 +103,6 @@ export default class PostBody extends PureComponent {
         isLongPost: false,
     };
 
-    logTelemetry = () => {
-        telemetry.end([
-            'channel:switch_initial',
-            'channel:switch_loaded',
-            'post_list:permalink',
-            'post_list:thread',
-            'team:switch',
-            'start:overall',
-        ]);
-        telemetry.save();
-    }
-
     measurePost = (event) => {
         const {height} = event.nativeEvent.layout;
         const {showLongPost} = this.props;
@@ -125,10 +111,6 @@ export default class PostBody extends PureComponent {
             this.setState({
                 isLongPost: height >= this.state.maxHeight,
             });
-        }
-
-        if (this.props.isLastPost) {
-            this.logTelemetry();
         }
     };
 
@@ -363,6 +345,7 @@ export default class PostBody extends PureComponent {
         const messageStyles = {messageStyle, textStyles};
         const intl = this.context.intl;
         const systemMessage = renderSystemMessage(this.props, messageStyles, intl);
+
         if (systemMessage) {
             return systemMessage;
         }

@@ -259,6 +259,8 @@ PODS:
     - React
   - react-native-safe-area-context (3.2.0):
     - React-Core
+  - react-native-startup-time (2.0.0):
+    - React
   - react-native-video (5.1.1):
     - React-Core
     - react-native-video/Video (= 5.1.1)
@@ -443,6 +445,7 @@ DEPENDENCIES:
   - react-native-passcode-status (from `../node_modules/react-native-passcode-status`)
   - react-native-safe-area (from `../node_modules/react-native-safe-area`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-startup-time (from `../node_modules/react-native-startup-time`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -571,6 +574,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-startup-time:
+    :path: "../node_modules/react-native-startup-time"
   react-native-video:
     :path: "../node_modules/react-native-video"
   react-native-webview:
@@ -653,7 +658,7 @@ SPEC CHECKSUMS:
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: 49cbe4b43e445b06bf29199b6ad2057649e4c8f5
-  FBReactNativeSpec: 4862b23f27a9cdb8fdb1710af411fa677dcdd3cf
+  FBReactNativeSpec: a804c9d6c798f94831713302354003ee54ea18cb
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   jail-monkey: 80c9e34da2cd54023e5ad08bf7051ec75bd43d5b
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
@@ -689,6 +694,7 @@ SPEC CHECKSUMS:
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
   react-native-safe-area-context: e471852c5ed67eea4b10c5d9d43c1cebae3b231d
+  react-native-startup-time: c4c433fcf7ccac3c622f5d522e4ef18fb3bb0c9c
   react-native-video: 1574074179ecaf6a9dd067116c8f31bf9fec15c8
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
   React-perflogger: 9c547d8f06b9bf00cb447f2b75e8d7f19b7e02af
