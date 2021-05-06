@@ -163,7 +163,6 @@ export default class ChannelItem extends PureComponent {
                 membersCount={displayName.split(',').length}
                 size={16}
                 status={channel.status}
-                shared={channel.shared && channel.type !== General.DM_CHANNEL}
                 theme={theme}
                 type={channel.type}
                 isArchived={isArchived}

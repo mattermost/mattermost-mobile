@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Text,
     View,
-    ViewPropTypes,
 } from 'react-native';
 
 import {General} from '@mm-redux/constants';
@@ -21,14 +20,12 @@ export default class ChannelIcon extends React.PureComponent {
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
         membersCount: PropTypes.number,
-        shared: PropTypes.bool,
         size: PropTypes.number,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
         isArchived: PropTypes.bool.isRequired,
         isBot: PropTypes.bool.isRequired,
-        style: ViewPropTypes.style,
         testID: PropTypes.string,
     };
 
@@ -46,7 +43,6 @@ export default class ChannelIcon extends React.PureComponent {
             isInfo,
             hasDraft,
             membersCount,
-            shared,
             size,
             status,
             theme,
@@ -109,24 +105,6 @@ export default class ChannelIcon extends React.PureComponent {
                     testID={`${testID}.draft`}
                 />
             );
-        } else if (shared) {
-            if (type === General.PRIVATE_CHANNEL) {
-                icon = (
-                    <CompassIcon
-                        name='circle-multiple-outline-lock'
-                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
-                        testID='channel_icon.shared_private'
-                    />
-                );
-            } else {
-                icon = (
-                    <CompassIcon
-                        name='circle-multiple-outline'
-                        style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
-                        testID='channel_icon.shared_open'
-                    />
-                );
-            }
         } else if (type === General.OPEN_CHANNEL) {
             icon = (
                 <CompassIcon
@@ -197,7 +175,7 @@ export default class ChannelIcon extends React.PureComponent {
         }
 
         return (
-            <View style={[style.container, {height: size}, this.props.style]}>
+            <View style={[style.container, {height: size}]}>
                 {icon}
             </View>
         );
