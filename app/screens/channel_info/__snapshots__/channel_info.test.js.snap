@@ -33,13 +33,11 @@ exports[`channelInfo should match snapshot 1`] = `
       hasGuests={false}
       header=""
       isArchived={false}
-      isBot={false}
       isGroupConstrained={false}
       isTeammateGuest={false}
       memberCount={2}
       onPermalinkPress={[Function]}
       purpose="Purpose"
-      status="status"
       testID="channel_info.header"
       theme={
         Object {

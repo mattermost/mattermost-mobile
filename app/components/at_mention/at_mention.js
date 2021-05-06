@@ -64,6 +64,7 @@ export default class AtMention extends React.PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -205,7 +206,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (highlighted) {
-            mentionTextStyle.push({backgroundColor, color: theme.mentionColor});
+            mentionTextStyle.push({backgroundColor, color: theme.mentionHighlightLink});
         }
 
         return (

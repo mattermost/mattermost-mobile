@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import type {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
+import {buildQueryString} from '@mm-redux/utils/helpers';
 
 export interface ClientAppsMix {
     executeAppCall: (call: AppCallRequest, type: AppCallType) => Promise<AppCallResponse>;
-    getAppsBindings: (userID: string, channelID: string) => Promise<AppBinding[]>;
+    getAppsBindings: (userID: string, channelID: string, teamID: string) => Promise<AppBinding[]>;
 }
 
 const ClientApps = (superclass: any) => class extends superclass {
@@ -25,9 +26,16 @@ const ClientApps = (superclass: any) => class extends superclass {
         );
     }
 
-    getAppsBindings = async (userID: string, channelID: string) => {
+    getAppsBindings = async (userID: string, channelID: string, teamID: string) => {
+        const params = {
+            user_id: userID,
+            channel_id: channelID,
+            team_id: teamID,
+            user_agent: 'mobile',
+        };
+
         return this.doFetch(
-            this.getAppsProxyRoute() + `/api/v1/bindings?user_id=${userID}&channel_id=${channelID}&user_agent_type=mobile`,
+            `${this.getAppsProxyRoute()}/api/v1/bindings${buildQueryString(params)}`,
             {method: 'get'},
         );
     }

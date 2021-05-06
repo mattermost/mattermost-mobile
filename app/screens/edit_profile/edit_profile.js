@@ -109,6 +109,7 @@ export default class EditProfile extends PureComponent {
         id: 'update-profile',
         enabled: false,
         showAsAction: 'always',
+        testID: 'edit_profile.save.button',
     };
 
     constructor(props, context) {
@@ -334,6 +335,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={firstName}
                 isLandscape={isLandscape}
+                testID='edit_profile.text_setting.first_name'
             />
         );
     };
@@ -357,6 +359,7 @@ export default class EditProfile extends PureComponent {
                     theme={theme}
                     value={lastName}
                     isLandscape={isLandscape}
+                    testID='edit_profile.text_setting.last_name'
                 />
             </View>
         );
@@ -382,6 +385,7 @@ export default class EditProfile extends PureComponent {
                 theme={theme}
                 value={username}
                 isLandscape={isLandscape}
+                testID='edit_profile.text_setting.username'
             />
         );
     };
@@ -444,6 +448,7 @@ export default class EditProfile extends PureComponent {
                     theme={theme}
                     value={email}
                     isLandscape={isLandscape}
+                    testID='edit_profile.text_setting.email'
                 />
             </View>
         );
@@ -469,6 +474,7 @@ export default class EditProfile extends PureComponent {
                 value={nickname}
                 isLandscape={isLandscape}
                 optional={true}
+                testID='edit_profile.text_setting.nickname'
             />
         );
     };
@@ -493,6 +499,7 @@ export default class EditProfile extends PureComponent {
                 value={position}
                 isLandscape={isLandscape}
                 optional={true}
+                testID='edit_profile.text_setting.position'
             />
         );
     };
@@ -602,6 +609,7 @@ export default class EditProfile extends PureComponent {
                 <KeyboardAwareScrollView
                     bounces={false}
                     innerRef={this.scrollViewRef}
+                    testID='edit_profile.scroll_view'
                 >
                     {displayError}
                     <View style={[style.scrollView]}>

@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.42.0",
+  "version": "1.43.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -162,6 +162,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "start:reset-cache": "react-native start -- --reset-cache",
     "check": "npm run lint && npm run tsc",
     "clean": "./scripts/clean.sh",
     "ios-gems": "cd ios && bundle install",

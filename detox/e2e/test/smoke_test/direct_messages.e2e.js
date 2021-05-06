@@ -70,6 +70,24 @@ describe('Direct Messages', () => {
         await ChannelScreen.logout();
     });
 
+    it('MM-T3209 should be able to open direct message from main sidebar', async () => {
+        // # Create a DM with the other user
+        await openMainSidebar();
+        await MoreDirectMessagesScreen.open();
+        await searchInput.typeText(testOtherUser.username);
+        await getUserAtIndex(0).tap();
+        await startButton.tap();
+
+        // * Verify DM channel is created
+        await ChannelInfoScreen.open();
+        await expect(ChannelInfoScreen.channelDisplayName).toHaveText(testOtherUser.username);
+        await ChannelInfoScreen.close();
+        await goToChannel(testOtherUser.username);
+
+        // # Go back to channel
+        await goToChannel(townSquareChannel.display_name);
+    });
+
     it('MM-T3210 should be able to open direct message from profile info in channel', async () => {
         // # Open user profile screen from channel
         const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
