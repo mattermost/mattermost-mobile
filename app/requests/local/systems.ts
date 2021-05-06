@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
+
+// See LICENSE.txt for license information.
 import DatabaseManager from '@database/manager';
 import System from '@typings/database/system';
 
@@ -11,13 +14,15 @@ import System from '@typings/database/system';
 export const setLastUpgradeCheck = async (configRecord: System) => {
     const database = DatabaseManager.getActiveServerDatabase();
 
-    if (database) {
-        await database.action(async () => {
-            await configRecord.update((config) => {
-                config.value = {...configRecord.value, lastUpdateCheck: Date.now()};
-            });
-        });
+    if (!database) {
+        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
     }
+
+    await database.action(async () => {
+        await configRecord.update((config) => {
+            config.value = {...configRecord.value, lastUpdateCheck: Date.now()};
+        });
+    });
 };
 
 type ServerUrlChangedArgs = {
@@ -35,21 +40,33 @@ export const handleServerUrlChanged = async ({
 }: ServerUrlChangedArgs) => {
     const database = DatabaseManager.getActiveServerDatabase();
 
-    if (database) {
-        await database.action(async () => {
-            await database.batch(
-                ...[
-                    configRecord.prepareUpdate((config: System) => {
-                        config.value = {};
-                    }),
-                    licenseRecord.prepareUpdate((license: System) => {
-                        license.value = {};
-                    }),
-                    selectServerRecord.prepareUpdate((server: System) => {
-                        server.value = {...server.value, serverUrl};
-                    }),
-                ],
-            );
-        });
+    if (!database) {
+        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
     }
+
+    await database.action(async () => {
+        await database.batch(
+            ...[
+                configRecord.prepareUpdate((config: System) => {
+                    config.value = {};
+                }),
+                licenseRecord.prepareUpdate((license: System) => {
+                    license.value = {};
+                }),
+                selectServerRecord.prepareUpdate((server: System) => {
+                    server.value = {...server.value, serverUrl};
+                }),
+            ],
+        );
+    });
+};
+
+export const createSessions = (sessions) => {
+    const database = DatabaseManager.getActiveServerDatabase();
+
+    if (!database) {
+        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
+    }
+
+    //todo: save sessions under system entity
 };

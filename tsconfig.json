@@ -35,6 +35,7 @@
         "paths": {
             "@app/*": ["app/*"],
             "@assets/*": ["dist/assets/*"],
+            "@client/*": ["app/client/*"],
             "@components/*": ["app/components/*"],
             "@constants": ["app/constants/index"],
             "@constants/*": ["app/constants/*"],

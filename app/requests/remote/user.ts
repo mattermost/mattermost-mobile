@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Client4} from '@client/rest';
 import {MM_TABLES} from '@constants/database';
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import {Q} from '@nozbe/watermelondb';
 import {Client4Error} from '@typings/api/client4';
@@ -10,11 +12,11 @@ const HTTP_UNAUTHORIZED = 401;
 
 //fixme: this file needs to be finalized
 
-export const logout = (skipServerLogout = false) => {
+export const logout = async (skipServerLogout = false) => {
     return async () => {
         if (!skipServerLogout) {
             try {
-                Client4.logout();
+                await Client4.logout();
             } catch {
                 // Do nothing
             }
@@ -31,7 +33,7 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
     const database = DatabaseManager.getActiveServerDatabase();
 
     if (!database) {
-        return;
+        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
     }
 
     const currentUserId = await database.collections.get(MM_TABLES.SERVER.SYSTEM).query(Q.where('name', 'currentUserId')).fetch();

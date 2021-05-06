@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import {Q} from '@nozbe/watermelondb';
 import {logError} from '@requests/remote/error';
@@ -27,37 +28,40 @@ export const getDataRetentionPolicy = async () => {
 
 export const loadConfigAndLicense = async () => {
     const database = DatabaseManager.getActiveServerDatabase();
-    if (database) {
-        try {
-            const currentUserId = await database.collections.
-                get(MM_TABLES.SERVER.SYSTEM).
-                query(Q.where('name', 'currentUserId')).
-                fetch();
 
-            if (currentUserId[0]) {
-                const [config, license] = await Promise.all([
-                    Client4.getClientConfigOld(),
-                    Client4.getClientLicenseOld(),
-                ]);
+    if (!database) {
+        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
+    }
 
-                //todo:  save config in systems entity
-                //todo:  save license in systems entity
+    try {
+        const currentUserId = await database.collections.
+            get(MM_TABLES.SERVER.SYSTEM).
+            query(Q.where('name', 'currentUserId')).
+            fetch();
 
-                if (
-                    config.DataRetentionEnableMessageDeletion &&
+        if (currentUserId[0]) {
+            const [config, license] = await Promise.all([
+                Client4.getClientConfigOld(),
+                Client4.getClientLicenseOld(),
+            ]);
+
+            //todo:  save config in systems entity
+            //todo:  save license in systems entity
+
+            if (
+                config.DataRetentionEnableMessageDeletion &&
                     config.DataRetentionEnableMessageDeletion === 'true' &&
                     license.IsLicensed === 'true' &&
                     license.DataRetention === 'true'
-                ) {
-                    //fixme: should we await this one ?  => NO
-                    await getDataRetentionPolicy();
-                } else {
-                    //todo: save  dataRetentionPolicy: {} under systems entity
-                }
+            ) {
+                //fixme: should we await this one ?  => NO
+                await getDataRetentionPolicy();
+            } else {
+                //todo: save  dataRetentionPolicy: {} under systems entity
             }
-        } catch (error) {
-            //todo:
-            logError(error);
         }
+    } catch (error) {
+        //todo:
+        logError(error);
     }
 };

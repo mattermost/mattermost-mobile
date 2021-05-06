@@ -22,6 +22,7 @@ module.exports = {
                 '@actions': './app/actions',
                 '@app': './app/',
                 '@assets': './dist/assets',
+                '@client': './app/client',
                 '@components': './app/components',
                 '@constants': './app/constants',
                 '@database': './app/database',

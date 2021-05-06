@@ -2,6 +2,10 @@
 // See LICENSE.txt for license information.
 
 import mattermostBucket from '@app/mattermost_bucket';
+import {goToScreen, resetToChannel} from '@app/navigation';
+import {getClientUpgrade} from '@app/queries/helpers';
+import {handleServerUrlChanged, setLastUpgradeCheck} from '@app/requests/local/systems';
+import {loadConfigAndLicense} from '@app/requests/remote/systems';
 import {GlobalStyles} from '@app/styles';
 import telemetry from '@app/telemetry';
 import LocalConfig from '@assets/config.json';
@@ -9,11 +13,12 @@ import {Client4} from '@client/rest';
 import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
 import withObservables from '@nozbe/with-observables';
-import {goToScreen, resetToChannel} from '@app/navigation';
+import {getSystems} from '@queries/system';
+import {getPing} from '@requests/remote/general';
+import {scheduleExpiredNotification} from '@requests/remote/session';
 import System from '@typings/database/system';
 import {Styles} from '@typings/utils';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
@@ -26,6 +31,7 @@ import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 import merge from 'deepmerge';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {IntlShape} from 'react-intl';
 import {
     ActivityIndicator,
     Alert,
@@ -47,11 +53,6 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
-import {getClientUpgrade} from '@app/queries/helpers';
-import {getSystems} from '@queries/system';
-import {handleServerUrlChanged, setLastUpgradeCheck} from '@app/requests/local/systems';
-import {loadConfigAndLicense} from '@app/requests/remote/systems';
-import {getPing} from '@requests/remote/general';
 
 //todo: Once you get a URL and a NAME for a server, you have to init a database and then set it as the currenly active server database.  All subsequent calls/queries will use it.
 //todo: review all substituted actions
@@ -83,7 +84,10 @@ class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
       allowOtherServers: true,
   };
 
-  private cancelPing: (() => void | null) | undefined;
+  static contextType = {
+      intl: IntlShape,
+  }
+  private cancelPing: (() => void | null) | undefined | null;
   private navigationEventListener!: EventSubscription;
   private certificateListener!: EmitterSubscription;
   private sslProblemListener!: EmitterSubscription;
@@ -98,20 +102,19 @@ class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
   };
 
   //fixme: do we need getDerivedStateFromProps ?
-  static getDerivedStateFromProps(props: SelectServerProps, state: SelectServerState) {
-      const {systems} = props;
-      const rootRecord = systems.find(
-          (systemRecord: System) => systemRecord.name === 'root',
-      ) as System;
-      const {deepLinkURL} = rootRecord.value;
-      if (state.url === undefined && props.allowOtherServers && deepLinkURL) {
-          const url = urlParse(deepLinkURL).host;
-          return {url};
-      } else if (state.url === undefined && props.serverUrl) {
-          return {url: props.serverUrl};
-      }
-      return null;
-  }
+  // static getDerivedStateFromProps(props: SelectServerProps, state: SelectServerState) {
+  //     const {systems} = props;
+  //     const rootRecord = systems.find((systemRecord: System) => systemRecord.name === 'root') as System;
+  //     const {deepLinkURL} = rootRecord.value;
+  //
+  //     if (state.url === undefined && props.allowOtherServers && deepLinkURL) {
+  //         const url = urlParse(deepLinkURL).host;
+  //         return {url};
+  //     } else if (state.url === undefined && props.serverUrl) {
+  //         return {url: props.serverUrl};
+  //     }
+  //     return null;
+  // }
 
   componentDidMount() {
       this.navigationEventListener = Navigation.events().bindComponent(this);
@@ -332,9 +335,10 @@ class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
 
   loginWithCertificate = async () => {
       tracker.initialLoad = Date.now();
-
+      const {intl} = this.context;
       await this.props.actions.login('credential', 'password');
-      this.scheduleSessionExpiredNotification();
+
+      scheduleExpiredNotification(intl);
 
       resetToChannel();
   };
@@ -471,13 +475,6 @@ class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
           this.pingServer(url);
       }
   });
-
-  scheduleSessionExpiredNotification = () => {
-      const {intl} = this.context;
-      const {actions} = this.props;
-
-      actions.scheduleExpiredNotification(intl);
-  };
 
   handleSslProblem = () => {
       const {connecting, connected, url} = this.state;
