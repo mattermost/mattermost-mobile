@@ -3,7 +3,7 @@
 
 import {Alert} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 
 class ChannelInfoScreen {
     testID = {
@@ -78,7 +78,7 @@ class ChannelInfoScreen {
         await expect(this.channelInfoScreen).not.toBeVisible();
     }
 
-    archiveChannel = async ({confirm = true, publicChannel = true} = {}) => {
+    archiveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.archiveAction.tap();
         const {
@@ -91,6 +91,10 @@ class ChannelInfoScreen {
             await expect(archivePublicChannelTitle).toBeVisible();
         } else {
             await expect(archivePrivateChannelTitle).toBeVisible();
+        }
+        if (description) {
+            const descriptionElement = isAndroid() ? element(by.text(description)) : element(by.label(description)).atIndex(0);
+            await expect(descriptionElement).toBeVisible();
         }
         await expect(noButton).toBeVisible();
         await expect(yesButton).toBeVisible();
@@ -105,7 +109,7 @@ class ChannelInfoScreen {
         }
     }
 
-    leaveChannel = async ({confirm = true, publicChannel = true} = {}) => {
+    leaveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.leaveAction.tap();
         const {
@@ -118,6 +122,10 @@ class ChannelInfoScreen {
             await expect(leavePublicChannelTitle).toBeVisible();
         } else {
             await expect(leavePrivateChannelTitle).toBeVisible();
+        }
+        if (description) {
+            const descriptionElement = isAndroid() ? element(by.text(description)) : element(by.label(description)).atIndex(0);
+            await expect(descriptionElement).toBeVisible();
         }
         await expect(noButton).toBeVisible();
         await expect(yesButton).toBeVisible();
