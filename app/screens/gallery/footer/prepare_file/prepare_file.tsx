@@ -126,6 +126,8 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
 
         if (path && share && !canceled) {
             Share.open({
+                message: '',
+                title: '',
                 url: `file://${path}`,
                 showAppsToView: true,
             }).catch(() => {
