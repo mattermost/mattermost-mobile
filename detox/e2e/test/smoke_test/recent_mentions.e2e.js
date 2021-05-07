@@ -29,7 +29,7 @@ describe('Recent Mentions', () => {
         const {team, user} = await Setup.apiInit();
         testUser1 = user;
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         ({user: testUser2} = await User.apiCreateUser());

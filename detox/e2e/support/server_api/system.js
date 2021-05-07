@@ -37,7 +37,7 @@ export const apiCheckSystemHealth = async () => {
 
 /**
  * Send a test email.
- * See https://api.mattermost.com/#tag/system/paths/~1email~1test/post
+ * See https://api.mattermost.com/#operation/TestEmail
  * @return {Object} returns response on success or {error, status} on error
  */
 export const apiEmailTest = async () => {
@@ -50,57 +50,8 @@ export const apiEmailTest = async () => {
 };
 
 /**
- * Get configuration.
- * See https://api.mattermost.com/#tag/system/paths/~1config/get
- * @return {Object} returns {config} on success or {error, status} on error
- */
-export const apiGetConfig = async () => {
-    try {
-        const response = await client.get('/api/v4/config');
-
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Update configuration.
- * See https://api.mattermost.com/#tag/system/paths/~1config/put
- * @param {Object} newConfig - specific config to update
- * @return {Object} returns {config} on success or {error, status} on error
- */
-export const apiUpdateConfig = async (newConfig = {}) => {
-    try {
-        const {config: currentConfig} = await apiGetConfig();
-        const config = merge.all([currentConfig, getDefaultConfig(), newConfig]);
-
-        const response = await client.put(
-            '/api/v4/config',
-            config,
-        );
-
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-function getDefaultConfig() {
-    const fromEnv = {
-        LdapSettings: {
-            LdapServer: testConfig.ldapServer,
-            LdapPort: testConfig.ldapPort,
-        },
-        ServiceSettings: {SiteURL: testConfig.siteUrl},
-    };
-
-    return merge(defaultServerConfig, fromEnv);
-}
-
-/**
  * Get client license.
- * See https://api.mattermost.com/#tag/system/paths/~1license~1client/get
+ * See https://api.mattermost.com/#operation/GetClientLicense
  * @return {Object} returns {license} on success or {error, status} on error
  */
 export const apiGetClientLicense = async () => {
@@ -114,8 +65,23 @@ export const apiGetClientLicense = async () => {
 };
 
 /**
+ * Get configuration.
+ * See https://api.mattermost.com/#operation/GetConfig
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiGetConfig = async () => {
+    try {
+        const response = await client.get('/api/v4/config');
+
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Ping server status.
- * See https://api.mattermost.com/#tag/system/paths/~1system~1ping/get
+ * See https://api.mattermost.com/#operation/GetPing
  * @return {Object} returns {data} on success or {error, status} on error
  */
 export const apiPingServerStatus = async () => {
@@ -125,14 +91,6 @@ export const apiPingServerStatus = async () => {
     } catch (err) {
         return getResponseFromError(err);
     }
-};
-
-/**
- * Require SMTP server to be running.
- */
-export const apiRequireSMTPServer = async () => {
-    const {status} = await apiEmailTest();
-    jestExpect(status).toEqual(200);
 };
 
 /**
@@ -180,7 +138,38 @@ export const apiRequireLicenseForFeature = async (key = '') => {
 };
 
 /**
+ * Require SMTP server to be running.
+ */
+export const apiRequireSMTPServer = async () => {
+    const {status} = await apiEmailTest();
+    jestExpect(status).toEqual(200);
+};
+
+/**
+ * Update configuration.
+ * See https://api.mattermost.com/#operation/UpdateConfig
+ * @param {Object} newConfig - specific config to update
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiUpdateConfig = async (newConfig = {}) => {
+    try {
+        const {config: currentConfig} = await apiGetConfig();
+        const config = merge.all([currentConfig, getDefaultConfig(), newConfig]);
+
+        const response = await client.put(
+            '/api/v4/config',
+            config,
+        );
+
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Upload server license with file expected at "/detox/e2e/support/fixtures/mattermost-license.txt"
+ * See https://api.mattermost.com/#operation/UploadLicenseFile
  * @return {Object} returns response on success or {error, status} on error
  */
 export const apiUploadLicense = async () => {
@@ -213,11 +202,24 @@ async function getClientLicense() {
     return {license: out.license};
 }
 
+function getDefaultConfig() {
+    const fromEnv = {
+        LdapSettings: {
+            LdapServer: testConfig.ldapServer,
+            LdapPort: testConfig.ldapPort,
+        },
+        ServiceSettings: {SiteURL: testConfig.siteUrl},
+    };
+
+    return merge(defaultServerConfig, fromEnv);
+}
+
 export const System = {
     apiCheckSystemHealth,
     apiEmailTest,
     apiGetClientLicense,
     apiGetConfig,
+    apiPingServerStatus,
     apiRequireLicense,
     apiRequireLicenseForFeature,
     apiRequireSMTPServer,

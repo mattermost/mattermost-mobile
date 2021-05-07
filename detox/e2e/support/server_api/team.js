@@ -20,8 +20,28 @@ import {getResponseFromError} from './common';
 // ****************************************************************
 
 /**
+ * Add user to team.
+ * See https://api.mattermost.com/#operation/AddTeamMember
+ * @param {string} userId - The ID of user to add into the team
+ * @param {string} teamId - The team ID
+ * @return {Object} returns {member} on success or {error, status} on error
+ */
+export const apiAddUserToTeam = async (userId, teamId) => {
+    try {
+        const response = await client.post(
+            `/api/v4/teams/${teamId}/members`,
+            {team_id: teamId, user_id: userId},
+        );
+
+        return {member: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Create a team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams/post
+ * See https://api.mattermost.com/#operation/CreateTeam
  * @param {string} option.type - 'O' (default) for open, 'I' for invite only
  * @param {string} option.prefix - option to add prefix to name and display name
  * @param {Object} team - fix team object to be created
@@ -41,28 +61,8 @@ export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} =
 };
 
 /**
- * Add user to team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams~1{team_id}~1members/post
- * @param {string} userId - The ID of user to add into the team
- * @param {string} teamId - The team ID
- * @return {Object} returns {member} on success or {error, status} on error
- */
-export const apiAddUserToTeam = async (userId, teamId) => {
-    try {
-        const response = await client.post(
-            `/api/v4/teams/${teamId}/members`,
-            {team_id: teamId, user_id: userId},
-        );
-
-        return {member: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
  * Delete a team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams~1{team_id}/delete
+ * See https://api.mattermost.com/#operation/SoftDeleteTeam
  * @param {string} teamId - The team ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
@@ -96,7 +96,7 @@ export const apiDeleteTeams = async (teams = []) => {
 
 /**
  * Remove user from team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams~1{team_id}~1members~1{user_id}/delete
+ * See https://api.mattermost.com/#operation/RemoveTeamMember
  * @param {string} teamId - The team ID
  * @param {string} userId - The user ID to be removed from team
  * @return {Object} returns {status} on success or {error, status} on error
@@ -115,7 +115,7 @@ export const apiDeleteUserFromTeam = async (teamId, userId) => {
 
 /**
  * Get teams.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams/get
+ * See https://api.mattermost.com/#operation/GetAllTeams
  * @return {Object} returns {teams} on success or {error, status} on error
  */
 export const apiGetTeams = async () => {
@@ -130,7 +130,7 @@ export const apiGetTeams = async () => {
 
 /**
  * Get teams for user.
- * See https://api.mattermost.com/#tag/teams/paths/~1users~1{user_id}~1teams/get
+ * See https://api.mattermost.com/#operation/GetTeamsForUser
  * @param {string} userId - The user ID
  * @return {Object} returns {teams} on success or {error, status} on error
  */
@@ -146,7 +146,7 @@ export const apiGetTeamsForUser = async (userId = 'me') => {
 
 /**
  * Patch a team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams~1{team_id}~1patch/put
+ * See https://api.mattermost.com/#operation/PatchTeam
  * @param {string} teamId - The team ID
  * @param {string} patch.display_name - Display name
  * @param {string} patch.description - Description

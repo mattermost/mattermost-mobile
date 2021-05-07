@@ -39,7 +39,7 @@ describe('Channel Info', () => {
         const {channel, team, user} = await Setup.apiInit();
         testChannel1 = channel;
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
         ({channel: testChannel2} = await Channel.apiCreateChannel({type: 'O', teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, testChannel2.id);
 
