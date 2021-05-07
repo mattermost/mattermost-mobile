@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import LocalConfig from '@assets/config';
@@ -21,6 +21,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import ChannelBase, {ClientUpgradeListener} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
+import GlobalThreads from '@screens/global_threads';
 
 export default class ChannelIOS extends ChannelBase {
     handleAutoComplete = (value) => {
@@ -54,21 +55,27 @@ export default class ChannelIOS extends ChannelBase {
     };
 
     render() {
-        const {currentChannelId, theme} = this.props;
+        const {currentChannelId, theme, viewingGlobalThreads} = this.props;
         let component = this.renderLoadingOrFailedChannel();
         let renderDraftArea = false;
 
         if (!component) {
-            renderDraftArea = true;
-            component = (
-                <>
-                    <ChannelPostList
-                        updateNativeScrollView={this.updateNativeScrollView}
-                        registerTypingAnimation={this.registerTypingAnimation}
-                    />
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
-                </>
-            );
+            renderDraftArea = true && !viewingGlobalThreads;
+            if (viewingGlobalThreads) {
+                component = (
+                    <GlobalThreads/>
+                );
+            } else {
+                component = (
+                    <>
+                        <ChannelPostList
+                            updateNativeScrollView={this.updateNativeScrollView}
+                            registerTypingAnimation={this.registerTypingAnimation}
+                        />
+                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                    </>
+                );
+            }
         }
 
         const style = getStyle(theme);
@@ -84,6 +91,7 @@ export default class ChannelIOS extends ChannelBase {
                     openMainSidebar={this.openMainSidebar}
                     openSettingsSidebar={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
+                    isGlobalThreads={viewingGlobalThreads}
                 />
             </>
         );

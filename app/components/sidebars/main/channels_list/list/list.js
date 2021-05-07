@@ -23,6 +23,7 @@ import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
+import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 
 import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
@@ -313,7 +314,12 @@ export default class List extends PureComponent {
         );
     };
 
-    renderItem = ({item}) => {
+    renderItem = ({item, section}) => {
+        if (section.id === 'sidebar.threads') {
+            return (
+                <ThreadsSidebarEntry/>
+            );
+        }
         const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
         const channelItemTestID = `${testID}.channel_item`;
 
@@ -334,6 +340,9 @@ export default class List extends PureComponent {
         const {action, defaultMessage, id} = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
+        if (id === 'sidebar.threads') {
+            return (<></>);
+        }
 
         return (
             <View style={styles.titleContainer}>
@@ -399,6 +408,11 @@ export default class List extends PureComponent {
     render() {
         const {testID, styles, theme} = this.props;
         const {sections, showIndicator} = this.state;
+        const sectionsWithThreads = [{
+            data: [''],
+            defaultMessage: '',
+            id: 'sidebar.threads',
+        }].concat(sections);
 
         const paddingBottom = this.listContentPadding();
 
@@ -410,7 +424,7 @@ export default class List extends PureComponent {
             >
                 <SectionList
                     ref={this.setListRef}
-                    sections={sections}
+                    sections={sectionsWithThreads}
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}

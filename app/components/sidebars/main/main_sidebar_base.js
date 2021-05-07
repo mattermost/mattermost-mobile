@@ -31,6 +31,7 @@ export default class MainSidebarBase extends Component {
             logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            handleNotViewingGlobalThreadsScreen: PropTypes.func,
         }).isRequired,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
@@ -38,6 +39,11 @@ export default class MainSidebarBase extends Component {
         locale: PropTypes.string,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        viewingGlobalThreads: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
@@ -56,9 +62,12 @@ export default class MainSidebarBase extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
+        const {currentTeamId, teamsCount, theme, viewingGlobalThreads} = this.props;
         const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, searching} = this.state;
 
+        if (viewingGlobalThreads !== nextProps.viewingGlobalThreads) {
+            return true;
+        }
         if (nextState.openDrawerOffset !== openDrawerOffset && Platform.OS === 'ios') {
             return true;
         }
@@ -267,7 +276,7 @@ export default class MainSidebarBase extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {logChannelSwitch, handleSelectChannel} = this.props.actions;
+        const {logChannelSwitch, handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;
 
         if (closeDrawer) {
             telemetry.start(['channel:close_drawer']);
@@ -275,6 +284,7 @@ export default class MainSidebarBase extends Component {
         }
 
         if (channel.id === currentChannelId) {
+            handleNotViewingGlobalThreadsScreen();
             return;
         }
 

@@ -12,6 +12,7 @@ import {
     shouldHideDefaultChannel,
 } from '@mm-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {getViewingGlobalThreads} from '@selectors/threads';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -71,6 +72,8 @@ function makeMapStateToProps() {
         if (member && member.notify_props) {
             showUnreadForMsgs = member.notify_props.mark_unread !== General.MENTION;
         }
+
+        const viewingGlobalThreads = getViewingGlobalThreads(state);
         return {
             channel,
             currentChannelId,
@@ -87,6 +90,7 @@ function makeMapStateToProps() {
             showUnreadForMsgs,
             theme: getTheme(state),
             unreadMsgs,
+            viewingGlobalThreads,
         };
     };
 }

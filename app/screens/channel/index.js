@@ -19,6 +19,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 
 import Channel from './channel';
+import {getViewingGlobalThreads} from '@selectors/threads';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
@@ -44,6 +45,7 @@ function mapStateToProps(state) {
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
         showTermsOfService: shouldShowTermsOfService(state),
+        viewingGlobalThreads: getViewingGlobalThreads(state),
     };
 }
 

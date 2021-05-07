@@ -37,11 +37,13 @@ export default class ChannelItem extends PureComponent {
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
+        viewingGlobalThreads: PropTypes.bool,
     };
 
     static defaultProps = {
         isArchived: false,
         mentions: 0,
+        viewingGlobalThreads: false,
     };
 
     static contextTypes = {
@@ -78,6 +80,7 @@ export default class ChannelItem extends PureComponent {
             isSearchResult,
             channel,
             isBot,
+            viewingGlobalThreads,
         } = this.props;
 
         // Only ever show an archived channel if it's the currently viewed channel.
@@ -114,7 +117,7 @@ export default class ChannelItem extends PureComponent {
         }
 
         const style = getStyleSheet(theme);
-        const isActive = channelId === currentChannelId;
+        const isActive = channelId === currentChannelId && !viewingGlobalThreads;
 
         let extraItemStyle;
         let extraTextStyle;
