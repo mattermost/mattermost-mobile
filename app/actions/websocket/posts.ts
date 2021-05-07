@@ -27,12 +27,15 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
+import {getViewingGlobalThreads} from '@selectors/threads';
 
 export function handleNewPostEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
         const currentUserId = getCurrentUserId(state);
+        const viewingGlobalThreads = getViewingGlobalThreads(state);
+
         const data = JSON.parse(msg.data.post);
         const post = {
             ...data,
@@ -132,7 +135,10 @@ export function handleNewPostEvent(msg: WebSocketMessage) {
                     ) {
                         markAsRead = true;
                         markAsReadOnServer = false;
-                    } else if (post.channel_id === currentChannelId) {
+                    } else if ((post.channel_id === currentChannelId) && !viewingGlobalThreads) {
+                        // Don't mark as read if we're in global threads screen
+                        // the currentChannelId still refers to previously viewed channel
+                        // changing our redux stuff to not need a valid currentChannelid is messy
                         markAsRead = true;
                         markAsReadOnServer = true;
                     }

@@ -5,7 +5,7 @@ import {ThreadTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 
 import {Client4} from '@mm-redux/client';
 import {batchActions, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
-import {UserThreadList} from '@mm-redux/types/threads';
+import {UserThread, UserThreadList} from '@mm-redux/types/threads';
 
 import ThreadConstants from '../constants/threads';
 import {logError} from './errors';
@@ -68,29 +68,35 @@ export function getThread(userId: string, teamId: string, threadId: string, exte
         }
 
         if (thread) {
-            thread = {...thread, is_following: true};
-
-            dispatch(batchActions([
-                {
-                    type: UserTypes.RECEIVED_PROFILES_LIST,
-                    data: thread.participants,
-                },
-                {
-                    type: PostTypes.RECEIVED_POSTS,
-                    data: {posts: [thread.post]},
-                },
-                {
-                    type: ThreadTypes.RECEIVED_THREAD,
-                    data: {
-                        thread,
-                        team_id: teamId,
-                    },
-                },
-            ]));
+            thread = handleThreadArrived(dispatch, thread, teamId);
         }
 
         return {data: thread};
     };
+}
+
+export function handleThreadArrived(dispatch: DispatchFunc, threadData: UserThread, teamId: string) {
+    const thread = {...threadData, is_following: true};
+
+    dispatch(batchActions([
+        {
+            type: UserTypes.RECEIVED_PROFILES_LIST,
+            data: thread.participants,
+        },
+        {
+            type: PostTypes.RECEIVED_POSTS,
+            data: {posts: [thread.post]},
+        },
+        {
+            type: ThreadTypes.RECEIVED_THREAD,
+            data: {
+                thread,
+                team_id: teamId,
+            },
+        },
+    ]));
+
+    return thread;
 }
 
 export function getThreadMentionCountsByChannel(teamId: string) {
@@ -183,4 +189,38 @@ export function setThreadFollow(userId: string, teamId: string, threadId: string
 
         return {};
     };
+}
+
+export function handleReadChanged(
+    dispatch: DispatchFunc,
+    threadId: string,
+    teamId: string,
+    channelId: string,
+    {
+        lastViewedAt,
+        prevUnreadMentions,
+        newUnreadMentions,
+        prevUnreadReplies,
+        newUnreadReplies,
+    }: {
+        lastViewedAt: number;
+        prevUnreadMentions: number;
+        newUnreadMentions: number;
+        prevUnreadReplies: number;
+        newUnreadReplies: number;
+    },
+) {
+    dispatch({
+        type: ThreadTypes.READ_CHANGED_THREAD,
+        data: {
+            id: threadId,
+            teamId,
+            channelId,
+            lastViewedAt,
+            prevUnreadMentions,
+            newUnreadMentions,
+            prevUnreadReplies,
+            newUnreadReplies,
+        },
+    });
 }

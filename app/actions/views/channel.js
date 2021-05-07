@@ -208,6 +208,9 @@ export function handleSelectChannel(channelId) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
+            actions.push({
+                type: ViewTypes.NOT_VIEWING_GLOBAL_THREADS_SCREEN,
+            });
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 

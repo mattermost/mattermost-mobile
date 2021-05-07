@@ -21,6 +21,7 @@ export type Config = {
     BuildHashEnterprise: string;
     BuildNumber: string;
     CloseUnusedDirectMessages: string;
+    CollapsedThreads: 'disabled' | 'default_off' | 'default_on';
     CustomBrandText: string;
     CustomDescriptionText: string;
     CustomTermsOfServiceId: string;

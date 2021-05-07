@@ -84,11 +84,65 @@ export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, 
 
 export const countsReducer = (state: ThreadsState['counts'] = {}, action: GenericAction) => {
     switch (action.type) {
+    case ThreadTypes.ALL_TEAM_THREADS_READ: {
+        const counts = state[action.data.team_id] ?? {unread_mentions_per_channel: {}};
+        return {
+            ...state,
+            [action.data.team_id]: {
+                ...counts,
+                unread_mentions_per_channel: {},
+                total_unread_mentions: 0,
+                total_unread_threads: 0,
+            },
+        };
+    }
+    case ThreadTypes.READ_CHANGED_THREAD: {
+        const {
+            teamId,
+            channelId,
+            prevUnreadMentions = 0,
+            newUnreadMentions = 0,
+            prevUnreadReplies = 0,
+            newUnreadReplies = 0,
+        } = action.data;
+        const counts = state[teamId] ? {
+            ...state[teamId],
+        } : {
+            unread_mentions_per_channel: {
+                [channelId]: 0,
+            },
+            total_unread_threads: 0,
+            total: 0,
+            total_unread_mentions: 0,
+        };
+        const unreadMentionDiff = newUnreadMentions - prevUnreadMentions;
+
+        if (counts.unread_mentions_per_channel[channelId]) {
+            const nc = {...counts.unread_mentions_per_channel};
+            nc[channelId] += unreadMentionDiff;
+            counts.unread_mentions_per_channel = nc;
+        } else {
+            counts.unread_mentions_per_channel = {[channelId]: newUnreadMentions};
+        }
+
+        counts.total_unread_mentions += unreadMentionDiff;
+
+        if (newUnreadReplies > 0 && prevUnreadReplies === 0) {
+            counts.total_unread_threads += 1;
+        } else if (prevUnreadReplies > 0 && newUnreadReplies === 0) {
+            counts.total_unread_threads -= 1;
+        }
+
+        return {
+            ...state,
+            [action.data.teamId]: counts,
+        };
+    }
     case ThreadTypes.RECEIVED_PER_CHANNEL_MENTION_COUNTS: {
         return {
             ...state,
             [action.data.team_id]: {
-                ...(state[action.data.team_id] ?? {}),
+                ...state[action.data.team_id] ?? {},
                 unread_mentions_per_channel: action.data.counts,
             },
         };

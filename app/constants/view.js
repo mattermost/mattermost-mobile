@@ -109,6 +109,12 @@ const ViewTypes = keyMirror({
 
     INDICATOR_BAR_VISIBLE: null,
     CHANNEL_NAV_BAR_CHANGED: null,
+
+    VIEWING_GLOBAL_THREADS_SCREEN: null,
+    NOT_VIEWING_GLOBAL_THREADS_SCREEN: null,
+
+    VIEWING_GLOBAL_THREADS_UNREADS: null,
+    VIEWING_GLOBAL_THREADS_ALL: null,
 });
 
 const RequiredServer = {

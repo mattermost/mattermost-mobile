@@ -13,6 +13,7 @@ import search from './search';
 import selectServer from './select_server';
 import team from './team';
 import thread from './thread';
+import threads from './threads';
 import user from './user';
 import emoji from './emoji';
 import post from './post';
@@ -31,4 +32,5 @@ export default combineReducers({
     user,
     emoji,
     post,
+    threads,
 });
