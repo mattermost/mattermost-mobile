@@ -75,6 +75,7 @@ export type Config = {
     EnablePreviewFeatures: string;
     EnablePreviewModeBanner: string;
     EnablePublicLink: string;
+    EnableReliableWebSockets: string;
     EnableSaml: string;
     EnableSignInWithEmail: string;
     EnableSignInWithUsername: string;
