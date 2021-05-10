@@ -28,7 +28,11 @@ export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => 
 export const getRecentCustomStatuses = createSelector(
     (state: GlobalState) => get(state, Preferences.CATEGORY_CUSTOM_STATUS, Preferences.NAME_RECENT_CUSTOM_STATUSES),
     (value) => {
-        return value ? JSON.parse(value) : [];
+        try {
+            return value ? JSON.parse(value) : [];
+        } catch (error) {
+            return [];
+        }
     },
 );
 

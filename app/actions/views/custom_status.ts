@@ -19,7 +19,6 @@ export function setCustomStatus(customStatus: UserCustomStatus): ActionFunc {
 
         user.props.customStatus = JSON.stringify(customStatus);
         dispatch({type: UserTypes.RECEIVED_ME, data: user});
-        dispatch({type: UserTypes.SET_CUSTOM_STATUS_REQUEST});
 
         try {
             await Client4.updateCustomStatus(customStatus);
@@ -27,32 +26,23 @@ export function setCustomStatus(customStatus: UserCustomStatus): ActionFunc {
             user.props.customStatus = oldCustomStatus;
             dispatch(batchActions([
                 {type: UserTypes.RECEIVED_ME, data: user},
-                {type: UserTypes.SET_CUSTOM_STATUS_FAILURE, error},
                 logError(error),
             ]));
             return {error};
         }
 
-        dispatch({type: UserTypes.SET_CUSTOM_STATUS_SUCCESS});
         return {data: true};
     };
 }
 
 export function unsetCustomStatus(): ActionFunc {
     return async (dispatch: DispatchFunc) => {
-        dispatch({type: UserTypes.UNSET_CUSTOM_STATUS_REQUEST});
-
         try {
             await Client4.unsetCustomStatus();
         } catch (error) {
-            dispatch(batchActions([
-                {type: UserTypes.UNSET_CUSTOM_STATUS_FAILURE, error},
-                logError(error),
-            ]));
+            dispatch(logError(error));
             return {error};
         }
-
-        dispatch({type: UserTypes.UNSET_CUSTOM_STATUS_SUCCESS});
         return {data: true};
     };
 }

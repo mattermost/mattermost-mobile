@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
 
-import {General, RequestStatus} from '@mm-redux/constants';
+import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
@@ -15,7 +15,7 @@ import ClearButton from '@components/custom_status/clear_button';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import UserStatus from '@components/user_status';
-import {NavigationTypes} from '@constants';
+import {NavigationTypes, CustomStatus} from '@constants';
 import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {preventDoubleTap} from '@utils/tap';
@@ -37,8 +37,6 @@ export default class SettingsSidebarBase extends PureComponent {
         theme: PropTypes.object.isRequired,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         customStatus: PropTypes.object,
-        setStatusRequestStatus: PropTypes.string,
-        clearStatusRequestStatus: PropTypes.string,
     };
 
     static defaultProps = {
@@ -57,57 +55,23 @@ export default class SettingsSidebarBase extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+        EventEmitter.on(CustomStatus.SET_CUSTOM_STATUS_FAILURE, this.handleSetCustomStatusFailure);
     }
 
     componentDidUpdate(prevProps) {
-        const {setStatusRequestStatus, clearStatusRequestStatus, customStatus} = this.props;
-
-        if (prevProps.clearStatusRequestStatus !== clearStatusRequestStatus) {
-            this.handleClearStatusRequestStatusChange();
-        }
-
-        if (prevProps.setStatusRequestStatus !== setStatusRequestStatus) {
-            this.handleSetStatusRequestStatusChange();
-        }
-
-        if (prevProps.clearStatusRequestStatus === clearStatusRequestStatus && prevProps.setStatusRequestStatus === setStatusRequestStatus) {
-            this.handleCustomStatusChange(prevProps.customStatus, customStatus);
-        }
+        this.handleCustomStatusChange(prevProps.customStatus, this.props.customStatus);
     }
 
     componentWillUnmount() {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+        EventEmitter.off(CustomStatus.SET_CUSTOM_STATUS_FAILURE, this.handleSetCustomStatusFailure);
     }
 
-    handleClearStatusRequestStatusChange = () => {
-        const {clearStatusRequestStatus} = this.props;
-        if (clearStatusRequestStatus === RequestStatus.STARTED || clearStatusRequestStatus === RequestStatus.SUCCESS) {
-            this.setState({
-                showStatus: false,
-                showRetryMessage: false,
-            });
-        } else if (clearStatusRequestStatus === RequestStatus.FAILURE) {
-            this.setState({
-                showStatus: true,
-                showRetryMessage: true,
-            });
-        }
-    }
-
-    handleSetStatusRequestStatusChange = () => {
-        const {setStatusRequestStatus} = this.props;
-        if (setStatusRequestStatus === RequestStatus.STARTED || setStatusRequestStatus === RequestStatus.SUCCESS) {
-            this.setState({
-                showStatus: true,
-                showRetryMessage: false,
-            });
-        } else if (setStatusRequestStatus === RequestStatus.FAILURE) {
-            this.setState({
-                showStatus: true,
-                showRetryMessage: true,
-            });
-        }
+    handleSetCustomStatusFailure = () => {
+        this.setState({
+            showRetryMessage: true,
+        });
     }
 
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
@@ -274,6 +238,14 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    clearCustomStatus = async () => {
+        this.setState({showStatus: false, showRetryMessage: false});
+        const {error} = await this.props.actions.unsetCustomStatus();
+        if (error) {
+            this.setState({showStatus: true, showRetryMessage: true});
+        }
+    }
+
     renderCustomStatus = () => {
         const {isCustomStatusEnabled, customStatus, theme} = this.props;
         const {showStatus, showRetryMessage} = this.state;
@@ -283,12 +255,6 @@ export default class SettingsSidebarBase extends PureComponent {
         }
 
         const isStatusSet = customStatus?.emoji && showStatus;
-        const labelComponent = isStatusSet ? (
-            <CustomStatusText
-                text={customStatus.text}
-                theme={theme}
-            />
-        ) : null;
 
         const customStatusEmoji = (
             <View
@@ -312,7 +278,7 @@ export default class SettingsSidebarBase extends PureComponent {
         const clearButton = isStatusSet ?
             (
                 <ClearButton
-                    handlePress={preventDoubleTap(this.props.actions.unsetCustomStatus)}
+                    handlePress={preventDoubleTap(this.clearCustomStatus)}
                     theme={theme}
                     testID='settings.sidebar.custom_status.action.clear'
                 />
@@ -327,18 +293,45 @@ export default class SettingsSidebarBase extends PureComponent {
                 />
             ) : null;
 
+        const text = isStatusSet ? customStatus.text : (
+            <FormattedText
+                id='mobile.routes.custom_status'
+                defaultMessage='Set a Status'
+            />
+        );
+        const labelComponent = (
+            <>
+                <View
+                    style={{width: '70%'}}
+                >
+                    <CustomStatusText
+                        text={text}
+                        theme={theme}
+                    />
+                </View>
+                {retryMessage}
+                {clearButton &&
+                    <View
+                        style={{
+                            position: 'absolute',
+                            top: 3,
+                            right: 14,
+                        }}
+                    >
+                        {clearButton}
+                    </View>
+                }
+            </>
+        );
+
         return (
             <DrawerItem
                 testID='settings.sidebar.custom_status.action'
                 labelComponent={labelComponent}
-                i18nId={'mobile.routes.custom_status'}
-                defaultMessage='Set a Status'
                 leftComponent={customStatusEmoji}
                 separator={false}
                 onPress={this.goToCustomStatus}
                 theme={theme}
-                labelSibling={clearButton}
-                failureText={retryMessage}
             />
         );
     };

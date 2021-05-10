@@ -18,8 +18,6 @@ export default class DrawerItem extends PureComponent {
         iconName: PropTypes.string,
         isDestructor: PropTypes.bool,
         labelComponent: PropTypes.node,
-        labelSibling: PropTypes.node,
-        failureText: PropTypes.node,
         leftComponent: PropTypes.node,
         onPress: PropTypes.func,
         separator: PropTypes.bool,
@@ -45,8 +43,6 @@ export default class DrawerItem extends PureComponent {
             onPress,
             separator,
             theme,
-            labelSibling,
-            failureText,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -100,12 +96,6 @@ export default class DrawerItem extends PureComponent {
                         <View style={style.labelContainer}>
                             {label}
                         </View>
-                        {labelSibling && (
-                            <View style={style.labelSiblingContainer}>
-                                {labelSibling}
-                            </View>
-                        )}
-                        {failureText}
                         {divider}
                     </View>
                 </View>
@@ -120,6 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             padding: 3,
+            minHeight: 50,
         },
         iconContainer: {
             width: 45,
@@ -137,15 +128,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
         },
         labelContainer: {
-            alignItems: 'center',
-            width: '70%',
             flex: 1,
-            flexDirection: 'row',
-        },
-        labelSiblingContainer: {
-            position: 'absolute',
-            top: 3,
-            right: 14,
+            justifyContent: 'center',
         },
         centerLabel: {
             textAlign: 'center',

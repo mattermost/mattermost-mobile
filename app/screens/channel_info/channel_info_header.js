@@ -14,6 +14,7 @@ import Clipboard from '@react-native-community/clipboard';
 
 import {popToRoot} from '@actions/navigation';
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
@@ -189,13 +190,13 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             textStyle={style.iconContainer}
                             testID={`custom_status.emoji.${customStatus.emoji}`}
                         />
-                        <Text
-                            style={style.customStatusText}
+                        <CustomStatusText
+                            text={customStatus.text}
+                            theme={theme}
+                            textStyle={style.customStatusText}
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                        >
-                            {customStatus.text}
-                        </Text>
+                        />
                     </View>
                 }
                 {this.renderHasGuestText(style)}

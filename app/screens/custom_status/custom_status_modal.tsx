@@ -11,11 +11,13 @@ import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigati
 import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
 import ClearButton from '@components/custom_status/clear_button';
+import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {CustomStatus, DeviceTypes} from '@constants';
-import {ActionFunc} from '@mm-redux/types/actions';
+import {ActionFunc, ActionResult} from '@mm-redux/types/actions';
 import {Theme} from '@mm-redux/types/preferences';
 import {UserCustomStatus} from '@mm-redux/types/users';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -42,7 +44,7 @@ interface Props extends NavigationComponentProps {
     recentCustomStatuses: UserCustomStatus[];
     isLandscape: boolean;
     actions: {
-        setCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
+        setCustomStatus: (customStatus: UserCustomStatus) => Promise<ActionResult>;
         unsetCustomStatus: () => ActionFunc;
         removeRecentCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
     };
@@ -114,7 +116,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     emoji: emoji || 'speech_balloon',
                     text: text.trim(),
                 };
-                this.props.actions.setCustomStatus(status);
+                const {error} = await this.props.actions.setCustomStatus(status);
+                if (error) {
+                    EventEmitter.emit(CustomStatus.SET_CUSTOM_STATUS_FAILURE);
+                }
             }
         } else if (customStatus?.emoji) {
             this.props.actions.unsetCustomStatus();
@@ -158,12 +163,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             <>
                 <View style={style.separator}/>
                 <View testID='custom_status.recents'>
-                    <Text style={style.title}>
-                        {this.props.intl.formatMessage({
-                            id: 'custom_status.suggestions.recent_title',
-                            defaultMessage: 'RECENT',
-                        })}
-                    </Text>
+                    <FormattedText
+                        id='custom_status.suggestions.recent_title'
+                        defaultMessage='RECENT'
+                        style={style.title}
+                    />
                     <View style={style.block}>
                         {recentStatuses}
                     </View>
@@ -173,12 +177,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     renderCustomStatusSuggestions = (style: Record<string, StyleProp<ViewStyle>>) => {
-        const {recentCustomStatuses, theme} = this.props;
+        const {recentCustomStatuses, theme, intl} = this.props;
         const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
         const customStatusSuggestions = defaultCustomStatusSuggestions.
             map((status) => ({
                 emoji: status.emoji,
-                text: status.messageDefault,
+                text: intl.formatMessage({id: status.message, defaultMessage: status.messageDefault}),
             })).
             filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
             map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
@@ -200,12 +204,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             <>
                 <View style={style.separator}/>
                 <View testID='custom_status.suggestions'>
-                    <Text style={style.title}>
-                        {this.props.intl.formatMessage({
-                            id: 'custom_status.suggestions.title',
-                            defaultMessage: 'SUGGESTIONS',
-                        })}
-                    </Text>
+                    <FormattedText
+                        id='custom_status.suggestions.title'
+                        defaultMessage='SUGGESTIONS'
+                        style={style.title}
+                    />
                     <View style={style.block}>
                         {customStatusSuggestions}
                     </View>
