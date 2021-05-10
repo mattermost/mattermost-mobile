@@ -31,7 +31,7 @@ import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 import merge from 'deepmerge';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {IntlShape} from 'react-intl';
+import {IntlShape, IntlContext} from 'react-intl';
 import {
     ActivityIndicator,
     Alert,
@@ -84,9 +84,11 @@ class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
       allowOtherServers: true,
   };
 
-  static contextType = {
-      intl: IntlShape,
-  }
+  //todo: make into functional component in typescript => last resort a class component
+
+  //fixme: relook at below definition for INTL context - you need to use modern Context API; not legacy one
+  static contextType = IntlContext;
+
   private cancelPing: (() => void | null) | undefined | null;
   private navigationEventListener!: EventSubscription;
   private certificateListener!: EmitterSubscription;
@@ -459,6 +461,7 @@ class SelectServer extends PureComponent<SelectServerProps, SelectServerState> {
 
       await globalEventHandler.resetState();
 
+      //todo: create a ticket for this part
       //fixme: ExperimentalClientSideCertEnable does not exist in LocalConfig...do we add it ?
       if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
           RNFetchBlob.cba.selectCertificate((certificate) => {

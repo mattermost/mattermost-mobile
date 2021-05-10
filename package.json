@@ -88,6 +88,7 @@
     "@testing-library/react-native": "7.2.0",
     "@types/jest": "26.0.22",
     "@types/react": "17.0.3",
+    "@types/react-intl": "3.0.0",
     "@types/react-native": "0.64.4",
     "@types/react-native-button": "3.0.0",
     "@types/react-native-share": "3.3.2",
