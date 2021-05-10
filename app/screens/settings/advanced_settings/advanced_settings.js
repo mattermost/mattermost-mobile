@@ -164,7 +164,7 @@ class AdvancedSettings extends Component {
                         iconName='trash-can-outline'
                         isDestructor={true}
                         onPress={this.clearOfflineCache}
-                        separator={true}
+                        separator={Boolean(Config.ShowPerformanceMarkers)}
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}
                         theme={theme}

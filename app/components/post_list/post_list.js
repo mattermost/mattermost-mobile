@@ -353,7 +353,6 @@ export default class PostList extends PureComponent {
             return (
                 <CombinedUserActivityPost
                     combinedId={item}
-                    hey={index}
                     {...postProps}
                 />
             );
