@@ -7,7 +7,7 @@ import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppForm, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 
-import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppCallResponseTypes, AppBindingLocations} from '@mm-redux/constants/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {showModal} from './navigation';
 import {Theme} from '@mm-redux/types/preferences';
@@ -117,7 +117,12 @@ const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) =>
     };
 
     const passProps = {form, call};
-    showModal('AppForm', form.title, passProps, options);
+
+    // Wait 500 ms in case this app call was invoked from another modal, such as the post options menu.
+    // Without this wait here, the app form modal will not show on iOS, due to a modal trying to open while one is still closing.
+    setTimeout(() => {
+        showModal('AppForm', form.title, passProps, options);
+    }, 500);
 };
 
 export function postEphemeralCallResponseForPost(response: AppCallResponse, message: string, post: Post): ActionFunc {
