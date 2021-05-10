@@ -17,12 +17,14 @@ import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {Channel} from '@mm-redux/types/channels';
+import {showAppForm} from '@actions/navigation';
 
 type Props = {
     actions: {
         doAppCall: DoAppCall;
         getChannel: (channelId: string) => Promise<ActionResult>;
         postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
     post: Post;
     binding: AppBinding;
@@ -41,6 +43,7 @@ export default class ButtonBinding extends PureComponent<Props> {
             binding,
             post,
             currentTeamID,
+            theme,
         } = this.props;
         const intl = this.context.intl;
         if (!binding.call) {
@@ -91,7 +94,10 @@ export default class ButtonBinding extends PureComponent<Props> {
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
+            this.props.actions.handleGotoLocation(callResp.navigate_to_url!, intl);
+            return;
         case AppCallResponseTypes.FORM:
+            showAppForm(callResp.form, call, theme);
             return;
         default: {
             const errorMessage = intl.formatMessage(

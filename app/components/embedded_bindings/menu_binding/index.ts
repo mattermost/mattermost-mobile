@@ -8,11 +8,13 @@ import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 import {getPost} from '@mm-redux/selectors/entities/posts';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 
 import MenuBinding from './menu_binding';
 import {getChannel} from '@mm-redux/actions/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 type OwnProps = {
     postId: string;
@@ -20,6 +22,7 @@ type OwnProps = {
 
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
+        theme: getTheme(state),
         post: getPost(state, ownProps.postId),
         currentTeamID: getCurrentTeamId(state),
     };
@@ -37,6 +40,7 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
             doAppCall,
             getChannel,
             postEphemeralCallResponseForPost,
+            handleGotoLocation,
         }, dispatch),
     };
 }

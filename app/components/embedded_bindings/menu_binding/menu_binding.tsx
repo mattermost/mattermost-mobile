@@ -6,6 +6,7 @@ import React, {PureComponent} from 'react';
 import AutocompleteSelector from 'app/components/autocomplete_selector';
 import {intlShape} from 'react-intl';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
+import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {AppBinding} from '@mm-redux/types/apps';
 import {ActionResult} from '@mm-redux/types/actions';
@@ -13,16 +14,19 @@ import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {Channel} from '@mm-redux/types/channels';
 import {createCallContext, createCallRequest} from '@utils/apps';
+import {showAppForm} from '@actions/navigation';
 
 type Props = {
     actions: {
         doAppCall: DoAppCall;
         getChannel: (channelId: string) => Promise<ActionResult>;
         postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
     binding?: AppBinding;
     post: Post;
     currentTeamID: string;
+    theme: Theme;
 }
 
 type State = {
@@ -59,6 +63,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
             actions,
             post,
             currentTeamID,
+            theme,
         } = this.props;
         const intl = this.context.intl;
 
@@ -101,7 +106,10 @@ export default class MenuBinding extends PureComponent<Props, State> {
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
+            this.props.actions.handleGotoLocation(callResp.navigate_to_url!, intl);
+            return;
         case AppCallResponseTypes.FORM:
+            showAppForm(callResp.form, call, theme);
             return;
         default: {
             const errorMessage = intl.formatMessage({

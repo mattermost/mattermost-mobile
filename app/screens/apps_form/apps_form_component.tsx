@@ -8,6 +8,7 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
+import {ActionResult} from '@mm-redux/types/actions';
 
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
@@ -36,6 +37,7 @@ export type Props = {
         }) => Promise<DoAppCallResult<FormResponseData>>;
         performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<DoAppCallResult<AppLookupResponse>>;
         refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
     theme: Theme;
     componentId: string;
@@ -173,7 +175,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         switch (callResponse.type) {
         case AppCallResponseTypes.OK:
         case AppCallResponseTypes.NAVIGATE:
-            this.handleHide();
+            await this.handleHide();
+            this.props.actions.handleGotoLocation(callResponse.navigate_to_url!, this.context.intl);
             return;
         case AppCallResponseTypes.FORM:
             this.submitting = false;
@@ -276,8 +279,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         }
     }
 
-    handleHide = () => {
-        dismissModal();
+    handleHide = async () => {
+        await dismissModal();
     }
 
     onChange = (name: string, value: any) => {

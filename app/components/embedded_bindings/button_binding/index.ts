@@ -10,6 +10,7 @@ import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import ButtonBinding from './button_binding';
@@ -40,6 +41,7 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
             doAppCall,
             getChannel,
             postEphemeralCallResponseForPost,
+            handleGotoLocation,
         }, dispatch),
     };
 }
