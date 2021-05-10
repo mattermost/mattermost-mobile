@@ -159,7 +159,6 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                     <ChannelIcon
                         isActive={false}
                         isArchived={false}
-                        isBot={false}
                         isInfo={true}
                         isUnread={true}
                         size={18}

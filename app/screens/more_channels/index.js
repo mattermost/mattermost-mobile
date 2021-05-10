@@ -63,6 +63,7 @@ function mapStateToProps(state) {
         currentTeamId,
         channels,
         sharedChannels,
+        sharedChannelsEnabled: config.ExperimentalSharedChannels === 'true',
         archivedChannels,
         theme: getTheme(state),
         canShowArchivedChannels,

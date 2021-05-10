@@ -220,11 +220,13 @@ exports[`ChannelTitle should match snapshot when isChannelShared is true 1`] = `
       My User
     </Text>
     <ChannelIcon
+      hasDraft={false}
       isActive={true}
       isArchived={false}
       isBot={false}
       isInfo={false}
       isUnread={false}
+      membersCount={0}
       shared={true}
       size={18}
       style={

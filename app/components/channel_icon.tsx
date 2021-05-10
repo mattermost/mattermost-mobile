@@ -18,8 +18,10 @@ type Props = {
     isInfo: boolean;
     isUnread: boolean;
     membersCount: number;
+    shared: boolean;
     size: number;
     statusStyle?: StyleProp<ViewStyle>;
+    style: StyleProp<ViewStyle>;
     testID?: string;
     theme: Theme;
     type: string;
@@ -105,7 +107,6 @@ const ChannelIcon = (props: Props) => {
     }
 
     let icon;
-    let extraStyle;
     if (props.isArchived) {
         icon = (
             <CompassIcon
@@ -122,6 +123,24 @@ const ChannelIcon = (props: Props) => {
                 testID={`${props.testID}.draft`}
             />
         );
+    } else if (props.shared) {
+        if (props.type === General.PRIVATE_CHANNEL) {
+            icon = (
+                <CompassIcon
+                    name='circle-multiple-outline-lock'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: 0.5}]}
+                    testID='channel_icon.shared_private'
+                />
+            );
+        } else {
+            icon = (
+                <CompassIcon
+                    name='circle-multiple-outline'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: 0.5}]}
+                    testID='channel_icon.shared_open'
+                />
+            );
+        }
     } else if (props.type === General.OPEN_CHANNEL) {
         icon = (
             <CompassIcon
@@ -152,7 +171,6 @@ const ChannelIcon = (props: Props) => {
             </View>
         );
     } else if (props.type === General.DM_CHANNEL) {
-        // extraStyle = {marginRight: 6};
         icon = (
             <ProfilePicture
                 size={props.size}
@@ -165,7 +183,7 @@ const ChannelIcon = (props: Props) => {
     }
 
     return (
-        <View style={[style.container, extraStyle, {width: props.size, height: props.size}]}>
+        <View style={[style.container, {width: props.size, height: props.size}, props.style]}>
             {icon}
         </View>
     );

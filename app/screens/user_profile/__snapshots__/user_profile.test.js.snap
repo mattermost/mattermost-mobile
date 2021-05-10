@@ -204,6 +204,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
             "marginTop": 15,
           }
         }
+        testID="user_profile.username"
       >
         @fred
       </Text>
@@ -278,11 +279,13 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
           }
         >
           <ChannelIcon
+            hasDraft={false}
             isActive={true}
             isArchived={false}
             isBot={false}
             isInfo={true}
             isUnread={false}
+            membersCount={0}
             shared={true}
             size={16}
             theme={

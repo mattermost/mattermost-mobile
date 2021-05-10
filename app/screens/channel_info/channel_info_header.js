@@ -33,6 +33,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         header: PropTypes.string,
         onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
+        shared: PropTypes.bool,
         teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         type: PropTypes.string.isRequired,
@@ -133,6 +134,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             memberCount,
             onPermalinkPress,
             purpose,
+            shared,
             teammateId,
             theme,
             type,
@@ -158,6 +160,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         membersCount={memberCount}
                         size={24}
                         userId={teammateId}
+                        shared={shared}
                         theme={theme}
                         type={type}
                         isArchived={isArchived}

@@ -198,6 +198,7 @@ export default class ChannelInfo extends PureComponent {
                         memberCount={currentChannelMemberCount}
                         onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
+                        shared={currentChannel.shared}
                         teammateId={teammateId}
                         theme={theme}
                         type={currentChannel.type}

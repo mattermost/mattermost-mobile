@@ -44,6 +44,7 @@ export default class MoreChannels extends PureComponent {
         canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
         sharedChannels: PropTypes.array,
+        sharedChannelsEnabled: PropTypes.bool,
         archivedChannels: PropTypes.array,
         closeButton: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
@@ -409,13 +410,24 @@ export default class MoreChannels extends PureComponent {
 
     handleDropdownClick = () => {
         const {formatMessage} = this.context.intl;
-        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
-        const sharedChannelsText = formatMessage({id: 'more_channels.sharedChannels', defaultMessage: 'Shared Channels'});
-        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
         const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
+        const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
+        const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
         const cancelText = 'Cancel';
+        const options = [publicChannelsText, archivedChannelsText, cancelText];
+
+        let archivedChannelsIndex = 1;
+        let sharedChannelsIndex;
+
+        if (this.props.sharedChannelsEnabled) {
+            const sharedChannelsText = formatMessage({id: 'more_channels.sharedChannels', defaultMessage: 'Shared Channels'});
+            options.splice(1, 0, sharedChannelsText);
+            sharedChannelsIndex = 1;
+            archivedChannelsIndex = 2;
+        }
+
         BottomSheet.showBottomSheetWithOptions({
-            options: [publicChannelsText, sharedChannelsText, archivedChannelsText, cancelText],
+            options,
             cancelButtonIndex: 3,
             title: titleText,
         }, (value) => {
@@ -424,10 +436,10 @@ export default class MoreChannels extends PureComponent {
             case 0:
                 typeOfChannels = 'public';
                 break;
-            case 1:
+            case sharedChannelsIndex:
                 typeOfChannels = 'shared';
                 break;
-            case 2:
+            case archivedChannelsIndex:
                 typeOfChannels = 'archived';
                 break;
             default:

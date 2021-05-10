@@ -686,11 +686,13 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
       </View>
     </View>
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
       isBot={false}
       isInfo={true}
       isUnread={true}
+      membersCount={0}
       shared={true}
       size={18}
       style={
