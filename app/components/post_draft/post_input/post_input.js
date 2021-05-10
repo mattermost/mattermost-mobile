@@ -10,6 +10,7 @@ import PasteableTextInput from '@components/pasteable_text_input';
 import {NavigationTypes} from '@constants';
 import DEVICE from '@constants/device';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
+import {debounce} from '@mm-redux/actions/helpers';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
@@ -86,7 +87,7 @@ export default class PostInput extends PureComponent {
         }
     };
 
-    changeDraft = (text) => {
+    changeDraft = debounce((text) => {
         const {
             channelId,
             handleCommentDraftChanged,
@@ -99,7 +100,7 @@ export default class PostInput extends PureComponent {
         } else {
             handlePostDraftChanged(channelId, text);
         }
-    };
+    }, 200);
 
     checkMessageLength = (value) => {
         const {intl} = this.context;
@@ -163,7 +164,7 @@ export default class PostInput extends PureComponent {
     };
 
     handleEndEditing = (e) => {
-        if (e && e.nativeEvent) {
+        if (e && e.nativeEvent && !DEVICE.IS_TABLET) {
             this.changeDraft(e.nativeEvent.text || '');
         }
     };
@@ -196,6 +197,9 @@ export default class PostInput extends PureComponent {
         } = this.props;
         this.value = value;
         updateInitialValue(value);
+        if (DEVICE.IS_TABLET) {
+            this.changeDraft(value);
+        }
 
         if (inputEventType) {
             EventEmitter.emit(inputEventType, value);

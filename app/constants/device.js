@@ -23,7 +23,7 @@ export default {
     DOCUMENTS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Documents`,
     IMAGES_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Images`,
     IS_IPHONE_WITH_INSETS: isPhoneWithInsets,
-    IS_TABLET: DeviceInfo.isTablet(),
+    IS_TABLET: isTablet,
     VIDEOS_PATH: `${RNFetchBlobFS.dirs.CacheDir}/Videos`,
     PERMANENT_SIDEBAR_SETTINGS: '@PERMANENT_SIDEBAR_SETTINGS',
     TABLET_WIDTH: 250,
