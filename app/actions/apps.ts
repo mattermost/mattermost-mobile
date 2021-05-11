@@ -7,7 +7,7 @@ import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppForm, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 
-import {AppCallTypes, AppCallResponseTypes, AppBindingLocations} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {showModal} from './navigation';
 import {Theme} from '@mm-redux/types/preferences';
