@@ -1,18 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import type {Theme} from '@mm-redux/types/preferences';
 import {Text, TextStyle} from 'react-native';
 
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import FormattedText from '@components/formatted_text';
+import type {Theme} from '@mm-redux/types/preferences';
+
 interface ComponentProps {
-    text: string;
+    text: string | FormattedText;
     theme: Theme;
-    textStyle?: TextStyle
+    textStyle?: TextStyle;
+    ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+    numberOfLines?: number;
 }
 
-const CustomStatusText = ({text, theme, textStyle}: ComponentProps) => (
-    <Text style={[getStyleSheet(theme).label, textStyle]}>
+const CustomStatusText = ({text, theme, textStyle, ellipsizeMode, numberOfLines}: ComponentProps) => (
+    <Text
+        style={[getStyleSheet(theme).label, textStyle]}
+        ellipsizeMode={ellipsizeMode}
+        numberOfLines={numberOfLines}
+    >
         {text}
     </Text>
 );

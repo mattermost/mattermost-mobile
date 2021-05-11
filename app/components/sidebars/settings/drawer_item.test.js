@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text} from 'react-native';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
@@ -30,31 +29,14 @@ describe('DrawerItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot with label sibling element and centered and separator false', () => {
-        const labelSibling = (
-            <Text>{'Hey'}</Text>
-        );
+    test('should match snapshot with separator and centered false', () => {
+        const props = {
+            ...baseProps,
+            centered: false,
+            separator: false,
+        };
         const wrapper = shallowWithIntl(
-            <DrawerItem
-                {...baseProps}
-                centered={false}
-                separator={false}
-                labelSibling={labelSibling}
-            />,
-        );
-
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should match snapshot with failure text element', () => {
-        const failureText = (
-            <Text>{'Hey'}</Text>
-        );
-        const wrapper = shallowWithIntl(
-            <DrawerItem
-                {...baseProps}
-                failureText={failureText}
-            />,
+            <DrawerItem {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

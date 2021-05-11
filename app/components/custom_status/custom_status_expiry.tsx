@@ -113,7 +113,7 @@ const CustomStatusExpiry = (props: Props) => {
             {showTime}
             {showDay}
             {showDate}
-            <Text style={styleProp || styles.text}>{')'}</Text>
+            <Text style={styleProp || styles.text}>{') '}</Text>
         </View>
     );
 };

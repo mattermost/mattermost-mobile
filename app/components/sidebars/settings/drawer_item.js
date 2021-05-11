@@ -18,9 +18,6 @@ export default class DrawerItem extends PureComponent {
         iconName: PropTypes.string,
         isDestructor: PropTypes.bool,
         labelComponent: PropTypes.node,
-        labelFirstSibling: PropTypes.node,
-        labelSecondSibling: PropTypes.node,
-        failureText: PropTypes.node,
         leftComponent: PropTypes.node,
         onPress: PropTypes.func,
         separator: PropTypes.bool,
@@ -46,9 +43,6 @@ export default class DrawerItem extends PureComponent {
             onPress,
             separator,
             theme,
-            labelFirstSibling,
-            labelSecondSibling,
-            failureText,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -100,21 +94,8 @@ export default class DrawerItem extends PureComponent {
                     )}
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
-                            <View>
-                                {label}
-                            </View>
+                            {label}
                         </View>
-                        {labelFirstSibling && (
-                            <View style={style.labelContainer}>
-                                {labelFirstSibling}
-                            </View>
-                        )}
-                        {labelSecondSibling && (
-                            <View style={style.labelSecondSiblingContainer}>
-                                {labelSecondSibling}
-                            </View>
-                        )}
-                        {failureText}
                         {divider}
                     </View>
                 </View>
@@ -129,6 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             padding: 3,
+            minHeight: 50,
         },
         iconContainer: {
             width: 45,
@@ -146,15 +128,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
         },
         labelContainer: {
-            alignItems: 'center',
-            width: '70%',
             flex: 1,
-            flexDirection: 'row',
-        },
-        labelSecondSiblingContainer: {
-            position: 'absolute',
-            top: 3,
-            right: 14,
+            justifyContent: 'center',
         },
         centerLabel: {
             textAlign: 'center',

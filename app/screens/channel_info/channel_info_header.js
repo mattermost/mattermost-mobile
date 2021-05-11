@@ -14,6 +14,7 @@ import Clipboard from '@react-native-community/clipboard';
 
 import {popToRoot} from '@actions/navigation';
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
@@ -200,21 +201,17 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             textStyle={style.iconContainer}
                             testID={`custom_status.emoji.${customStatus?.emoji}`}
                         />
-
                         <View style={style.customStatus}>
-                            <Text
-                                style={style.customStatusText}
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                            >
-                                {customStatus?.text}
-                            </Text>
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                            >
-                                {customStatusExpiry}
-                            </Text>
+                            <View>
+                                <CustomStatusText
+                                    text={customStatus.text}
+                                    theme={theme}
+                                    textStyle={style.customStatusText}
+                                    ellipsizeMode='tail'
+                                    numberOfLines={1}
+                                />
+                            </View>
+                            {customStatusExpiry}
                         </View>
                     </View>
                 }
@@ -318,13 +315,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
         },
         customStatusContainer: {
-            position: 'relative',
             flexDirection: 'row',
             alignItems: 'center',
             paddingVertical: 10,
         },
         customStatus: {
-            flex: 1,
             flexDirection: 'row',
             width: '80%',
         },
