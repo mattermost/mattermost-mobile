@@ -1,11 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import FormData from 'form-data';
-
-import {analytics} from '@init/analytics';
-import {CustomEmoji} from '@mm-redux/types/emojis';
-import {buildQueryString} from '@mm-redux/utils/helpers';
+import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -22,27 +18,29 @@ export interface ClientEmojisMix {
 }
 
 const ClientEmojis = (superclass: any) => class extends superclass {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createCustomEmoji = async (emoji: CustomEmoji, imageData: any) => {
-        analytics.trackAPI('api_emoji_custom_add');
+        this.analytics.trackAPI('api_emoji_custom_add');
 
-        const formData = new FormData();
-        formData.append('image', imageData);
-        formData.append('emoji', JSON.stringify(emoji));
-        const request: any = {
-            method: 'post',
-            body: formData,
-        };
+        // FIXME: Multipart upload with client
+        // const formData = new FormData();
+        // formData.append('image', imageData);
+        // formData.append('emoji', JSON.stringify(emoji));
+        // const request: any = {
+        //     method: 'post',
+        //     body: formData,
+        // };
 
-        if (formData.getBoundary) {
-            request.headers = {
-                'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`,
-            };
-        }
+        // if (formData.getBoundary) {
+        //     request.headers = {
+        //         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`,
+        //     };
+        // }
 
-        return this.doFetch(
-            `${this.getEmojisRoute()}`,
-            request,
-        );
+        // return this.doFetch(
+        //     `${this.getEmojisRoute()}`,
+        //     request,
+        // );
     };
 
     getCustomEmoji = async (id: string) => {
@@ -67,7 +65,7 @@ const ClientEmojis = (superclass: any) => class extends superclass {
     };
 
     deleteCustomEmoji = async (emojiId: string) => {
-        analytics.trackAPI('api_emoji_custom_delete');
+        this.analytics.trackAPI('api_emoji_custom_delete');
 
         return this.doFetch(
             `${this.getEmojiRoute(emojiId)}`,

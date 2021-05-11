@@ -1,5 +1,8 @@
-export declare type logLevel = 'ERROR' | 'WARNING' | 'INFO';
-export declare type GenericClientResponse = {
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+declare type logLevel = 'ERROR' | 'WARNING' | 'INFO';
+declare type GenericClientResponse = {
     response: any;
     headers: Map<string, string>;
     data: any;
@@ -14,14 +17,14 @@ declare type ErrorInvalidResponse = {
         defaultMessage: string;
     };
 };
-export declare type ErrorApi = {
+declare type ErrorApi = {
     message: string;
     server_error_id: string;
     status_code: number;
     url: string;
 };
-export declare type Client4Error = ErrorOffline | ErrorInvalidResponse | ErrorApi;
-export declare type Options = {
+declare type Client4Error = ErrorOffline | ErrorInvalidResponse | ErrorApi;
+declare type ClientOptions = {
     headers?: {
         [x: string]: string;
     };
@@ -30,4 +33,3 @@ export declare type Options = {
     credentials?: 'omit' | 'same-origin' | 'include';
     body?: any;
 };
-export {};

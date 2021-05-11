@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
-import Preferences from '@mm-redux/constants/preferences';
+import {render} from '@testing-library/react-native';
+import {Preferences} from '@constants';
 
-import ErrorText from './error_text.tsx';
+import ErrorText from './index';
 
 describe('ErrorText', () => {
     const baseProps = {
@@ -15,16 +15,14 @@ describe('ErrorText', () => {
             marginHorizontal: 15,
         },
         theme: Preferences.THEMES.default,
-        error: {
-            message: 'Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols',
-        },
+        error: 'Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols',
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = render(
             <ErrorText {...baseProps}/>,
         );
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

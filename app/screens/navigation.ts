@@ -81,7 +81,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers: boolean) {
-    const theme = Preferences.THEMES.default;
+    const theme = getThemeFromState();
 
     EphemeralStore.clearNavigationComponents();
 
@@ -94,6 +94,7 @@ export function resetToSelectServer(allowOtherServers: boolean) {
                         name: Screens.SERVER,
                         passProps: {
                             allowOtherServers,
+                            theme,
                         },
                         options: {
                             layout: {

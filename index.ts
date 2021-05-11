@@ -7,6 +7,8 @@ import 'react-native-gesture-handler';
 import setFontFamily from './app/utils/font_family';
 import './app/mattermost';
 
+declare const global: { HermesInternal: null | {} };
+
 if (__DEV__) {
     const LogBox = require('react-native/Libraries/LogBox/LogBox');
     LogBox.ignoreLogs([
@@ -16,6 +18,16 @@ if (__DEV__) {
 }
 
 setFontFamily();
+
+if (global.HermesInternal) {
+    // Polyfills required to use Intl with Hermes engine
+    require('@formatjs/intl-getcanonicallocales/polyfill');
+    require('@formatjs/intl-locale/polyfill');
+    require('@formatjs/intl-pluralrules/polyfill');
+    require('@formatjs/intl-numberformat/polyfill');
+    require('@formatjs/intl-datetimeformat/polyfill');
+    require('@formatjs/intl-datetimeformat/add-golden-tz');
+}
 
 if (Platform.OS === 'android') {
     const ShareExtension = require('share_extension/index.tsx').default;

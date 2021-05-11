@@ -4,15 +4,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RNFetchBlobFetchRepsonse} from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
-import {Options} from '@mm-redux/types/client4';
+import {Analytics, create} from '@init/analytics';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
 
 export default class ClientBase {
+    analitics: Analytics|undefined;
     clusterId = '';
     csrf = '';
     defaultHeaders: {[x: string]: string} = {};
@@ -38,8 +38,8 @@ export default class ClientBase {
         return this.getUrl() + baseUrl;
     }
 
-    getOptions(options: Options) {
-        const newOptions: Options = {...options};
+    getOptions(options: ClientOptions) {
+        const newOptions: ClientOptions = {...options};
 
         const headers: {[x: string]: string} = {
             [ClientConstants.HEADER_REQUESTED_WITH]: 'XMLHttpRequest',
@@ -127,6 +127,7 @@ export default class ClientBase {
 
     setUrl(url: string) {
         this.url = url.replace(/\/+$/, '');
+        this.analitics = create(this.url);
     }
 
     // Routes
@@ -279,12 +280,12 @@ export default class ClientBase {
     }
 
     // Client Helpers
-    handleRedirectProtocol = (url: string, response: RNFetchBlobFetchRepsonse) => {
+    handleRedirectProtocol = (url: string, response: Response) => {
         const serverUrl = this.getUrl();
         const parsed = urlParse(url);
-        const {redirects} = response.rnfbRespInfo;
-        if (redirects) {
-            const redirectUrl = urlParse(redirects[redirects.length - 1]);
+
+        if (response.redirected) {
+            const redirectUrl = urlParse(response.url);
 
             if (serverUrl === parsed.origin && parsed.host === redirectUrl.host && parsed.protocol !== redirectUrl.protocol) {
                 this.setUrl(serverUrl.replace(parsed.protocol, redirectUrl.protocol));
@@ -292,13 +293,13 @@ export default class ClientBase {
         }
     };
 
-    doFetch = async (url: string, options: Options) => {
+    doFetch = async (url: string, options: ClientOptions) => {
         const {data} = await this.doFetchWithResponse(url, options);
 
         return data;
     };
 
-    doFetchWithResponse = async (url: string, options: Options) => {
+    doFetchWithResponse = async (url: string, options: ClientOptions) => {
         const response = await fetch(url, this.getOptions(options));
         const headers = parseAndMergeNestedHeaders(response.headers);
 

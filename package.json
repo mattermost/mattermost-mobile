@@ -8,6 +8,12 @@
   "private": true,
   "dependencies": {
     "@babel/runtime": "7.13.16",
+    "@formatjs/intl-datetimeformat": "3.3.5",
+    "@formatjs/intl-getcanonicallocales": "1.5.10",
+    "@formatjs/intl-locale": "2.4.24",
+    "@formatjs/intl-numberformat": "6.2.10",
+    "@formatjs/intl-pluralrules": "4.0.18",
+    "@formatjs/intl-relativetimeformat": "8.1.8",
     "@mattermost/react-native-emm": "1.1.1",
     "@mattermost/react-native-paste-input": "0.1.3",
     "@nozbe/watermelondb": "0.21.0",

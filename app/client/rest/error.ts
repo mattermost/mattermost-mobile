@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
+import {cleanUrlForLogging} from '@utils/url';
 
 export default class ClientError extends Error {
     url: string;

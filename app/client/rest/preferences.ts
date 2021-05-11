@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {PreferenceType} from '@mm-redux/types/preferences';
-
 export interface ClientPreferencesMix {
     savePreferences: (userId: string, preferences: PreferenceType[]) => Promise<any>;
     deletePreferences: (userId: string, preferences: PreferenceType[]) => Promise<any>;

@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {analytics} from '@init/analytics';
-import {Command, DialogSubmission} from '@mm-redux/types/integrations';
-import {buildQueryString} from '@mm-redux/utils/helpers';
+import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -39,7 +37,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     };
 
     executeCommand = async (command: Command, commandArgs = {}) => {
-        analytics.trackAPI('api_integrations_used');
+        this.analytics.trackAPI('api_integrations_used');
 
         return this.doFetch(
             `${this.getCommandsRoute()}/execute`,
@@ -48,7 +46,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     };
 
     addCommand = async (command: Command) => {
-        analytics.trackAPI('api_integrations_created');
+        this.analytics.trackAPI('api_integrations_created');
 
         return this.doFetch(
             `${this.getCommandsRoute()}`,
@@ -57,7 +55,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     };
 
     submitInteractiveDialog = async (data: DialogSubmission) => {
-        analytics.trackAPI('api_interactive_messages_dialog_submitted');
+        this.analytics.trackAPI('api_interactive_messages_dialog_submitted');
         return this.doFetch(
             `${this.getBaseRoute()}/actions/dialogs/submit`,
             {method: 'post', body: JSON.stringify(data)},

@@ -13,7 +13,7 @@ const isSystemAdmin = (roles: string) => {
 
 const clientMap: Record<string, Analytics> = {};
 
-class Analytics {
+export class Analytics {
     analytics: RudderClient | null = null;
     context: any;
     diagnosticId: string | undefined;

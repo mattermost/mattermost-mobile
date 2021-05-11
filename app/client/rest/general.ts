@@ -1,10 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Config} from '@mm-redux/types/config';
-import {Role} from '@mm-redux/types/roles';
-import {Dictionary} from '@mm-redux/types/utilities';
-import {buildQueryString} from '@mm-redux/utils/helpers';
+import {buildQueryString} from '@utils/helpers';
 
 import ClientError from './error';
 
@@ -12,12 +9,12 @@ export interface ClientGeneralMix {
     getOpenGraphMetadata: (url: string) => Promise<any>;
     ping: () => Promise<any>;
     logClientError: (message: string, level?: string) => Promise<any>;
-    getClientConfigOld: () => Promise<Config>;
+    getClientConfigOld: () => Promise<ClientConfig>;
     getClientLicenseOld: () => Promise<any>;
     getTimezones: () => Promise<string[]>;
     getDataRetentionPolicy: () => Promise<any>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
-    getRedirectLocation: (urlParam: string) => Promise<Dictionary<string>>;
+    getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
 }
 
 const ClientGeneral = (superclass: any) => class extends superclass {

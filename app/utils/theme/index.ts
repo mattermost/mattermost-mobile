@@ -4,9 +4,9 @@
 import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
-import * as ThemeUtils from '@mm-redux/utils/theme_utils';
+import {mergeNavigationOptions} from '@screens/navigation';
 
-import {mergeNavigationOptions} from 'app/actions/navigation';
+import type {Options} from 'react-native-navigation';
 
 const MODAL_SCREENS_WITHOUT_BACK = [
     'AddReaction',
@@ -24,22 +24,74 @@ const MODAL_SCREENS_WITHOUT_BACK = [
     'UserProfile',
 ];
 
-export function makeStyleSheetFromTheme(getStyleFromTheme) {
-    return ThemeUtils.makeStyleFromTheme((theme) => {
-        return StyleSheet.create(getStyleFromTheme(theme));
-    });
+const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;
+
+export function getComponents(inColor: string): {red: number; green: number; blue: number; alpha: number} {
+    let color = inColor;
+
+    // RGB color
+    const match = rgbPattern.exec(color);
+    if (match) {
+        return {
+            red: parseInt(match[1], 10),
+            green: parseInt(match[2], 10),
+            blue: parseInt(match[3], 10),
+            alpha: match[4] ? parseFloat(match[4]) : 1,
+        };
+    }
+
+    // Hex color
+    if (color[0] === '#') {
+        color = color.slice(1);
+    }
+
+    if (color.length === 3) {
+        const tempColor = color;
+        color = '';
+
+        color += tempColor[0] + tempColor[0];
+        color += tempColor[1] + tempColor[1];
+        color += tempColor[2] + tempColor[2];
+    }
+
+    return {
+        red: parseInt(color.substring(0, 2), 16),
+        green: parseInt(color.substring(2, 4), 16),
+        blue: parseInt(color.substring(4, 6), 16),
+        alpha: 1,
+    };
 }
 
-export const changeOpacity = ThemeUtils.changeOpacity;
+export function makeStyleSheetFromTheme(getStyleFromTheme: (a: any) => any): (a: any) => any {
+    let lastTheme: any;
+    let style: any;
+    return (theme: any) => {
+        if (!style || theme !== lastTheme) {
+            style = StyleSheet.create(getStyleFromTheme(theme));
+            lastTheme = theme;
+        }
 
-export const blendColors = ThemeUtils.blendColors;
+        return style;
+    };
+}
 
-export function concatStyles(...styles) {
+export function changeOpacity(oldColor: string, opacity: number): string {
+    const {
+        red,
+        green,
+        blue,
+        alpha,
+    } = getComponents(oldColor);
+
+    return `rgba(${red},${green},${blue},${alpha * opacity})`;
+}
+
+export function concatStyles(...styles: any) {
     return [].concat(styles);
 }
 
-export function setNavigatorStyles(componentId, theme) {
-    const options = {
+export function setNavigatorStyles(componentId: string, theme: Theme) {
+    const options: Options = {
         topBar: {
             title: {
                 color: theme.sidebarHeaderTextColor,
@@ -55,7 +107,7 @@ export function setNavigatorStyles(componentId, theme) {
         },
     };
 
-    if (!MODAL_SCREENS_WITHOUT_BACK.includes(componentId)) {
+    if (!MODAL_SCREENS_WITHOUT_BACK.includes(componentId) && options.topBar) {
         options.topBar.backButton = {
             color: theme.sidebarHeaderTextColor,
         };
@@ -64,17 +116,12 @@ export function setNavigatorStyles(componentId, theme) {
     mergeNavigationOptions(componentId, options);
 }
 
-export function isThemeSwitchingEnabled(state) {
-    const {config} = state.entities.general;
-    return config.EnableThemeSelection === 'true';
-}
-
-export function getKeyboardAppearanceFromTheme(theme) {
+export function getKeyboardAppearanceFromTheme(theme: Theme) {
     return tinyColor(theme.centerChannelBg).isLight() ? 'light' : 'dark';
 }
 
-export function hexToHue(hexColor) {
-    let {red, green, blue} = ThemeUtils.getComponents(hexColor);
+export function hexToHue(hexColor: string) {
+    let {red, green, blue} = getComponents(hexColor);
     red /= 255;
     green /= 255;
     blue /= 255;

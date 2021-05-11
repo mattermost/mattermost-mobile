@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
-import {withManagedConfig} from '@mattermost/react-native-emm';
+import {IntlProvider} from 'react-intl';
 
-import {Navigation} from 'react-native-navigation';
+import {Navigation, NavigationComponent, NavigationFunctionComponent} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import {Screens} from '@constants';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable */
 
-const withGestures = (screen: React.ComponentType<any>, styles: StyleProp<ViewStyle>) => {
+const withGestures = (screen: NavigationFunctionComponent, styles: StyleProp<ViewStyle>) => {
     if (Platform.OS === 'android') {
         return gestureHandlerRootHOC(screen, styles);
     }
@@ -21,10 +23,23 @@ const withGestures = (screen: React.ComponentType<any>, styles: StyleProp<ViewSt
     return screen;
 };
 
+const withIntl = (Screen: React.ComponentType) => {
+    return function IntlEnabledComponent(props: any) {
+        return (
+            <IntlProvider
+                locale={DEFAULT_LOCALE}
+                messages={getTranslations()}
+            >
+                <Screen {...props}/>
+            </IntlProvider>
+    );
+        }
+}
+
 Navigation.setLazyComponentRegistrator((screenName) => {
-    // let screen: any;
-    // let extraStyles: StyleProp<ViewStyle>;
-    // switch (screenName) {
+    let screen: any|undefined;
+    let extraStyles: StyleProp<ViewStyle>;
+    switch (screenName) {
     // case 'About':
     //     screen = require('@screens/about').default;
     //     break;
@@ -91,9 +106,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'Login':
     //     screen = require('@screens/login').default;
     //     break;
-    // case 'LoginOptions':
-    //     screen = require('@screens/login_options').default;
-    //     break;
+    case 'LoginOptions':
+        screen = require('@screens/login_options').default;
+        break;
     // case 'LongPost':
     //     screen = require('@screens/long_post').default;
     //     break;
@@ -191,11 +206,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
-    // }
+    }
 
-    // if (screen) {
-    //     Navigation.registerComponent(screenName, () => withGestures(withManagedConfig(screen), extraStyles));
-    // }
+    if (screen) {
+        Navigation.registerComponent(screenName, () => withGestures(withIntl(withManagedConfig(screen)), extraStyles));
+    }
 });
 
 export function registerScreens() {
@@ -203,5 +218,5 @@ export function registerScreens() {
     const serverScreen = require('@screens/server').default;
 
     Navigation.registerComponent(Screens.CHANNEL, () => withManagedConfig(channelScreen));
-    Navigation.registerComponent(Screens.SERVER, () => withManagedConfig(serverScreen));
+    Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 }

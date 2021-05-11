@@ -7,7 +7,7 @@ import nock from 'nock';
 import {HEADER_X_VERSION_ID} from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import TestHelper from 'test/test_helper';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 describe('Client4', () => {
     beforeAll(() => {
