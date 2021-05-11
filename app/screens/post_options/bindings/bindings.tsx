@@ -22,7 +22,7 @@ type Props = {
     post: Post,
     currentUser: UserProfile,
     teamID: string,
-    closeWithAnimation: () => void,
+    closeWithAnimation: (cb?: () => void) => void,
     appsEnabled: boolean,
     intl: typeof intlShape,
     actions: {
@@ -69,7 +69,7 @@ type OptionProps = {
     post: Post,
     currentUser: UserProfile,
     teamID: string,
-    closeWithAnimation: () => void,
+    closeWithAnimation: (cb?: () => void) => void,
     intl: typeof intlShape,
     actions: {
         doAppCall: DoAppCall;
@@ -101,46 +101,48 @@ class Option extends React.PureComponent<OptionProps> {
             },
         );
 
-        closeWithAnimation();
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
-        if (res.error) {
-            const errorResponse = res.error;
-            const title = intl.formatMessage({
-                id: 'mobile.general.error.title',
-                defaultMessage: 'Error',
-            });
-            const errorMessage = errorResponse.error || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error occurred.',
-            });
-            Alert.alert(title, errorMessage);
-            return;
-        }
-
-        const callResp = (res as {data: AppCallResponse}).data;
-        switch (callResp.type) {
-        case AppCallResponseTypes.OK:
-            if (callResp.markdown) {
-                postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
+        closeWithAnimation(async () => {
+            const callPromise = doAppCall(call, AppCallTypes.SUBMIT, intl);
+            const res = await callPromise;
+            if (res.error) {
+                const errorResponse = res.error;
+                const title = intl.formatMessage({
+                    id: 'mobile.general.error.title',
+                    defaultMessage: 'Error',
+                });
+                const errorMessage = errorResponse.error || intl.formatMessage({
+                    id: 'apps.error.unknown',
+                    defaultMessage: 'Unknown error occurred.',
+                });
+                Alert.alert(title, errorMessage);
+                return;
             }
-            break;
-        case AppCallResponseTypes.NAVIGATE:
-        case AppCallResponseTypes.FORM:
-            break;
-        default: {
-            const title = intl.formatMessage({
-                id: 'mobile.general.error.title',
-                defaultMessage: 'Error',
-            });
-            const errMessage = intl.formatMessage({
-                id: 'apps.error.responses.unknown_type',
-                defaultMessage: 'App response type not supported. Response type: {type}.',
-            }, {
-                type: callResp.type,
-            });
-            Alert.alert(title, errMessage);
-        }
-        }
+
+            const callResp = (res as {data: AppCallResponse}).data;
+            switch (callResp.type) {
+            case AppCallResponseTypes.OK:
+                if (callResp.markdown) {
+                    postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
+                }
+                break;
+            case AppCallResponseTypes.NAVIGATE:
+            case AppCallResponseTypes.FORM:
+                break;
+            default: {
+                const title = intl.formatMessage({
+                    id: 'mobile.general.error.title',
+                    defaultMessage: 'Error',
+                });
+                const errMessage = intl.formatMessage({
+                    id: 'apps.error.responses.unknown_type',
+                    defaultMessage: 'App response type not supported. Response type: {type}.',
+                }, {
+                    type: callResp.type,
+                });
+                Alert.alert(title, errMessage);
+            }
+            }
+        });
     };
 
     render() {
