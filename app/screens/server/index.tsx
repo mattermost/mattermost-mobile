@@ -74,13 +74,14 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
         setConnecting(false);
     };
 
-    const handleConnect = preventDoubleTap(() => {
+    const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
             cancelPing();
             return;
         }
 
-        if (!url || url.trim() === '') {
+        let serverUrl = manualUrl || url;
+        if (!serverUrl || serverUrl.trim() === '') {
             setError(intl.formatMessage({
                 id: 'mobile.server_url.empty',
                 defaultMessage: 'Please enter a valid server URL',
@@ -89,7 +90,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             return;
         }
 
-        const serverUrl = sanitizeUrl(url);
+        serverUrl = sanitizeUrl(serverUrl);
         if (!isValidUrl(serverUrl)) {
             setError(formatMessage({
                 id: 'mobile.server_url.invalid_format',
@@ -157,6 +158,20 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
         }
 
         return () => listener?.remove();
+    }, []);
+
+    useEffect(() => {
+        const serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+
+        if (serverUrl) {
+            // If a server Url is set by the managed or local configuration, use it.
+            setUrl(serverUrl);
+
+            if (managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl) {
+                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+            }
+        }
     }, []);
 
     let buttonIcon;
