@@ -38,7 +38,7 @@ describe('Clock Display', () => {
         await System.apiUpdateConfig({DisplaySettings: {ExperimentalTimezone: true}});
 
         const {team, user} = await Setup.apiInit();
-        ({channel: testChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: testChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         // # Set user's timezone
         await User.apiPatchUser(user.id, {timezone: {automaticTimezone: '', manualTimezone: testTimezone, useAutomaticTimezone: 'false'}});

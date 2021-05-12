@@ -29,7 +29,7 @@ describe('Guest Experience', () => {
         testGuestUser = user;
         testTeam = team;
 
-        ({channel: testChannel} = await Channel.apiGetChannelByName(testTeam.name, 'town-square'));
+        ({channel: testChannel} = await Channel.apiGetChannelByName(testTeam.id, 'town-square'));
 
         // # Demote user to guest
         await User.apiDemoteUserToGuest(testGuestUser.id);

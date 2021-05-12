@@ -22,7 +22,7 @@ describe('Language Settings', () => {
         const {team, user} = await Setup.apiInit();
         testUser = user;
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
     });
 
     afterAll(async () => {
