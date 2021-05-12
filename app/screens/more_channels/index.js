@@ -19,13 +19,15 @@ import {teamArchivedChannels, joinablePublicChannels, joinableSharedChannels} fr
 
 import MoreChannels from './more_channels';
 
+const defaultSharedChannels = [];
+
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
     const sharedChannelsEnabled = config.ExperimentalSharedChannels === 'true';
     const roles = getCurrentUserRoles(state);
     const channels = joinablePublicChannels(state);
-    const sharedChannels = sharedChannelsEnabled ? joinableSharedChannels(state) : [];
+    const sharedChannels = sharedChannelsEnabled ? joinableSharedChannels(state) : defaultSharedChannels;
     const archivedChannels = teamArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
     const canShowArchivedChannels = config.ExperimentalViewArchivedChannels === 'true' &&
