@@ -25,7 +25,6 @@ describe('ChannelBase', () => {
             getChannelStats: jest.fn(),
             loadChannelsForTeam: jest.fn(),
             markChannelViewedAndRead: jest.fn(),
-            recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
         },

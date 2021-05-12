@@ -8,7 +8,7 @@ import {General} from '../constants';
 import {UserTypes, TeamTypes} from '@mm-redux/action_types';
 import {getAllCustomEmojis} from './emojis';
 import {getClientConfig, setServerVersion} from './general';
-import {getMyTeams, getMyTeamMembers, getMyTeamUnreads} from './teams';
+import {getMyTeams} from './teams';
 import {loadRolesIfNeeded} from './roles';
 import {getUserIdFromChannelName, isDirectChannel, isDirectChannelVisible, isGroupChannel, isGroupChannelVisible} from '@mm-redux/utils/channel_utils';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
@@ -188,47 +188,6 @@ function completeLogin(data: UserProfile): ActionFunc {
         }
         if (roles.size > 0) {
             dispatch(loadRolesIfNeeded(roles));
-        }
-
-        return {data: true};
-    };
-}
-
-export function loadMe(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const state = getState();
-        const config = getConfig(state);
-
-        const deviceId = state.entities.general.deviceToken;
-        if (deviceId) {
-            Client4.attachDevice(deviceId);
-        }
-
-        const promises = [
-            dispatch(getMe()),
-            dispatch(getMyPreferences()),
-            dispatch(getMyTeams()),
-            dispatch(getMyTeamMembers()),
-            dispatch(getMyTeamUnreads()),
-        ];
-
-        // Sometimes the server version is set in one or the other
-        const serverVersion = Client4.getServerVersion() || getState().entities.general.serverVersion;
-        dispatch(setServerVersion(serverVersion));
-        if (!isMinimumServerVersion(serverVersion, 4, 7) && config.EnableCustomEmoji === 'true') {
-            dispatch(getAllCustomEmojis());
-        }
-
-        await Promise.all(promises);
-
-        const {currentUserId} = getState().entities.users;
-        const user = getState().entities.users.profiles[currentUserId];
-        if (currentUserId) {
-            analytics.setUserId(currentUserId);
-        }
-
-        if (user) {
-            analytics.setUserRoles(user.roles);
         }
 
         return {data: true};

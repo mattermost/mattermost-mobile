@@ -11,7 +11,6 @@ const deviceTypes = keyMirror({
     DEVICE_DIMENSIONS_CHANGED: null,
     DEVICE_TYPE_CHANGED: null,
     DEVICE_ORIENTATION_CHANGED: null,
-    STATUSBAR_HEIGHT_CHANGED: null,
 });
 
 const isPhoneWithInsets = Platform.OS === 'ios' && DeviceInfo.hasNotch();

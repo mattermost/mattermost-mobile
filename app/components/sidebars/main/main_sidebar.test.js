@@ -15,7 +15,6 @@ describe('MainSidebar', () => {
     const baseProps = {
         actions: {
             getTeams: jest.fn(),
-            logChannelSwitch: jest.fn(),
             makeDirectChannel: jest.fn(),
             setChannelDisplayName: jest.fn(),
             setChannelLoading: jest.fn(),

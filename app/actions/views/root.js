@@ -4,7 +4,6 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {NavigationTypes, ViewTypes} from '@constants';
-import {analytics} from '@init/analytics.ts';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {fetchMyChannelsAndMembers, getChannelAndMyMember} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
@@ -177,14 +176,6 @@ export function createPostForNotificationReply(post) {
         } catch (error) {
             return {error};
         }
-    };
-}
-
-export function recordLoadTime(screenName, category) {
-    return async (dispatch, getState) => {
-        const {currentUserId} = getState().entities.users;
-
-        analytics.recordTime(screenName, category, currentUserId);
     };
 }
 
