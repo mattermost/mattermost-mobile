@@ -39,6 +39,9 @@ const prepackagedPlugins = [
  */
 export const apiDisableNonPrepackagedPlugins = async () => {
     const {plugins} = await apiGetAllPlugins();
+    if (!plugins) {
+        return;
+    }
     plugins.active.forEach(async (plugin) => {
         if (!prepackagedPlugins.includes(plugin.id)) {
             await apiDisablePluginById(plugin.id);
