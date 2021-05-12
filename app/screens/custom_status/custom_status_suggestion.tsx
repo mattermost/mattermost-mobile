@@ -68,15 +68,15 @@ const CustomStatusSuggestion = (props: Props) => {
                                 textStyle={{color: theme.centerChannelColor}}
                             />
                         </View>
-                        <View style={style.expiryTimeContainer}>
-                            {duration && (
+                        {duration ? (
+                            <View style={style.expiryTimeContainer}>
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}
                                     theme={theme}
                                     textStyle={{color: changeOpacity(theme.centerChannelColor, 0.6)}}
                                 />
-                            )}
-                        </View>
+                            </View>
+                        ) : null}
                     </View>
                     {clearButton}
                     {separator && <View style={style.divider}/>}
