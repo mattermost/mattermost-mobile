@@ -58,7 +58,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
         const {allowOtherServers} = managedConfig;
         let visible = !LocalConfig.AutoSelectServerUrl;
 
-        if (!allowOtherServers) {
+        if (allowOtherServers === 'false') {
             visible = false;
         }
 
@@ -80,7 +80,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             return;
         }
 
-        let serverUrl = manualUrl || url;
+        let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
             setError(intl.formatMessage({
                 id: 'mobile.server_url.empty',
