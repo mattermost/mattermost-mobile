@@ -942,8 +942,6 @@ export function getArchivedChannels(teamId: string, page = 0, perPage: number = 
 
 export function getSharedChannels(teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        dispatch({type: ChannelTypes.GET_CHANNELS_REQUEST, data: null});
-
         let channels;
         try {
             channels = await Client4.getSharedChannels(teamId, page, perPage);

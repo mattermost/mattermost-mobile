@@ -454,7 +454,7 @@ export default class MoreChannels extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, canShowArchivedChannels} = this.props;
+        const {canShowArchivedChannels, sharedChannelsEnabled, theme} = this.props;
         const {adding, channels, sharedChannels, archivedChannels, loading, term, typeOfChannels} = this.state;
         const more = term ? emptyFunction : this.getChannels;
         const style = getStyleFromTheme(theme);
@@ -478,7 +478,7 @@ export default class MoreChannels extends PureComponent {
             }
 
             let channelDropdown;
-            if (canShowArchivedChannels) {
+            if (canShowArchivedChannels || sharedChannelsEnabled) {
                 let channelDropdownText;
                 if (typeOfChannels === 'public') {
                     channelDropdownText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});

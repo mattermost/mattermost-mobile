@@ -21,7 +21,7 @@ type Props = {
     shared: boolean;
     size: number;
     statusStyle?: StyleProp<ViewStyle>;
-    style: StyleProp<ViewStyle>;
+    style?: StyleProp<ViewStyle>;
     testID?: string;
     theme: Theme;
     type: string;
@@ -124,23 +124,15 @@ const ChannelIcon = (props: Props) => {
             />
         );
     } else if (props.shared) {
-        if (props.type === General.PRIVATE_CHANNEL) {
-            icon = (
-                <CompassIcon
-                    name='circle-multiple-outline-lock'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: 0.5}]}
-                    testID='channel_icon.shared_private'
-                />
-            );
-        } else {
-            icon = (
-                <CompassIcon
-                    name='circle-multiple-outline'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: 0.5}]}
-                    testID='channel_icon.shared_open'
-                />
-            );
-        }
+        const iconName = props.type === General.PRIVATE_CHANNEL ? 'circle-multiple-outline-lock' : 'circle-multiple-outline';
+        const sharedTestID = props.type === General.PRIVATE_CHANNEL ? 'channel_icon.shared_private' : 'channel_icon.shared_open';
+        icon = (
+            <CompassIcon
+                name={iconName}
+                style={[style.icon, unreadIcon, activeIcon, {fontSize: props.size, left: 0.5}]}
+                testID={sharedTestID}
+            />
+        );
     } else if (props.type === General.OPEN_CHANNEL) {
         icon = (
             <CompassIcon

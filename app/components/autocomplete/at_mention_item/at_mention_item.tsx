@@ -163,7 +163,6 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         isUnread={true}
                         size={18}
                         shared={true}
-                        style={style.sharedUserIcon}
                         theme={theme}
                         type={General.DM_CHANNEL}
                     />
