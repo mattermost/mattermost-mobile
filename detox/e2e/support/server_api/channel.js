@@ -120,7 +120,7 @@ export const apiDeleteUserFromChannel = async (channelId, userId) => {
 /**
  * Get a channel by name.
  * See https://api.mattermost.com/#operation/GetChannelByName
- * @param {string} teamName - team name
+ * @param {string} teamId - team ID
  * @param {string} channelName - channel name
  * @return {Object} returns {channel} on success or {error, status} on error
  */
