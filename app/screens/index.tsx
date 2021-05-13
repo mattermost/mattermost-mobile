@@ -6,7 +6,7 @@ import React from 'react';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
 import {IntlProvider} from 'react-intl';
 
-import {Navigation, NavigationComponent, NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import {Screens} from '@constants';
@@ -103,9 +103,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'InteractiveDialog':
     //     screen = require('@screens/interactive_dialog').default;
     //     break;
-    // case 'Login':
-    //     screen = require('@screens/login').default;
-    //     break;
+    case 'Login':
+        screen = require('@screens/login').default;
+        break;
     case 'LoginOptions':
         screen = require('@screens/login_options').default;
         break;

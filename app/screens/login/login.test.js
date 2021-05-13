@@ -9,8 +9,8 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import * as NavigationActions from 'app/actions/navigation';
 
-import {MFA_EXPECTED_ERRORS} from '@screens/login/login';
-import Login from './login';
+import {MFA_EXPECTED_ERRORS} from '@screens/login/index';
+import Login from './index';
 
 describe('Login', () => {
     const baseProps = {

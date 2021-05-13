@@ -61,7 +61,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, license, theme}: Log
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {config, license});
     });
 
     const displaySSO = preventDoubleTap((ssoType: string) => {

@@ -4,6 +4,7 @@
 import {GlobalStyles} from '@app/styles';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import FormattedText from '@components/formatted_text';
+import {scheduleExpiredNotification} from '@requests/remote/session';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -26,6 +27,7 @@ import {
     ViewStyle,
 } from 'react-native';
 import Button from 'react-native-button';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 
 type LoginProps = {
@@ -42,6 +44,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
 
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
+    const scrollRef = useRef<KeyboardAwareScrollView>(null);
 
     const intl = useIntl();
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -114,7 +117,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
 
     const signIn = async () => {
         if (isLoading) {
-            const result = await actions.login(loginId.toLowerCase(), password);
+            const result = await login(loginId.toLowerCase(), password);
             if (checkLoginResponse(result)) {
                 goToChannel();
             }
@@ -127,7 +130,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     };
 
     const scheduleSessionExpiredNotification = () => {
-        actions.scheduleExpiredNotification(intl);
+        scheduleExpiredNotification(intl);
     };
 
     const checkLoginResponse = (data) => {
@@ -298,7 +301,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                 accessible={false}
             >
                 <KeyboardAwareScrollView
-                    ref={this.scrollRef}
+                    ref={scrollRef}
                     style={styles.container}
                     contentContainerStyle={styles.innerContainer}
                     keyboardShouldPersistTaps='handled'

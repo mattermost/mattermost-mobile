@@ -51,6 +51,7 @@
     "react-native-gesture-handler": "1.10.3",
     "react-native-haptic-feedback": "1.11.0",
     "react-native-hw-keyboard-event": "0.0.4",
+    "react-native-keyboard-aware-scroll-view": "0.9.4",
     "react-native-keyboard-tracking-view": "5.7.0",
     "react-native-keychain": "7.0.0",
     "react-native-linear-gradient": "2.5.6",
