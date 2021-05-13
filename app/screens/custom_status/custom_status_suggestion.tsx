@@ -27,13 +27,19 @@ const CustomStatusSuggestion = (props: Props) => {
 
     const handleClick = useCallback(preventDoubleTap(() => {
         handleSuggestionClick({emoji, text});
-    }), [emoji, text]);
+    }), []);
+
+    const handleSuggestionClear = useCallback(() => {
+        if (handleClear) {
+            handleClear({emoji, text});
+        }
+    }, []);
 
     const clearButton = handleClear ?
         (
             <View style={style.clearButtonContainer}>
                 <ClearButton
-                    handlePress={() => handleClear({emoji, text})}
+                    handlePress={handleSuggestionClear}
                     theme={theme}
                     iconName='close'
                     size={18}
