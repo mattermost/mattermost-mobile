@@ -1,18 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GlobalStyles} from '@app/styles';
-import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
-import FormattedText from '@components/formatted_text';
-import {scheduleExpiredNotification} from '@requests/remote/session';
-import {goToScreen, resetToChannel} from '@screens/navigation';
-import {t} from '@utils/i18n';
-import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator,
+    Dimensions,
     Image,
     InteractionManager,
     Keyboard,
@@ -29,6 +22,16 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {NavigationFunctionComponent} from 'react-native-navigation';
+
+import {GlobalStyles} from '@app/styles';
+import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import {useManagedConfig} from '@mattermost/react-native-emm';
+import {scheduleExpiredNotification} from '@requests/remote/session';
+import {goToScreen, resetToChannel} from '@screens/navigation';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type LoginProps = {
     componentId: string;
@@ -47,11 +50,35 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     const scrollRef = useRef<KeyboardAwareScrollView>(null);
 
     const intl = useIntl();
+    const managedConfig = useManagedConfig();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<ClientErrorWithIntl | string | undefined | null>();
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
+    // useEffect for orientation change
+    useEffect(() => {
+        Dimensions.addEventListener('change', handleOrientationDidChange);
+        return () => Dimensions.removeEventListener('change', handleOrientationDidChange);
+    }, []);
+
+    // useEffect to set userName for EMM
+    useEffect(() => {
+        const setEmmUsernameIfAvailable = async () => {
+            if (managedConfig?.username && loginRef.current) {
+                loginRef.current.setNativeProps({text: managedConfig.username});
+                setLoginId(managedConfig.username);
+            }
+        };
+
+        setEmmUsernameIfAvailable();
+    }, []);
+
+    const handleOrientationDidChange = () => {
+        if (this.scroll.current) {
+            this.scroll.current.scrollTo({x: 0, y: 0, animated: true});
+        }
+    };
     const preSignIn = preventDoubleTap(() => {
         setIsLoading(true);
         setError(null);
@@ -157,19 +184,19 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
         goToScreen(screen, title, {goToChannel, loginId, password});
     };
 
-    const getLoginErrorMessage = (error) => {
-        return (getServerErrorForLogin(error) || error);
+    const getLoginErrorMessage = (loginError) => {
+        return (getServerErrorForLogin(loginError) || loginError);
     };
 
-    const getServerErrorForLogin = (error) => {
-        if (!error) {
+    const getServerErrorForLogin = (serverError) => {
+        if (!serverError) {
             return null;
         }
 
-        const errorId = error.server_error_id;
+        const errorId = serverError.server_error_id;
 
         if (!errorId) {
-            return error.message;
+            return serverError.message;
         }
 
         if (errorId === 'store.sql_user.get_for_login.app_error' || errorId === 'ent.ldap.do_login.user_not_registered.app_error') {
@@ -190,7 +217,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
             };
         }
 
-        return error.message;
+        return serverError.message;
     };
 
     const onPressForgotPassword = () => {
