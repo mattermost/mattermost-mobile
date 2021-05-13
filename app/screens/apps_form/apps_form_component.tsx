@@ -39,7 +39,7 @@ export type Props = {
     componentId: string;
 }
 
-type State = {
+export type State = {
     values: AppFormValues;
     formError: string | null;
     fieldErrors: {[name: string]: React.ReactNode};
