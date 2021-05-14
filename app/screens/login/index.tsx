@@ -136,6 +136,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
 
                 return;
             }
+
             signIn();
         });
     });
