@@ -4,6 +4,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ClientOptions} from '@typings/api/client4';
 import urlParse from 'url-parse';
 
 import {Analytics, create} from '@init/analytics';
@@ -12,7 +13,7 @@ import * as ClientConstants from './constants';
 import ClientError from './error';
 
 export default class ClientBase {
-    analitics: Analytics|undefined;
+    analytics: Analytics|undefined;
     clusterId = '';
     csrf = '';
     defaultHeaders: {[x: string]: string} = {};
@@ -127,7 +128,7 @@ export default class ClientBase {
 
     setUrl(url: string) {
         this.url = url.replace(/\/+$/, '');
-        this.analitics = create(this.url);
+        this.analytics = create(this.url);
     }
 
     // Routes

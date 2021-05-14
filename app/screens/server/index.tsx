@@ -37,7 +37,9 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
     const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
     const [error, setError] = useState<ClientErrorWithIntl|string|undefined>();
-    const [url, setUrl] = useState<string>('');
+
+    //fixme: remove hardcoded url
+    const [url, setUrl] = useState<string>('https://rc.test.mattermost.com');
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 

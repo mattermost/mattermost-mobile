@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {login} from '@requests/remote/user';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator,
-    Dimensions,
     Image,
     InteractionManager,
     Keyboard,
@@ -53,14 +53,22 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     const managedConfig = useManagedConfig();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<ClientErrorWithIntl | string | undefined | null>();
-    const [loginId, setLoginId] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
 
+    //fixme: remove hardcoded value for loginId and password
+    const [loginId, setLoginId] = useState<string>('avinash.lingaloo@mattermost.com');
+    const [password, setPassword] = useState<string>('AluminiumZ545*');
+
+    //fixme: is this necessary ?
     // useEffect for orientation change
-    useEffect(() => {
-        Dimensions.addEventListener('change', handleOrientationDidChange);
-        return () => Dimensions.removeEventListener('change', handleOrientationDidChange);
-    }, []);
+    // useEffect(() => {
+    //     const handleOrientationDidChange = () => {
+    //         if (this.scroll.current) {
+    //             this.scroll.current.scrollTo({x: 0, y: 0, animated: true});
+    //         }
+    //     };
+    //     Dimensions.addEventListener('change', handleOrientationDidChange);
+    //     return () => Dimensions.removeEventListener('change', handleOrientationDidChange);
+    // }, []);
 
     // useEffect to set userName for EMM
     useEffect(() => {
@@ -74,14 +82,10 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
         setEmmUsernameIfAvailable();
     }, []);
 
-    const handleOrientationDidChange = () => {
-        if (this.scroll.current) {
-            this.scroll.current.scrollTo({x: 0, y: 0, animated: true});
-        }
-    };
-    const preSignIn = preventDoubleTap(() => {
+    const preSignIn = preventDoubleTap(async () => {
         setIsLoading(true);
         setError(null);
+
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {
             if (!loginId) {
@@ -111,43 +115,35 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                 });
 
                 setIsLoading(false);
-                setError(
-                    intl.formatMessage(
-                        {
-                            id: msgId,
-                            defaultMessage: '',
-                        },
-                        {
-                            ldapUsername: config.LdapLoginFieldName || ldapUsername,
-                        },
-                    ),
-                );
+                setError(intl.formatMessage(
+                    {
+                        id: msgId,
+                        defaultMessage: '',
+                    },
+                    {
+                        ldapUsername: config.LdapLoginFieldName || ldapUsername,
+                    },
+                ));
                 return;
             }
 
             if (!password) {
                 setIsLoading(false);
-                setError(
-                    intl.formatMessage(
-                        {
-                            id: t('login.noPassword'),
-                            defaultMessage: 'Please enter your password',
-                        },
-                    ),
-                );
+                setError(intl.formatMessage({
+                    id: t('login.noPassword'),
+                    defaultMessage: 'Please enter your password',
+                }));
+
                 return;
             }
-
             signIn();
         });
     });
 
     const signIn = async () => {
-        if (isLoading) {
-            const result = await login(loginId.toLowerCase(), password);
-            if (checkLoginResponse(result)) {
-                goToChannel();
-            }
+        const result = await login({loginId: loginId.toLowerCase(), password});
+        if (checkLoginResponse(result)) {
+            goToChannel();
         }
     };
 
@@ -160,10 +156,9 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
         scheduleExpiredNotification(intl);
     };
 
-    const checkLoginResponse = (data) => {
+    const checkLoginResponse = (data: any) => {
         if (MFA_EXPECTED_ERRORS.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
             goToMfa();
-
             setIsLoading(false);
             return false;
         }
@@ -184,11 +179,11 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
         goToScreen(screen, title, {goToChannel, loginId, password});
     };
 
-    const getLoginErrorMessage = (loginError) => {
+    const getLoginErrorMessage = (loginError: any) => {
         return (getServerErrorForLogin(loginError) || loginError);
     };
 
-    const getServerErrorForLogin = (serverError) => {
+    const getServerErrorForLogin = (serverError: any) => {
         if (!serverError) {
             return null;
         }
@@ -338,14 +333,14 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         source={require('@assets/images/logo.png')}
                         style={{height: 72, resizeMode: 'contain'}}
                     />
-                    <View testID='login.screen'>
-                        <Text style={GlobalStyles.header}>{config.SiteName}</Text>
+                    {config?.SiteName && (<View testID='login.screen'>
+                        <Text style={GlobalStyles.header}>{config?.SiteName}</Text>
                         <FormattedText
                             style={GlobalStyles.subheader}
                             id='web.root.signup_info'
                             defaultMessage='All team communication in one place, searchable and accessible anywhere'
                         />
-                    </View>
+                    </View>)}
                     {error && (
                         <ErrorText
                             testID='login.error.text'
@@ -368,6 +363,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         returnKeyType='next'
                         style={GlobalStyles.inputBox}
                         underlineColorAndroid='transparent'
+                        value={loginId} //to remove
                     />
                     <TextInput
                         testID='login.password.input'
@@ -386,6 +382,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         returnKeyType='go'
                         secureTextEntry={true}
                         underlineColorAndroid='transparent'
+                        value={password} //to remove
                     />
                     {getProceed()}
                     {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (

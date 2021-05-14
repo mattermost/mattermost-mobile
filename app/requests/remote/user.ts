@@ -7,10 +7,12 @@ import DatabaseConnectionException from '@database/exceptions/database_connectio
 import DatabaseManager from '@database/manager';
 import {Q} from '@nozbe/watermelondb';
 import {Client4Error} from '@typings/api/client4';
+import Global from '@typings/database/global';
 
 const HTTP_UNAUTHORIZED = 401;
 
 //fixme: this file needs to be finalized
+//todo: retrieve deviceToken from default database - Global entity
 
 export const logout = async (skipServerLogout = false) => {
     return async () => {
@@ -41,4 +43,42 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         logout(false);
     }
+};
+
+type LoginArgs = {loginId: string, password: string, mfaToken?: string, ldapOnly?: boolean}
+export const login = async ({loginId, password, mfaToken, ldapOnly = false}: LoginArgs) => {
+    const database = await DatabaseManager.getDefaultDatabase();
+
+    if (!database) {
+        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
+    }
+
+    let deviceToken;
+    let user;
+
+    try {
+        const tokens = await database.collections.get(MM_TABLES.DEFAULT.GLOBAL).query(Q.where('name', 'deviceToken')).fetch() as Global[];
+
+        console.log('called login api method with ', loginId, password);
+        deviceToken = tokens?.[0]?.value ?? '';
+        user = await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly);
+        console.log('user =>> ', user);
+
+        //todo : setCSRFFromCookie
+        // await setCSRFFromCookie(Client4.getUrl());
+    } catch (error) {
+        return {error};
+    }
+
+    //todo : loadMe
+    // const result = await dispatch(loadMe(user));
+
+    // if (!result.error) {
+    //     //todo: completeLogin
+    //     // dispatch(completeLogin(user, deviceToken));
+    // }
+    // return user;
+    //     return result;
+
+    return user;
 };

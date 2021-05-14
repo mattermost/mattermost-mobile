@@ -47,7 +47,7 @@ const ErrorText = ({error, testID, textStyle, theme}: ErrorProps) => {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         errorLabel: {
-            color: (theme.errorTextColor || '#DA4A4A'),
+            color: (theme?.errorTextColor || '#DA4A4A'),
             marginTop: 15,
             marginBottom: 15,
             fontSize: 12,
