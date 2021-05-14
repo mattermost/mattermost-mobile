@@ -196,8 +196,6 @@
   "mobile.channel_list.not_member": "KEIN MITGLIED",
   "mobile.channel_list.unreads": "UNGELESENE",
   "mobile.channel_members.add_members_alert": "Sie müssen mindestens ein Mitglied auswählen, um es dem Kanal hinzuzufügen.",
-  "mobile.client_upgrade.latest_version": "Ihre Version: {version}",
-  "mobile.client_upgrade.no_upgrade_title": "Ihre App ist aktuell",
   "mobile.commands.error_title": "Fehler beim Ausführen des Befehls",
   "mobile.components.error_list.dismiss_all": "Alle verwerfen",
   "mobile.components.select_server_view.connect": "Verbinden",
