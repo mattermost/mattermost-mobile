@@ -196,7 +196,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 Suggestion: '/' + item.trigger,
                 Hint: item.auto_complete_hint,
                 Description: item.auto_complete_desc,
-                IconData: item.icon_url,
+                IconData: item.icon_url || item.autocomplete_icon_data,
             };
         });
     }
