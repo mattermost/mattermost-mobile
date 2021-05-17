@@ -9,6 +9,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {generateId} from '@utils/file';
 import {isGifTooLarge, openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {fileNameFromLink} from '@utils/url';
 
 import {Theme} from '@mm-redux/types/preferences';
 import {PostImage} from '@mm-redux/types/posts';
@@ -88,7 +89,7 @@ export default class AttachmentImage extends PureComponent<Props, State> {
             } as FileInfo;
         }
 
-        let filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1, imageUrl.indexOf('?') === -1 ? imageUrl.length : imageUrl.indexOf('?'));
+        let filename = fileNameFromLink(imageUrl);
         const extension = filename.split('.').pop();
 
         if (extension === filename) {
@@ -135,6 +136,16 @@ export default class AttachmentImage extends PureComponent<Props, State> {
 
         if (imageMetadata) {
             this.setImageDimensionsFromMeta(imageURL, imageMetadata);
+            return;
+        }
+
+        const {extension} = this.getFileInfo();
+        if (extension === 'svg') {
+            if (this.mounted) {
+                this.setState({
+                    imageUri: imageURL,
+                });
+            }
         }
     };
 

@@ -20,6 +20,7 @@ import AttachmentText from './attachment_text';
 import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
 import AttachmentFooter from './attachment_footer';
+import {isSVGLink} from '@utils/url';
 
 type Props = {
     attachment: MessageAttachmentType,
@@ -49,7 +50,7 @@ export default function MessageAttachment(props: Props) {
 
     const style = getStyleSheet(theme);
     const STATUS_COLORS = getStatusColors(theme);
-    const hasImage = Boolean(metadata?.images?.[attachment.image_url]);
+    const hasImage = Boolean(metadata?.images?.[attachment.image_url]) || isSVGLink(attachment.image_url);
 
     let borderStyle;
     if (attachment.color) {

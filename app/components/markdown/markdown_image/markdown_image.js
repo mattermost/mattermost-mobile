@@ -23,7 +23,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
-import {normalizeProtocol, tryOpenURL} from '@utils/url';
+import {fileNameFromLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -62,7 +62,7 @@ export default class MarkdownImage extends ImageViewPort {
     getFileInfo = () => {
         const {originalHeight, originalWidth} = this.state;
         const link = decodeURIComponent(this.getSource());
-        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        let filename = parseUrl(fileNameFromLink(link)).pathname.replace('/', '');
         let extension = filename.split('.').pop();
 
         if (extension === filename) {
@@ -98,7 +98,8 @@ export default class MarkdownImage extends ImageViewPort {
             return;
         }
 
-        if (!width || !height) {
+        const {extension} = this.getFileInfo();
+        if (extension !== 'svg' && (!width || !height)) {
             this.setState({failed: true});
             return;
         }
@@ -224,6 +225,26 @@ export default class MarkdownImage extends ImageViewPort {
                     </TouchableWithFeedback>
                 );
             }
+        } else if (fileInfo.extension === 'svg') {
+            let source = null;
+            if (fileInfo.uri) {
+                source = {uri: fileInfo.uri};
+            }
+
+            image = (
+                <TouchableWithFeedback
+                    onLongPress={this.handleLinkLongPress}
+                    onPress={this.handlePreviewImage}
+                    style={{width, height}}
+                >
+                    <ProgressiveImage
+                        id={fileInfo.id}
+                        defaultSource={source}
+                        resizeMode='contain'
+                        style={{width, height}}
+                    />
+                </TouchableWithFeedback>
+            );
         }
 
         if (image && this.props.linkDestination) {

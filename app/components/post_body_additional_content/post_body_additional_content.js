@@ -21,7 +21,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
-import {getYouTubeVideoId, isImageLink, isYoutubeLink, tryOpenURL} from '@utils/url';
+import {fileNameFromLink, getYouTubeVideoId, isImageLink, isYoutubeLink, tryOpenURL} from '@utils/url';
 import EmbeddedBindings from '@components/embedded_bindings';
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
@@ -123,7 +123,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         }
 
         const url = decodeURIComponent(link);
-        let filename = parseUrl(url.substr(url.lastIndexOf('/'))).pathname.replace('/', '');
+        let filename = parseUrl(fileNameFromLink(url)).pathname.replace('/', '');
         let extension = filename.split('.').pop();
 
         if (extension === filename) {
