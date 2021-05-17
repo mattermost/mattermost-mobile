@@ -92,7 +92,7 @@ exports[`DrawerItem should match snapshot 1`] = `
 </ForwardRef>
 `;
 
-exports[`DrawerItem should match snapshot with separator and centered false 1`] = `
+exports[`DrawerItem should match snapshot without separator and centered false 1`] = `
 <ForwardRef
   onPress={[MockFunction]}
   testID="test-id"

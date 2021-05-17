@@ -29,7 +29,7 @@ describe('DrawerItem', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot with separator and centered false', () => {
+    test('should match snapshot without separator and centered false', () => {
         const props = {
             ...baseProps,
             centered: false,
