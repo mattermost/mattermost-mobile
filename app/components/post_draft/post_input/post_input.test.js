@@ -4,7 +4,9 @@
 import React from 'react';
 import {Alert} from 'react-native';
 import {shallowWithIntl} from 'test/intl-test-helper';
+import TestHelper from 'test/test_helper';
 
+import Device from '@constants/device';
 import Preferences from '@mm-redux/constants/preferences';
 
 import PostInput from './post_input';
@@ -48,7 +50,7 @@ describe('PostInput', () => {
         expect(instance.changeDraft).not.toBeCalled();
     });
 
-    test('should emit the event and text is save to draft', () => {
+    test('should emit the event and text is save to draft', async () => {
         const wrapper = shallowWithIntl(
             <PostInput {...baseProps}/>,
         );
@@ -58,6 +60,7 @@ describe('PostInput', () => {
 
         instance.setValue(value);
         instance.handleAppStateChange('background');
+        await TestHelper.wait(200);
         expect(baseProps.handlePostDraftChanged).toHaveBeenCalledWith(baseProps.channelId, value);
         expect(baseProps.handlePostDraftChanged).toHaveBeenCalledTimes(1);
     });
@@ -75,6 +78,37 @@ describe('PostInput', () => {
 
         expect(Alert.alert).toBeCalled();
         expect(Alert.alert).toHaveBeenCalledTimes(1);
+    });
+
+    test('should save the draft onChangeText for tablets', async () => {
+        Device.IS_TABLET = true;
+        const wrapper = shallowWithIntl(
+            <PostInput {...baseProps}/>,
+        );
+
+        const instance = wrapper.instance();
+        const value = 'some text';
+
+        instance.handleTextChange(value);
+        await TestHelper.wait(200);
+
+        expect(baseProps.handlePostDraftChanged).toBeCalled();
+        expect(baseProps.handlePostDraftChanged).toHaveBeenCalledTimes(1);
+    });
+
+    test('should not save the draft onEndEditing for tablets', async () => {
+        Device.IS_TABLET = true;
+        const wrapper = shallowWithIntl(
+            <PostInput {...baseProps}/>,
+        );
+
+        const instance = wrapper.instance();
+        const value = 'some text';
+
+        instance.handleEndEditing(value);
+        await TestHelper.wait(200);
+
+        expect(baseProps.handlePostDraftChanged).not.toBeCalled();
     });
 });
 

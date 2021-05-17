@@ -35,16 +35,13 @@ import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
 import {Client4} from '@client/rest';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
-import tracker from '@utils/time_tracker';
 import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import telemetry from 'app/telemetry';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
@@ -55,16 +52,12 @@ export default class SelectServer extends PureComponent {
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
             resetPing: PropTypes.func.isRequired,
-            setLastUpgradeCheck: PropTypes.func.isRequired,
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
-        currentVersion: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
-        latestVersion: PropTypes.string,
         license: PropTypes.object,
-        minVersion: PropTypes.string,
         serverUrl: PropTypes.string.isRequired,
         deepLinkURL: PropTypes.string,
     };
@@ -115,25 +108,11 @@ export default class SelectServer extends PureComponent {
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
         this.sslProblemListener = DeviceEventEmitter.addListener('RNFetchBlobSslProblem', this.handleSslProblem);
-
-        telemetry.end(['start:select_server_screen']);
-        telemetry.save();
     }
 
     componentDidUpdate(prevProps, prevState) {
         if (this.state.connected && this.props.hasConfigAndLicense && !(prevState.connected && prevProps.hasConfigAndLicense)) {
-            if (LocalConfig.EnableMobileClientUpgrade) {
-                this.props.actions.setLastUpgradeCheck();
-                const {currentVersion, minVersion, latestVersion} = this.props;
-                const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion);
-                if (isUpgradeAvailable(upgradeType)) {
-                    this.handleShowClientUpgrade(upgradeType);
-                } else {
-                    this.handleLoginOptions(this.props);
-                }
-            } else {
-                this.handleLoginOptions(this.props);
-            }
+            this.handleLoginOptions();
         }
     }
 
@@ -251,9 +230,9 @@ export default class SelectServer extends PureComponent {
         }
     });
 
-    handleLoginOptions = async (props = this.props) => {
+    handleLoginOptions = async () => {
         const {formatMessage} = this.context.intl;
-        const {config, license} = props;
+        const {config, license} = this.props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
@@ -293,23 +272,6 @@ export default class SelectServer extends PureComponent {
         }
     };
 
-    handleShowClientUpgrade = (upgradeType) => {
-        const {formatMessage} = this.context.intl;
-        const screen = 'ClientUpgrade';
-        const title = formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Client Upgrade'});
-        const passProps = {
-            closeAction: this.handleLoginOptions,
-            upgradeType,
-        };
-        const options = {
-            statusBar: {
-                visible: false,
-            },
-        };
-
-        this.goToNextScreen(screen, title, passProps, options);
-    };
-
     handleTextChanged = (url) => {
         this.setState({url});
     };
@@ -319,8 +281,6 @@ export default class SelectServer extends PureComponent {
     };
 
     loginWithCertificate = async () => {
-        tracker.initialLoad = Date.now();
-
         await this.props.actions.login('credential', 'password');
         this.scheduleSessionExpiredNotification();
 

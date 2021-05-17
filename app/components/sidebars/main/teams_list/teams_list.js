@@ -20,11 +20,9 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {DeviceTypes, ListTypes, ViewTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
-import telemetry from '@telemetry';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {removeProtocol} from '@utils/url';
-import tracker from '@utils/time_tracker';
 
 import TeamsListItem from './teams_list_item';
 
@@ -70,15 +68,9 @@ export default class TeamsList extends PureComponent {
     selectTeam = (teamId) => {
         const {actions, closeMainSidebar, currentTeamId} = this.props;
 
-        if (teamId !== currentTeamId) {
-            telemetry.reset();
-            telemetry.start(['team:switch']);
-        }
-
         StatusBar.setHidden(false, 'slide');
         requestAnimationFrame(() => {
             if (teamId !== currentTeamId) {
-                tracker.teamSwitch = Date.now();
                 actions.handleTeamChange(teamId);
             }
         });

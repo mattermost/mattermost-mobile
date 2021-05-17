@@ -49,7 +49,6 @@ export {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/ent
 
 export {getUserByUsername} from '@mm-redux/actions/users';
 export {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
-export {sendEphemeralPost} from '@actions/views/post';
 
 export {doAppCall} from '@actions/apps';
 export {createCallRequest} from '@utils/apps';

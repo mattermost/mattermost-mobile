@@ -23,7 +23,7 @@ describe('Advanced Settings', () => {
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         // # Open channel screen
         await ChannelScreen.open(user);

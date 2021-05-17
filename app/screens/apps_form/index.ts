@@ -5,19 +5,17 @@ import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {doAppCall} from '@actions/apps';
+import {doAppCall, postEphemeralCallResponseForContext} from '@actions/apps';
 
-import {AppCallResponse, AppCallRequest, AppCallType} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
-import {SendEphemeralPost} from 'types/actions/posts';
 
 import AppsFormContainer from './apps_form_container';
-import {sendEphemeralPost} from '@actions/views/post';
+import {DoAppCall, PostEphemeralCallResponseForContext} from 'types/actions/apps';
 
 type Actions = {
-    doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-    sendEphemeralPost: SendEphemeralPost;
+    doAppCall: DoAppCall;
+    postEphemeralCallResponseForContext: PostEphemeralCallResponseForContext;
 };
 
 function mapStateToProps(state: GlobalState) {
@@ -30,7 +28,7 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
-            sendEphemeralPost,
+            postEphemeralCallResponseForContext,
         }, dispatch),
     };
 }

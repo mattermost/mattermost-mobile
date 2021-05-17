@@ -1,0 +1,13 @@
+diff --git a/node_modules/jail-monkey/android/build.gradle b/node_modules/jail-monkey/android/build.gradle
+index 29f27c0..cac1ee4 100644
+--- a/node_modules/jail-monkey/android/build.gradle
++++ b/node_modules/jail-monkey/android/build.gradle
+@@ -5,7 +5,7 @@ android {
+     buildToolsVersion "28.0.3"
+ 
+     defaultConfig {
+-        minSdkVersion 19
++        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 19
+         targetSdkVersion 28
+         versionCode 1
+         versionName "1.0"

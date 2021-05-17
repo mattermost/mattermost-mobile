@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import semver from 'semver/preload';
 
-import {MinServerVersion} from '@assets/config';
 import * as I18n from '@i18n';
 import PushNotification from '@init/push_notifications';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -27,10 +25,6 @@ jest.mock('@utils/error_handling', () => ({
     default: {
         initializeErrorHandling: jest.fn(),
     },
-}));
-
-jest.mock('react-native-status-bar-size', () => ({
-    addEventListener: jest.fn(),
 }));
 
 jest.mock('@mm-redux/actions/general', () => ({
@@ -149,7 +143,7 @@ describe('GlobalEventHandler', () => {
             jest.clearAllMocks();
         });
 
-        const minVersion = semver.parse(MinServerVersion);
+        const minVersion = semver.parse('5.31.0');
         const currentUserId = 'current-user-id';
         Store.redux.getState = jest.fn().mockReturnValue({
             entities: {
@@ -165,13 +159,11 @@ describe('GlobalEventHandler', () => {
 
         const dispatch = jest.spyOn(Store.redux, 'dispatch');
         const configureAnalytics = jest.spyOn(GlobalEventHandler, 'configureAnalytics');
-        const alert = jest.spyOn(Alert, 'alert');
 
         it('should dispatch on invalid version with currentUserId', async () => {
             const invalidVersion = 'a.b.c';
             await GlobalEventHandler.onServerVersionChanged(invalidVersion);
 
-            expect(alert).not.toHaveBeenCalled();
             expect(dispatch).toHaveBeenCalledTimes(2);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
             expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
@@ -180,41 +172,28 @@ describe('GlobalEventHandler', () => {
         it('should dispatch on gte min server version  with currentUserId', async () => {
             let version = minVersion.version;
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(alert).not.toHaveBeenCalled();
             expect(dispatch).toHaveBeenCalledTimes(2);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
             expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
 
             version = semver.coerce(minVersion.major + 1).version;
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(alert).not.toHaveBeenCalled();
             expect(dispatch).toHaveBeenCalledTimes(4);
         });
 
-        it('should alert on lt min server version', async () => {
-            const version = semver.coerce(minVersion.major - 1).version;
-            await GlobalEventHandler.onServerVersionChanged(version);
-            expect(alert).toHaveBeenCalled();
-            expect(dispatch).not.toHaveBeenCalled();
-            expect(configureAnalytics).not.toHaveBeenCalled();
-        });
-
-        it('should not alert nor dispatch on empty, null, undefined server version', async () => {
+        it('should not dispatch on empty, null, undefined server version', async () => {
             let version;
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(alert).not.toHaveBeenCalled();
             expect(dispatch).not.toHaveBeenCalled();
             expect(configureAnalytics).not.toHaveBeenCalled();
 
             version = '';
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(alert).not.toHaveBeenCalled();
             expect(dispatch).not.toHaveBeenCalled();
             expect(configureAnalytics).not.toHaveBeenCalled();
 
             version = null;
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(alert).not.toHaveBeenCalled();
             expect(dispatch).not.toHaveBeenCalled();
             expect(configureAnalytics).not.toHaveBeenCalled();
         });

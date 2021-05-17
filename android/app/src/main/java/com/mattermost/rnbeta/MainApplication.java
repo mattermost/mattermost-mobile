@@ -33,8 +33,6 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactMarker;
-import com.facebook.react.bridge.ReactMarkerConstants;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
@@ -132,9 +130,6 @@ private final ReactNativeHost mReactNativeHost =
 
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-
-    // Uncomment to listen to react markers for build that has telemetry enabled
-    // addReactMarkerListener();
   }
 
   @Override
@@ -193,38 +188,6 @@ private final ReactNativeHost mReactNativeHost =
     }
 
     return null;
-  }
-
-  private void addReactMarkerListener() {
-    ReactMarker.addListener(new ReactMarker.MarkerListener() {
-      @Override
-      public void logMarker(ReactMarkerConstants name, @Nullable String tag, int instanceKey) {
-        if (name.toString() == ReactMarkerConstants.RELOAD.toString()) {
-          APP_START_TIME = System.currentTimeMillis();
-          RELOAD = System.currentTimeMillis();
-        } else if (name.toString() == ReactMarkerConstants.PROCESS_PACKAGES_START.toString()) {
-          PROCESS_PACKAGES_START = System.currentTimeMillis();
-        } else if (name.toString() == ReactMarkerConstants.PROCESS_PACKAGES_END.toString()) {
-          PROCESS_PACKAGES_END = System.currentTimeMillis();
-        } else if (name.toString() == ReactMarkerConstants.CONTENT_APPEARED.toString()) {
-          CONTENT_APPEARED = System.currentTimeMillis();
-          ReactContext ctx = getRunningReactContext();
-
-          if (ctx != null) {
-            WritableMap map = Arguments.createMap();
-
-            map.putDouble("appReload", RELOAD);
-            map.putDouble("appContentAppeared", CONTENT_APPEARED);
-
-            map.putDouble("processPackagesStart", PROCESS_PACKAGES_START);
-            map.putDouble("processPackagesEnd", PROCESS_PACKAGES_END);
-
-            ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).
-                    emit("nativeMetrics", map);
-          }
-        }
-      }
-    });
   }
 
   /**

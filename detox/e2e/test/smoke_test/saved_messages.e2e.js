@@ -38,7 +38,7 @@ describe('Saved Messages', () => {
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         // # Open channel screen
