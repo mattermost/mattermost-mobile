@@ -27,16 +27,6 @@ const GlobalThreads = () => {
         ids = unreadThreadIds;
     }
 
-    // TODO
-    // Show messages - with Memo
-    const renderPost = ({item}: {item: string, index:number}) => {
-        return (
-            <ThreadItem
-                postId={item}
-            />
-        );
-    };
-
     const dispatch = useDispatch();
 
     const handleViewingAllThreads = () => {
@@ -49,49 +39,52 @@ const GlobalThreads = () => {
 
     const style = getStyleSheet(theme);
 
-    let unreadsDot;
-    if (haveUnreads) {
-        unreadsDot = (<View style={style.unreadsDot}/>);
-    }
+    const keyExtractor = React.useCallback((item) => {
+        return item.id;
+    }, []);
+
+    const renderPost = React.useCallback(({item}) => {
+        return (
+            <ThreadItem
+                postId={item}
+            />
+        );
+    }, []);
 
     return (
+        <View style={style.container}>
+            <View style={[style.headerContainer, style.borderBottom]}>
 
-        <View>
-            <View style={[{height: 64, flexDirection: 'row'}, style.borderBottom]}>
-                <View style={[style.allYourThreadsContainer]}>
+                <View style={style.menuContainer}>
                     <TouchableOpacity onPress={handleViewingAllThreads}>
-                        <View style={[style.allYouThreadsPadding, viewingUnreads ? {} : style.selectedContainer]}>
-                            <Text style={[style.allYourThreadsText, viewingUnreads ? {} : style.selectedText]}>{'All Your Threads'}</Text>
+                        <View style={[style.menuItemContainer, viewingUnreads ? undefined : style.menuItemContainerSelected]}>
+                            <Text style={[style.menuItem, viewingUnreads ? {} : style.menuItemSelected]}>{'All Your Threads'}</Text>
                         </View>
                     </TouchableOpacity>
-                </View>
-
-                <View style={[style.unreadsContainer]}>
                     <TouchableOpacity onPress={handleViewingUnreadThreads}>
-                        <View style={[{flexDirection: 'row'}, style.unreadsPadding, viewingUnreads ? style.selectedContainer : {}]}>
-                            <Text style={[style.unreadsText, viewingUnreads ? style.selectedText : {}]}>{'Unreads'}</Text>
-                            {unreadsDot}
+                        <View style={[style.menuItemContainer, viewingUnreads ? style.menuItemContainerSelected : undefined]}>
+                            <View>
+                                <Text style={[style.menuItem, viewingUnreads ? style.menuItemSelected : {}]}>{'Unreads'}</Text>
+                                {haveUnreads ? <View style={style.unreadsDot}/> : null}
+                            </View>
                         </View>
                     </TouchableOpacity>
                 </View>
 
                 <View style={style.markAllReadIconContainer}>
-                    <TouchableOpacity >
+                    <TouchableOpacity>
                         <CompassIcon
                             name='playlist-check'
                             style={style.markAllReadIcon}
                         />
                     </TouchableOpacity>
                 </View>
-
             </View>
 
             <FlatList
                 data={ids}
                 renderItem={renderPost}
-                keyExtractor={(item) => {
-                    return item;
-                }}
+                keyExtractor={keyExtractor}
             />
         </View>
     );
@@ -103,61 +96,52 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderBottomWidth: 1,
         },
-        selectedContainer: {
+
+        container: {
+            flex: 1,
+        },
+        headerContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            height: 64,
+        },
+
+        menuContainer: {
+            alignItems: 'center',
+            flexGrow: 1,
+            flexDirection: 'row',
+        },
+        menuItemContainer: {
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+            marginLeft: 16,
+        },
+        menuItemContainerSelected: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         },
-        selectedText: {
+        menuItem: {
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            alignSelf: 'center',
+            fontFamily: 'Open Sans',
+            fontWeight: '600',
+            fontSize: 16,
+            lineHeight: 24,
+        },
+        menuItemSelected: {
             color: theme.buttonBg,
         },
-        allYourThreadsContainer: {
-            alignSelf: 'center',
-            flex: 4.5,
-        },
-        allYouThreadsPadding: {
-            paddingTop: 8,
-            paddingBottom: 8,
-            marginLeft: 16,
-            paddingRight: 16,
-        },
-        allYourThreadsText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            alignSelf: 'center',
-            fontFamily: 'Open Sans',
-            fontWeight: '600',
-            fontSize: 16,
-            lineHeight: 24,
-        },
-        unreadsContainer: {
-            flexDirection: 'row',
-            alignSelf: 'center',
-            flex: 4.5,
-        },
-        unreadsPadding: {
-            paddingTop: 8,
-            paddingBottom: 8,
-            paddingLeft: 16,
-            paddingRight: 16,
-        },
-        unreadsText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            alignSelf: 'flex-start',
-            fontFamily: 'Open Sans',
-            fontWeight: '600',
-            fontSize: 16,
-            lineHeight: 24,
-            textAlign: 'center',
-        },
+
         unreadsDot: {
+            position: 'absolute',
             width: 6,
             height: 6,
             borderRadius: 3,
             backgroundColor: theme.sidebarTextActiveBorder,
-            marginTop: 5,
-            marginLeft: 3,
+            right: -6,
         },
+
         markAllReadIconContainer: {
-            flex: 1,
-            alignSelf: 'center',
+            paddingHorizontal: 20,
         },
         markAllReadIcon: {
             fontSize: 28,

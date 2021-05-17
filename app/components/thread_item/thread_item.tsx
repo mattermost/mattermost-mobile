@@ -109,7 +109,7 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
                         channelIsReadOnly={false}
                         showLongPost={false}
                     />
-                    <View style={{flexDirection: 'row'}}>
+                    <View style={style.footerContainer}>
                         <View style={style.avatarsContainer}>
                             <Avatars
                                 style={{flex: 1}}
@@ -117,7 +117,6 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
                             />
                         </View>
                         {repliesComponent}
-
                     </View>
                 </View>
             </View>
@@ -174,6 +173,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 6,
             marginTop: 2,
             marginBottom: 2,
+        },
+        footerContainer: {
+            flexDirection: 'row',
+            marginTop: 3
         },
         avatarsContainer: {
             width: 96,
