@@ -21,13 +21,11 @@ import {getResponseFromError} from './common';
 /**
  * Synchronize any user attribute changes in the configured AD/LDAP server with Mattermost.
  * See https://api.mattermost.com/#operation/SyncLdap
- * @return {string} returns {status} on success or {error, status} on error
+ * @return {string} returns response on success or {error, status} on error
  */
 export const apiLDAPSync = async () => {
     try {
-        const response = await client.post('/api/v4/ldap/sync');
-
-        return response;
+        return await client.post('/api/v4/ldap/sync');
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -36,13 +34,13 @@ export const apiLDAPSync = async () => {
 /**
  * Test the current AD/LDAP configuration to see if the AD/LDAP server can be contacted successfully.
  * See https://api.mattermost.com/#operation/TestLdap
- * @return {string} returns {status} on success or {error, status} on error
+ * @return {Object} returns {status} on success or {error, status} on error
  */
 export const apiLDAPTest = async () => {
     try {
         const response = await client.post('/api/v4/ldap/test');
 
-        return response.data;
+        return {status: response.status};
     } catch (err) {
         return getResponseFromError(err);
     }

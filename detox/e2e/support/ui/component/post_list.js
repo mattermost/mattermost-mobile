@@ -6,8 +6,18 @@ import Post from './post';
 class PostList {
     constructor(screenPrefix) {
         this.testID = {
+            moreMessagesButton: `${screenPrefix}post_list.more_messages_button`,
+            newMessagesDivider: `${screenPrefix}post_list.new_messages_divider`,
             postListPostItem: `${screenPrefix}post_list.post`,
         };
+    }
+
+    getMoreMessagesButton = () => {
+        return element(by.id(this.testID.moreMessagesButton));
+    }
+
+    getNewMessagesDivider = () => {
+        return element(by.id(this.testID.newMessagesDivider));
     }
 
     getPost = (postId, postMessage, postProfileOptions = {}) => {

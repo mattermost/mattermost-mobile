@@ -19,6 +19,7 @@ function NewMessagesDivider(props) {
             id='posts_view.newMsg'
             defaultMessage='New Messages'
             style={style.text}
+            testID={props.testID}
         />
     );
 
@@ -28,6 +29,7 @@ function NewMessagesDivider(props) {
                 id='mobile.posts_view.moreMsg'
                 defaultMessage='More New Messages Above'
                 style={style.text}
+                testID={props.testID}
             />
         );
     }
@@ -47,6 +49,7 @@ NewMessagesDivider.propTypes = {
     moreMessages: PropTypes.bool,
     style: ViewPropTypes.style,
     theme: PropTypes.object,
+    testID: PropTypes.string,
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
