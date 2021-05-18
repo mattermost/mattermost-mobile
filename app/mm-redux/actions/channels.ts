@@ -940,29 +940,13 @@ export function getArchivedChannels(teamId: string, page = 0, perPage: number = 
     };
 }
 
+// Returns all public shared channels
 export function getSharedChannels(teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let channels;
         try {
             channels = await Client4.getSharedChannels(teamId, page, perPage);
-
-            // Make the response compatible with our public/archived channels response
-            const renameFields: Dictionary<string> = {
-                channel_id: 'id',
-                share_displayname: 'display_name',
-                share_header: 'header',
-                share_name: 'name',
-                share_purpose: 'purpose',
-            };
             channels = (channels || []).map((channel: Dictionary<string|boolean|number>) => {
-                for (const i in renameFields) {
-                    if (Object.prototype.hasOwnProperty.call(renameFields, i)) {
-                        const oldPropName = i;
-                        const newPropName = renameFields[i];
-                        channel[newPropName] = channel[oldPropName];
-                        delete channel[oldPropName];
-                    }
-                }
                 if (channel.delete_at === undefined) {
                     channel.delete_at = 0;
                 }
