@@ -1,23 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Model, Q} from '@nozbe/watermelondb';
+
 import {Client4} from '@client/rest';
 import {MM_TABLES} from '@constants/database';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import {DataOperator} from '@database/operator';
 import analytics from '@init/analytics';
-import {setAppCredentials} from '@init/credentials';
-import {Q} from '@nozbe/watermelondb';
 import {createSessions} from '@requests/local/systems';
 import {logError} from '@requests/remote/error';
 import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
-import {RawPreference, RawTeamMembership, RawUser} from '@typings/database/database';
+import {RawMyTeam, RawPreference, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import Global from '@typings/database/global';
+import MyTeam from '@typings/database/my_team';
 import Preference from '@typings/database/preference';
 import System from '@typings/database/system';
+import Team from '@typings/database/team';
 import TeamMembership from '@typings/database/team_membership';
 import {getCSRFFromCookie} from '@utils/security';
 
@@ -57,7 +59,12 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
         query(Q.where('name', 'currentUserId')).
         fetch();
 
-    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
+    if (
+        'status_code' in err &&
+    err.status_code === HTTP_UNAUTHORIZED &&
+    err?.url?.indexOf('/login') === -1 &&
+    currentUserId
+    ) {
         logout(false);
     }
 };
@@ -68,7 +75,10 @@ export const createAndSetActiveDatabase = async (config: Partial<Config>) => {
     //todo: confirm with team that this SiteName can't be null - extra precaution
     const displayName = config.SiteName;
     try {
-        await DatabaseManager.setActiveServerDatabase({displayName: displayName!, serverUrl});
+        await DatabaseManager.setActiveServerDatabase({
+            displayName: displayName!,
+            serverUrl,
+        });
     } catch (e) {
         throw new DatabaseConnectionException(
             `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
@@ -85,7 +95,14 @@ type LoginArgs = {
   password: string;
   serverUrl: string;
 };
-export const login = async ({config, ldapOnly = false, loginId, mfaToken, password, serverUrl}: LoginArgs) => {
+export const login = async ({
+    config,
+    ldapOnly = false,
+    loginId,
+    mfaToken,
+    password,
+    serverUrl,
+}: LoginArgs) => {
     const database = await DatabaseManager.getDefaultDatabase();
 
     if (!database) {
@@ -184,17 +201,35 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
 
         data.teams = teams;
 
-        // data.teamMembers = teamMembers;
-        data.teamUnreads = teamUnreads;
-
-        // data.preferences = preferences;
-        // data.config = config;
-        // data.license = license;
+        let models: Model[] = [];
+        const teamRecords = await DataOperator.handleTeam({
+            prepareRecordsOnly: true,
+            teams: (teams as unknown) as RawTeam[],
+        }) as Team[];
+        models = models.concat(teamRecords);
 
         const teamMembershipRecords = await DataOperator.handleTeamMemberships({
             prepareRecordsOnly: true,
-            teamMemberships: teamMembers as unknown as RawTeamMembership[],
+            teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
+        }) as TeamMembership[];
+        models = models.concat(teamMembershipRecords);
+
+        const myTeams = teamUnreads.map((unread) => {
+            return {
+                team_id: unread.team_id,
+                roles: '',
+                is_unread: unread.msg_count > 0,
+                mentions_count: unread.mention_count,
+            };
         });
+
+        //fixme:myTeamRecords/teamUnreads contain  { "mention_count": 0, "mention_count_root": 0, "msg_count": 0, "msg_count_root":
+        //       0, "team_id": "ubr1ia9uj7bu3qwqdzonigfj5o" }.  But the RawMyTeam and the schema has a 'roles' field...to confirm what should go in there
+        const myTeamRecords = await DataOperator.handleMyTeam({
+            prepareRecordsOnly: true,
+            myTeams: (myTeams as unknown) as RawMyTeam[],
+        }) as MyTeam[];
+        models = models.concat(myTeamRecords);
 
         // Save License, Config and CurrentUserId to System entity
         const systemRecords = await DataOperator.handleIsolatedEntity({
@@ -218,21 +253,18 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
                 },
             ],
             prepareRecordsOnly: true,
-        });
+        }) as System[];
+        models = models.concat(systemRecords);
 
         const preferenceRecords = await DataOperator.handlePreferences({
             prepareRecordsOnly: true,
-            preferences: preferences as unknown as RawPreference[],
-        });
+            preferences: (preferences as unknown) as RawPreference[],
+        }) as Preference[];
+        models = models.concat(preferenceRecords);
 
-        await DataOperator.batchOperations({
-            database,
-            models: [
-                ...systemRecords as System[],
-                ...preferenceRecords as Preference[],
-                ...teamMembershipRecords as TeamMembership[],
-            ],
-        });
+        if (models?.length > 0) {
+            await DataOperator.batchOperations({database, models});
+        }
 
         //todo: writes to all table
         // actions.push({
@@ -272,31 +304,31 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
     return {data};
 };
 
-export const completeLogin = async (user, deviceToken) => {
-    // const state = getState();
-    // const config = getConfig(state);
-    // const license = getLicense(state);
+// export const completeLogin = async (user, deviceToken) => {
+// const state = getState();
+// const config = getConfig(state);
+// const license = getLicense(state);
 
-    //todo:
-    const token = Client4.getToken();
-    const url = Client4.getUrl();
+//todo:
+// const token = Client4.getToken();
+// const url = Client4.getUrl();
+//
+// setAppCredentials(deviceToken, user.id, token, url);
 
-    setAppCredentials(deviceToken, user.id, token, url);
+// Set timezone
+// const enableTimezone = isTimezoneEnabled(state);
+// if (enableTimezone) {
+//     const timezone = getDeviceTimezone();
+//     // dispatch(autoUpdateTimezone(timezone));
+// }
 
-    // Set timezone
-    // const enableTimezone = isTimezoneEnabled(state);
-    // if (enableTimezone) {
-    //     const timezone = getDeviceTimezone();
-    //     // dispatch(autoUpdateTimezone(timezone));
-    // }
-
-    // Data retention
-    // if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-    //     await getDataRetentionPolicy();
-    // } else {
-    //     // dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
-    // }
-};
+// Data retention
+// if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+//     await getDataRetentionPolicy();
+// } else {
+//     // dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+// }
+// };
 
 export const getSessions = async (currentUserId: string) => {
     try {
