@@ -19,6 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PostBody from '@components/post_body';
 import {getPost as gP} from '@actions/views/post';
 import {DispatchFunc} from '@mm-redux/types/actions';
+import RemoveMarkdown from '@components/remove_markdown';
 
 // import threads from 'app/reducers/views/threads';
 // import styleAndroid from '@screens/settings/settings_item/style.android';
@@ -104,11 +105,17 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
                     </View>
                     {/* TODO Truncate the text to two lines */}
                     {/* TODO Remove user mention highlights */}
-                    <PostBody
+                    {/* <PostBody
                         post={post}
                         channelIsReadOnly={false}
                         showLongPost={false}
-                    />
+                    /> */}
+                    <Text
+                        style={style.message}
+                        numberOfLines={2}
+                    >
+                        <RemoveMarkdown value={post.message}/>
+                    </Text>
                     <View style={style.footerContainer}>
                         <View style={style.avatarsContainer}>
                             <Avatars
@@ -174,9 +181,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginTop: 2,
             marginBottom: 2,
         },
+        message: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            lineHeight: 20,
+            marginTop: 3,
+        },
         footerContainer: {
             flexDirection: 'row',
-            marginTop: 3
+            marginTop: 6,
         },
         avatarsContainer: {
             width: 96,

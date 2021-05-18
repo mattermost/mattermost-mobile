@@ -15,6 +15,8 @@ import {useSelector, useDispatch} from 'react-redux';
 import {getViewingGlobalThreadsUnread} from '@selectors/threads';
 import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
 
+import EmptyState from './empty_state';
+
 const GlobalThreads = () => {
     const theme = useSelector((state: GlobalState) => getTheme(state));
     const threadIds = useSelector((state: GlobalState) => getThreadOrderInCurrentTeam(state));
@@ -39,9 +41,7 @@ const GlobalThreads = () => {
 
     const style = getStyleSheet(theme);
 
-    const keyExtractor = React.useCallback((item) => {
-        return item.id;
-    }, []);
+    const keyExtractor = React.useCallback((item) => item, []);
 
     const renderPost = React.useCallback(({item}) => {
         return (
@@ -51,10 +51,12 @@ const GlobalThreads = () => {
         );
     }, []);
 
-    return (
-        <View style={style.container}>
+    const renderHeader = () => {
+        if (!threadIds.length) {
+            return null;
+        }
+        return (
             <View style={[style.headerContainer, style.borderBottom]}>
-
                 <View style={style.menuContainer}>
                     <TouchableOpacity onPress={handleViewingAllThreads}>
                         <View style={[style.menuItemContainer, viewingUnreads ? undefined : style.menuItemContainerSelected]}>
@@ -70,7 +72,6 @@ const GlobalThreads = () => {
                         </View>
                     </TouchableOpacity>
                 </View>
-
                 <View style={style.markAllReadIconContainer}>
                     <TouchableOpacity>
                         <CompassIcon
@@ -80,11 +81,20 @@ const GlobalThreads = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+        );
+    };
 
+    return (
+        <View style={style.container}>
+            {renderHeader()}
             <FlatList
                 data={ids}
                 renderItem={renderPost}
                 keyExtractor={keyExtractor}
+                contentContainerStyle={style.messagesContainer}
+                ListEmptyComponent={
+                    <EmptyState isUnreads={viewingUnreads}/>
+                }
             />
         </View>
     );
@@ -118,6 +128,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         menuItemContainerSelected: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+            borderRadius: 4,
         },
         menuItem: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
@@ -147,6 +158,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 28,
             lineHeight: 28,
             color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
+        messagesContainer: {
+            flexGrow: 1,
         },
     };
 });
