@@ -65,7 +65,7 @@ const CustomStatusSuggestion = (props: Props) => {
                             <CustomStatusText
                                 text={text}
                                 theme={theme}
-                                textStyle={{color: theme.centerChannelColor}}
+                                textStyle={style.customStatusText}
                             />
                         </View>
                         <View style={style.expiryTimeContainer}>
@@ -73,7 +73,7 @@ const CustomStatusSuggestion = (props: Props) => {
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}
                                     theme={theme}
-                                    textStyle={{color: changeOpacity(theme.centerChannelColor, 0.6)}}
+                                    textStyle={style.customStatusDuration}
                                 />
                             )}
                         </View>
@@ -127,6 +127,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
             marginRight: 16,
+        },
+        customStatusDuration: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+        },
+        customStatusText: {
+            color: theme.centerChannelColor,
         },
     };
 });

@@ -32,7 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            flex: 1,
             fontSize: 17,
             textAlignVertical: 'center',
             includeFontPadding: false,

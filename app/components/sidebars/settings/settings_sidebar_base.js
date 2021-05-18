@@ -282,15 +282,17 @@ export default class SettingsSidebarBase extends PureComponent {
 
         const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
-                <CustomStatusExpiry
-                    time={customStatus?.expires_at}
-                    timezone={timezone}
-                    theme={theme}
-                    styleProp={{
-                        fontSize: 15,
-                        color: changeOpacity(theme.centerChannelColor, 0.5),
-                    }}
-                />
+                <View style={{flexDirection: 'row'}}>
+                    <CustomStatusExpiry
+                        time={customStatus?.expires_at}
+                        timezone={timezone}
+                        theme={theme}
+                        styleProp={{
+                            fontSize: 15,
+                            color: changeOpacity(theme.centerChannelColor, 0.5),
+                        }}
+                    />
+                </View>
             ) : null;
 
         const clearButton = isStatusSet ?
