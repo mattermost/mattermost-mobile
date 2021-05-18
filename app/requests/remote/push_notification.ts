@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {createSessions} from '@requests/local/systems';
-import {logError} from '@requests/remote/error';
-import {forceLogoutIfNecessary} from '@requests/remote/user';
+import {Q} from '@nozbe/watermelondb';
 import moment from 'moment-timezone';
 import {IntlShape} from 'react-intl';
 
@@ -12,29 +10,19 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
-import {Q} from '@nozbe/watermelondb';
+import {getSessions} from '@requests/remote/user';
 import System from '@typings/database/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 const MAJOR_VERSION = 5;
 const MINOR_VERSION = 24;
 
-const sortByNewest = (a, b) => {
+const sortByNewest = (a: any, b: any) => {
     if (a.create_at > b.create_at) {
         return -1;
     }
 
     return 1;
-};
-
-export const getSessions = async (currentUserId: string) => {
-    try {
-        const sessions = Client4.getSessions(currentUserId);
-        createSessions(sessions);
-    } catch (e) {
-        logError(e);
-        forceLogoutIfNecessary(e);
-    }
 };
 
 export const scheduleExpiredNotification = async (intl: IntlShape) => {
@@ -50,7 +38,6 @@ export const scheduleExpiredNotification = async (intl: IntlShape) => {
 
     const config = systemRecords.find((record) => record.name === 'config')?.value ?? {};
     const currentUserId = systemRecords.find((record) => record.name === 'currentUserId')?.value ?? '';
-
     if (isMinimumServerVersion(Client4.serverVersion, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
         PushNotifications.cancelAllLocalNotifications();
         return;
@@ -58,14 +45,13 @@ export const scheduleExpiredNotification = async (intl: IntlShape) => {
 
     let sessions;
     try {
-        //todo: api call getSessions
         sessions = await getSessions(currentUserId);
     } catch (e) {
         // console.warn('Failed to get current session', e); // eslint-disable-line no-console
         return;
     }
 
-    if (!Array.isArray(sessions.data)) {
+    if (!Array.isArray(sessions?.data)) {
         return;
     }
 

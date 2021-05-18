@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 
-// See LICENSE.txt for license information.
 import DatabaseManager from '@database/manager';
+import {DataOperator} from '@database/operator';
+import {IsolatedEntities} from '@typings/database/enums';
 import System from '@typings/database/system';
 
 /**
@@ -61,12 +63,23 @@ export const handleServerUrlChanged = async ({
     });
 };
 
-export const createSessions = (sessions) => {
+export const createSessions = async (sessions: any) => {
     const database = DatabaseManager.getActiveServerDatabase();
 
     if (!database) {
         throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
     }
 
-    //todo: save sessions under system entity
+    console.log('called here <<< in createSessions');
+
+    await DataOperator.handleIsolatedEntity({
+        tableName: IsolatedEntities.SYSTEM,
+        values: [{
+
+            // id: string; // todo: to confirm value
+            name: 'sessions',
+            value: sessions,
+        }],
+        prepareRecordsOnly: false,
+    });
 };

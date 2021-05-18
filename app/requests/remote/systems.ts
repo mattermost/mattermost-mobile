@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+
+import {Client4} from '@client/rest';
 import {MM_TABLES} from '@constants/database';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
-import {Q} from '@nozbe/watermelondb';
 import {logError} from '@requests/remote/error';
 import {forceLogoutIfNecessary} from '@requests/remote/user';
 

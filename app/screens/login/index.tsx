@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Client4} from '@client/rest';
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import {login} from '@requests/remote/user';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -26,8 +28,9 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import {GlobalStyles} from '@app/styles';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import FormattedText from '@components/formatted_text';
+import DatabaseManager from '@database/manager';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {scheduleExpiredNotification} from '@requests/remote/session';
+import {scheduleExpiredNotification} from '@requests/remote/push_notification';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -142,23 +145,19 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     });
 
     const signIn = async () => {
-        const result = await login({loginId: loginId.toLowerCase(), password});
+        const result = await login({loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            goToChannel();
+            await goToChannel();
         }
     };
 
-    const goToChannel = () => {
-        scheduleSessionExpiredNotification();
+    const goToChannel = async () => {
+        await scheduleExpiredNotification(intl);
         resetToChannel();
     };
 
-    const scheduleSessionExpiredNotification = () => {
-        scheduleExpiredNotification(intl);
-    };
-
     const checkLoginResponse = (data: any) => {
-        if (MFA_EXPECTED_ERRORS.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
+        if (MFA_EXPECTED_ERRORS.includes(data?.error?.server_error_id)) {
             goToMfa();
             setIsLoading(false);
             return false;
@@ -169,7 +168,11 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
             setError(getLoginErrorMessage(data.error));
             return false;
         }
+
         setIsLoading(false);
+
+        //todo: login successful => create server database and set this serverURL to be the current active database
+
         return true;
     };
 
