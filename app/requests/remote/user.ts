@@ -6,8 +6,6 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import {DataOperator} from '@database/operator';
-import {prepareSystemRecord} from '@database/operator/prepareRecords/general';
-import {preparePreferenceRecord} from '@database/operator/prepareRecords/user';
 import analytics from '@init/analytics';
 import {setAppCredentials} from '@init/credentials';
 import {Q} from '@nozbe/watermelondb';
@@ -15,11 +13,12 @@ import {createSessions} from '@requests/local/systems';
 import {logError} from '@requests/remote/error';
 import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
-import {RawPreference, RawUser} from '@typings/database/database';
-import {IsolatedEntities, OperationType} from '@typings/database/enums';
+import {RawPreference, RawTeamMembership, RawUser} from '@typings/database/database';
+import {IsolatedEntities} from '@typings/database/enums';
 import Global from '@typings/database/global';
 import Preference from '@typings/database/preference';
 import System from '@typings/database/system';
+import TeamMembership from '@typings/database/team_membership';
 import {getCSRFFromCookie} from '@utils/security';
 
 const HTTP_UNAUTHORIZED = 401;
@@ -184,12 +183,18 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         ]);
 
         data.teams = teams;
-        data.teamMembers = teamMembers;
+
+        // data.teamMembers = teamMembers;
         data.teamUnreads = teamUnreads;
-        data.preferences = preferences;
-        data.config = config;
-        data.license = license;
-        data.url = Client4.getUrl();
+
+        // data.preferences = preferences;
+        // data.config = config;
+        // data.license = license;
+
+        const teamMembershipRecords = await DataOperator.handleTeamMemberships({
+            prepareRecordsOnly: true,
+            teamMemberships: teamMembers as unknown as RawTeamMembership[],
+        });
 
         // Save License, Config and CurrentUserId to System entity
         const systemRecords = await DataOperator.handleIsolatedEntity({
@@ -207,6 +212,10 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
                     name: 'currentUserId',
                     value: user.id,
                 },
+                {
+                    name: 'url',
+                    value: Client4.getUrl(),
+                },
             ],
             prepareRecordsOnly: true,
         });
@@ -221,6 +230,7 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
             models: [
                 ...systemRecords as System[],
                 ...preferenceRecords as Preference[],
+                ...teamMembershipRecords as TeamMembership[],
             ],
         });
 
