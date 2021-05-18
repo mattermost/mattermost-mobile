@@ -1,19 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-
 import {Client4} from '@client/rest';
 import {MM_TABLES} from '@constants/database';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
+import {DataOperator} from '@database/operator';
+import {prepareSystemRecord} from '@database/operator/prepareRecords/general';
+import {preparePreferenceRecord} from '@database/operator/prepareRecords/user';
 import analytics from '@init/analytics';
 import {setAppCredentials} from '@init/credentials';
+import {Q} from '@nozbe/watermelondb';
 import {createSessions} from '@requests/local/systems';
 import {logError} from '@requests/remote/error';
 import {Client4Error} from '@typings/api/client4';
-import {RawUser} from '@typings/database/database';
+import {Config} from '@typings/database/config';
+import {RawPreference, RawUser} from '@typings/database/database';
+import {IsolatedEntities, OperationType} from '@typings/database/enums';
 import Global from '@typings/database/global';
+import Preference from '@typings/database/preference';
 import System from '@typings/database/system';
 import {getCSRFFromCookie} from '@utils/security';
 
@@ -53,35 +58,35 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
         query(Q.where('name', 'currentUserId')).
         fetch();
 
-    if (
-        'status_code' in err &&
-    err.status_code === HTTP_UNAUTHORIZED &&
-    err?.url?.indexOf('/login') === -1 &&
-    currentUserId
-    ) {
+    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         logout(false);
     }
 };
 
-export const createAndSetActiveDatabase = async (config: any) => {
+export const createAndSetActiveDatabase = async (config: Partial<Config>) => {
     const serverUrl = Client4.getUrl();
-    const displayName = config?.SiteName;
+
+    //todo: confirm with team that this SiteName can't be null - extra precaution
+    const displayName = config.SiteName;
     try {
-        await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
+        await DatabaseManager.setActiveServerDatabase({displayName: displayName!, serverUrl});
     } catch (e) {
-        throw new DatabaseConnectionException(`createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`);
+        throw new DatabaseConnectionException(
+            `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
+        );
     }
 };
 
-type LoginArgs = { config: any; ldapOnly?: boolean; license: any; loginId: string; mfaToken?: string; password: string; serverUrl: string; };
-export const login = async ({
-    config,
-    ldapOnly = false,
-    loginId,
-    mfaToken,
-    password,
-    serverUrl,
-}: LoginArgs) => {
+type LoginArgs = {
+  config: any;
+  ldapOnly?: boolean;
+  license: any;
+  loginId: string;
+  mfaToken?: string;
+  password: string;
+  serverUrl: string;
+};
+export const login = async ({config, ldapOnly = false, loginId, mfaToken, password, serverUrl}: LoginArgs) => {
     const database = await DatabaseManager.getDefaultDatabase();
 
     if (!database) {
@@ -101,13 +106,7 @@ export const login = async ({
 
         deviceToken = tokens?.[0]?.value ?? '';
 
-        user = await Client4.login(
-            loginId,
-            password,
-            mfaToken,
-            deviceToken,
-            ldapOnly,
-        ) as unknown as RawUser;
+        user = ((await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly)) as unknown) as RawUser;
 
         await createAndSetActiveDatabase(config);
 
@@ -121,19 +120,15 @@ export const login = async ({
     const result = await loadMe({user, deviceToken, serverUrl});
 
     if (!result.error) {
-        //todo: completeLogin
-        // completeLogin(user, deviceToken);
+    //todo: completeLogin
+    // completeLogin(user, deviceToken);
     }
 
     return result;
 };
 
 type LoadMeArgs = { user: RawUser; deviceToken?: string; serverUrl: string };
-const loadMe = async ({
-    deviceToken,
-    serverUrl,
-    user,
-}: LoadMeArgs) => {
+const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
     const data: any = {user};
 
     const database = await DatabaseManager.getActiveServerDatabase();
@@ -170,7 +165,7 @@ const loadMe = async ({
         const teamUnreadRequest = Client4.getMyTeamUnreads();
         const preferencesRequest = Client4.getMyPreferences();
         const configRequest = Client4.getClientConfigOld();
-        const actions = [];
+        const licenseRequest = Client4.getClientLicenseOld(); // todo: I have added this one
 
         const [
             teams,
@@ -178,12 +173,14 @@ const loadMe = async ({
             teamUnreads,
             preferences,
             config,
+            license,
         ] = await Promise.all([
             teamsRequest,
             teamMembersRequest,
             teamUnreadRequest,
             preferencesRequest,
             configRequest,
+            licenseRequest,
         ]);
 
         data.teams = teams;
@@ -191,16 +188,40 @@ const loadMe = async ({
         data.teamUnreads = teamUnreads;
         data.preferences = preferences;
         data.config = config;
+        data.license = license;
         data.url = Client4.getUrl();
 
-        // Saves currentUserId to server database under system entity
-        //todo: batch operations
-        await database.action(async () => {
-            const systemCollection = database.collections.get(MM_TABLES.SERVER.SYSTEM);
-            const currentUserIdRecord = await systemCollection.create((system: System) => {
-                system.name = 'currentUserId';
-                system.value = user.id;
-            });
+        // Save License, Config and CurrentUserId to System entity
+        const systemRecords = await DataOperator.handleIsolatedEntity({
+            tableName: IsolatedEntities.SYSTEM,
+            values: [
+                {
+                    name: 'config',
+                    value: config,
+                },
+                {
+                    name: 'license',
+                    value: license,
+                },
+                {
+                    name: 'currentUserId',
+                    value: user.id,
+                },
+            ],
+            prepareRecordsOnly: true,
+        });
+
+        const preferenceRecords = await DataOperator.handlePreferences({
+            prepareRecordsOnly: true,
+            preferences: preferences as unknown as RawPreference[],
+        });
+
+        await DataOperator.batchOperations({
+            database,
+            models: [
+                ...systemRecords as System[],
+                ...preferenceRecords as Preference[],
+            ],
         });
 
         //todo: writes to all table

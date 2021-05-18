@@ -146,9 +146,9 @@ class BaseHandler {
           }
           case IsolatedEntities.SYSTEM: {
               findMatchingRecordBy = isRecordSystemEqualToRaw;
-              fieldName = 'id';
+              fieldName = 'name';
               operator = prepareSystemRecord;
-              rawValues = getUniqueRawsBy({raws: values, key: 'id'});
+              rawValues = getUniqueRawsBy({raws: values, key: 'name'});
               break;
           }
           case IsolatedEntities.TERMS_OF_SERVICE: {
@@ -311,6 +311,7 @@ class BaseHandler {
               });
           }
       } catch (e) {
+          console.error('batchOperation error ', e);
           throw new DataOperatorException('batchOperations error ', e);
       }
   };

@@ -234,7 +234,6 @@ export type RawUser = {
 };
 
 export type RawPreference = {
-  id? : string;
   category: string;
   name: string;
   user_id: string;
