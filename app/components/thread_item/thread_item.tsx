@@ -1,25 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo} from 'react';
+import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
 import {goToScreen} from '@actions/navigation';
-import type {GlobalState} from '@mm-redux/types/store';
-import {getPost} from '@mm-redux/selectors/entities/posts';
-import {getThread} from '@mm-redux/selectors/entities/threads';
-import {getUser} from '@mm-redux/selectors/entities/users';
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import {DispatchFunc} from '@mm-redux/types/actions';
+import {getPost as gP} from '@actions/views/post';
+import Avatars from '@components/avatars';
+import RemoveMarkdown from '@components/remove_markdown';
+import FriendlyDate from '@components/friendly_date';
+
 import {Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import Avatars from '@components/avatars';
-import type {Theme} from '@mm-redux/types/preferences';
+import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import PostBody from '@components/post_body';
-import {getPost as gP} from '@actions/views/post';
-import {DispatchFunc} from '@mm-redux/types/actions';
-import RemoveMarkdown from '@components/remove_markdown';
+import {getThread} from '@mm-redux/selectors/entities/threads';
+import {getUser} from '@mm-redux/selectors/entities/users';
+import type {Theme} from '@mm-redux/types/preferences';
+import type {GlobalState} from '@mm-redux/types/store';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 // import threads from 'app/reducers/views/threads';
 // import styleAndroid from '@screens/settings/settings_item/style.android';
@@ -98,23 +101,28 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
                 </View>
                 <View style={style.postContainer} >
                     <View style={style.header}>
-                        <Text style={style.threadStarter} >{threadStarterName} </Text>
-                        <View style={style.channelNameContainer}>
-                            <Text style={style.channelName}>{channelName}</Text>
+                        <View style={style.headerInfoContainer}>
+                            <Text
+                                style={style.threadStarter}
+                                numberOfLines={1}
+                            >{threadStarterName}</Text>
+                            <View style={style.channelNameContainer}>
+                                <Text
+                                    style={style.channelName}
+                                    numberOfLines={1}
+                                >{channelName}</Text>
+                            </View>
                         </View>
+                        <FriendlyDate
+                            value={thread?.last_reply_at}
+                            style={style.date}
+                        />
                     </View>
-                    {/* TODO Truncate the text to two lines */}
-                    {/* TODO Remove user mention highlights */}
-                    {/* <PostBody
-                        post={post}
-                        channelIsReadOnly={false}
-                        showLongPost={false}
-                    /> */}
                     <Text
                         style={style.message}
                         numberOfLines={2}
                     >
-                        <RemoveMarkdown value={post.message}/>
+                        <RemoveMarkdown value={post?.message || ''}/>
                     </Text>
                     <View style={style.footerContainer}>
                         <View style={style.avatarsContainer}>
@@ -152,27 +160,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 92,
         },
         header: {
+            alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
-            alignSelf: 'auto',
+        },
+        headerInfoContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            marginRight: 12,
         },
         threadStarter: {
+            flex: 0,
+            flexShrink: 1,
             fontFamily: 'Open Sans',
-            fontWeight: '600',
             fontSize: 15,
+            fontWeight: '600',
             lineHeight: 22,
             paddingRight: 8,
         },
         channelNameContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            alignSelf: 'center',
             borderRadius: 4,
+            maxWidth: '50%',
         },
         channelName: {
             color: theme.centerChannelColor,
             fontFamily: 'Open Sans',
-            fontWeight: '600',
             fontSize: 10,
+            fontWeight: '600',
             lineHeight: 16,
             letterSpacing: 1.01,
             textTransform: 'uppercase',
@@ -180,6 +196,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 6,
             marginTop: 2,
             marginBottom: 2,
+        },
+        date: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 12,
+            fontWeight: '400',
         },
         message: {
             color: theme.centerChannelColor,
