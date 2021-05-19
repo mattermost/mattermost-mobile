@@ -6,10 +6,10 @@ import {shallow} from 'enzyme';
 import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 import {General} from '@mm-redux/constants';
+import {Channel} from '@mm-redux/types/channels';
 
 import ChannelInfo from './channel_info';
 import NotificationPreference from './notification_preference';
-import {Channel} from '@mm-redux/types/channels';
 
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');

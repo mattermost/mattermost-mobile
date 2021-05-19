@@ -12,6 +12,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
+import {Channel} from '@mm-redux/types/channels';
+import {Theme} from '@mm-redux/types/preferences';
 import {alertErrorWithFallback} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -30,8 +32,6 @@ import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
 import Bindings from './bindings';
-import {Channel} from '@mm-redux/types/channels';
-import {Theme} from '@mm-redux/types/preferences';
 
 type Props = {
     actions: {

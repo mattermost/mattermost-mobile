@@ -644,7 +644,7 @@ function setLoadMorePostsVisible(visible: boolean) {
     };
 }
 
-function loadGroupData(isReconnect = false) {
+function loadGroupData() {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const actions = [];
@@ -734,7 +734,7 @@ type LoadChannelsForTeamData = {
     roles?: Role[],
 }
 
-export function loadChannelsForTeam(teamId: string, skipDispatch = false, isReconnect = false) {
+export function loadChannelsForTeam(teamId: string, skipDispatch = false) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
@@ -805,7 +805,7 @@ export function loadChannelsForTeam(teamId: string, skipDispatch = false, isReco
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
 
-            dispatch(loadGroupData(isReconnect));
+            dispatch(loadGroupData());
         }
 
         return {data};

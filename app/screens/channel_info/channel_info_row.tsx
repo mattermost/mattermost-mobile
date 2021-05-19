@@ -32,6 +32,7 @@ type Props = {
     icon?: string,
     iconColor?: string,
     image?: Source | null,
+    imageTintColor?: string,
     isLandscape?: boolean,
     rightArrow?: boolean,
     textId: string,
@@ -42,7 +43,7 @@ type Props = {
 }
 
 function channelInfoRow(props: Props) {
-    const {testID, action, defaultMessage, detail, icon, iconColor, image, rightArrow, textColor, textId, togglable, theme, shouldRender} = props;
+    const {testID, action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender} = props;
 
     if (!shouldRender) {
         return null;
@@ -63,7 +64,7 @@ function channelInfoRow(props: Props) {
         iconElement = isValidUrl(image.uri) && (
             <FastImage
                 source={image}
-                style={{width: 24, height: 24}}
+                style={{width: 15, height: 15, tintColor: imageTintColor || changeOpacity(theme.centerChannelColor, 0.5)}}
             />
         );
     }

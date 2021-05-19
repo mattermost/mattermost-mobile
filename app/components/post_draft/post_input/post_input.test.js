@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {Alert} from 'react-native';
-import {shallowWithIntl} from 'test/intl-test-helper';
-import TestHelper from 'test/test_helper';
 
+import {shallowWithIntl} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 import Device from '@constants/device';
 import Preferences from '@mm-redux/constants/preferences';
 
