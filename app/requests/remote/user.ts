@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
-import {Model, Q} from '@nozbe/watermelondb';
+import compact from 'lodash.compact';
 
 import {Client4} from '@client/rest';
 import {MM_TABLES} from '@constants/database';
@@ -9,26 +8,22 @@ import DatabaseConnectionException from '@database/exceptions/database_connectio
 import DatabaseManager from '@database/manager';
 import {DataOperator} from '@database/operator';
 import analytics from '@init/analytics';
+import {Q} from '@nozbe/watermelondb';
 import {createSessions} from '@requests/local/systems';
 import {logError} from '@requests/remote/error';
 import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
-import {RawMyTeam, RawPreference, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
+import {RawMyTeam, RawPreference, RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import Global from '@typings/database/global';
-import MyTeam from '@typings/database/my_team';
-import Preference from '@typings/database/preference';
-import System from '@typings/database/system';
-import Team from '@typings/database/team';
-import TeamMembership from '@typings/database/team_membership';
+import Role from '@typings/database/role';
 import {getCSRFFromCookie} from '@utils/security';
 
 const HTTP_UNAUTHORIZED = 401;
 const {SERVER: {SYSTEM}, DEFAULT: {GLOBAL}} = MM_TABLES;
 
 //fixme: Question : do you need to pass an auth token when retrieving the config+license the second time ?
-//fixme: this file needs to be finalized
-//todo: retrieve deviceToken from default database - Global entity
+//todo: this file needs to be finalized
 
 export const logout = async (skipServerLogout = false) => {
     return async () => {
@@ -89,14 +84,7 @@ type LoginArgs = {
   password: string;
   serverUrl: string;
 };
-export const login = async ({
-    config,
-    ldapOnly = false,
-    loginId,
-    mfaToken,
-    password,
-    serverUrl,
-}: LoginArgs) => {
+export const login = async ({config, ldapOnly = false, loginId, mfaToken, password, serverUrl}: LoginArgs) => {
     const database = await DatabaseManager.getDefaultDatabase();
 
     if (!database) {
@@ -110,13 +98,9 @@ export const login = async ({
 
     try {
         const tokens = (await database.collections.get(GLOBAL).query(Q.where('name', 'deviceToken')).fetch()) as Global[];
-
         deviceToken = tokens?.[0]?.value ?? '';
-
         user = ((await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly)) as unknown) as RawUser;
-
         await createAndSetActiveDatabase(config);
-
         await getCSRFFromCookie(Client4.getUrl());
     } catch (error) {
         return {error};
@@ -134,10 +118,9 @@ export const login = async ({
 
 type LoadMeArgs = { user: RawUser; deviceToken?: string; serverUrl: string };
 const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
-    const data: any = {user};
+    let currentUser: RawUser = user;
 
     const database = await DatabaseManager.getActiveServerDatabase();
-
     if (!database) {
         throw new DatabaseConnectionException(
             'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/loadMe',
@@ -151,7 +134,7 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         }
 
         if (!user) {
-            data.user = await Client4.getMe(); //todo:  why do we do this here ?
+            currentUser = await Client4.getMe() as unknown as RawUser; //todo:  why do we do this here ?
         }
     } catch (error) {
         forceLogoutIfNecessary(error);
@@ -160,11 +143,10 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
 
     try {
         const analyticsClient = analytics.create(serverUrl);
-        analyticsClient.setUserId(data.user.id);
-        analyticsClient.setUserRoles(data.user.roles);
+        analyticsClient.setUserId(currentUser.id);
+        analyticsClient.setUserRoles(currentUser.roles);
 
         //todo: maybe you need to defer some of those requests for when we load the channels ??
-        // Execute all other requests in parallel
         const teamsRequest = Client4.getMyTeams();
         const teamMembersRequest = Client4.getMyTeamMembers();
         const teamUnreadRequest = Client4.getMyTeamUnreads();
@@ -172,31 +154,14 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         const configRequest = Client4.getClientConfigOld();
         const licenseRequest = Client4.getClientLicenseOld(); // todo: I have added this one
 
-        const [
-            teams,
-            teamMembers,
-            teamUnreads,
-            preferences,
-            config,
-            license,
-        ] = await Promise.all([
-            teamsRequest,
-            teamMembersRequest,
-            teamUnreadRequest,
-            preferencesRequest,
-            configRequest,
-            licenseRequest,
-        ]);
+        const [teams, teamMembers, teamUnreads, preferences, config, license] = await Promise.all([teamsRequest, teamMembersRequest, teamUnreadRequest, preferencesRequest, configRequest, licenseRequest]);
 
-        let models: Model[] = [];
-        const teamRecords = (await DataOperator.handleTeam({prepareRecordsOnly: true, teams: (teams as unknown) as RawTeam[]})) as Team[];
-        models = models.concat(teamRecords);
+        const teamRecords = await DataOperator.handleTeam({prepareRecordsOnly: true, teams: (teams as RawTeam[])});
 
         const teamMembershipRecords = await DataOperator.handleTeamMemberships({
             prepareRecordsOnly: true,
             teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
-        }) as TeamMembership[];
-        models = models.concat(teamMembershipRecords);
+        });
 
         //fixme: Ask for confirmation from Elias/Miguel as to how the unreads count are really treated.
         const myTeams = teamUnreads.map((unread) => {
@@ -213,8 +178,7 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         const myTeamRecords = await DataOperator.handleMyTeam({
             prepareRecordsOnly: true,
             myTeams: (myTeams as unknown) as RawMyTeam[],
-        }) as MyTeam[];
-        models = models.concat(myTeamRecords);
+        });
 
         const systemRecords = await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
@@ -237,27 +201,16 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
                 },
             ],
             prepareRecordsOnly: true,
-        }) as System[];
-        models = models.concat(systemRecords);
+        });
 
         const preferenceRecords = await DataOperator.handlePreferences({
             prepareRecordsOnly: true,
             preferences: (preferences as unknown) as RawPreference[],
-        }) as Preference[];
-        models = models.concat(preferenceRecords);
-
-        if (models?.length > 0) {
-            await DataOperator.batchOperations({database, models});
-        }
-
-        //todo: writes to all table
-        // actions.push({
-        //     type: UserTypes.LOGIN,
-        //     data,
-        // });
+        });
 
         const rolesToLoad = new Set<string>();
-        for (const role of data.user.roles.split(' ')) {
+
+        for (const role of user.roles.split(' ')) {
             rolesToLoad.add(role);
         }
 
@@ -266,26 +219,41 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
                 rolesToLoad.add(role);
             }
         }
+
+        let rolesRecords: Role[] = [];
         if (rolesToLoad.size > 0) {
-            data.roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
-            if (data.roles.length) {
-                //todo: update roles
-                // actions.push({
-                //     type: RoleTypes.RECEIVED_ROLES,
-                //     data: data.roles,
-                // });
+            const roles = await Client4.getRolesByNames(Array.from(rolesToLoad)) as RawRole[];
+
+            if (roles?.length) {
+                rolesRecords = (await DataOperator.handleIsolatedEntity({
+                    tableName: IsolatedEntities.ROLE,
+                    prepareRecordsOnly: true,
+                    values: (roles as unknown) as RawRole[],
+                })) as Role[];
             }
+        }
+
+        const models = compact([
+            ...teamRecords,
+            ...teamMembershipRecords,
+            ...myTeamRecords,
+            ...systemRecords,
+            ...preferenceRecords,
+            ...rolesRecords,
+        ]);
+
+        if (models?.length > 0) {
+            await DataOperator.batchOperations({database, models});
         }
 
     // if (!skipDispatch) {
     //     dispatch(batchActions(actions, 'BATCH_LOAD_ME'));
     // }
     } catch (error) {
-    // console.log('login error', error.stack); // eslint-disable-line no-console
         return {error};
     }
 
-    return {data};
+    return {data: currentUser};
 };
 
 // export const completeLogin = async (user, deviceToken) => {

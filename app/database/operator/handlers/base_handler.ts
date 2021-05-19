@@ -50,7 +50,7 @@ export interface BaseHandlerMix {
   activeDatabase: Database;
   getActiveDatabase: () => DatabaseInstance;
   setActiveDatabase: (database: Database) => void;
-  handleIsolatedEntity: ({tableName, values, prepareRecordsOnly}: HandleIsolatedEntityArgs) => boolean | Model[];
+  handleIsolatedEntity: ({tableName, values, prepareRecordsOnly}: HandleIsolatedEntityArgs) => Model[];
   handleEntityRecords: ({findMatchingRecordBy, fieldName, operator, rawValues, tableName, prepareRecordsOnly}: HandleEntityRecordsArgs) => Promise<null | Model[]>;
   processInputs: ({rawValues, tableName, findMatchingRecordBy, fieldName}: ProcessInputsArgs) => Promise<{ createRaws: RecordPair[]; updateRaws: RecordPair[] }>;
   batchOperations: ({database, models}: BatchOperationsArgs) => Promise<void>;
@@ -94,7 +94,7 @@ class BaseHandler {
    * @param {boolean} isolatedEntityArgs.prepareRecordsOnly
    * @param {RawValue} isolatedEntityArgs.values
    * @throws DataOperatorException
-   * @returns {Model[] | boolean}
+   * @returns {Model[]}
    */
   handleIsolatedEntity = async ({tableName, values, prepareRecordsOnly = true}: HandleIsolatedEntityArgs) => {
       let findMatchingRecordBy;

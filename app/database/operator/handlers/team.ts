@@ -94,6 +94,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
      */
     handleTeam = async ({teams, prepareRecordsOnly = true}: HandleTeamArgs) => {
         let records: Team[] = [];
+
         if (!teams.length) {
             throw new DataOperatorException(
                 'An empty "teams" array has been passed to the handleTeam method',
