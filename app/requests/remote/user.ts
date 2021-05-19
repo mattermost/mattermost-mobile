@@ -24,7 +24,9 @@ import TeamMembership from '@typings/database/team_membership';
 import {getCSRFFromCookie} from '@utils/security';
 
 const HTTP_UNAUTHORIZED = 401;
+const {SERVER: {SYSTEM}, DEFAULT: {GLOBAL}} = MM_TABLES;
 
+//fixme: Question : do you need to pass an auth token when retrieving the config+license the second time ?
 //fixme: this file needs to be finalized
 //todo: retrieve deviceToken from default database - Global entity
 
@@ -54,17 +56,9 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
         );
     }
 
-    const currentUserId = await database.collections.
-        get(MM_TABLES.SERVER.SYSTEM).
-        query(Q.where('name', 'currentUserId')).
-        fetch();
+    const currentUserId = await database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch();
 
-    if (
-        'status_code' in err &&
-    err.status_code === HTTP_UNAUTHORIZED &&
-    err?.url?.indexOf('/login') === -1 &&
-    currentUserId
-    ) {
+    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         logout(false);
     }
 };
@@ -115,10 +109,7 @@ export const login = async ({
     let user;
 
     try {
-        const tokens = (await database.collections.
-            get(MM_TABLES.DEFAULT.GLOBAL).
-            query(Q.where('name', 'deviceToken')).
-            fetch()) as Global[];
+        const tokens = (await database.collections.get(GLOBAL).query(Q.where('name', 'deviceToken')).fetch()) as Global[];
 
         deviceToken = tokens?.[0]?.value ?? '';
 
@@ -126,13 +117,11 @@ export const login = async ({
 
         await createAndSetActiveDatabase(config);
 
-        //fixme: Question : do you need to pass an auth token when retrieving the config+license the second time ?
         await getCSRFFromCookie(Client4.getUrl());
     } catch (error) {
         return {error};
     }
 
-    //todo : loadMe
     const result = await loadMe({user, deviceToken, serverUrl});
 
     if (!result.error) {
@@ -199,13 +188,8 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
             licenseRequest,
         ]);
 
-        data.teams = teams;
-
         let models: Model[] = [];
-        const teamRecords = await DataOperator.handleTeam({
-            prepareRecordsOnly: true,
-            teams: (teams as unknown) as RawTeam[],
-        }) as Team[];
+        const teamRecords = (await DataOperator.handleTeam({prepareRecordsOnly: true, teams: (teams as unknown) as RawTeam[]})) as Team[];
         models = models.concat(teamRecords);
 
         const teamMembershipRecords = await DataOperator.handleTeamMemberships({
@@ -214,6 +198,7 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         }) as TeamMembership[];
         models = models.concat(teamMembershipRecords);
 
+        //fixme: Ask for confirmation from Elias/Miguel as to how the unreads count are really treated.
         const myTeams = teamUnreads.map((unread) => {
             return {
                 team_id: unread.team_id,
@@ -231,7 +216,6 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         }) as MyTeam[];
         models = models.concat(myTeamRecords);
 
-        // Save License, Config and CurrentUserId to System entity
         const systemRecords = await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
             values: [
