@@ -101,6 +101,7 @@ class BaseHandler {
       let fieldName;
       let operator;
       let rawValues;
+      let records: Model[] = [];
 
       if (!values.length) {
           throw new DataOperatorException(
@@ -166,7 +167,7 @@ class BaseHandler {
       }
 
       if (fieldName && findMatchingRecordBy) {
-          const records = await this.handleEntityRecords({
+          records = await this.handleEntityRecords({
               fieldName,
               findMatchingRecordBy,
               operator,
@@ -175,10 +176,10 @@ class BaseHandler {
               tableName,
           });
 
-          return prepareRecordsOnly && records?.length && records;
+          return records;
       }
 
-      return false;
+      return records;
   };
 
   /**
@@ -189,13 +190,14 @@ class BaseHandler {
    * @param {(DataFactoryArgs) => Promise<Model>} handleEntityArgs.operator
    * @param {RawValue[]} handleEntityArgs.rawValues
    * @param {string} handleEntityArgs.tableName
-   * @returns {Promise<null | Model[]>}
+   * @returns {Promise<Model[]>}
    */
   handleEntityRecords = async ({findMatchingRecordBy, fieldName, operator, rawValues, tableName, prepareRecordsOnly = true}: HandleEntityRecordsArgs) => {
       if (!rawValues.length) {
-          return null;
+          throw new DataOperatorException(
+              `An empty "rawValues" array has been passed to the handleEntityRecords method for tableName ${tableName}`,
+          );
       }
-
       const {createRaws, updateRaws} = await this.processInputs({
           rawValues,
           tableName,
@@ -205,7 +207,8 @@ class BaseHandler {
 
       const database = await this.getDatabase(tableName);
 
-      const models = await this.prepareRecords({
+      let models: Model[] = [];
+      models = await this.prepareRecords({
           database,
           tableName,
           createRaws,
@@ -221,7 +224,7 @@ class BaseHandler {
           await this.batchOperations({database, models});
       }
 
-      return null;
+      return models;
   };
 
   /**
@@ -311,7 +314,6 @@ class BaseHandler {
               });
           }
       } catch (e) {
-          console.error('batchOperation error ', e);
           throw new DataOperatorException('batchOperations error ', e);
       }
   };

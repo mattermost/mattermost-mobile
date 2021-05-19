@@ -48,9 +48,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {RawChannel[]} channelsArgs.channels
      * @param {boolean} channelsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Channel[]|boolean}
+     * @returns {Channel[]}
      */
     handleChannel = async ({channels, prepareRecordsOnly = true}: HandleChannelArgs) => {
+        let records: Channel[] = [];
+
         if (!channels.length) {
             throw new DataOperatorException(
                 'An empty "channels" array has been passed to the handleChannel method',
@@ -59,7 +61,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: channels, key: 'id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordChannelEqualToRaw,
             operator: prepareChannelRecord,
@@ -68,7 +70,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             tableName: CHANNEL,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -77,9 +79,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {RawMyChannelSettings[]} settingsArgs.settings
      * @param {boolean} settingsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {MyChannelSettings[]| boolean}
+     * @returns {MyChannelSettings[]}
      */
     handleMyChannelSettings = async ({settings, prepareRecordsOnly = true}: HandleMyChannelSettingsArgs) => {
+        let records: MyChannelSettings[] = [];
+
         if (!settings.length) {
             throw new DataOperatorException(
                 'An empty "settings" array has been passed to the handleMyChannelSettings method',
@@ -88,7 +92,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
             operator: prepareMyChannelSettingsRecord,
@@ -97,7 +101,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             tableName: MY_CHANNEL_SETTINGS,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -106,9 +110,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {RawChannelInfo[]} channelInfosArgs.channelInfos
      * @param {boolean} channelInfosArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {ChannelInfo[]| boolean}
+     * @returns {ChannelInfo[]}
      */
     handleChannelInfo = async ({channelInfos, prepareRecordsOnly = true}: HandleChannelInfoArgs) => {
+        let records: ChannelInfo[] = [];
+
         if (!channelInfos.length) {
             throw new DataOperatorException(
                 'An empty "channelInfos" array has been passed to the handleMyChannelSettings method',
@@ -120,7 +126,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             key: 'channel_id',
         });
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
             operator: prepareChannelInfoRecord,
@@ -129,7 +135,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             tableName: CHANNEL_INFO,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -138,9 +144,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @param {RawMyChannel[]} myChannelsArgs.myChannels
      * @param {boolean} myChannelsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {MyChannel[]| boolean}
+     * @returns {MyChannel[]}
      */
     handleMyChannel = async ({myChannels, prepareRecordsOnly = true}: HandleMyChannelArgs) => {
+        let records: MyChannel[] = [];
+
         if (!myChannels.length) {
             throw new DataOperatorException(
                 'An empty "myChannels" array has been passed to the handleMyChannel method',
@@ -152,7 +160,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             key: 'channel_id',
         });
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
             operator: prepareMyChannelRecord,
@@ -161,7 +169,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             tableName: MY_CHANNEL,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 };
 

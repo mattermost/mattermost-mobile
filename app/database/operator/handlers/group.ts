@@ -48,9 +48,11 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroupMembership[]} groupMembershipsArgs.groupMemberships
      * @param {boolean} groupMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {GroupMembership[] | boolean}
+     * @returns {GroupMembership[]}
      */
     handleGroupMembership = async ({groupMemberships, prepareRecordsOnly = true}: HandleGroupMembershipArgs) => {
+        let records: GroupMembership[] = [];
+
         if (!groupMemberships.length) {
             throw new DataOperatorException(
                 'An empty "groupMemberships" array has been passed to the handleGroupMembership method',
@@ -59,7 +61,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             operator: prepareGroupMembershipRecord,
@@ -68,7 +70,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
             tableName: GROUP_MEMBERSHIP,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -77,9 +79,11 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroup[]} groupsArgs.groups
      * @param {boolean} groupsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Group[] | boolean}
+     * @returns {Group[]}
      */
     handleGroup = async ({groups, prepareRecordsOnly = true}: HandleGroupArgs) => {
+        let records: Group[] = [];
+
         if (!groups.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroup method',
@@ -88,7 +92,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: groups, key: 'name'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'name',
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             operator: prepareGroupRecord,
@@ -97,7 +101,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
             tableName: GROUP,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -106,9 +110,11 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroupsInTeam[]} groupsInTeamsArgs.groupsInTeams
      * @param {boolean} groupsInTeamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {GroupsInTeam[] | boolean}
+     * @returns {GroupsInTeam[]}
      */
     handleGroupsInTeam = async ({groupsInTeams, prepareRecordsOnly = true} : HandleGroupsInTeamArgs) => {
+        let records: GroupsInTeam[] = [];
+
         if (!groupsInTeams.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
@@ -117,7 +123,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             operator: prepareGroupsInTeamRecord,
@@ -126,7 +132,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
             tableName: GROUPS_IN_TEAM,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -135,9 +141,11 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroupsInChannel[]} groupsInChannelsArgs.groupsInChannels
      * @param {boolean} groupsInChannelsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {GroupsInChannel[] | boolean}
+     * @returns {GroupsInChannel[]}
      */
     handleGroupsInChannel = async ({groupsInChannels, prepareRecordsOnly = true}: HandleGroupsInChannelArgs) => {
+        let records: GroupsInChannel[] = [];
+
         if (!groupsInChannels.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
@@ -146,7 +154,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             operator: prepareGroupsInChannelRecord,
@@ -155,7 +163,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
             tableName: GROUPS_IN_CHANNEL,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 };
 
