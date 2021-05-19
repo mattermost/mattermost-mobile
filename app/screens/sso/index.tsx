@@ -8,12 +8,11 @@ import type {GlobalState} from '@mm-redux/types/store';
 
 import {resetToChannel} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
-import tracker from 'app/utils/time_tracker';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {ssoLogin} from '@actions/views/user';
 import emmProvider from '@init/emm_provider';
 import {DispatchFunc} from '@mm-redux/types/actions';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {ErrorApi} from '@mm-redux/types/client4';
@@ -92,7 +91,6 @@ function SSO({intl, ssoType}: SSOProps) {
     };
 
     const goToChannel = () => {
-        tracker.initialLoad = Date.now();
         scheduleSessionExpiredNotification();
         resetToChannel();
     };

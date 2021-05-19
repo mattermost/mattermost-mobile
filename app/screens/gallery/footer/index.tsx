@@ -7,7 +7,7 @@ import {injectIntl} from 'react-intl';
 import Clipboard from '@react-native-community/clipboard';
 
 import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, FooterRef, ShowToast, ToastRef} from 'types/screens/gallery';

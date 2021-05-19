@@ -34,6 +34,9 @@ class MoreChannelsScreen {
     searchInput = SearchBar.getSearchInput(this.testID.moreChannelsScreenPrefix);
     cancelButton = SearchBar.getCancelButton(this.testID.moreChannelsScreenPrefix);
     clearButton = SearchBar.getClearButton(this.testID.moreChannelsScreenPrefix);
+    archivedChannelsOption = BottomSheet.archivedChannelsOption;
+    cancelOption = BottomSheet.cancelOption;
+    publicChannelsOption = BottomSheet.publicChannelsOption;
 
     getChannel = (channelId, displayName) => {
         const channelItemTestID = `${this.testID.channelItem}.${channelId}`;
@@ -75,13 +78,13 @@ class MoreChannelsScreen {
 
     showArchivedChannels = async () => {
         await this.channelDropdown.tap();
-        await BottomSheet.archivedChannelsOption.tap();
+        await this.archivedChannelsOption.tap();
         await expect(this.channelDropdownArchived).toBeVisible();
     }
 
     showPublicChannels = async () => {
         await this.channelDropdown.tap();
-        await BottomSheet.publicChannelsOption.tap();
+        await this.publicChannelsOption.tap();
         await expect(this.channelDropdownPublic).toBeVisible();
     }
 

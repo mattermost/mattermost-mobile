@@ -44,6 +44,8 @@ const ChannelItem = ({onSelect, selected, channel}: ChannelItemProps) => {
         );
     }
 
+    const channelType = channelTypes[channel.type] || PublicChannel;
+
     return (
         <TouchableHighlight
             underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
@@ -51,7 +53,7 @@ const ChannelItem = ({onSelect, selected, channel}: ChannelItemProps) => {
         >
             <View style={styles.container}>
                 <View style={styles.item}>
-                    {channelTypes[channel.type] || PublicChannel}
+                    {channelType()}
                     <Text
                         testID='share_extension.channel_item.display_name'
                         style={[styles.text]}

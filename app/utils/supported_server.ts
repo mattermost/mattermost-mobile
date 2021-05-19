@@ -36,7 +36,7 @@ function unsupportedServerAdminAlert(formatMessage: FormatMessageType) {
         text: formatMessage({id: 'mobile.server_upgrade.learn_more', defaultMessage: 'Learn More'}),
         style: 'cancel',
         onPress: () => {
-            const url = 'https://mattermost.com/blog/support-for-esr-5-9-has-ended/';
+            const url = 'https://docs.mattermost.com/administration/release-lifecycle.html';
             const onError = () => {
                 Alert.alert(
                     formatMessage({

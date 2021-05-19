@@ -15,7 +15,7 @@ import {
     receivedPostsSince,
     receivedPostsInThread,
 } from '@mm-redux/actions/posts';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {Posts} from '@mm-redux/constants';
 import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';

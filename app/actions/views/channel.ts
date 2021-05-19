@@ -16,7 +16,7 @@ import {
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {getLicense} from '@mm-redux/selectors/entities/general';
 import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
@@ -37,7 +37,7 @@ import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/
 import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
-import telemetry from '@telemetry';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 import {Action, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -206,6 +206,14 @@ export function handleSelectChannel(channelId: string) {
         const member = myMembers[channelId];
 
         if (channel) {
+            let markerExtra;
+            if (channel.display_name) {
+                markerExtra = `Channel: ${channel.display_name}`;
+            } else {
+                markerExtra = `Channel: ${channel.type === General.DM_CHANNEL ? 'Direct Channel' : channel.name}`;
+            }
+
+            telemetry.start([PERF_MARKERS.CHANNEL_RENDER], Date.now(), [markerExtra]);
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
             let previousChannelId: string | undefined;
@@ -546,12 +554,6 @@ export function leaveChannel(channel: Channel, reset = false) {
 }
 
 export function setChannelLoading(loading = true) {
-    if (loading) {
-        telemetry.start(['channel:loading']);
-    } else {
-        telemetry.end(['channel:loading']);
-    }
-
     return {
         type: ViewTypes.SET_CHANNEL_LOADER,
         loading,
@@ -600,9 +602,6 @@ export function increasePostVisibility(channelId: string, postId: string) {
             return true;
         }
 
-        telemetry.reset();
-        telemetry.start(['posts:loading']);
-
         dispatch({
             type: ViewTypes.LOADING_POSTS,
             data: true,
@@ -633,8 +632,6 @@ export function increasePostVisibility(channelId: string, postId: string) {
         }
 
         dispatch(batchActions(actions, 'BATCH_LOAD_MORE_POSTS'));
-        telemetry.end(['posts:loading']);
-        telemetry.save();
 
         return hasMorePost;
     };
@@ -647,7 +644,7 @@ function setLoadMorePostsVisible(visible: boolean) {
     };
 }
 
-function loadGroupData() {
+function loadGroupData(isReconnect = false) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const actions = [];
@@ -666,10 +663,10 @@ function loadGroupData() {
                             Client4.getAllGroupsAssociatedToTeam(team.id, true),
                         ]);
 
-                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                        if (getAllGroupsAssociatedToChannelsInTeam) {
                             actions.push({
                                 type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
-                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam},
                             });
                         }
 
@@ -682,13 +679,13 @@ function loadGroupData() {
                     } else {
                         const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
-                            Client4.getGroups(true, 0, 0),
+                            Client4.getGroups(false, 0, 0),
                         ]);
 
-                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                        if (getAllGroupsAssociatedToChannelsInTeam) {
                             actions.push({
                                 type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
-                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam},
                             });
                         }
 
@@ -737,10 +734,11 @@ type LoadChannelsForTeamData = {
     roles?: Role[],
 }
 
-export function loadChannelsForTeam(teamId: string, skipDispatch = false) {
+export function loadChannelsForTeam(teamId: string, skipDispatch = false, isReconnect = false) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
+        const lastConnectAt = state.websocket?.lastConnectAt || 0;
         const data: LoadChannelsForTeamData = {
             sync: true,
             teamId,
@@ -748,13 +746,12 @@ export function loadChannelsForTeam(teamId: string, skipDispatch = false) {
         };
 
         const actions = [];
-
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
-                    console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
+                    console.log('Fetching channels attempt', (i + 1), teamId, 'include deleted since', lastConnectAt); //eslint-disable-line no-console
                     const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                        Client4.getMyChannels(teamId, true),
+                        Client4.getMyChannels(teamId, true, lastConnectAt),
                         Client4.getMyChannelMembers(teamId),
                     ]);
 
@@ -808,7 +805,7 @@ export function loadChannelsForTeam(teamId: string, skipDispatch = false) {
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
 
-            dispatch(loadGroupData());
+            dispatch(loadGroupData(isReconnect));
         }
 
         return {data};

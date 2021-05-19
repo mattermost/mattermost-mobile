@@ -5,7 +5,6 @@ import {combineReducers} from 'redux';
 
 import announcement from './announcement';
 import channel from './channel';
-import clientUpgrade from './client_upgrade';
 import i18n from './i18n';
 import recentEmojis from './recent_emojis';
 import root from './root';
@@ -20,7 +19,6 @@ import post from './post';
 export default combineReducers({
     announcement,
     channel,
-    clientUpgrade,
     i18n,
     recentEmojis,
     root,

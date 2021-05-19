@@ -11,7 +11,7 @@ import Share from 'react-native-share';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressBar from '@components/progress_bar';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getLocalPath} from '@utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
 
@@ -126,6 +126,8 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
 
         if (path && share && !canceled) {
             Share.open({
+                message: '',
+                title: '',
                 url: `file://${path}`,
                 showAppsToView: true,
             }).catch(() => {

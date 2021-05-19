@@ -45,11 +45,9 @@ type Props = {
     currentChannelGuestCount?: number,
     currentChannelMemberCount?: number,
     currentUserId: string,
-    isBot: boolean,
-    isLandscape: boolean,
     isTeammateGuest: boolean,
     isDirectMessage: boolean,
-    status?: string,
+    teammateId?: string,
     theme: Theme,
 }
 
@@ -175,9 +173,8 @@ export default class ChannelInfo extends PureComponent<Props> {
             currentChannelCreatorName,
             currentChannelMemberCount,
             currentChannelGuestCount,
-            status,
+            teammateId,
             theme,
-            isBot,
             isTeammateGuest,
         } = this.props;
 
@@ -204,11 +201,10 @@ export default class ChannelInfo extends PureComponent<Props> {
                         memberCount={currentChannelMemberCount}
                         onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
-                        status={status}
+                        teammateId={teammateId}
                         theme={theme}
                         type={currentChannel.type}
                         isArchived={channelIsArchived}
-                        isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={(currentChannelGuestCount || 0) > 0}
                         isGroupConstrained={currentChannel.group_constrained}

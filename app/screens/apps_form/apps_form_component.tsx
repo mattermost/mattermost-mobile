@@ -18,11 +18,12 @@ import {dismissModal} from 'app/actions/navigation';
 
 import DialogIntroductionText from './dialog_introduction_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCallRequest, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
+import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
 import {preventDoubleTap} from '@utils/tap';
+import {DoAppCallResult} from 'types/actions/apps';
 
 export type Props = {
     call: AppCallRequest;
@@ -32,9 +33,9 @@ export type Props = {
             values: {
                 [name: string]: string;
             };
-        }) => Promise<{data?: AppCallResponse<FormResponseData>, error?: AppCallResponse<FormResponseData>}>;
-        performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<{data?: AppCallResponse<AppLookupResponse>, error?: AppCallResponse<AppLookupResponse>}>;
-        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<{data?: AppCallResponse<FormResponseData>, error?: AppCallResponse<FormResponseData>}>;
+        }) => Promise<DoAppCallResult<FormResponseData>>;
+        performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<DoAppCallResult<AppLookupResponse>>;
+        refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
     };
     theme: Theme;
     componentId: string;

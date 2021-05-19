@@ -21,7 +21,7 @@ class ChannelsList {
 
     channelsList = element(by.id(this.testID.channelsList));
     channelsListUnreadIndicator = element(by.id(this.testID.channelsListUnreadIndicator));
-    filteredChannelsList = element(by.id(this.testID.channelsList));
+    filteredChannelsList = element(by.id(this.testID.filteredChannelsList));
     switchTeamsButton = element(by.id(this.testID.switchTeamsButton));
     switchTeamsButtonBadge = element(by.id(this.testID.switchTeamsButtonBadge));
     switchTeamsButtonBadgeUnreadCount = element(by.id(this.testID.switchTeamsButtonBadgeUnreadCount));

@@ -27,14 +27,13 @@ exports[`channel_info_header should match snapshot 1`] = `
     }
   >
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -76,6 +75,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
+          "marginLeft": 13,
         }
       }
       testID="channel_info.header.display_name"
@@ -333,14 +333,13 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
     }
   >
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -382,6 +381,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
+          "marginLeft": 13,
         }
       }
       testID="channel_info.header.display_name"
@@ -667,14 +667,13 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
     }
   >
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -716,6 +715,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
+          "marginLeft": 13,
         }
       }
       testID="channel_info.header.display_name"
@@ -973,14 +973,13 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
     }
   >
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -1022,6 +1021,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
+          "marginLeft": 13,
         }
       }
       testID="channel_info.header.display_name"
@@ -1307,14 +1307,13 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
     }
   >
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -1356,6 +1355,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
+          "marginLeft": 13,
         }
       }
       testID="channel_info.header.display_name"
@@ -1634,14 +1634,13 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
     }
   >
     <ChannelIcon
+      hasDraft={false}
       isActive={false}
       isArchived={false}
-      isBot={false}
       isInfo={true}
       isUnread={false}
       membersCount={3}
       size={24}
-      status="status"
       testID="channel_info.header.channel_icon"
       theme={
         Object {
@@ -1683,6 +1682,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
+          "marginLeft": 13,
         }
       }
       testID="channel_info.header.display_name"

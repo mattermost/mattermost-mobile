@@ -8,7 +8,7 @@ import {Alert, BackHandler, NativeModules, StyleSheet, View} from 'react-native'
 import {useSelector} from 'react-redux';
 
 import {MAX_FILE_COUNT, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {Preferences} from '@mm-redux/constants';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getConfig, canUploadFilesOnMobile} from '@mm-redux/selectors/entities/general';

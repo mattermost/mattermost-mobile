@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';

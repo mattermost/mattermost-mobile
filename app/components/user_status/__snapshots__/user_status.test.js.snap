@@ -44,7 +44,7 @@ exports[`UserStatus should match snapshot, should default to offline status 1`] 
   name="circle-outline"
   style={
     Object {
-      "color": "rgba(61,60,64,0.3)",
+      "color": "rgba(184,184,184,0.64)",
       "fontSize": 32,
     }
   }

@@ -9,7 +9,7 @@ import {Server, WebSocket as MockWebSocket} from 'mock-socket';
 
 import * as ChannelActions from '@mm-redux/actions/channels';
 import * as PostActions from '@mm-redux/actions/posts';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Posts} from '@mm-redux/constants';
 import * as PostSelectors from '@mm-redux/selectors/entities/posts';
 import EventEmitter from '@mm-redux/utils/event_emitter';

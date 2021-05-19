@@ -5,7 +5,7 @@ import assert from 'assert';
 import nock from 'nock';
 
 import Config from '@assets/config.json';
-import Client from '@mm-redux/client/client4';
+import {Client} from '@client/rest';
 import CONSTANTS from '@mm-redux/constants/general';
 import {generateId} from '@mm-redux/utils/helpers';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
@@ -15,7 +15,6 @@ import {UserProfile} from '@mm-redux/types/users';
 import {IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
 import {FileInfo} from '@mm-redux/types/files';
 import {Bot} from '@mm-redux/types/bots';
-import {Scheme} from '@mm-redux/types/schemes';
 import {Role} from '@mm-redux/types/roles';
 import {Dictionary} from '@mm-redux/types/utilities';
 
@@ -27,7 +26,6 @@ class TestHelper {
     basicChannelMember: ChannelMembership | null;
     basicPost: Post | null;
     basicRoles: Dictionary<Role> | null;
-    basicScheme: Scheme | null;
     basicClient: Client | null;
     basicClient4: Client | null;
 
@@ -42,7 +40,6 @@ class TestHelper {
         this.basicChannelMember = null;
         this.basicPost = null;
         this.basicRoles = null;
-        this.basicScheme = null;
     }
 
     activateMocking() {
@@ -368,7 +365,6 @@ class TestHelper {
                 built_in: true,
             } as Role,
         };
-        this.basicScheme = this.mockSchemeWithId();
     }
 
     initBasic = async (client = this.createClient()) => {
@@ -387,26 +383,6 @@ class TestHelper {
             channel: this.basicChannel,
             post: this.basicPost,
         };
-    };
-
-    mockScheme = () => {
-        return {
-            name: this.generateId(),
-            description: this.generateId(),
-            scope: 'channel',
-            default_channel_admin_role: 'false',
-            default_channel_user_role: 'false',
-        } as Scheme;
-    };
-
-    mockSchemeWithId = () => {
-        return {
-            ...this.mockScheme(),
-            id: this.generateId(),
-            create_at: 1507840900004,
-            update_at: 1507840900004,
-            delete_at: 0,
-        } as Scheme;
     };
 
     testIncomingHook = () => {

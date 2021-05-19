@@ -27,11 +27,11 @@ describe('Mention Badges', () => {
     beforeAll(async () => {
         ({user: testUser1} = await User.apiCreateUser());
         ({team: testTeam1} = await Team.apiCreateTeam({prefix: 'team-a'}));
-        ({channel: testChannel1} = await Channel.apiGetChannelByName(testTeam1.name, 'town-square'));
+        ({channel: testChannel1} = await Channel.apiGetChannelByName(testTeam1.id, 'town-square'));
 
         ({user: testUser2} = await User.apiCreateUser());
         ({team: testTeam2} = await Team.apiCreateTeam({prefix: 'team-b'}));
-        ({channel: testChannel2} = await Channel.apiGetChannelByName(testTeam2.name, 'town-square'));
+        ({channel: testChannel2} = await Channel.apiGetChannelByName(testTeam2.id, 'town-square'));
 
         await Team.apiAddUserToTeam(testUser1.id, testTeam1.id);
         await Team.apiAddUserToTeam(testUser1.id, testTeam2.id);

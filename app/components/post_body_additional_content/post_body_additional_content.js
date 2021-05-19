@@ -355,7 +355,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
         if (attachments && attachments.length) {
             if (!MessageAttachments) {
-                MessageAttachments = require('app/components/message_attachments').default;
+                MessageAttachments = require('@components/message_attachments').default;
             }
 
             return (
