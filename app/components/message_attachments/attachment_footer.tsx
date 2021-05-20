@@ -34,8 +34,9 @@ export default function AttachmentFooter(props: Props) {
                 <FastImage
                     source={{uri: icon}}
                     key='footer_icon'
+                    id='footer_icon'
                     style={style.icon}
-                    renderOnError={true}
+                    renderErrorImage={true}
                 />
             }
             <Text

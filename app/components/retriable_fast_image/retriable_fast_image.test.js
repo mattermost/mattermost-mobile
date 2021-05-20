@@ -86,7 +86,7 @@ describe('RetriableFastImage', () => {
             source: {
                 uri: invalidUri,
             },
-            renderOnError: true,
+            renderErrorImage: true,
         };
         const wrapper = shallow(<RetriableFastImage {...props}/>);
 
@@ -99,7 +99,7 @@ describe('RetriableFastImage', () => {
             source: {
                 uri: dataUri,
             },
-            renderOnError: true,
+            renderErrorImage: true,
         };
         const wrapper = shallow(
             <RetriableFastImage {...props}/>,
@@ -128,12 +128,12 @@ describe('RetriableFastImage', () => {
         while (instance.state.retry < FAST_IMAGE_MAX_RETRIES) {
             instance.onError();
             retry += 1;
-            expect(instance.state.retry).toEqual(retry);
+            expect(instance.state.retries).toEqual(retry);
             expect(baseProps.onError).not.toHaveBeenCalled();
         }
 
         instance.onError();
-        expect(instance.state.retry).toEqual(retry);
+        expect(instance.state.retries).toEqual(retry);
         expect(baseProps.onError).toHaveBeenCalled();
     });
 });

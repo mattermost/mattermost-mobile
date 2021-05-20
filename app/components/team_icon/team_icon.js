@@ -81,7 +81,8 @@ export default class TeamIcon extends React.PureComponent {
                     style={[styles.image, styleImage]}
                     source={{uri: Client4.getTeamIconUrl(teamId, lastIconUpdate)}}
                     onError={this.handleImageError}
-                    renderOnError={true}
+                    renderErrorImage={true}
+                    id='team_icon'
                 />
             );
         }

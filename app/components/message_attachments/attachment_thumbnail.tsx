@@ -20,10 +20,11 @@ export default function AttachmentThumbnail(props: Props) {
     return (
         <View style={style.container}>
             <FastImage
+                id='attachment_thumbnail'
                 source={{uri}}
                 resizeMode='contain'
                 style={style.image}
-                renderOnError={true}
+                renderErrorImage={true}
             />
         </View>
     );

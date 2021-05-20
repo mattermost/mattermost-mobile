@@ -162,7 +162,8 @@ export default class ProfilePicture extends PureComponent {
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={source}
-                    renderOnError={true}
+                    renderErrorImage={true}
+                    id='profile_picture'
                 />
             );
         } else {

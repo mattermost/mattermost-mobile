@@ -63,8 +63,9 @@ export default class AttachmentAuthor extends PureComponent<Props> {
                 <FastImage
                     source={{uri: icon}}
                     key='author_icon'
+                    id='author_icon'
                     style={style.icon}
-                    renderOnError={true}
+                    renderErrorImage={true}
                 />
                 }
                 {Boolean(name) &&

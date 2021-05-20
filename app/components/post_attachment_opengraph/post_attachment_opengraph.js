@@ -244,11 +244,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                     type={'none'}
                 >
                     <FastImage
+                        id='post_attachment_opengraph'
                         style={[style.image, {width, height}]}
                         source={source}
                         resizeMode='contain'
                         nativeID={`image-${this.fileId}`}
-                        renderOnError={true}
+                        renderErrorImage={true}
                     />
                 </TouchableWithFeedback>
             </View>

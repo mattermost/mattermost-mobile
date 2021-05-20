@@ -35,7 +35,8 @@ const NotificationIcon = ({fromWebhook, overrideIconUrl, senderId, useUserIcon}:
                 <FastImage
                     source={source}
                     style={styles.icon}
-                    renderOnError={true}
+                    renderErrorImage={true}
+                    id='notification_icon'
                 />
             );
         } else {
@@ -60,7 +61,8 @@ const NotificationIcon = ({fromWebhook, overrideIconUrl, senderId, useUserIcon}:
             <FastImage
                 source={logo}
                 style={styles.icon}
-                renderOnError={true}
+                renderErrorImage={true}
+                id='notification_icon'
             />
         );
     }

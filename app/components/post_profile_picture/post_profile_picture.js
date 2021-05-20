@@ -71,7 +71,8 @@ export default class PostProfilePicture extends PureComponent {
                             height: pictureSize,
                             width: pictureSize,
                         }}
-                        renderOnError={true}
+                        renderErrorImage={true}
+                        id='post_profile_picture'
                     />
                 );
             } else {

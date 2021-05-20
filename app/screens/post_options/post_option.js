@@ -65,7 +65,8 @@ export default class PostOption extends PureComponent {
                     <FastImage
                         source={icon}
                         style={imageStyle}
-                        renderOnError={true}
+                        renderErrorImage={true}
+                        id='post_options'
                     />
                 );
             } else {

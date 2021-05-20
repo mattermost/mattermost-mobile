@@ -30,7 +30,8 @@ const Avatar = ({avatarUri, theme}: AvatarProps) => {
             <FastImage
                 source={{uri: avatarUri}}
                 style={[styles.avatar, styles.avatarRadius]}
-                renderOnError={true}
+                renderErrorImage={true}
+                id='avatar'
             />
         );
     } else {

@@ -48,7 +48,8 @@ function channelInfoRow(props) {
             <FastImage
                 source={image}
                 style={{width: 24, height: 24}}
-                renderOnError={true}
+                renderErrorImage={true}
+                id='channel_info_row'
             />
         );
     } else {

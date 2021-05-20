@@ -111,7 +111,8 @@ const SlashSuggestionItem = (props: Props) => {
     } else if (props.icon && props.icon.startsWith('http')) {
         image = (
             <FastImage
-                renderOnError={true}
+                id='slash-suggestion'
+                renderErrorImage={true}
                 source={{uri: props.icon}}
                 style={{width: 16, height: 16}}
             />
