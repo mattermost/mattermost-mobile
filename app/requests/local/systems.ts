@@ -70,8 +70,6 @@ export const createSessions = async (sessions: any) => {
         throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
     }
 
-    console.log('called here <<< in createSessions');
-
     await DataOperator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [{
