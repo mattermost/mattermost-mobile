@@ -1,23 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import compact from 'lodash.compact';
 
-import {Client4} from '@client/rest';
-import {MM_TABLES} from '@constants/database';
+import compact from 'lodash.compact';
+import {Q} from '@nozbe/watermelondb';
+
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
-import {DataOperator} from '@database/operator';
-import analytics from '@init/analytics';
-import {Q} from '@nozbe/watermelondb';
-import {createSessions} from '@requests/local/systems';
-import {logError} from '@requests/remote/error';
-import {Client4Error} from '@typings/api/client4';
-import {Config} from '@typings/database/config';
-import {RawMyTeam, RawPreference, RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
-import {IsolatedEntities} from '@typings/database/enums';
 import Global from '@typings/database/global';
 import Role from '@typings/database/role';
+import System from '@typings/database/system';
+import analytics from '@init/analytics';
+import {Client4Error} from '@typings/api/client4';
+import {Client4} from '@client/rest';
+import {Config} from '@typings/database/config';
+import {DataOperator} from '@database/operator';
+import {IsolatedEntities} from '@typings/database/enums';
+import {MM_TABLES} from '@constants/database';
+import {RawMyTeam, RawPreference, RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
+import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
+import {createSessions} from '@requests/local/systems';
 import {getCSRFFromCookie} from '@utils/security';
+import {logError} from '@requests/remote/error';
+import {setAppCredentials} from '@init/credentials';
 
 const HTTP_UNAUTHORIZED = 401;
 const {SERVER: {SYSTEM}, DEFAULT: {GLOBAL}} = MM_TABLES;
@@ -47,7 +51,7 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
 
     if (!database) {
         throw new DatabaseConnectionException(
-            'DatabaseManager.getActiveServerDatabase returned undefined',
+            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/forceLogoutIfNecessary',
         );
     }
 
@@ -100,6 +104,7 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
         const tokens = (await database.collections.get(GLOBAL).query(Q.where('name', 'deviceToken')).fetch()) as Global[];
         deviceToken = tokens?.[0]?.value ?? '';
         user = ((await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly)) as unknown) as RawUser;
+
         await createAndSetActiveDatabase(config);
         await getCSRFFromCookie(Client4.getUrl());
     } catch (error) {
@@ -110,7 +115,7 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
 
     if (!result.error) {
     //todo: completeLogin
-    // completeLogin(user, deviceToken);
+        completeLogin(user, deviceToken);
     }
 
     return result;
@@ -196,6 +201,10 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
                     value: user.id,
                 },
                 {
+                    name: 'currentUser',
+                    value: user,
+                },
+                {
                     name: 'url',
                     value: Client4.getUrl(),
                 },
@@ -245,10 +254,6 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         if (models?.length > 0) {
             await DataOperator.batchOperations({database, models});
         }
-
-    // if (!skipDispatch) {
-    //     dispatch(batchActions(actions, 'BATCH_LOAD_ME'));
-    // }
     } catch (error) {
         return {error};
     }
@@ -256,31 +261,50 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
     return {data: currentUser};
 };
 
-// export const completeLogin = async (user, deviceToken) => {
-// const state = getState();
-// const config = getConfig(state);
-// const license = getLicense(state);
+export const completeLogin = async (user: RawUser, deviceToken: string) => {
+    const database = await DatabaseManager.getActiveServerDatabase();
 
-//todo:
-// const token = Client4.getToken();
-// const url = Client4.getUrl();
-//
-// setAppCredentials(deviceToken, user.id, token, url);
+    if (!database) {
+        throw new DatabaseConnectionException(
+            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/completeLogin',
+        );
+    }
 
-// Set timezone
-// const enableTimezone = isTimezoneEnabled(state);
-// if (enableTimezone) {
-//     const timezone = getDeviceTimezone();
-//     // dispatch(autoUpdateTimezone(timezone));
-// }
+    let config = null;
+    let license = null;
 
-// Data retention
-// if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-//     await getDataRetentionPolicy();
-// } else {
-//     // dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
-// }
-// };
+    const systemRecords = await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license']))).fetch() as System[];
+    systemRecords.forEach((systemRecord) => {
+        if (systemRecord.name === 'config') {
+            config = systemRecord.value;
+        }
+        if (systemRecord.name === 'license') {
+            license = systemRecord.value;
+        }
+    });
+
+    if (!config || !license) {
+        return;
+    }
+    const token = Client4.getToken();
+    const url = Client4.getUrl();
+
+    setAppCredentials(deviceToken, user.id, token, url);
+
+    // Set timezone
+    if (isTimezoneEnabled(config)) {
+        const timezone = getDeviceTimezone();
+        await autoUpdateTimezone(timezone);
+    }
+
+    // Data retention
+    if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
+            license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+        // dispatch(getDataRetentionPolicy());
+    } else {
+        // dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+    }
+};
 
 export const getSessions = async (currentUserId: string) => {
     try {

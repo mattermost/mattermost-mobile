@@ -18,7 +18,7 @@ interface UserProps {
 interface Timezone {
     automaticTimezone: string;
     manualTimezone: string;
-    useAutomaticTimezone: boolean;
+    useAutomaticTimezone: string;
 }
 
 interface FileInfo {
