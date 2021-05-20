@@ -31,7 +31,7 @@ describe('Markdown Block Quote', () => {
     });
 
     it('MM-T195 should display markdown block quote', async () => {
-        // # Post a markdown separator
+        // # Post a markdown block quote
         const markdownBlockQuote = 'this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile';
         await Post.apiCreatePost({
             channelId: townSquareChannel.id,
