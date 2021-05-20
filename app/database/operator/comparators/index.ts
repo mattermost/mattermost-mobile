@@ -56,6 +56,8 @@ import TeamSearchHistory from '@typings/database/team_search_history';
 import TermsOfService from '@typings/database/terms_of_service';
 import User from '@typings/database/user';
 
+//fixme: make comparators more specific  - look out for checks on id only
+
 /**
  *  This file contains all the comparators that are used by the handlers to find out which records to truly update and
  *  which one to create.  A 'record' is a model in our database and a 'raw' is the object that is passed to the handler
@@ -80,11 +82,11 @@ export const isRecordRoleEqualToRaw = (record: Role, raw: RawRole) => {
 };
 
 export const isRecordSystemEqualToRaw = (record: System, raw: RawSystem) => {
-    return raw.name === record.name;
+    return raw.name === record.name && raw.value === record.value;
 };
 
 export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfService, raw: RawTermsOfService) => {
-    return raw.id === record.id;
+    return raw.id === record.id && raw.acceptedAt === record.acceptedAt;
 };
 
 export const isRecordDraftEqualToRaw = (record: Draft, raw: RawDraft) => {

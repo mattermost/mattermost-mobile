@@ -30,7 +30,7 @@ import {
     getRangeOfValues,
     getRawRecordPairs,
     getUniqueRawsBy,
-    hasSimilarUpdateAt,
+    getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
 import {
@@ -45,6 +45,8 @@ import {
     RecordPair,
 } from '@typings/database/database';
 import {IsolatedEntities, OperationType} from '@typings/database/enums';
+
+const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 export interface BaseHandlerMix {
   activeDatabase: Database;
@@ -266,23 +268,17 @@ class BaseHandler {
                   const existingRecord = existingRecords[findIndex];
 
                   // Some raw value has an update_at field.  We'll proceed to update only if the update_at value is different from the record's value in database
-                  const isUpdateAtSimilar = hasSimilarUpdateAt({
+                  const updateRecords = getValidRecordsForUpdate({
                       tableName,
                       existingRecord,
                       newValue: newElement,
                   });
 
-                  if (!isUpdateAtSimilar) {
-                      return updateRaws.push({
-                          record: existingRecord,
-                          raw: newElement,
-                      });
-                  }
-              } else {
-                  // This RawValue is not present in the database; hence, we need to create it
-                  return createRaws.push({record: undefined, raw: newElement});
+                  return updateRaws.push(updateRecords);
               }
-              return null;
+
+              // This RawValue is not present in the database; hence, we need to create it
+              return createRaws.push({record: undefined, raw: newElement});
           });
 
           return {
