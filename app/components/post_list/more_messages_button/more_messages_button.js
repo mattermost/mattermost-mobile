@@ -53,6 +53,7 @@ export default class MoreMessageButton extends React.PureComponent {
         registerScrollEndIndexListener: PropTypes.func.isRequired,
         resetUnreadMessageCount: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
+        testID: PropTypes.string,
     };
 
     static contextTypes = {
@@ -295,7 +296,7 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     render() {
-        const {theme, loadingPosts} = this.props;
+        const {theme, loadingPosts, testID} = this.props;
 
         const styles = getStyleSheet(theme);
         const {moreText} = this.state;
@@ -309,6 +310,7 @@ export default class MoreMessageButton extends React.PureComponent {
                     onPress={this.onMoreMessagesPress}
                     underlayColor={underlayColor}
                     style={styles.roundBorder}
+                    testID={testID}
                 >
                     <View style={[styles.container, styles.roundBorder]}>
                         <View style={styles.iconContainer}>
