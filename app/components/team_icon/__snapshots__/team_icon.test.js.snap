@@ -18,8 +18,9 @@ exports[`TeamIcon should match snapshot 1`] = `
   testID="team_icon"
 >
   <RetriableFastImage
+    id="team_icon"
     onError={[Function]}
-    renderOnError={true}
+    renderErrorImage={true}
     source={
       Object {
         "uri": "/api/v4/teams/team-id/image?_=1",

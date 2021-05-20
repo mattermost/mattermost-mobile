@@ -95,8 +95,9 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       type="none"
     >
       <RetriableFastImage
+        id="post_attachment_opengraph"
         nativeID="image-123"
-        renderOnError={true}
+        renderErrorImage={true}
         resizeMode="contain"
         source={
           Object {
@@ -277,8 +278,9 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
     type="none"
   >
     <RetriableFastImage
+      id="post_attachment_opengraph"
       nativeID="image-123"
-      renderOnError={true}
+      renderErrorImage={true}
       resizeMode="contain"
       source={
         Object {
