@@ -273,8 +273,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         clearx: {
             position: 'absolute',
-            top: 9,
-            right: 55,
+            right: 45,
+            padding: 8,
+            paddingRight: 20,
+            paddingLeft: 40,
         },
         divider: {
             position: 'absolute',
