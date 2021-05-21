@@ -73,7 +73,6 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
 
 export const createAndSetActiveDatabase = async (config: Partial<Config>) => {
     const serverUrl = Client4.getUrl();
-
     const displayName = config.SiteName;
 
     if (!displayName) {
@@ -97,9 +96,8 @@ type LoginArgs = {
   loginId: string;
   mfaToken?: string;
   password: string;
-  serverUrl: string;
 };
-export const login = async ({config, ldapOnly = false, loginId, mfaToken, password, serverUrl}: LoginArgs) => {
+export const login = async ({config, ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
     const database = await DatabaseManager.getDefaultDatabase();
 
     if (!database) {
@@ -115,14 +113,13 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
         const tokens = (await database.collections.get(GLOBAL).query(Q.where('name', 'deviceToken')).fetch()) as Global[];
         deviceToken = tokens?.[0]?.value ?? '';
         user = ((await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly)) as unknown) as RawUser;
-
         await createAndSetActiveDatabase(config);
         await getCSRFFromCookie(Client4.getUrl());
     } catch (error) {
         return {error};
     }
 
-    const result = await loadMe({user, deviceToken, serverUrl});
+    const result = await loadMe({user, deviceToken});
 
     if (!result.error) {
         await completeLogin(user, deviceToken);
@@ -131,8 +128,8 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
     return result;
 };
 
-type LoadMeArgs = { user: RawUser; deviceToken?: string; serverUrl: string };
-const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
+type LoadMeArgs = { user: RawUser; deviceToken?: string; };
+const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
     let currentUser: RawUser = user;
 
     const database = await DatabaseManager.getActiveServerDatabase();
@@ -157,7 +154,7 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
     }
 
     try {
-        const analyticsClient = analytics.create(serverUrl);
+        const analyticsClient = analytics.create(Client4.getUrl());
         analyticsClient.setUserId(currentUser.id);
         analyticsClient.setUserRoles(currentUser.roles);
 
