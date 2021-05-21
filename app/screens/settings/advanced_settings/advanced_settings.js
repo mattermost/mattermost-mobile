@@ -15,7 +15,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import * as Sentry from '@sentry/react-native';
 
-import {dismissAllModals} from '@actions/navigation';
+import {dismissAllModals, goToScreen} from '@actions/navigation';
 import Config from '@assets/config';
 import StatusBar from '@components/status_bar';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
@@ -137,6 +137,10 @@ class AdvancedSettings extends Component {
         );
     };
 
+    showPerfMetrics = preventDoubleTap(() => {
+        goToScreen('PerfMetrics', 'Performance Metrics');
+    });
+
     render() {
         const {theme} = this.props;
         const style = getStyleSheet(theme);
@@ -160,12 +164,25 @@ class AdvancedSettings extends Component {
                         iconName='trash-can-outline'
                         isDestructor={true}
                         onPress={this.clearOfflineCache}
-                        separator={false}
+                        separator={Boolean(Config.ShowPerformanceMarkers)}
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}
                         theme={theme}
                         testID='advanced_settings.delete_documents_and_data.action'
                     />
+                    {Config.ShowPerformanceMarkers &&
+                    <SettingsItem
+                        defaultMessage='Performance Metrics'
+                        i18nId='mobile.advanced_settings.performance_title'
+                        iconName='chart-bar'
+                        isDestructor={false}
+                        onPress={this.showPerfMetrics}
+                        separator={false}
+                        showArrow={true}
+                        theme={theme}
+                        testID='advanced_settings.performance.action'
+                    />
+                    }
                     <View style={style.divider}/>
                     {this.renderSentryDebugOptions()}
                 </ScrollView>

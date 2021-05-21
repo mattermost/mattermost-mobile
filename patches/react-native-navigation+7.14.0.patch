@@ -67,20 +67,3 @@ index 815e1c6..a35a087 100644
          return nil;
      }
  
-diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-index 6b9981d..f725701 100644
---- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-+++ b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-@@ -31,11 +31,7 @@ - (CGFloat)getClippedCornerRadius:(UIView *)view {
- 
- - (CATransform3D)getTransform:(UIView *)view {
-     if (view) {
--        if (!CATransform3DEqualToTransform(view.layer.transform, CATransform3DIdentity)) {
--            return view.layer.transform;
--        } else {
--            return [self getTransform:view.superview];
--        }
-+        return view.layer.transform;
-     }
- 
-     return CATransform3DIdentity;

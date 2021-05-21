@@ -49,7 +49,7 @@ describe('Select Team', () => {
         await team.tap();
 
         // * Verify redirect to default channel of joined team
-        const {channel} = await Channel.apiGetChannelByName(testTeam.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(testTeam.id, 'town-square');
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.channelNavBarTitle).toHaveText(channel.display_name);
     });

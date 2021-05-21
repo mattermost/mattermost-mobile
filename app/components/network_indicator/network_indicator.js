@@ -14,17 +14,16 @@ import {
 import NetInfo from '@react-native-community/netinfo';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {RequestStatus} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {ViewTypes} from '@constants';
 import {INDICATOR_BAR_HEIGHT} from '@constants/view';
-import networkConnectionListener, {checkConnection} from '@utils/network';
-import {t} from '@utils/i18n';
-
 import PushNotifications from '@init/push_notifications';
+import {debounce} from '@mm-redux/actions/helpers';
+import {RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {t} from '@utils/i18n';
+import networkConnectionListener, {checkConnection} from '@utils/network';
 
 const MAX_WEBSOCKET_RETRIES = 3;
 const CONNECTION_RETRY_SECONDS = 5;
@@ -226,23 +225,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleAppStateChange = async (appState) => {
-        const {actions, currentChannelId} = this.props;
-        const active = appState === 'active';
-        if (active) {
-            this.connect(true);
-
-            if (currentChannelId) {
-                // Clear the notifications for the current channel after one second
-                // this is done so we can cancel it in case the app is brought to the
-                // foreground by tapping a notification from another channel
-                this.clearNotificationTimeout = setTimeout(() => {
-                    PushNotifications.clearChannelNotifications(currentChannelId);
-                    actions.markChannelViewedAndReadOnReconnect(currentChannelId);
-                }, 1000);
-            }
-        } else {
-            this.handleWebSocket(false);
-        }
+        this.onStateChange(appState);
     };
 
     handleConnectionChange = ({hasInternet, serverReachable}) => {
@@ -301,6 +284,27 @@ export default class NetworkIndicator extends PureComponent {
 
         this.show();
     };
+
+    onStateChange = debounce((appState) => {
+        const {actions, currentChannelId} = this.props;
+        const active = appState === 'active';
+
+        if (active) {
+            this.connect(true);
+
+            if (currentChannelId) {
+                // Clear the notifications for the current channel after one second
+                // this is done so we can cancel it in case the app is brought to the
+                // foreground by tapping a notification from another channel
+                this.clearNotificationTimeout = setTimeout(() => {
+                    PushNotifications.clearChannelNotifications(currentChannelId);
+                    actions.markChannelViewedAndReadOnReconnect(currentChannelId);
+                }, 1000);
+            }
+        } else {
+            this.handleWebSocket(false);
+        }
+    }, 300);
 
     show = () => {
         if (!this.visible) {

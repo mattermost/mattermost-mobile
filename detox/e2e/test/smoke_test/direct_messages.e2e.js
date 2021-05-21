@@ -52,7 +52,7 @@ describe('Direct Messages', () => {
         ({user: testOtherUser} = await User.apiCreateUser({prefix: searchTerm}));
         await Team.apiAddUserToTeam(testOtherUser.id, team.id);
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         // # Post message by other user
         testMessage = `Message by ${testOtherUser.username}`;

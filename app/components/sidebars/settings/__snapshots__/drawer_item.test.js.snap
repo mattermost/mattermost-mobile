@@ -8,6 +8,7 @@ exports[`DrawerItem should match snapshot 1`] = `
   <View
     style={
       Object {
+        "alignItems": "center",
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
@@ -45,7 +46,6 @@ exports[`DrawerItem should match snapshot 1`] = `
       style={
         Object {
           "flex": 1,
-          "position": "relative",
         }
       }
     >
@@ -64,7 +64,6 @@ exports[`DrawerItem should match snapshot 1`] = `
             Array [
               Object {
                 "color": "rgba(61,60,64,0.5)",
-                "flex": 1,
                 "fontSize": 17,
                 "includeFontPadding": false,
                 "textAlignVertical": "center",
@@ -93,7 +92,7 @@ exports[`DrawerItem should match snapshot 1`] = `
 </ForwardRef>
 `;
 
-exports[`DrawerItem should match snapshot with separator and centered false 1`] = `
+exports[`DrawerItem should match snapshot without separator and centered false 1`] = `
 <ForwardRef
   onPress={[MockFunction]}
   testID="test-id"
@@ -101,6 +100,7 @@ exports[`DrawerItem should match snapshot with separator and centered false 1`] 
   <View
     style={
       Object {
+        "alignItems": "center",
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
@@ -138,7 +138,6 @@ exports[`DrawerItem should match snapshot with separator and centered false 1`] 
       style={
         Object {
           "flex": 1,
-          "position": "relative",
         }
       }
     >
@@ -157,7 +156,6 @@ exports[`DrawerItem should match snapshot with separator and centered false 1`] 
             Array [
               Object {
                 "color": "rgba(61,60,64,0.5)",
-                "flex": 1,
                 "fontSize": 17,
                 "includeFontPadding": false,
                 "textAlignVertical": "center",

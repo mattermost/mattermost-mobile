@@ -9,13 +9,6 @@ import keyMirror from '@mm-redux/utils/key_mirror';
 // The iPhone 11 and iPhone 11 Pro Max have a navbar height of 44 and iPhone 11 Pro has 32
 const IPHONE_11_LANDSCAPE_HEIGHT = ['iPhone 11', 'iPhone 11 Pro Max'];
 
-export const UpgradeTypes = {
-    CAN_UPGRADE: 'can_upgrade',
-    MUST_UPGRADE: 'must_upgrade',
-    NO_UPGRADE: 'no_upgrade',
-    IS_BETA: 'is_beta',
-};
-
 export const SidebarSectionTypes = {
     UNREADS: 'unreads',
     FAVORITE: 'favorite',
@@ -88,8 +81,6 @@ const ViewTypes = keyMirror({
     SET_LOAD_MORE_POSTS_VISIBLE: null,
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
-
-    SET_LAST_UPGRADE_CHECK: null,
 
     ADD_RECENT_EMOJI: null,
     ADD_RECENT_EMOJI_ARRAY: null,

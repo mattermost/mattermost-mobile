@@ -20,7 +20,7 @@ import {getResponseFromError} from './common';
 
 /**
  * Synchronize any user attribute changes in the configured AD/LDAP server with Mattermost.
- * See https://api.mattermost.com/#tag/LDAP/paths/~1ldap~1sync/post
+ * See https://api.mattermost.com/#operation/SyncLdap
  * @return {string} returns {status} on success or {error, status} on error
  */
 export const apiLDAPSync = async () => {
@@ -35,7 +35,7 @@ export const apiLDAPSync = async () => {
 
 /**
  * Test the current AD/LDAP configuration to see if the AD/LDAP server can be contacted successfully.
- * See https://api.mattermost.com/#tag/LDAP/paths/~1ldap~1test/post
+ * See https://api.mattermost.com/#operation/TestLdap
  * @return {string} returns {status} on success or {error, status} on error
  */
 export const apiLDAPTest = async () => {

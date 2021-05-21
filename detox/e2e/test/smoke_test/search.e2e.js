@@ -44,7 +44,7 @@ describe('Search', () => {
         const {team, user} = await Setup.apiInit();
         testUser = user;
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         // # Open channel screen

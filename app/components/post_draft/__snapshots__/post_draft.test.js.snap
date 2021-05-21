@@ -209,7 +209,9 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
 `;
 
 exports[`PostDraft Should render the DraftInput 1`] = `
-<KeyboardTrackingView>
+<KeyboardTrackingView
+  inverted={false}
+>
   <View
     style={
       Object {

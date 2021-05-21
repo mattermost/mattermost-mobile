@@ -45,7 +45,7 @@ describe('Messaging', () => {
         await expect(element(by.text(message))).toExist();
 
         // * Check that no duplicate message is saved.
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         const {posts} = await Post.apiGetPostsInChannel(channel.id);
         jestExpect(posts.length).toEqual(3);
         jestExpect(posts[0].message).toEqual(message);

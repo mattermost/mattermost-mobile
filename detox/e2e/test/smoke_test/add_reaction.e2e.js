@@ -26,7 +26,7 @@ describe('Add Reaction', () => {
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
 
-        ({channel: testChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: testChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         ({user: testOtherUser} = await User.apiCreateUser());
         await Team.apiAddUserToTeam(testOtherUser.id, team.id);

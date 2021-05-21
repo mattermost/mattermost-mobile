@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
-index d4ded69..af35eaa 100644
+index 3da433f..7bbc965 100644
 --- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 +++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 @@ -1,6 +1,7 @@
@@ -7,10 +7,10 @@ index d4ded69..af35eaa 100644
  
  import android.os.Build;
 +import android.os.Bundle;
- import android.os.Looper;
  import android.text.TextUtils;
  import android.util.Log;
-@@ -128,6 +129,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+ 
+@@ -129,6 +130,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
    //region Members
    /** Name-to-instance lookup  map. */
    private final Map<String, CipherStorage> cipherStorageMap = new HashMap<>();
@@ -18,7 +18,7 @@ index d4ded69..af35eaa 100644
    /** Shared preferences storage. */
    private final PrefsStorage prefsStorage;
    //endregion
-@@ -139,13 +141,13 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -140,13 +142,13 @@ public class KeychainModule extends ReactContextBaseJavaModule {
      super(reactContext);
      prefsStorage = new PrefsStorage(reactContext);
  
@@ -36,7 +36,7 @@ index d4ded69..af35eaa 100644
    }
  
    /** Allow initialization in chain. */
-@@ -277,6 +279,12 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -278,6 +280,11 @@ public class KeychainModule extends ReactContextBaseJavaModule {
                                      @Nullable final ReadableMap options,
                                      @NonNull final Promise promise) {
      try {
@@ -45,11 +45,10 @@ index d4ded69..af35eaa 100644
 +        promise.resolve(Arguments.fromBundle(cached));
 +        return;
 +      }
-+
        final ResultSet resultSet = prefsStorage.getEncryptedEntry(alias);
  
        if (resultSet == null) {
-@@ -299,6 +307,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -300,6 +307,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
        credentials.putString(Maps.USERNAME, decryptionResult.username);
        credentials.putString(Maps.PASSWORD, decryptionResult.password);
        credentials.putString(Maps.STORAGE, current.getCipherStorageName());

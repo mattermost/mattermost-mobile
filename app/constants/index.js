@@ -9,7 +9,7 @@ import DeviceTypes from './device';
 import ListTypes from './list';
 import NavigationTypes from './navigation';
 import Types from './types';
-import ViewTypes, {UpgradeTypes} from './view';
+import ViewTypes from './view';
 import WebsocketEvents from './websocket';
 
 export {
@@ -19,7 +19,6 @@ export {
     DeviceTypes,
     ListTypes,
     NavigationTypes,
-    UpgradeTypes,
     Types,
     ViewTypes,
     WebsocketEvents,

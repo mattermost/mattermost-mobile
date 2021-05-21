@@ -40,7 +40,7 @@ export const getRecentCustomStatuses = createSelector(
 export function isCustomStatusEnabled(state: GlobalState) {
     const config = getConfig(state);
     const serverVersion = state.entities.general.serverVersion;
-    return config && config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(serverVersion, 5, 36);
+    return config && config.EnableCustomUserStatuses === 'true';
 }
 
 export const getCurrentUserTimezone = createSelector(

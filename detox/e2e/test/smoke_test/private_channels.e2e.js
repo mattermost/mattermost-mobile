@@ -51,7 +51,7 @@ describe('Private Channels', () => {
         ({user: testOtherUser} = await User.apiCreateUser({prefix: `${testOtherUserSearchTerm}-`}));
         await Team.apiAddUserToTeam(testOtherUser.id, team.id);
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
         ({channel: testPrivateChannel} = await Channel.apiCreateChannel({type: 'P', prefix: '1-private-channel', teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, testPrivateChannel.id);
 

@@ -8,13 +8,13 @@ import {intlShape, injectIntl} from 'react-intl';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostOption from '../post_option';
-import {AppBinding, AppCallRequest, AppCallResponse, AppCallType} from '@mm-redux/types/apps';
+import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
 import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
-import {SendEphemeralPost} from 'types/actions/posts';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 type Props = {
     bindings: AppBinding[],
@@ -22,12 +22,12 @@ type Props = {
     post: Post,
     currentUser: UserProfile,
     teamID: string,
-    closeWithAnimation: () => void,
+    closeWithAnimation: (cb?: () => void) => void,
     appsEnabled: boolean,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall;
+        postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
     }
 }
 
@@ -69,18 +69,18 @@ type OptionProps = {
     post: Post,
     currentUser: UserProfile,
     teamID: string,
-    closeWithAnimation: () => void,
+    closeWithAnimation: (cb?: () => void) => void,
     intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCallRequest, type: AppCallType, intl: any) => Promise<{data?: AppCallResponse, error?: AppCallResponse}>;
-        sendEphemeralPost: SendEphemeralPost;
+        doAppCall: DoAppCall;
+        postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
     },
 }
 
 class Option extends React.PureComponent<OptionProps> {
     onPress = async () => {
         const {closeWithAnimation, post, teamID, binding, intl} = this.props;
-        const {doAppCall, sendEphemeralPost} = this.props.actions;
+        const {doAppCall, postEphemeralCallResponseForPost} = this.props.actions;
 
         if (!binding.call) {
             return;
@@ -101,47 +101,48 @@ class Option extends React.PureComponent<OptionProps> {
             },
         );
 
-        closeWithAnimation();
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
-        if (res.error) {
-            const errorResponse = res.error;
-            const title = intl.formatMessage({
-                id: 'mobile.general.error.title',
-                defaultMessage: 'Error',
-            });
-            const errorMessage = errorResponse.error || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error occurred.',
-            });
-            Alert.alert(title, errorMessage);
-            return;
-        }
-
-        const callResp = (res as {data: AppCallResponse}).data;
-        const ephemeral = (message: string) => sendEphemeralPost(message, post.channel_id, post.root_id || post.id, callResp.app_metadata?.bot_user_id);
-        switch (callResp.type) {
-        case AppCallResponseTypes.OK:
-            if (callResp.markdown) {
-                ephemeral(callResp.markdown);
+        closeWithAnimation(async () => {
+            const callPromise = doAppCall(call, AppCallTypes.SUBMIT, intl);
+            const res = await callPromise;
+            if (res.error) {
+                const errorResponse = res.error;
+                const title = intl.formatMessage({
+                    id: 'mobile.general.error.title',
+                    defaultMessage: 'Error',
+                });
+                const errorMessage = errorResponse.error || intl.formatMessage({
+                    id: 'apps.error.unknown',
+                    defaultMessage: 'Unknown error occurred.',
+                });
+                Alert.alert(title, errorMessage);
+                return;
             }
-            break;
-        case AppCallResponseTypes.NAVIGATE:
-        case AppCallResponseTypes.FORM:
-            break;
-        default: {
-            const title = intl.formatMessage({
-                id: 'mobile.general.error.title',
-                defaultMessage: 'Error',
-            });
-            const errMessage = intl.formatMessage({
-                id: 'apps.error.responses.unknown_type',
-                defaultMessage: 'App response type not supported. Response type: {type}.',
-            }, {
-                type: callResp.type,
-            });
-            Alert.alert(title, errMessage);
-        }
-        }
+
+            const callResp = (res as {data: AppCallResponse}).data;
+            switch (callResp.type) {
+            case AppCallResponseTypes.OK:
+                if (callResp.markdown) {
+                    postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
+                }
+                break;
+            case AppCallResponseTypes.NAVIGATE:
+            case AppCallResponseTypes.FORM:
+                break;
+            default: {
+                const title = intl.formatMessage({
+                    id: 'mobile.general.error.title',
+                    defaultMessage: 'Error',
+                });
+                const errMessage = intl.formatMessage({
+                    id: 'apps.error.responses.unknown_type',
+                    defaultMessage: 'App response type not supported. Response type: {type}.',
+                }, {
+                    type: callResp.type,
+                });
+                Alert.alert(title, errMessage);
+            }
+            }
+        });
     };
 
     render() {

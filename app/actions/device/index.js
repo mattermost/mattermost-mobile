@@ -15,13 +15,6 @@ export function connection(isOnline) {
     };
 }
 
-export function setStatusBarHeight(height = 20) {
-    return {
-        type: DeviceTypes.STATUSBAR_HEIGHT_CHANGED,
-        data: height,
-    };
-}
-
 export function setDeviceDimensions(height, width) {
     return {
         type: DeviceTypes.DEVICE_DIMENSIONS_CHANGED,
@@ -51,5 +44,4 @@ export default {
     setDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
-    setStatusBarHeight,
 };

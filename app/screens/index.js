@@ -64,9 +64,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'ClearAfter':
         screen = require('@screens/custom_status_clear_after').default;
         break;
-    case 'ClientUpgrade':
-        screen = require('@screens/client_upgrade').default;
-        break;
     case 'ClockDisplaySettings':
         screen = require('@screens/settings/clock_display').default;
         break;
@@ -154,6 +151,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'OptionsModal':
         screen = require('@screens/options_modal').default;
+        break;
+    case 'PerfMetrics':
+        screen = require('@screens/perf_metrics').default;
         break;
     case 'Permalink':
         screen = require('@screens/permalink').default;

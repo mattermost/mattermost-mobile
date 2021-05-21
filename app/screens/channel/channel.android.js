@@ -5,7 +5,6 @@ import React from 'react';
 import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
-import LocalConfig from '@assets/config';
 import AnnouncementBanner from 'app/components/announcement_banner';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
@@ -18,7 +17,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
-import ChannelBase, {ClientUpgradeListener} from './channel_base';
+import ChannelBase from './channel_base';
 
 let backPressedCount = 0;
 
@@ -93,7 +92,6 @@ export default class ChannelAndroid extends ChannelBase {
                 {component}
                 <NetworkIndicator/>
                 <AnnouncementBanner/>
-                {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
         );
 

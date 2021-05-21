@@ -19,6 +19,16 @@ import {Setup} from '@support/server_api';
 import {isAndroid} from '@support/utils';
 
 describe('Channels', () => {
+    const {
+        channelIntro,
+        openMainSidebar,
+    } = ChannelScreen;
+    const {
+        nameInput,
+        purposeInput,
+        headerInput,
+    } = CreateChannelScreen;
+
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
@@ -30,9 +40,24 @@ describe('Channels', () => {
         await ChannelScreen.logout();
     });
 
+    it('MM-T838 should be able to create channel using non-latin characters', async () => {
+        // # Open more channels screen
+        await openMainSidebar();
+        await MoreChannelsScreen.open();
+
+        // # Create new channel with non-latin characters
+        const expectedChannelName = 'ÁÜäÊú¨';
+        await MoreChannelsScreen.createButton.tap();
+        await nameInput.replaceText(expectedChannelName);
+        await CreateChannelScreen.createButton.tap();
+
+        // * Verify channel is created
+        await expect(channelIntro).toHaveText('Beginning of ' + expectedChannelName);
+    });
+
     it('MM-T3201 Create public channel', async () => {
         // # Open more channels screen
-        await ChannelScreen.openMainSidebar();
+        await openMainSidebar();
         await MoreChannelsScreen.open();
 
         // * Expect a list of public channels, initially empty
@@ -44,12 +69,6 @@ describe('Channels', () => {
         // * Expect a new screen to create a new public channel
         const createChannelScreen = await CreateChannelScreen.toBeVisible();
         await expect(element(by.text('New Public Channel'))).toBeVisible();
-
-        const {
-            nameInput,
-            purposeInput,
-            headerInput,
-        } = CreateChannelScreen;
 
         // # Fill data
         await nameInput.typeText('a');

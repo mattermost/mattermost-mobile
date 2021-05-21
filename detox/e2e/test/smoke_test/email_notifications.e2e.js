@@ -48,7 +48,7 @@ describe('Email Notifications', () => {
 
         await Status.apiUpdateUserStatus(testUser.id, 'offline');
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         ({user: testOtherUser1} = await User.apiCreateUser());

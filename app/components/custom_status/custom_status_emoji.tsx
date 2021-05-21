@@ -20,9 +20,7 @@ const CustomStatusEmoji = ({emojiSize, userID, style, testID}: ComponentProps) =
     const customStatus = useSelector((state: GlobalState) => {
         return getCustomStatus(state, userID);
     });
-    const emojiExists = customStatus && customStatus.emoji;
-
-    if (!emojiExists) {
+    if (!customStatus?.emoji) {
         return null;
     }
 

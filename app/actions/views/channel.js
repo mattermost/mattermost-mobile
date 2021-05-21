@@ -36,7 +36,7 @@ import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/
 import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
-import telemetry from '@telemetry';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
@@ -194,6 +194,14 @@ export function handleSelectChannel(channelId) {
         const member = myMembers[channelId];
 
         if (channel) {
+            let markerExtra;
+            if (channel.display_name) {
+                markerExtra = `Channel: ${channel.display_name}`;
+            } else {
+                markerExtra = `Channel: ${channel.type === General.DM_CHANNEL ? 'Direct Channel' : channel.name}`;
+            }
+
+            telemetry.start([PERF_MARKERS.CHANNEL_RENDER], Date.now(), [markerExtra]);
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
             let previousChannelId = null;
@@ -531,12 +539,6 @@ export function leaveChannel(channel, reset = false) {
 }
 
 export function setChannelLoading(loading = true) {
-    if (loading) {
-        telemetry.start(['channel:loading']);
-    } else {
-        telemetry.end(['channel:loading']);
-    }
-
     return {
         type: ViewTypes.SET_CHANNEL_LOADER,
         loading,
@@ -585,9 +587,6 @@ export function increasePostVisibility(channelId, postId) {
             return true;
         }
 
-        telemetry.reset();
-        telemetry.start(['posts:loading']);
-
         dispatch({
             type: ViewTypes.LOADING_POSTS,
             data: true,
@@ -618,8 +617,6 @@ export function increasePostVisibility(channelId, postId) {
         }
 
         dispatch(batchActions(actions, 'BATCH_LOAD_MORE_POSTS'));
-        telemetry.end(['posts:loading']);
-        telemetry.save();
 
         return hasMorePost;
     };

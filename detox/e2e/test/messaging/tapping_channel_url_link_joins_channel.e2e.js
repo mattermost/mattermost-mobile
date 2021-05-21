@@ -101,7 +101,7 @@ describe('Messaging', () => {
         await postMessage(Date.now().toString());
 
         // # Get the last post data
-        const {channel: privateChannel2} = await Channel.apiGetChannelByName(testTeam.name, privateChannel2Name);
+        const {channel: privateChannel2} = await Channel.apiGetChannelByName(testTeam.id, privateChannel2Name);
         const {post} = await Post.apiGetLastPostInChannel(privateChannel2.id);
 
         // # Go to the Town Square channel

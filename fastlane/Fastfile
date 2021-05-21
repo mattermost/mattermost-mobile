@@ -592,7 +592,6 @@ platform :android do
     unless configured
       configure
     end
-    configure_telemetry_android
     update_identifiers
     replace_assets
     link_sentry_android
@@ -620,27 +619,6 @@ platform :android do
     )
 
     sh "mv #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]} #{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/Mattermost-unsigned.apk"
-  end
-
-  desc 'Update config and module/listener for Android telemetry'
-  lane :configure_telemetry_android do
-    if ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
-      # Update telemetry config
-      json = load_config_json('../dist/assets/config.json')
-      json['TelemetryEnabled'] = true
-      json['TelemetryUrl'] = ENV['TELEMETRY_URL']
-      json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
-      save_json_as_file('../dist/assets/config.json', json)
-
-      beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
-
-      # Listen to telemetry react markers
-      find_replace_string(
-          path_to_file: "#{beta_dir}MainApplication.java",
-          old_string: '// addReactMarkerListener();',
-          new_string: 'addReactMarkerListener();'
-      )
-    end
   end
 
   lane :update_identifiers do
