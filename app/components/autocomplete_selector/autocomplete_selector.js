@@ -217,7 +217,7 @@ export default class AutocompleteSelector extends PureComponent {
                         )}
                         <View style={style.divider}/>
                         <CompassIcon
-                            name='chevron-down'
+                            name='chevron-right'
                             color={changeOpacity(theme.centerChannelColor, 0.5)}
                             style={style.icon}
                             size={20}
