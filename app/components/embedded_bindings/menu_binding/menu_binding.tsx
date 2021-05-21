@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 
-import AutocompleteSelector from 'app/components/autocomplete_selector';
+import AutocompleteSelector from '@components/autocomplete_selector';
 import {intlShape} from 'react-intl';
 import {PostActionOption} from '@mm-redux/types/integration_actions';
 import {Post} from '@mm-redux/types/posts';
