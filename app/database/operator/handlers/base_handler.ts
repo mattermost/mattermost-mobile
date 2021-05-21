@@ -46,8 +46,6 @@ import {
 } from '@typings/database/database';
 import {IsolatedEntities, OperationType} from '@typings/database/enums';
 
-const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
-
 export interface BaseHandlerMix {
   activeDatabase: Database;
   getActiveDatabase: () => DatabaseInstance;

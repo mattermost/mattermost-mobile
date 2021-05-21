@@ -1,9 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
-import {Client4} from '@client/rest';
-import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
-import {login} from '@requests/remote/user';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -28,9 +24,9 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import {GlobalStyles} from '@app/styles';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import DatabaseManager from '@database/manager';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {scheduleExpiredNotification} from '@requests/remote/push_notification';
+import {login} from '@requests/remote/user';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
