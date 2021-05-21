@@ -206,7 +206,7 @@ export default class AutocompleteSelector extends PureComponent {
                         >
                             {text}
                         </Text>
-                        {onClear && selected && (
+                        {!disabled && onClear && selected && (
                             <CompassIcon
                                 name='close-circle'
                                 color={changeOpacity(theme.centerChannelColor, 0.5)}
