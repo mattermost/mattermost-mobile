@@ -273,6 +273,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         clearx: {
             position: 'absolute',
+            top: 1,
             right: 45,
             padding: 8,
             paddingRight: 20,
