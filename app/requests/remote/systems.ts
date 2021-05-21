@@ -11,7 +11,7 @@ import {logError} from '@requests/remote/error';
 import {forceLogoutIfNecessary} from '@requests/remote/user';
 
 export const getDataRetentionPolicy = async () => {
-    let data;
+    let data = {};
     try {
         data = await Client4.getDataRetentionPolicy();
     } catch (error) {
@@ -25,7 +25,7 @@ export const getDataRetentionPolicy = async () => {
 
     //todo: save  data to dataRetentionPolicy  under systems entity
 
-    return {data};
+    return data;
 };
 
 export const loadConfigAndLicense = async () => {

@@ -1,33 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
-import compact from 'lodash.compact';
 import {Q} from '@nozbe/watermelondb';
+import compact from 'lodash.compact';
+import isEmpty from 'lodash.isempty';
 
+import {Client4} from '@client/rest';
+import {MM_TABLES} from '@constants/database';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
+import {DataOperator} from '@database/operator';
+import analytics from '@init/analytics';
+import {setAppCredentials} from '@init/credentials';
+import {createSessions} from '@requests/local/systems';
+import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
+import {logError} from '@requests/remote/error';
+import {getDataRetentionPolicy} from '@requests/remote/systems';
+import {Client4Error} from '@typings/api/client4';
+import {Config} from '@typings/database/config';
+import {RawMyTeam, RawPreference, RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
+import {IsolatedEntities} from '@typings/database/enums';
 import Global from '@typings/database/global';
+import {Licence} from '@typings/database/license';
 import Role from '@typings/database/role';
 import System from '@typings/database/system';
-import analytics from '@init/analytics';
-import {Client4Error} from '@typings/api/client4';
-import {Client4} from '@client/rest';
-import {Config} from '@typings/database/config';
-import {DataOperator} from '@database/operator';
-import {IsolatedEntities} from '@typings/database/enums';
-import {MM_TABLES} from '@constants/database';
-import {RawMyTeam, RawPreference, RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
-import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
-import {createSessions} from '@requests/local/systems';
+import User from '@typings/database/user';
 import {getCSRFFromCookie} from '@utils/security';
-import {logError} from '@requests/remote/error';
-import {setAppCredentials} from '@init/credentials';
 
 const HTTP_UNAUTHORIZED = 401;
-const {SERVER: {SYSTEM}, DEFAULT: {GLOBAL}} = MM_TABLES;
+const {
+    SERVER: {SYSTEM},
+    DEFAULT: {GLOBAL},
+} = MM_TABLES;
 
 //fixme: Question : do you need to pass an auth token when retrieving the config+license the second time ?
-//todo: this file needs to be finalized
+//todo: There are too many requests made just on the login flow - discuss it with peers to find out which group can be staggered.
 
 export const logout = async (skipServerLogout = false) => {
     return async () => {
@@ -55,23 +61,28 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
         );
     }
 
-    const currentUserId = await database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch();
+    const currentUserId = await database.collections.
+        get(SYSTEM).
+        query(Q.where('name', 'currentUserId')).
+        fetch();
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
-        logout(false);
+        await logout(false);
     }
 };
 
 export const createAndSetActiveDatabase = async (config: Partial<Config>) => {
     const serverUrl = Client4.getUrl();
 
-    //todo: confirm with team that this SiteName can't be null - extra precaution
     const displayName = config.SiteName;
+
+    if (!displayName) {
+        throw new DatabaseConnectionException(
+            `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
+        );
+    }
     try {
-        await DatabaseManager.setActiveServerDatabase({
-            displayName: displayName!,
-            serverUrl,
-        });
+        await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
     } catch (e) {
         throw new DatabaseConnectionException(
             `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
@@ -114,8 +125,7 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
     const result = await loadMe({user, deviceToken, serverUrl});
 
     if (!result.error) {
-    //todo: completeLogin
-        completeLogin(user, deviceToken);
+        await completeLogin(user, deviceToken);
     }
 
     return result;
@@ -139,10 +149,10 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         }
 
         if (!user) {
-            currentUser = await Client4.getMe() as unknown as RawUser; //todo:  why do we do this here ?
+            currentUser = ((await Client4.getMe()) as unknown) as RawUser; //todo:  why do we do this here ?
         }
     } catch (error) {
-        forceLogoutIfNecessary(error);
+        await forceLogoutIfNecessary(error);
         return {error};
     }
 
@@ -159,9 +169,26 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
         const configRequest = Client4.getClientConfigOld();
         const licenseRequest = Client4.getClientLicenseOld(); // todo: I have added this one
 
-        const [teams, teamMembers, teamUnreads, preferences, config, license] = await Promise.all([teamsRequest, teamMembersRequest, teamUnreadRequest, preferencesRequest, configRequest, licenseRequest]);
+        const [
+            teams,
+            teamMembers,
+            teamUnreads,
+            preferences,
+            config,
+            license,
+        ] = await Promise.all([
+            teamsRequest,
+            teamMembersRequest,
+            teamUnreadRequest,
+            preferencesRequest,
+            configRequest,
+            licenseRequest,
+        ]);
 
-        const teamRecords = await DataOperator.handleTeam({prepareRecordsOnly: true, teams: (teams as RawTeam[])});
+        const teamRecords = await DataOperator.handleTeam({
+            prepareRecordsOnly: true,
+            teams: teams as RawTeam[],
+        });
 
         const teamMembershipRecords = await DataOperator.handleTeamMemberships({
             prepareRecordsOnly: true,
@@ -217,27 +244,26 @@ const loadMe = async ({deviceToken, serverUrl, user}: LoadMeArgs) => {
             preferences: (preferences as unknown) as RawPreference[],
         });
 
-        const rolesToLoad = new Set<string>();
-
+        let roles: string[] = [];
         for (const role of user.roles.split(' ')) {
-            rolesToLoad.add(role);
+            roles = roles.concat(role);
         }
 
         for (const teamMember of teamMembers) {
-            for (const role of teamMember.roles.split(' ')) {
-                rolesToLoad.add(role);
-            }
+            roles = roles.concat(teamMember.roles.split(' '));
         }
+
+        const rolesToLoad = new Set<string>(roles);
 
         let rolesRecords: Role[] = [];
         if (rolesToLoad.size > 0) {
-            const roles = await Client4.getRolesByNames(Array.from(rolesToLoad)) as RawRole[];
+            const rolesByName = ((await Client4.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
 
-            if (roles?.length) {
+            if (rolesByName?.length) {
                 rolesRecords = (await DataOperator.handleIsolatedEntity({
                     tableName: IsolatedEntities.ROLE,
                     prepareRecordsOnly: true,
-                    values: (roles as unknown) as RawRole[],
+                    values: rolesByName,
                 })) as Role[];
             }
         }
@@ -270,10 +296,11 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
         );
     }
 
-    let config = null;
-    let license = null;
+    let config: Partial<Config> = {};
+    let license: Partial<Licence> = {};
 
-    const systemRecords = await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license']))).fetch() as System[];
+    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license']))).fetch()) as System[];
+
     systemRecords.forEach((systemRecord) => {
         if (systemRecord.name === 'config') {
             config = systemRecord.value;
@@ -283,9 +310,10 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
         }
     });
 
-    if (!config || !license) {
+    if (isEmpty(config) || isEmpty(license)) {
         return;
     }
+
     const token = Client4.getToken();
     const url = Client4.getUrl();
 
@@ -297,13 +325,70 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
         await autoUpdateTimezone(timezone);
     }
 
+    let dataRetentionPolicy: any;
+
     // Data retention
-    if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
-            license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-        // dispatch(getDataRetentionPolicy());
-    } else {
-        // dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+        dataRetentionPolicy = await getDataRetentionPolicy();
+        await DataOperator.handleIsolatedEntity({
+            tableName: IsolatedEntities.SYSTEM,
+            values: [
+                {
+                    name: 'dataRetentionPolicy',
+                    value: dataRetentionPolicy,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
     }
+};
+
+export const updateMe = async (user: User) => {
+    const database = await DatabaseManager.getActiveServerDatabase();
+    if (!database) {
+        throw new DatabaseConnectionException(
+            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/updateMe',
+        );
+    }
+
+    let data;
+    try {
+        data = await Client4.patchMe(user);
+    } catch (error) {
+        logError(error);
+        return {error};
+    }
+
+    //fixme: we are writing to systems twice - is this optimal ?
+    const systemRecords = await DataOperator.handleIsolatedEntity({
+        tableName: IsolatedEntities.SYSTEM,
+        values: [
+            {name: 'currentUser', value: JSON.stringify(user)},
+            {name: 'currentUserId', value: user.id},
+            {name: 'locale', value: data?.locale},
+        ],
+        prepareRecordsOnly: true,
+    });
+
+    //todo: Do we need to write to TOS entity ?
+    // const tosRecords = await DataOperator.handleIsolatedEntity({
+    //     tableName: TERMS_OF_SERVICE,
+    //     values: [{}],
+    // });
+    const models = compact([
+        ...systemRecords,
+
+    // ...tosRecords,
+    ]);
+
+    if (models?.length) {
+        await DataOperator.batchOperations({database, models});
+    }
+
+    //todo: update roles if needed
+    // dispatch(loadRolesIfNeeded(data.roles.split(' ')));
+
+    return {data};
 };
 
 export const getSessions = async (currentUserId: string) => {
@@ -312,6 +397,6 @@ export const getSessions = async (currentUserId: string) => {
         await createSessions(sessions);
     } catch (e) {
         logError(e);
-        forceLogoutIfNecessary(e);
+        await forceLogoutIfNecessary(e);
     }
 };

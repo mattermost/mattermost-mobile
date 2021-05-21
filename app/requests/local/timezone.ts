@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
+import {updateMe} from '@requests/remote/user';
 import {getTimeZone} from 'react-native-localize';
 
 import {MM_TABLES} from '@constants/database';
@@ -13,7 +14,7 @@ import {Config} from '@typings/database/config';
 import User from '@typings/database/user';
 
 export const isTimezoneEnabled = (config: Partial<Config>) => {
-    return config.ExperimentalTimezone === 'true';
+    return config?.ExperimentalTimezone === 'true';
 };
 
 export function getDeviceTimezone() {
@@ -40,7 +41,6 @@ export const autoUpdateTimezone = async (deviceTimezone: string) => {
             'key currentUser has not been set in System entity in @requests/local/timezone/autoUpdateTimezone',
         );
     }
-
     if (!currentUser) {
         return;
     }
@@ -55,12 +55,8 @@ export const autoUpdateTimezone = async (deviceTimezone: string) => {
             manualTimezone: currentTimezone.manualTimezone,
         };
 
-        const updatedUser = {
-            ...currentUser,
-            timezone,
-        };
-
-        // updateMe(updatedUser)(dispatch, getState);
+        const updatedUser = {...currentUser, timezone} as unknown as User;
+        await updateMe(updatedUser);
     }
 };
 
