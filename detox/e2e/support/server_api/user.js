@@ -155,14 +155,14 @@ export const apiLogin = async (user) => {
 /**
  * Logout from the Mattermost server.
  * See https://api.mattermost.com/#operation/Logout
- * @return {Object} returns data on success
+ * @return {Object} returns {status} on success
  */
 export const apiLogout = async () => {
     const response = await client.post('/api/v4/users/logout');
 
     client.defaults.headers.Cookie = '';
 
-    return response.data;
+    return {status: response.status};
 };
 
 /**

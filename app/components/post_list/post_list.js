@@ -317,6 +317,7 @@ export default class PostList extends PureComponent {
                     index={index}
                     theme={theme}
                     moreMessages={moreNewMessages && checkForPostId}
+                    testID={`${testID}.new_messages_divider`}
                 />
             );
         } else if (PostListUtils.isDateLine(item)) {
@@ -544,6 +545,7 @@ export default class PostList extends PureComponent {
                         scrollToIndex={this.scrollToIndex}
                         registerViewableItemsListener={this.registerViewableItemsListener}
                         registerScrollEndIndexListener={this.registerScrollEndIndexListener}
+                        testID={`${testID}.more_messages_button`}
                     />
                 }
             </>

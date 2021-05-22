@@ -57,9 +57,7 @@ export const apiDisableNonPrepackagedPlugins = async () => {
  */
 export const apiDisablePluginById = async (pluginId) => {
     try {
-        const response = await client.post(`/api/v4/plugins/${encodeURIComponent(pluginId)}/disable`);
-
-        return response;
+        return await client.post(`/api/v4/plugins/${encodeURIComponent(pluginId)}/disable`);
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -73,9 +71,7 @@ export const apiDisablePluginById = async (pluginId) => {
  */
 export const apiEnablePluginById = async (pluginId) => {
     try {
-        const response = await client.post(`/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`);
-
-        return response;
+        return await client.post(`/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`);
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -121,9 +117,7 @@ export const apiInstallPluginFromUrl = async (pluginDownloadUrl, force = false) 
  */
 export const apiRemovePluginById = async (pluginId) => {
     try {
-        const response = await client.delete(`/api/v4/plugins/${encodeURIComponent(pluginId)}`);
-
-        return response;
+        return await client.delete(`/api/v4/plugins/${encodeURIComponent(pluginId)}`);
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -138,9 +132,7 @@ export const apiRemovePluginById = async (pluginId) => {
 export const apiUploadPlugin = async (filename) => {
     try {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
-        const response = await apiUploadFile('plugin', absFilePath, {url: '/api/v4/plugins', method: 'POST'});
-
-        return response;
+        return await apiUploadFile('plugin', absFilePath, {url: '/api/v4/plugins', method: 'POST'});
     } catch (err) {
         return getResponseFromError(err);
     }
