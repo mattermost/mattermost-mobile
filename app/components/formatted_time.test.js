@@ -11,7 +11,7 @@ import FormattedTime from './formatted_time';
 describe('FormattedTime', () => {
     const baseProps = {
         value: 1548788533405,
-        timeZone: 'UTC',
+        timezone: 'UTC',
         hour12: true,
     };
 
@@ -72,7 +72,7 @@ describe('FormattedTime', () => {
         const viewOne = renderWithIntl(
             <FormattedTime
                 {...baseProps}
-                timeZone='NZ-CHAT'
+                timezone='NZ-CHAT'
             />,
             'es',
         );
@@ -83,7 +83,7 @@ describe('FormattedTime', () => {
         const viewTwo = renderWithIntl(
             <FormattedTime
                 {...baseProps}
-                timeZone='NZ-CHAT'
+                timezone='NZ-CHAT'
                 hour12={false}
             />,
             'es',

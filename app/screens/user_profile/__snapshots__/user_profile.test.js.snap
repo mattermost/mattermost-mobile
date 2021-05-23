@@ -87,7 +87,9 @@ exports[`user_profile should match snapshot 1`] = `
             }
           }
           testID="user_profile.display_block.nickname.label"
-        />
+        >
+          Nickname
+        </Text>
         <Text
           style={
             Object {

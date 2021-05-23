@@ -37,7 +37,7 @@ exports[`AttachmentFooter matches snapshot 1`] = `
       }
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Connected"
       id="mobile.offlineIndicator.connected"
       style={

@@ -249,7 +249,7 @@ export default class UserProfile extends PureComponent {
                     testID='user_profile.timezone_block.local_time.value'
                 >
                     <FormattedTime
-                        timeZone={currentTimezone}
+                        timezone={currentTimezone}
                         hour12={!militaryTime}
                         value={nowDate}
                     />

@@ -42,7 +42,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         testID: PropTypes.string,
-        timeZone: PropTypes.string,
+        timezone: PropTypes.string,
     };
 
     static contextTypes = {
@@ -141,7 +141,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isGroupConstrained,
             testID,
-            timeZone,
+            timezone,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -244,7 +244,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <FormattedDate
                             format='LL'
-                            timeZone={timeZone}
+                            timezone={timezone}
                             value={createAt}
                         />
                     </Text>

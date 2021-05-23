@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {shallow} from 'enzyme';
-
 import FastImage from 'react-native-fast-image';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
 
@@ -37,14 +36,14 @@ describe('PostAttachmentOpenGraph', () => {
     };
 
     test('should match snapshot, without image and description', () => {
-        let wrapper = shallow(
+        let wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
         // should return null
         expect(wrapper.getElement()).toMatchSnapshot();
 
-        wrapper = shallow(
+        wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={openGraphData}
@@ -59,7 +58,7 @@ describe('PostAttachmentOpenGraph', () => {
             title: 'Title',
             url: 'https://mattermost.com/',
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={newOpenGraphData}
@@ -69,7 +68,7 @@ describe('PostAttachmentOpenGraph', () => {
     });
 
     test('should match snapshot, without title and url', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={{}}
@@ -79,7 +78,7 @@ describe('PostAttachmentOpenGraph', () => {
     });
 
     test('should match state and snapshot, on renderImage', () => {
-        let wrapper = shallow(
+        let wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
@@ -91,7 +90,7 @@ describe('PostAttachmentOpenGraph', () => {
 
         const images = [{height: 440, width: 1200, url: 'https://mattermost.com/logo.png'}];
         const openGraphDataWithImage = {...openGraphData, images};
-        wrapper = shallow(
+        wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={openGraphDataWithImage}
@@ -107,7 +106,7 @@ describe('PostAttachmentOpenGraph', () => {
     test('should match state and snapshot, on renderImage', () => {
         const images = [{height: 440, width: 1200, url: '%REACT_APP_WEBSITE_BANNER%'}];
         const openGraphDataWithImage = {...openGraphData, images};
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={openGraphDataWithImage}
@@ -121,7 +120,7 @@ describe('PostAttachmentOpenGraph', () => {
     });
 
     test('should match state and snapshot, on renderDescription', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={openGraphData}
@@ -137,7 +136,7 @@ describe('PostAttachmentOpenGraph', () => {
     });
 
     test('should match result on getFilename', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostAttachmentOpenGraph {...baseProps}/>,
         );
 

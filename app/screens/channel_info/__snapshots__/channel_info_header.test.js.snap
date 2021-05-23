@@ -100,7 +100,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -144,7 +144,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -290,7 +290,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
@@ -404,7 +404,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         }
       }
     >
-      <FormattedText
+      <InjectIntl(FormattedText)
         defaultMessage="This person is a guest"
         id="channel.isGuest"
         style={
@@ -435,7 +435,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -479,7 +479,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -625,7 +625,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
@@ -742,7 +742,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -786,7 +786,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -932,7 +932,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
@@ -1046,7 +1046,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         }
       }
     >
-      <FormattedText
+      <InjectIntl(FormattedText)
         defaultMessage="This group message has guests"
         id="channel.hasGuests"
         style={
@@ -1077,7 +1077,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -1121,7 +1121,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -1267,7 +1267,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
@@ -1384,7 +1384,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -1428,7 +1428,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -1574,7 +1574,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Members are managed by linked groups"
       id="mobile.routes.channelInfo.groupManaged"
     />
@@ -1595,7 +1595,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
@@ -1709,7 +1709,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         }
       }
     >
-      <FormattedText
+      <InjectIntl(FormattedText)
         defaultMessage="This channel has guests"
         id="channel.channelHasGuests"
         style={
@@ -1740,7 +1740,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -1784,7 +1784,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -1930,7 +1930,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={

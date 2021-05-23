@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import PostPreHeader from './post_pre_header';
 
@@ -20,7 +20,7 @@ describe('PostPreHeader', () => {
     };
 
     test('should match snapshot when not flagged or pinned post', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -34,7 +34,7 @@ describe('PostPreHeader', () => {
             skipFlaggedHeader: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -48,7 +48,7 @@ describe('PostPreHeader', () => {
             skipPinnedHeader: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -61,13 +61,13 @@ describe('PostPreHeader', () => {
             isFlagged: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find({name: 'bookmark-outline'}).exists()).toEqual(true);
         expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(false);
-        expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.flagged');
+        expect(wrapper.find('InjectIntl(FormattedText)').first().props().id).toEqual('mobile.post_pre_header.flagged');
     });
 
     test('should match snapshot when pinned and not flagged', () => {
@@ -76,13 +76,13 @@ describe('PostPreHeader', () => {
             isPinned: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find({name: 'bookmark-outline'}).exists()).toEqual(false);
         expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(true);
-        expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.pinned');
+        expect(wrapper.find('InjectIntl(FormattedText)').first().props().id).toEqual('mobile.post_pre_header.pinned');
     });
 
     test('should match snapshot when pinned and flagged', () => {
@@ -92,13 +92,13 @@ describe('PostPreHeader', () => {
             isPinned: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find({name: 'bookmark-outline'}).exists()).toEqual(true);
         expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(true);
-        expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.pinned_flagged');
+        expect(wrapper.find('InjectIntl(FormattedText)').first().props().id).toEqual('mobile.post_pre_header.pinned_flagged');
     });
 
     test('should match snapshot when pinned and flagged but skipping pinned', () => {
@@ -109,13 +109,13 @@ describe('PostPreHeader', () => {
             skipPinnedHeader: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find({name: 'bookmark-outline'}).exists()).toEqual(true);
         expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(false);
-        expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.flagged');
+        expect(wrapper.find('InjectIntl(FormattedText)').first().props().id).toEqual('mobile.post_pre_header.flagged');
     });
 
     test('should match snapshot when pinned and flagged but skipping flagged', () => {
@@ -126,13 +126,13 @@ describe('PostPreHeader', () => {
             skipFlaggedHeader: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find({name: 'bookmark-outline'}).exists()).toEqual(false);
         expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(true);
-        expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.pinned');
+        expect(wrapper.find('InjectIntl(FormattedText)').first().props().id).toEqual('mobile.post_pre_header.pinned');
     });
 
     test('should match snapshot when pinned and flagged but skipping both', () => {
@@ -144,7 +144,7 @@ describe('PostPreHeader', () => {
             skipPinnedHeader: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();

@@ -10,7 +10,7 @@ exports[`ShowMoreButton should match, button snapshot 1`] = `
     size={18}
     style={Object {}}
   />
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="Show More"
     id="post_info.message.show_more"
     style={Object {}}
@@ -28,7 +28,7 @@ exports[`ShowMoreButton should match, button snapshot 2`] = `
     size={18}
     style={Object {}}
   />
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="Show Less"
     id="post_info.message.show_less"
     style={Object {}}
@@ -132,7 +132,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
             }
           }
         />
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Show More"
           id="post_info.message.show_more"
           style={

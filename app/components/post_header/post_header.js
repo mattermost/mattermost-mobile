@@ -319,7 +319,7 @@ export default class PostHeader extends PureComponent {
             dateComponent = (
                 <FormattedDate
                     format={`ddd, MMM DD, YYYY ${militaryTime ? 'HH:mm' : 'hh:mm A'}`}
-                    timeZone={userTimezone}
+                    timezone={userTimezone}
                     value={createAt}
                     style={style.time}
                     testID='post_header.date_time'
@@ -328,7 +328,7 @@ export default class PostHeader extends PureComponent {
         } else {
             dateComponent = (
                 <FormattedTime
-                    timeZone={userTimezone}
+                    timezone={userTimezone}
                     hour12={!militaryTime}
                     value={createAt}
                     style={style.time}

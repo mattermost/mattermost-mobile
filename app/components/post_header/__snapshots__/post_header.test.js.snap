@@ -64,7 +64,7 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
     </View>
@@ -138,7 +138,7 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
     </View>
@@ -249,7 +249,7 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
     </View>
@@ -287,7 +287,7 @@ exports[`PostHeader should match snapshot when post is from system message 1`] =
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="System"
           id="post_info.system"
           style={
@@ -316,7 +316,7 @@ exports[`PostHeader should match snapshot when post is from system message 1`] =
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
     </View>
@@ -388,12 +388,12 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
     </View>
   </View>
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="Commented on {name}{apostrophe} message: "
     id="post_body.commentedOn"
     style={
@@ -515,7 +515,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
       <View
@@ -668,7 +668,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
       <View
@@ -783,12 +783,12 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
     </View>
   </View>
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="Commented on {name}{apostrophe} message: "
     id="post_body.commentedOn"
     style={
@@ -872,7 +872,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
           }
         }
         testID="post_header.date_time"
-        timeZone=""
+        timezone=""
         value={0}
       />
       <View

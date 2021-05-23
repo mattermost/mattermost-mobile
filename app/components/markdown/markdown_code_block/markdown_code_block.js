@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import BottomSheet from 'app/utils/bottom_sheet';
 import {getDisplayNameForLanguage} from 'app/utils/markdown';

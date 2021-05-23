@@ -294,7 +294,7 @@ LongPost {
                   }
                 }
               >
-                <FormattedText
+                <InjectIntl(FormattedText)
                   defaultMessage="{channelName} - Post"
                   ellipsizeMode="tail"
                   id="mobile.long_post_title"

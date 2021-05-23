@@ -20,7 +20,7 @@ exports[`RetryBarIndicator should match snapshot 1`] = `
     ]
   }
 >
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="Refreshing messages failed. Pull up to try again."
     id="mobile.retry_message"
     style={
