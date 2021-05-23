@@ -19,6 +19,7 @@ if (__DEV__) {
         '`-[RCTRootView cancelTouches]`',
         'Animated',
         'If you want to use Reanimated 2 then go through our installation steps https://docs.swmansion.com/react-native-reanimated/docs/installation',
+        'scaleY',
 
         // Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)
         'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',
