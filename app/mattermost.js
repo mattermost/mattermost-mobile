@@ -75,7 +75,9 @@ const launchApp = (credentials) => {
             resetToSelectServer(emmProvider.allowOtherServers);
         }
 
-        telemetry.startSinceLaunch(credentials ? 'Launch on Channel Screen' : 'Launch on Server Screen');
+        if (!EphemeralStore.appStarted) {
+            telemetry.startSinceLaunch(credentials ? 'Launch on Channel Screen' : 'Launch on Server Screen');
+        }
     });
 
     EphemeralStore.appStarted = true;
