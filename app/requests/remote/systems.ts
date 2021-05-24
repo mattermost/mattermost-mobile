@@ -23,8 +23,6 @@ export const getDataRetentionPolicy = async () => {
         return {error};
     }
 
-    //todo: save  data to dataRetentionPolicy  under systems entity
-
     return data;
 };
 
