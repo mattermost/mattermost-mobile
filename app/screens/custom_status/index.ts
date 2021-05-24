@@ -12,7 +12,7 @@ import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@act
 
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {isLandscape} from '@selectors/device';
-import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 
 function mapStateToProps(state: GlobalState) {
     const customStatus = getCustomStatus(state);
@@ -21,6 +21,7 @@ function mapStateToProps(state: GlobalState) {
     const userTimezone = getCurrentUserTimezone(state);
 
     return {
+        isTimezoneEnabled: isTimezoneEnabled(state),
         userTimezone,
         customStatus,
         recentCustomStatuses,
