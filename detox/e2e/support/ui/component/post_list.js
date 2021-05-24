@@ -23,6 +23,7 @@ class PostList {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemBlockQuote,
             postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
@@ -35,10 +36,14 @@ class PostList {
             postItemProfilePictureUserStatus,
             postItemShowLessButton,
             postItemShowMoreButton,
+            postItemTable,
+            postItemTableExpandButton,
+            postItemThematicBreak,
         } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
 
         return {
             postListPostItem: postItem,
+            postListPostItemBlockQuote: postItemBlockQuote,
             postListPostItemEmoji: postItemEmoji,
             postListPostItemHeaderDateTime: postItemHeaderDateTime,
             postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
@@ -51,6 +56,9 @@ class PostList {
             postListPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
             postListPostItemShowLessButton: postItemShowLessButton,
             postListPostItemShowMoreButton: postItemShowMoreButton,
+            postListPostItemTable: postItemTable,
+            postListPostItemTableExpandButton: postItemTableExpandButton,
+            postListPostItemThematicBreak: postItemThematicBreak,
         };
     }
 

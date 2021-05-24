@@ -11,6 +11,7 @@ class SearchResultPostScreen {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemBlockQuote,
             postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
@@ -22,10 +23,14 @@ class SearchResultPostScreen {
             postItemProfilePictureUserStatus,
             postItemShowLessButton,
             postItemShowMoreButton,
+            postItemTable,
+            postItemTableExpandButton,
+            postItemThematicBreak,
         } = Post.getPost(this.testID.searchResultPostItem, postId, postMessage, postProfileOptions);
 
         return {
             searchResultPostItem: postItem,
+            searchResultPostItemBlockQuote: postItemBlockQuote,
             searchResultPostItemEmoji: postItemEmoji,
             searchResultPostItemHeaderDateTime: postItemHeaderDateTime,
             searchResultPostItemHeaderDisplayName: postItemHeaderDisplayName,
@@ -37,6 +42,9 @@ class SearchResultPostScreen {
             searchResultPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
             searchResultPostItemShowLessButton: postItemShowLessButton,
             searchResultPostItemShowMoreButton: postItemShowMoreButton,
+            searchResultPostItemTable: postItemTable,
+            searchResultPostItemTableExpandButton: postItemTableExpandButton,
+            searchResultPostItemThematicBreak: postItemThematicBreak,
         };
     }
 
