@@ -31,15 +31,16 @@ function mapStateToProps(state) {
     }
 
     return {
-        isSelfDMChannel,
-        currentChannelName: currentChannel ? currentChannel.display_name : '',
-        isArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
-        displayName: state.views.channel.displayName,
         channelType: currentChannel?.type,
-        isChannelMuted: isChannelMuted(myChannelMember),
-        theme: getTheme(state),
-        isGuest: isTeammateGuest,
+        currentChannelName: currentChannel ? currentChannel.display_name : '',
+        displayName: state.views.channel.displayName,
         hasGuests: stats.guest_count > 0,
+        isArchived: currentChannel ? currentChannel.delete_at !== 0 : false,
+        isChannelMuted: isChannelMuted(myChannelMember),
+        isChannelShared: currentChannel?.shared,
+        isGuest: isTeammateGuest,
+        isSelfDMChannel,
+        theme: getTheme(state),
         teammateId,
         customStatusEnabled: isCustomStatusEnabled(state),
     };

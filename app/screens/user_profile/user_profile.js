@@ -22,11 +22,13 @@ import {
 import Config from '@assets/config';
 import Emoji from '@components/emoji';
 import ClearButton from '@components/custom_status/clear_button';
+import ChannelIcon from '@components/channel_icon';
 import FormattedTime from '@components/formatted_time';
 import ProfilePicture from '@components/profile_picture';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {BotTag, GuestTag} from '@components/tag';
+import {General} from '@mm-redux/constants';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
@@ -43,6 +45,7 @@ export default class UserProfile extends PureComponent {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
+            getRemoteClusterInfo: PropTypes.func.isRequired,
             unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
@@ -55,6 +58,7 @@ export default class UserProfile extends PureComponent {
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
+        remoteClusterInfo: PropTypes.object,
         customStatus: PropTypes.object,
     };
 
@@ -86,8 +90,14 @@ export default class UserProfile extends PureComponent {
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
-        if (this.props.user && this.props.user.is_bot) {
-            this.props.actions.loadBot(this.props.user.id);
+        const {user} = this.props;
+        if (user) {
+            if (user.is_bot) {
+                this.props.actions.loadBot(user.id);
+            }
+            if (user.remote_id) {
+                this.props.actions.getRemoteClusterInfo(user.remote_id);
+            }
         }
     }
 
@@ -189,6 +199,36 @@ export default class UserProfile extends PureComponent {
 
         return null;
     };
+
+    buildOrganizationBlock = () => {
+        const {theme, remoteClusterInfo} = this.props;
+        if (!remoteClusterInfo) {
+            return null;
+        }
+        const style = createStyleSheet(theme);
+        return (
+            <View>
+                <FormattedText
+                    id='mobile.routes.user_profile.organization'
+                    defaultMessage='ORGANIZATION'
+                    style={style.header}
+                />
+                <View style={style.organizationDataContainer}>
+                    <ChannelIcon
+                        isActive={true}
+                        isArchived={false}
+                        isBot={false}
+                        isInfo={true}
+                        size={16}
+                        shared={true}
+                        theme={theme}
+                        type={General.OPEN_CHANNEL}
+                    />
+                    <Text style={style.text}>{remoteClusterInfo.display_name}</Text>
+                </View>
+            </View>
+        );
+    }
 
     buildCustomStatusBlock = () => {
         const {formatMessage} = this.context.intl;
@@ -382,6 +422,7 @@ export default class UserProfile extends PureComponent {
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                 {this.props.config.EnableCustomUserStatuses === 'true' && this.buildCustomStatusBlock()}
                 {this.buildDisplayBlock('nickname')}
+                {this.buildOrganizationBlock()}
                 {this.buildDisplayBlock('position')}
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
             </View>
@@ -511,6 +552,10 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 16,
             marginRight: 22,
             backgroundColor: '#EBEBEC',
+        },
+        organizationDataContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
         },
     };
 });

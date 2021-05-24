@@ -75,6 +75,22 @@ describe('UserListRow', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should match snapshot for remote user', () => {
+        const newProps = {
+            ...baseProps,
+            user: {
+                ...baseProps.user,
+                remote_id: 'abc123',
+            },
+        };
+
+        const wrapper = shallow(
+            <UserListRow {...newProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should match snapshot for  currentUser with (you) populated in list', () => {
         const newProps = {
             ...baseProps,

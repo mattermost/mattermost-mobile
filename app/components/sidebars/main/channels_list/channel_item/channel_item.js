@@ -164,6 +164,7 @@ export default class ChannelItem extends PureComponent {
                 isUnread={isUnread}
                 hasDraft={hasDraft && channelId !== currentChannelId}
                 membersCount={displayName.split(',').length}
+                shared={channel.shared && channel.type !== General.DM_CHANNEL}
                 statusStyle={{backgroundColor: theme.sidebarBg, borderColor: 'transparent'}}
                 size={24}
                 theme={theme}

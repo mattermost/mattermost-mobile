@@ -18,7 +18,7 @@ import SearchBar from '@components/search_bar';
 import StatusBar from '@components/status_bar';
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
-import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
+import {filterProfilesMatchingTerm, isShared} from '@mm-redux/utils/user_utils';
 import {alertErrorIfInvalidPermissions} from '@utils/general';
 import {createProfilesSections, loadingText} from '@utils/member_list';
 import {
@@ -243,7 +243,7 @@ export default class ChannelMembers extends PureComponent {
         const selectProps = {
             selectable: true,
             selected: this.state.selectedIds[props.id],
-            enabled: props.id !== this.props.currentUserId,
+            enabled: props.id !== this.props.currentUserId && !isShared(props.item),
         };
 
         return this.renderItem(props, selectProps);
