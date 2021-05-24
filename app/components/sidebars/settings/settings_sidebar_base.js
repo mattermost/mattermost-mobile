@@ -430,7 +430,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         clearButton: {
             position: 'absolute',
-            top: 3,
+            top: 4,
             right: 14,
         },
         retryMessage: {
