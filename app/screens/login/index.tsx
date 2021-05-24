@@ -167,8 +167,6 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
 
         setIsLoading(false);
 
-        //todo: login successful => create server database and set this serverURL to be the current active database
-
         return true;
     };
 
@@ -275,7 +273,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
 
     // **** **** ****   RENDER METHOD **** **** ****
 
-    const getProceed = () => {
+    const renderProceedButton = () => {
         if (isLoading) {
             return (
                 <ActivityIndicator
@@ -384,7 +382,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         underlineColorAndroid='transparent'
                         value={password} //to remove
                     />
-                    {getProceed()}
+                    {renderProceedButton()}
                     {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (
                         <Button
                             onPress={onPressForgotPassword}
