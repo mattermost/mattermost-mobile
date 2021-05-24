@@ -73,4 +73,19 @@ describe('ChannelTitle', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot when isChannelShared is true', () => {
+        const props = {
+            ...baseProps,
+            displayName: 'My User',
+            isChannelShared: true,
+            channelType: General.PRIVATE_CHANNEL,
+        };
+        const wrapper = shallow(
+            <ChannelTitle {...props}/>,
+            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });

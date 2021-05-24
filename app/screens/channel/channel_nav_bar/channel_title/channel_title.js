@@ -12,6 +12,7 @@ import {
 
 import {General} from '@mm-redux/constants';
 
+import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -19,17 +20,18 @@ import {t} from '@utils/i18n';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
+        canHaveSubtitle: PropTypes.bool.isRequired,
+        channelType: PropTypes.string,
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
-        channelType: PropTypes.string,
+        hasGuests: PropTypes.bool.isRequired,
+        isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
+        isChannelShared: PropTypes.bool,
+        isGuest: PropTypes.bool.isRequired,
+        isSelfDMChannel: PropTypes.bool.isRequired,
         onPress: PropTypes.func,
         theme: PropTypes.object,
-        isArchived: PropTypes.bool,
-        isGuest: PropTypes.bool.isRequired,
-        hasGuests: PropTypes.bool.isRequired,
-        canHaveSubtitle: PropTypes.bool.isRequired,
-        isSelfDMChannel: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -119,7 +121,9 @@ export default class ChannelTitle extends PureComponent {
 
     render() {
         const {
+            channelType,
             isChannelMuted,
+            isChannelShared,
             onPress,
             theme,
         } = this.props;
@@ -150,6 +154,22 @@ export default class ChannelTitle extends PureComponent {
             );
         }
 
+        let channelIcon;
+        if (isChannelShared) {
+            channelIcon = (
+                <ChannelIcon
+                    isActive={true}
+                    isArchived={false}
+                    isBot={false}
+                    size={18}
+                    shared={isChannelShared}
+                    style={style.channelIconContainer}
+                    theme={theme}
+                    type={channelType}
+                />
+            );
+        }
+
         return (
             <TouchableOpacity
                 testID={'channel.title.button'}
@@ -166,6 +186,7 @@ export default class ChannelTitle extends PureComponent {
                     >
                         {channelDisplayName}
                     </Text>
+                    {channelIcon}
                     {icon}
                     {mutedIcon}
                 </View>
@@ -187,7 +208,6 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            width: '90%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
@@ -198,6 +218,12 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             fontSize: 18,
             fontWeight: 'bold',
             textAlign: 'center',
+            flex: 0,
+            flexShrink: 1,
+        },
+        channelIconContainer: {
+            marginLeft: 3,
+            marginRight: 0,
         },
         muted: {
             marginTop: 1,

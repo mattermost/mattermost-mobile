@@ -41,6 +41,7 @@ export default class PostHeader extends PureComponent {
         username: PropTypes.string,
         isBot: PropTypes.bool,
         isGuest: PropTypes.bool,
+        isShared: PropTypes.bool,
         userTimezone: PropTypes.string,
         enableTimezone: PropTypes.bool,
         previousPostExists: PropTypes.bool,
@@ -214,6 +215,19 @@ export default class PostHeader extends PureComponent {
         );
     };
 
+    renderMemberTypeIcon = (style) => {
+        if (!this.props.isShared) {
+            return null;
+        }
+        return (
+            <CompassIcon
+                name='circle-multiple-outline'
+                size={17}
+                style={style.sharedUserIcon}
+            />
+        );
+    };
+
     renderReply = () => {
         const {
             commentCount,
@@ -328,6 +342,7 @@ export default class PostHeader extends PureComponent {
                 <View style={[style.container, (isPendingOrFailedPost && style.pendingPost)]}>
                     <View style={style.wrapper}>
                         {this.renderDisplayName()}
+                        {this.renderMemberTypeIcon(style)}
                         {this.renderTag()}
                         {dateComponent}
                         {this.renderReply()}
@@ -409,6 +424,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         displayNameContainerLandscapeBotReplyWidth: {
             maxWidth: '70%',
         },
-
+        sharedUserIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            top: 3,
+            marginRight: 6,
+        },
     };
 });

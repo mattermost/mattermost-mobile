@@ -10,7 +10,7 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getUser, getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {isPostPendingOrFailed, isSystemMessage, isFromWebhook} from '@mm-redux/utils/post_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import {displayUsername, isShared} from '@mm-redux/utils/user_utils';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 
 import {fromAutoResponder} from 'app/utils/general';
@@ -59,6 +59,7 @@ function makeMapStateToProps() {
             isBot: user.is_bot || false,
             isGuest: isGuest(user),
             isLandscape: isLandscape(state),
+            isShared: isShared(user),
             userTimezone,
         };
     };

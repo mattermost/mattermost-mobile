@@ -154,3 +154,234 @@ exports[`user_profile should match snapshot 1`] = `
   </ScrollView>
 </RNCSafeAreaView>
 `;
+
+exports[`user_profile should match snapshot when user is from remote 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+  testID="user_profile.screen"
+>
+  <Connect(StatusBar) />
+  <ScrollView
+    contentContainerStyle={
+      Object {
+        "paddingBottom": 48,
+      }
+    }
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "flex": 1,
+      }
+    }
+    testID="user_profile.scroll_view"
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "justifyContent": "center",
+          "padding": 25,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        iconSize={104}
+        size={153}
+        statusBorderWidth={6}
+        statusSize={36}
+        testID="user_profile.profile_picture"
+        userId="4hzdnk6mg7gepe7yze6m3domnc"
+      />
+      <Text
+        style={
+          Object {
+            "color": "#3d3c40",
+            "fontSize": 15,
+            "marginTop": 15,
+          }
+        }
+        testID="user_profile.username"
+      >
+        @fred
+      </Text>
+    </View>
+    <View
+      style={
+        Object {
+          "backgroundColor": "#EBEBEC",
+          "height": 1,
+          "marginLeft": 16,
+          "marginRight": 22,
+        }
+      }
+    />
+    <View
+      style={
+        Object {
+          "marginBottom": 25,
+          "marginHorizontal": 15,
+        }
+      }
+    >
+      <View
+        testID="user_profile.display_block"
+      >
+        <Text
+          style={
+            Object {
+              "color": undefined,
+              "fontSize": 13,
+              "fontWeight": "600",
+              "marginBottom": 10,
+              "marginTop": 25,
+              "textTransform": "uppercase",
+            }
+          }
+          testID="user_profile.display_block.nickname.label"
+        />
+        <Text
+          style={
+            Object {
+              "color": "#3d3c40",
+              "fontSize": 15,
+            }
+          }
+          testID="user_profile.display_block.nickname.value"
+        >
+          nick
+        </Text>
+      </View>
+      <View>
+        <FormattedText
+          defaultMessage="ORGANIZATION"
+          id="mobile.routes.user_profile.organization"
+          style={
+            Object {
+              "color": undefined,
+              "fontSize": 13,
+              "fontWeight": "600",
+              "marginBottom": 10,
+              "marginTop": 25,
+              "textTransform": "uppercase",
+            }
+          }
+        />
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <ChannelIcon
+            hasDraft={false}
+            isActive={true}
+            isArchived={false}
+            isBot={false}
+            isInfo={true}
+            isUnread={false}
+            membersCount={0}
+            shared={true}
+            size={16}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            type="O"
+          />
+          <Text
+            style={
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              }
+            }
+          >
+            Remote Organization
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        Object {
+          "backgroundColor": "#EBEBEC",
+          "height": 1,
+          "marginLeft": 16,
+          "marginRight": 22,
+        }
+      }
+    />
+    <userProfileRow
+      action={[Function]}
+      defaultMessage="Send Message"
+      icon="send"
+      iconColor="rgba(0, 0, 0, 0.7)"
+      iconSize={24}
+      testID="user_profile.send_message.action"
+      textColor="#000"
+      textId="mobile.routes.user_profile.send_message"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+      togglable={false}
+    />
+  </ScrollView>
+</RNCSafeAreaView>
+`;

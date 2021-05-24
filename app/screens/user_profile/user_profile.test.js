@@ -24,6 +24,7 @@ describe('user_profile', () => {
         setChannelDisplayName: jest.fn(),
         makeDirectChannel: jest.fn(),
         loadBot: jest.fn(),
+        getRemoteClusterInfo: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -126,6 +127,25 @@ describe('user_profile', () => {
 
         wrapper.instance().goToEditProfile();
         expect(goToScreen).toHaveBeenCalledTimes(1);
+    });
+
+    test('should match snapshot when user is from remote', () => {
+        const remoteUser = {
+            ...user,
+            remote_id: 'sr23g5h456',
+        };
+        const clusterInfo = {
+            display_name: 'Remote Organization',
+        };
+        const wrapper = shallow(
+            <UserProfile
+                {...baseProps}
+                remoteClusterInfo={clusterInfo}
+                user={remoteUser}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should call goToEditProfile', () => {

@@ -35,6 +35,7 @@ export type UserProfile = {
     last_name: string;
     position: string;
     roles: string;
+    remote_id?: string;
     locale: string;
     notify_props: UserNotifyProps;
     terms_of_service_id: string;
