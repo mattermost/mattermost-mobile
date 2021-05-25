@@ -168,3 +168,5 @@ export type Config = {
     WebsocketSecurePort: string;
     WebsocketURL: string;
 };
+
+export type FeatureFlags = Record<string, string>;
