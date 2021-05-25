@@ -61,7 +61,7 @@ describe('Autocomplete', () => {
     });
 
     afterAll(async () => {
-        // await ChannelScreen.logout();
+        await ChannelScreen.logout();
     });
 
     it('MM-T168 should have autocomplete items available from input boxes', async () => {
