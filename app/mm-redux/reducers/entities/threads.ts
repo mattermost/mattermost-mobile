@@ -27,12 +27,41 @@ export const threadsReducer = (state: ThreadsState['threads'] = {}, action: Gene
             [thread.id]: thread,
         };
     }
+    case ThreadTypes.READ_CHANGED_THREAD: {
+        const {
+            id,
+            newUnreadMentions,
+            newUnreadReplies,
+            lastViewedAt,
+        } = action.data;
+
+        return {
+            ...state,
+            [id]: {
+                ...(state[id] || {}),
+                last_viewed_at: lastViewedAt,
+                unread_mentions: newUnreadMentions,
+                unread_replies: newUnreadReplies,
+                is_following: true,
+            },
+        };
+    }
     case ThreadTypes.FOLLOW_CHANGED_THREAD: {
         const {id, following} = action.data;
         return {
             ...state,
             [id]: {...(state[id] || {}), is_following: following},
         };
+    }
+    case ThreadTypes.ALL_TEAM_THREADS_READ: {
+        return Object.entries(state).reduce<ThreadsState['threads']>((newState, [id, thread]) => {
+            newState[id] = {
+                ...thread,
+                unread_mentions: 0,
+                unread_replies: 0,
+            };
+            return newState;
+        }, {});
     }
     }
     return state;
