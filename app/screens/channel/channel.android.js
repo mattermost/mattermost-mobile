@@ -12,8 +12,9 @@ import InteractiveDialogController from '@components/interactive_dialog_controll
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import GlobalThreads from '@screens/global_threads';
 import EphemeralStore from '@store/ephemeral_store';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
@@ -61,8 +62,14 @@ export default class ChannelAndroid extends ChannelBase {
     }
 
     render() {
-        const {theme} = this.props;
+        const {theme, viewingGlobalThreads} = this.props;
         let component = this.renderLoadingOrFailedChannel();
+
+        if (viewingGlobalThreads) {
+            component = (
+                <GlobalThreads/>
+            );
+        }
 
         if (!component) {
             component = (

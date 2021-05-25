@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {Text, View} from 'react-native';
+import {intlShape} from 'react-intl';
 import Svg, {
     Ellipse,
     G,
@@ -18,20 +19,33 @@ import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 
 type Props = {
+    intl: typeof intlShape;
     isUnreads: boolean;
 }
 
-function EmptyState({isUnreads}: Props) {
+function EmptyState({intl, isUnreads}: Props) {
     const theme = useSelector((state: GlobalState) => getTheme(state));
     const style = getStyleSheet(theme);
     let title;
     let subTitle;
     if (isUnreads) {
-        title = 'No unread threads';
-        subTitle = "Looks like you're all caught up.";
+        title = intl.formatMessage({
+            id: 'global_threads.emptyUnreads.title',
+            defaultMessage: 'No unread threads',
+        });
+        subTitle = intl.formatMessage({
+            id: 'global_threads.emptyUnreads.message',
+            defaultMessage: "Looks like you're all caught up.",
+        });
     } else {
-        title = 'No followed threads yet';
-        subTitle = 'Any threads you are mentioned in or have participated in will show here along with any threads you have followed.';
+        title = intl.formatMessage({
+            id: 'global_threads.emptyThreads.title',
+            defaultMessage: 'No followed threads yet',
+        });
+        subTitle = intl.formatMessage({
+            id: 'global_threads.emptyThreads.message',
+            defaultMessage: 'Any threads you are mentioned in or have participated in will show here along with any threads you have followed.',
+        });
     }
     return (
         <View style={style.container}>
@@ -224,6 +238,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             textAlign: 'center',
         },
         subTitle: {
+            color: theme.centerChannelColor,
             fontSize: 16,
             fontWeight: '400',
             lineHeight: 24,

@@ -153,8 +153,8 @@ const ChannelNavBar = (props) => {
                 <FormattedText
                     numberOfLines={1}
                     ellipsizeMode='tail'
-                    id={'TODO'} // TODO CHANGE TO INTL ID
-                    defaultMessage={'Threads'} //
+                    id='threads'
+                    defaultMessage='Threads'
                 />
             </Text>
         </View>

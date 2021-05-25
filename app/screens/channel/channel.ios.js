@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import LocalConfig from '@assets/config';
@@ -16,12 +16,12 @@ import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
+import GlobalThreads from '@screens/global_threads';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelBase, {ClientUpgradeListener} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
-import GlobalThreads from '@screens/global_threads';
 
 export default class ChannelIOS extends ChannelBase {
     handleAutoComplete = (value) => {
@@ -59,23 +59,23 @@ export default class ChannelIOS extends ChannelBase {
         let component = this.renderLoadingOrFailedChannel();
         let renderDraftArea = false;
 
+        if (viewingGlobalThreads) {
+            component = (
+                <GlobalThreads/>
+            );
+        }
+
         if (!component) {
-            renderDraftArea = true && !viewingGlobalThreads;
-            if (viewingGlobalThreads) {
-                component = (
-                    <GlobalThreads/>
-                );
-            } else {
-                component = (
-                    <>
-                        <ChannelPostList
-                            updateNativeScrollView={this.updateNativeScrollView}
-                            registerTypingAnimation={this.registerTypingAnimation}
-                        />
-                        {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
-                    </>
-                );
-            }
+            renderDraftArea = true;
+            component = (
+                <>
+                    <ChannelPostList
+                        updateNativeScrollView={this.updateNativeScrollView}
+                        registerTypingAnimation={this.registerTypingAnimation}
+                    />
+                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                </>
+            );
         }
 
         const style = getStyle(theme);

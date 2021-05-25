@@ -12,7 +12,7 @@ import {getChannelStats} from '@mm-redux/actions/channels';
 import {Client4} from '@mm-redux/client';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
@@ -45,7 +45,7 @@ function mapStateToProps(state) {
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
         showTermsOfService: shouldShowTermsOfService(state),
-        viewingGlobalThreads: getViewingGlobalThreads(state),
+        viewingGlobalThreads: isCollapsedThreadsEnabled(state) && getViewingGlobalThreads(state),
     };
 }
 
