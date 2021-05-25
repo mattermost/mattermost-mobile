@@ -194,19 +194,19 @@ export const apiPatchUser = async (userId, userData) => {
     }
 };
 
-function generateRandomUser(prefix) {
-    const randomId = getRandomId();
+export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) => {
+    const randomId = getRandomId(randomIdLength);
 
     return {
         email: `${prefix}${randomId}@sample.mattermost.com`,
         username: `${prefix}${randomId}`,
         password: 'passwd',
-        first_name: `First${randomId}`,
-        last_name: `Last${randomId}`,
-        nickname: `Nickname${randomId}`,
-        position: `Position${randomId}`,
+        first_name: `F${randomId}`,
+        last_name: `L${randomId}`,
+        nickname: `N${randomId}`,
+        position: `P${randomId}`,
     };
-}
+};
 
 export const User = {
     apiAdminLogin,
@@ -220,6 +220,7 @@ export const User = {
     apiLogout,
     apiPatchMe,
     apiPatchUser,
+    generateRandomUser,
 };
 
 export default User;
