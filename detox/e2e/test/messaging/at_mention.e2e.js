@@ -89,6 +89,8 @@ describe('At Mention', () => {
         await postInput.clearText();
         await postInput.typeText('@channel');
         await sendButton.tap();
+
+        // * Verify confirmation dialog is displayed
         await expect(confirmSendingNotificationsTitle).toBeVisible();
         await cancelButton.tap();
     });
