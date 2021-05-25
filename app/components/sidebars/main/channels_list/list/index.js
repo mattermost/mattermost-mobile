@@ -12,7 +12,7 @@ import {
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getTheme, getFavoritesPreferences, getSidebarPreferences} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
@@ -65,6 +65,7 @@ function mapStateToProps(state) {
         canJoinPublicChannels,
         canCreatePrivateChannels,
         canCreatePublicChannels,
+        collapsedThreadsEnabled: isCollapsedThreadsEnabled(state),
         favoriteChannelIds,
         theme: getTheme(state),
         unreadChannelIds,

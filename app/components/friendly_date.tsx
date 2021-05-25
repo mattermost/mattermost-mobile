@@ -29,7 +29,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     // Message: Now
     if (difference < 60) {
         return intl.formatMessage({
-            id: 'friendlyDate.now',
+            id: 'friendly_date.now',
             defaultMessage: 'Now',
         });
     }
@@ -38,7 +38,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     if (difference < 3600) { // 1 hour = 60 seconds * 60
         const minutes = Math.floor(difference / 60);
         return intl.formatMessage({
-            id: 'friendlyDate.minsAgo',
+            id: 'friendly_date.minsAgo',
             defaultMessage: '{count} {count, plural, one {min} other {mins}} ago',
         }, {
             count: minutes,
@@ -49,7 +49,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     if (difference < 86400) {
         const hours = Math.floor(difference / 3600);
         return intl.formatMessage({
-            id: 'friendlyDate.hoursAgo',
+            id: 'friendly_date.hoursAgo',
             defaultMessage: '{count} {count, plural, one {hour} other {hours}} ago',
         }, {
             count: hours,
@@ -60,7 +60,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     if (difference < 2678400) { // 31 days = 86400 seconds * 31 days (max value)
         if (isYesterday(date)) {
             return intl.formatMessage({
-                id: 'friendlyDate.yesterday',
+                id: 'friendly_date.yesterday',
                 defaultMessage: 'Yesterday',
             });
         }
@@ -68,7 +68,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
         if (!completedAMonth) {
             const days = Math.floor(difference / 86400) || 1;
             return intl.formatMessage({
-                id: 'friendlyDate.daysAgo',
+                id: 'friendly_date.daysAgo',
                 defaultMessage: '{count} {count, plural, one {day} other {days}} ago',
             }, {
                 count: days,
@@ -84,7 +84,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
         if (!completedAnYear) {
             const months = Math.floor(difference / 2592000) || 1; // 30 days per month * 86400 seconds
             return intl.formatMessage({
-                id: 'friendlyDate.monthsAgo',
+                id: 'friendly_date.monthsAgo',
                 defaultMessage: '{count} {count, plural, one {month} other {months}} ago',
             }, {
                 count: months,
@@ -95,7 +95,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     // Message: Years Ago
     const years = Math.floor(difference / 31536000) || 1; // 365 days * 86400 seconds
     return intl.formatMessage({
-        id: 'friendlyDate.yearsAgo',
+        id: 'friendly_date.yearsAgo',
         defaultMessage: '{count} {count, plural, one {year} other {years}} ago',
     }, {
         count: years,

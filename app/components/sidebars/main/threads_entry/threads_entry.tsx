@@ -3,23 +3,29 @@
 
 import React, {useEffect} from 'react';
 import {TouchableHighlight, Text, View} from 'react-native';
-import type {Theme} from '@mm-redux/types/preferences';
+import {injectIntl, intlShape} from 'react-intl';
 import {useDispatch, useSelector} from 'react-redux';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import type {GlobalState} from '@mm-redux/types/store';
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import {handleViewingGlobalThreadsScreen} from '@actions/views/threads';
 import {NavigationTypes} from '@constants';
 import CompassIcon from '@components/compass_icon';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getViewingGlobalThreads} from '@selectors/threads';
+
 import {getThreads} from '@mm-redux/actions/threads';
-import {handleViewingGlobalThreadsScreen} from '@actions/views/threads';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import type {Theme} from '@mm-redux/types/preferences';
+import type {GlobalState} from '@mm-redux/types/store';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getViewingGlobalThreads} from '@selectors/threads';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const ThreadsSidebarEntry = () => {
+type Props = {
+    intl: typeof intlShape;
+};
+
+const ThreadsSidebarEntry = ({intl}: Props) => {
     const viewingGlobalThreads = useSelector(getViewingGlobalThreads);
     const theme = useSelector((state: GlobalState) => getTheme(state));
     const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
@@ -63,7 +69,10 @@ const ThreadsSidebarEntry = () => {
                         ellipsizeMode='tail'
                         numberOfLines={1}
                     >
-                        {'Threads'}
+                        {intl.formatMessage({
+                            id: 'threads',
+                            defaultMessage: 'Threads',
+                        })}
                     </Text>
                 </View>
             </View>
@@ -111,4 +120,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ThreadsSidebarEntry;
+export default injectIntl(ThreadsSidebarEntry);

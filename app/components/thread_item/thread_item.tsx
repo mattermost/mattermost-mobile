@@ -5,55 +5,49 @@ import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import {goToScreen} from '@actions/navigation';
 import {DispatchFunc} from '@mm-redux/types/actions';
-import {getPost as gP} from '@actions/views/post';
-import Avatars from '@components/avatars';
+import {getPost} from '@actions/views/post';
 import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
+import ThreadFooter from '@components/thread_footer';
 
 import {Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getPost} from '@mm-redux/selectors/entities/posts';
+import {getPost as getPostSelector} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getThread} from '@mm-redux/selectors/entities/threads';
 import {getUser} from '@mm-redux/selectors/entities/users';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-// import threads from 'app/reducers/views/threads';
-// import styleAndroid from '@screens/settings/settings_item/style.android';
-
-interface ThreadItemProps{
+type Props = {
     postId: string;
-}
+};
 
-const ThreadItem = ({postId}: ThreadItemProps) => {
+const ThreadItem = ({postId}: Props) => {
     const theme = useSelector((state: GlobalState) => getTheme(state));
-    let post = useSelector((state: GlobalState) => getPost(state, postId));
+    let post = useSelector((state: GlobalState) => getPostSelector(state, postId));
     const asyncDispatch: DispatchFunc = useDispatch();
 
-    // const dispatch = useDispatch();
     if (!post) {
-        console.log('####################### missing post ID: ', postId);
-        asyncDispatch(gP(postId)).then((p) => {
+        // console.log('####################### missing post ID: ', postId);
+        asyncDispatch(getPost(postId)).then((p) => {
             post = p.data;
-        },
-        );
+        });
     }
 
     const thread = useSelector((state: GlobalState) => getThread(state, postId));
+    if (!thread) {
+        return null;
+    }
+
     const threadStarter = useSelector((state: GlobalState) => getUser(state, post?.user_id));
     const channel = useSelector((state: GlobalState) => getChannel(state, post?.channel_id));
     const channelName = channel?.display_name;
     const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
-
-    // threadstarter should be the first one in the avatars list
-    const participants = thread?.participants.flatMap((p) => (p.id === threadStarter?.id ? [] : p.id));
-    participants?.unshift(threadStarter?.id);
 
     const showThread = () => {
         const screen = 'Thread';
@@ -69,23 +63,18 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
 
     const style = getStyleSheet(theme);
 
-    let repliesComponent;
-    if (thread?.unread_replies) {
-        repliesComponent = (<Text style={style.unreadReplies}>{thread?.unread_replies} { thread?.unread_replies > 0 ? 'new replies' : 'new reply'}</Text>);
-    } else {
-        repliesComponent = (<Text style={style.replies}>{thread?.reply_count} {thread?.reply_count > 0 ? 'replies' : 'reply'}</Text>);
-    }
-
-    const needBadge = thread?.unread_mentions || thread?.unread_replies;
+    const needBadge = thread.unread_mentions || thread.unread_replies;
     let badgeComponent;
     if (needBadge) {
-        if (thread?.unread_replies && thread.unread_replies > 0) {
+        if (thread.unread_replies && thread.unread_replies > 0) {
             badgeComponent = (<View style={style.unreadDot}/>);
         }
-        if (thread?.unread_mentions && thread.unread_mentions > 0) {
-            badgeComponent = (<View style={style.mentionBadge}><Text style={style.mentionBadgeText}>{thread?.unread_mentions}</Text></View>);
-
-            // badgeComponent = (<View style={style.mentionBadge}><Text style={style.mentionBadgeText}>{'11'}</Text></View>);
+        if (thread.unread_mentions && thread.unread_mentions > 0) {
+            badgeComponent = (
+                <View style={style.mentionBadge}>
+                    <Text style={style.mentionBadgeText}>{thread.unread_mentions}</Text>
+                </View>
+            );
         }
     }
 
@@ -114,7 +103,7 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
                             </View>
                         </View>
                         <FriendlyDate
-                            value={thread?.last_reply_at}
+                            value={thread.last_reply_at}
                             style={style.date}
                         />
                     </View>
@@ -124,22 +113,15 @@ const ThreadItem = ({postId}: ThreadItemProps) => {
                     >
                         <RemoveMarkdown value={post?.message || ''}/>
                     </Text>
-                    <View style={style.footerContainer}>
-                        <View style={style.avatarsContainer}>
-                            <Avatars
-                                style={{flex: 1}}
-                                userIds={participants}
-                            />
-                        </View>
-                        {repliesComponent}
-                    </View>
+                    <ThreadFooter
+                        thread={thread}
+                        threadStarter={threadStarter}
+                    />
                 </View>
             </View>
         </TouchableHighlight>
     );
 };
-
-export default ThreadItem;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -171,6 +153,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 12,
         },
         threadStarter: {
+            color: theme.centerChannelColor,
             flex: 0,
             flexShrink: 1,
             fontFamily: 'Open Sans',
@@ -206,22 +189,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
             lineHeight: 20,
-            marginTop: 3,
-        },
-        footerContainer: {
-            flexDirection: 'row',
-            marginTop: 6,
-        },
-        avatarsContainer: {
-            width: 96,
-        },
-        replies: {
-            alignSelf: 'center',
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-        unreadReplies: {
-            alignSelf: 'center',
-            color: theme.sidebarTextActiveBorder,
+            marginVertical: 9,
         },
         unreadDot: {
             width: 8,
@@ -248,3 +216,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+export default ThreadItem;

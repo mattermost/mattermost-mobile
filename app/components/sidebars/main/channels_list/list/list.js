@@ -21,9 +21,9 @@ import {debounce} from '@mm-redux/actions/helpers';
 
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
-import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 
 import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
@@ -43,6 +43,7 @@ export default class List extends PureComponent {
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
+        collapsedThreadsEnabled: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -169,12 +170,22 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s) => {
+        const sections = orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
             };
         });
+
+        if (props.collapsedThreadsEnabled) {
+            sections.unshift(({
+                data: [''],
+                defaultMessage: '',
+                id: 'sidebar.threads',
+            }));
+        }
+
+        return sections;
     };
 
     showCreateChannelOptions = () => {
@@ -408,11 +419,6 @@ export default class List extends PureComponent {
     render() {
         const {testID, styles, theme} = this.props;
         const {sections, showIndicator} = this.state;
-        const sectionsWithThreads = [{
-            data: [''],
-            defaultMessage: '',
-            id: 'sidebar.threads',
-        }].concat(sections);
 
         const paddingBottom = this.listContentPadding();
 
@@ -424,7 +430,7 @@ export default class List extends PureComponent {
             >
                 <SectionList
                     ref={this.setListRef}
-                    sections={sectionsWithThreads}
+                    sections={sections}
                     contentContainerStyle={{paddingBottom}}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
