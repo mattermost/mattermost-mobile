@@ -4,11 +4,14 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
 import {selectPost} from '@mm-redux/actions/posts';
+import {updateThreadRead} from '@mm-redux/actions/threads';
 import {makeGetChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
 
 import Thread from './thread';
 
@@ -18,17 +21,19 @@ function makeMapStateToProps() {
 
     return function mapStateToProps(state, ownProps) {
         const channel = getChannel(state, {id: ownProps.channelId});
-
         return {
             channelId: ownProps.channelId,
+            channelIsArchived: channel ? channel.delete_at !== 0 : false,
             channelType: channel ? channel.type : '',
             displayName: channel ? channel.display_name : '',
             myMember: getMyCurrentChannelMembership(state),
-            rootId: ownProps.rootId,
             postIds: getPostIdsForThread(state, ownProps.rootId),
+            rootId: ownProps.rootId,
+            teamId: getCurrentTeamId(state),
             theme: getTheme(state),
-            channelIsArchived: channel ? channel.delete_at !== 0 : false,
+            thread: getThread(state, ownProps.rootId),
             threadLoadingStatus: state.requests.posts.getPostThread,
+            userId: getCurrentUserId(state),
         };
     };
 }
@@ -37,6 +42,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             selectPost,
+            updateThreadRead,
         }, dispatch),
     };
 }

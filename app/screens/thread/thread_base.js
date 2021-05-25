@@ -18,17 +18,19 @@ export default class ThreadBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
+            updateThreadRead: PropTypes.func,
         }).isRequired,
         componentId: PropTypes.string,
-        channelId: PropTypes.string.isRequired,
         channelType: PropTypes.string,
         displayName: PropTypes.string,
         myMember: PropTypes.object.isRequired,
-        rootId: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
-        channelIsArchived: PropTypes.bool,
+        rootId: PropTypes.string.isRequired,
+        teamId: PropTypes.string.isRequired,
+        theme: PropTypes.object.isRequired,
+        thread: PropTypes.object,
         threadLoadingStatus: PropTypes.object,
+        userId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -72,6 +74,7 @@ export default class ThreadBase extends PureComponent {
     }
 
     componentDidMount() {
+        this.markThreadRead();
         this.removeTypingAnimation = this.registerTypingAnimation(this.bottomPaddingAnimation);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
     }
@@ -85,12 +88,34 @@ export default class ThreadBase extends PureComponent {
         if (!this.state.lastViewedAt) {
             this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
         }
+
+        if (this.props.thread?.id !== nextProps.thread?.id) {
+            this.markThreadRead();
+        }
     }
 
     componentWillUnmount() {
         this.props.actions.selectPost('');
         this.removeTypingAnimation();
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+    }
+
+    markThreadRead() {
+        if (
+            this.props.thread &&
+            (
+                this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
+                this.props.thread.unread_mentions ||
+                this.props.thread.unread_replies
+            )
+        ) {
+            this.props.actions.updateThreadRead(
+                this.props.userId,
+                this.props.teamId,
+                this.props.rootId,
+                Date.now(),
+            );
+        }
     }
 
     close = () => {
