@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {handleThreadArrived, handleReadChanged, handleAllMarkedRead} from '@mm-redux/actions/threads';
 import {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
-import {handleThreadArrived} from '@mm-redux/actions/threads';
-import {Dispatch} from 'react';
 
 export function handleThreadUpdated(msg: WebSocketMessage) {
     return (dispatch: DispatchFunc): ActionResult => {
         try {
             const threadData = JSON.parse(msg.data.thread);
-            console.log('$$$$$$$$$$$$$$$: ', threadData);
+            // console.log('$$$$$$$$$$$$$$$: ', threadData);
             handleThreadArrived(dispatch, threadData, msg.broadcast.team_id);
         } catch {
             // invalid JSON
@@ -42,6 +41,7 @@ export function handleThreadReadChanged(msg: WebSocketMessage) {
         } else {
             handleAllMarkedRead(doDispatch, msg.broadcast.team_id);
         }
+        return {data: true};
     };
 }
 

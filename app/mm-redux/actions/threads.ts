@@ -16,7 +16,7 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
         let userThreadList: undefined | UserThreadList;
 
         try {
-            userThreadList = await Client4.getUserThreads(userId, teamId, before, after, perPage, true, true, unread);
+            userThreadList = await Client4.getUserThreads(userId, teamId, before, after, perPage, true, false, unread);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -124,6 +124,15 @@ export function getThreadMentionCountsByChannel(teamId: string) {
     };
 }
 
+export function handleAllMarkedRead(dispatch: DispatchFunc, teamId: string) {
+    dispatch({
+        type: ThreadTypes.ALL_TEAM_THREADS_READ,
+        data: {
+            team_id: teamId,
+        },
+    });
+}
+
 export function markAllThreadsInTeamRead(userId: string, teamId: string) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         try {
@@ -134,12 +143,7 @@ export function markAllThreadsInTeamRead(userId: string, teamId: string) {
             return {error};
         }
 
-        dispatch({
-            type: ThreadTypes.ALL_TEAM_THREADS_READ,
-            data: {
-                team_id: teamId,
-            },
-        });
+        handleAllMarkedRead(dispatch, teamId);
 
         return {};
     };
