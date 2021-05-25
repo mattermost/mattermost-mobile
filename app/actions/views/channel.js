@@ -13,12 +13,11 @@ import {
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
-import {getLicense} from '@mm-redux/selectors/entities/general';
 import {selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
+import {getLicense} from '@mm-redux/selectors/entities/general';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
@@ -26,16 +25,18 @@ import {
     getMyChannelMemberships,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getTeamByName, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
+import {getViewingGlobalThreads} from '@selectors/threads';
 import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
@@ -122,9 +123,10 @@ export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
 export function selectInitialChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
-        const channelId = lastChannelIdForTeam(state, teamId);
-
-        dispatch(handleSelectChannel(channelId));
+        if (isCollapsedThreadsEnabled(state) && !getViewingGlobalThreads(state)) {
+            const channelId = lastChannelIdForTeam(state, teamId);
+            dispatch(handleSelectChannel(channelId));
+        }
     };
 }
 
