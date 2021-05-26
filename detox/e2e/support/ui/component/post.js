@@ -14,6 +14,7 @@ class Post {
         postHeaderDisplayName: 'post_header.display_name',
         postHeaderGuestTag: 'post_header.guest_tag',
         postHeaderReply: 'post_header.reply',
+        postHeaderReplyCount: 'post_header.reply.count',
         postPreHeaderText: 'post_pre_header.text',
         showLessButton: 'show_more.button.minus',
         showMoreButton: 'show_more.button.plus',
@@ -57,12 +58,14 @@ class Post {
         const postItemHeaderDisplayNameMatcher = by.id(this.testID.postHeaderDisplayName).withAncestor(postItemMatcher);
         const postItemHeaderGuestTagMatcher = by.id(this.testID.postHeaderGuestTag).withAncestor(postItemMatcher);
         const postItemHeaderReplyMatcher = by.id(this.testID.postHeaderReply).withAncestor(postItemMatcher);
+        const postItemHeaderReplyCountMatcher = by.id(this.testID.postHeaderReplyCount).withAncestor(postItemMatcher);
 
         return {
             postItemHeaderDateTime: element(postItemHeaderDateTimeMatcher),
             postItemHeaderDisplayName: element(postItemHeaderDisplayNameMatcher),
             postItemHeaderGuestTag: element(postItemHeaderGuestTagMatcher),
             postItemHeaderReply: element(postItemHeaderReplyMatcher),
+            postItemHeaderReplyCount: element(postItemHeaderReplyCountMatcher),
         };
     }
 
