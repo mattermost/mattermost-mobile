@@ -5,7 +5,7 @@ import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import BoolSetting from './bool_setting.js';
+import BoolSetting from './bool_setting';
 
 describe('components/widgets/settings/TextSetting', () => {
     const theme = Preferences.THEMES.default;
