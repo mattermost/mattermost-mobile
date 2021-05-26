@@ -11,7 +11,7 @@ describe('components/widgets/settings/TextSetting', () => {
     const theme = Preferences.THEMES.default;
     test('onChange', () => {
         const onChange = jest.fn();
-        const wrapper = shallow(
+        const wrapper = shallow<BoolSetting>(
             <BoolSetting
                 id='elementid'
                 label='Can you please check below'

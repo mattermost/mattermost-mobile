@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import {
     View,
     Text,
@@ -14,28 +13,24 @@ import {
     changeOpacity,
     makeStyleSheetFromTheme,
 } from '@utils/theme';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class BoolSetting extends PureComponent {
-    static propTypes = {
-        id: PropTypes.string.isRequired,
-        label: PropTypes.oneOfType([
-            PropTypes.shape({
-                id: PropTypes.string.isRequired,
-                defaultMessage: PropTypes.string.isRequired,
-            }),
-            PropTypes.string,
-        ]),
-        value: PropTypes.bool.isRequired,
-        placeholder: PropTypes.string,
-        helpText: PropTypes.node,
-        errorText: PropTypes.node,
-        optional: PropTypes.bool,
-        theme: PropTypes.object.isRequired,
-        onChange: PropTypes.func.isRequired,
-    };
+type Props = {
+    id: string;
+    label?: string | {id: string, defaultMessage: string};
+    value: boolean;
+    placeholder?: string;
+    helpText?: React.ReactNode;
+    errorText?: React.ReactNode;
+    optional?: boolean;
+    disabled?: boolean;
+    theme: Theme;
+    onChange: (name: string, value: boolean) => void;
+}
 
-    handleChange = (value) => {
-        this.props.onChange(this.props.id, Boolean(value));
+export default class BoolSetting extends PureComponent<Props> {
+    handleChange = (value: boolean) => {
+        this.props.onChange(this.props.id, value);
     };
 
     render() {
@@ -47,6 +42,7 @@ export default class BoolSetting extends PureComponent {
             errorText,
             optional,
             theme,
+            disabled,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -96,13 +92,15 @@ export default class BoolSetting extends PureComponent {
             );
         }
 
+        const noediting = disabled ? style.disabled : null;
+
         return (
             <>
                 <View>
                     {labelContent}
                 </View>
                 <View style={style.separator}/>
-                <View style={style.inputContainer}>
+                <View style={[style.inputContainer, noediting]}>
                     <Text style={style.placeholderText}>
                         {placeholder}
                     </Text>
@@ -110,6 +108,7 @@ export default class BoolSetting extends PureComponent {
                         onValueChange={this.handleChange}
                         value={value}
                         style={style.inputSwitch}
+                        disabled={disabled}
                     />
                 </View>
                 <View style={style.separator}/>
@@ -122,7 +121,7 @@ export default class BoolSetting extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         labelContainer: {
             flexDirection: 'row',
@@ -140,6 +139,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             paddingHorizontal: 15,
             height: 40,
+        },
+        disabled: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         placeholderText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
