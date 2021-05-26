@@ -256,7 +256,11 @@ export default class UserProfile extends PureComponent {
                             size={20}
                         />
                     </Text>
-                    <Text style={[style.text, style.customStatusText]}>{customStatus.text}</Text>
+                    <View style={style.customStatusTextContainer}>
+                        <Text style={style.text}>
+                            {customStatus.text}
+                        </Text>
+                    </View>
                     {isMyUser && (
                         <View style={style.clearButton}>
                             <ClearButton
@@ -494,15 +498,15 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
         },
         customStatus: {
-            position: 'relative',
             flexDirection: 'row',
-            alignItems: 'center',
         },
-        customStatusText: {
+        customStatusTextContainer: {
+            justifyContent: 'center',
             width: '80%',
         },
         clearButton: {
             position: 'absolute',
+            top: -8,
             right: 0,
         },
         content: {
