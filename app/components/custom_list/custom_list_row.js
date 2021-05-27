@@ -76,7 +76,7 @@ const style = StyleSheet.create({
         width: 28,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: '#888',
+        borderColor: 'rgba(61, 60, 64, 0.32)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -87,7 +87,7 @@ const style = StyleSheet.create({
         justifyContent: 'center',
     },
     selectorDisabled: {
-        backgroundColor: '#888',
+        borderColor: 'rgba(61, 60, 64, 0.16)',
     },
     selectorFilled: {
         backgroundColor: '#166DE0',

@@ -9,9 +9,8 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
     style={
       Object {
         "backgroundColor": "#ffffff",
-        "display": "flex",
         "flexDirection": "row",
-        "padding": 2,
+        "minHeight": 50,
       }
     }
   >
@@ -22,7 +21,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
           "height": 46,
           "left": 14,
           "marginRight": 6,
-          "top": 8,
+          "top": 12,
           "width": 45,
         }
       }
@@ -36,17 +35,16 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
       style={
         Object {
           "flex": 1,
-          "position": "relative",
         }
       }
     >
       <View
         style={
           Object {
-            "alignItems": "center",
             "flex": 1,
-            "flexDirection": "row",
-            "marginBottom": 2,
+            "justifyContent": "center",
+            "paddingBottom": 14,
+            "paddingTop": 14,
             "width": "70%",
           }
         }
@@ -103,9 +101,8 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
     style={
       Object {
         "backgroundColor": "#ffffff",
-        "display": "flex",
         "flexDirection": "row",
-        "padding": 2,
+        "minHeight": 50,
       }
     }
   >
@@ -116,7 +113,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
           "height": 46,
           "left": 14,
           "marginRight": 6,
-          "top": 8,
+          "top": 12,
           "width": 45,
         }
       }
@@ -130,17 +127,16 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
       style={
         Object {
           "flex": 1,
-          "position": "relative",
         }
       }
     >
       <View
         style={
           Object {
-            "alignItems": "center",
             "flex": 1,
-            "flexDirection": "row",
-            "marginBottom": 2,
+            "justifyContent": "center",
+            "paddingBottom": 14,
+            "paddingTop": 14,
             "width": "70%",
           }
         }
@@ -188,7 +184,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
           Object {
             "position": "absolute",
             "right": 13,
-            "top": 0,
+            "top": 4,
           }
         }
       >

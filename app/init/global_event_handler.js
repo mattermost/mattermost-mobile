@@ -291,7 +291,7 @@ class GlobalEventHandler {
                 },
                 views: {
                     i18n: {
-                        locale: getLocales()[0].languageCode,
+                        locale: getLocales()[0].languageTag,
                     },
                     root: {
                         hydrationComplete: true,

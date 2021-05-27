@@ -69,6 +69,14 @@ class ChannelScreen {
 
     postList = new PostList(this.testID.channelScreenPrefix);
 
+    getMoreMessagesButton = () => {
+        return this.postList.getMoreMessagesButton();
+    }
+
+    getNewMessagesDivider = () => {
+        return this.postList.getNewMessagesDivider();
+    }
+
     getLongPostItem = (postId, text, postProfileOptions = {}) => {
         return LongPostScreen.getPost(postId, text, postProfileOptions);
     }

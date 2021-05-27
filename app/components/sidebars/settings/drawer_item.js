@@ -107,10 +107,8 @@ export default class DrawerItem extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            padding: 3,
             minHeight: 50,
         },
         iconContainer: {
@@ -130,6 +128,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         labelContainer: {
             flex: 1,
             justifyContent: 'center',
+            paddingTop: 14,
+            paddingBottom: 14,
         },
         centerLabel: {
             textAlign: 'center',

@@ -8,11 +8,9 @@ exports[`DrawerItem should match snapshot 1`] = `
   <View
     style={
       Object {
-        "alignItems": "center",
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
-        "padding": 3,
       }
     }
   >
@@ -54,6 +52,8 @@ exports[`DrawerItem should match snapshot 1`] = `
           Object {
             "flex": 1,
             "justifyContent": "center",
+            "paddingBottom": 14,
+            "paddingTop": 14,
           }
         }
       >
@@ -100,11 +100,9 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
   <View
     style={
       Object {
-        "alignItems": "center",
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
-        "padding": 3,
       }
     }
   >
@@ -146,6 +144,8 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
           Object {
             "flex": 1,
             "justifyContent": "center",
+            "paddingBottom": 14,
+            "paddingTop": 14,
           }
         }
       >

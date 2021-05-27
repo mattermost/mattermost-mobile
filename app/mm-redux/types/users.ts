@@ -35,6 +35,7 @@ export type UserProfile = {
     last_name: string;
     position: string;
     roles: string;
+    remote_id?: string;
     locale: string;
     props: Dictionary<string>;
     notify_props: UserNotifyProps;
