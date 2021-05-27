@@ -19,28 +19,30 @@ import {getCustomStatus} from '@selectors/custom_status';
 
 import UserProfile from './user_profile';
 
-function mapStateToProps(state, ownProps) {
-    const config = getConfig(state);
-    const {createChannel: createChannelRequest} = state.requests.channels;
-    const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
-    const enableTimezone = isTimezoneEnabled(state);
-    const user = state.entities.users.profiles[ownProps.userId];
-    const userTimezone = getCurrentUserTimezone(state);
+function makeMapStateToProps() {
+    return (state, ownProps) => {
+        const config = getConfig(state);
+        const {createChannel: createChannelRequest} = state.requests.channels;
+        const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
+        const enableTimezone = isTimezoneEnabled(state);
+        const user = state.entities.users.profiles[ownProps.userId];
+        const userTimezone = getCurrentUserTimezone(state);
 
-    return {
-        userTimezone,
-        config,
-        createChannelRequest,
-        currentDisplayName: state.views.channel.displayName,
-        user,
-        bot: getBotAccounts(state)[ownProps.userId],
-        teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        enableTimezone,
-        militaryTime,
-        theme: getTheme(state),
-        isMyUser: getCurrentUserId(state) === ownProps.userId,
-        remoteClusterInfo: state.entities.remoteCluster.info[user?.remote_id],
-        customStatus: getCustomStatus(state, ownProps.userId),
+        return {
+            userTimezone,
+            config,
+            createChannelRequest,
+            currentDisplayName: state.views.channel.displayName,
+            user,
+            bot: getBotAccounts(state)[ownProps.userId],
+            teammateNameDisplay: getTeammateNameDisplaySetting(state),
+            enableTimezone,
+            militaryTime,
+            theme: getTheme(state),
+            isMyUser: getCurrentUserId(state) === ownProps.userId,
+            remoteClusterInfo: state.entities.remoteCluster.info[user?.remote_id],
+            customStatus: getCustomStatus(state, ownProps.userId),
+        };
     };
 }
 
@@ -56,4 +58,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserProfile);
+export default connect(makeMapStateToProps, mapDispatchToProps)(UserProfile);

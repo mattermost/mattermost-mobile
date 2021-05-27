@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
 import {getRecentCustomStatuses, getCustomStatus} from '@selectors/custom_status';
@@ -12,21 +13,22 @@ import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@act
 
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {isLandscape} from '@selectors/device';
-import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 
-function mapStateToProps(state: GlobalState) {
-    const customStatus = getCustomStatus(state);
-    const recentCustomStatuses = getRecentCustomStatuses(state);
-    const theme = getTheme(state);
-    const userTimezone = getCurrentUserTimezone(state);
+function makeMapStateToProps() {
+    return (state: GlobalState) => {
+        const customStatus = getCustomStatus(state);
+        const recentCustomStatuses = getRecentCustomStatuses(state);
+        const theme = getTheme(state);
+        const userTimezone = getCurrentUserTimezone(state);
 
-    return {
-        isTimezoneEnabled: isTimezoneEnabled(state),
-        userTimezone,
-        customStatus,
-        recentCustomStatuses,
-        theme,
-        isLandscape: isLandscape(state),
+        return {
+            isTimezoneEnabled: isTimezoneEnabled(state),
+            userTimezone,
+            customStatus,
+            recentCustomStatuses,
+            theme,
+            isLandscape: isLandscape(state),
+        };
     };
 }
 
@@ -40,4 +42,4 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CustomStatusModal);
+export default connect(makeMapStateToProps, mapDispatchToProps)(CustomStatusModal);
