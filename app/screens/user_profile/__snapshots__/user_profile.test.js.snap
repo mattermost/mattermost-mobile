@@ -476,9 +476,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
         <View
           style={
             Object {
-              "alignItems": "center",
               "flexDirection": "row",
-              "position": "relative",
             }
           }
         >
@@ -496,21 +494,25 @@ exports[`user_profile should match snapshot with custom status 1`] = `
               size={20}
             />
           </Text>
-          <Text
+          <View
             style={
-              Array [
+              Object {
+                "justifyContent": "center",
+                "width": "80%",
+              }
+            }
+          >
+            <Text
+              style={
                 Object {
                   "color": "#3d3c40",
                   "fontSize": 15,
-                },
-                Object {
-                  "width": "80%",
-                },
-              ]
-            }
-          >
-            In a meeting
-          </Text>
+                }
+              }
+            >
+              In a meeting
+            </Text>
+          </View>
         </View>
       </View>
       <View
@@ -686,9 +688,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
         <View
           style={
             Object {
-              "alignItems": "center",
               "flexDirection": "row",
-              "position": "relative",
             }
           }
         >
@@ -706,26 +706,31 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               size={20}
             />
           </Text>
-          <Text
+          <View
             style={
-              Array [
+              Object {
+                "justifyContent": "center",
+                "width": "80%",
+              }
+            }
+          >
+            <Text
+              style={
                 Object {
                   "color": "#3d3c40",
                   "fontSize": 15,
-                },
-                Object {
-                  "width": "80%",
-                },
-              ]
-            }
-          >
-            In a meeting
-          </Text>
+                }
+              }
+            >
+              In a meeting
+            </Text>
+          </View>
           <View
             style={
               Object {
                 "position": "absolute",
                 "right": 0,
+                "top": -8,
               }
             }
           >
