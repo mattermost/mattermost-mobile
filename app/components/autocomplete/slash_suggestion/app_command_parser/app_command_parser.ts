@@ -236,6 +236,7 @@ export class ParsedCommand {
             fields = this.form.fields;
         }
 
+        fields = fields.filter((f) => f.type !== AppFieldTypes.MARKDOWN && !f.readonly);
         this.state = ParseState.StartParameter;
         this.i = this.incompleteStart || 0;
         let flagEqualsUsed = false;
