@@ -14,21 +14,22 @@ import {logout} from 'app/actions/views/user';
 
 import SettingsSidebar from './settings_sidebar';
 
-const getCustomStatus = makeGetCustomStatus();
+function makeMapStateToProps() {
+    const getCustomStatus = makeGetCustomStatus();
+    return (state) => {
+        const currentUser = getCurrentUser(state) || {};
+        const status = getStatusForUserId(state, currentUser.id);
 
-function mapStateToProps(state) {
-    const currentUser = getCurrentUser(state) || {};
-    const status = getStatusForUserId(state, currentUser.id);
-
-    const customStatusEnabled = isCustomStatusEnabled(state);
-    const customStatus = customStatusEnabled ? getCustomStatus(state) : undefined;
-    return {
-        currentUser,
-        locale: currentUser?.locale,
-        status,
-        theme: getTheme(state),
-        isCustomStatusEnabled: customStatusEnabled,
-        customStatus,
+        const customStatusEnabled = isCustomStatusEnabled(state);
+        const customStatus = customStatusEnabled ? getCustomStatus(state) : undefined;
+        return {
+            currentUser,
+            locale: currentUser?.locale,
+            status,
+            theme: getTheme(state),
+            isCustomStatusEnabled: customStatusEnabled,
+            customStatus,
+        };
     };
 }
 
@@ -42,4 +43,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(SettingsSidebar);
+export default connect(makeMapStateToProps, mapDispatchToProps, null, {forwardRef: true})(SettingsSidebar);

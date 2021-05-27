@@ -12,18 +12,19 @@ import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {getRecentCustomStatuses, makeGetCustomStatus} from '@selectors/custom_status';
 import {isLandscape} from '@selectors/device';
 
-const getCustomStatus = makeGetCustomStatus();
+function makeMapStateToProps() {
+    const getCustomStatus = makeGetCustomStatus();
+    return (state: GlobalState) => {
+        const customStatus = getCustomStatus(state);
+        const recentCustomStatuses = getRecentCustomStatuses(state);
+        const theme = getTheme(state);
 
-function mapStateToProps(state: GlobalState) {
-    const customStatus = getCustomStatus(state);
-    const recentCustomStatuses = getRecentCustomStatuses(state);
-    const theme = getTheme(state);
-
-    return {
-        customStatus,
-        recentCustomStatuses,
-        theme,
-        isLandscape: isLandscape(state),
+        return {
+            customStatus,
+            recentCustomStatuses,
+            theme,
+            isLandscape: isLandscape(state),
+        };
     };
 }
 
@@ -37,4 +38,4 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CustomStatusModal);
+export default connect(makeMapStateToProps, mapDispatchToProps)(CustomStatusModal);
