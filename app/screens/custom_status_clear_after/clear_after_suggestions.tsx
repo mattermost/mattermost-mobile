@@ -112,7 +112,7 @@ const ClearAfterSuggestion = (props: Props) => {
     return (
         <View>
             <TouchableOpacity
-                testID={`expiry_time_suggestion.${duration}`}
+                testID={`clear_after.suggestion.${duration}`}
                 onPress={handleClick}
             >
                 <View style={style.container}>
