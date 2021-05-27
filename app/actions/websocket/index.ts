@@ -57,6 +57,7 @@ export function init(additionalOptions: any = {}) {
         connUrl += `${Client4.getUrlVersion()}/websocket`;
         websocketClient.setFirstConnectCallback(() => dispatch(handleFirstConnect()));
         websocketClient.setEventCallback((evt: WebSocketMessage) => dispatch(handleEvent(evt)));
+        websocketClient.setMissedEventsCallback(() => dispatch(doMissedEvents()));
         websocketClient.setReconnectCallback(() => dispatch(handleReconnect()));
         websocketClient.setCloseCallback((connectFailCount: number) => dispatch(handleClose(connectFailCount)));
 
@@ -81,15 +82,19 @@ export function close(shouldReconnect = false): GenericAction {
     };
 }
 
+function wsConnected(timestamp = Date.now()) {
+    return {
+        type: GeneralTypes.WEBSOCKET_SUCCESS,
+        timestamp,
+        data: null,
+    };
+}
+
 export function doFirstConnect(now: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
         const {lastDisconnectAt} = state.websocket;
-        const actions: Array<GenericAction> = [{
-            type: GeneralTypes.WEBSOCKET_SUCCESS,
-            timestamp: now,
-            data: null,
-        }];
+        const actions: Array<GenericAction> = [wsConnected(now)];
 
         if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
@@ -112,6 +117,14 @@ export function doFirstConnect(now: number) {
     };
 }
 
+export function doMissedEvents() {
+    return async (dispatch: DispatchFunc): Promise<ActionResult> => {
+        dispatch(wsConnected());
+
+        return {data: true};
+    };
+}
+
 export function doReconnect(now: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
@@ -122,11 +135,7 @@ export function doReconnect(now: number) {
         const {lastDisconnectAt} = state.websocket;
         const actions: Array<GenericAction> = [];
 
-        dispatch({
-            type: GeneralTypes.WEBSOCKET_SUCCESS,
-            timestamp: now,
-            data: null,
-        });
+        dispatch(wsConnected(now));
 
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
@@ -273,13 +282,16 @@ export function handleUserTypingEvent(msg: WebSocketMessage) {
 }
 
 function handleFirstConnect() {
-    return (dispatch: DispatchFunc) => {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const config = getConfig(state);
         const now = Date.now();
 
-        if (reconnect) {
+        if (reconnect && config?.EnableReliableWebSockets !== 'true') {
             reconnect = false;
             return dispatch(doReconnect(now));
         }
+
         return dispatch(doFirstConnect(now));
     };
 }

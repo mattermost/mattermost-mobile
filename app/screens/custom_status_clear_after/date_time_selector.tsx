@@ -55,6 +55,17 @@ const DateTimeSelector = (props: Props) => {
         showMode('time');
     };
 
+    const renderDateTimePicker = show && (
+        <DateTimePicker
+            testID='dateTimePicker'
+            value={moment(date).toDate()}
+            mode={mode}
+            is24Hour={militaryTime}
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onChange}
+        />
+    );
+
     return (
         <View style={styles.container}>
             <View style={styles.datePicker}>
@@ -71,16 +82,7 @@ const DateTimeSelector = (props: Props) => {
                     color={theme.buttonBg}
                 />
             </View>
-            {show && (
-                <DateTimePicker
-                    testID='dateTimePicker'
-                    value={moment(date).toDate()}
-                    mode={mode}
-                    is24Hour={militaryTime}
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={onChange}
-                />
-            )}
+            {renderDateTimePicker}
         </View>
     );
 };
@@ -93,6 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
             alignItems: 'center',
             justifyContent: 'center',
+            paddingBottom: 10,
         },
         datePicker: {
             marginRight: 10,

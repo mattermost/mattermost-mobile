@@ -32,7 +32,7 @@ type State = {
 class ClearAfterModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
         id: 'update-custom-status-clear-after',
-        testID: 'custom_status-clear-after.done.button',
+        testID: 'clear_after.done.button',
         enabled: true,
         showAsAction: 'always',
     };

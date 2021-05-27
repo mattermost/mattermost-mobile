@@ -6,18 +6,17 @@ import PropTypes from 'prop-types';
 import {Alert, DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
+import CombinedUserActivityPost from '@components/combined_user_activity_post';
+import Post from '@components/post';
+import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import * as PostListUtils from '@mm-redux/utils/post_list';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {errorBadChannel} from '@utils/draft';
-
-import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
-import Post from 'app/components/post';
-import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
+import {makeExtraData} from '@utils/list_view';
+import {matchDeepLink, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import mattermostManaged from 'app/mattermost_managed';
-import {makeExtraData} from 'app/utils/list_view';
-import {matchDeepLink, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from 'app/utils/url';
-import telemetry from 'app/telemetry';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -98,6 +97,7 @@ export default class PostList extends PureComponent {
         this.shouldScrollToBottom = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
+        this.initialRender = false;
     }
 
     componentDidMount() {
@@ -215,13 +215,16 @@ export default class PostList extends PureComponent {
 
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
+        if (!this.initialRender && this.props.postIds.length) {
+            telemetry.end([PERF_MARKERS.CHANNEL_RENDER]);
+            this.initialRender = true;
+        }
         if (this.postListHeight !== height) {
             this.postListHeight = height;
         }
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        telemetry.start(['post_list:permalink']);
         const {showPermalink} = this.props.actions;
 
         showPermalink(this.context.intl, teamName, postId);
@@ -362,6 +365,7 @@ export default class PostList extends PureComponent {
                 postId={postId}
                 highlight={highlightPostId === postId}
                 isLastPost={lastPostIndex === index}
+                hey={index}
                 {...postProps}
             />
         );
@@ -370,6 +374,7 @@ export default class PostList extends PureComponent {
     resetPostList = () => {
         this.contentOffsetY = 0;
         this.hasDoneInitialScroll = false;
+        this.initialRender = false;
 
         if (this.scrollAfterInteraction) {
             this.scrollAfterInteraction.cancel();

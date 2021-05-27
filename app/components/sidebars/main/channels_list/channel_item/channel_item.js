@@ -7,6 +7,7 @@ import {
     TouchableHighlight,
     Text,
     View,
+    Platform,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
@@ -180,7 +181,7 @@ export default class ChannelItem extends PureComponent {
             (
                 <CustomStatusEmoji
                     userID={this.props.teammateId}
-                    style={[{color: changeOpacity(theme.sidebarText, 0.6)}, extraTextStyle]}
+                    style={[style.emoji, extraTextStyle]}
                     testID={displayName}
                 />
             ) : null;
@@ -250,11 +251,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
+            opacity: 1,
         },
         textUnread: {
+            opacity: 1,
             color: theme.sidebarUnreadText,
             fontWeight: '500',
             maxWidth: '70%',
+        },
+        emoji: {
+            color: changeOpacity(theme.sidebarText, 0.6),
+            opacity: Platform.OS === 'ios' ? 0.6 : 1,
         },
         badge: {
             backgroundColor: theme.mentionBg,

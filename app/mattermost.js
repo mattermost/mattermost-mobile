@@ -10,7 +10,6 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {resetToChannel, resetToSelectServer} from '@actions/navigation';
 import {setDeepLinkURL} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
-import telemetry from 'app/telemetry';
 import {NavigationTypes} from '@constants';
 import {getAppCredentials} from '@init/credentials';
 import emmProvider from '@init/emm_provider';
@@ -23,6 +22,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import getStorage from '@store/mmkv_adapter';
 import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
+import telemetry from '@telemetry';
 import {validatePreviousVersion} from '@utils/general';
 import {captureJSException} from '@utils/sentry';
 
@@ -49,11 +49,6 @@ const init = async () => {
 };
 
 const launchApp = (credentials) => {
-    telemetry.start([
-        'start:select_server_screen',
-        'start:channel_screen',
-    ]);
-
     const store = Store.redux;
     waitForHydration(store, async () => {
         Linking.getInitialURL().then((url) => {
@@ -70,7 +65,7 @@ const launchApp = (credentials) => {
                 await globalEventHandler.configureAnalytics();
                 // eslint-disable-next-line no-console
                 console.log('Launch app in Channel screen');
-                resetToChannel({skipMetrics: true});
+                resetToChannel();
             } else {
                 const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
                 captureJSException(error, false, store);
@@ -79,9 +74,10 @@ const launchApp = (credentials) => {
         } else {
             resetToSelectServer(emmProvider.allowOtherServers);
         }
+
+        telemetry.startSinceLaunch(credentials ? 'Launch on Channel Screen' : 'Launch on Server Screen');
     });
 
-    telemetry.startSinceLaunch(['start:splash_screen']);
     EphemeralStore.appStarted = true;
 };
 

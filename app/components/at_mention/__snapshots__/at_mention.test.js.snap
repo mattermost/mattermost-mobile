@@ -34,7 +34,7 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
         },
         Object {
           "backgroundColor": "#ffe577",
-          "color": "#145dbf",
+          "color": "#166de0",
         },
       ]
     }

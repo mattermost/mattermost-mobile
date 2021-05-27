@@ -6,7 +6,6 @@ exports[`components/custom_status/custom_status_text should match snapshot 1`] =
     Array [
       Object {
         "color": "rgba(61,60,64,0.5)",
-        "flex": 1,
         "fontSize": 17,
         "includeFontPadding": false,
         "textAlignVertical": "center",
@@ -25,7 +24,6 @@ exports[`components/custom_status/custom_status_text should match snapshot with 
     Array [
       Object {
         "color": "rgba(61,60,64,0.5)",
-        "flex": 1,
         "fontSize": 17,
         "includeFontPadding": false,
         "textAlignVertical": "center",

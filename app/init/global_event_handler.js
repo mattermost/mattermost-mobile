@@ -1,26 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
+import {AppState, Dimensions, Linking, Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
 import RNFetchBlob from 'rn-fetch-blob';
-import semver from 'semver/preload';
 
-import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
+import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet} from '@actions/device';
 import {selectDefaultChannel} from '@actions/views/channel';
 import {showOverlay} from '@actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
-import {getTranslations, resetMomentLocale} from '@i18n';
+import {resetMomentLocale} from '@i18n';
 import {setupPermanentSidebar} from '@init/device';
 import PushNotifications from '@init/push_notifications';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
-import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
 import {Client4} from '@client/rest';
@@ -31,10 +29,8 @@ import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {getCurrentLocale} from '@selectors/i18n';
 import initialState from '@store/initial_state';
 import Store from '@store/store';
-import {t} from '@utils/i18n';
 import {deleteFileCache} from '@utils/file';
 import {getDeviceTimezone} from '@utils/timezone';
 
@@ -45,7 +41,6 @@ import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
 import {analytics} from '@init/analytics.ts';
 
-const {StatusBarManager} = NativeModules;
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
 class GlobalEventHandler {
@@ -99,17 +94,6 @@ class GlobalEventHandler {
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
-
-        this.StatusBarSizeIOS = require('react-native-status-bar-size');
-        if (Platform.OS === 'ios') {
-            this.StatusBarSizeIOS.addEventListener('willChange', this.onStatusBarHeightChange);
-
-            StatusBarManager.getHeight(
-                (data) => {
-                    this.onStatusBarHeightChange(data.height);
-                },
-            );
-        }
 
         this.JavascriptAndNativeErrorHandler = require('app/utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler.initializeErrorHandling(Store.redux);
@@ -259,19 +243,10 @@ class GlobalEventHandler {
         const user = getUser(state, currentUserId);
 
         await dispatch(loadConfigAndLicense());
-        await dispatch(getTeams());
         await dispatch(loadMe(user));
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
-
-        if (Platform.OS === 'ios') {
-            StatusBarManager.getHeight(
-                (data) => {
-                    this.onStatusBarHeightChange(data.height);
-                },
-            );
-        }
     };
 
     onServerConfigChanged = (config) => {
@@ -285,30 +260,10 @@ class GlobalEventHandler {
     onServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = Store.redux;
         const state = getState();
-        const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
-        const version = match && match[0];
-        const locale = getCurrentLocale(state);
-        const translations = getTranslations(locale);
-        if (serverVersion) {
-            if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
-                Alert.alert(
-                    translations[t('mobile.server_upgrade.title')],
-                    translations[t('mobile.server_upgrade.description')],
-                    [{
-                        text: translations[t('mobile.server_upgrade.button')],
-                        onPress: this.serverUpgradeNeeded,
-                    }],
-                    {cancelable: false},
-                );
-            } else if (state.entities.users && state.entities.users.currentUserId) {
-                dispatch(setServerVersion(serverVersion));
-                dispatch(loadConfigAndLicense());
-            }
+        if (serverVersion && state.entities.users && state.entities.users.currentUserId) {
+            dispatch(setServerVersion(serverVersion));
+            dispatch(loadConfigAndLicense());
         }
-    };
-
-    onStatusBarHeightChange = (nextStatusBarHeight) => {
-        Store.redux.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     onSwitchToDefaultChannel = (teamId) => {

@@ -56,6 +56,7 @@ interface Props extends NavigationComponentProps {
         unsetCustomStatus: () => ActionFunc;
         removeRecentCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
     };
+    isTimezoneEnabled: boolean;
 }
 
 type State = {
@@ -98,9 +99,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         mergeNavigationOptions(props.componentId, options);
 
         let currentTime = moment();
-        const timezone = userTimezone;
 
-        currentTime = getCurrentDateAndTimeForTimezone(timezone);
+        if (props.isTimezoneEnabled) {
+            const timezone = userTimezone;
+            currentTime = getCurrentDateAndTimeForTimezone(timezone);
+        }
 
         let initialCustomExpiryTime: Moment = currentTime;
 
@@ -130,11 +133,14 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     handleSetStatus = async () => {
-        const {emoji, text, duration, expires_at} = this.state;
+        const {emoji, text, duration} = this.state;
         const isStatusSet = emoji || text;
         const {customStatus} = this.props;
         if (isStatusSet) {
-            const isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.expires_at === expires_at.toISOString();
+            let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
+            if (isStatusSame && duration === CustomStatusDuration.DATE_AND_TIME) {
+                isStatusSame = customStatus?.expires_at === this.calculateExpiryTime(duration);
+            }
             if (!isStatusSame) {
                 const status = {
                     emoji: emoji || 'speech_balloon',
@@ -358,7 +364,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         );
 
         const clearAfter = (
-            <TouchableOpacity onPress={this.openClearAfterModal}>
+            <TouchableOpacity
+                testID={`custom_status.duration.${duration}`}
+                onPress={this.openClearAfterModal}
+            >
                 <View style={style.inputContainer}>
                     <Text style={style.expiryTime}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
                     {duration ? (

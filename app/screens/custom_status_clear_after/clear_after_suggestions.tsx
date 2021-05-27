@@ -92,10 +92,27 @@ const ClearAfterSuggestion = (props: Props) => {
         handleSuggestionClick(duration, expiry);
     };
 
+    const renderDateTimePicker = showDateAndTimePicker && (
+        <DateTimePicker
+            theme={theme}
+            handleChange={handleCustomExpiresAtChange}
+        />
+    );
+
+    const renderCheckIcon = isSelected && (
+        <View style={style.selectButton}>
+            <CompassIcon
+                name={'check'}
+                size={24}
+                style={style.button}
+            />
+        </View>
+    );
+
     return (
         <View>
             <TouchableOpacity
-                testID={`expiry_time_suggestion.${duration}`}
+                testID={`clear_after.suggestion.${duration}`}
                 onPress={handleClick}
             >
                 <View style={style.container}>
@@ -105,23 +122,12 @@ const ClearAfterSuggestion = (props: Props) => {
                             theme={theme}
                             textStyle={{color: theme.centerChannelColor}}
                         />
-                        {isSelected && <View style={style.selectButton}>
-                            <CompassIcon
-                                name={'check'}
-                                size={24}
-                                style={style.button}
-                            />
-                        </View>}
+                        {renderCheckIcon}
                     </View>
                 </View>
                 {divider}
             </TouchableOpacity>
-            {showDateAndTimePicker && (
-                <DateTimePicker
-                    theme={theme}
-                    handleChange={handleCustomExpiresAtChange}
-                />
-            )}
+            {renderDateTimePicker}
         </View>
     );
 };

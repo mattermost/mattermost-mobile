@@ -11,7 +11,7 @@ import {GlobalState} from '@mm-redux/types/store';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import Preferences from '@mm-redux/constants/preferences';
 import {useSelector} from 'react-redux';
-import {Text, TextStyle, View} from 'react-native';
+import {Text, TextStyle} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -20,6 +20,7 @@ type Props = {
     theme: Theme;
     time: Date;
     styleProp?: TextStyle;
+    testID?: string;
 }
 
 const CustomStatusExpiry = (props: Props) => {
@@ -64,7 +65,7 @@ const CustomStatusExpiry = (props: Props) => {
         />
     );
 
-    const showDate = !isToday && !useTime && !useDay && (
+    const showDate = !(isToday || useTime || useDay) && (
         <FormattedDate
             format='MMM DD, YYYY'
             timezone={timezone}
@@ -99,9 +100,10 @@ const CustomStatusExpiry = (props: Props) => {
     );
 
     return (
-        <View style={styles.labelContainer}>
+        <Text testID={props.testID}>
             <Text style={styleProp || styles.text}>{' ('}</Text>
             <FormattedText
+                testID={'custom_status.until'}
                 id='custom_status.until'
                 defaultMessage='Until'
                 style={styleProp || styles.text}
@@ -114,7 +116,7 @@ const CustomStatusExpiry = (props: Props) => {
             {showDay}
             {showDate}
             <Text style={styleProp || styles.text}>{') '}</Text>
-        </View>
+        </Text>
     );
 };
 
@@ -124,8 +126,6 @@ const createStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         labelContainer: {
             alignItems: 'center',
-            width: '70%',
-            flex: 1,
             flexDirection: 'row',
         },
         text: {

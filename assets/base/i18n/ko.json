@@ -561,6 +561,7 @@
   "permalink.error.access": "Permalink belongs to a deleted message or to a channel to which you do not have access.",
   "permalink.error.link_not_found": "Link Not Found",
   "permalink.show_dialog_warn.cancel": "취소",
+  "permalink.show_dialog_warn.join": "참여",
   "post_body.check_for_out_of_channel_groups_mentions.message": "did not get notified by this mention because they are not in the channel. They cannot be added to the channel because they are not a member of the linked groups. To add them to this channel, they must be added to the linked groups.",
   "post_body.check_for_out_of_channel_mentions.link.and": " 그리고 ",
   "post_body.check_for_out_of_channel_mentions.link.private": "팀에 사용자 초대하기",

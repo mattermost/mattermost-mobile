@@ -207,11 +207,7 @@ export default class PostHeader extends PureComponent {
                     {customStatusEnabled &&
                         <CustomStatusEmoji
                             userID={post.user_id}
-                            style={{
-                                color: theme.centerChannelColor,
-                                marginRight: 4,
-                                marginTop: 1,
-                            }}
+                            style={style.customStatusEmoji}
                         />
                     }
                 </>
@@ -387,6 +383,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             flexGrow: 1,
             paddingVertical: 2,
+        },
+        customStatusEmoji: {
+            color: theme.centerChannelColor,
+            marginRight: 4,
+            marginTop: 1,
         },
         time: {
             color: theme.centerChannelColor,

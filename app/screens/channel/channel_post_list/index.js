@@ -10,7 +10,6 @@ import {
     refreshChannelWithRetry,
 } from '@actions/views/channel';
 import {getPostThread} from '@actions/views/post';
-import {recordLoadTime} from 'app/actions/views/root';
 import {Types} from '@constants';
 import {selectPost} from '@mm-redux/actions/posts';
 import {getPostIdsInCurrentChannel} from '@mm-redux/selectors/entities/posts';
@@ -46,7 +45,6 @@ function mapDispatchToProps(dispatch) {
             getPostThread,
             increasePostVisibility,
             selectPost,
-            recordLoadTime,
             refreshChannelWithRetry,
         }, dispatch),
     };

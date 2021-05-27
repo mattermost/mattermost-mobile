@@ -27,11 +27,9 @@ import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
-import tracker from '@utils/time_tracker';
 
 import mattermostManaged from 'app/mattermost_managed';
 import {GlobalStyles} from 'app/styles';
-import telemetry from 'app/telemetry';
 
 export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
@@ -75,9 +73,6 @@ export default class Login extends PureComponent {
     }
 
     goToChannel = () => {
-        telemetry.remove(['start:overall']);
-
-        tracker.initialLoad = Date.now();
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();

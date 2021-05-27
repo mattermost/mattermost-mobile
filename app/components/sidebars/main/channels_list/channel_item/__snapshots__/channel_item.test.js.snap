@@ -98,6 +98,7 @@ exports[`ChannelItem should match snapshot 1`] = `
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -217,6 +218,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             },
             Object {
               "color": "#ffffff",
+              "opacity": 1,
             },
           ]
         }
@@ -336,6 +338,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             },
             Object {
               "color": "#ffffff",
+              "opacity": 1,
             },
           ]
         }
@@ -455,6 +458,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             },
             Object {
               "color": "#ffffff",
+              "opacity": 1,
             },
           ]
         }
@@ -565,6 +569,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -675,6 +680,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -785,6 +791,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -900,6 +907,7 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -913,11 +921,13 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
           Array [
             Object {
               "color": "rgba(255,255,255,0.6)",
+              "opacity": 0.6,
             },
             Object {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -1027,6 +1037,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }
@@ -1139,6 +1150,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
+              "opacity": 1,
             },
           ]
         }

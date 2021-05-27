@@ -5,8 +5,8 @@ import client from './client';
 import {getResponseFromError} from './common';
 
 // ****************************************************************
-// Channels
-// See https://api.mattermost.com/#tag/channels
+// Posts
+// See https://api.mattermost.com/#tag/posts
 //
 // Exported API function should have the following:
 // - documented using JSDoc
@@ -18,7 +18,7 @@ import {getResponseFromError} from './common';
 
 /**
  * Create a new post in a channel. To create the post as a comment on another post, provide root_id.
- * See https://api.mattermost.com/#tag/posts/paths/~1posts/post
+ * See https://api.mattermost.com/#operation/CreatePost
  * @param {string} option.channelId - The channel ID to post in
  * @param {string} option.message - The message contents, can be formatted with Markdown
  * @param {string} option.rootId - The post ID to comment on
@@ -46,7 +46,7 @@ export const apiCreatePost = async ({channelId, message, rootId, props = {}, cre
 
 /**
  * Get posts for a channel.
- * See https://api.mattermost.com/#tag/posts/paths/~1channels~1{channel_id}~1posts/get
+ * See https://api.mattermost.com/#operation/GetPostsForChannel
  * @param {string} channelId - The channel ID to get the posts for
  * @return {Object} returns {posts} on success or {error, status} on error
  */

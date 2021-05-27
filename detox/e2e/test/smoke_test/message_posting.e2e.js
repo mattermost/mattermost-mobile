@@ -35,7 +35,7 @@ describe('Message Posting', () => {
         const {channel, team, user} = await Setup.apiInit();
         testChannel = channel;
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         // # Open channel screen
         await ChannelScreen.open(user);

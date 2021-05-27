@@ -18,6 +18,7 @@ class Alert {
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);
     deleteButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(0);
     joinButton = isAndroid() ? element(by.text('JOIN')) : element(by.label('Join')).atIndex(0);
+    okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
     noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(1);
     yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
 }

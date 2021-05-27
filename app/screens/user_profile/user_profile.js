@@ -38,6 +38,7 @@ import {isGuest} from '@utils/users';
 import UserProfileRow from './user_profile_row';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
+import CustomStatusText from '@components/custom_status/custom_status_text';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {
@@ -213,6 +214,7 @@ export default class UserProfile extends PureComponent {
                     time={customStatus?.expires_at}
                     timezone={timezone}
                     theme={theme}
+                    styleProp={style.customStatusExpiry}
                 />
             ) : null;
 
@@ -220,7 +222,7 @@ export default class UserProfile extends PureComponent {
             <View
                 testID='user_profile.custom_status'
             >
-                <Text style={style.header}>{label}</Text>
+                <Text style={style.header}>{label}{customStatusExpiryTime}</Text>
                 <View style={style.customStatus}>
                     <Text
                         style={style.iconContainer}
@@ -231,10 +233,14 @@ export default class UserProfile extends PureComponent {
                             size={20}
                         />
                     </Text>
-                    <Text style={[style.text, style.customStatusText]}>
-                        <Text>{customStatus?.text}</Text>
-                        {customStatusExpiryTime}
-                    </Text>
+                    <View style={[style.customStatusText]}>
+                        <CustomStatusText
+                            text={customStatus?.text}
+                            theme={theme}
+                            textStyle={style.text}
+                        />
+
+                    </View>
                     {isMyUser && (
                         <View style={style.clearButton}>
                             <ClearButton
@@ -476,6 +482,13 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         customStatusText: {
             width: '80%',
+            flexDirection: 'row',
+        },
+        customStatusExpiry: {
+            fontSize: 13,
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         clearButton: {
             position: 'absolute',

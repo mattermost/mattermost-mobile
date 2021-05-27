@@ -32,13 +32,19 @@ const CustomStatusSuggestion = (props: Props) => {
 
     const handleClick = useCallback(preventDoubleTap(() => {
         handleSuggestionClick({emoji, text, duration});
-    }), [emoji, text, duration]);
+    }), []);
+
+    const handleSuggestionClear = useCallback(() => {
+        if (handleClear) {
+            handleClear({emoji, text, duration, expires_at});
+        }
+    }, []);
 
     const clearButton = handleClear && expires_at ?
         (
             <View style={style.clearButtonContainer}>
                 <ClearButton
-                    handlePress={() => handleClear({emoji, text, duration, expires_at})}
+                    handlePress={handleSuggestionClear}
                     theme={theme}
                     iconName='close-circle'
                     size={18}
@@ -65,7 +71,7 @@ const CustomStatusSuggestion = (props: Props) => {
                             <CustomStatusText
                                 text={text}
                                 theme={theme}
-                                textStyle={{color: theme.centerChannelColor}}
+                                textStyle={style.customStatusText}
                             />
                         </View>
                         {duration ? (
@@ -73,7 +79,7 @@ const CustomStatusSuggestion = (props: Props) => {
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}
                                     theme={theme}
-                                    textStyle={{color: changeOpacity(theme.centerChannelColor, 0.6)}}
+                                    textStyle={style.customStatusDuration}
                                 />
                             </View>
                         ) : null}
@@ -127,6 +133,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
             marginRight: 16,
+        },
+        customStatusDuration: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+        },
+        customStatusText: {
+            color: theme.centerChannelColor,
         },
     };
 });

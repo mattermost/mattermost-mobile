@@ -202,15 +202,13 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             testID={`custom_status.emoji.${customStatus?.emoji}`}
                         />
                         <View style={style.customStatus}>
-                            <View>
-                                <CustomStatusText
-                                    text={customStatus.text}
-                                    theme={theme}
-                                    textStyle={style.customStatusText}
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                />
-                            </View>
+                            <CustomStatusText
+                                text={customStatus.text}
+                                theme={theme}
+                                textStyle={style.customStatusText}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            />
                             {customStatusExpiry}
                         </View>
                     </View>

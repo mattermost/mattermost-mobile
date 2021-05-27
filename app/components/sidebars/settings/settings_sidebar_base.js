@@ -19,13 +19,13 @@ import {NavigationTypes, CustomStatus} from '@constants';
 import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
 import StatusLabel from './status_label';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
-import {changeOpacity} from 'app/utils/theme';
 
 export default class SettingsSidebarBase extends PureComponent {
     static propTypes = {
@@ -50,7 +50,7 @@ export default class SettingsSidebarBase extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            showStatus: true,
+            showStatus: props.isCustomStatusEnabled,
             showRetryMessage: false,
         };
     }
@@ -168,10 +168,8 @@ export default class SettingsSidebarBase extends PureComponent {
     };
 
     goToCustomStatusScreen = (intl) => {
-        this.openCustomStatusModal(
-            'CustomStatus',
-            intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}),
-        );
+        this.closeSettingsSidebar();
+        showModal('CustomStatus', intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
     }
 
     logout = preventDoubleTap(() => {
@@ -179,11 +177,6 @@ export default class SettingsSidebarBase extends PureComponent {
         this.closeSettingsSidebar();
         logout();
     });
-
-    openCustomStatusModal = (screen, title, passProps = {}) => {
-        this.closeSettingsSidebar();
-        showModal(screen, title, passProps);
-    }
 
     openModal = async (screen, title, passProps = {}) => {
         this.closeSettingsSidebar();
@@ -257,6 +250,7 @@ export default class SettingsSidebarBase extends PureComponent {
             return null;
         }
 
+        const style = getStyleSheet(theme);
         const isStatusSet = customStatus?.emoji && showStatus;
 
         const customStatusEmoji = (
@@ -272,7 +266,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     <CompassIcon
                         name='emoticon-happy-outline'
                         size={24}
-                        style={{color: changeOpacity(theme.centerChannelColor, 0.64)}}
+                        style={style.customStatusIcon}
                     />
                 )}
             </View>
@@ -282,21 +276,23 @@ export default class SettingsSidebarBase extends PureComponent {
 
         const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
-                <CustomStatusExpiry
-                    time={customStatus?.expires_at}
-                    timezone={timezone}
-                    theme={theme}
-                    styleProp={{
-                        fontSize: 15,
-                        color: changeOpacity(theme.centerChannelColor, 0.5),
-                    }}
-                />
+                <View style={{flexDirection: 'row'}}>
+                    <CustomStatusExpiry
+                        time={customStatus?.expires_at}
+                        timezone={timezone}
+                        theme={theme}
+                        styleProp={{
+                            fontSize: 15,
+                            color: changeOpacity(theme.centerChannelColor, 0.5),
+                        }}
+                    />
+                </View>
             ) : null;
 
         const clearButton = isStatusSet ?
             (
                 <ClearButton
-                    handlePress={preventDoubleTap(this.clearCustomStatus)}
+                    handlePress={this.clearCustomStatus}
                     theme={theme}
                     testID='settings.sidebar.custom_status.action.clear'
                 />
@@ -307,7 +303,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 <FormattedText
                     id='custom_status.failure_message'
                     defaultMessage='Failed to update status. Try again'
-                    style={{color: theme.errorTextColor}}
+                    style={style.retryMessage}
                 />
             ) : null;
 
@@ -317,10 +313,11 @@ export default class SettingsSidebarBase extends PureComponent {
                 defaultMessage='Set a Status'
             />
         );
+
         const labelComponent = (
             <>
                 <View
-                    style={{width: '70%'}}
+                    style={style.customStatusTextContainer}
                 >
                     <CustomStatusText
                         text={text}
@@ -331,11 +328,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 {retryMessage}
                 {clearButton &&
                     <View
-                        style={{
-                            position: 'absolute',
-                            top: 3,
-                            right: 14,
-                        }}
+                        style={style.clearButton}
                     >
                         {clearButton}
                     </View>
@@ -447,3 +440,22 @@ export default class SettingsSidebarBase extends PureComponent {
         return; // eslint-disable-line no-useless-return
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        customStatusTextContainer: {
+            width: '70%',
+        },
+        customStatusIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+        clearButton: {
+            position: 'absolute',
+            top: 3,
+            right: 14,
+        },
+        retryMessage: {
+            color: theme.errorTextColor,
+        },
+    };
+});

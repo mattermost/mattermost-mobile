@@ -8,7 +8,7 @@ import {General} from '../constants';
 import {UserTypes, TeamTypes} from '@mm-redux/action_types';
 import {getAllCustomEmojis} from './emojis';
 import {getClientConfig, setServerVersion} from './general';
-import {getMyTeams, getMyTeamMembers, getMyTeamUnreads} from './teams';
+import {getMyTeams} from './teams';
 import {loadRolesIfNeeded} from './roles';
 import {getUserIdFromChannelName, isDirectChannel, isDirectChannelVisible, isGroupChannel, isGroupChannelVisible} from '@mm-redux/utils/channel_utils';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
@@ -194,47 +194,6 @@ function completeLogin(data: UserProfile): ActionFunc {
     };
 }
 
-export function loadMe(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const state = getState();
-        const config = getConfig(state);
-
-        const deviceId = state.entities.general.deviceToken;
-        if (deviceId) {
-            Client4.attachDevice(deviceId);
-        }
-
-        const promises = [
-            dispatch(getMe()),
-            dispatch(getMyPreferences()),
-            dispatch(getMyTeams()),
-            dispatch(getMyTeamMembers()),
-            dispatch(getMyTeamUnreads()),
-        ];
-
-        // Sometimes the server version is set in one or the other
-        const serverVersion = Client4.getServerVersion() || getState().entities.general.serverVersion;
-        dispatch(setServerVersion(serverVersion));
-        if (!isMinimumServerVersion(serverVersion, 4, 7) && config.EnableCustomEmoji === 'true') {
-            dispatch(getAllCustomEmojis());
-        }
-
-        await Promise.all(promises);
-
-        const {currentUserId} = getState().entities.users;
-        const user = getState().entities.users.profiles[currentUserId];
-        if (currentUserId) {
-            analytics.setUserId(currentUserId);
-        }
-
-        if (user) {
-            analytics.setUserRoles(user.roles);
-        }
-
-        return {data: true};
-    };
-}
-
 export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, options: any = {}): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
@@ -242,7 +201,6 @@ export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SI
 
         try {
             profiles = await Client4.getProfiles(page, perPage, options);
-            removeUserFromList(currentUserId, profiles);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -251,7 +209,7 @@ export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SI
 
         dispatch({
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: profiles,
+            data: removeUserFromList(currentUserId, [...profiles]),
         });
 
         return {data: profiles};
@@ -307,7 +265,6 @@ export function getProfilesByIds(userIds: Array<string>, options?: any): ActionF
 
         try {
             profiles = await Client4.getProfilesByIds(userIds, options);
-            removeUserFromList(currentUserId, profiles);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -316,7 +273,7 @@ export function getProfilesByIds(userIds: Array<string>, options?: any): ActionF
 
         dispatch({
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: profiles,
+            data: removeUserFromList(currentUserId, [...profiles]),
         });
 
         return {data: profiles};
@@ -330,7 +287,6 @@ export function getProfilesByUsernames(usernames: Array<string>): ActionFunc {
 
         try {
             profiles = await Client4.getProfilesByUsernames(usernames);
-            removeUserFromList(currentUserId, profiles);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -339,7 +295,7 @@ export function getProfilesByUsernames(usernames: Array<string>): ActionFunc {
 
         dispatch({
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: profiles,
+            data: removeUserFromList(currentUserId, [...profiles]),
         });
 
         return {data: profiles};

@@ -31,7 +31,7 @@ describe('Permalink', () => {
         const {user, team, channel} = await Setup.apiInit();
         testUser = user;
         testChannel = channel;
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         // # Open channel screen
         await ChannelScreen.open(user);
