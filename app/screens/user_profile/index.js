@@ -15,7 +15,7 @@ import {loadBot} from '@mm-redux/actions/bots';
 import {getRemoteClusterInfo} from '@mm-redux/actions/remote_cluster';
 import {getBotAccounts} from '@mm-redux/selectors/entities/bots';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {makeGetCustomStatus} from '@selectors/custom_status';
+import {makeGetCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
 
 import UserProfile from './user_profile';
 
@@ -28,6 +28,7 @@ function makeMapStateToProps() {
         const enableTimezone = isTimezoneEnabled(state);
         const user = state.entities.users.profiles[ownProps.userId];
 
+        const customStatus = isCustomStatusEnabled(state) ? getCustomStatus(state) : undefined;
         return {
             config,
             createChannelRequest,
@@ -40,7 +41,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             isMyUser: getCurrentUserId(state) === ownProps.userId,
             remoteClusterInfo: state.entities.remoteCluster.info[user?.remote_id],
-            customStatus: getCustomStatus(state, ownProps.userId),
+            customStatus,
         };
     };
 }
