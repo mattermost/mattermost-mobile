@@ -79,9 +79,8 @@ describe('UserListRow', () => {
             },
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserListRow {...newProps}/>,
-            {context: {intl: {formatMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });

@@ -39,6 +39,10 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.soloader.SoLoader;
 
+import com.facebook.react.bridge.JSIModulePackage;
+import com.swmansion.reanimated.ReanimatedJSIModulePackage;
+
+
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
 
@@ -110,6 +114,11 @@ private final ReactNativeHost mReactNativeHost =
     @Override
     protected String getJSMainModuleName() {
       return "index";
+    }
+
+    @Override
+    protected JSIModulePackage getJSIModulePackage() {
+      return new ReanimatedJSIModulePackage();
     }
   };
 

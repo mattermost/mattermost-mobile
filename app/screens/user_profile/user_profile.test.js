@@ -131,13 +131,12 @@ describe('user_profile', () => {
         const clusterInfo = {
             display_name: 'Remote Organization',
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 remoteClusterInfo={clusterInfo}
                 user={remoteUser}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });

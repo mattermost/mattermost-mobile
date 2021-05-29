@@ -159,9 +159,8 @@ describe('MoreChannels', () => {
     });
 
     test('Allow load more shared channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'shared'});
@@ -170,9 +169,8 @@ describe('MoreChannels', () => {
     });
 
     test('Prevent load more shared channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'shared'});

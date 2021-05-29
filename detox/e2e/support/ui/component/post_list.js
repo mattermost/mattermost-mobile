@@ -7,7 +7,7 @@ class PostList {
     constructor(screenPrefix) {
         this.testID = {
             moreMessagesButton: `${screenPrefix}post_list.more_messages_button`,
-            newMessagesDivider: `${screenPrefix}post_list.new_messages_divider`,
+            newMessagesDivider: `${screenPrefix}post_list.new_messages_line`,
             postListPostItem: `${screenPrefix}post_list.post`,
         };
     }

@@ -3,19 +3,13 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Platform,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import {Navigation} from 'react-native-navigation';
 
 import {
     resetToChannel,
-    goToScreen,
     dismissModal,
     dismissAllModals,
     popToRoot,
@@ -28,9 +22,7 @@ import PostListRetry from '@components/post_list_retry';
 import SafeAreaView from '@components/safe_area_view';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import {privateChannelJoinPrompt} from '@utils/channels';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {PERMALINK} from '@constants/screen';
 
@@ -141,23 +133,6 @@ export default class Permalink extends PureComponent {
         this.viewRef = ref;
     }
 
-    goToThread = preventDoubleTap((post) => {
-        const {actions} = this.props;
-        const channelId = post.channel_id;
-        const rootId = (post.root_id || post.id);
-        const screen = 'Thread';
-        const title = '';
-        const passProps = {
-            channelId,
-            rootId,
-        };
-
-        actions.getPostThread(rootId);
-        actions.selectPost(rootId);
-
-        goToScreen(screen, title, passProps);
-    });
-
     handleClose = () => {
         const {actions, onClose} = this.props;
         if (this.viewRef) {
@@ -171,10 +146,6 @@ export default class Permalink extends PureComponent {
                 }
             });
         }
-    };
-
-    handleHashtagPress = () => {
-        // Do nothing because we're already in a modal
     };
 
     handlePress = () => {
@@ -369,13 +340,8 @@ export default class Permalink extends PureComponent {
                     testID='permalink.post_list'
                     highlightPostId={focusedPostId}
                     indicateNewMessages={false}
-                    isSearchResult={false}
                     shouldRenderReplyButton={false}
-                    renderReplies={true}
-                    onHashtagPress={this.handleHashtagPress}
-                    onPostPress={this.goToThread}
                     postIds={postIds}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds || []) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}

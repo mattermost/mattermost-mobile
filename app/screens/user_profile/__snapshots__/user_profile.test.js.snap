@@ -244,7 +244,9 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
             }
           }
           testID="user_profile.display_block.nickname.label"
-        />
+        >
+          Nickname
+        </Text>
         <Text
           style={
             Object {
@@ -258,7 +260,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
         </Text>
       </View>
       <View>
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="ORGANIZATION"
           id="mobile.routes.user_profile.organization"
           style={

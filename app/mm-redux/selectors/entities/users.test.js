@@ -402,7 +402,7 @@ describe('Selectors.Users', () => {
         ];
 
         testCases.forEach((testCase) => {
-            assert.deepEqual(getProfilesByIdsAndUsernames(testState, testCase.input), testCase.output);
+            assert.deepEqual(getProfilesByIdsAndUsernames(testState, testCase.input.allUserIds, testCase.input.allUsernames), testCase.output);
         });
     });
 

@@ -31,7 +31,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
         memberCount: PropTypes.number,
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
-        onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
         shared: PropTypes.bool,
         teammateId: PropTypes.string,
@@ -132,7 +131,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             displayName,
             header,
             memberCount,
-            onPermalinkPress,
             purpose,
             shared,
             teammateId,
@@ -211,7 +209,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     defaultMessage='Header'
                                 />
                                 <Markdown
-                                    onPermalinkPress={onPermalinkPress}
                                     baseTextStyle={baseTextStyle}
                                     textStyles={textStyles}
                                     blockStyles={blockStyles}

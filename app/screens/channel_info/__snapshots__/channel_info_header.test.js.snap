@@ -182,7 +182,6 @@ exports[`channel_info_header should match snapshot 1`] = `
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {
@@ -517,7 +516,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {
@@ -824,7 +822,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {
@@ -1159,7 +1156,6 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {
@@ -1466,7 +1462,6 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {
@@ -1822,7 +1817,6 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {

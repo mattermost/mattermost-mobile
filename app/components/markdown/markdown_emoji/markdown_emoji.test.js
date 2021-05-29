@@ -12,7 +12,7 @@ describe('MarkdownEmoji', () => {
     const baseProps = {
         baseTextStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
         isEdited: false,
-        shouldRenderJumboEmoji: true,
+        isJumboEmoji: true,
         theme: Preferences.THEMES.default,
         value: ':smile:',
     };

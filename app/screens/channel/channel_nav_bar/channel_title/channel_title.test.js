@@ -77,9 +77,8 @@ describe('ChannelTitle', () => {
             isChannelShared: true,
             channelType: General.PRIVATE_CHANNEL,
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle {...props}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

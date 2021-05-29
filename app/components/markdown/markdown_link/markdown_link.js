@@ -22,17 +22,16 @@ export default class MarkdownLink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleSelectChannelByName: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         href: PropTypes.string.isRequired,
-        onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string,
         siteURL: PropTypes.string.isRequired,
         currentTeamName: PropTypes.string,
     };
 
     static defaultProps = {
-        onPermalinkPress: () => true,
         serverURL: '',
         siteURL: '',
     };
@@ -42,7 +41,7 @@ export default class MarkdownLink extends PureComponent {
     };
 
     handlePress = preventDoubleTap(async () => {
-        const {href, onPermalinkPress, serverURL, siteURL} = this.props;
+        const {href, actions, serverURL, siteURL} = this.props;
         const url = normalizeProtocol(href);
 
         if (!url) {
@@ -59,13 +58,10 @@ export default class MarkdownLink extends PureComponent {
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
                 const {intl} = this.context;
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel.bind(null, intl), intl);
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel, intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
-                if (match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
-                    onPermalinkPress(match.postId, this.props.currentTeamName);
-                } else {
-                    onPermalinkPress(match.postId, match.teamName);
-                }
+                const teamName = match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? this.props.currentTeamName : match.teamName;
+                actions.showPermalink(this.context.intl, teamName, match.postId);
             }
         } else {
             const onError = () => {
