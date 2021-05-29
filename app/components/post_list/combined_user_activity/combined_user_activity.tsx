@@ -101,11 +101,7 @@ const CombinedUserActivity = ({
         const usernames = userIds.reduce((acc: string[], id: string) => {
             if (id !== currentUserId && id !== currentUsername) {
                 const name = userProfiles[id];
-                if (name) {
-                    acc.push(`@${name}`);
-                } else {
-                    acc.push(someone);
-                }
+                acc.push(name ? `@${name}` : someone);
             }
             return acc;
         }, []);
