@@ -32,9 +32,6 @@ const {
     DEFAULT: {GLOBAL},
 } = MM_TABLES;
 
-//fixme: Question : do you need to pass an auth token when retrieving the config+license the second time ?
-//todo: There are too many requests made just on the login flow - discuss it with peers to find out which group can be staggered.
-
 export const logout = async (skipServerLogout = false) => {
     return async () => {
         if (!skipServerLogout) {
@@ -141,12 +138,11 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
     try {
         if (deviceToken) {
-            //todo: confirm with Elias if we can just pass the deviceToken wrt to v1 code
             await Client4.attachDevice(deviceToken);
         }
 
         if (!user) {
-            currentUser = ((await Client4.getMe()) as unknown) as RawUser; //todo:  why do we do this here ?
+            currentUser = ((await Client4.getMe()) as unknown) as RawUser;
         }
     } catch (error) {
         await forceLogoutIfNecessary(error);
@@ -158,13 +154,16 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         analyticsClient.setUserId(currentUser.id);
         analyticsClient.setUserRoles(currentUser.roles);
 
-        //todo: maybe you need to defer some of those requests for when we load the channels ??
-        const teamsRequest = Client4.getMyTeams();
+        //todo: Ask for a unified endpoint that will serve all those values in one go.( while ensuring backward-compatibility through fallbacks to previous code-path)
+        const teamsRequest = Client4.getMyTeams(); // goes into TEAM table
+
+        // Goes into myTeam table
         const teamMembersRequest = Client4.getMyTeamMembers();
         const teamUnreadRequest = Client4.getMyTeamUnreads();
+
         const preferencesRequest = Client4.getMyPreferences();
         const configRequest = Client4.getClientConfigOld();
-        const licenseRequest = Client4.getClientLicenseOld(); // todo: I have added this one
+        const licenseRequest = Client4.getClientLicenseOld();
 
         const [
             teams,
@@ -192,18 +191,16 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
         });
 
-        //fixme: Ask for confirmation from Elias/Miguel as to how the unreads count are really treated.
+        //todo: Use response from teamMembers request instead and for each team member to be combined with teamUnreads
         const myTeams = teamUnreads.map((unread) => {
             return {
                 team_id: unread.team_id,
-                roles: '',
+                roles: '', // todo: teamMembers roles value for this specific
                 is_unread: unread.msg_count > 0,
                 mentions_count: unread.mention_count,
             };
         });
 
-        //fixme:myTeamRecords/teamUnreads contain  { "mention_count": 0, "mention_count_root": 0, "msg_count": 0, "msg_count_root":
-        //       0, "team_id": "ubr1ia9uj7bu3qwqdzonigfj5o" }.  But the RawMyTeam and the schema has a 'roles' field...to confirm what should go in there
         const myTeamRecords = await DataOperator.handleMyTeam({
             prepareRecordsOnly: true,
             myTeams: (myTeams as unknown) as RawMyTeam[],
@@ -223,10 +220,6 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
                 {
                     name: 'currentUserId',
                     value: user.id,
-                },
-                {
-                    name: 'currentUser',
-                    value: user,
                 },
                 {
                     name: 'url',
@@ -356,7 +349,6 @@ export const updateMe = async (user: User) => {
         return {error};
     }
 
-    //fixme: we are writing to systems twice - is this optimal ?
     const systemRecords = await DataOperator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [
