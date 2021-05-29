@@ -155,7 +155,7 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         analyticsClient.setUserRoles(currentUser.roles);
 
         //todo: Ask for a unified endpoint that will serve all those values in one go.( while ensuring backward-compatibility through fallbacks to previous code-path)
-        const teamsRequest = Client4.getMyTeams(); // goes into TEAM table
+        const teamsRequest = Client4.getMyTeams();
 
         // Goes into myTeam table
         const teamMembersRequest = Client4.getMyTeamMembers();
@@ -191,11 +191,11 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
         });
 
-        //todo: Use response from teamMembers request instead and for each team member to be combined with teamUnreads
         const myTeams = teamUnreads.map((unread) => {
+            const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
             return {
                 team_id: unread.team_id,
-                roles: '', // todo: teamMembers roles value for this specific
+                roles: matchingTeam?.roles ?? '', //'', // todo: teamMembers roles value for this specific
                 is_unread: unread.msg_count > 0,
                 mentions_count: unread.mention_count,
             };
