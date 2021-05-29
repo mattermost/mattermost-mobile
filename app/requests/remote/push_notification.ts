@@ -28,58 +28,80 @@ const sortByNewest = (a: any, b: any) => {
 export const scheduleExpiredNotification = async (intl: IntlShape) => {
     const database = DatabaseManager.getActiveServerDatabase();
     if (!database) {
-        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
+        throw new DatabaseConnectionException(
+            'DatabaseManager.getActiveServerDatabase returned undefined',
+        );
     }
 
-    const systemRecords = await database.collections.
+    const systemRecords = (await database.collections.
         get(MM_TABLES.SERVER.SYSTEM).
         query(Q.where('name', Q.oneOf(['currentUserId', 'config']))).
-        fetch() as System[];
+        fetch()) as System[];
 
-    const config = systemRecords.find((record) => record.name === 'config')?.value ?? {};
-    const currentUserId = systemRecords.find((record) => record.name === 'currentUserId')?.value ?? '';
-    if (isMinimumServerVersion(Client4.serverVersion, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
+    const config =
+    systemRecords.find((record) => record.name === 'config')?.value ?? {};
+    const currentUserId =
+    systemRecords.find((record) => record.name === 'currentUserId')?.value ??
+    '';
+    if (
+        isMinimumServerVersion(
+            Client4.serverVersion,
+            MAJOR_VERSION,
+            MINOR_VERSION,
+        ) &&
+    config.ExtendSessionLengthWithActivity === 'true'
+    ) {
         PushNotifications.cancelAllLocalNotifications();
         return;
     }
 
-    let sessions;
-    try {
-        sessions = await getSessions(currentUserId);
-    } catch (e) {
-        // console.warn('Failed to get current session', e); // eslint-disable-line no-console
-        return;
-    }
+    // eslint-disable-next-line prefer-const
+    const timeOut = setTimeout(async () => {
+        clearTimeout(timeOut);
+        let sessions: any;
 
-    if (!Array.isArray(sessions?.data)) {
-        return;
-    }
+        try {
+            sessions = await getSessions(currentUserId);
+        } catch (e) {
+            // console.warn('Failed to get current session', e);
+            return;
+        }
 
-    const session = sessions.data.sort(sortByNewest)[0];
-    const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
-    const expiresInDays = parseInt(String(Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays()))), 10);
+        if (!Array.isArray(sessions?.data)) {
+            return;
+        }
 
-    const message = intl.formatMessage(
-        {
-            id: 'mobile.session_expired',
-            defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
-        },
-        {
-            siteName: config.SiteName,
-            daysCount: expiresInDays,
-        },
-    );
+        const session = sessions.data.sort(sortByNewest)[0];
+        const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
+        const expiresInDays = parseInt(
+            String(
+                Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays())),
+            ),
+            10,
+        );
 
-    if (expiresAt) {
-        // console.log('Schedule Session Expiry Local Push Notification', expiresAt);
-        PushNotifications.scheduleNotification({
-            fireDate: expiresAt,
-            body: message,
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            userInfo: {
-                local: true,
+        const message = intl.formatMessage(
+            {
+                id: 'mobile.session_expired',
+                defaultMessage:
+          'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
             },
-        });
-    }
+            {
+                siteName: config.SiteName,
+                daysCount: expiresInDays,
+            },
+        );
+
+        if (expiresAt) {
+            PushNotifications.scheduleNotification({
+                fireDate: expiresAt,
+                body: message,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                userInfo: {
+                    local: true,
+                },
+            });
+        }
+    }, 20000);
 };
