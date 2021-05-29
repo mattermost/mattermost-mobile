@@ -13,7 +13,7 @@ import type {UserTimezone} from '@mm-redux/types/users';
 
 type Props = {
     createAt: number | string | Date;
-    militaryTime: boolean;
+    isMilitaryTime: boolean;
     theme: Theme;
     userTimezone: UserTimezone | string | null | undefined
 }
@@ -47,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SystemHeader = ({militaryTime, createAt, theme, userTimezone}: Props) => {
+const SystemHeader = ({isMilitaryTime, createAt, theme, userTimezone}: Props) => {
     const styles = getStyleSheet(theme);
 
     return (
@@ -62,7 +62,7 @@ const SystemHeader = ({militaryTime, createAt, theme, userTimezone}: Props) => {
             </View>
             <FormattedTime
                 timezone={userTimezone!}
-                hour12={!militaryTime}
+                isMilitaryTime={isMilitaryTime}
                 value={createAt}
                 style={styles.time}
                 testID='post_header.date_time'

@@ -16,12 +16,12 @@ import SystemHeader from './system_header';
 
 export function mapStateToProps(state: GlobalState) {
     const currentUser: UserProfile | undefined = getCurrentUser(state);
-    const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
+    const isMilitaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
     const enableTimezone = isTimezoneEnabled(state);
     const userTimezone = enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : '';
 
     return {
-        militaryTime,
+        isMilitaryTime,
         userTimezone,
     };
 }

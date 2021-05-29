@@ -12,7 +12,7 @@ describe('FormattedTime', () => {
     const baseProps = {
         value: 1548788533405,
         timezone: 'UTC',
-        hour12: true,
+        isMilitaryTime: false,
     };
 
     it('should render correctly', () => {
@@ -28,7 +28,7 @@ describe('FormattedTime', () => {
         const viewTwo = renderWithIntl(
             <FormattedTime
                 {...baseProps}
-                hour12={false}
+                isMilitaryTime={true}
             />,
         );
 
@@ -58,7 +58,7 @@ describe('FormattedTime', () => {
         const koViewTwo = renderWithIntl(
             <FormattedTime
                 {...baseProps}
-                hour12={false}
+                isMilitaryTime={true}
             />,
             'ko',
         );
@@ -84,7 +84,7 @@ describe('FormattedTime', () => {
             <FormattedTime
                 {...baseProps}
                 timezone='NZ-CHAT'
-                hour12={false}
+                isMilitaryTime={true}
             />,
             'es',
         );

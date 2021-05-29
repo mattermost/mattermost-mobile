@@ -38,7 +38,7 @@ function mapStateToProps() {
             displayName: postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride),
             isBot: (author ? author.is_bot : false),
             isGuest: isGuest(author),
-            militaryTime: getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'),
+            isMilitaryTime: getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'),
             userTimezone: enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : undefined,
         };
     };

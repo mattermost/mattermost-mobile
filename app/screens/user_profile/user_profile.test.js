@@ -33,7 +33,7 @@ describe('user_profile', () => {
         teams: [],
         theme: Preferences.THEMES.default,
         enableTimezone: false,
-        militaryTime: false,
+        isMilitaryTime: false,
         isMyUser: false,
         componentId: 'component-id',
     };

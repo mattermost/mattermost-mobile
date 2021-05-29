@@ -23,8 +23,8 @@ type HeaderProps = {
     displayName?: string;
     isBot: boolean;
     isGuest: boolean;
+    isMilitaryTime: boolean;
     location: string;
-    militaryTime: boolean;
     post: Post;
     rootPostAuthor?: string;
     shouldRenderReplyButton?: boolean;
@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = ({
     commentCount, displayName, location, isBot, isGuest,
-    militaryTime, post, rootPostAuthor, shouldRenderReplyButton, theme, userTimezone,
+    isMilitaryTime, post, rootPostAuthor, shouldRenderReplyButton, theme, userTimezone,
 }: HeaderProps) => {
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPostPendingOrFailed(post) ? style.pendingPost : undefined;
@@ -90,7 +90,7 @@ const Header = ({
                     }
                     <FormattedTime
                         timezone={userTimezone || ''}
-                        hour12={!militaryTime}
+                        isMilitaryTime={isMilitaryTime}
                         value={post.create_at}
                         style={style.time}
                         testID='post_header.date_time'

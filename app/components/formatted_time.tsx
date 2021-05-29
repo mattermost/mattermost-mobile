@@ -8,15 +8,15 @@ import {Text, TextProps} from 'react-native';
 import type {UserTimezone} from '@mm-redux/types/users';
 
 type FormattedTimeProps = TextProps & {
-    hour12: boolean;
+    isMilitaryTime: boolean;
     timezone: UserTimezone | string;
     value: number | string | Date;
 }
 
-const FormattedTime = ({hour12, timezone, value, ...props}: FormattedTimeProps) => {
+const FormattedTime = ({isMilitaryTime, timezone, value, ...props}: FormattedTimeProps) => {
     const getFormattedTime = () => {
         let format = 'H:mm';
-        if (hour12) {
+        if (!isMilitaryTime) {
             const localeFormat = moment.localeData().longDateFormat('LT');
             format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
         }
