@@ -6,7 +6,7 @@ index 29f27c0..cac1ee4 100644
      buildToolsVersion "28.0.3"
  
      defaultConfig {
--        minSdkVersion 19
+-        minSdkVersion 21
 +        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 19
          targetSdkVersion 28
          versionCode 1
