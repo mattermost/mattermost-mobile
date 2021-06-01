@@ -143,6 +143,7 @@ const GalleryFile = (props: GalleryFileProps) => {
         <TapGestureHandler>
             <View style={styles.container}>
                 <FileIcon
+                    backgroundColor='transparent'
                     file={file}
                     iconSize={120}
                     iconColor={theme?.buttonBg}
