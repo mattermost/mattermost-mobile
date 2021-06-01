@@ -68,7 +68,12 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
                     color={theme.linkColor}
                 />
                 {location !== SEARCH && commentCount > 0 &&
-                <Text style={style.replyText}>{commentCount}</Text>
+                <Text
+                    style={style.replyText}
+                    testID='post_header.reply.count'
+                >
+                    {commentCount}
+                </Text>
                 }
             </TouchableWithFeedback>
         </View>

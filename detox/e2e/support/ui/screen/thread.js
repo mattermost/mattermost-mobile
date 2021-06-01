@@ -119,6 +119,11 @@ class ThreadScreen {
         ).toHaveText(postMessage);
     }
 
+    hasPostMessage = async (postId, postMessage) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
+        await expect(postListPostItem).toBeVisible();
+    }
+
     hasPostMessageAtIndex = async (index, postMessage) => {
         await expect(
             this.getPostMessageAtIndex(index),
