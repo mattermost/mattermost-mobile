@@ -369,7 +369,12 @@ export default class Markdown extends PureComponent {
     };
 
     renderThematicBreak = () => {
-        return <View style={this.props.blockStyles.horizontalRule}/>;
+        return (
+            <View
+                style={this.props.blockStyles.horizontalRule}
+                testID='markdown_thematic_break'
+            />
+        );
     };
 
     renderSoftBreak = () => {

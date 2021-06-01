@@ -23,10 +23,11 @@ export default class Table extends React.PureComponent {
         let container;
         if (Platform.OS === 'android') {
             container = (
-                <ScrollView>
+                <ScrollView testID='table.screen'>
                     <ScrollView
                         contentContainerStyle={viewStyle}
                         horizontal={true}
+                        testID='table.scroll_view'
                     >
                         {content}
                     </ScrollView>
@@ -34,10 +35,14 @@ export default class Table extends React.PureComponent {
             );
         } else {
             container = (
-                <SafeAreaView style={style.container}>
+                <SafeAreaView
+                    style={style.container}
+                    testID='table.screen'
+                >
                     <ScrollView
                         style={style.fullHeight}
                         contentContainerStyle={viewStyle}
+                        testID='table.scroll_view'
                     >
                         {content}
                     </ScrollView>
