@@ -13,6 +13,7 @@ class Alert {
     joinPrivateChannelTitle = isAndroid() ? element(by.text('Join private channel')) : element(by.label('Join private channel')).atIndex(0);
     leavePrivateChannelTitle = isAndroid() ? element(by.text('Leave Private Channel')) : element(by.label('Leave Private Channel')).atIndex(0);
     leavePublicChannelTitle = isAndroid() ? element(by.text('Leave Public Channel')) : element(by.label('Leave Public Channel')).atIndex(0);
+    messageLengthTitle = isAndroid() ? element(by.text('Message Length')) : element(by.label('Message Length')).atIndex(0);
     removeMembersTitle = isAndroid() ? element(by.text('Remove Members')) : element(by.label('Remove Members')).atIndex(0);
 
     // alert buttons
