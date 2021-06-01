@@ -7,6 +7,7 @@ class Alert {
     // alert titles
     archivePrivateChannelTitle = isAndroid() ? element(by.text('Archive Private Channel')) : element(by.label('Archive Private Channel')).atIndex(0);
     archivePublicChannelTitle = isAndroid() ? element(by.text('Archive Public Channel')) : element(by.label('Archive Public Channel')).atIndex(0);
+    confirmSendingNotificationsTitle = isAndroid() ? element(by.text('Confirm sending notifications to entire channel')) : element(by.label('Confirm sending notifications to entire channel')).atIndex(0);
     deleteDocumentsAndDataTitle = isAndroid() ? element(by.text('Delete Documents & Data')) : element(by.label('Delete Documents & Data')).atIndex(0);
     deletePostTitle = isAndroid() ? element(by.text('Delete Post')) : element(by.label('Delete Post')).atIndex(0);
     joinPrivateChannelTitle = isAndroid() ? element(by.text('Join private channel')) : element(by.label('Join private channel')).atIndex(0);
@@ -16,6 +17,7 @@ class Alert {
 
     // alert buttons
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);
+    confirmButton = isAndroid() ? element(by.text('CONFIRM')) : element(by.label('Confirm')).atIndex(1);
     deleteButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(0);
     joinButton = isAndroid() ? element(by.text('JOIN')) : element(by.label('Join')).atIndex(0);
     okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
