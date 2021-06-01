@@ -492,7 +492,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         roles: {name: 'roles', type: 'string'},
                         status: {name: 'status', type: 'string'},
                         timezone: {name: 'timezone', type: 'string'},
-                        user_id: {name: 'user_id', type: 'string'},
                         username: {name: 'username', type: 'string'},
                     },
                     columnArray: [
@@ -513,7 +512,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'roles', type: 'string'},
                         {name: 'status', type: 'string'},
                         {name: 'timezone', type: 'string'},
-                        {name: 'user_id', type: 'string'},
                         {name: 'username', type: 'string'},
                     ],
                 },
