@@ -237,7 +237,7 @@ const PostList = ({
                 const scrollToBottomTimer = setTimeout(() => {
                     flatListRef.current?.scrollToOffset({offset: 0, animated: true});
                     clearTimeout(scrollToBottomTimer);
-                }, 250);
+                }, 400);
             }
         };
 
