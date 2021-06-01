@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import CompassIcon from '@components/compass_icon';
 import FastImage, {FastImageProps} from 'react-native-fast-image';
 import validator from 'validator';
+import {StyleSheet, View} from 'react-native';
 
 export const FAST_IMAGE_MAX_RETRIES = 3;
 
@@ -16,8 +17,7 @@ interface RetriableFastImageProps extends FastImageProps {
     id: string
     retry?: boolean
     renderErrorImage?: boolean
-    errorImageHeight?: number
-    errorImageWidth?: number
+    errorImageSize?: number
 }
 
 export default class RetriableFastImage extends PureComponent<RetriableFastImageProps, RetriableFastImageState> {
@@ -38,8 +38,15 @@ export default class RetriableFastImage extends PureComponent<RetriableFastImage
     // Checks if given URI is valid
     isValidUri = this.props.source && typeof this.props.source != 'number' && this.props.source.uri ? validator.isURL(this.props.source.uri, this.config) || validator.isDataURI(this.props.source.uri) : false;
 
-    // Sets width/height otherwise icon fills all available space
-    errorImageStyle = this.props.errorImageHeight && this.props.errorImageWidth ? {height: this.props.errorImageHeight, width: this.props.errorImageWidth} : {flex: 1}
+    styles = StyleSheet.create({
+        iconView: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            alignContent: 'center',
+            height: '100%',
+        },
+    })
 
     onError = () => {
         const retryCount = this.state.retries + 1;
@@ -66,10 +73,13 @@ export default class RetriableFastImage extends PureComponent<RetriableFastImage
 
         if (this.props.renderErrorImage) {
             return (
-                <CompassIcon
-                    name='jumbo-attachment-image-broken'
-                    style={this.errorImageStyle}
-                />);
+                <View style={this.styles.iconView}>
+                    <CompassIcon
+                        name='jumbo-attachment-image-broken'
+                        size={this.props.errorImageSize || 20}
+                    />
+                </View>
+            );
         }
 
         return null;
