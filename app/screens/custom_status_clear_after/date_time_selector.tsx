@@ -59,7 +59,9 @@ const DateTimeSelector = (props: Props) => {
             is24Hour={militaryTime}
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={onChange}
+            textColor={theme.centerChannelColor}
             timeZoneOffsetInMinutes={timezoneOffSetInMinutes}
+            minimumDate={currentTime.toDate()}
         />
     );
 
@@ -86,12 +88,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
-            marginTop: 10,
+            paddingTop: 10,
+            backgroundColor: theme.centerChannelBg,
         },
         buttonContainer: {
             flex: 1,
             flexDirection: 'row',
-            backgroundColor: theme.centerChannelBg,
             alignItems: 'center',
             justifyContent: 'space-evenly',
             marginBottom: 10,

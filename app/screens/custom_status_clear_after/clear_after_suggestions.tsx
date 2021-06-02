@@ -11,8 +11,11 @@ import {preventDoubleTap} from '@utils/tap';
 import DateTimePicker from './date_time_selector';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import CompassIcon from '@components/compass_icon';
-import {Moment} from 'moment';
+import moment, {Moment} from 'moment';
 import {durationValues} from '@constants/custom_status';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
+import {useSelector} from 'react-redux';
+import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 
 type Props = {
     handleSuggestionClick: (duration: CustomStatusDuration, expiresAt: string) => void;
@@ -21,6 +24,7 @@ type Props = {
     separator: boolean;
     isSelected: boolean;
     intl: typeof intlShape;
+    showExpiryTime?: boolean;
 };
 
 type ExpiryMenuItem = {
@@ -39,11 +43,12 @@ const {
 } = CustomStatusDuration;
 
 const ClearAfterSuggestion = (props: Props) => {
-    const {handleSuggestionClick, duration, theme, separator, isSelected, intl} = props;
+    const {handleSuggestionClick, duration, theme, separator, isSelected, intl, showExpiryTime} = props;
     const style = getStyleSheet(theme);
 
     const divider = separator ? <View style={style.divider}/> : null;
-    const [showDateAndTimePicker, setShowDateAndTimePicker] = useState(false);
+    const [showDateAndTimePicker, setShowDateAndTimePicker] = useState<boolean>(false);
+    const [expiry, setExpiry] = useState<string>('');
 
     const expiryMenuItems: { [key in CustomStatusDuration]: ExpiryMenuItem; } = {
         [DONT_CLEAR]: {
@@ -88,8 +93,8 @@ const ClearAfterSuggestion = (props: Props) => {
     );
 
     const handleCustomExpiresAtChange = (expiresAt: Moment) => {
-        const expiry = expiresAt.toISOString();
-        handleSuggestionClick(duration, expiry);
+        setExpiry(expiresAt.toISOString());
+        handleSuggestionClick(duration, expiresAt.toISOString());
     };
 
     const renderDateTimePicker = showDateAndTimePicker && (
@@ -100,11 +105,27 @@ const ClearAfterSuggestion = (props: Props) => {
     );
 
     const renderCheckIcon = isSelected && (
-        <View style={style.selectButton}>
+        <View style={style.rightPosition}>
             <CompassIcon
                 name={'check'}
                 size={24}
                 style={style.button}
+            />
+        </View>
+    );
+
+    const timezone = useSelector(getCurrentUserTimezone);
+
+    const renderExpiryTime = showExpiryTime && expiry !== '' && (
+        <View style={style.rightPosition}>
+            <CustomStatusExpiry
+                timezone={timezone}
+                theme={theme}
+                time={moment(expiry).toDate()}
+                styleProp={{
+                    color: theme.linkColor,
+                    fontSize: 15,
+                }}
             />
         </View>
     );
@@ -123,6 +144,7 @@ const ClearAfterSuggestion = (props: Props) => {
                             textStyle={{color: theme.centerChannelColor}}
                         />
                         {renderCheckIcon}
+                        {renderExpiryTime}
                     </View>
                 </View>
                 {divider}
@@ -151,7 +173,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             position: 'relative',
         },
-        selectButton: {
+        rightPosition: {
             position: 'absolute',
             top: 3,
             right: 14,

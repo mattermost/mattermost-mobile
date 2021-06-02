@@ -136,7 +136,6 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     render() {
         const {theme, intl} = this.props;
         const style = getStyleSheet(theme);
-        const {duration} = this.state;
 
         return (
             <SafeAreaView
@@ -154,8 +153,9 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                             duration={CustomStatusDuration.DATE_AND_TIME}
                             theme={theme}
                             separator={false}
-                            isSelected={duration === CustomStatusDuration.DATE_AND_TIME}
+                            isSelected={false}
                             intl={intl}
+                            showExpiryTime={true}
                         />
                     </View>
                 </KeyboardAwareScrollView>

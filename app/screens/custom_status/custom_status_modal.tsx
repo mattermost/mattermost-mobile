@@ -26,6 +26,7 @@ import moment from 'moment';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {Moment} from 'moment-timezone';
 import {durationValues} from '@constants/custom_status';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 
 type DefaultUserCustomStatus = {
     emoji: string;
@@ -335,8 +336,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     render() {
-        const {emoji, text, duration} = this.state;
-        const {theme, isLandscape, intl} = this.props;
+        const {emoji, text, duration, expires_at} = this.state;
+        const {theme, isLandscape, intl, userTimezone} = this.props;
 
         const isStatusSet = emoji || text;
         const style = getStyleSheet(theme);
@@ -363,6 +364,22 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             </TouchableOpacity>
         );
 
+        const renderClearAfterTime = duration && duration !== CustomStatusDuration.DATE_AND_TIME ? (
+            <FormattedText
+                id={durationValues[duration].id}
+                defaultMessage={durationValues[duration].defaultMessage}
+                style={style.expiryTime}
+            />
+        ) : (
+            <View style={style.expiryTime}>
+                <CustomStatusExpiry
+                    timezone={userTimezone}
+                    time={expires_at.toDate()}
+                    theme={theme}
+                />
+            </View>
+        );
+
         const clearAfter = (
             <TouchableOpacity
                 testID={`custom_status.duration.${duration}`}
@@ -370,13 +387,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             >
                 <View style={style.inputContainer}>
                     <Text style={style.expiryTimeLabel}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
-                    {duration ? (
-                        <FormattedText
-                            id={durationValues[duration].id}
-                            defaultMessage={durationValues[duration].defaultMessage}
-                            style={style.expiryTime}
-                        />
-                    ) : null}
+                    {renderClearAfterTime}
                     <CompassIcon
                         name='chevron-right'
                         size={24}
