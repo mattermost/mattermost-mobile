@@ -9,7 +9,6 @@ import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
-import System from '@typings/database/system';
 import {Config} from '@typings/database/config';
 import User from '@typings/database/user';
 
@@ -21,7 +20,7 @@ export function getDeviceTimezone() {
     return getTimeZone();
 }
 
-export const autoUpdateTimezone = async (deviceTimezone: string) => {
+export const autoUpdateTimezone = async ({deviceTimezone, userId}: {deviceTimezone: string, userId: string}) => {
     const database = await DatabaseManager.getActiveServerDatabase();
     if (!database) {
         throw new DatabaseConnectionException(
@@ -31,15 +30,10 @@ export const autoUpdateTimezone = async (deviceTimezone: string) => {
 
     let currentUser: User;
     try {
-        const systemRecords = (await database.collections.
-            get(MM_TABLES.SERVER.SYSTEM).
-            query(Q.where('name', 'currentUser')).
-            fetch()) as System[];
-        currentUser = systemRecords?.[0]?.value;
+        const userRecords = (await database.collections.get(MM_TABLES.SERVER.USER).query(Q.where('id', userId)).fetch()) as User[];
+        currentUser = userRecords?.[0] ?? null;
     } catch (e) {
-        throw new DataOperatorException(
-            'key currentUser has not been set in System entity in @requests/local/timezone/autoUpdateTimezone',
-        );
+        throw new DataOperatorException('key currentUser has not been set in System entity in @requests/local/timezone/autoUpdateTimezone');
     }
     if (!currentUser) {
         return;
@@ -49,13 +43,8 @@ export const autoUpdateTimezone = async (deviceTimezone: string) => {
     const newTimezoneExists = currentTimezone.automaticTimezone !== deviceTimezone;
 
     if (currentTimezone.useAutomaticTimezone && newTimezoneExists) {
-        const timezone = {
-            useAutomaticTimezone: 'true',
-            automaticTimezone: deviceTimezone,
-            manualTimezone: currentTimezone.manualTimezone,
-        };
-
-        const updatedUser = {...currentUser, timezone} as unknown as User;
+        const timezone = {useAutomaticTimezone: 'true', automaticTimezone: deviceTimezone, manualTimezone: currentTimezone.manualTimezone};
+        const updatedUser = {...currentUser, timezone} as User;
         await updateMe(updatedUser);
     }
 };

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Q} from '@nozbe/watermelondb';
-import compact from 'lodash.compact';
 import isEmpty from 'lodash.isempty';
 
 import {Client4} from '@client/rest';
@@ -17,7 +16,14 @@ import {logError} from '@requests/remote/error';
 import {getDataRetentionPolicy} from '@requests/remote/systems';
 import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
-import {RawMyTeam, RawPreference, RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
+import {
+    RawMyTeam,
+    RawPreference,
+    RawRole,
+    RawTeam,
+    RawTeamMembership,
+    RawUser,
+} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import Global from '@typings/database/global';
 import {Licence} from '@typings/database/license';
@@ -181,12 +187,12 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             licenseRequest,
         ]);
 
-        const teamRecords = await DataOperator.handleTeam({
+        const teamRecords = DataOperator.handleTeam({
             prepareRecordsOnly: true,
             teams: teams as RawTeam[],
         });
 
-        const teamMembershipRecords = await DataOperator.handleTeamMemberships({
+        const teamMembershipRecords = DataOperator.handleTeamMemberships({
             prepareRecordsOnly: true,
             teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
         });
@@ -201,12 +207,12 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             };
         });
 
-        const myTeamRecords = await DataOperator.handleMyTeam({
+        const myTeamRecords = DataOperator.handleMyTeam({
             prepareRecordsOnly: true,
             myTeams: (myTeams as unknown) as RawMyTeam[],
         });
 
-        const systemRecords = await DataOperator.handleIsolatedEntity({
+        const systemRecords = DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
             values: [
                 {
@@ -229,7 +235,9 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             prepareRecordsOnly: true,
         });
 
-        const preferenceRecords = await DataOperator.handlePreferences({
+        const userRecords = DataOperator.handleUsers({users: [user], prepareRecordsOnly: true});
+
+        const preferenceRecords = DataOperator.handlePreferences({
             prepareRecordsOnly: true,
             preferences: (preferences as unknown) as RawPreference[],
         });
@@ -258,17 +266,19 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             }
         }
 
-        const models = compact([
-            ...teamRecords,
-            ...teamMembershipRecords,
-            ...myTeamRecords,
-            ...systemRecords,
-            ...preferenceRecords,
-            ...rolesRecords,
+        const models = await Promise.all([
+            teamRecords,
+            teamMembershipRecords,
+            myTeamRecords,
+            systemRecords,
+            preferenceRecords,
+            rolesRecords,
+            userRecords,
         ]);
 
-        if (models?.length > 0) {
-            await DataOperator.batchOperations({database, models});
+        const flattenedModels = models.flat();
+        if (flattenedModels?.length > 0) {
+            await DataOperator.batchOperations({database, models: flattenedModels});
         }
     } catch (error) {
         return {error};
@@ -279,7 +289,6 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
 export const completeLogin = async (user: RawUser, deviceToken: string) => {
     const database = await DatabaseManager.getActiveServerDatabase();
-
     if (!database) {
         throw new DatabaseConnectionException(
             'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/completeLogin',
@@ -312,7 +321,7 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     // Set timezone
     if (isTimezoneEnabled(config)) {
         const timezone = getDeviceTimezone();
-        await autoUpdateTimezone(timezone);
+        await autoUpdateTimezone({deviceTimezone: timezone, userId: user.id});
     }
 
     let dataRetentionPolicy: any;
@@ -340,10 +349,9 @@ export const updateMe = async (user: User) => {
             'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/updateMe',
         );
     }
-
     let data;
     try {
-        data = await Client4.patchMe(user);
+        data = await Client4.patchMe(user._raw);
     } catch (error) {
         logError(error);
         return {error};
@@ -352,23 +360,22 @@ export const updateMe = async (user: User) => {
     const systemRecords = await DataOperator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [
-            {name: 'currentUser', value: JSON.stringify(user)},
-            {name: 'currentUserId', value: user.id},
+            {name: 'currentUserId', value: data.id},
             {name: 'locale', value: data?.locale},
         ],
         prepareRecordsOnly: true,
     });
 
-    //todo: Do we need to write to TOS entity ?
+    //todo: Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152
     // const tosRecords = await DataOperator.handleIsolatedEntity({
     //     tableName: TERMS_OF_SERVICE,
     //     values: [{}],
     // });
-    const models = compact([
+    const models = [
         ...systemRecords,
 
     // ...tosRecords,
-    ]);
+    ];
 
     if (models?.length) {
         await DataOperator.batchOperations({database, models});
