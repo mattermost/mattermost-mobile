@@ -38,8 +38,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
     const [connecting, setConnecting] = useState(false);
     const [error, setError] = useState<ClientErrorWithIntl|string|undefined>();
 
-    //fixme: remove hardcoded url
-    const [url, setUrl] = useState<string>('https://rc.test.mattermost.com');
+    const [url, setUrl] = useState<string>('');
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 

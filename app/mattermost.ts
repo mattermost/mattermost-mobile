@@ -8,6 +8,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {getAppCredentials} from '@init/credentials';
 import emmProvider from '@init/emm_provider';
 import globalEventHandler from '@init/global_event_handler';
+import '@init/fetch';
 import {registerScreens} from '@screens/index';
 import {resetToChannel, resetToSelectServer} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
