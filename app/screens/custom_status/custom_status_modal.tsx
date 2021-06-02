@@ -21,7 +21,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
+import {getCurrentMomentForTimezone} from '@utils/timezone';
 import moment from 'moment';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {Moment} from 'moment-timezone';
@@ -102,7 +102,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         if (props.isTimezoneEnabled) {
             const timezone = userTimezone;
-            currentTime = getCurrentDateAndTimeForTimezone(timezone);
+            currentTime = getCurrentMomentForTimezone(timezone);
         }
 
         let initialCustomExpiryTime: Moment = currentTime;

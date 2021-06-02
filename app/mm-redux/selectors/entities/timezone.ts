@@ -2,12 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {GlobalState} from '@mm-redux/types/store';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getCurrentUser} from '@mm-redux/selectors/entities/common';
 import {createSelector} from 'reselect';
+import {UserProfile} from '@mm-redux/types/users';
 
 export function getUserTimezone(state: GlobalState, id: string) {
     const profile = state.entities.users.profiles[id];
+    return getTimezoneForUserProfile(profile);
+}
 
+function getTimezoneForUserProfile(profile: UserProfile) {
     if (profile && profile.timezone) {
         return {
             ...profile.timezone,
@@ -28,13 +32,12 @@ export function isTimezoneEnabled(state: GlobalState) {
 }
 
 export const getCurrentUserTimezone = createSelector(
-    getCurrentUserId,
+    getCurrentUser,
     isTimezoneEnabled,
-    (state: GlobalState) => (userId: string) => getUserTimezone(state, userId),
-    (userId, enabledTimezone, getTimezone) => {
+    (user, enabledTimezone) => {
         let timezone;
         if (enabledTimezone) {
-            const userTimezone = getTimezone(userId);
+            const userTimezone = getTimezoneForUserProfile(user);
             timezone = userTimezone.useAutomaticTimezone ? userTimezone.automaticTimezone : userTimezone.manualTimezone;
         }
 

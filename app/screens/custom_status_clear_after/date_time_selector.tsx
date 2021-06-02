@@ -5,14 +5,13 @@ import {View, Button, Platform} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {useSelector} from 'react-redux';
 import {GlobalState} from '@mm-redux/types/store';
-import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
-import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
+import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentMomentForTimezone, getUtcOffsetForTimeZone} from '@utils/timezone';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import Preferences from '@mm-redux/constants/preferences';
 import {Theme} from '@mm-redux/types/preferences';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import moment from 'moment';
-import {Moment} from 'moment-timezone';
+import moment, {Moment} from 'moment-timezone';
 
 type Props = {
     theme: Theme;
@@ -24,13 +23,10 @@ type AndroidMode = 'date' | 'time';
 const DateTimeSelector = (props: Props) => {
     const {theme} = props;
     const styles = getStyleSheet(theme);
-    const enableTimezone = useSelector((state: GlobalState) => isTimezoneEnabled(state));
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
-    const timezone = useSelector((state: GlobalState) => getCurrentUserTimezone(state));
-    let currentTime = moment();
-    if (enableTimezone && timezone) {
-        currentTime = getCurrentDateAndTimeForTimezone(timezone);
-    }
+    const timezone = useSelector(getCurrentUserTimezone);
+    const currentTime = getCurrentMomentForTimezone(timezone);
+    const timezoneOffSetInMinutes = timezone ? getUtcOffsetForTimeZone(timezone) : undefined;
     const [date, setDate] = useState<Moment>(currentTime);
     const [mode, setMode] = useState<AndroidMode>('date');
     const [show, setShow] = useState<boolean>(false);
@@ -58,11 +54,12 @@ const DateTimeSelector = (props: Props) => {
     const renderDateTimePicker = show && (
         <DateTimePicker
             testID='dateTimePicker'
-            value={moment(date).toDate()}
+            value={date.toDate()}
             mode={mode}
             is24Hour={militaryTime}
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={onChange}
+            timeZoneOffsetInMinutes={timezoneOffSetInMinutes}
         />
     );
 

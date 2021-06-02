@@ -6,7 +6,7 @@ import moment from 'moment-timezone';
 
 import FormattedDate from '@components/formatted_date';
 import FormattedTime from '@components/formatted_time';
-import {getCurrentDateAndTimeForTimezone} from '@utils/timezone';
+import {getCurrentMomentForTimezone} from '@utils/timezone';
 import {GlobalState} from '@mm-redux/types/store';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import Preferences from '@mm-redux/constants/preferences';
@@ -27,7 +27,7 @@ const CustomStatusExpiry = (props: Props) => {
     const {timezone, time, theme, styleProp} = props;
     const styles = createStyleSheet(theme);
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
-    const currentMomentTime = timezone ? getCurrentDateAndTimeForTimezone(timezone) : moment();
+    const currentMomentTime = getCurrentMomentForTimezone(timezone);
 
     const expiryMomentTime = timezone ? moment(time).tz(timezone) : moment(time);
 
