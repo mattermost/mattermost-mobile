@@ -10,6 +10,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
 
 import {DeviceTypes, NavigationTypes} from '@constants';
+import {CHANNEL} from '@constants/screen';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
@@ -33,8 +34,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: NavigationTypes.CHANNEL_SCREEN,
-                name: NavigationTypes.CHANNEL_SCREEN,
+                id: CHANNEL,
+                name: CHANNEL,
                 passProps,
                 options: {
                     layout: {
@@ -444,7 +445,7 @@ export function closeMainSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             left: {visible: false},
         },
@@ -456,7 +457,7 @@ export function enableMainSideMenu(enabled, visible = true) {
         return;
     }
 
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             left: {enabled, visible},
         },
@@ -469,7 +470,7 @@ export function openSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             right: {visible: true},
         },
@@ -482,7 +483,7 @@ export function closeSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             right: {visible: false},
         },
