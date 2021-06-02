@@ -17,16 +17,22 @@ import Store from '@store/store';
 import {NavigationTypes} from '@constants';
 
 jest.unmock('@actions/navigation');
-jest.mock('@store/ephemeral_store', () => ({
-    getNavigationTopComponentId: jest.fn(),
-    clearNavigationComponents: jest.fn(),
-    addNavigationModal: jest.fn(),
-    hasModalsOpened: jest.fn().mockReturnValue(true),
-}));
-
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
 Store.redux = store;
+
+// Mock EphemeralStore add/remove modal
+const add = EphemeralStore.addNavigationModal;
+const remove = EphemeralStore.removeNavigationModal;
+EphemeralStore.removeNavigationModal = (componentId) => {
+    remove(componentId);
+    EphemeralStore.removeNavigationComponentId(componentId);
+};
+
+EphemeralStore.addNavigationModal = (componentId) => {
+    add(componentId);
+    EphemeralStore.addNavigationComponentId(componentId);
+};
 
 describe('@actions/navigation', () => {
     const topComponentId = 'top-component-id';
@@ -39,7 +45,16 @@ describe('@actions/navigation', () => {
     const options = {
         testOption: 'test',
     };
-    EphemeralStore.getNavigationTopComponentId.mockReturnValue(topComponentId);
+
+    beforeEach(() => {
+        EphemeralStore.clearNavigationComponents();
+        EphemeralStore.clearNavigationModals();
+
+        // mock that we have a root screen
+        EphemeralStore.addNavigationComponentId(topComponentId);
+    });
+
+    // EphemeralStore.getNavigationTopComponentId.mockReturnValue(topComponentId);
 
     test('resetToChannel should call Navigation.setRoot', () => {
         const setRoot = jest.spyOn(Navigation, 'setRoot');
@@ -425,15 +440,20 @@ describe('@actions/navigation', () => {
     test('dismissModal should call Navigation.dismissModal', async () => {
         const dismissModal = jest.spyOn(Navigation, 'dismissModal');
 
+        NavigationActions.showModal('First', 'First Modal', passProps, options);
+
         await NavigationActions.dismissModal(options);
-        expect(dismissModal).toHaveBeenCalledWith(topComponentId, options);
+        expect(dismissModal).toHaveBeenCalledWith('First', options);
     });
 
     test('dismissAllModals should call Navigation.dismissAllModals', async () => {
-        const dismissAllModals = jest.spyOn(Navigation, 'dismissAllModals');
+        const dismissModal = jest.spyOn(Navigation, 'dismissModal');
+
+        NavigationActions.showModal('First', 'First Modal', passProps, options);
+        NavigationActions.showModal('Second', 'Second Modal', passProps, options);
 
         await NavigationActions.dismissAllModals(options);
-        expect(dismissAllModals).toHaveBeenCalledWith(options);
+        expect(dismissModal).toHaveBeenCalledTimes(2);
     });
 
     test('mergeNavigationOptions should call Navigation.mergeOptions', () => {
@@ -493,12 +513,15 @@ describe('@actions/navigation', () => {
     });
 
     test('dismissAllModalsAndPopToRoot should call Navigation.dismissAllModals, Navigation.popToRoot, and emit event', async () => {
-        const dismissAllModals = jest.spyOn(Navigation, 'dismissAllModals');
+        const dismissModal = jest.spyOn(Navigation, 'dismissModal');
         const popToRoot = jest.spyOn(Navigation, 'popToRoot');
         EventEmitter.emit = jest.fn();
 
+        NavigationActions.showModal('First', 'First Modal', passProps, options);
+        NavigationActions.showModal('Second', 'Second Modal', passProps, options);
+
         await NavigationActions.dismissAllModalsAndPopToRoot();
-        expect(dismissAllModals).toHaveBeenCalled();
+        expect(dismissModal).toHaveBeenCalledTimes(2);
         expect(popToRoot).toHaveBeenCalledWith(topComponentId);
         expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
     });

@@ -364,10 +364,6 @@ export async function dismissModal(options = {}) {
 }
 
 export async function dismissAllModals() {
-    if (!EphemeralStore.hasModalsOpened()) {
-        return;
-    }
-
     while (EphemeralStore.hasModalsOpened()) {
         // eslint-disable-next-line no-await-in-loop
         await dismissModal();
