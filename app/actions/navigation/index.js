@@ -363,13 +363,21 @@ export async function dismissModal(options = {}) {
     }
 }
 
-export async function dismissAllModals() {
-    while (EphemeralStore.hasModalsOpened()) {
-        // eslint-disable-next-line no-await-in-loop
-        await dismissModal();
+export async function dismissAllModals(options) {
+    if (!EphemeralStore.hasModalsOpened()) {
+        return;
     }
 
-    EphemeralStore.clearNavigationModals();
+    if (Platform.OS === 'ios') {
+        const modals = [...EphemeralStore.navigationModalStack];
+        for await (const modal of modals) {
+            await Navigation.dismissModal(modal, options);
+            EphemeralStore.removeNavigationModal(modal);
+        }
+    } else {
+        await Navigation.dismissAllModals(options);
+        EphemeralStore.clearNavigationModals();
+    }
 }
 
 export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
