@@ -10,7 +10,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import mattermostManaged from 'app/mattermost_managed';
 
-// Use permanentSidebar and splitView hooks instead
+// TODO: Use permanentSidebar and splitView hooks instead
 export default class ImageViewPort extends PureComponent {
     mounted = false;
     state = {
