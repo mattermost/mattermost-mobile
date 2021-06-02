@@ -26,6 +26,7 @@ class PostOptions {
     reactionPickerAction = element(by.id(this.testID.reactionPickerAction));
     replyAction = element(by.id(this.testID.replyAction));
     permalinkAction = element(by.id(this.testID.permalinkAction));
+    copyAction = element(by.id(this.testID.copyAction));
     deleteAction = element(by.id(this.testID.deleteAction));
     editAction = element(by.id(this.testID.editAction));
     saveAction = element(by.id(this.testID.saveAction));

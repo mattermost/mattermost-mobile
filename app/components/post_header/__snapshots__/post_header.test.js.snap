@@ -598,6 +598,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
                 "marginTop": 2,
               }
             }
+            testID="post_header.reply.count"
           >
             0
           </Text>
@@ -752,6 +753,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
                 "marginTop": 2,
               }
             }
+            testID="post_header.reply.count"
           >
             0
           </Text>
@@ -982,6 +984,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
                 "marginTop": 2,
               }
             }
+            testID="post_header.reply.count"
           >
             0
           </Text>

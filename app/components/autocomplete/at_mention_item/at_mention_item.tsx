@@ -123,7 +123,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         size={24}
                         status={null}
                         showStatus={false}
-                        testID={`${testID}.profile_picture`}
+                        testID='at_mention_item.profile_picture'
                     />
                 </View>
                 <View style={style.rowInfo}>
@@ -139,13 +139,15 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                     <Text
                         style={style.rowFullname}
                         numberOfLines={1}
+                        testID='at_mention_item.name'
                     >
-                        {name} {name}
+                        {name}
                     </Text>
                     }
                     <Text
                         style={style.rowUsername}
                         numberOfLines={1}
+                        testID='at_mention_item.username'
                     >
                         {isCurrentUser &&
                         <FormattedText

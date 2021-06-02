@@ -273,7 +273,12 @@ export default class PostHeader extends PureComponent {
                         color={theme.linkColor}
                     />
                     {!isSearchResult &&
-                        <Text style={style.replyText}>{commentCount}</Text>
+                    <Text
+                        style={style.replyText}
+                        testID='post_header.reply.count'
+                    >
+                        {commentCount}
+                    </Text>
                     }
                 </TouchableWithFeedback>
             </View>

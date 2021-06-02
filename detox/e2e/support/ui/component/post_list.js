@@ -23,11 +23,13 @@ class PostList {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemBlockQuote,
             postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
             postItemHeaderGuestTag,
             postItemHeaderReply,
+            postItemHeaderReplyCount,
             postItemImage,
             postItemMessage,
             postItemPreHeaderText,
@@ -35,15 +37,20 @@ class PostList {
             postItemProfilePictureUserStatus,
             postItemShowLessButton,
             postItemShowMoreButton,
+            postItemTable,
+            postItemTableExpandButton,
+            postItemThematicBreak,
         } = Post.getPost(this.testID.postListPostItem, postId, postMessage, postProfileOptions);
 
         return {
             postListPostItem: postItem,
+            postListPostItemBlockQuote: postItemBlockQuote,
             postListPostItemEmoji: postItemEmoji,
             postListPostItemHeaderDateTime: postItemHeaderDateTime,
             postListPostItemHeaderDisplayName: postItemHeaderDisplayName,
             postListPostItemHeaderGuestTag: postItemHeaderGuestTag,
             postListPostItemHeaderReply: postItemHeaderReply,
+            postListPostItemHeaderReplyCount: postItemHeaderReplyCount,
             postListPostItemImage: postItemImage,
             postListPostItemMessage: postItemMessage,
             postListPostItemPreHeaderText: postItemPreHeaderText,
@@ -51,6 +58,9 @@ class PostList {
             postListPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
             postListPostItemShowLessButton: postItemShowLessButton,
             postListPostItemShowMoreButton: postItemShowMoreButton,
+            postListPostItemTable: postItemTable,
+            postListPostItemTableExpandButton: postItemTableExpandButton,
+            postListPostItemThematicBreak: postItemThematicBreak,
         };
     }
 

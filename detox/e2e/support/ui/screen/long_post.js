@@ -14,6 +14,7 @@ class LongPostScreen {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemBlockQuote,
             postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
@@ -25,10 +26,14 @@ class LongPostScreen {
             postItemProfilePictureUserStatus,
             postItemShowLessButton,
             postItemShowMoreButton,
+            postItemTable,
+            postItemTableExpandButton,
+            postItemThematicBreak,
         } = Post.getPost(this.testID.longPostItem, postId, postMessage, postProfileOptions);
 
         return {
             longPostItem: postItem,
+            longPostItemBlockQuote: postItemBlockQuote,
             longPostItemEmoji: postItemEmoji,
             longPostItemHeaderDateTime: postItemHeaderDateTime,
             longPostItemHeaderDisplayName: postItemHeaderDisplayName,
@@ -40,6 +45,9 @@ class LongPostScreen {
             longPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
             longPostItemShowLessButton: postItemShowLessButton,
             longPostItemShowMoreButton: postItemShowMoreButton,
+            longPostItemTable: postItemTable,
+            longPostItemTableExpandButton: postItemTableExpandButton,
+            longPostItemThematicBreak: postItemThematicBreak,
         };
     }
 
