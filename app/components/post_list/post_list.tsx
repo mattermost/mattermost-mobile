@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
 const buildExtraData = makeExtraData();
 
 const PostList = ({
-    channelId, currentTeamName = '', deepLinkURL, extraData, handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl,
+    channelId, currentTeamName = '', closePermalink, deepLinkURL, extraData, handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl,
     loadMorePostsVisible, location, onLoadMoreUp = emptyFunction, postIds = [], renderFooter = (() => null),
     serverURL = '', setDeepLinkURL, showMoreMessagesButton, showPermalink, siteURL = '', scrollViewNativeID, shouldRenderReplyButton, testID, theme,
 }: PostListProps) => {
@@ -118,10 +118,11 @@ const PostList = ({
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const animationFrameIndexFailed = requestAnimationFrame(() => {
+            const index = Math.min(info.highestMeasuredFrameIndex, info.index);
             if (onScrollEndIndexListener.current) {
-                onScrollEndIndexListener.current(info.index);
+                onScrollEndIndexListener.current(index);
             }
-            scrollToIndex(info.index);
+            scrollToIndex(index);
             cancelAnimationFrame(animationFrameIndexFailed);
         });
     }, []);
@@ -218,7 +219,7 @@ const PostList = ({
         );
     }, [postIds]);
 
-    const scrollToIndex = useCallback((index: number, animated = false) => {
+    const scrollToIndex = useCallback((index: number, animated = true) => {
         flatListRef.current?.scrollToIndex({
             animated,
             index,
@@ -228,10 +229,6 @@ const PostList = ({
     }, []);
 
     useEffect(() => {
-        const closePermalink = () => {
-            closePermalink();
-        };
-
         const scrollToBottom = (screen: string) => {
             if (screen === location) {
                 const scrollToBottomTimer = setTimeout(() => {
@@ -277,7 +274,7 @@ const PostList = ({
 
     useLayoutEffect(() => {
         if (initialIndex > 0 && initialIndex <= postIds.length && highlightPostId) {
-            scrollToIndex(initialIndex);
+            scrollToIndex(initialIndex, false);
         }
     }, [initialIndex, highlightPostId]);
 
