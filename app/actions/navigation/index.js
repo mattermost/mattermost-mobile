@@ -363,18 +363,17 @@ export async function dismissModal(options = {}) {
     }
 }
 
-export async function dismissAllModals(options = {}) {
+export async function dismissAllModals() {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    try {
-        await Navigation.dismissAllModals(options);
-        EphemeralStore.clearNavigationModals();
-    } catch (error) {
-        // RNN returns a promise rejection if there are no modals to
-        // dismiss. We'll do nothing in this case.
+    while (EphemeralStore.hasModalsOpened()) {
+        // eslint-disable-next-line no-await-in-loop
+        await dismissModal();
     }
+
+    EphemeralStore.clearNavigationModals();
 }
 
 export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
