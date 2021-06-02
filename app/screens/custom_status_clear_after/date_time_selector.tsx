@@ -65,14 +65,12 @@ const DateTimeSelector = (props: Props) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.datePicker}>
+            <View style={styles.buttonContainer}>
                 <Button
                     onPress={showDatepicker}
                     title='Select Date'
                     color={theme.buttonBg}
                 />
-            </View>
-            <View>
                 <Button
                     onPress={showTimepicker}
                     title='Select Time'
@@ -88,16 +86,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
+            marginTop: 10,
+        },
+        buttonContainer: {
+            flex: 1,
             flexDirection: 'row',
             backgroundColor: theme.centerChannelBg,
             alignItems: 'center',
-            justifyContent: 'center',
-            paddingBottom: 10,
+            justifyContent: 'space-evenly',
+            marginBottom: 10,
         },
-        datePicker: {
-            marginRight: 10,
-        },
-
     };
 });
 export default DateTimeSelector;

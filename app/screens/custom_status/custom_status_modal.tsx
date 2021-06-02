@@ -369,12 +369,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 onPress={this.openClearAfterModal}
             >
                 <View style={style.inputContainer}>
-                    <Text style={style.expiryTime}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
+                    <Text style={style.expiryTimeLabel}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
                     {duration ? (
                         <FormattedText
                             id={durationValues[duration].id}
                             defaultMessage={durationValues[duration].defaultMessage}
-                            style={style.expiryTimeShow}
+                            style={style.expiryTime}
                         />
                     ) : null}
                     <CompassIcon
@@ -470,6 +470,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'relative',
             flexDirection: 'row',
             alignItems: 'center',
+            height: 48,
             borderTopWidth: 1,
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -483,7 +484,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 17,
             paddingHorizontal: 52,
             textAlignVertical: 'center',
-            height: 48,
+            height: '100%',
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -494,7 +495,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         iconContainer: {
             position: 'absolute',
             left: 14,
-            top: 12,
+            top: 10,
         },
         separator: {
             marginTop: 32,
@@ -521,14 +522,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 1,
             marginHorizontal: 16,
         },
-        expiryTime: {
+        expiryTimeLabel: {
             fontSize: 17,
             paddingLeft: 16,
-            height: 48,
             textAlignVertical: 'center',
             color: theme.centerChannelColor,
         },
-        expiryTimeShow: {
+        expiryTime: {
             position: 'absolute',
             right: 30,
             color: theme.centerChannelColor,
