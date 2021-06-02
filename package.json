@@ -24,7 +24,6 @@
     "@react-native-community/cookies": "5.0.1",
     "@react-native-community/masked-view": "0.1.10",
     "@react-native-community/netinfo": "6.0.0",
-    "@react-native-cookies/cookies": "6.0.7",
     "@rudderstack/rudder-sdk-react-native": "1.0.6",
     "@sentry/react-native": "2.4.1",
     "commonmark": "github:mattermost/commonmark.js#f6ab98dede6ce4b4e7adea140ac77249bfb2d6ce",
