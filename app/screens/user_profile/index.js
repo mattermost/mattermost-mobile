@@ -28,7 +28,7 @@ function makeMapStateToProps() {
         const enableTimezone = isTimezoneEnabled(state);
         const user = state.entities.users.profiles[ownProps.userId];
 
-        const customStatus = isCustomStatusEnabled(state) ? getCustomStatus(state) : undefined;
+        const customStatus = isCustomStatusEnabled(state) ? getCustomStatus(state, user?.id) : undefined;
         return {
             config,
             createChannelRequest,
