@@ -6,7 +6,7 @@ import {DataOperator} from '@database/operator';
 import analytics from '@init/analytics';
 import {setAppCredentials} from '@init/credentials';
 import {getDeviceToken} from '@queries/global';
-import {getConfigAndLicense, getCurrentUserId} from '@queries/system';
+import {getCommonSystemValues, getCurrentUserId} from '@queries/system';
 import {createSessions} from '@requests/local/systems';
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
 import {logError} from '@requests/remote/error';
@@ -278,7 +278,7 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     }: {
     config: Partial<Config>;
     license: Partial<License>;
-  } = await getConfigAndLicense(activeServerDatabase);
+  } = await getCommonSystemValues(activeServerDatabase);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;

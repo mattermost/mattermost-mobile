@@ -3,8 +3,6 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
-import DatabaseManager from '@database/manager';
 import {DataOperator} from '@database/operator';
 import {ServerUrlChangedArgs} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
@@ -34,12 +32,11 @@ export const setLastUpgradeCheck = async (configRecord: System) => {
 };
 
 export const handleServerUrlChanged = async ({configRecord, licenseRecord, selectServerRecord, serverUrl}: ServerUrlChangedArgs) => {
-    const database = DatabaseManager.getActiveServerDatabase();
-
-    if (!database) {
-        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
+    if (!activeServerDatabase) {
+        return {error};
     }
-
+    const database = activeServerDatabase as Database;
     await database.action(async () => {
         await database.batch(
             ...[
@@ -55,15 +52,11 @@ export const handleServerUrlChanged = async ({configRecord, licenseRecord, selec
             ],
         );
     });
+
+    return null;
 };
 
 export const createSessions = async (sessions: any) => {
-    const database = DatabaseManager.getActiveServerDatabase();
-
-    if (!database) {
-        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
-    }
-
     await DataOperator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [{

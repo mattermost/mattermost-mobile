@@ -3,7 +3,6 @@
 
 import {getTimeZone} from 'react-native-localize';
 
-import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {getUserById} from '@queries/user';
 import {updateMe} from '@requests/remote/user';
 import {Config} from '@typings/database/config';
@@ -24,12 +23,8 @@ export const autoUpdateTimezone = async ({deviceTimezone, userId}: {deviceTimezo
         return {error};
     }
 
-    let currentUser: User;
-    try {
-        currentUser = await getUserById({userId, database: activeServerDatabase}) ?? null;
-    } catch (e) {
-        throw new DataOperatorException('key currentUser has not been set in System entity in @requests/local/timezone/autoUpdateTimezone');
-    }
+    const currentUser = await getUserById({userId, database: activeServerDatabase}) ?? null;
+
     if (!currentUser) {
         return null;
     }

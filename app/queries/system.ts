@@ -13,10 +13,11 @@ export const getCurrentUserId = async (serverDatabase: Database) => {
     return currentUserId?.[0] ?? '';
 };
 
-export const getConfigAndLicense = async (database: Database) => {
-    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license']))).fetch()) as System[];
+export const getCommonSystemValues = async (database: Database) => {
+    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license', 'currentUserId']))).fetch()) as System[];
     let config = {};
     let license = {};
+    let currentUserId = '';
     systemRecords.forEach((systemRecord) => {
         if (systemRecord.name === 'config') {
             config = systemRecord.value;
@@ -24,9 +25,13 @@ export const getConfigAndLicense = async (database: Database) => {
         if (systemRecord.name === 'license') {
             license = systemRecord.value;
         }
+        if (systemRecord.name === 'currentUserId') {
+            currentUserId = systemRecord.value;
+        }
     });
 
     return {
+        currentUserId,
         config,
         license,
     };

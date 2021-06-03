@@ -166,4 +166,5 @@ export type Config = {
     WebsocketPort: string;
     WebsocketSecurePort: string;
     WebsocketURL: string;
+    ExtendSessionLengthWithActivity: string;
 };
