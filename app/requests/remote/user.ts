@@ -1,22 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Q} from '@nozbe/watermelondb';
-import isEmpty from 'lodash.isempty';
 
 import {Client4} from '@client/rest';
-import {MM_TABLES} from '@constants/database';
-import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
-import DatabaseManager from '@database/manager';
 import {DataOperator} from '@database/operator';
 import analytics from '@init/analytics';
 import {setAppCredentials} from '@init/credentials';
+import {getDeviceToken} from '@queries/global';
+import {getConfigAndLicense, getCurrentUserId} from '@queries/system';
 import {createSessions} from '@requests/local/systems';
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
 import {logError} from '@requests/remote/error';
+import {loadRolesIfNeeded} from '@requests/remote/role';
 import {getDataRetentionPolicy} from '@requests/remote/systems';
 import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
 import {
+    LoadMeArgs,
+    LoginArgs,
     RawMyTeam,
     RawPreference,
     RawRole,
@@ -25,18 +25,13 @@ import {
     RawUser,
 } from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
-import Global from '@typings/database/global';
-import {Licence} from '@typings/database/license';
+import {License} from '@typings/database/license';
 import Role from '@typings/database/role';
-import System from '@typings/database/system';
 import User from '@typings/database/user';
+import {createAndSetActiveDatabase, getActiveServerDatabase, getDefaultDatabase} from '@utils/database';
 import {getCSRFFromCookie} from '@utils/security';
 
 const HTTP_UNAUTHORIZED = 401;
-const {
-    SERVER: {SYSTEM},
-    DEFAULT: {GLOBAL},
-} = MM_TABLES;
 
 export const logout = async (skipServerLogout = false) => {
     return async () => {
@@ -56,90 +51,64 @@ export const logout = async (skipServerLogout = false) => {
 };
 
 export const forceLogoutIfNecessary = async (err: Client4Error) => {
-    const database = DatabaseManager.getActiveServerDatabase();
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
 
-    if (!database) {
-        throw new DatabaseConnectionException(
-            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/forceLogoutIfNecessary',
-        );
+    if (!activeServerDatabase) {
+        return {error};
     }
 
-    const currentUserId = await database.collections.
-        get(SYSTEM).
-        query(Q.where('name', 'currentUserId')).
-        fetch();
+    const currentUserId = await getCurrentUserId(activeServerDatabase);
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         await logout(false);
     }
+
+    return {error: null};
 };
 
-export const createAndSetActiveDatabase = async (config: Partial<Config>) => {
-    const serverUrl = Client4.getUrl();
-    const displayName = config.SiteName;
-
-    if (!displayName) {
-        throw new DatabaseConnectionException(
-            `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
-        );
-    }
-    try {
-        await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
-    } catch (e) {
-        throw new DatabaseConnectionException(
-            `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
-        );
-    }
-};
-
-type LoginArgs = {
-  config: any;
-  ldapOnly?: boolean;
-  license: any;
-  loginId: string;
-  mfaToken?: string;
-  password: string;
-};
 export const login = async ({config, ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
-    const database = await DatabaseManager.getDefaultDatabase();
-
-    if (!database) {
-        throw new DatabaseConnectionException(
-            'DatabaseManager.getDefaultDatabase returned undefined in @requests/remote/user/login',
-        );
-    }
-
     let deviceToken;
     let user;
 
-    try {
-        const tokens = (await database.collections.get(GLOBAL).query(Q.where('name', 'deviceToken')).fetch()) as Global[];
-        deviceToken = tokens?.[0]?.value ?? '';
-        user = ((await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly)) as unknown) as RawUser;
-        await createAndSetActiveDatabase(config);
-        await getCSRFFromCookie(Client4.getUrl());
-    } catch (error) {
+    const {error, defaultDatabase} = await getDefaultDatabase();
+    if (!defaultDatabase) {
         return {error};
+    }
+    try {
+        deviceToken = await getDeviceToken(defaultDatabase);
+        user = ((await Client4.login(
+            loginId,
+            password,
+            mfaToken,
+            deviceToken,
+            ldapOnly,
+        )) as unknown) as RawUser;
+
+        //fixme: what do we use as alternative for displayName if SiteName is null ?
+        await createAndSetActiveDatabase({
+            serverUrl: Client4.getUrl(),
+            displayName: config?.SiteName ?? '',
+        });
+        await getCSRFFromCookie(Client4.getUrl());
+    } catch (e) {
+        return {error: e};
     }
 
     const result = await loadMe({user, deviceToken});
 
-    if (!result.error) {
+    if (!result?.error) {
         await completeLogin(user, deviceToken);
     }
 
     return result;
 };
 
-type LoadMeArgs = { user: RawUser; deviceToken?: string; };
-const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
+export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
     let currentUser: RawUser = user;
 
-    const database = await DatabaseManager.getActiveServerDatabase();
-    if (!database) {
-        throw new DatabaseConnectionException(
-            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/loadMe',
-        );
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
+    if (!activeServerDatabase) {
+        return {error};
     }
 
     try {
@@ -150,9 +119,9 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         if (!user) {
             currentUser = ((await Client4.getMe()) as unknown) as RawUser;
         }
-    } catch (error) {
-        await forceLogoutIfNecessary(error);
-        return {error};
+    } catch (e) {
+        await forceLogoutIfNecessary(e);
+        return {error: e};
     }
 
     try {
@@ -198,10 +167,12 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         });
 
         const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
+            const matchingTeam = teamMembers.find(
+                (team) => team.team_id === unread.team_id,
+            );
             return {
                 team_id: unread.team_id,
-                roles: matchingTeam?.roles ?? '', //'', // todo: teamMembers roles value for this specific
+                roles: matchingTeam?.roles ?? '',
                 is_unread: unread.msg_count > 0,
                 mentions_count: unread.mention_count,
             };
@@ -235,7 +206,10 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             prepareRecordsOnly: true,
         });
 
-        const userRecords = DataOperator.handleUsers({users: [user], prepareRecordsOnly: true});
+        const userRecords = DataOperator.handleUsers({
+            users: [user],
+            prepareRecordsOnly: true,
+        });
 
         const preferenceRecords = DataOperator.handlePreferences({
             prepareRecordsOnly: true,
@@ -255,14 +229,16 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         let rolesRecords: Role[] = [];
         if (rolesToLoad.size > 0) {
-            const rolesByName = ((await Client4.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
+            const rolesByName = ((await Client4.getRolesByNames(
+                Array.from(rolesToLoad),
+            )) as unknown) as RawRole[];
 
             if (rolesByName?.length) {
-                rolesRecords = (await DataOperator.handleIsolatedEntity({
+                rolesRecords = DataOperator.handleIsolatedEntity({
                     tableName: IsolatedEntities.ROLE,
                     prepareRecordsOnly: true,
                     values: rolesByName,
-                })) as Role[];
+                }) as Role[];
             }
         }
 
@@ -278,39 +254,34 @@ const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         const flattenedModels = models.flat();
         if (flattenedModels?.length > 0) {
-            await DataOperator.batchOperations({database, models: flattenedModels});
+            await DataOperator.batchOperations({
+                database: activeServerDatabase,
+                models: flattenedModels,
+            });
         }
-    } catch (error) {
-        return {error};
+    } catch (e) {
+        return {error: e};
     }
 
     return {data: currentUser};
 };
 
 export const completeLogin = async (user: RawUser, deviceToken: string) => {
-    const database = await DatabaseManager.getActiveServerDatabase();
-    if (!database) {
-        throw new DatabaseConnectionException(
-            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/completeLogin',
-        );
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
+    if (!activeServerDatabase) {
+        return {error};
     }
 
-    let config: Partial<Config> = {};
-    let license: Partial<Licence> = {};
+    const {
+        config,
+        license,
+    }: {
+    config: Partial<Config>;
+    license: Partial<License>;
+  } = await getConfigAndLicense(activeServerDatabase);
 
-    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license']))).fetch()) as System[];
-
-    systemRecords.forEach((systemRecord) => {
-        if (systemRecord.name === 'config') {
-            config = systemRecord.value;
-        }
-        if (systemRecord.name === 'license') {
-            license = systemRecord.value;
-        }
-    });
-
-    if (isEmpty(config) || isEmpty(license)) {
-        return;
+    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
+        return null;
     }
 
     const token = Client4.getToken();
@@ -327,7 +298,11 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     let dataRetentionPolicy: any;
 
     // Data retention
-    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+    if (
+        config?.DataRetentionEnableMessageDeletion === 'true' &&
+    license?.IsLicensed === 'true' &&
+    license?.DataRetention === 'true'
+    ) {
         dataRetentionPolicy = await getDataRetentionPolicy();
         await DataOperator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
@@ -340,24 +315,24 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
             prepareRecordsOnly: false,
         });
     }
+
+    return null;
 };
 
 export const updateMe = async (user: User) => {
-    const database = await DatabaseManager.getActiveServerDatabase();
-    if (!database) {
-        throw new DatabaseConnectionException(
-            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/remote/user/updateMe',
-        );
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
+    if (!activeServerDatabase) {
+        return {error};
     }
     let data;
     try {
-        data = await Client4.patchMe(user._raw);
-    } catch (error) {
-        logError(error);
-        return {error};
+        data = ((await Client4.patchMe(user._raw)) as unknown) as RawUser;
+    } catch (e) {
+        logError(e);
+        return {error: e};
     }
 
-    const systemRecords = await DataOperator.handleIsolatedEntity({
+    const systemRecords = DataOperator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [
             {name: 'currentUserId', value: data.id},
@@ -366,23 +341,31 @@ export const updateMe = async (user: User) => {
         prepareRecordsOnly: true,
     });
 
-    //todo: Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152
-    // const tosRecords = await DataOperator.handleIsolatedEntity({
-    //     tableName: TERMS_OF_SERVICE,
-    //     values: [{}],
-    // });
-    const models = [
+    const userRecord = DataOperator.handleUsers({
+        prepareRecordsOnly: true,
+        users: [data],
+    });
+
+    //todo: ?? Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
+    // tosRecords = await DataOperator.handleIsolatedEntity({ tableName: TERMS_OF_SERVICE, values: [{}], });
+    const models = await Promise.all([
         ...systemRecords,
+        ...userRecord,
 
     // ...tosRecords,
-    ];
+    ]);
 
     if (models?.length) {
-        await DataOperator.batchOperations({database, models});
+        await DataOperator.batchOperations({
+            database: activeServerDatabase,
+            models: models.flat(),
+        });
     }
 
-    //todo: update roles if needed
-    // dispatch(loadRolesIfNeeded(data.roles.split(' ')));
+    const updatedRoles: string[] = data.roles.split(' ');
+    if (updatedRoles.length) {
+        await loadRolesIfNeeded(updatedRoles);
+    }
 
     return {data};
 };

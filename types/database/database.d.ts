@@ -5,6 +5,8 @@ import {Database} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 import {Clause} from '@nozbe/watermelondb/QueryDescription';
 import {Class} from '@nozbe/watermelondb/utils/common';
+import {Config} from '@typings/database/config';
+import {License} from '@typings/database/license';
 
 import {DatabaseType, IsolatedEntities} from './enums';
 
@@ -684,3 +686,14 @@ export type HandleDraftArgs = {
   drafts: RawDraft[];
   prepareRecordsOnly: boolean;
 };
+
+export type LoginArgs = {
+  config: Partial<Config>;
+  ldapOnly?: boolean;
+  license: Partial<License>;
+  loginId: string;
+  mfaToken?: string;
+  password: string;
+};
+
+export type LoadMeArgs = { user: RawUser; deviceToken?: string };

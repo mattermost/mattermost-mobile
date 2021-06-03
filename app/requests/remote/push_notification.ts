@@ -38,24 +38,13 @@ export const scheduleExpiredNotification = async (intl: IntlShape) => {
         query(Q.where('name', Q.oneOf(['currentUserId', 'config']))).
         fetch()) as System[];
 
-    const config =
-    systemRecords.find((record) => record.name === 'config')?.value ?? {};
-    const currentUserId =
-    systemRecords.find((record) => record.name === 'currentUserId')?.value ??
-    '';
-    if (
-        isMinimumServerVersion(
-            Client4.serverVersion,
-            MAJOR_VERSION,
-            MINOR_VERSION,
-        ) &&
-    config.ExtendSessionLengthWithActivity === 'true'
-    ) {
+    const config = systemRecords.find((record) => record.name === 'config')?.value ?? {};
+    const currentUserId = systemRecords.find((record) => record.name === 'currentUserId')?.value ?? '';
+    if (isMinimumServerVersion(Client4.serverVersion, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
         PushNotifications.cancelAllLocalNotifications();
         return;
     }
 
-    // eslint-disable-next-line prefer-const
     const timeOut = setTimeout(async () => {
         clearTimeout(timeOut);
         let sessions: any;
@@ -73,19 +62,12 @@ export const scheduleExpiredNotification = async (intl: IntlShape) => {
 
         const session = sessions.data.sort(sortByNewest)[0];
         const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
-        const expiresInDays = parseInt(
-            String(
-                Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays())),
-            ),
-            10,
-        );
+        const expiresInDays = parseInt(String(Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays()))), 10);
 
         const message = intl.formatMessage(
             {
                 id: 'mobile.session_expired',
-                defaultMessage:
-          'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
-            },
+                defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.'},
             {
                 siteName: config.SiteName,
                 daysCount: expiresInDays,
