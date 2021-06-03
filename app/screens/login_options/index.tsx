@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {LOGIN, SSO} from '@constants/screens';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Image, ScrollView, StatusBar, StyleSheet, Text} from 'react-native';
@@ -58,14 +59,14 @@ const LoginOptions: NavigationFunctionComponent = ({config, license, theme}: Log
     const intl = useIntl();
 
     const displayLogin = preventDoubleTap(() => {
-        const screen = 'Login';
+        const screen = LOGIN;
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
         goToScreen(screen, title, {config, license});
     });
 
     const displaySSO = preventDoubleTap((ssoType: string) => {
-        const screen = 'SSO';
+        const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
 
         goToScreen(screen, title, {ssoType});
