@@ -7,6 +7,7 @@ import {Clause} from '@nozbe/watermelondb/QueryDescription';
 import {Class} from '@nozbe/watermelondb/utils/common';
 import {Config} from '@typings/database/config';
 import {License} from '@typings/database/license';
+import System from '@typings/database/system';
 
 import {DatabaseType, IsolatedEntities} from './enums';
 
@@ -697,3 +698,10 @@ export type LoginArgs = {
 };
 
 export type LoadMeArgs = { user: RawUser; deviceToken?: string };
+
+export type ServerUrlChangedArgs = {
+  configRecord: System;
+  licenseRecord: System;
+  selectServerRecord: System;
+  serverUrl: string;
+};

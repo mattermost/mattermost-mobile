@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-import {updateMe} from '@requests/remote/user';
 import {getTimeZone} from 'react-native-localize';
 
-import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
-import DatabaseManager from '@database/manager';
+import {getUserById} from '@queries/user';
+import {updateMe} from '@requests/remote/user';
 import {Config} from '@typings/database/config';
 import User from '@typings/database/user';
+import {getActiveServerDatabase} from '@utils/database';
 
 export const isTimezoneEnabled = (config: Partial<Config>) => {
     return config?.ExperimentalTimezone === 'true';
@@ -21,22 +19,19 @@ export function getDeviceTimezone() {
 }
 
 export const autoUpdateTimezone = async ({deviceTimezone, userId}: {deviceTimezone: string, userId: string}) => {
-    const database = await DatabaseManager.getActiveServerDatabase();
-    if (!database) {
-        throw new DatabaseConnectionException(
-            'DatabaseManager.getActiveServerDatabase returned undefined in @requests/local/timezone/autoUpdateTimezone',
-        );
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
+    if (!activeServerDatabase) {
+        return {error};
     }
 
     let currentUser: User;
     try {
-        const userRecords = (await database.collections.get(MM_TABLES.SERVER.USER).query(Q.where('id', userId)).fetch()) as User[];
-        currentUser = userRecords?.[0] ?? null;
+        currentUser = await getUserById({userId, database: activeServerDatabase}) ?? null;
     } catch (e) {
         throw new DataOperatorException('key currentUser has not been set in System entity in @requests/local/timezone/autoUpdateTimezone');
     }
     if (!currentUser) {
-        return;
+        return null;
     }
 
     const currentTimezone = getUserTimezone(currentUser);
@@ -47,6 +42,7 @@ export const autoUpdateTimezone = async ({deviceTimezone, userId}: {deviceTimezo
         const updatedUser = {...currentUser, timezone} as User;
         await updateMe(updatedUser);
     }
+    return null;
 };
 
 export const getUserTimezone = (currentUser: User) => {

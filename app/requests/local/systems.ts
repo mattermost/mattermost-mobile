@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
+import {Database} from '@nozbe/watermelondb';
 
+import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
 import {DataOperator} from '@database/operator';
+import {ServerUrlChangedArgs} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import System from '@typings/database/system';
+import {getActiveServerDatabase} from '@utils/database';
 
 /**
  * setLastUpgradeCheck: Takes in 'config' record from System entity and update its lastUpdateCheck to Date.now()
@@ -14,32 +17,23 @@ import System from '@typings/database/system';
  * @returns {Promise<void>}
  */
 export const setLastUpgradeCheck = async (configRecord: System) => {
-    const database = DatabaseManager.getActiveServerDatabase();
-
-    if (!database) {
-        throw new DatabaseConnectionException('DatabaseManager.getActiveServerDatabase returned undefined');
+    const {activeServerDatabase, error} = await getActiveServerDatabase();
+    if (!activeServerDatabase) {
+        return {error};
     }
+
+    const database = activeServerDatabase as Database;
 
     await database.action(async () => {
         await configRecord.update((config) => {
             config.value = {...configRecord.value, lastUpdateCheck: Date.now()};
         });
     });
+
+    return null;
 };
 
-type ServerUrlChangedArgs = {
-  configRecord: System;
-  licenseRecord: System;
-  selectServerRecord: System;
-  serverUrl: string;
-};
-
-export const handleServerUrlChanged = async ({
-    configRecord,
-    licenseRecord,
-    selectServerRecord,
-    serverUrl,
-}: ServerUrlChangedArgs) => {
+export const handleServerUrlChanged = async ({configRecord, licenseRecord, selectServerRecord, serverUrl}: ServerUrlChangedArgs) => {
     const database = DatabaseManager.getActiveServerDatabase();
 
     if (!database) {
@@ -74,7 +68,7 @@ export const createSessions = async (sessions: any) => {
         tableName: IsolatedEntities.SYSTEM,
         values: [{
 
-            // id: string; // todo: to confirm value
+            // id: string; // todo: to confirm value for session id ?
             name: 'sessions',
             value: sessions,
         }],
