@@ -2,25 +2,21 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
-
-import Permissions from 'react-native-permissions';
 import {Alert, StatusBar} from 'react-native';
+import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
-
-import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
+import {VALID_MIME_TYPES} from '@screens/edit_profile/edit_profile';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import AttachmentButton from './index';
 
-jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
     launchCamera: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
     launchImageLibrary: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('AttachmentButton', () => {
-    const formatMessage = jest.fn();
     const baseProps = {
         theme: Preferences.THEMES.default,
         maxFileSize: 10,
@@ -28,7 +24,7 @@ describe('AttachmentButton', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<AttachmentButton {...baseProps}/>);
+        const wrapper = shallowWithIntl(<AttachmentButton {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -40,7 +36,7 @@ describe('AttachmentButton', () => {
             onShowUnsupportedMimeTypeWarning: jest.fn(),
         };
 
-        const wrapper = shallow(<AttachmentButton {...props}/>);
+        const wrapper = shallowWithIntl(<AttachmentButton {...props}/>);
 
         const file = {
             type: 'image/gif',
@@ -59,7 +55,7 @@ describe('AttachmentButton', () => {
             onShowUnsupportedMimeTypeWarning: jest.fn(),
         };
 
-        const wrapper = shallow(<AttachmentButton {...props}/>);
+        const wrapper = shallowWithIntl(<AttachmentButton {...props}/>);
 
         const file = {
             fileSize: 10,
@@ -77,9 +73,8 @@ describe('AttachmentButton', () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.DENIED);
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <AttachmentButton {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const hasPhotoPermission = await wrapper.instance().hasPhotoPermission('camera');
@@ -93,9 +88,8 @@ describe('AttachmentButton', () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.BLOCKED);
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <AttachmentButton {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const hasPhotoPermission = await wrapper.instance().hasPhotoPermission('camera');
@@ -106,9 +100,8 @@ describe('AttachmentButton', () => {
     });
 
     test('should re-enable StatusBar after ImagePicker launchCamera finishes', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <AttachmentButton {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const instance = wrapper.instance();
@@ -120,9 +113,8 @@ describe('AttachmentButton', () => {
     });
 
     test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <AttachmentButton {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const instance = wrapper.instance();

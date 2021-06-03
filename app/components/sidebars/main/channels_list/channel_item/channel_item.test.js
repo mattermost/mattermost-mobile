@@ -2,15 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 import {TouchableHighlight} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelItem from './channel_item';
 
 jest.useFakeTimers();
-jest.mock('react-intl');
 
 describe('ChannelItem', () => {
     const channel = {
@@ -43,9 +42,8 @@ describe('ChannelItem', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -58,9 +56,8 @@ describe('ChannelItem', () => {
             isChannelMuted: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -78,9 +75,8 @@ describe('ChannelItem', () => {
             channel: channelObj,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -98,9 +94,8 @@ describe('ChannelItem', () => {
             channel: channelObj,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -119,9 +114,8 @@ describe('ChannelItem', () => {
             isArchived: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -132,9 +126,8 @@ describe('ChannelItem', () => {
             displayName: '',
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -152,9 +145,8 @@ describe('ChannelItem', () => {
             currentChannelId: 'channel_id',
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -174,46 +166,42 @@ describe('ChannelItem', () => {
             isSearchResult: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem {...newProps}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot with draft', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem
                 {...baseProps}
                 hasDraft={true}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for showUnreadForMsgs', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem
                 {...baseProps}
                 hasDraft={true}
                 shouldHideChannel={true}
                 unreadMsgs={0}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for isManualUnread', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem
                 {...baseProps}
                 isManualUnread={true}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -222,12 +210,11 @@ describe('ChannelItem', () => {
     test('Should call onPress', () => {
         const onSelectChannel = jest.fn();
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem
                 {...baseProps}
                 onSelectChannel={onSelectChannel}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.find(TouchableHighlight).simulate('press');

@@ -2,18 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import InteractiveDialogController from './interactive_dialog_controller';
-
-jest.mock('react-intl');
 
 describe('InteractiveDialogController', () => {
     test('should open interactive dialog as alert or screen depending on with or without element', () => {
         let baseProps = getBaseProps('trigger_id_1');
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <InteractiveDialogController {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         const instance = wrapper.instance();

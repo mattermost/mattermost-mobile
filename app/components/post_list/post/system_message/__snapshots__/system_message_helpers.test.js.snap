@@ -1,0 +1,240 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {
+            "color": "rgba(61,60,64,0.6)",
+            "fontSize": 15,
+            "lineHeight": 20,
+          },
+          Object {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={Array []}
+      >
+        @username
+      </Text>
+    </Text>
+    <Text
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.6)",
+          "fontSize": 15,
+          "lineHeight": 20,
+        }
+      }
+      testID="markdown_text"
+    >
+       updated the channel display name from: old displayname to: new displayname
+    </Text>
+  </Text>
+</View>
+`;
+
+exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {
+            "color": "rgba(61,60,64,0.6)",
+            "fontSize": 15,
+            "lineHeight": 20,
+          },
+          Object {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={Array []}
+      >
+        @username
+      </Text>
+    </Text>
+    <Text
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.6)",
+          "fontSize": 15,
+          "lineHeight": 20,
+        }
+      }
+      testID="markdown_text"
+    >
+       updated the channel header from: old header to: new header
+    </Text>
+  </Text>
+</View>
+`;
+
+exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
+<Text
+  style={
+    Object {
+      "color": "rgba(61,60,64,0.6)",
+      "fontSize": 15,
+      "lineHeight": 20,
+    }
+  }
+>
+  @username updated the channel purpose from: old purpose to: new purpose
+</Text>
+`;
+
+exports[`renderSystemMessage uses renderer for OLD archived channel without a username 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.6)",
+          "fontSize": 15,
+          "lineHeight": 20,
+        }
+      }
+      testID="markdown_text"
+    >
+      archived the channel
+    </Text>
+  </Text>
+</View>
+`;
+
+exports[`renderSystemMessage uses renderer for archived channel 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {
+            "color": "rgba(61,60,64,0.6)",
+            "fontSize": 15,
+            "lineHeight": 20,
+          },
+          Object {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={Array []}
+      >
+        @username
+      </Text>
+    </Text>
+    <Text
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.6)",
+          "fontSize": 15,
+          "lineHeight": 20,
+        }
+      }
+      testID="markdown_text"
+    >
+       archived the channel
+    </Text>
+  </Text>
+</View>
+`;
+
+exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {
+            "color": "rgba(61,60,64,0.6)",
+            "fontSize": 15,
+            "lineHeight": 20,
+          },
+          Object {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={Array []}
+      >
+        @username
+      </Text>
+    </Text>
+    <Text
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.6)",
+          "fontSize": 15,
+          "lineHeight": 20,
+        }
+      }
+      testID="markdown_text"
+    >
+       unarchived the channel
+    </Text>
+  </Text>
+</View>
+`;

@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {View, ViewPropTypes} from 'react-native';
 import PropTypes from 'prop-types';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 

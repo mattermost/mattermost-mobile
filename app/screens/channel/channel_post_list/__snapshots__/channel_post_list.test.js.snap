@@ -21,19 +21,16 @@ exports[`ChannelPostList should match snapshot 1`] = `
       }
     }
   />
-  <Connect(PostList)
+  <Connect(InjectIntl(PostList))
     channelId="channel-id"
     extraData={false}
     indicateNewMessages={true}
-    lastPostIndex={-1}
     loadMorePostsVisible={false}
-    location="channel"
+    location="Channel"
     onLoadMoreUp={[Function]}
-    onPostPress={[Function]}
     postIds={Array []}
     refreshing={false}
     renderFooter={[Function]}
-    renderReplies={true}
     scrollViewNativeID="channel-id"
     showMoreMessagesButton={true}
     testID="channel.post_list"

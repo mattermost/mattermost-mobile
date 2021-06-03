@@ -52,7 +52,7 @@ export default class UserProfile extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         bot: PropTypes.object,
-        militaryTime: PropTypes.bool.isRequired,
+        isMilitaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
         remoteClusterInfo: PropTypes.object,
@@ -227,7 +227,7 @@ export default class UserProfile extends PureComponent {
     }
 
     buildTimezoneBlock = () => {
-        const {theme, user, militaryTime} = this.props;
+        const {theme, user, isMilitaryTime} = this.props;
         const style = createStyleSheet(theme);
 
         const currentTimezone = getUserCurrentTimezone(user.timezone);
@@ -249,8 +249,8 @@ export default class UserProfile extends PureComponent {
                     testID='user_profile.timezone_block.local_time.value'
                 >
                     <FormattedTime
-                        timeZone={currentTimezone}
-                        hour12={!militaryTime}
+                        timezone={currentTimezone}
+                        isMilitaryTime={isMilitaryTime}
                         value={nowDate}
                     />
                 </Text>

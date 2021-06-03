@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {injectIntl} from 'react-intl';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';

@@ -14,7 +14,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {DeviceTypes} from 'app/constants';
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';

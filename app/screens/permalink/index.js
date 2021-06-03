@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {handleSelectChannel} from '@actions/views/channel';
+import {closePermalink} from '@actions/views/permalink';
 import {getPostsAround, getPostThread} from '@actions/views/post';
 import {handleTeamChange} from '@actions/views/select_team';
 import {getChannel as getChannelAction, joinChannel} from '@mm-redux/actions/channels';
@@ -58,6 +59,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             addUserToTeam,
+            closePermalink,
             getPostsAround,
             getPostThread,
             getChannel: getChannelAction,
