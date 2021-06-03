@@ -6,8 +6,8 @@ import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {Command, AutocompleteSuggestion} from '@mm-redux/types/integrations';
-
 import Store from '@store/store';
+import {intl} from 'test/intl-test-helper';
 
 import {
     thunk,
@@ -86,7 +86,10 @@ describe('components/autocomplete/slash_suggestion', () => {
             ...baseProps,
         };
 
-        const wrapper = shallow(<SlashSuggestion {...props}/>);
+        const wrapper = shallow(
+            <SlashSuggestion {...props}/>,
+            {context: {intl}},
+        );
 
         const dataSource: AutocompleteSuggestion[] = [
             {
@@ -117,7 +120,10 @@ describe('components/autocomplete/slash_suggestion', () => {
             commands: [command],
         };
 
-        const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
+        const wrapper = shallow<SlashSuggestion>(
+            <SlashSuggestion {...props}/>,
+            {context: {intl}},
+        );
         wrapper.setProps({value: '/the'});
 
         expect(wrapper.state('dataSource')).toEqual([
@@ -137,7 +143,10 @@ describe('components/autocomplete/slash_suggestion', () => {
             commands: [],
         };
 
-        const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
+        const wrapper = shallow<SlashSuggestion>(
+            <SlashSuggestion {...props}/>,
+            {context: {intl}},
+        );
         wrapper.setProps({value: '/ji'});
 
         expect(wrapper.state('dataSource')).toEqual([
@@ -156,7 +165,10 @@ describe('components/autocomplete/slash_suggestion', () => {
             ...baseProps,
         };
 
-        const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
+        const wrapper = shallow<SlashSuggestion>(
+            <SlashSuggestion {...props}/>,
+            {context: {intl}},
+        );
 
         wrapper.setProps({value: '/'});
         expect(wrapper.state('dataSource')).toEqual([
@@ -207,7 +219,10 @@ describe('components/autocomplete/slash_suggestion', () => {
             ...baseProps,
         };
 
-        const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
+        const wrapper = shallow<SlashSuggestion>(
+            <SlashSuggestion {...props}/>,
+            {context: {intl}},
+        );
         wrapper.setProps({value: '/jira i', suggestions: []});
 
         const expected: AutocompleteSuggestion[] = [
@@ -232,7 +247,10 @@ describe('components/autocomplete/slash_suggestion', () => {
             appsEnabled: false,
         };
 
-        const wrapper = shallow<SlashSuggestion>(<SlashSuggestion {...props}/>);
+        const wrapper = shallow<SlashSuggestion>(
+            <SlashSuggestion {...props}/>,
+            {context: {intl}},
+        );
         wrapper.setProps({value: '/', suggestions: []});
 
         expect(wrapper.state('dataSource')).toEqual([

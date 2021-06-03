@@ -12,7 +12,7 @@ index dffccc4..dc426c2 100644
  }
  
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-index 2249d54..d26452a 100644
+index 2249d54..cc303b3 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 +++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 @@ -18,6 +18,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
@@ -23,12 +23,19 @@ index 2249d54..d26452a 100644
  
  const flattenStyle = require('../StyleSheet/flattenStyle');
  const infoLog = require('../Utilities/infoLog');
-@@ -2061,7 +2062,7 @@ function describeNestedLists(childList: {
+@@ -2061,7 +2062,14 @@ function describeNestedLists(childList: {
  
  const styles = StyleSheet.create({
    verticallyInverted: {
 -    transform: [{scaleY: -1}],
-+    ...Platform.select({android: {transform: [{perspective: 1}, {scaleY: -1}]}, ios: {transform: [{scaleY: -1}]}}),
++    ...Platform.select({
++      android: {
++        scaleY: -1,
++      },
++      ios: {
++        transform: [{scaleY: -1}],
++      },
++    }),
    },
    horizontallyInverted: {
      transform: [{scaleX: -1}],

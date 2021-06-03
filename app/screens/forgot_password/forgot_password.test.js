@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ForgotPassword from './forgot_password.js';
-
-jest.mock('react-intl');
 
 describe('ForgotPassword', () => {
     const actions = {
@@ -17,21 +16,17 @@ describe('ForgotPassword', () => {
         actions,
     };
 
-    const formatMessage = jest.fn();
-
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ForgotPassword {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('snapshot for error on failure of email regex', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ForgotPassword {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         wrapper.setState({email: 'bar'});
@@ -41,9 +36,8 @@ describe('ForgotPassword', () => {
     });
 
     test('Should call sendPasswordResetEmail', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ForgotPassword {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         wrapper.setState({email: 'test@test.com'});
@@ -57,7 +51,7 @@ describe('ForgotPassword', () => {
                 data: {},
             };
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ForgotPassword
                 {...baseProps}
                 actions={{
@@ -65,7 +59,6 @@ describe('ForgotPassword', () => {
                     sendPasswordResetEmail,
                 }}
             />,
-            {context: {intl: {formatMessage}}},
         );
 
         wrapper.setState({email: 'test@test.com'});

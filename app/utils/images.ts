@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions, Keyboard, Platform} from 'react-native';
+import {Dimensions} from 'react-native';
 
-import {goToScreen} from '@actions/navigation';
 import {DeviceTypes} from '@constants';
 import {
     IMAGE_MAX_HEIGHT,
@@ -14,14 +13,13 @@ import {
 } from '@constants/image';
 
 import {PostImage} from '@mm-redux/types/posts';
-import {FileInfo} from '@mm-redux/types/files';
 
-import {isImage} from './file';
-import {Options, SharedElementTransition, StackAnimationOptions, ViewAnimationOptions} from 'react-native-navigation';
-
-export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
-        return {};
+        return {
+            height: 0,
+            width: 0,
+        };
     }
 
     const ratio = height / width;
@@ -76,101 +74,6 @@ export function getViewPortWidth(isReplyPost: boolean, permanentSidebar = false)
     }
 
     return portraitPostWidth;
-}
-
-export function openGalleryAtIndex(index: number, files: FileInfo[]) {
-    Keyboard.dismiss();
-    requestAnimationFrame(() => {
-        const screen = 'Gallery';
-        const passProps = {
-            index,
-            files,
-        };
-        const windowHeight = Dimensions.get('window').height;
-        const sharedElementTransitions: SharedElementTransition[] = [];
-
-        const contentPush = {} as ViewAnimationOptions;
-        const contentPop = {} as ViewAnimationOptions;
-        const file = files[index];
-
-        if (isImage(file)) {
-            sharedElementTransitions.push({
-                fromId: `image-${file.id}`,
-                toId: `gallery-${file.id}`,
-                duration: 300,
-                interpolation: {type: 'accelerateDecelerate'},
-            });
-        } else {
-            contentPush.y = {
-                from: windowHeight,
-                to: 0,
-                duration: 300,
-                interpolation: {type: 'decelerate'},
-            };
-
-            if (Platform.OS === 'ios') {
-                contentPop.translationY = {
-                    from: 0,
-                    to: windowHeight,
-                    duration: 300,
-                };
-            } else {
-                contentPop.y = {
-                    from: 0,
-                    to: windowHeight,
-                    duration: 300,
-                };
-                contentPop.alpha = {
-                    from: 1,
-                    to: 0,
-                    duration: 100,
-                };
-            }
-        }
-
-        const options: Options = {
-            layout: {
-                backgroundColor: '#000',
-                componentBackgroundColor: '#000',
-                orientation: ['portrait', 'landscape'],
-            },
-            topBar: {
-                background: {
-                    color: '#000',
-                },
-                visible: Platform.OS === 'android',
-            },
-            animations: {
-                push: {
-                    waitForRender: true,
-                    sharedElementTransitions,
-                },
-            },
-        };
-
-        if (Object.keys(contentPush).length) {
-            options.animations!.push = {
-                ...options.animations!.push,
-                ...Platform.select<ViewAnimationOptions | StackAnimationOptions>({
-                    android: contentPush,
-                    ios: {
-                        content: contentPush,
-                    },
-                }),
-            };
-        }
-
-        if (Object.keys(contentPop).length) {
-            options.animations!.pop = Platform.select<ViewAnimationOptions | StackAnimationOptions>({
-                android: contentPop,
-                ios: {
-                    content: contentPop,
-                },
-            });
-        }
-
-        goToScreen(screen, '', passProps, options);
-    });
 }
 
 // isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered

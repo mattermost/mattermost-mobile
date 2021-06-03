@@ -49,13 +49,11 @@ export default class Markdown extends PureComponent {
         mentionKeys: PropTypes.array,
         minimumHashtagLength: PropTypes.number,
         onChannelLinkPress: PropTypes.func,
-        onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         postId: PropTypes.string,
         textStyles: PropTypes.object,
         theme: PropTypes.object,
-        value: PropTypes.string.isRequired,
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         disableHashtags: PropTypes.bool,
         disableAtMentions: PropTypes.bool,
         disableChannelLink: PropTypes.bool,
@@ -274,7 +272,6 @@ export default class Markdown extends PureComponent {
             <Hashtag
                 hashtag={hashtag}
                 linkStyle={this.props.textStyles.link}
-                onHashtagPress={this.props.onHashtagPress}
             />
         );
     };
@@ -417,10 +414,7 @@ export default class Markdown extends PureComponent {
 
     renderLink = ({children, href}) => {
         return (
-            <MarkdownLink
-                href={href}
-                onPermalinkPress={this.props.onPermalinkPress}
-            >
+            <MarkdownLink href={href}>
                 {children}
             </MarkdownLink>
         );

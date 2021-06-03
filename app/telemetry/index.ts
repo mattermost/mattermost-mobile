@@ -45,7 +45,7 @@ class Telemetry {
         });
     }
 
-    end(names = []) {
+    end(names: string[] = []) {
         const endTime = Date.now();
         names.forEach((name) => {
             const finalMetric = this.currentMetrics[name];

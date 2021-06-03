@@ -2,30 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
+import {intlShape} from 'react-intl';
 
-import {IntegrationTypes} from '@mm-redux/action_types';
-import {General} from '../constants';
+import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} from '@actions/views/channel';
+import {makeDirectChannel} from '@actions/views/more_dms';
+import {showPermalink} from '@actions/views/permalink';
 import {Client4} from '@client/rest';
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {DeepLinkTypes} from '@constants';
 import {analytics} from '@init/analytics';
+import {getUserByUsername} from '@mm-redux/actions/users';
+import {IntegrationTypes} from '@mm-redux/action_types';
+import {General} from '@mm-redux/constants';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import * as DraftUtils from '@utils/draft';
+import {permalinkBadTeam} from '@utils/general';
+import {getURLAndMatch, tryOpenURL} from '@utils/url';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
-
 import {Command, CommandArgs, DialogSubmission} from '@mm-redux/types/integrations';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
 import {makeGroupMessageVisibleIfNecessary} from './preferences';
-import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} from '@actions/views/channel';
-import {makeDirectChannel} from '@actions/views/more_dms';
-import {showPermalink} from '@actions/views/permalink';
-import {DeepLinkTypes} from '@constants';
-import {getUserByUsername} from '@mm-redux/actions/users';
-import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
-import * as DraftUtils from '@utils/draft';
-import {permalinkBadTeam} from '@utils/general';
-import {getURLAndMatch, tryOpenURL} from '@utils/url';
 
 export function getCommands(teamId: string): ActionFunc {
     return bindClientFunc({
@@ -51,7 +51,7 @@ export function getAutocompleteCommands(teamId: string, page = 0, perPage: numbe
 
 export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: CommandArgs): ActionFunc {
     return async (dispatch: DispatchFunc) => {
-        let data: any = null;
+        let data: unknown = null;
         try {
             analytics.trackCommand('get_suggestions_initiated', userInput);
             data = await Client4.getCommandAutocompleteSuggestionsList(userInput, teamId, commandArgs);
@@ -106,7 +106,7 @@ export function submitInteractiveDialog(submission: DialogSubmission): ActionFun
     };
 }
 
-export function handleGotoLocation(href: string, intl: any): ActionFunc {
+export function handleGotoLocation(href: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const config = getConfig(state);
@@ -116,7 +116,7 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
         if (match) {
             switch (match.type) {
             case DeepLinkTypes.CHANNEL:
-                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl), intl));
+                dispatch(handleSelectChannelByName(match.channelName, match.teamName, DraftUtils.errorBadChannel, intl));
                 break;
             case DeepLinkTypes.PERMALINK: {
                 const {error} = await dispatch(loadChannelsByTeamName(match.teamName, () => permalinkBadTeam(intl)));
