@@ -259,6 +259,12 @@ export class ParsedCommand {
                     this.i++;
                     break;
                 }
+                case '—': {
+                    // Em dash, introduced when two '-' are set in iOS. Will be considered as such.
+                    this.state = ParseState.Flag;
+                    this.i++;
+                    break;
+                }
                 default: {
                     // Positional parameter.
                     this.position++;
