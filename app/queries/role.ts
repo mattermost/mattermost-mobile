@@ -9,5 +9,6 @@ import Role from '@typings/database/role';
 const {SERVER: {ROLE}} = MM_TABLES;
 
 export const getRoles = async (database: Database) => {
-  await database.collections.get(ROLE).query().fetch() as Role[];
+    const roles = await database.collections.get(ROLE).query().fetch() as Role[];
+    return roles;
 };
