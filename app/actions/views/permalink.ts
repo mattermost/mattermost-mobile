@@ -21,7 +21,6 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
         if (!loadTeam.error) {
             Keyboard.dismiss();
             dispatch(selectFocusedPostId(postId));
-
             if (showingPermalink) {
                 await dismissAllModals();
             }
@@ -29,9 +28,6 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
             const screen = 'Permalink';
             const passProps = {
                 isPermalink: openAsPermalink,
-                onClose: () => {
-                    dispatch(closePermalink());
-                },
                 teamName,
             };
 

@@ -47,6 +47,7 @@ export default class Permalink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addUserToTeam: PropTypes.func.isRequired,
+            closePermalink: PropTypes.func.isRequired,
             getPostsAround: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
@@ -67,7 +68,6 @@ export default class Permalink extends PureComponent {
         isPermalink: PropTypes.bool,
         myChannelMemberships: PropTypes.object.isRequired,
         myTeamMemberships: PropTypes.object.isRequired,
-        onClose: PropTypes.func,
         postIds: PropTypes.array,
         team: PropTypes.object,
         teamName: PropTypes.string,
@@ -134,16 +134,13 @@ export default class Permalink extends PureComponent {
     }
 
     handleClose = () => {
-        const {actions, onClose} = this.props;
+        const {actions} = this.props;
         if (this.viewRef) {
             this.mounted = false;
             this.viewRef.zoomOut().then(() => {
                 actions.selectPost('');
                 dismissModal();
-
-                if (onClose) {
-                    onClose();
-                }
+                actions.closePermalink();
             });
         }
     };
@@ -158,8 +155,8 @@ export default class Permalink extends PureComponent {
 
     jumpToChannel = async (channelId) => {
         if (channelId) {
-            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId, onClose} = this.props;
-            const {handleSelectChannel, handleTeamChange} = actions;
+            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId} = this.props;
+            const {closePermalink, handleSelectChannel, handleTeamChange} = actions;
 
             actions.selectPost('');
 
@@ -175,9 +172,7 @@ export default class Permalink extends PureComponent {
                 resetToChannel(passProps);
             }
 
-            if (onClose) {
-                onClose();
-            }
+            closePermalink();
 
             if (channelTeamId && currentTeamId !== channelTeamId) {
                 handleTeamChange(channelTeamId);
