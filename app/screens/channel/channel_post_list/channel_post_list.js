@@ -87,7 +87,7 @@ export default class ChannelPostList extends PureComponent {
     }
 
     goToThread = (post) => {
-        const {actions, channelId} = this.props;
+        const {actions} = this.props;
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
@@ -97,7 +97,7 @@ export default class ChannelPostList extends PureComponent {
         const screen = 'Thread';
         const title = '';
         const passProps = {
-            channelId,
+            channelId: post.channel_id,
             rootId,
         };
 
