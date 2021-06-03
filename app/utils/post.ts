@@ -8,7 +8,7 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 import type {Post} from '@mm-redux/types/posts';
 import type {UserProfile} from '@mm-redux/types/users';
 
-export function areConsecutivePost(post: Post, previousPost: Post) {
+export function areConsecutivePosts(post: Post, previousPost: Post) {
     let consecutive = false;
 
     if (post && previousPost) {

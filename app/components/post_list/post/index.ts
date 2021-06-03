@@ -12,7 +12,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getUser} from '@mm-redux/selectors/entities/users';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {canDeletePost} from '@selectors/permissions';
-import {areConsecutivePost, postUserDisplayName} from '@utils/post';
+import {areConsecutivePosts, postUserDisplayName} from '@utils/post';
 
 import type {Post as PostType} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
@@ -39,7 +39,7 @@ function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
     const config = getConfig(state);
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
     const enablePostUsernameOverride = config.EnablePostUsernameOverride === 'true';
-    const isConsecutivePost = post && previousPost && !author?.is_bot && !isRootPost(state, post.id) && areConsecutivePost(post, previousPost);
+    const isConsecutivePost = post && previousPost && !author?.is_bot && !isRootPost(state, post.id) && areConsecutivePosts(post, previousPost);
     let isFirstReply = true;
     let isLastReply = true;
     let canDelete = false;
