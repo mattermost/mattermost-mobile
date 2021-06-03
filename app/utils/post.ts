@@ -19,7 +19,7 @@ export function areConsecutivePost(post: Post, previousPost: Post) {
         const isInTimeframe = post.create_at - previousPost.create_at <= Posts.POST_COLLAPSE_TIMEOUT;
         const isSameThread = (previousPost.root_id === post.root_id || previousPost.id === post.root_id);
 
-        // Were The last post and this post made by the same user within some time?
+        // Were the last post and this post made by the same user within some time?
         consecutive = previousPost && isFromSameUser && isInTimeframe && !postFromWebhook &&
         !prevPostFromWebhook && isNotSystemMessage && isSameThread;
     }
