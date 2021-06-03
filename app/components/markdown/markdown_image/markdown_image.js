@@ -22,7 +22,8 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
+import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';

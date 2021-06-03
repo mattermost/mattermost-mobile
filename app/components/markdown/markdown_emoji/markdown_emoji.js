@@ -15,7 +15,7 @@ export default class MarkdownEmoji extends PureComponent {
     static propTypes = {
         baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         isEdited: PropTypes.bool,
-        shouldRenderJumboEmoji: PropTypes.bool.isRequired,
+        isJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string.isRequired,
     };
@@ -44,7 +44,7 @@ export default class MarkdownEmoji extends PureComponent {
     };
 
     computeTextStyle = (baseStyle) => {
-        if (!this.props.shouldRenderJumboEmoji) {
+        if (!this.props.isJumboEmoji) {
             return baseStyle;
         }
 

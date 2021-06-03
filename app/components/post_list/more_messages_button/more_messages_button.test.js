@@ -16,7 +16,7 @@ import MoreMessagesButton, {
     MAX_INPUT,
     INDICATOR_BAR_FACTOR,
     CANCEL_TIMER_DELAY,
-} from './more_messages_button.js';
+} from './more_messages_button';
 
 describe('MoreMessagesButton', () => {
     const baseProps = {
@@ -288,7 +288,7 @@ describe('MoreMessagesButton', () => {
 
         it('should set indicatorBarVisible but not animate if not visible', () => {
             instance.buttonVisible = false;
-            expect(instance.indicatorBarVisible).not.toBeDefined();
+            expect(instance.indicatorBarVisible).toBe(false);
 
             instance.onIndicatorBarVisible(true);
             expect(instance.indicatorBarVisible).toBe(true);
@@ -597,7 +597,7 @@ describe('MoreMessagesButton', () => {
             instance.onMoreMessagesPress();
 
             expect(instance.pressed).toBe(true);
-            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(baseProps.newMessageLineIndex);
+            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(baseProps.newMessageLineIndex, true);
         });
     });
 
@@ -661,7 +661,7 @@ describe('MoreMessagesButton', () => {
 
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
-            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
+            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex, true);
         });
 
         it('should force cancel and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex will be the next viewable item', () => {
@@ -676,7 +676,7 @@ describe('MoreMessagesButton', () => {
 
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
-            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
+            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex, true);
         });
 
         it('should force cancel when the New Message line has been reached and there are no more unread messages', () => {

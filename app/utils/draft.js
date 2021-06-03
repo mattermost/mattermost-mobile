@@ -256,3 +256,17 @@ export const textContainsAtAllAtChannel = (text) => {
     const textWithoutCode = text.replace(CODE_REGEX, '');
     return (/(?:\B|\b_+)@(channel|all)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
 };
+
+export const badDeepLink = (intl) => {
+    const {formatMessage} = intl;
+    Alert.alert(
+        formatMessage({
+            id: 'mobile.server_link.error.title',
+            defaultMessage: 'Link Error',
+        }),
+        formatMessage({
+            id: 'mobile.server_link.error.text',
+            defaultMessage: 'The link could not be found on this server.',
+        }),
+    );
+};
