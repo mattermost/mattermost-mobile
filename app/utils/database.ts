@@ -30,10 +30,9 @@ export const createAndSetActiveDatabase = async ({
 export const getDefaultDatabase = async () => {
     try {
         const defaultDatabase = await DatabaseManager.getDefaultDatabase();
-
         return {
             error: defaultDatabase ? null : 'Unable to retrieve the App database.',
-            database: defaultDatabase ?? null,
+            defaultDatabase,
         };
     } catch (e) {
         return {
@@ -49,7 +48,7 @@ export const getActiveServerDatabase = async () => {
 
         return {
             error: activeServerDatabase ? null : 'Unable to retrieve the current active server database.',
-            database: activeServerDatabase ?? null,
+            activeServerDatabase: activeServerDatabase ?? null,
         };
     } catch (e) {
         return {
