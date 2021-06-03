@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUser, getIdMapUsernamesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
+import {getCurrentUser, getUsernamesByUserId} from '@mm-redux/selectors/entities/users';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {makeGenerateCombinedPost} from '@mm-redux/utils/post_list';
@@ -40,7 +40,7 @@ export function mapStateToProps() {
             currentUsername: currentUser?.username,
             post,
             showJoinLeave: getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true),
-            userProfiles: getIdMapUsernamesByIdsAndUsernames(state, allUserIds, allUsernames),
+            usernamesById: getUsernamesByUserId(state, allUserIds, allUsernames),
         };
     };
 }

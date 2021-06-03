@@ -30,7 +30,7 @@ type Props = {
     showJoinLeave: boolean;
     testID?: string;
     theme: Theme;
-    userProfiles: Record<string, string>;
+    usernamesById: Record<string, string>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -87,7 +87,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const CombinedUserActivity = ({
     canDelete, currentUserId, currentUsername, intl, post,
-    showJoinLeave, testID, theme, userProfiles,
+    showJoinLeave, testID, theme, usernamesById,
 }: Props) => {
     const itemTestID = `${testID}.${post.id}`;
     const textStyles = getMarkdownTextStyles(theme);
@@ -100,7 +100,7 @@ const CombinedUserActivity = ({
         const someone = intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
         const usernames = userIds.reduce((acc: string[], id: string) => {
             if (id !== currentUserId && id !== currentUsername) {
-                const name = userProfiles[id];
+                const name = usernamesById[id];
                 acc.push(name ? `@${name}` : someone);
             }
             return acc;
@@ -134,8 +134,8 @@ const CombinedUserActivity = ({
 
     const renderMessage = (postType: string, userIds: string[], actorId: string) => {
         let actor = '';
-        if (userProfiles[actorId]) {
-            actor = `@${userProfiles[actorId]}`;
+        if (usernamesById[actorId]) {
+            actor = `@${usernamesById[actorId]}`;
         }
 
         if (actor && (actorId === currentUserId || actorId === currentUsername)) {

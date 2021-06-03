@@ -480,7 +480,7 @@ export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: Array<$I
     );
 }
 
-export const getIdMapUsernamesByIdsAndUsernames = createSelector(
+export const getUsernamesByUserId = createSelector(
     getUsers,
     getUsersByUsername,
     (state: GlobalState, allUserIds: Array<$ID<UserProfile>>) => allUserIds,
