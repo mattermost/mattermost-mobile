@@ -4,7 +4,7 @@
 import {intlShape} from 'react-intl';
 import {Keyboard} from 'react-native';
 
-import {showModalOverCurrentContext} from '@actions/navigation';
+import {dismissAllModals, showModalOverCurrentContext} from '@actions/navigation';
 import {loadChannelsByTeamName} from '@actions/views/channel';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
 import {permalinkBadTeam} from '@utils/general';
@@ -22,8 +22,8 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
             Keyboard.dismiss();
             dispatch(selectFocusedPostId(postId));
 
-            if (!showingPermalink) {
-                closePermalink();
+            if (showingPermalink) {
+                await dismissAllModals();
             }
 
             const screen = 'Permalink';
