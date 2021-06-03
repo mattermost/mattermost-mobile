@@ -401,7 +401,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         flex: 1,
 
