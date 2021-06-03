@@ -6,6 +6,7 @@ import {StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import MarkdownEmoji from '@components/markdown/markdown_emoji';
+import {THREAD} from '@constants/screen';
 import {isEdited, isPostEphemeral} from '@mm-redux/utils/post_utils';
 import {Posts} from '@mm-redux/constants';
 
@@ -81,7 +82,7 @@ const Body = ({
     let body;
     let message;
 
-    const isReplyPost = Boolean(post.root_id && (!isPostEphemeral(post) || post.state === Posts.POST_DELETED));
+    const isReplyPost = Boolean(post.root_id && (!isPostEphemeral(post) || post.state === Posts.POST_DELETED) && location !== THREAD);
     const hasContent = (post.metadata?.embeds?.length || (appsEnabled && post.props?.app_bindings?.length)) || post.props?.attachments?.length;
 
     const replyBarStyle = useCallback((): StyleProp<ViewStyle>[]|undefined => {
