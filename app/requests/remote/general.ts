@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-//fixme:  substitute with network client
 import {Client4} from '@client/rest';
 
 export const doPing = async (serverUrl?: string) => {
