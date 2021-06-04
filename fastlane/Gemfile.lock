@@ -179,6 +179,7 @@ GEM
     simctl (1.6.8)
       CFPropertyList
       naturally
+    slack-notifier (2.3.2)
     terminal-notifier (2.0.0)
     terminal-table (1.8.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
@@ -215,6 +216,7 @@ DEPENDENCIES
   fastlane-plugin-find_replace_string
   fastlane-plugin-versioning_android
   nokogiri
+  slack-notifier (= 2.3.2)
 
 BUNDLED WITH
    2.1.4
