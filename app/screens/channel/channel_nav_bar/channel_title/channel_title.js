@@ -14,9 +14,10 @@ import {General} from '@mm-redux/constants';
 
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
@@ -32,6 +33,8 @@ export default class ChannelTitle extends PureComponent {
         isSelfDMChannel: PropTypes.bool.isRequired,
         onPress: PropTypes.func,
         theme: PropTypes.object,
+        teammateId: PropTypes.string,
+        customStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -144,6 +147,7 @@ export default class ChannelTitle extends PureComponent {
         }
 
         let mutedIcon;
+        let wrapperWidth = 90;
         if (isChannelMuted) {
             mutedIcon = (
                 <CompassIcon
@@ -152,6 +156,20 @@ export default class ChannelTitle extends PureComponent {
                     name='bell-off-outline'
                 />
             );
+            wrapperWidth -= 10;
+        }
+
+        const customStatus = this.props.channelType === General.DM_CHANNEL && this.props.customStatusEnabled ?
+            (
+                <CustomStatusEmoji
+                    userID={this.props.teammateId}
+                    emojiSize={16}
+                    style={[style.icon, style.emoji]}
+                />
+            ) : null;
+
+        if (customStatus) {
+            wrapperWidth -= 10;
         }
 
         let channelIcon;
@@ -176,7 +194,7 @@ export default class ChannelTitle extends PureComponent {
                 style={style.container}
                 onPress={onPress}
             >
-                <View style={style.wrapper}>
+                <View style={[style.wrapper, {width: `${wrapperWidth}%`}]}>
                     {this.archiveIcon(style)}
                     <Text
                         ellipsizeMode='tail'
@@ -188,6 +206,7 @@ export default class ChannelTitle extends PureComponent {
                     </Text>
                     {channelIcon}
                     {icon}
+                    {customStatus}
                     {mutedIcon}
                 </View>
                 {hasGuestsText}
@@ -212,6 +231,9 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         icon: {
             color: theme.sidebarHeaderTextColor,
             marginHorizontal: 1,
+        },
+        emoji: {
+            marginHorizontal: 5,
         },
         text: {
             color: theme.sidebarHeaderTextColor,

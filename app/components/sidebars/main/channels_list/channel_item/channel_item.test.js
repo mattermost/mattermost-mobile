@@ -39,6 +39,7 @@ describe('ChannelItem', () => {
         unreadMsgs: 1,
         isSearchResult: false,
         isBot: false,
+        customStatusEnabled: true,
     };
 
     test('should match snapshot', () => {
@@ -202,6 +203,18 @@ describe('ChannelItem', () => {
                 {...baseProps}
                 isManualUnread={true}
             />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status emoji', () => {
+        const wrapper = shallowWithIntl(
+            <ChannelItem
+                {...baseProps}
+                teammateId={baseProps.currentUserId}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
