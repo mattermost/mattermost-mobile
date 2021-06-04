@@ -10,11 +10,16 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import ClearButton from '@components/custom_status/clear_button';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
 import UserStatus from '@components/user_status';
-import {NavigationTypes} from '@constants';
+import {NavigationTypes, CustomStatus} from '@constants';
+import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {preventDoubleTap} from '@utils/tap';
-import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -25,10 +30,13 @@ export default class SettingsSidebarBase extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
+        customStatus: PropTypes.object,
     };
 
     static defaultProps = {
@@ -36,14 +44,47 @@ export default class SettingsSidebarBase extends PureComponent {
         status: 'offline',
     };
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            showStatus: props.isCustomStatusEnabled,
+            showRetryMessage: false,
+        };
+    }
+
     componentDidMount() {
         this.mounted = true;
         EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+        EventEmitter.on(CustomStatus.SET_CUSTOM_STATUS_FAILURE, this.handleSetCustomStatusFailure);
+    }
+
+    componentDidUpdate(prevProps) {
+        this.handleCustomStatusChange(prevProps.customStatus, this.props.customStatus);
     }
 
     componentWillUnmount() {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+        EventEmitter.off(CustomStatus.SET_CUSTOM_STATUS_FAILURE, this.handleSetCustomStatusFailure);
+    }
+
+    handleSetCustomStatusFailure = () => {
+        this.setState({
+            showRetryMessage: true,
+        });
+    }
+
+    handleCustomStatusChange = (prevCustomStatus, customStatus) => {
+        const isStatusSet = Boolean(customStatus?.emoji);
+        if (isStatusSet) {
+            const isStatusChanged = prevCustomStatus?.emoji !== customStatus.emoji || prevCustomStatus?.text !== customStatus.text;
+            if (isStatusChanged) {
+                this.setState({
+                    showStatus: true,
+                    showRetryMessage: false,
+                });
+            }
+        }
     }
 
     confirmResetBase = (status, intl) => {
@@ -123,6 +164,11 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    goToCustomStatusScreen = (intl) => {
+        this.closeSettingsSidebar();
+        showModal('CustomStatus', intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
+    }
+
     logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
         this.closeSettingsSidebar();
@@ -185,6 +231,102 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    clearCustomStatus = async () => {
+        this.setState({showStatus: false, showRetryMessage: false});
+        const {error} = await this.props.actions.unsetCustomStatus();
+        if (error) {
+            this.setState({showStatus: true, showRetryMessage: true});
+        }
+    }
+
+    renderCustomStatus = () => {
+        const {isCustomStatusEnabled, customStatus, theme} = this.props;
+        const {showStatus, showRetryMessage} = this.state;
+
+        if (!isCustomStatusEnabled) {
+            return null;
+        }
+
+        const style = getStyleSheet(theme);
+        const isStatusSet = customStatus?.emoji && showStatus;
+
+        const customStatusEmoji = (
+            <View
+                testID={`custom_status.emoji.${isStatusSet ? customStatus.emoji : 'default'}`}
+            >
+                {isStatusSet ? (
+                    <Emoji
+                        emojiName={customStatus.emoji}
+                        size={20}
+                    />
+                ) : (
+                    <CompassIcon
+                        name='emoticon-happy-outline'
+                        size={24}
+                        style={style.customStatusIcon}
+                    />
+                )}
+            </View>
+        );
+
+        const clearButton = isStatusSet ?
+            (
+                <ClearButton
+                    handlePress={this.clearCustomStatus}
+                    theme={theme}
+                    testID='settings.sidebar.custom_status.action.clear'
+                />
+            ) : null;
+
+        const retryMessage = showRetryMessage ?
+            (
+                <FormattedText
+                    id='custom_status.failure_message'
+                    defaultMessage='Failed to update status. Try again'
+                    style={style.retryMessage}
+                />
+            ) : null;
+
+        const text = isStatusSet ? customStatus.text : (
+            <FormattedText
+                id='mobile.routes.custom_status'
+                defaultMessage='Set a Status'
+            />
+        );
+
+        const labelComponent = (
+            <>
+                <View
+                    style={style.customStatusTextContainer}
+                >
+                    <CustomStatusText
+                        text={text}
+                        theme={theme}
+                    />
+                </View>
+                {retryMessage}
+                {clearButton &&
+                    <View
+                        style={style.clearButton}
+                    >
+                        {clearButton}
+                    </View>
+                }
+            </>
+        );
+
+        return (
+            <DrawerItem
+                testID='settings.sidebar.custom_status.action'
+                labelComponent={labelComponent}
+                leftComponent={customStatusEmoji}
+                separator={false}
+                onPress={this.goToCustomStatus}
+                theme={theme}
+            />
+        );
+    };
+
     renderOptions = (style) => {
         const {currentUser, theme} = this.props;
 
@@ -207,10 +349,11 @@ export default class SettingsSidebarBase extends PureComponent {
                             testID='settings.sidebar.status.action'
                             labelComponent={this.renderUserStatusLabel(currentUser.id)}
                             leftComponent={this.renderUserStatusIcon(currentUser.id)}
-                            separator={false}
+                            separator={this.props.isCustomStatusEnabled}
                             onPress={this.handleSetStatus}
                             theme={theme}
                         />
+                        {this.renderCustomStatus()}
                     </View>
                     <View style={style.separator}/>
                     <View style={style.block}>
@@ -276,3 +419,22 @@ export default class SettingsSidebarBase extends PureComponent {
         return; // eslint-disable-line no-useless-return
     }
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        customStatusTextContainer: {
+            width: '70%',
+        },
+        customStatusIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+        clearButton: {
+            position: 'absolute',
+            top: 4,
+            right: 14,
+        },
+        retryMessage: {
+            color: theme.errorTextColor,
+        },
+    };
+});
