@@ -143,7 +143,7 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     // If url doesn't contain site or server URL, tack it on.
     // e.g. <jump to convo> URLs from autolink plugin.
-    const urlBase = serverURL || siteURL;
+    const urlBase = serverURL || siteURL || '';
     let match = new RegExp(escapeRegex(urlBase)).exec(url);
     if (!match) {
         urlToMatch = urlBase + url;

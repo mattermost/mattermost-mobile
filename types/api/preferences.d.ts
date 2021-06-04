@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 type Theme = {
-    [key: string]: string | undefined;
     type?: string;
     sidebarBg: string;
     sidebarText: string;
@@ -28,4 +27,5 @@ type Theme = {
     mentionHighlightBg: string;
     mentionHighlightLink: string;
     codeTheme: string;
+    [key: string]: any;
 };

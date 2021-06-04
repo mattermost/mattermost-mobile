@@ -4,15 +4,20 @@
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 describe('getKeyboardAppearanceFromTheme', () => {
-    const themes = [{
-        centerChannelBg: '#ffffff', // Mattermost
-    }, {
-        centerChannelBg: '#f2f4f8', // Organization
-    }, {
-        centerChannelBg: '#2f3e4e', // Mattermost Dark
-    }, {
-        centerChannelBg: '#1f1f1f', // Windows Dark
-    }];
+    const themes: Partial<Theme> = [
+        {
+            centerChannelBg: '#ffffff', // Mattermost
+        },
+        {
+            centerChannelBg: '#f2f4f8', // Organization
+        },
+        {
+            centerChannelBg: '#2f3e4e', // Mattermost Dark
+        },
+        {
+            centerChannelBg: '#1f1f1f', // Windows Dark
+        },
+    ];
 
     it('should return "light" keyboard appearance for centerChannelBg="#ffffff"', () => {
         const keyboardAppearance = getKeyboardAppearanceFromTheme(themes[0]);

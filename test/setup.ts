@@ -27,7 +27,6 @@ jest.doMock('react-native', () => {
         StyleSheet,
         ViewPropTypes,
         PermissionsAndroid,
-        ImagePickerManager,
         requireNativeComponent,
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
@@ -113,7 +112,6 @@ jest.doMock('react-native', () => {
         StyleSheet,
         ViewPropTypes,
         PermissionsAndroid,
-        ImagePickerManager,
         requireNativeComponent,
         Alert,
         InteractionManager,
@@ -240,7 +238,7 @@ jest.mock('react-native-navigation', () => {
 });
 
 jest.mock('react-native-notifications', () => {
-    let deliveredNotifications = [];
+    let deliveredNotifications: ReactNative.PushNotification[] = [];
 
     return {
         Notifications: {
@@ -261,7 +259,8 @@ jest.mock('react-native-notifications', () => {
             ios: {
                 getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
                 removeDeliveredNotifications: jest.fn((ids) => {
-                    // eslint-disable-next-line max-nested-callbacks
+                    // eslint-disable-next-line
+                    // @ts-ignore
                     deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
                 }),
                 setBadgeCount: jest.fn(),
@@ -305,20 +304,30 @@ let logs = [];
 let warns = [];
 let errors = [];
 beforeAll(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     console.originalLog = console.log;
     console.log = jest.fn((...params) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         console.originalLog(...params);
         logs.push(params);
     });
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     console.originalWarn = console.warn;
     console.warn = jest.fn((...params) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         console.originalWarn(...params);
         warns.push(params);
     });
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     console.originalError = console.error;
     console.error = jest.fn((...params) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         console.originalError(...params);
         errors.push(params);
     });
@@ -329,7 +338,7 @@ beforeEach(() => {
     warns = [];
     errors = [];
 });
-
+declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
 };
