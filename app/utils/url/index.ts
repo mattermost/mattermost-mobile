@@ -5,7 +5,7 @@ import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
 import {DeepLink, Files} from '@constants';
-import {emptyErrorHandlingFunction, emptyFunction} from '@utils/general';
+import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 
 import {latinise} from './latinise';
@@ -199,7 +199,7 @@ export function getYouTubeVideoId(link: string) {
     return '';
 }
 
-export function tryOpenURL(url: string, onError = emptyErrorHandlingFunction, onSuccess = emptyFunction) {
+export function tryOpenURL(url: string, onError = emptyFunction, onSuccess = emptyFunction) {
     Linking.openURL(url).
         then(onSuccess).
         catch(onError);
