@@ -2111,7 +2111,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
@@ -2155,7 +2155,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Header"
           id="channel_info.header"
           style={
@@ -2193,7 +2193,6 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           disableAtChannelMentionHighlight={true}
           disableGallery={true}
           onChannelLinkPress={[MockFunction]}
-          onPermalinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
             Object {
@@ -2301,7 +2300,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={

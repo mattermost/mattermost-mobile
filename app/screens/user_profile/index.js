@@ -24,7 +24,7 @@ function makeMapStateToProps() {
     return (state, ownProps) => {
         const config = getConfig(state);
         const {createChannel: createChannelRequest} = state.requests.channels;
-        const militaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
+        const isMilitaryTime = getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
         const enableTimezone = isTimezoneEnabled(state);
         const user = state.entities.users.profiles[ownProps.userId];
 
@@ -37,7 +37,7 @@ function makeMapStateToProps() {
             bot: getBotAccounts(state)[ownProps.userId],
             teammateNameDisplay: getTeammateNameDisplaySetting(state),
             enableTimezone,
-            militaryTime,
+            isMilitaryTime,
             theme: getTheme(state),
             isMyUser: getCurrentUserId(state) === ownProps.userId,
             remoteClusterInfo: state.entities.remoteCluster.info[user?.remote_id],
