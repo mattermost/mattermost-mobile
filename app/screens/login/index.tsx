@@ -53,21 +53,8 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<ClientErrorWithIntl | string | undefined | null>();
 
-    //fixme: remove hardcoded value for loginId and password
-    const [loginId, setLoginId] = useState<string>('avinash.lingaloo@mattermost.com');
-    const [password, setPassword] = useState<string>('AluminiumZ545*');
-
-    //fixme: is this necessary ?
-    // useEffect for orientation change
-    // useEffect(() => {
-    //     const handleOrientationDidChange = () => {
-    //         if (this.scroll.current) {
-    //             this.scroll.current.scrollTo({x: 0, y: 0, animated: true});
-    //         }
-    //     };
-    //     Dimensions.addEventListener('change', handleOrientationDidChange);
-    //     return () => Dimensions.removeEventListener('change', handleOrientationDidChange);
-    // }, []);
+    const [loginId, setLoginId] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
 
     // useEffect to set userName for EMM
     useEffect(() => {
