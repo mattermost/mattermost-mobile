@@ -34,7 +34,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
         memberCount: PropTypes.number,
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
-        onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
         shared: PropTypes.bool,
         teammateId: PropTypes.string,
@@ -45,7 +44,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         testID: PropTypes.string,
-        timeZone: PropTypes.string,
+        timezone: PropTypes.string,
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
@@ -137,7 +136,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             displayName,
             header,
             memberCount,
-            onPermalinkPress,
             purpose,
             shared,
             teammateId,
@@ -146,7 +144,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isGroupConstrained,
             testID,
-            timeZone,
+            timezone,
             customStatus,
             isCustomStatusEnabled,
         } = this.props;
@@ -238,7 +236,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     defaultMessage='Header'
                                 />
                                 <Markdown
-                                    onPermalinkPress={onPermalinkPress}
                                     baseTextStyle={baseTextStyle}
                                     textStyles={textStyles}
                                     blockStyles={blockStyles}
@@ -271,7 +268,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <FormattedDate
                             format='LL'
-                            timeZone={timeZone}
+                            timezone={timezone}
                             value={createAt}
                         />
                     </Text>

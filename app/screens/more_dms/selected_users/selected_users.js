@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {View} from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import SelectedUser from 'app/screens/more_dms/selected_users/selected_user';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 

@@ -38,7 +38,6 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -81,10 +80,6 @@ export default class ChannelInfo extends PureComponent {
         }
 
         dismissModal();
-    };
-
-    handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     permalinkBadTeam = () => {
@@ -200,7 +195,6 @@ export default class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
-                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
                         shared={currentChannel.shared}
                         teammateId={teammateId}

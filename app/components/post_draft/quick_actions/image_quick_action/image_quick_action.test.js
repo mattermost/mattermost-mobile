@@ -3,20 +3,18 @@
 
 import React from 'react';
 import {Alert, Platform, StatusBar} from 'react-native';
-import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ImageQuickAction from './index';
 
-jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
     launchImageLibrary: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('ImageQuickAction', () => {
-    const formatMessage = jest.fn();
     const baseProps = {
         testID: 'post_draft.quick_actions.image_action',
         fileCount: 0,
@@ -27,7 +25,7 @@ describe('ImageQuickAction', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<ImageQuickAction {...baseProps}/>);
+        const wrapper = shallowWithIntl(<ImageQuickAction {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -36,9 +34,8 @@ describe('ImageQuickAction', () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.UNAVAILABLE);
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ImageQuickAction {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const hasPermission = await wrapper.instance().hasPhotoPermission();
@@ -52,9 +49,8 @@ describe('ImageQuickAction', () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.BLOCKED);
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ImageQuickAction {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const hasPermission = await wrapper.instance().hasPhotoPermission();
@@ -81,9 +77,8 @@ describe('ImageQuickAction', () => {
             const request = jest.spyOn(Permissions, 'request');
             request.mockReturnValue(Permissions.RESULTS.GRANTED);
 
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <ImageQuickAction {...baseProps}/>,
-                {context: {intl: {formatMessage}}},
             );
             const instance = wrapper.instance();
 
@@ -102,9 +97,8 @@ describe('ImageQuickAction', () => {
     });
 
     test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ImageQuickAction {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const instance = wrapper.instance();

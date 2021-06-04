@@ -5,7 +5,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 

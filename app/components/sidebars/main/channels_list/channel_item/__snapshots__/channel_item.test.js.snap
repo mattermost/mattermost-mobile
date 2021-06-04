@@ -344,7 +344,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         }
         testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
-        {displayname} (you)
+        display_name (you)
       </Text>
     </View>
   </View>

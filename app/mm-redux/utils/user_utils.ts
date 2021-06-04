@@ -17,8 +17,8 @@ export function getFullName(user: UserProfile): string {
 }
 
 export function displayUsername(
-    user: UserProfile,
-    teammateNameDisplay: string,
+    user?: UserProfile,
+    teammateNameDisplay?: string,
     useFallbackUsername = true,
 ): string {
     let name = useFallbackUsername ? localizeMessage('channel_loader.someone', 'Someone') : '';

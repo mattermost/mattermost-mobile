@@ -198,7 +198,9 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
               }
             }
             testID="custom_list.user_item.display_username"
-          />
+          >
+            @user - you
+          </Text>
           <BotTag
             show={false}
             theme={
@@ -410,7 +412,9 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
               "marginTop": 2,
             }
           }
-        />
+        >
+          Deactivated
+        </Text>
       </View>
     </View>
   </CustomListRow>
