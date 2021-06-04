@@ -3,13 +3,12 @@
 
 import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
-import {ScrollView} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 
-import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
 import FormattedText from '@components/formatted_text';
 
@@ -24,6 +23,9 @@ import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
 import {preventDoubleTap} from '@utils/tap';
 import {DoAppCallResult} from 'types/actions/apps';
+import {GlobalStyles} from 'app/styles';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import Markdown from '@components/markdown/markdown';
 
 export type Props = {
     call: AppCallRequest;
@@ -343,11 +345,16 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 >
                     <StatusBar/>
                     {formError && (
-                        <ErrorText
-                            testID='interactive_dialog.error.text'
-                            textStyle={style.errorContainer}
-                            error={formError}
-                        />
+                        <View style={style.errorContainer} >
+                            <Markdown
+                                mentionKeys={[]}
+                                theme={theme}
+                                baseTextStyle={style.errorLabel}
+                                textStyles={getMarkdownTextStyles(theme)}
+                                blockStyles={getMarkdownBlockStyles(theme)}
+                                value={formError}
+                            />
+                        </View>
                     )}
                     {header &&
                         <DialogIntroductionText
@@ -398,6 +405,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         scrollView: {
             marginBottom: 20,
             marginTop: 10,
+        },
+        errorLabel: {
+            fontSize: 12,
+            textAlign: 'left',
+            color: (theme.errorTextColor || '#DA4A4A'),
         },
     };
 });

@@ -15,6 +15,8 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {ViewTypes} from '@constants';
 import {goToScreen} from '@actions/navigation';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import Markdown from '@components/markdown/markdown';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
@@ -122,6 +124,8 @@ export default class AutocompleteSelector extends PureComponent {
         } = this.props;
         const {selectedText} = this.state;
         const style = getStyleSheet(theme);
+        const textStyles = getMarkdownTextStyles(theme);
+        const blockStyles = getMarkdownBlockStyles(theme);
 
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
@@ -167,18 +171,32 @@ export default class AutocompleteSelector extends PureComponent {
         let helpTextContent;
         if (helpText) {
             helpTextContent = (
-                <Text style={style.helpText}>
-                    {helpText}
-                </Text>
+                <View style={style.helpTextContainer} >
+                    <Markdown
+                        mentionKeys={[]}
+                        theme={theme}
+                        baseTextStyle={style.helpText}
+                        textStyles={textStyles}
+                        blockStyles={blockStyles}
+                        value={helpText}
+                    />
+                </View>
             );
         }
 
         let errorTextContent;
         if (errorText) {
             errorTextContent = (
-                <Text style={style.errorText}>
-                    {errorText}
-                </Text>
+                <View style={style.errorTextContainer} >
+                    <Markdown
+                        mentionKeys={[]}
+                        theme={theme}
+                        baseTextStyle={style.errorText}
+                        textStyles={textStyles}
+                        blockStyles={blockStyles}
+                        value={errorText}
+                    />
+                </View>
             );
         }
 
@@ -265,17 +283,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
             marginLeft: 5,
         },
+        helpTextContainer: {
+            marginHorizontal: 15,
+            marginTop: 10,
+        },
         helpText: {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        errorTextContainer: {
             marginHorizontal: 15,
             marginVertical: 10,
         },
         errorText: {
             fontSize: 12,
             color: theme.errorTextColor,
-            marginHorizontal: 15,
-            marginVertical: 10,
         },
         asterisk: {
             color: theme.errorTextColor,
