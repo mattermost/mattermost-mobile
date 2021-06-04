@@ -241,7 +241,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
-            fieldName: 'id',
+            fieldName: 'name',
             operator: prepareSystemRecord,
             rawValues: values,
             tableName: 'System',

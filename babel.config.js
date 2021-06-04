@@ -36,6 +36,7 @@ module.exports = {
                 '@share': './share_extension',
                 '@store': './app/store',
                 '@telemetry': './app/telemetry',
+                '@test': './test',
                 '@typings': './types',
                 '@utils': './app/utils',
                 '@websocket': './app/client/websocket',

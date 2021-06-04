@@ -35,6 +35,7 @@
     "jail-monkey": "2.3.3",
     "mime-db": "1.47.0",
     "moment-timezone": "0.5.33",
+    "nock": "13.1.0",
     "prop-types": "15.7.2",
     "react": "17.0.2",
     "react-intl": "5.15.8",
