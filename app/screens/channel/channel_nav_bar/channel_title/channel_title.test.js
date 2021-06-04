@@ -86,7 +86,7 @@ describe('ChannelTitle', () => {
     });
 
     test('should match snapshot with custom status emoji', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle
                 {...baseProps}
                 channelType={General.DM_CHANNEL}

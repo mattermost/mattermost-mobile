@@ -9,6 +9,7 @@ import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getUser, getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
+import {isCustomStatusEnabled} from '@selectors/custom_status';
 import {postUserDisplayName} from '@utils/post';
 import {isGuest} from '@utils/users';
 
@@ -40,6 +41,7 @@ function mapStateToProps() {
             isGuest: isGuest(author),
             isMilitaryTime: getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'),
             userTimezone: enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : undefined,
+            isCustomStatusEnabled: isCustomStatusEnabled(state),
         };
     };
 }

@@ -74,7 +74,7 @@ describe('user_profile', () => {
     });
 
     test('should match snapshot with custom status', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...customStatusProps}
             />,
@@ -84,7 +84,7 @@ describe('user_profile', () => {
     });
 
     test('should match snapshot with custom status and isMyUser true', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...customStatusProps}
                 isMyUser={true}

@@ -209,7 +209,7 @@ describe('ChannelItem', () => {
     });
 
     test('should match snapshot with custom status emoji', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelItem
                 {...baseProps}
                 teammateId={baseProps.currentUserId}
