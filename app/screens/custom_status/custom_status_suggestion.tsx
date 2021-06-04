@@ -75,7 +75,7 @@ const CustomStatusSuggestion = (props: Props) => {
                             />
                         </View>
                         {duration ? (
-                            <View style={style.expiryTimeContainer}>
+                            <View style={{paddingTop: 5}}>
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}
                                     theme={theme}
@@ -118,9 +118,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             width: '70%',
             flex: 1,
-        },
-        expiryTimeContainer: {
-            marginLeft: 10,
         },
         clearButtonContainer: {
             position: 'absolute',

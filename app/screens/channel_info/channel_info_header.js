@@ -49,6 +49,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         timezone: PropTypes.string,
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
+        isCustomStatusExpired: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -149,6 +150,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             timezone,
             customStatus,
             isCustomStatusEnabled,
+            isCustomStatusExpired,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -161,11 +163,14 @@ export default class ChannelInfoHeader extends React.PureComponent {
 
         const customStatusExpiry = customStatus?.emoji && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
             (
-                <CustomStatusExpiry
-                    time={customStatus.expires_at}
-                    timezone={timeZone}
-                    theme={theme}
-                />
+                <Text style={style.customStatusExpiry}>
+                    <CustomStatusExpiry
+                        time={customStatus.expires_at}
+                        theme={theme}
+                        styleProp={style.customStatusExpiry}
+                        showPrefix={true}
+                    />
+                </Text>
             ) : null;
 
         return (
@@ -191,7 +196,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji &&
+                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji && !isCustomStatusExpired &&
                     <View
                         style={[style.row, style.customStatusContainer]}
                         testID={`${testID}.custom_status`}
@@ -318,12 +323,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 10,
         },
         customStatus: {
-            flexDirection: 'row',
             width: '80%',
         },
         customStatusText: {
             color: theme.centerChannelColor,
             fontSize: 15,
+        },
+        customStatusExpiry: {
+            fontSize: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         channelNameContainer: {
             flexDirection: 'row',

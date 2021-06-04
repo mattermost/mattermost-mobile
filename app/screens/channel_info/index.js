@@ -15,12 +15,13 @@ import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
-import {getCustomStatus, isCustomStatusEnabled} from '@selectors/custom_status';
+import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
 import ChannelInfo from './channel_info';
 
 function makeMapStateToProps() {
+    const getCustomStatus = makeGetCustomStatus();
     return (state) => {
         const currentChannel = getCurrentChannel(state) || {};
         const currentChannelCreator = getUser(state, currentChannel.creator_id);
@@ -34,8 +35,9 @@ function makeMapStateToProps() {
 
         let teammateId;
         let isTeammateGuest = false;
-        let customStatusEnabled;
+        let customStatusEnabled = false;
         let customStatus;
+        let customStatusExpired = true;
         const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
 
         if (isDirectMessage) {
@@ -47,6 +49,7 @@ function makeMapStateToProps() {
             }
             customStatusEnabled = isCustomStatusEnabled(state);
             customStatus = customStatusEnabled ? getCustomStatus(state, teammateId) : undefined;
+            customStatusExpired = isCustomStatusExpired(state, customStatus);
         }
 
         if (currentChannel.type === General.GM_CHANNEL) {
@@ -66,6 +69,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             customStatus,
             isCustomStatusEnabled: customStatusEnabled,
+            isCustomStatusExpired: customStatusExpired,
         };
     };
 }

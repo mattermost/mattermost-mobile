@@ -16,7 +16,7 @@ describe('components/custom_status/custom_status_emoji', () => {
             text: 'In a meeting',
         };
     };
-    (CustomStatusSelectors.getCustomStatus as jest.Mock).mockReturnValue(getCustomStatus);
+    (CustomStatusSelectors.makeGetCustomStatus as jest.Mock).mockReturnValue(getCustomStatus);
     it('should match snapshot', () => {
         const wrapper = renderWithRedux(
             <CustomStatusEmoji/>,
@@ -35,7 +35,7 @@ describe('components/custom_status/custom_status_emoji', () => {
     });
 
     it('should not render when getCustomStatus returns null', () => {
-        (CustomStatusSelectors.getCustomStatus as jest.Mock).mockReturnValue(() => null);
+        (CustomStatusSelectors.makeGetCustomStatus as jest.Mock).mockReturnValue(() => null);
         const wrapper = renderWithRedux(
             <CustomStatusEmoji/>,
         );

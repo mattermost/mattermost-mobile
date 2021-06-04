@@ -14,8 +14,6 @@ import CompassIcon from '@components/compass_icon';
 import moment, {Moment} from 'moment';
 import {durationValues} from '@constants/custom_status';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
-import {useSelector} from 'react-redux';
-import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 
 type Props = {
     handleSuggestionClick: (duration: CustomStatusDuration, expiresAt: string) => void;
@@ -114,12 +112,9 @@ const ClearAfterSuggestion = (props: Props) => {
         </View>
     );
 
-    const timezone = useSelector(getCurrentUserTimezone);
-
     const renderExpiryTime = showExpiryTime && expiry !== '' && (
         <View style={style.rightPosition}>
             <CustomStatusExpiry
-                timezone={timezone}
                 theme={theme}
                 time={moment(expiry).toDate()}
                 styleProp={{

@@ -15,14 +15,29 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {getCurrentMomentForTimezone} from '@utils/timezone';
 
-export function getCustomStatus(state: GlobalState, userID?: string): UserCustomStatus | undefined {
-    const user = userID ? getUser(state, userID) : getCurrentUser(state);
-    const userProps = user?.props || {};
-    const customStatus = userProps.customStatus ? JSON.parse(userProps.customStatus) : undefined;
+export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => UserCustomStatus {
+    return createSelector(
+        (state: GlobalState, userID?: string) => (userID ? getUser(state, userID) : getCurrentUser(state)),
+        (user) => {
+            const userProps = user?.props || {};
+            return userProps.customStatus ? JSON.parse(userProps.customStatus) : undefined;
+        },
+    );
+}
+
+export function isCustomStatusExpired(state: GlobalState, customStatus?: UserCustomStatus) {
+    if (!customStatus) {
+        return true;
+    }
+
+    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR) {
+        return false;
+    }
+
+    const expiryTime = moment(customStatus.expires_at);
     const timezone = getCurrentUserTimezone(state);
-    const expiryTime = moment(customStatus?.expires_at);
     const currentTime = getCurrentMomentForTimezone(timezone);
-    return (customStatus?.duration === CustomStatusDuration.DONT_CLEAR || currentTime < expiryTime) ? customStatus : undefined;
+    return currentTime.isSameOrAfter(expiryTime);
 }
 
 export const getRecentCustomStatuses = createSelector(

@@ -43,7 +43,7 @@ const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
     {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation', durationDefault: CustomStatusDuration.THIS_WEEK},
 ];
 
-const defaultDuration: CustomStatusDuration = CustomStatusDuration.DONT_CLEAR;
+const defaultDuration: CustomStatusDuration = CustomStatusDuration.TODAY;
 
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
@@ -58,6 +58,7 @@ interface Props extends NavigationComponentProps {
         removeRecentCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
     };
     isTimezoneEnabled: boolean;
+    isCustomStatusExpired: boolean;
 }
 
 type State = {
@@ -87,7 +88,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const {customStatus, userTimezone} = props;
+        const {customStatus, userTimezone, isCustomStatusExpired} = props;
 
         this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
@@ -102,21 +103,20 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         let currentTime = moment();
 
         if (props.isTimezoneEnabled) {
-            const timezone = userTimezone;
-            currentTime = getCurrentMomentForTimezone(timezone);
+            currentTime = getCurrentMomentForTimezone(userTimezone);
         }
 
         let initialCustomExpiryTime: Moment = currentTime;
 
-        const isCurrentCustomStatusSet = customStatus?.text || customStatus?.emoji;
+        const isCurrentCustomStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
         if (isCurrentCustomStatusSet && customStatus?.duration === CustomStatusDuration.DATE_AND_TIME && customStatus?.expires_at) {
             initialCustomExpiryTime = moment(customStatus?.expires_at);
         }
 
         this.state = {
-            emoji: props.customStatus?.emoji || '',
-            text: props.customStatus?.text || '',
-            duration: props.customStatus?.duration || defaultDuration,
+            emoji: isCurrentCustomStatusSet ? customStatus?.emoji : '',
+            text: isCurrentCustomStatusSet ? customStatus?.text : '',
+            duration: isCurrentCustomStatusSet ? customStatus?.duration : defaultDuration,
             expires_at: initialCustomExpiryTime,
         };
     }
@@ -163,22 +163,21 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     calculateExpiryTime = (duration: CustomStatusDuration): string => {
         const {userTimezone} = this.props;
-        const timezone = userTimezone;
-        const currentTime = timezone ? moment().tz(timezone) : new Date();
+        const currentTime = getCurrentMomentForTimezone(userTimezone);
         const {expires_at} = this.state;
         switch (duration) {
-        case defaultDuration:
+        case CustomStatusDuration.DONT_CLEAR:
             return '';
         case CustomStatusDuration.THIRTY_MINUTES:
-            return moment(currentTime).add(30, 'minutes').seconds(0).milliseconds(0).toISOString();
+            return currentTime.add(30, 'minutes').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.ONE_HOUR:
-            return moment(currentTime).add(1, 'hour').seconds(0).milliseconds(0).toISOString();
+            return currentTime.add(1, 'hour').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.FOUR_HOURS:
-            return moment(currentTime).add(4, 'hours').seconds(0).milliseconds(0).toISOString();
+            return currentTime.add(4, 'hours').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.TODAY:
-            return moment(currentTime).endOf('day').toISOString();
+            return currentTime.endOf('day').toISOString();
         case CustomStatusDuration.THIS_WEEK:
-            return moment(currentTime).endOf('week').toISOString();
+            return currentTime.endOf('week').toISOString();
         case CustomStatusDuration.DATE_AND_TIME:
             return expires_at.toISOString();
         default:
@@ -337,7 +336,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {emoji, text, duration, expires_at} = this.state;
-        const {theme, isLandscape, intl, userTimezone} = this.props;
+        const {theme, isLandscape, intl} = this.props;
 
         const isStatusSet = emoji || text;
         const style = getStyleSheet(theme);
@@ -373,9 +372,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         ) : (
             <View style={style.expiryTime}>
                 <CustomStatusExpiry
-                    timezone={userTimezone}
                     time={expires_at.toDate()}
                     theme={theme}
+                    styleProp={{
+                        fontSize: 15,
+                        color: changeOpacity(theme.centerChannelColor, 0.5),
+                    }}
                 />
             </View>
         );
@@ -458,6 +460,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             {this.renderRecentCustomStatuses(style)}
                             {this.renderCustomStatusSuggestions(style)}
                         </View>
+                        <View style={style.separator}/>
                     </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
@@ -542,12 +545,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         expiryTime: {
             position: 'absolute',
             right: 30,
-            color: theme.centerChannelColor,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         rightIcon: {
             position: 'absolute',
             right: 6,
-            color: changeOpacity(theme.centerChannelColor, 0.32),
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };
 });

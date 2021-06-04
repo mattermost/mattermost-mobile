@@ -51,6 +51,7 @@ export default class ChannelInfo extends PureComponent {
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         userTimezone: PropTypes.string,
+        isCustomStatusExpired: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -174,12 +175,11 @@ export default class ChannelInfo extends PureComponent {
             isTeammateGuest,
             customStatus,
             isCustomStatusEnabled,
+            isCustomStatusExpired,
         } = this.props;
 
         const style = getStyleSheet(theme);
         const channelIsArchived = currentChannel.delete_at !== 0;
-
-        const timezone = userTimezone;
 
         return (
             <SafeAreaView
@@ -211,7 +211,8 @@ export default class ChannelInfo extends PureComponent {
                         testID='channel_info.header'
                         customStatus={customStatus}
                         isCustomStatusEnabled={isCustomStatusEnabled}
-                        timeZone={timezone}
+                        isCustomStatusExpired={isCustomStatusExpired}
+                        timeZone={userTimezone}
                     />
                     }
                     <View style={style.rowsContainer}>
