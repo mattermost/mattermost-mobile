@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import {CHANNEL, THREAD} from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
@@ -30,6 +31,7 @@ type HeaderProps = {
     shouldRenderReplyButton?: boolean;
     theme: Theme;
     userTimezone?: string | null;
+    isCustomStatusEnabled: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -52,12 +54,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 0.5,
             flex: 1,
         },
+        customStatusEmoji: {
+            color: theme.centerChannelColor,
+            marginRight: 4,
+            marginTop: 1,
+        },
     };
 });
 
 const Header = ({
     commentCount, displayName, location, isBot, isGuest,
-    isMilitaryTime, post, rootPostAuthor, shouldRenderReplyButton, theme, userTimezone,
+    isMilitaryTime, post, rootPostAuthor, shouldRenderReplyButton, theme, userTimezone, isCustomStatusEnabled,
 }: HeaderProps) => {
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPostPendingOrFailed(post) ? style.pendingPost : undefined;
@@ -66,6 +73,7 @@ const Header = ({
     const isSystemPost = isSystemMessage(post);
     const isReplyPost = Boolean(post.root_id && (!isPostEphemeral(post) || post.state === Posts.POST_DELETED));
     const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0));
+    const showCustomStatusEmoji = Boolean(isCustomStatusEnabled && displayName && !(isSystemPost || isBot || isAutoResponse || isWebHook));
 
     return (
         <>
@@ -80,6 +88,12 @@ const Header = ({
                         theme={theme}
                         userId={post.user_id}
                     />
+                    {showCustomStatusEmoji && (
+                        <CustomStatusEmoji
+                            userID={post.user_id}
+                            style={style.customStatusEmoji}
+                        />
+                    )}
                     {!isSystemPost &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}

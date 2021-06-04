@@ -15,6 +15,7 @@ describe('ChannelTitle', () => {
         hasGuests: false,
         canHaveSubtitle: false,
         isSelfDMChannel: false,
+        customStatusEnabled: true,
     };
 
     test('should match snapshot', () => {
@@ -79,6 +80,17 @@ describe('ChannelTitle', () => {
         };
         const wrapper = shallowWithIntl(
             <ChannelTitle {...props}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status emoji', () => {
+        const wrapper = shallowWithIntl(
+            <ChannelTitle
+                {...baseProps}
+                channelType={General.DM_CHANNEL}
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
