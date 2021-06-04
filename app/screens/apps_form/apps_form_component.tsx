@@ -108,7 +108,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             return;
         case 'close-dialog':
             this.handleHide();
-            return;
         }
     }
 
