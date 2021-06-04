@@ -9,7 +9,7 @@ import FormattedText from '@components/formatted_text';
 import type {Theme} from '@mm-redux/types/preferences';
 
 interface ComponentProps {
-    text: string | FormattedText;
+    text: string | typeof FormattedText;
     theme: Theme;
     textStyle?: TextStyle;
     ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';

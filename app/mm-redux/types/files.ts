@@ -14,6 +14,7 @@ export type FileInfo = {
     extension: string;
     size: number;
     mime_type: string;
+    mini_preview?: string;
     width: number;
     height: number;
     has_preview_image: boolean;

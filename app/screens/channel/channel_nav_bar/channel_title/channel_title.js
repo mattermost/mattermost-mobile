@@ -163,7 +163,7 @@ export default class ChannelTitle extends PureComponent {
             (
                 <CustomStatusEmoji
                     userID={this.props.teammateId}
-                    emojiSize={18}
+                    emojiSize={16}
                     style={[style.icon, style.emoji]}
                 />
             ) : null;

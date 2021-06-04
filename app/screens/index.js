@@ -112,9 +112,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'LoginOptions':
         screen = require('@screens/login_options').default;
         break;
-    case 'LongPost':
-        screen = require('@screens/long_post').default;
-        break;
     case 'MainSidebar':
         screen = require('app/components/sidebars/main').default;
         break;

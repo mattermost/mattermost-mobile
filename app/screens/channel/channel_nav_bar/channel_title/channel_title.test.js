@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+
 import {General} from '@mm-redux/constants';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelTitle from './channel_title';
-
-jest.mock('react-intl');
 
 describe('ChannelTitle', () => {
     const baseProps = {
@@ -20,7 +19,7 @@ describe('ChannelTitle', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle {...baseProps}/>,
         );
 
@@ -33,9 +32,8 @@ describe('ChannelTitle', () => {
             displayName: 'My User',
             isSelfDMChannel: true,
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle {...props}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -50,9 +48,8 @@ describe('ChannelTitle', () => {
             hasGuests: true,
             canHaveSubtitle: true,
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle {...props}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -67,9 +64,8 @@ describe('ChannelTitle', () => {
             hasGuests: true,
             canHaveSubtitle: true,
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle {...props}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -82,16 +78,15 @@ describe('ChannelTitle', () => {
             isChannelShared: true,
             channelType: General.PRIVATE_CHANNEL,
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle {...props}/>,
-            {context: {intl: {formatMessage: (intlId) => intlId.defaultMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot with custom status emoji', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelTitle
                 {...baseProps}
                 channelType={General.DM_CHANNEL}

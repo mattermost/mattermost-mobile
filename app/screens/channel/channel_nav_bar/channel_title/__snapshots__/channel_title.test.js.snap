@@ -111,7 +111,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
       }
     />
     <CustomStatusEmoji
-      emojiSize={18}
+      emojiSize={16}
       style={
         Array [
           Object {
@@ -136,7 +136,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
       }
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="This person is a guest"
       ellipsizeMode="tail"
       id="channel.isGuest"
@@ -207,7 +207,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
       }
     />
     <CustomStatusEmoji
-      emojiSize={18}
+      emojiSize={16}
       style={
         Array [
           Object {
@@ -341,7 +341,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
       }
       testID="channel.nav_bar.title"
     >
-      <FormattedText
+      <InjectIntl(FormattedText)
         defaultMessage="{displayname} (you)"
         id="channel_header.directchannel.you"
         values={
@@ -419,7 +419,7 @@ exports[`ChannelTitle should match snapshot with custom status emoji 1`] = `
       }
     />
     <CustomStatusEmoji
-      emojiSize={18}
+      emojiSize={16}
       style={
         Array [
           Object {

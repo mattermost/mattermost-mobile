@@ -5,7 +5,6 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {setChannelDisplayName} from '@actions/views/channel';
-import {showPermalink} from '@actions/views/permalink';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {General} from '@mm-redux/constants';
@@ -77,7 +76,6 @@ function mapDispatchToProps(dispatch) {
             getChannelStats,
             getCustomEmojisInText,
             setChannelDisplayName,
-            showPermalink,
         }, dispatch),
     };
 }

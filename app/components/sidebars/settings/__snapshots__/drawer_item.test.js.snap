@@ -57,7 +57,7 @@ exports[`DrawerItem should match snapshot 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="default message"
           id="i18-id"
           style={
@@ -149,7 +149,7 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="default message"
           id="i18-id"
           style={

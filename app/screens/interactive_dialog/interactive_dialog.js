@@ -11,7 +11,7 @@ import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/
 
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {dismissModal} from 'app/actions/navigation';

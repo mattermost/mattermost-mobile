@@ -33,7 +33,6 @@ describe('channel_info_header', () => {
         memberCount: 3,
         displayName: 'Channel name',
         header: 'Header string',
-        onPermalinkPress: jest.fn(),
         purpose: 'Purpose string',
         status: 'status',
         theme: Preferences.THEMES.default,

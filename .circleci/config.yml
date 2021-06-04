@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
+  node: circleci/node@4.4.0
 
 executors:
   android:
@@ -158,6 +159,8 @@ commands:
     steps:
       - checkout:
           path: ~/mattermost-mobile
+      - node/install-npm:
+          version: '6.14.11'
       - npm-dependencies
       - pods-dependencies
       - assets

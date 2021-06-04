@@ -20,7 +20,7 @@ target 'Mattermost' do
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"
   pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
 
-  pod 'XCDYouTubeKit', '2.8.2'
+  pod 'XCDYouTubeKit', '2.8.3'
   pod 'Swime', '3.0.6'
 
 # Enables Flipper.
@@ -33,5 +33,7 @@ target 'Mattermost' do
 
   post_install do |installer|
     react_native_post_install(installer)
+    puts 'Patching XCDYouTube so it can playback videos'
+    %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
   end
 end
