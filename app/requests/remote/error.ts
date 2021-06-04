@@ -3,7 +3,8 @@
 
 //fixme: to be completed in next PR.
 
-export const logError = () => null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const logError = (_e: any) => null;
 
 // export const logError = async (error: Error, displayable = false) => {
 // if (error?.server_error_id === 'api.context.session_expired.app_error') {

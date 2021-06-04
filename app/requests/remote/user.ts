@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
 import {DataOperator} from '@database/operator';
@@ -30,7 +31,6 @@ import Role from '@typings/database/role';
 import User from '@typings/database/user';
 import {createAndSetActiveDatabase, getActiveServerDatabase, getDefaultDatabase} from '@utils/database';
 import {getCSRFFromCookie} from '@utils/security';
-import urlParse from 'url-parse';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -67,7 +67,7 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
     return {error: null};
 };
 
-export const login = async ({config, ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
+export const login = async ({ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
     let deviceToken;
     let user;
 
