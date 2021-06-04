@@ -30,6 +30,7 @@ import Role from '@typings/database/role';
 import User from '@typings/database/user';
 import {createAndSetActiveDatabase, getActiveServerDatabase, getDefaultDatabase} from '@utils/database';
 import {getCSRFFromCookie} from '@utils/security';
+import urlParse from 'url-parse';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -74,6 +75,10 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
     if (!defaultDatabase) {
         return {error};
     }
+
+    const url = Client4.getUrl();
+    const hostname = urlParse(url)?.hostname;
+
     try {
         deviceToken = await getDeviceToken(defaultDatabase);
         user = ((await Client4.login(
@@ -84,11 +89,7 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
             ldapOnly,
         )) as unknown) as RawUser;
 
-        //fixme: what do we use as alternative for displayName if SiteName is null ?
-        await createAndSetActiveDatabase({
-            serverUrl: Client4.getUrl(),
-            displayName: config?.SiteName ?? '',
-        });
+        await createAndSetActiveDatabase({serverUrl: url, displayName: hostname});
         await getCSRFFromCookie(Client4.getUrl());
     } catch (e) {
         return {error: e};
