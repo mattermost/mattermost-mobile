@@ -3,34 +3,36 @@
 
 //fixme: to be completed in next PR.
 
-export const logError = async (error: Error, displayable = false) => {
-    // if (error?.server_error_id === 'api.context.session_expired.app_error') {
-    //     return {data: true};
-    // }
-    //
-    // const serializedError = serializeError(error);
-    //
-    // let sendToServer = true;
-    // if (error.stack && error.stack.includes('TypeError: Failed to fetch')) {
-    //     sendToServer = false;
-    // }
-    // if (error?.server_error_id) {
-    //     sendToServer = false;
-    // }
-    //
-    // if (sendToServer) {
-    //     try {
-    //         const stringifiedSerializedError = JSON.stringify(serializedError).toString();
-    //         await Client4.logClientError(stringifiedSerializedError);
-    //     } catch (err) {
-    //         // avoid crashing the app if an error sending
-    //         // the error occurs.
-    //     }
-    // }
-    //
-    // EventEmitter.emit(ErrorTypes.LOG_ERROR, error);
-    // dispatch(getLogErrorAction(serializedError, displayable));
+export const logError = () => null;
 
-    return {data: true};
-};
+// export const logError = async (error: Error, displayable = false) => {
+// if (error?.server_error_id === 'api.context.session_expired.app_error') {
+//     return {data: true};
+// }
+//
+// const serializedError = serializeError(error);
+//
+// let sendToServer = true;
+// if (error.stack && error.stack.includes('TypeError: Failed to fetch')) {
+//     sendToServer = false;
+// }
+// if (error?.server_error_id) {
+//     sendToServer = false;
+// }
+//
+// if (sendToServer) {
+//     try {
+//         const stringifiedSerializedError = JSON.stringify(serializedError).toString();
+//         await Client4.logClientError(stringifiedSerializedError);
+//     } catch (err) {
+//         // avoid crashing the app if an error sending
+//         // the error occurs.
+//     }
+// }
+//
+// EventEmitter.emit(ErrorTypes.LOG_ERROR, error);
+// dispatch(getLogErrorAction(serializedError, displayable));
+
+//     return {data: true};
+// };
 
