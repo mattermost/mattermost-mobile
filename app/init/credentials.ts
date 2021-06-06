@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as KeyChain from 'react-native-keychain';
 
 import * as analytics from '@init/analytics';
-import emmProvider from '@init/emm_provider';
 import EphemeralStore from '@store/ephemeral_store';
+import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {getCSRFFromCookie} from '@utils/security';
 
 const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
@@ -29,7 +30,12 @@ export const setAppCredentials = (deviceToken: string, currentUserId: string, to
     if (url && token) {
         try {
             const username = `${deviceToken}, ${currentUserId}`;
-            const accessGroup = emmProvider.getAppGroupIdentifier();
+            
+            let accessGroup;
+            if (Platform.OS === 'ios') {
+                const appGroup = getIOSAppGroupDetails();
+                accessGroup = appGroup.appGroupIdentifier;
+            }
 
             EphemeralStore.deviceToken = deviceToken;
             EphemeralStore.currentServerUrl = url;

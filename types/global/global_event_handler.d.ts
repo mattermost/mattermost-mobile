@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 interface launchAppFunc {
-    (skipEmm: boolean): void;
+    (): void;
 }
 
 interface GlobalEventHandlerOpts {

@@ -137,7 +137,7 @@ class GlobalEventHandler {
         await this.clearCookiesAndWebData();
 
         if (this.launchApp) {
-            this.launchApp(true);
+            this.launchApp();
         }
 
         // TODO: Remove the database

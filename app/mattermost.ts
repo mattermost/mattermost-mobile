@@ -5,76 +5,97 @@ import {DeviceEventEmitter, Linking} from 'react-native';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
 import {Navigation as NavigationConstants, Screens} from '@constants';
-import {getAppCredentials} from '@init/credentials';
-import emmProvider from '@init/emm_provider';
-import globalEventHandler from '@init/global_event_handler';
+import DatabaseManager from '@database/manager';
+import {getAppCredentials, getInternetCredentials} from '@init/credentials';
+import GlobalEventHandler from '@init/global_event_handler';
+import ManagedApp from '@init/managed_app';
 import '@init/fetch';
 import {registerScreens} from '@screens/index';
-import {resetToChannel, resetToSelectServer} from '@screens/navigation';
+import {resetToChannel, resetToLogin, resetToSelectServer} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {parseDeepLink} from '@utils/url';
 
-const init = () => {
-    if (EphemeralStore.appStarted) {
-        launchApp(true);
+
+Navigation.events().registerAppLaunchedListener(() => {
+    initApp();
+    launchApp();
+});
+
+const initApp = () => {
+    GlobalEventHandler.configure({launchApp});
+    registerNavigationListeners();
+    registerScreens();
+
+    if (ManagedApp.enabled) {
+        ManagedApp.processConfig();
+    }
+};
+
+const launchApp = async () => {
+    const initialUrl = await Linking.getInitialURL();
+    if (initialUrl) {
+        launchFromDeepLink(initialUrl);
+        return;
+    }
+    
+    const credentials = await getAppCredentials();
+    if (credentials) {
+        launchToChannel();
+        return;
+    }
+    
+    resetToSelectServer();
+};
+
+const launchFromDeepLink = async (deepLinkUrl: string) => {
+    const parsed = parseDeepLink(deepLinkUrl);
+    if (!parsed?.serverUrl) {
+        // TODO: return error?
         return;
     }
 
-    globalEventHandler.configure({
-        launchApp,
-    });
-
-    registerScreens();
-
-    if (!EphemeralStore.appStarted) {
-        launchApp(false);
-    }
-};
-
-const launchApp = async (skipEmm: boolean) => {
-    if (!skipEmm) {
-        await emmProvider.handleManagedConfig();
-        if (emmProvider.enabled) {
-            if (emmProvider.jailbreakProtection) {
-                emmProvider.checkIfDeviceIsTrusted();
-            }
-
-            if (emmProvider.inAppPinCode) {
-                await emmProvider.handleAuthentication();
-            }
-        }
+    const {serverUrl} = parsed;
+    if (!DatabaseManager.isServerPresent(serverUrl)) {
+        // TODO: Probably need to pass in other `parsed` values so that 
+        // after adding server we navigate the user to the correct link?
+        launchToAddServer(serverUrl);
+        return;
     }
 
-    Linking.getInitialURL().then((url) => {
-        if (url) {
-            // TODO: Handle deeplink
-            // if server is not added go to add new server screen
-            // if server is added but no credentials found take to server login screen
-        }
-    });
+    // TODO: set the currentServerUrl?
+    // TODO: set the active DB?
 
-    const credentials = await getAppCredentials();
+    const credentials = await getInternetCredentials(serverUrl);
     if (credentials) {
-        // TODO: Fetch posts for current channel and then load user profile, etc..
-
-        // eslint-disable-next-line no-console
-        console.log('Launch app in Channel screen');
-        resetToChannel({skipMetrics: true});
-    } else {
-        resetToSelectServer(emmProvider.allowOtherServers);
+        // TODO: set the default team and channel from the deeplink
+        launchToChannel();
+        return;
     }
 
-    EphemeralStore.appStarted = true;
-};
+    
+    resetToLogin();
+}
 
-Navigation.events().registerAppLaunchedListener(() => {
-    init();
+const launchToAddServer = (serverUrl: String) => {
+    // TODO: show error if allowOtherServers is false and serverUrl
+    // is not equal to managed serverUrl
+}
 
-    // Keep track of the latest componentId to appear/disappear
+const launchToChannel = () => {
+    // TODO: Fetch posts for current channel and then load user profile, etc...
+
+    // eslint-disable-next-line no-console
+    console.log('Launch app in Channel screen');
+    const passProps = {skipMetrics: true};
+    resetToChannel(passProps);
+}
+
+const registerNavigationListeners = () => {
     Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
     Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
-});
+}
 
-export function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
+function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
     EphemeralStore.addNavigationComponentId(componentId);
 
     switch (componentId) {
@@ -88,7 +109,7 @@ export function componentDidAppearListener({componentId}: ComponentDidAppearEven
     }
 }
 
-export function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
+function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.CHANNEL) {
         EphemeralStore.removeNavigationComponentId(componentId);
     }
