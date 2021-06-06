@@ -55,7 +55,8 @@ const launchFromDeepLink = async (deepLinkUrl: string) => {
     }
 
     const {serverUrl} = parsed;
-    if (!DatabaseManager.isServerPresent(serverUrl)) {
+    const serverPresent = await DatabaseManager.isServerPresent(serverUrl);
+    if (!serverPresent) {
         // TODO: Probably need to pass in other `parsed` values so that 
         // after adding server we navigate the user to the correct link?
         launchToAddServer(serverUrl);
