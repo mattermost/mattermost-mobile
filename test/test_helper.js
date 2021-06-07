@@ -5,11 +5,12 @@ import assert from 'assert';
 import nock from 'nock';
 
 import Config from '@assets/config.json';
-import Client from '@mm-redux/client/client4';
-import {DEFAULT_LOCALE} from '@mm-redux/constants/general';
-import {generateId} from '@mm-redux/utils/helpers';
+import {Client} from '@client/rest';
+import GENERAL_CONSTANTS from '@constants/general';
+import {generateId} from '@utils/general';
 
 const PASSWORD = 'password1';
+const DEFAULT_LOCALE = GENERAL_CONSTANTS.DEFAULT_LOCALE;
 
 class TestHelper {
     constructor() {

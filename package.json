@@ -134,6 +134,7 @@
     "react-native-dev-menu": "4.0.2",
     "react-native-dotenv": "2.5.5",
     "react-native-storybook-loader": "2.0.2",
+    "react-test-renderer": "17.0.2",
     "ts-jest": "26.5.5",
     "typescript": "4.2.4",
     "underscore": "1.13.1",
