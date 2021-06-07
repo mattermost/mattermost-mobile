@@ -88,7 +88,7 @@ describe('*** Operator: User Handlers tests ***', () => {
                 timezone: {
                     automaticTimezone: 'Indian/Mauritius',
                     manualTimezone: '',
-                    useAutomaticTimezone: true,
+                    useAutomaticTimezone: '',
                 },
             },
         ];
@@ -139,7 +139,7 @@ describe('*** Operator: User Handlers tests ***', () => {
                     timezone: {
                         automaticTimezone: 'Indian/Mauritius',
                         manualTimezone: '',
-                        useAutomaticTimezone: true,
+                        useAutomaticTimezone: '',
                     },
                 },
             ],

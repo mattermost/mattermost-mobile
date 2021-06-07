@@ -3,6 +3,7 @@
 
 import {preventDoubleTap} from './index';
 
+/*eslint max-nested-callbacks: 0 */
 describe('Prevent double tap', () => {
     it('should prevent double taps within the 300ms default', (done) => {
         const testFunction = jest.fn();

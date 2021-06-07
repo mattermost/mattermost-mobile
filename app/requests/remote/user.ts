@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
 import {DataOperator} from '@database/operator';
@@ -66,7 +67,7 @@ export const forceLogoutIfNecessary = async (err: Client4Error) => {
     return {error: null};
 };
 
-export const login = async ({config, ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
+export const login = async ({ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
     let deviceToken;
     let user;
 
@@ -74,6 +75,10 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
     if (!defaultDatabase) {
         return {error};
     }
+
+    const url = Client4.getUrl();
+    const hostname = urlParse(url)?.hostname;
+
     try {
         deviceToken = await getDeviceToken(defaultDatabase);
         user = ((await Client4.login(
@@ -84,11 +89,7 @@ export const login = async ({config, ldapOnly = false, loginId, mfaToken, passwo
             ldapOnly,
         )) as unknown) as RawUser;
 
-        //fixme: what do we use as alternative for displayName if SiteName is null ?
-        await createAndSetActiveDatabase({
-            serverUrl: Client4.getUrl(),
-            displayName: config?.SiteName ?? '',
-        });
+        await createAndSetActiveDatabase({serverUrl: url, displayName: hostname});
         await getCSRFFromCookie(Client4.getUrl());
     } catch (e) {
         return {error: e};

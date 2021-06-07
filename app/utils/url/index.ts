@@ -5,7 +5,7 @@ import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
 import {DeepLink, Files} from '@constants';
-import {emptyErrorHandlingFunction, emptyFunction} from '@utils/general';
+import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 
 import {latinise} from './latinise';
@@ -143,7 +143,7 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     // If url doesn't contain site or server URL, tack it on.
     // e.g. <jump to convo> URLs from autolink plugin.
-    const urlBase = serverURL || siteURL;
+    const urlBase = serverURL || siteURL || '';
     let match = new RegExp(escapeRegex(urlBase)).exec(url);
     if (!match) {
         urlToMatch = urlBase + url;
@@ -199,7 +199,7 @@ export function getYouTubeVideoId(link: string) {
     return '';
 }
 
-export function tryOpenURL(url: string, onError = emptyErrorHandlingFunction, onSuccess = emptyFunction) {
+export function tryOpenURL(url: string, onError = emptyFunction, onSuccess = emptyFunction) {
     Linking.openURL(url).
         then(onSuccess).
         catch(onError);

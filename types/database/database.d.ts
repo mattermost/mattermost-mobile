@@ -226,7 +226,7 @@ export type RawUser = {
   props: UserProps;
   roles: string;
   timezone: {
-    useAutomaticTimezone: boolean;
+    useAutomaticTimezone: string;
     manualTimezone: string;
     automaticTimezone: string;
   };

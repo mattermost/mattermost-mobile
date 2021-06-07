@@ -22,6 +22,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
                 files: [
                     {
+                        id: '322dxx',
                         user_id: 'user_id',
                         post_id: 'post_id',
                         create_at: 123,

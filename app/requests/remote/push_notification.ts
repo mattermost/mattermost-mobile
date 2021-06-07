@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment from 'moment-timezone';
+import {IntlShape} from 'react-intl';
+
 import {Client4} from '@client/rest';
 import PushNotifications from '@init/push_notifications';
 import {getCommonSystemValues} from '@queries/system';
@@ -8,8 +11,6 @@ import {getSessions} from '@requests/remote/user';
 import {Config} from '@typings/database/config';
 import {getActiveServerDatabase} from '@utils/database';
 import {isMinimumServerVersion} from '@utils/helpers';
-import moment from 'moment-timezone';
-import {IntlShape} from 'react-intl';
 
 const MAJOR_VERSION = 5;
 const MINOR_VERSION = 24;
