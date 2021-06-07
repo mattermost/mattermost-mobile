@@ -4,10 +4,6 @@
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import {t} from '@utils/i18n';
 
-export const CUSTOM_STATUS_TEXT_CHARACTER_LIMIT = 100;
-
-export const SET_CUSTOM_STATUS_FAILURE = 'set_custom_status_failure';
-
 const {
     DONT_CLEAR,
     THIRTY_MINUTES,
@@ -48,3 +44,5 @@ export const durationValues = {
         defaultMessage: 'Date and Time',
     },
 };
+export const CUSTOM_STATUS_TEXT_CHARACTER_LIMIT = 100;
+export const SET_CUSTOM_STATUS_FAILURE = 'set_custom_status_failure';

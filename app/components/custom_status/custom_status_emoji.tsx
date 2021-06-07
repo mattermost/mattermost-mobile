@@ -18,7 +18,9 @@ interface ComponentProps {
 
 const CustomStatusEmoji = ({emojiSize, userID, style, testID}: ComponentProps) => {
     const getCustomStatus = makeGetCustomStatus();
-    const customStatus = useSelector((state: GlobalState) => getCustomStatus(state, userID));
+    const customStatus = useSelector((state: GlobalState) => {
+        return getCustomStatus(state, userID);
+    });
     const customStatusExpired = useSelector((state: GlobalState) => isCustomStatusExpired(state, customStatus));
 
     if (!customStatus?.emoji || customStatusExpired) {
@@ -27,17 +29,15 @@ const CustomStatusEmoji = ({emojiSize, userID, style, testID}: ComponentProps) =
 
     const testIdPrefix = testID ? `${testID}.` : '';
     return (
-        customStatus && (
-            <Text
-                style={style}
-                testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
-            >
-                <Emoji
-                    size={emojiSize}
-                    emojiName={customStatus.emoji}
-                />
-            </Text>
-        )
+        <Text
+            style={style}
+            testID={`${testIdPrefix}custom_status_emoji.${customStatus.emoji}`}
+        >
+            <Emoji
+                size={emojiSize}
+                emojiName={customStatus.emoji}
+            />
+        </Text>
     );
 };
 

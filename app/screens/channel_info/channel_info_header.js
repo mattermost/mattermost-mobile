@@ -202,10 +202,10 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         testID={`${testID}.custom_status`}
                     >
                         <Emoji
-                            emojiName={customStatus?.emoji}
+                            emojiName={customStatus.emoji}
                             size={20}
                             textStyle={style.iconContainer}
-                            testID={`custom_status.emoji.${customStatus?.emoji}`}
+                            testID={`custom_status.emoji.${customStatus.emoji}`}
                         />
                         <View style={style.customStatus}>
                             <CustomStatusText
@@ -318,6 +318,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
         },
         customStatusContainer: {
+            position: 'relative',
             flexDirection: 'row',
             alignItems: 'center',
             paddingVertical: 10,
@@ -325,12 +326,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         customStatus: {
             width: '80%',
         },
-        customStatusText: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-        },
         customStatusExpiry: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        customStatusText: {
+            flex: 1,
+            fontSize: 15,
+            color: theme.centerChannelColor,
+            width: '80%',
         },
         channelNameContainer: {
             flexDirection: 'row',

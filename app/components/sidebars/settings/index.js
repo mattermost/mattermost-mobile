@@ -19,6 +19,7 @@ function makeMapStateToProps() {
     return (state) => {
         const currentUser = getCurrentUser(state) || {};
         const status = getStatusForUserId(state, currentUser.id);
+
         const customStatusEnabled = isCustomStatusEnabled(state);
         const customStatus = customStatusEnabled ? getCustomStatus(state) : undefined;
         return {

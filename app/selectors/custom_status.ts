@@ -19,7 +19,11 @@ export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => 
         (state: GlobalState, userID?: string) => (userID ? getUser(state, userID) : getCurrentUser(state)),
         (user) => {
             const userProps = user?.props || {};
-            return userProps.customStatus ? JSON.parse(userProps.customStatus) : undefined;
+            if (userProps.customStatus) {
+                return JSON.parse(userProps.customStatus) || undefined;
+            }
+
+            return undefined;
         },
     );
 }

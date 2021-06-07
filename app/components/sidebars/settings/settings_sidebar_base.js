@@ -255,11 +255,11 @@ export default class SettingsSidebarBase extends PureComponent {
 
         const customStatusEmoji = (
             <View
-                testID={`custom_status.emoji.${isStatusSet ? customStatus?.emoji : 'default'}`}
+                testID={`custom_status.emoji.${isStatusSet ? customStatus.emoji : 'default'}`}
             >
                 {isStatusSet ? (
                     <Emoji
-                        emojiName={customStatus?.emoji}
+                        emojiName={customStatus.emoji}
                         size={20}
                     />
                 ) : (

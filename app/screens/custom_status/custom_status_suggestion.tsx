@@ -46,7 +46,7 @@ const CustomStatusSuggestion = (props: Props) => {
                 <ClearButton
                     handlePress={handleSuggestionClear}
                     theme={theme}
-                    iconName='close-circle'
+                    iconName='close'
                     size={18}
                     testID='custom_status_suggestion.clear.button'
                 />

@@ -50,7 +50,6 @@ export default class ChannelInfo extends PureComponent {
         theme: PropTypes.object.isRequired,
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
-        userTimezone: PropTypes.string,
         isCustomStatusExpired: PropTypes.bool.isRequired,
     };
 
@@ -165,7 +164,6 @@ export default class ChannelInfo extends PureComponent {
 
     render() {
         const {
-            userTimezone,
             currentChannel,
             currentChannelCreatorName,
             currentChannelMemberCount,
@@ -212,7 +210,6 @@ export default class ChannelInfo extends PureComponent {
                         customStatus={customStatus}
                         isCustomStatusEnabled={isCustomStatusEnabled}
                         isCustomStatusExpired={isCustomStatusExpired}
-                        timeZone={userTimezone}
                     />
                     }
                     <View style={style.rowsContainer}>

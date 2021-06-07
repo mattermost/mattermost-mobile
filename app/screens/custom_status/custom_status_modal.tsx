@@ -88,21 +88,21 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const {customStatus, userTimezone, isCustomStatusExpired} = props;
+        const {customStatus, userTimezone, isCustomStatusExpired, intl, theme, componentId, isTimezoneEnabled} = props;
 
-        this.rightButton.text = props.intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
-        this.rightButton.color = props.theme.sidebarHeaderTextColor;
+        this.rightButton.text = intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
+        this.rightButton.color = theme.sidebarHeaderTextColor;
 
         const options: Options = {
             topBar: {
                 rightButtons: [this.rightButton],
             },
         };
-        mergeNavigationOptions(props.componentId, options);
+        mergeNavigationOptions(componentId, options);
 
         let currentTime = moment();
 
-        if (props.isTimezoneEnabled) {
+        if (isTimezoneEnabled) {
             currentTime = getCurrentMomentForTimezone(userTimezone);
         }
 

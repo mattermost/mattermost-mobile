@@ -269,10 +269,10 @@ export default class UserProfile extends PureComponent {
                 <View style={style.customStatus}>
                     <Text
                         style={style.iconContainer}
-                        testID={`custom_status.emoji.${customStatus?.emoji}`}
+                        testID={`custom_status.emoji.${customStatus.emoji}`}
                     >
                         <Emoji
-                            emojiName={customStatus?.emoji}
+                            emojiName={customStatus.emoji}
                             size={20}
                         />
                     </Text>
