@@ -19,14 +19,14 @@ import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 type Props = {
     theme: Theme;
     time: Date;
-    styleProp?: TextStyle;
+    textStyles?: TextStyle;
     testID?: string;
     showPrefix?: boolean;
     withinBrackets?: boolean;
 }
 
 const CustomStatusExpiry = (props: Props) => {
-    const {time, theme, styleProp, showPrefix, withinBrackets} = props;
+    const {time, theme, textStyles, showPrefix, withinBrackets} = props;
     const timezone = useSelector(getCurrentUserTimezone);
     const styles = createStyleSheet(theme);
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
@@ -114,15 +114,15 @@ const CustomStatusExpiry = (props: Props) => {
     return (
         <Text
             testID={props.testID}
-            style={styleProp || styles.text}
+            style={{...styles.text, ...textStyles}}
         >
-            {withinBrackets ? '(' : null}
+            {withinBrackets && '('}
             {prefix}
             {showToday}
             {showTomorrow}
             {showTime}
             {showDayorDate}
-            {withinBrackets ? ')' : null}
+            {withinBrackets && ')'}
         </Text>
     );
 };

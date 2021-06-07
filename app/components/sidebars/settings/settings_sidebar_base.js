@@ -278,7 +278,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     <CustomStatusExpiry
                         time={customStatus?.expires_at}
                         theme={theme}
-                        styleProp={style.customStatusExpiryText}
+                        textStyles={style.customStatusExpiryText}
                         withinBrackets={true}
                         showPrefix={true}
                     />
@@ -451,7 +451,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.35),
         },
         customStatusExpiryText: {
-            fontSize: 15,
             color: changeOpacity(theme.centerChannelColor, 0.35),
         },
         clearButton: {

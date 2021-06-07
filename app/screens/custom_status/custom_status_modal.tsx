@@ -362,8 +362,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 )}
             </TouchableOpacity>
         );
-
-        const renderClearAfterTime = duration && duration !== CustomStatusDuration.DATE_AND_TIME ? (
+        const renderClearAfterTime = duration !== null && duration !== undefined && duration !== CustomStatusDuration.DATE_AND_TIME ? (
             <FormattedText
                 id={durationValues[duration].id}
                 defaultMessage={durationValues[duration].defaultMessage}
@@ -374,10 +373,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 <CustomStatusExpiry
                     time={expires_at.toDate()}
                     theme={theme}
-                    styleProp={{
-                        fontSize: 15,
-                        color: changeOpacity(theme.centerChannelColor, 0.5),
-                    }}
+                    textStyles={style.customStatusExpiry}
                 />
             </View>
         );
@@ -530,6 +526,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             top: 3,
             right: 14,
+        },
+        customStatusExpiry: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),

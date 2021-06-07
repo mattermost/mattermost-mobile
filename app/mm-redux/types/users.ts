@@ -81,7 +81,7 @@ export type UserStatus = {
 }
 
 export enum CustomStatusDuration {
-    DONT_CLEAR = 'dont_clear',
+    DONT_CLEAR = '',
     THIRTY_MINUTES = 'thirty_minutes',
     ONE_HOUR = 'one_hour',
     FOUR_HOURS = 'four_hours',

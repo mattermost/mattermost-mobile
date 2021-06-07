@@ -12,7 +12,6 @@ import {get} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-
 import {getCurrentMomentForTimezone} from '@utils/timezone';
 
 export function makeGetCustomStatus(): (state: GlobalState, userID?: string) => UserCustomStatus {
@@ -54,5 +53,5 @@ export const getRecentCustomStatuses = createSelector(
 export function isCustomStatusEnabled(state: GlobalState) {
     const config = getConfig(state);
     const serverVersion = state.entities.general.serverVersion;
-    return config && config.EnableCustomUserStatuses === 'true';
+    return config && config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(serverVersion, 5, 36);
 }

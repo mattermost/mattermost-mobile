@@ -117,10 +117,7 @@ const ClearAfterSuggestion = (props: Props) => {
             <CustomStatusExpiry
                 theme={theme}
                 time={moment(expiry).toDate()}
-                styleProp={{
-                    color: theme.linkColor,
-                    fontSize: 15,
-                }}
+                textStyles={style.customStatusExpiry}
             />
         </View>
     );
@@ -181,6 +178,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         button: {
             borderRadius: 1000,
             color: theme.buttonBg,
+        },
+        customStatusExpiry: {
+            color: theme.linkColor,
         },
     };
 });

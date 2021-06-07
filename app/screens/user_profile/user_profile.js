@@ -251,7 +251,7 @@ export default class UserProfile extends PureComponent {
                 <CustomStatusExpiry
                     time={customStatus?.expires_at}
                     theme={theme}
-                    styleProp={style.customStatusExpiry}
+                    textStyles={style.customStatusExpiry}
                     showPrefix={true}
                     withinBrackets={true}
                 />

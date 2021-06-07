@@ -167,7 +167,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     <CustomStatusExpiry
                         time={customStatus.expires_at}
                         theme={theme}
-                        styleProp={style.customStatusExpiry}
+                        textStyles={style.customStatusExpiry}
                         showPrefix={true}
                     />
                 </Text>
@@ -330,7 +330,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
         },
         customStatusExpiry: {
-            fontSize: 15,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         channelNameContainer: {
