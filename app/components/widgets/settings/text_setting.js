@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
-import Markdown from '@components/markdown/markdown';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 
 export default class TextSetting extends PureComponent {
     static validTypes = ['input', 'textarea', 'number', 'email', 'tel', 'url', 'password'];
@@ -136,8 +136,6 @@ export default class TextSetting extends PureComponent {
             helpTextContent = (
                 <View style={style.helpTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
@@ -152,8 +150,6 @@ export default class TextSetting extends PureComponent {
             errorTextContent = (
                 <View style={style.errorTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.errorText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
@@ -168,8 +164,6 @@ export default class TextSetting extends PureComponent {
             disabledTextContent = (
                 <View style={style.helpTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}

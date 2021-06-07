@@ -10,13 +10,13 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {ViewTypes} from '@constants';
 import {goToScreen} from '@actions/navigation';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import Markdown from '@components/markdown/markdown';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
@@ -173,8 +173,6 @@ export default class AutocompleteSelector extends PureComponent {
             helpTextContent = (
                 <View style={style.helpTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
@@ -189,8 +187,6 @@ export default class AutocompleteSelector extends PureComponent {
             errorTextContent = (
                 <View style={style.errorTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.errorText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}

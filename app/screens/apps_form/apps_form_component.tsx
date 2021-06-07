@@ -7,25 +7,24 @@ import {ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import StatusBar from 'app/components/status_bar';
-import FormattedText from '@components/formatted_text';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {dismissModal} from 'app/actions/navigation';
-
-import DialogIntroductionText from './dialog_introduction_text';
-import {Theme} from '@mm-redux/types/preferences';
+import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
-import {AppCallResponseTypes} from '@mm-redux/constants/apps';
-import AppsFormField from './apps_form_field';
-import {preventDoubleTap} from '@utils/tap';
-import {DoAppCallResult} from 'types/actions/apps';
-import {GlobalStyles} from 'app/styles';
+import {Theme} from '@mm-redux/types/preferences';
+import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
+
+import StatusBar from '@components/status_bar';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+
+import {dismissModal} from '@actions/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import Markdown from '@components/markdown/markdown';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {DoAppCallResult} from 'types/actions/apps';
+
+import AppsFormField from './apps_form_field';
+import DialogIntroductionText from './dialog_introduction_text';
 
 export type Props = {
     call: AppCallRequest;
@@ -347,8 +346,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                     {formError && (
                         <View style={style.errorContainer} >
                             <Markdown
-                                mentionKeys={[]}
-                                theme={theme}
                                 baseTextStyle={style.errorLabel}
                                 textStyles={getMarkdownTextStyles(theme)}
                                 blockStyles={getMarkdownBlockStyles(theme)}

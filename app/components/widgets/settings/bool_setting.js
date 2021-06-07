@@ -10,12 +10,12 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
 } from '@utils/theme';
-import Markdown from '@components/markdown/markdown';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 
 export default class BoolSetting extends PureComponent {
     static propTypes = {
@@ -87,8 +87,6 @@ export default class BoolSetting extends PureComponent {
             helpTextContent = (
                 <View style={style.helpTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.helpText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
@@ -103,8 +101,6 @@ export default class BoolSetting extends PureComponent {
             errorTextContent = (
                 <View style={style.errorTextContainer} >
                     <Markdown
-                        mentionKeys={[]}
-                        theme={theme}
                         baseTextStyle={style.errorText}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
