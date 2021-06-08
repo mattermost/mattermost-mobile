@@ -269,6 +269,10 @@ export function postsInChannel(state: Dictionary<Array<PostOrderBlock>> = {}, ac
     case PostTypes.RECEIVED_NEW_POST: {
         const post = action.data as Post;
 
+        if (action.features?.crtEnabled && post.root_id) {
+            return state;
+        }
+
         const postsForChannel = state[post.channel_id];
         if (!postsForChannel) {
             // Don't save newly created posts until the channel has been loaded

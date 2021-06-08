@@ -43,7 +43,7 @@ import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePrefe
 import {handleAddEmoji, handleReactionAddedEvent, handleReactionRemovedEvent} from './reactions';
 import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
-import {handleThreadUpdated, handleThreadReadChanged} from './threads';
+import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
 import {getChannelSinceValue} from '@utils/channels';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
@@ -382,10 +382,9 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleThreadUpdated(msg));
         case WebsocketEvents.THREAD_READ_CHANGED:
             return dispatch(handleThreadReadChanged(msg));
+        case WebsocketEvents.THREAD_FOLLOW_CHANGED:
+            return dispatch(handleThreadFollowChanged(msg));
         }
-
-        // case WebsocketEvents.THREAD_FOLLOW_CHANGED:
-        //     return dispatch(handleThreadFollowChanged(msg));
 
         return {data: true};
     };

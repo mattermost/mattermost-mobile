@@ -20,13 +20,14 @@ import {
     getMyChannelMember as selectMyChannelMember,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getPost as selectPost} from '@mm-redux/selectors/entities/posts';
-import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
+import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {getViewingGlobalThreads} from '@selectors/threads';
 
 export function handleNewPostEvent(msg: WebSocketMessage) {
@@ -73,7 +74,8 @@ export function handleNewPostEvent(msg: WebSocketMessage) {
                 }
             }
 
-            actions.push(receivedNewPost(post));
+            const crtEnabled = isCollapsedThreadsEnabled(state);
+            actions.push(receivedNewPost(post, crtEnabled));
 
             // If we don't have the thread for this post, fetch it from the server
             // and include the actions in the batch
@@ -148,7 +150,7 @@ export function handleNewPostEvent(msg: WebSocketMessage) {
                     const readActions = markAsViewedAndReadBatch(state, post.channel_id, undefined, markAsReadOnServer);
                     actions.push(...readActions);
                 } else {
-                    const unreadActions = markChannelAsUnread(state, msg.data.team_id, post.channel_id, msg.data.mentions);
+                    const unreadActions = markChannelAsUnread(state, msg.data.team_id, post.channel_id, msg.data.mentions, post.root_id === '');
                     actions.push(...unreadActions);
                 }
             }
