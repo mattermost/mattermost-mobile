@@ -80,7 +80,7 @@ describe('DataOperator: Utils tests', () => {
                 serverUrl,
             },
         });
-        await DatabaseManager.setActiveServerDatabase({
+        await DatabaseManager.setMostRecentServerConnection({
             displayName: dbName,
             serverUrl,
         });

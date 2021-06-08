@@ -36,12 +36,12 @@ export default async () => {
 
     // Test: It should return the current active server database
     const testGetActiveServerConnection = () => {
-        // const activeServer = DBManager.getActiveServerDatabase();
+        // const activeServer = DBManager.getMostRecentServerConnection();
     };
 
     // Test: It should set the current active server database to the provided server url.
     const testSetActiveServerConnection = async () => {
-        await DBManager.setActiveServerDatabase({
+        await DBManager.setMostRecentServerConnection({
             displayName: 'comm4',
             serverUrl: 'https://comm4.mattermost.com',
         });

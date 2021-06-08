@@ -712,4 +712,8 @@ export type RetrievedDatabase = {
   url: string;
 }
 
-export type GetDatabaseConnectionArgs = { serverUrl: string, setAsActiveDatabase: boolean}
+export type GetDatabaseConnectionArgs = {
+  serverUrl: string;
+  connectionName?: string;
+  setAsActiveDatabase: boolean;
+}

@@ -439,7 +439,7 @@ class BaseHandler {
 
       // NOTE: here we are getting the active server directly as in a multi-server support system, the current
       // active server connection will already be set on application init
-      const connection = await DatabaseManager.getActiveServerDatabase();
+      const connection = await DatabaseManager.getMostRecentServerConnection();
       if (connection === undefined) {
           throw new DatabaseConnectionException(
               'An error occurred while retrieving the server database',

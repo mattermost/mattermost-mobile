@@ -42,20 +42,22 @@ import {
 import {serverSchema} from '@database/schema/server';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {
-    ActiveServerDatabaseArgs,
     DatabaseConnectionArgs,
     DatabaseInstance,
     DatabaseInstances,
-    DefaultNewServerArgs, GetDatabaseConnectionArgs,
+    DefaultNewServerArgs,
+    GetDatabaseConnectionArgs,
     Models,
     RetrievedDatabase,
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
+import IGlobal from '@typings/database/global';
 import IServers from '@typings/database/servers';
 import urlParse from 'url-parse';
 
-const {SERVERS} = MM_TABLES.DEFAULT;
+const {SERVERS, GLOBAL} = MM_TABLES.DEFAULT;
 const DEFAULT_DATABASE = 'default';
+const RECENTLY_VIEWED_SERVERS = 'RECENTLY_VIEWED_SERVERS';
 
 if (__DEV__) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -64,7 +66,6 @@ if (__DEV__) {
 }
 
 class DatabaseManager {
-  private activeDatabase: DatabaseInstance;
   private defaultDatabase: DatabaseInstance;
   private readonly defaultModels: Models;
   private readonly iOSAppGroupDatabase: string | null;
@@ -107,47 +108,53 @@ class DatabaseManager {
       this.androidFilesDirectory = null;
   }
 
-    /**
-     * getDatabaseConnection: Given a server url (serverUrl) and a flag (setAsActiveDatabase), this method will attempt
-     * to retrieve an existing database connection previously created for that url.  If not found, it will create a new connection and register it in the DEFAULT_DATABASE
-     * @param {string} serverUrl
-     * @param {boolean} setAsActiveDatabase
-     * @returns {Promise<DatabaseInstance>}
-     */
-    getDatabaseConnection = async ({serverUrl, setAsActiveDatabase}: GetDatabaseConnectionArgs) => {
-        // We potentially already have this server registered; so we'll try to retrieve it if it is present under DEFAULT_DATABASE/GLOBAL entity
-        const existingServers = await this.retrieveDatabaseInstances([serverUrl]) as RetrievedDatabase[];
+  /**
+   * getDatabaseConnection: Given a server url (serverUrl) and a flag (setAsActiveDatabase), this method will attempt
+   * to retrieve an existing database connection previously created for that url.  If not found, it will create a new connection and register it in the DEFAULT_DATABASE
+   * @param {GetDatabaseConnectionArgs} getDatabaseConnection
+   * @param {string} getDatabaseConnection.connectionName
+   * @param {string} getDatabaseConnection.serverUrl
+   * @param {boolean} getDatabaseConnection.setAsActiveDatabase
+   * @returns {Promise<DatabaseInstance>}
+   */
+  getDatabaseConnection = async ({
+      serverUrl,
+      setAsActiveDatabase,
+      connectionName,
+  }: GetDatabaseConnectionArgs) => {
+      // We potentially already have this server registered; so we'll try to retrieve it if it is present under DEFAULT_DATABASE/GLOBAL entity
+      const existingServers = (await this.retrieveDatabaseInstances([
+          serverUrl,
+      ])) as RetrievedDatabase[];
 
-        // Since we only passed one serverUrl, we'll expect only one value in the array
-        const serverDatabase = existingServers?.[0];
+      // Since we only passed one serverUrl, we'll expect only one value in the array
+      const serverDatabase = existingServers?.[0];
 
-        let connection: DatabaseInstance;
-        let databaseName: string;
+      let connection: DatabaseInstance;
 
-        if (serverDatabase) {
-            // This serverUrl has previously been registered on the app
-            databaseName = serverDatabase.displayName;
-            connection = serverDatabase.dbInstance;
-        } else {
-            // Or, it might be that the user has this server on the web-app but not mobile-app; so we'll need to create a new entry for this new serverUrl
-            databaseName = urlParse(serverUrl).hostname;
-            connection = await this.createDatabaseConnection({
-                shouldAddToDefaultDatabase: true,
-                configs: {
-                    actionsEnabled: true,
-                    dbName: databaseName,
-                    dbType: DatabaseType.SERVER,
-                    serverUrl,
-                },
-            });
-        }
+      if (serverDatabase) {
+      // This serverUrl has previously been registered on the app
+          connection = serverDatabase.dbInstance;
+      } else {
+      // Or, it might be that the user has this server on the web-app but not mobile-app; so we'll need to create a new entry for this new serverUrl
+          const databaseName = connectionName ?? urlParse(serverUrl).hostname;
+          connection = await this.createDatabaseConnection({
+              shouldAddToDefaultDatabase: true,
+              configs: {
+                  actionsEnabled: true,
+                  dbName: databaseName,
+                  dbType: DatabaseType.SERVER,
+                  serverUrl,
+              },
+          });
+      }
 
-        if (setAsActiveDatabase) {
-            await this.setActiveServerDatabase({serverUrl, displayName: databaseName});
-        }
+      if (setAsActiveDatabase) {
+          await this.setMostRecentServerConnection(serverUrl);
+      }
 
-        return connection;
-    }
+      return connection;
+  };
 
   /**
    * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
@@ -168,13 +175,7 @@ class DatabaseManager {
           const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
           const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
 
-          const adapter = new LokiJSAdapter({
-              dbName: databaseName,
-              migrations,
-              schema,
-              useWebWorker: false,
-              useIncrementalIndexedDB: true,
-          });
+          const adapter = new LokiJSAdapter({dbName: databaseName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
 
           // Registers the new server connection into the DEFAULT database
           if (serverUrl && shouldAddToDefaultDatabase) {
@@ -186,7 +187,7 @@ class DatabaseManager {
           }
           return new Database({adapter, actionsEnabled, modelClasses});
       } catch (e) {
-          // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console
           console.log('createDatabaseConnection ERROR:', e);
       }
 
@@ -194,24 +195,42 @@ class DatabaseManager {
   };
 
   /**
-   * setActiveServerDatabase: Set the new active server database.  The serverUrl is used to ensure that we do not duplicate entries in the default database.
+   * setMostRecentServerConnection: Set the new active server database.  The serverUrl is used to ensure that we do not duplicate entries in the default database.
    * This method should be called when switching to another server.
-   * @param {string} displayName
    * @param {string} serverUrl
    * @returns {Promise<void>}
    */
-  setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabaseArgs) => {
-      const isServerPresent = await this.isServerPresent(serverUrl);
+  setMostRecentServerConnection = async (serverUrl: string) => {
+      const defaultDatabase = await this.getDefaultDatabase();
 
-      this.activeDatabase = await this.createDatabaseConnection({
-          configs: {
-              actionsEnabled: true,
-              dbName: displayName,
-              dbType: DatabaseType.SERVER,
-              serverUrl,
-          },
-          shouldAddToDefaultDatabase: Boolean(!isServerPresent),
-      });
+      if (defaultDatabase) {
+          // retrieve recentlyViewedServers from Global entity
+          const recentlyViewedServers = (await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch()) as IGlobal[];
+
+          if (recentlyViewedServers.length) {
+              // We have previously written something for this flag
+              const flagRecord = recentlyViewedServers[0];
+              const recentList = Array.from(flagRecord.value);
+              recentList.unshift(serverUrl);
+
+              // so as to avoid duplicate in this array
+              const sanitizedList = Array.from(new Set(recentList));
+
+              await defaultDatabase.action(async () => {
+                  await flagRecord.update((record) => {
+                      record.value = sanitizedList;
+                  });
+              });
+          } else {
+              // The flag hasn't been set; so we create the record
+              await defaultDatabase.action(async () => {
+                  await defaultDatabase.collections.get(GLOBAL).create((record: IGlobal) => {
+                      record.name = RECENTLY_VIEWED_SERVERS;
+                      record.value = [serverUrl];
+                  });
+              });
+          }
+      }
   };
 
   /**
@@ -225,12 +244,31 @@ class DatabaseManager {
   };
 
   /**
-   * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
+   * getMostRecentServerConnection: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
    * Use this getter method to retrieve the active database if it has been set in your code.
    * @returns {DatabaseInstance}
    */
-  getActiveServerDatabase = (): DatabaseInstance => {
-      return this.activeDatabase;
+  getMostRecentServerConnection = async (): Promise<DatabaseInstance> => {
+      const defaultDatabase = await this.getDefaultDatabase();
+
+      if (defaultDatabase) {
+          const serverRecords = (await defaultDatabase.collections.
+              get(GLOBAL).
+              query(Q.where('name', RECENTLY_VIEWED_SERVERS)).
+              fetch()) as IGlobal[];
+
+          if (serverRecords.length) {
+              const activeServer = serverRecords[0].value as string[];
+              const activeServerUrl = activeServer[0];
+              const activeServerDatabase = await this.getDatabaseConnection({
+                  serverUrl: activeServerUrl,
+                  setAsActiveDatabase: false,
+              });
+              return activeServerDatabase;
+          }
+          return undefined;
+      }
+      return undefined;
   };
 
   /**
@@ -286,22 +324,37 @@ class DatabaseManager {
    */
   deleteDatabase = async (serverUrl: string): Promise<boolean> => {
       try {
-          const defaultDB = await this.getDefaultDatabase();
+          const defaultDatabase = await this.getDefaultDatabase();
           let server: IServers;
-
-          if (defaultDB) {
-              const serversRecords = (await defaultDB.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch()) as IServers[];
+          let result = true;
+          if (defaultDatabase) {
+              const serversRecords = (await defaultDatabase.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch()) as IServers[];
               server = serversRecords?.[0] ?? undefined;
+
+              const globalRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+              const global = globalRecords?.[0] ?? undefined;
 
               if (server) {
                   // Perform a delete operation for this server record on the 'servers' table in default database
-                  await defaultDB.action(async () => {
+                  await defaultDatabase.action(async () => {
                       await server.destroyPermanently();
                   });
 
-                  return true;
+                  result = result && true;
               }
-              return false;
+
+              if (global) {
+                  // filter out the deleted serverURL
+                  const urls = global.value as string[];
+                  const filtered = urls.filter((url) => url !== serverUrl);
+                  await defaultDatabase.action(async () => {
+                      await global.update((record) => {
+                          record.value = filtered;
+                      });
+                  });
+                  result = result && true;
+              }
+              return result;
           }
           return false;
       } catch (e) {
@@ -317,7 +370,10 @@ class DatabaseManager {
       // Retrieve all server records from the default db
       const defaultDatabase = await this.getDefaultDatabase();
       if (defaultDatabase) {
-          const allServers = (await defaultDatabase.collections.get(SERVERS).query(Q.where('url', Q.oneOf(serverUrls))).fetch() as IServers[]);
+          const allServers = (await defaultDatabase.collections.
+              get(SERVERS).
+              query(Q.where('url', Q.oneOf(serverUrls))).
+              fetch()) as IServers[];
           return allServers;
       }
       return [];
@@ -361,10 +417,10 @@ class DatabaseManager {
               });
           }
       } catch (e) {
-          // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console
           console.log('addServerToDefaultDatabase ERROR:', e);
       }
   };
 }
 
-export default new DatabaseManager();
+export default DatabaseManager;
