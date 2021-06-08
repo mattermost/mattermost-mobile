@@ -20,6 +20,8 @@ import {
     dismissAllModalsAndPopToRoot,
 } from '@actions/navigation';
 import Config from '@assets/config';
+import Emoji from '@components/emoji';
+import ClearButton from '@components/custom_status/clear_button';
 import ChannelIcon from '@components/channel_icon';
 import FormattedTime from '@components/formatted_time';
 import ProfilePicture from '@components/profile_picture';
@@ -44,6 +46,7 @@ export default class UserProfile extends PureComponent {
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
             getRemoteClusterInfo: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -52,10 +55,11 @@ export default class UserProfile extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         bot: PropTypes.object,
-        militaryTime: PropTypes.bool.isRequired,
+        isMilitaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
         remoteClusterInfo: PropTypes.object,
+        customStatus: PropTypes.object,
     };
 
     static contextTypes = {
@@ -226,8 +230,52 @@ export default class UserProfile extends PureComponent {
         );
     }
 
+    buildCustomStatusBlock = () => {
+        const {formatMessage} = this.context.intl;
+        const {customStatus, theme, isMyUser} = this.props;
+        const style = createStyleSheet(theme);
+        const isStatusSet = customStatus?.emoji;
+
+        if (!isStatusSet) {
+            return null;
+        }
+
+        const label = formatMessage({id: 'user.settings.general.status', defaultMessage: 'Status'});
+        return (
+            <View
+                testID='user_profile.custom_status'
+            >
+                <Text style={style.header}>{label}</Text>
+                <View style={style.customStatus}>
+                    <Text
+                        style={style.iconContainer}
+                        testID={`custom_status.emoji.${customStatus.emoji}`}
+                    >
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                        />
+                    </Text>
+                    <View style={style.customStatusTextContainer}>
+                        <Text style={style.text}>
+                            {customStatus.text}
+                        </Text>
+                    </View>
+                    {isMyUser && (
+                        <View style={style.clearButton}>
+                            <ClearButton
+                                theme={theme}
+                                handlePress={this.props.actions.unsetCustomStatus}
+                            />
+                        </View>
+                    )}
+                </View>
+            </View>
+        );
+    }
+
     buildTimezoneBlock = () => {
-        const {theme, user, militaryTime} = this.props;
+        const {theme, user, isMilitaryTime} = this.props;
         const style = createStyleSheet(theme);
 
         const currentTimezone = getUserCurrentTimezone(user.timezone);
@@ -249,8 +297,8 @@ export default class UserProfile extends PureComponent {
                     testID='user_profile.timezone_block.local_time.value'
                 >
                     <FormattedTime
-                        timeZone={currentTimezone}
-                        hour12={!militaryTime}
+                        timezone={currentTimezone}
+                        isMilitaryTime={isMilitaryTime}
                         value={nowDate}
                     />
                 </Text>
@@ -376,6 +424,7 @@ export default class UserProfile extends PureComponent {
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('first_name')}
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.props.config.EnableCustomUserStatuses === 'true' && this.buildCustomStatusBlock()}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildOrganizationBlock()}
                 {this.buildDisplayBlock('position')}
@@ -444,6 +493,22 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
         },
+        iconContainer: {
+            marginRight: 5,
+            color: theme.centerChannelColor,
+        },
+        customStatus: {
+            flexDirection: 'row',
+        },
+        customStatusTextContainer: {
+            justifyContent: 'center',
+            width: '80%',
+        },
+        clearButton: {
+            position: 'absolute',
+            top: -8,
+            right: 0,
+        },
         content: {
             marginBottom: 25,
             marginHorizontal: 15,
@@ -498,4 +563,3 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-

@@ -8,6 +8,7 @@ import {getCurrentChannel, getMyCurrentChannelMembership, getCurrentChannelStats
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
+import {isCustomStatusEnabled} from '@selectors/custom_status';
 
 import {isGuest} from 'app/utils/users';
 
@@ -21,8 +22,9 @@ function mapStateToProps(state) {
 
     let isTeammateGuest = false;
     let isSelfDMChannel = false;
+    let teammateId;
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
-        const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
+        teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
         isTeammateGuest = isGuest(teammate);
         isSelfDMChannel = currentUserId === currentChannel.teammate_id;
@@ -39,6 +41,8 @@ function mapStateToProps(state) {
         isGuest: isTeammateGuest,
         isSelfDMChannel,
         theme: getTheme(state),
+        teammateId,
+        customStatusEnabled: isCustomStatusEnabled(state),
     };
 }
 

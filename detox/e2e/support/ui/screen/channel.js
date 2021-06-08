@@ -15,7 +15,6 @@ import {
 } from '@support/ui/component';
 import {
     LoginScreen,
-    LongPostScreen,
     SelectServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -75,14 +74,6 @@ class ChannelScreen {
 
     getNewMessagesDivider = () => {
         return this.postList.getNewMessagesDivider();
-    }
-
-    getLongPostItem = (postId, text, postProfileOptions = {}) => {
-        return LongPostScreen.getPost(postId, text, postProfileOptions);
-    }
-
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
     }
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {

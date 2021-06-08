@@ -10,21 +10,21 @@ import {
 const PORTRAIT_VIEWPORT = 315;
 
 describe('Images calculateDimensions', () => {
-    it('image with falsy height should return null height and width', () => {
+    it('image with falsy height should return 0 for height and width', () => {
         const falsyHeights = [0, null, undefined, NaN, '', false];
         falsyHeights.forEach((falsyHeight) => {
             const {height, width} = calculateDimensions(falsyHeight as number, 20, PORTRAIT_VIEWPORT);
-            expect(height).toEqual(undefined);
-            expect(width).toEqual(undefined);
+            expect(height).toEqual(0);
+            expect(width).toEqual(0);
         });
     });
 
-    it('image with falsy width should return null height and width', () => {
+    it('image with falsy width should return 0 for height and width', () => {
         const falsyWidths = [0, null, undefined, NaN, '', false];
         falsyWidths.forEach((falsyWidth) => {
             const {height, width} = calculateDimensions(20, falsyWidth as number, PORTRAIT_VIEWPORT);
-            expect(height).toEqual(undefined);
-            expect(width).toEqual(undefined);
+            expect(height).toEqual(0);
+            expect(width).toEqual(0);
         });
     });
 

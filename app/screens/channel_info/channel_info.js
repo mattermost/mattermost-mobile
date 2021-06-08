@@ -38,7 +38,6 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -49,6 +48,8 @@ export default class ChannelInfo extends PureComponent {
         isDirectMessage: PropTypes.bool.isRequired,
         teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        customStatus: PropTypes.object,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -79,10 +80,6 @@ export default class ChannelInfo extends PureComponent {
         }
 
         dismissModal();
-    };
-
-    handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     permalinkBadTeam = () => {
@@ -173,6 +170,8 @@ export default class ChannelInfo extends PureComponent {
             teammateId,
             theme,
             isTeammateGuest,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -196,7 +195,6 @@ export default class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
-                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
                         shared={currentChannel.shared}
                         teammateId={teammateId}
@@ -207,6 +205,8 @@ export default class ChannelInfo extends PureComponent {
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                         testID='channel_info.header'
+                        customStatus={customStatus}
+                        isCustomStatusEnabled={isCustomStatusEnabled}
                     />
                     }
                     <View style={style.rowsContainer}>

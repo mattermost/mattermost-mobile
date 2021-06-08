@@ -11,14 +11,19 @@ exports[`ChannelTitle should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "justifyContent": "flex-start",
-        "position": "relative",
-        "top": -1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "position": "relative",
+          "top": -1,
+        },
+        Object {
+          "width": "90%",
+        },
+      ]
     }
   >
     <Text
@@ -63,14 +68,19 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "justifyContent": "flex-start",
-        "position": "relative",
-        "top": -1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "position": "relative",
+          "top": -1,
+        },
+        Object {
+          "width": "80%",
+        },
+      ]
     }
   >
     <Text
@@ -100,6 +110,20 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
         }
       }
     />
+    <CustomStatusEmoji
+      emojiSize={16}
+      style={
+        Array [
+          Object {
+            "color": undefined,
+            "marginHorizontal": 1,
+          },
+          Object {
+            "marginHorizontal": 5,
+          },
+        ]
+      }
+    />
   </View>
   <View
     style={
@@ -112,7 +136,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
       }
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="This person is a guest"
       ellipsizeMode="tail"
       id="channel.isGuest"
@@ -140,14 +164,19 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "justifyContent": "flex-start",
-        "position": "relative",
-        "top": -1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "position": "relative",
+          "top": -1,
+        },
+        Object {
+          "width": "80%",
+        },
+      ]
     }
   >
     <Text
@@ -177,6 +206,20 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
         }
       }
     />
+    <CustomStatusEmoji
+      emojiSize={16}
+      style={
+        Array [
+          Object {
+            "color": undefined,
+            "marginHorizontal": 1,
+          },
+          Object {
+            "marginHorizontal": 5,
+          },
+        ]
+      }
+    />
   </View>
 </ForwardRef>
 `;
@@ -192,14 +235,19 @@ exports[`ChannelTitle should match snapshot when isChannelShared is true 1`] = `
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "justifyContent": "flex-start",
-        "position": "relative",
-        "top": -1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "position": "relative",
+          "top": -1,
+        },
+        Object {
+          "width": "90%",
+        },
+      ]
     }
   >
     <Text
@@ -263,14 +311,19 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
 >
   <View
     style={
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "justifyContent": "flex-start",
-        "position": "relative",
-        "top": -1,
-      }
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "position": "relative",
+          "top": -1,
+        },
+        Object {
+          "width": "90%",
+        },
+      ]
     }
   >
     <Text
@@ -288,7 +341,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
       }
       testID="channel.nav_bar.title"
     >
-      <FormattedText
+      <InjectIntl(FormattedText)
         defaultMessage="{displayname} (you)"
         id="channel_header.directchannel.you"
         values={
@@ -306,6 +359,77 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
           "color": undefined,
           "marginHorizontal": 1,
         }
+      }
+    />
+  </View>
+</ForwardRef>
+`;
+
+exports[`ChannelTitle should match snapshot with custom status emoji 1`] = `
+<ForwardRef
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+  testID="channel.title.button"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "position": "relative",
+          "top": -1,
+        },
+        Object {
+          "width": "80%",
+        },
+      ]
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Object {
+          "color": undefined,
+          "flex": 0,
+          "flexShrink": 1,
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+      testID="channel.nav_bar.title"
+    >
+      My Channel
+    </Text>
+    <CompassIcon
+      name="chevron-down"
+      size={24}
+      style={
+        Object {
+          "color": undefined,
+          "marginHorizontal": 1,
+        }
+      }
+    />
+    <CustomStatusEmoji
+      emojiSize={16}
+      style={
+        Array [
+          Object {
+            "color": undefined,
+            "marginHorizontal": 1,
+          },
+          Object {
+            "marginHorizontal": 5,
+          },
+        ]
       }
     />
   </View>

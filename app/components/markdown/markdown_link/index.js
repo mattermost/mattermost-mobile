@@ -4,9 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {handleSelectChannelByName} from '@actions/views/channel';
+import {showPermalink} from '@actions/views/permalink';
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-import {handleSelectChannelByName} from 'app/actions/views/channel';
 
 import MarkdownLink from './markdown_link';
 
@@ -22,6 +23,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             handleSelectChannelByName,
+            showPermalink,
         }, dispatch),
     };
 }

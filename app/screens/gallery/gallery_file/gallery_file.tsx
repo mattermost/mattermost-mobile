@@ -8,7 +8,7 @@ import {TapGestureHandler} from 'react-native-gesture-handler';
 import FileViewer from 'react-native-file-viewer';
 import tinyColor from 'tinycolor2';
 
-import FileIcon from '@components/file_attachment_list/file_attachment_icon';
+import FileIcon from '@components//post_list/post/body/files/file_icon';
 import Touchable from '@components/touchable_with_feedback';
 import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -143,9 +143,11 @@ const GalleryFile = (props: GalleryFileProps) => {
         <TapGestureHandler>
             <View style={styles.container}>
                 <FileIcon
+                    backgroundColor='transparent'
                     file={file}
                     iconSize={120}
                     iconColor={theme?.buttonBg}
+                    theme={theme!}
                 />
                 <Text
                     numberOfLines={1}

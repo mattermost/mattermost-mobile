@@ -27,7 +27,7 @@ function makeMapStateToProps() {
             reactions,
             teammateNameDisplay: getTeammateNameDisplaySetting(state),
             theme: getTheme(state),
-            userProfiles: getProfilesByIdsAndUsernames(state, {allUserIds}) || [],
+            userProfiles: getProfilesByIdsAndUsernames(state, allUserIds) || [],
             isLandscape: isLandscape(state),
         };
     };

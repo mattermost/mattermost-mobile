@@ -52,13 +52,13 @@ export function getEmoticonName(value) {
 
 export function hasEmojisOnly(message, customEmojis) {
     if (!message || message.length === 0 || (/^\s{4}/).test(message)) {
-        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
+        return {isEmojiOnly: false, isJumboEmoji: false};
     }
 
     const chunks = message.trim().replace(/\n/g, ' ').split(' ').filter((m) => m && m.length > 0);
 
     if (chunks.length === 0) {
-        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
+        return {isEmojiOnly: false, isJumboEmoji: false};
     }
 
     let emojiCount = 0;
@@ -87,12 +87,12 @@ export function hasEmojisOnly(message, customEmojis) {
             continue;
         }
 
-        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
+        return {isEmojiOnly: false, isJumboEmoji: false};
     }
 
     return {
         isEmojiOnly: true,
-        shouldRenderJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
+        isJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
     };
 }
 

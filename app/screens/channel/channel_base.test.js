@@ -3,19 +3,15 @@
 
 import React from 'react';
 import {Alert} from 'react-native';
-import {shallow} from 'enzyme';
+
+import * as NavigationActions from '@actions/navigation';
+import {General, Preferences} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {General} from '@mm-redux/constants';
-
-import Preferences from '@mm-redux/constants/preferences';
-
-import EphemeralStore from 'app/store/ephemeral_store';
-import * as NavigationActions from 'app/actions/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {emptyFunction} from '@utils/general';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelBase from './channel_base';
-
-jest.mock('react-intl');
 
 describe('ChannelBase', () => {
     const channelBaseComponentId = 'component-0';
@@ -60,9 +56,8 @@ describe('ChannelBase', () => {
             EphemeralStore.addNavigationComponentId(componentId);
         });
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelBase {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(mergeNavigationOptions.mock.calls).toEqual([]);
@@ -80,9 +75,8 @@ describe('ChannelBase', () => {
     });
 
     test('registerTypingAnimation should return a callback that removes the typing animation', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelBase {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         const instance = wrapper.instance();
@@ -97,9 +91,8 @@ describe('ChannelBase', () => {
 
     test('should display an alert when the user is removed from the current channel', () => {
         const alert = jest.spyOn(Alert, 'alert');
-        shallow(
+        shallowWithIntl(
             <ChannelBase {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         EventEmitter.emit(General.REMOVED_FROM_CHANNEL);
@@ -107,9 +100,8 @@ describe('ChannelBase', () => {
     });
 
     test('should call selectDefault team when the current team is archived', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelBase {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.setProps({currentTeamId: '', currentChannelId: ''});

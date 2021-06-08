@@ -48,9 +48,12 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-function createTouchableComponent(children, action) {
+function createTouchableComponent(children, action, testID) {
     return (
-        <TouchableWithFeedback onPress={action}>
+        <TouchableWithFeedback
+            onPress={action}
+            testID={testID}
+        >
             {children}
         </TouchableWithFeedback>
     );
@@ -100,7 +103,7 @@ function userProfileRow(props) {
         return RowComponent;
     }
 
-    return createTouchableComponent(RowComponent, action);
+    return createTouchableComponent(RowComponent, action, testID);
 }
 
 userProfileRow.propTypes = {
@@ -118,6 +121,7 @@ userProfileRow.propTypes = {
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
     theme: PropTypes.object.isRequired,
+    testID: PropTypes.string,
 };
 
 userProfileRow.defaultProps = {
@@ -125,6 +129,7 @@ userProfileRow.defaultProps = {
     iconSize: 15,
     textColor: '#000',
     togglable: false,
+    testID: 'user_profile.row',
 };
 
 export default userProfileRow;

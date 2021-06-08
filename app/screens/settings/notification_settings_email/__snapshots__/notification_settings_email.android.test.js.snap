@@ -5,13 +5,13 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
   action={[Function]}
   actionType="default"
   description={
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Immediately"
       id="user.settings.notifications.email.immediately"
     />
   }
   label={
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Send email notifications"
       id="user.settings.notifications.email.send"
     />
@@ -69,7 +69,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
         <View
           style={Object {}}
         >
-          <FormattedText
+          <InjectIntl(FormattedText)
             defaultMessage="Send email notifications"
             id="user.settings.notifications.email.send"
             style={Object {}}
@@ -95,7 +95,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             ]
           }
         />
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
           id="user.settings.notifications.emailInfo"
           style={Object {}}
@@ -115,7 +115,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
             style={Object {}}
             testID="notification_settings_email.send_modal_cancel.button"
           >
-            <FormattedText
+            <InjectIntl(FormattedText)
               defaultMessage="CANCEL"
               id="mobile.notification_settings.modal_cancel"
               style={Object {}}
@@ -134,7 +134,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
               style={Object {}}
               testID="notification_settings_email.send_modal_save.button"
             >
-              <FormattedText
+              <InjectIntl(FormattedText)
                 defaultMessage="SAVE"
                 id="mobile.notification_settings.modal_save"
                 style={Object {}}

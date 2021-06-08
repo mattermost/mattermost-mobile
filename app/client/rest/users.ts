@@ -3,7 +3,7 @@
 
 import {analytics} from '@init/analytics';
 import {General} from '@mm-redux/constants';
-import {UserProfile, UserStatus} from '@mm-redux/types/users';
+import {UserCustomStatus, UserProfile, UserStatus} from '@mm-redux/types/users';
 import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
@@ -43,6 +43,9 @@ export interface ClientUsersMix {
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string) => Promise<UserStatus>;
     updateStatus: (status: UserStatus) => Promise<UserStatus>;
+    updateCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
+    unsetCustomStatus: () => Promise<{status: string}>;
+    removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
 }
 
 const ClientUsers = (superclass: any) => class extends superclass {
@@ -391,6 +394,27 @@ const ClientUsers = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getUserRoute(status.user_id)}/status`,
             {method: 'put', body: JSON.stringify(status)},
+        );
+    };
+
+    updateCustomStatus = (customStatus: UserCustomStatus) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom`,
+            {method: 'put', body: JSON.stringify(customStatus)},
+        );
+    };
+
+    unsetCustomStatus = () => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom`,
+            {method: 'delete'},
+        );
+    };
+
+    removeRecentCustomStatus = (customStatus: UserCustomStatus) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom/recent/delete`,
+            {method: 'post', body: JSON.stringify(customStatus)},
         );
     };
 };

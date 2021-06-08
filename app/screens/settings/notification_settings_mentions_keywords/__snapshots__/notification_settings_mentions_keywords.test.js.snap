@@ -233,7 +233,7 @@ NotificationSettingsMentionsKeywords {
               }
             }
           >
-            <FormattedText
+            <InjectIntl(FormattedText)
               defaultMessage="Keywords are non-case sensitive and should be separated by a comma."
               id="mobile.notification_settings_mentions.keywordsHelp"
               style={
