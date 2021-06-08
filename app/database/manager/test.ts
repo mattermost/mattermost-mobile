@@ -98,7 +98,7 @@ describe('*** Database Manager tests ***', () => {
         ]);
 
         expect(dbInstances).toBeTruthy();
-        const numDbInstances = dbInstances && dbInstances.length ? dbInstances.length : 0;
+        const numDbInstances = dbInstances?.length ?? 0;
 
         // The Database Manager will call the 'createDatabaseConnection' method in consequence of the number of database connection present in dbInstances array
         expect(spyOnCreateDatabaseConnection).toHaveBeenCalledTimes(numDbInstances);
@@ -106,6 +106,17 @@ describe('*** Database Manager tests ***', () => {
         // We should have two active database connection
         expect(numDbInstances).toEqual(2);
     });
+
+    it('=> should retrieve existing database instances matching serverUrl parameter', async () => {
+        expect.assertions(2);
+
+        const spyOnRetrieveDatabaseInstances = jest.spyOn(DatabaseManager, 'retrieveDatabaseInstances');
+        const connection = await DatabaseManager.getDatabaseConnection({serverUrl: 'https://appv1.mattermost.com', setAsActiveDatabase: false});
+        expect(spyOnRetrieveDatabaseInstances).toHaveBeenCalledTimes(1);
+        expect(connection).toBeDefined();
+    });
+
+    //todo: test the current active database together with the getDatabaseConnection method
 
     it('=> should have records of Servers set in the servers table of the default database', async () => {
         expect.assertions(3);
