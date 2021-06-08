@@ -11,10 +11,10 @@ import {
     makeGetChannel,
     shouldHideDefaultChannel,
 } from '@mm-redux/selectors/entities/channels';
-import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getViewingGlobalThreads} from '@selectors/threads';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
+import {getMsgCountInChannel, getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getDraftForChannel} from '@selectors/views';
 import {isGuest as isGuestUser} from '@utils/users';
@@ -29,6 +29,7 @@ function makeMapStateToProps() {
         const member = getMyChannelMember(state, channel.id);
         const currentUserId = getCurrentUserId(state);
         const channelDraft = getDraftForChannel(state, channel.id);
+        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
 
         let displayName = channel.display_name;
         let isBot = false;
@@ -65,7 +66,7 @@ function makeMapStateToProps() {
 
         let unreadMsgs = 0;
         if (member && channel) {
-            unreadMsgs = Math.max(channel.total_msg_count - member.msg_count, 0);
+            unreadMsgs = getMsgCountInChannel(collapsedThreadsEnabled, channel, member);
         }
 
         let showUnreadForMsgs = true;
@@ -85,7 +86,7 @@ function makeMapStateToProps() {
             isChannelMuted: isChannelMuted(member),
             isGuest,
             isManualUnread: isManuallyUnread(state, ownProps.channelId),
-            mentions: member ? member.mention_count : 0,
+            mentions: member?.mention_count_root ?? 0,
             shouldHideChannel,
             showUnreadForMsgs,
             theme: getTheme(state),
