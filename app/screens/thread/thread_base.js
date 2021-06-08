@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated, Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -14,14 +15,20 @@ import DeletedPost from 'app/components/deleted_post';
 import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
 import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
 
+import ThreadFollow from './thread_follow';
+
+Navigation.registerComponent('ThreadFollow', () => ThreadFollow);
+
 export default class ThreadBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
+            setThreadFollow: PropTypes.func.isRequired,
             updateThreadRead: PropTypes.func,
         }).isRequired,
         componentId: PropTypes.string,
         channelType: PropTypes.string,
+        collapsedThreadsEnabled: PropTypes.bool,
         displayName: PropTypes.string,
         myMember: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
@@ -44,26 +51,57 @@ export default class ThreadBase extends PureComponent {
     constructor(props, context) {
         super(props);
 
-        const {channelType, displayName} = props;
+        const {channelType, displayName, theme, thread} = props;
         const {formatMessage} = context.intl;
-        let title;
+
+        const options = {};
 
         if (channelType === General.DM_CHANNEL) {
-            title = formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
+            options.topBar = {
+                title: {
+                    text: formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'}),
+                },
+            };
+        } else if (props.collapsedThreadsEnabled) {
+            options.topBar = {
+                title: {
+                    text: 'Thread',
+                    fontSize: 18,
+                    fontWeight: '600',
+                    color: theme.centerChannelColor,
+                },
+                subtitle: {
+                    text: 'in UX Design',
+                    fontSize: 13,
+                    color: theme.centerChannelColor,
+                },
+                rightButtons: [
+                    {
+                        id: '1',
+                        component: {
+                            id: 'ThreadFollow',
+                            name: 'ThreadFollow',
+                            passProps: {
+                                active: thread?.is_following,
+                                intl: context.intl,
+                                theme,
+                                onPress: this.handleThreadFollow.bind(this),
+                            },
+                        },
+                    },
+                ],
+            };
         } else {
-            title = formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
+            options.topBar = {
+                title: {
+                    text: formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName}),
+                },
+            };
         }
 
-        this.postDraft = React.createRef();
-
-        const options = {
-            topBar: {
-                title: {
-                    text: title,
-                },
-            },
-        };
         mergeNavigationOptions(props.componentId, options);
+
+        this.postDraft = React.createRef();
 
         this.state = {
             lastViewedAt: props.myMember && props.myMember.last_viewed_at,
@@ -92,6 +130,10 @@ export default class ThreadBase extends PureComponent {
         if (this.props.thread?.id !== nextProps.thread?.id) {
             this.markThreadRead();
         }
+
+        if (this.props.thread?.is_following !== nextProps.thread?.is_following) {
+            Navigation.updateProps('ThreadFollow', {active: nextProps.thread?.is_following});
+        }
     }
 
     componentWillUnmount() {
@@ -100,8 +142,14 @@ export default class ThreadBase extends PureComponent {
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
     }
 
+    handleThreadFollow() {
+        const {userId, teamId, rootId, thread} = this.props;
+        this.props.actions.setThreadFollow(userId, teamId, rootId, !thread?.is_following);
+    }
+
     markThreadRead() {
         if (
+            this.props.collapsedThreadsEnabled &&
             this.props.thread &&
             (
                 this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||

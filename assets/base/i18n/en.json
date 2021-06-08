@@ -636,6 +636,8 @@
   "suggestion.search.private": "Private Channels",
   "suggestion.search.public": "Public Channels",
   "threads": "Threads",
+  "threads.follow": "Follow",
+  "threads.following": "Following",
   "threads.newReplies": "{count} new {count, plural, one {reply} other {replies}}",
   "threads.replies": "{count} {count, plural, one {day} other {days}} ago",
   "terms_of_service.agreeButton": "I Agree",
