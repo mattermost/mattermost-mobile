@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
+import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 
-import * as NavigationActions from 'app/actions/navigation';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import MoreChannels from './more_channels.js';
-
-jest.mock('react-intl');
 
 describe('MoreChannels', () => {
     const actions = {
@@ -42,9 +40,8 @@ describe('MoreChannels', () => {
     });
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -53,9 +50,8 @@ describe('MoreChannels', () => {
     test('should call dismissModal on close', () => {
         const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.instance().close();
@@ -65,9 +61,8 @@ describe('MoreChannels', () => {
     test('should call setButtons on setHeaderButtons', () => {
         const setButtons = jest.spyOn(NavigationActions, 'setButtons');
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(setButtons).toHaveBeenCalledTimes(1);
@@ -76,9 +71,8 @@ describe('MoreChannels', () => {
     });
 
     test('should match return value of filterChannels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         const channels = [{id: 'id', name: 'name', display_name: 'display_name'}];
@@ -89,9 +83,8 @@ describe('MoreChannels', () => {
     });
 
     test('should match state on cancelSearch', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.setState({term: 'term'});
@@ -101,9 +94,8 @@ describe('MoreChannels', () => {
     });
 
     test('should search correct channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
 
@@ -121,9 +113,8 @@ describe('MoreChannels', () => {
     });
 
     test('Allow load more public channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'public'});
@@ -132,9 +123,8 @@ describe('MoreChannels', () => {
     });
 
     test('Prevent load more public channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'public'});
@@ -146,9 +136,8 @@ describe('MoreChannels', () => {
     });
 
     test('Allow load more archived channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'archived'});
@@ -157,9 +146,8 @@ describe('MoreChannels', () => {
     });
 
     test('Prevent load more archived channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'archived'});
@@ -171,9 +159,8 @@ describe('MoreChannels', () => {
     });
 
     test('Allow load more shared channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'shared'});
@@ -182,9 +169,8 @@ describe('MoreChannels', () => {
     });
 
     test('Prevent load more shared channels', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreChannels {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         wrapper.setState({typeOfChannels: 'shared'});

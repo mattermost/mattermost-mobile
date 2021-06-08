@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Theme from './theme';
 import ThemeTile from './theme_tile';
-
-jest.mock('react-intl');
 
 const allowedThemes = Object.keys(Preferences.THEMES).map((key) => ({
     key,
@@ -30,7 +28,7 @@ describe('Theme', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <Theme {...baseProps}/>,
         );
 

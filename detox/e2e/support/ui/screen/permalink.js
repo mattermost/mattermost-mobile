@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {PostList} from '@support/ui/component';
-import {LongPostScreen} from '@support/ui/screen';
 
 class PermalinkScreen {
     testID = {
@@ -17,14 +16,6 @@ class PermalinkScreen {
     searchJump = element(by.id(this.testID.searchJump));
 
     postList = new PostList(this.testID.permalinkScreenPrefix);
-
-    getLongPostItem = (postId, text, postProfileOptions = {}) => {
-        return LongPostScreen.getPost(postId, text, postProfileOptions);
-    }
-
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
-    }
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);

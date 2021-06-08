@@ -42,9 +42,8 @@ export default class PostOptions extends PureComponent {
         canFlag: PropTypes.bool,
         canPin: PropTypes.bool,
         canEdit: PropTypes.bool,
-        canMarkAsUnread: PropTypes.bool, //#backwards-compatibility:5.18v
+        canMarkAsUnread: PropTypes.bool,
         canEditUntil: PropTypes.number.isRequired,
-        showAppOptions: PropTypes.bool.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
