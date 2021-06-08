@@ -112,14 +112,11 @@ class DatabaseManager {
    * @returns {Promise<DatabaseInstance>}
    */
   createDatabaseConnection = async ({configs, shouldAddToDefaultDatabase = true}: DatabaseConnectionArgs): Promise<DatabaseInstance> => {
-      const {
-          actionsEnabled = true,
-          dbName = 'default',
-          dbType = DatabaseType.DEFAULT,
-          serverUrl = undefined,
-      } = configs;
+      const {actionsEnabled = true, dbName = 'default', dbType = DatabaseType.DEFAULT, serverUrl = undefined} = configs;
 
       try {
+          //fixme: before creating a new connection, look up the serverUrl from the 'SERVERS' entity first and then if it is present, you return that instance. You can use the retrieveDatabaseInstances method
+
           const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
           const databaseFilePath = this.getDatabaseDirectory(databaseName);
           const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
@@ -160,6 +157,7 @@ class DatabaseManager {
   setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabaseArgs) => {
       const isServerPresent = await this.isServerPresent(serverUrl);
 
+      //fixme: use a 'flag' under the GLOBAL entity called 'recentlyUsedServer'. This flag will contain an array of recently connected servers and the server at index 0 will be the last server visited/viewed
       this.activeDatabase = await this.createDatabaseConnection({
           configs: {
               actionsEnabled: true,
@@ -177,13 +175,13 @@ class DatabaseManager {
    * @returns {Promise<boolean>}
    */
   private isServerPresent = async (serverUrl: string) => {
-      const allServers = await this.getAllServers();
+      const allServers = await this.getAllServers([serverUrl]);
 
-      const existingServer = allServers?.filter((server) => {
-          return server.url === serverUrl;
-      });
+      // const existingServer = allServers?.filter((server) => {
+      //     return server.url === serverUrl;
+      // });
 
-      return existingServer && existingServer?.length > 0;
+      return allServers?.length > 0;
   };
 
   /**
@@ -192,6 +190,7 @@ class DatabaseManager {
    * @returns {DatabaseInstance}
    */
   getActiveServerDatabase = (): DatabaseInstance => {
+      //fixme: read index 0 from 'flag' from GLOBAL entity  and return it.
       return this.activeDatabase;
   };
 
@@ -216,10 +215,10 @@ class DatabaseManager {
   retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<DatabaseInstances[] | null> => {
       if (serverUrls?.length) {
           // Retrieve all server records from the default db
-          const allServers = await this.getAllServers();
+          const allServers = await this.getAllServers(serverUrls);
 
           // Filter only those servers that are present in the serverUrls array
-          const servers = allServers!.filter((server: IServers) => {
+          const servers = allServers.filter((server: IServers) => {
               return serverUrls.includes(server.url);
           });
 
@@ -262,19 +261,17 @@ class DatabaseManager {
           let server: IServers;
 
           if (defaultDB) {
-              const serversRecords = (await defaultDB.collections.
-                  get(SERVERS).
-                  query(Q.where('url', serverUrl)).
-                  fetch()) as IServers[];
+              // NOTE: We are deleting this 'database' entry in the SERVERS entity on the DEFAULT database; for that we retrieve its record first.
+              const serversRecords = (await defaultDB.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch()) as IServers[];
               server = serversRecords?.[0] ?? undefined;
 
               if (server) {
+                  const databaseName = server.displayName;
+
                   // Perform a delete operation for this server record on the 'servers' table in default database
                   await defaultDB.action(async () => {
                       await server.destroyPermanently();
                   });
-
-                  const databaseName = server.displayName;
 
                   if (Platform.OS === 'ios') {
                       // On iOS, we'll delete the *.db file under the shared app-group/databases folder
@@ -296,7 +293,6 @@ class DatabaseManager {
           }
           return false;
       } catch (e) {
-      // console.log('An error occurred while trying to delete database with name ', databaseName);
           return false;
       }
   };
@@ -308,7 +304,7 @@ class DatabaseManager {
    */
   factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
       try {
-      //On iOS, we'll delete the databases folder under the shared AppGroup folder
+          //On iOS, we'll delete the databases folder under the shared AppGroup folder
           if (Platform.OS === 'ios') {
               deleteIOSDatabase({shouldRemoveDirectory});
               return true;
@@ -319,20 +315,24 @@ class DatabaseManager {
           await FileSystem.deleteAsync(androidFilesDir);
           return true;
       } catch (e) {
-      // console.log('An error occurred while trying to delete the databases directory);
           return false;
       }
   };
 
   /**
    * getAllServers : Retrieves all the servers registered in the default database
-   * @returns {Promise<undefined | Servers[]>}
+   * @returns {Promise<Servers[]>}
    */
-  private getAllServers = async () => {
+  private getAllServers = async (serverUrls: string[]) => {
       // Retrieve all server records from the default db
       const defaultDatabase = await this.getDefaultDatabase();
-      const allServers = defaultDatabase && ((await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch()) as IServers[]);
-      return allServers;
+
+      if (defaultDatabase) {
+          const allServers = (await defaultDatabase.collections.get(SERVERS).query(Q.where('url', Q.oneOf(serverUrls))).fetch() as IServers[]);
+          return allServers;
+      }
+
+      return [];
   };
 
   /**

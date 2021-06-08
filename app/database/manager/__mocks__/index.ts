@@ -114,12 +114,7 @@ class DatabaseManager {
    * @returns {Promise<DatabaseInstance>}
    */
   createDatabaseConnection = async ({configs, shouldAddToDefaultDatabase = true}: DatabaseConnectionArgs): Promise<DatabaseInstance> => {
-      const {
-          actionsEnabled = true,
-          dbName = 'default',
-          dbType = DatabaseType.DEFAULT,
-          serverUrl = undefined,
-      } = configs;
+      const {actionsEnabled = true, dbName = 'default', dbType = DatabaseType.DEFAULT, serverUrl = undefined} = configs;
 
       try {
           const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
@@ -181,11 +176,8 @@ class DatabaseManager {
    * @returns {Promise<boolean>}
    */
   isServerPresent = async (serverUrl: string) => {
-      const allServers = await this.getAllServers();
-      const existingServer = allServers?.filter((server) => {
-          return server.url === serverUrl;
-      });
-      return existingServer && existingServer.length > 0;
+      const allServers = await this.getAllServers([serverUrl]);
+      return allServers?.length > 0;
   };
 
   /**
@@ -218,7 +210,7 @@ class DatabaseManager {
   retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<DatabaseInstances[] | null> => {
       if (serverUrls?.length) {
           // Retrieve all server records from the default db
-          const allServers = await this.getAllServers();
+          const allServers = await this.getAllServers(serverUrls);
 
           // Filter only those servers that are present in the serverUrls array
           const servers = allServers!.filter((server: IServers) => {
@@ -279,7 +271,6 @@ class DatabaseManager {
           }
           return false;
       } catch (e) {
-      // console.log('An error occurred while trying to delete database with name ', databaseName);
           return false;
       }
   };
@@ -288,11 +279,14 @@ class DatabaseManager {
    * getAllServers : Retrieves all the servers registered in the default database
    * @returns {Promise<undefined | Servers[]>}
    */
-  private getAllServers = async () => {
+  private getAllServers = async (serverUrls: string[]) => {
       // Retrieve all server records from the default db
       const defaultDatabase = await this.getDefaultDatabase();
-      const allServers = defaultDatabase && ((await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch()) as IServers[]);
-      return allServers;
+      if (defaultDatabase) {
+          const allServers = (await defaultDatabase.collections.get(SERVERS).query(Q.where('url', Q.oneOf(serverUrls))).fetch() as IServers[]);
+          return allServers;
+      }
+      return [];
   };
 
   /**
@@ -333,7 +327,8 @@ class DatabaseManager {
               });
           }
       } catch (e) {
-      // console.log({catchError: e});
+          // eslint-disable-next-line no-console
+          console.log('addServerToDefaultDatabase ERROR:', e);
       }
   };
 }
