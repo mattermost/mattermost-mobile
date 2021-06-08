@@ -32,7 +32,7 @@ function makeMapStateToProps() {
 
         let teammateId;
         let isTeammateGuest = false;
-        let customStatusEnabled;
+        let customStatusEnabled = false;
         let customStatus;
         const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
 
