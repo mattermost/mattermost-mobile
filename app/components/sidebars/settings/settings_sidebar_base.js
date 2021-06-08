@@ -272,36 +272,33 @@ export default class SettingsSidebarBase extends PureComponent {
             </View>
         );
 
-        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
-            (
-                <Text style={style.customStatusExpiryContainer}>
-                    <CustomStatusExpiry
-                        time={customStatus?.expires_at}
-                        theme={theme}
-                        textStyles={style.customStatusExpiryText}
-                        withinBrackets={true}
-                        showPrefix={true}
-                    />
-                </Text>
-            ) : null;
-
-        const clearButton = isStatusSet ?
-            (
-                <ClearButton
-                    handlePress={this.clearCustomStatus}
+        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ? (
+            <Text style={style.customStatusExpiryContainer}>
+                <CustomStatusExpiry
+                    time={customStatus?.expires_at}
                     theme={theme}
-                    testID='settings.sidebar.custom_status.action.clear'
+                    textStyles={style.customStatusExpiryText}
+                    withinBrackets={true}
+                    showPrefix={true}
                 />
-            ) : null;
+            </Text>
+        ) : null;
 
-        const retryMessage = showRetryMessage ?
-            (
-                <FormattedText
-                    id='custom_status.failure_message'
-                    defaultMessage='Failed to update status. Try again'
-                    style={style.retryMessage}
-                />
-            ) : null;
+        const clearButton = isStatusSet ? (
+            <ClearButton
+                handlePress={this.clearCustomStatus}
+                theme={theme}
+                testID='settings.sidebar.custom_status.action.clear'
+            />
+        ) : null;
+
+        const retryMessage = showRetryMessage ? (
+            <FormattedText
+                id='custom_status.failure_message'
+                defaultMessage='Failed to update status. Try again'
+                style={style.retryMessage}
+            />
+        ) : null;
 
         const text = isStatusSet ? customStatus.text : (
             <FormattedText

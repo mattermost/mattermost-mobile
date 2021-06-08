@@ -75,7 +75,7 @@ const ClearAfterSuggestion = ({handleSuggestionClick, duration, theme, separator
             value: intl.formatMessage(durationValues[THIS_WEEK]),
         },
         [DATE_AND_TIME]: {
-            text: intl.formatMessage({id: 'expiry_dropdown.custom', defaultMessage: 'Custom'}),
+            text: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
             value: intl.formatMessage(durationValues[DATE_AND_TIME]),
         },
     };

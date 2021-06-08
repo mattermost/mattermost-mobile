@@ -43,7 +43,7 @@ function makeMapStateToProps() {
             isMyUser: getCurrentUserId(state) === ownProps.userId,
             remoteClusterInfo: state.entities.remoteCluster.info[user?.remote_id],
             customStatus,
-            isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : false,
+            isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : true,
         };
     };
 }

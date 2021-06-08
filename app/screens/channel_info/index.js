@@ -46,7 +46,7 @@ function makeMapStateToProps() {
             }
             customStatusEnabled = isCustomStatusEnabled(state);
             customStatus = customStatusEnabled && getCustomStatus(state, teammateId);
-            customStatusExpired = customStatusEnabled ? isCustomStatusExpired(state, customStatus) : false;
+            customStatusExpired = customStatusEnabled ? isCustomStatusExpired(state, customStatus) : true;
         }
 
         if (currentChannel.type === General.GM_CHANNEL) {

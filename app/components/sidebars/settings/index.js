@@ -29,7 +29,7 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             isCustomStatusEnabled: customStatusEnabled,
             customStatus,
-            isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : false,
+            isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : true,
         };
     };
 }

@@ -16,31 +16,31 @@ const {
 
 export const durationValues = {
     [DONT_CLEAR]: {
-        id: t('expiry_dropdown.dont_clear'),
+        id: t('custom_status.expiry_dropdown.dont_clear'),
         defaultMessage: "Don't clear",
     },
     [THIRTY_MINUTES]: {
-        id: t('expiry_dropdown.thirty_minutes'),
+        id: t('custom_status.expiry_dropdown.thirty_minutes'),
         defaultMessage: '30 minutes',
     },
     [ONE_HOUR]: {
-        id: t('expiry_dropdown.one_hour'),
+        id: t('custom_status.expiry_dropdown.one_hour'),
         defaultMessage: '1 hour',
     },
     [FOUR_HOURS]: {
-        id: t('expiry_dropdown.four_hours'),
+        id: t('custom_status.expiry_dropdown.four_hours'),
         defaultMessage: '4 hours',
     },
     [TODAY]: {
-        id: t('expiry_dropdown.today'),
+        id: t('custom_status.expiry_dropdown.today'),
         defaultMessage: 'Today',
     },
     [THIS_WEEK]: {
-        id: t('expiry_dropdown.this_week'),
+        id: t('custom_status.expiry_dropdown.this_week'),
         defaultMessage: 'This week',
     },
     [DATE_AND_TIME]: {
-        id: t('expiry_dropdown.date_and_time'),
+        id: t('custom_status.expiry_dropdown.date_and_time'),
         defaultMessage: 'Date and Time',
     },
 };
