@@ -154,7 +154,7 @@ export function parseDeepLink(deepLinkUrl: string) {
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(deepLinkUrl);
     if (match) {
-        return {serverUrl: match[1], teamName: match[2], id: match[3]};
+        return {serverUrl: match[1], teamName: match[2], channelId: match[3]};
     }
 
     return null;

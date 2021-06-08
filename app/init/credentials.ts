@@ -46,9 +46,13 @@ export const setAppCredentials = (deviceToken: string, currentUserId: string, to
                 accessGroup = appGroup.appGroupIdentifier;
             }
 
+            // TODO: Do we need these in EphemeralStore?
             EphemeralStore.deviceToken = deviceToken;
             EphemeralStore.currentServerUrl = url;
+
+            // TODO: Do we need this in AsyncStorage?
             AsyncStorage.setItem(ASYNC_STORAGE_CURRENT_SERVER_KEY, url);
+
             const options: KeyChain.Options = {
                 accessGroup,
                 securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
@@ -60,11 +64,41 @@ export const setAppCredentials = (deviceToken: string, currentUserId: string, to
     }
 };
 
-// TODO: rename this to getActiveServerCredentials
+export const getServerCredentials = async (serverUrl: string) => {
+    return getInternetCredentials(serverUrl);
+}
+
+export const getActiveServerCredentials = async () => {
+    const serverUrl = await getCurrentServerUrl();
+    if (serverUrl) {
+        return getServerCredentials(serverUrl);
+    }
+
+    return null;
+}
+
+export const removeServerCredentials = async (serverUrl: string) => {
+    // TODO: invalidate client and remove tokens
+
+    KeyChain.resetInternetCredentials(serverUrl);
+
+    // Is EphemeralStore and AsyncStorage needed?
+    EphemeralStore.currentServerUrl = null;
+    AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+}
+
+export const removeActiveServerCredentials = async () => {
+    const serverUrl = await getCurrentServerUrl();
+    if (serverUrl) {
+        removeServerCredentials(serverUrl);
+    }
+}
+
+// TODO: replace all calls to this either getServerCredentials or getActiveServerCredentials
+// then remove this function.
 export const getAppCredentials = async () => {
     const serverUrl = await getCurrentServerUrl();
 
-    // TODO: Why are we passing '' ?
     return getInternetCredentials(serverUrl || '');
 };
 
@@ -81,9 +115,9 @@ export const removeAppCredentials = async () => {
     AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
-export async function getInternetCredentials(url: string) {
+export async function getInternetCredentials(serverUrl: string) {
     try {
-        const credentials = await KeyChain.getInternetCredentials(url);
+        const credentials = await KeyChain.getInternetCredentials(serverUrl);
 
         if (credentials) {
             const usernameParsed = credentials.username.split(',');
@@ -91,11 +125,12 @@ export async function getInternetCredentials(url: string) {
             const [deviceToken, currentUserId] = usernameParsed;
 
             if (token && token !== 'undefined') {
+                // TODO: Do we need deviceToken in EphemeralStore
                 EphemeralStore.deviceToken = deviceToken;
-                const analyticsClient = analytics.get(url);
+                const analyticsClient = analytics.get(serverUrl);
                 analyticsClient?.setUserId(currentUserId);
 
-                const csrf = await getCSRFFromCookie(url);
+                const csrf = await getCSRFFromCookie(serverUrl);
                 // eslint-disable-next-line no-console
                 console.log('CSRF', csrf);
 

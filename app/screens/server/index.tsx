@@ -8,7 +8,6 @@ import {
     Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {useManagedConfig} from '@mattermost/react-native-emm';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -24,18 +23,21 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
+import type {ManagedConfig} from '@mattermost/react-native-emm';
+import type {LaunchOptions} from '@typings/launch';
+
 interface ServerProps extends LaunchOptions {
     componentId: string;
+    managedConfig: ManagedConfig;
     theme: Theme;
 }
 
 let cancelPing: undefined | (() => void);
 
 const Server: NavigationFunctionComponent = (props: ServerProps) => {
-    const {theme} = props;
+    const {theme, managedConfig} = props;
 
     const intl = useIntl();
-    const managedConfig = useManagedConfig();
     const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
     const [error, setError] = useState<ClientErrorWithIntl|string|undefined>();
@@ -170,9 +172,9 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
         return () => listener?.remove();
     }, []);
 
-    // TODO: Discuss with Elias how to handle managedConfig, either here or in init?
+    // TODO: need autoconnect
     useEffect(() => {
-        const serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        const serverUrl = props.serverUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
 
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
@@ -182,13 +184,6 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
                 // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
                 handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
             }
-        }
-    }, []);
-
-    useEffect(() => {
-        if (props.serverUrl) {
-            setUrl(props.serverUrl);
-            handleConnect(props.serverUrl);
         }
     }, []);
 

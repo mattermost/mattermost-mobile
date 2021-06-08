@@ -1,48 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Emm from '@mattermost/react-native-emm';
 import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
 
-import LocalConfig from '@assets/config.json';
+import Emm from '@mattermost/react-native-emm';
+
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import type {ManagedConfig} from '@mattermost/react-native-emm';
 
-import {getAppCredentials} from './credentials';
-
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
 class ManagedApp {
-    allowOtherServers = true;
-    appGroupIdentifier: string | undefined;
     backgroundSince = 0;
-    blurApplicationScreen = false;
-    config: ManagedConfig | undefined;
-    previousConfig: ManagedConfig | undefined;
     enabled = false;
     inAppPinCode = false;
-    jailbreakProtection = false;
     performingAuthentication = false;
-    previousAppState: AppStateStatus | undefined;
-    processConfigTimeout: NodeJS.Timeout | undefined;
-    serverUrl: string | undefined;
+    previousAppState?: AppStateStatus;
+    processConfigTimeout?: NodeJS.Timeout;
     vendor = 'Mattermost';
 
     constructor() {
-        this.setConfig();
-        this.processConfig();
+        Emm.addListener(this.processConfig);
+
         this.setIOSAppGroupIdentifier();
 
-        Emm.addListener(this.onManagedConfigChange);
         AppState.addEventListener('change', this.onAppStateChange);
     }
 
-    setConfig = async (config?: ManagedConfig) => {
-        this.config = config || await Emm.getManagedConfig();
-        this.enabled = Boolean(this.config && Object.keys(this.config).length);
+    init() {
+        Emm.getManagedConfig().then(this.processConfig);
     }
 
     setIOSAppGroupIdentifier = () => {
@@ -50,54 +39,45 @@ class ManagedApp {
             const {appGroupIdentifier} = getIOSAppGroupDetails();
 
             if (appGroupIdentifier) {
-                this.appGroupIdentifier = appGroupIdentifier;
                 Emm.setAppGroupId(appGroupIdentifier);
             }
         }
     }
 
-    onManagedConfigChange = (config: ManagedConfig) => {
-        this.setConfig(config)
-        this.processConfig();
-    }
-
-    processConfig = async () => {
-        if (!this.enabled) {
-            return;
-        }
-
+    processConfig = async (config?: ManagedConfig) => {
+        // If the managed configuration changed while authentication was
+        // being performed, delay the processing of this new configuration
+        // until authentication is complete.
         if (this.performingAuthentication) {
             if (this.processConfigTimeout) {
                 clearTimeout(this.processConfigTimeout);
             }
 
-            this.processConfigTimeout = setTimeout(this.processConfig, 500);
+            this.processConfigTimeout = setTimeout(() => this.processConfig(config), 500);
         }
 
-        const blurScreen = this.config!.blurApplicationScreen === 'true';
+        this.enabled = Boolean(config && Object.keys(config).length);
+        if (!this.enabled) {
+            return;
+        }
+
+        const blurScreen = config!.blurApplicationScreen === 'true';
         Emm.enableBlurScreen(blurScreen);
 
-        const vendor = this.config!.vendor;
+        const vendor = config!.vendor;
         if (vendor) {
             this.vendor = vendor;
         }
 
-        const jailbreakProtection = this.config!.jailbreakProtection === 'true';
+        const jailbreakProtection = config!.jailbreakProtection === 'true';
         if (jailbreakProtection) {
             this.alertIfDeviceIsUntrusted();
         }
 
-        const inAppPinCode = this.config!.inAppPinCode === 'true';
+        const inAppPinCode = config!.inAppPinCode === 'true';
         if (inAppPinCode) {
             this.handleDeviceAuthentication();
         }
-
-        this.allowOtherServers = this.config!.allowOtherServers === 'false' || !LocalConfig.AutoSelectServerUrl;
-        if (!this.allowOtherServers) {        
-            this.serverUrl = this.config!.serverUrl || LocalConfig.DefaultServerUrl;
-            // TODO: remove all databases and set active database to this server's database
-        }
-
     };
 
     alertIfDeviceIsUntrusted = () => {
