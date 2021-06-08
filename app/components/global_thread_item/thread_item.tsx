@@ -10,7 +10,7 @@ import {DispatchFunc} from '@mm-redux/types/actions';
 import {getPost} from '@actions/views/post';
 import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
-import ThreadFooter from '@components/thread_footer';
+import ThreadFooter from '@components/thread_item_footer';
 
 import {Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';

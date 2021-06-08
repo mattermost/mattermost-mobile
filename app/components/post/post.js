@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     Platform,
+    Text,
     View,
     ViewPropTypes,
 } from 'react-native';
@@ -30,6 +31,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {fromAutoResponder} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import ThreadFooter from '@components/thread_item_footer';
 
 export default class Post extends PureComponent {
     static propTypes = {
@@ -39,6 +41,7 @@ export default class Post extends PureComponent {
             insertToDraft: PropTypes.func.isRequired,
             removePost: PropTypes.func.isRequired,
         }).isRequired,
+        collapsedThreadsEnabled: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
         highlight: PropTypes.bool,
@@ -70,6 +73,8 @@ export default class Post extends PureComponent {
         location: PropTypes.string,
         isBot: PropTypes.bool,
         previousPostExists: PropTypes.bool,
+        thread: PropTypes.object,
+        threadStarter: PropTypes.object,
         beforePrevPostUserId: PropTypes.string,
     };
 
@@ -241,6 +246,7 @@ export default class Post extends PureComponent {
         const {
             testID,
             channelIsReadOnly,
+            collapsedThreadsEnabled,
             commentedOnPost,
             highlight,
             isLastPost,
@@ -256,6 +262,8 @@ export default class Post extends PureComponent {
             showFullDate,
             showLongPost,
             theme,
+            thread,
+            threadStarter,
             managedConfig,
             consecutivePost,
             hasComments,
@@ -305,6 +313,7 @@ export default class Post extends PureComponent {
                 <PostHeader
                     post={post}
                     commentedOnPost={commentedOnPost}
+                    collapsedThreadsEnabled={collapsedThreadsEnabled}
                     createAt={post.create_at}
                     isSearchResult={isSearchResult}
                     shouldRenderReplyButton={shouldRenderReplyButton}
@@ -321,6 +330,21 @@ export default class Post extends PureComponent {
         const replyBarStyle = this.replyBarStyle();
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
         const itemTestID = `${testID}.${post.id}`;
+
+        const needBadge = thread?.unread_mentions || thread?.unread_replies;
+        let badgeComponent;
+        if (needBadge) {
+            if (thread.unread_replies && thread.unread_replies > 0) {
+                badgeComponent = (<View style={style.unreadDot}/>);
+            }
+            if (thread.unread_mentions && thread.unread_mentions > 0) {
+                badgeComponent = (
+                    <View style={style.mentionBadge}>
+                        <Text style={style.mentionBadgeText}>{thread.unread_mentions}</Text>
+                    </View>
+                );
+            }
+        }
 
         return (
             <View
@@ -368,7 +392,24 @@ export default class Post extends PureComponent {
                                     showLongPost={showLongPost}
                                     location={location}
                                 />
+                                {
+                                    thread?.id ? (
+                                        <View style={style.footerContainer}>
+                                            <ThreadFooter
+                                                thread={thread}
+                                                threadStarter={threadStarter}
+                                            />
+                                        </View>
+                                    ) : null
+                                }
                             </View>
+                            {
+                                badgeComponent ? (
+                                    <View style={style.badgeContainer}>
+                                        {badgeComponent}
+                                    </View>
+                                ) : null
+                            }
                         </View>
                     </>
                 </TouchableWithFeedback>
@@ -446,6 +487,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         highlightPinnedOrFlagged: {
             backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2),
+        },
+        footerContainer: {
+            marginTop: 6,
+            marginBottom: 9,
+        },
+        badgeContainer: {
+            position: 'absolute',
+            left: 28,
+            bottom: 12,
+        },
+        unreadDot: {
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: theme.sidebarTextActiveBorder,
+            alignSelf: 'center',
+            top: -6,
+            left: 4,
+        },
+        mentionBadge: {
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            backgroundColor: theme.mentionColor,
+            alignSelf: 'center',
+        },
+        mentionBadgeText: {
+            fontFamily: 'Open Sans',
+            fontSize: 10,
+            lineHeight: 16,
+            fontWeight: '700',
+            alignSelf: 'center',
+            color: theme.centerChannelBg,
         },
     };
 });

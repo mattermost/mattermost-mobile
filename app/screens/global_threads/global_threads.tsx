@@ -8,13 +8,13 @@ import {useSelector, useDispatch} from 'react-redux';
 import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
 import {markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
-import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getThreadOrderInCurrentTeam, getUnreadThreadOrderInCurrentTeam} from '@mm-redux/selectors/entities/threads';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 import CompassIcon from '@components/compass_icon';
-import ThreadItem from '@components/thread_item';
+import ThreadItem from '@components/global_thread_item';
 import {getViewingGlobalThreadsUnread} from '@selectors/threads';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

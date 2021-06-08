@@ -4,12 +4,15 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {Types} from '@constants';
+import {THREAD} from '@constants/screen';
 import {createPost, removePost} from '@mm-redux/actions/posts';
 import {Posts} from '@mm-redux/constants';
 import {isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from '@mm-redux/selectors/entities/posts';
 import {getUser, getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getMyPreferences, getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {getThread} from '@mm-redux/selectors/entities/threads';
 import {isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 
@@ -72,6 +75,8 @@ function makeMapStateToProps() {
             }
         }
 
+        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+
         return {
             channelIsReadOnly: isChannelReadOnlyById(state, post.channel_id),
             currentUserId,
@@ -80,12 +85,15 @@ function makeMapStateToProps() {
             isFirstReply,
             isLastReply,
             consecutivePost: isConsecutivePost(post, previousPost),
+            collapsedThreadsEnabled,
             hasComments: getCommentCountForPost(state, {post}) > 0,
             commentedOnPost,
             theme: getTheme(state),
             isFlagged: isPostFlagged(post.id, myPreferences),
             isCommentMention,
             previousPostExists: Boolean(previousPost),
+            thread: collapsedThreadsEnabled && ownProps.location !== THREAD ? getThread(state, post.id) : Types.EMTPY_OBJECT,
+            threadStarter: getUser(state, post.user_id),
             beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
         };
     };

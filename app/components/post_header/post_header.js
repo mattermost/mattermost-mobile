@@ -20,6 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
+        collapsedThreadsEnabled: PropTypes.bool,
         commentCount: PropTypes.number,
         commentedOnDisplayName: PropTypes.string,
         createAt: PropTypes.number.isRequired,
@@ -211,6 +212,7 @@ export default class PostHeader extends PureComponent {
 
     renderReply = () => {
         const {
+            collapsedThreadsEnabled,
             commentCount,
             commentedOnDisplayName,
             isSearchResult,
@@ -219,12 +221,13 @@ export default class PostHeader extends PureComponent {
             shouldRenderReplyButton,
             theme,
         } = this.props;
-        const style = getStyleSheet(theme);
         const showReply = shouldRenderReplyButton || (!commentedOnDisplayName && commentCount > 0 && renderReplies);
 
-        if (!showReply) {
+        if (collapsedThreadsEnabled || !showReply) {
             return null;
         }
+
+        const style = getStyleSheet(theme);
 
         return (
             <View
