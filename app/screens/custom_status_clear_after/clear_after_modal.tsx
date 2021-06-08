@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 import {SafeAreaView, View, StatusBar, Keyboard} from 'react-native';
 import React from 'react';
+import {intlShape, injectIntl} from 'react-intl';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {
     Navigation,
     NavigationComponent,
@@ -9,14 +11,13 @@ import {
     Options,
     OptionsTopBarButton,
 } from 'react-native-navigation';
-import {Theme} from '@mm-redux/types/preferences';
-import {intlShape, injectIntl} from 'react-intl';
-import {dismissModal, mergeNavigationOptions} from 'app/actions/navigation';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import ClearAfterSuggestion from './clear_after_suggestions';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {CustomStatusDuration} from '@mm-redux/types/users';
 
+import {Theme} from '@mm-redux/types/preferences';
+import {CustomStatusDuration} from '@mm-redux/types/users';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+
+import {dismissModal, mergeNavigationOptions} from 'app/actions/navigation';
+import ClearAfterSuggestion from './clear_after_suggestions';
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
     theme: Theme;

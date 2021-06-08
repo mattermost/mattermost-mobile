@@ -20,15 +20,18 @@ import {
     dismissAllModalsAndPopToRoot,
 } from '@actions/navigation';
 import Config from '@assets/config';
-import Emoji from '@components/emoji';
-import ClearButton from '@components/custom_status/clear_button';
 import ChannelIcon from '@components/channel_icon';
+import ClearButton from '@components/custom_status/clear_button';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import Emoji from '@components/emoji';
 import FormattedTime from '@components/formatted_time';
 import ProfilePicture from '@components/profile_picture';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {BotTag, GuestTag} from '@components/tag';
 import {General} from '@mm-redux/constants';
+import {CustomStatusDuration} from '@mm-redux/types/users';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
@@ -38,9 +41,6 @@ import {tryOpenURL} from '@utils/url';
 import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
-import {CustomStatusDuration} from '@mm-redux/types/users';
-import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
-import CustomStatusText from '@components/custom_status/custom_status_text';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {

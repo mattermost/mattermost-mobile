@@ -1,32 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment, {Moment} from 'moment-timezone';
 import React from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleProp, ViewStyle} from 'react-native';
 import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options, NavigationButtonPressedEvent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import {dismissModal, showModal, mergeNavigationOptions} from '@actions/navigation';
 import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
 import ClearButton from '@components/custom_status/clear_button';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {CustomStatus, DeviceTypes} from '@constants';
+import {durationValues} from '@constants/custom_status';
 import {ActionFunc, ActionResult} from '@mm-redux/types/actions';
 import {Theme} from '@mm-redux/types/preferences';
+import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {getCurrentMomentForTimezone} from '@utils/timezone';
-import moment from 'moment';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
-import {Moment} from 'moment-timezone';
-import {durationValues} from '@constants/custom_status';
-import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 
 type DefaultUserCustomStatus = {
     emoji: string;

@@ -13,7 +13,6 @@ import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/ent
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
-
 import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
@@ -47,7 +46,7 @@ function makeMapStateToProps() {
             }
             customStatusEnabled = isCustomStatusEnabled(state);
             customStatus = customStatusEnabled && getCustomStatus(state, teammateId);
-            customStatusExpired = isCustomStatusExpired(state, customStatus);
+            customStatusExpired = customStatusEnabled ? isCustomStatusExpired(state, customStatus) : false;
         }
 
         if (currentChannel.type === General.GM_CHANNEL) {

@@ -8,11 +8,11 @@ import {View, TouchableOpacity, Text} from 'react-native';
 import Emoji from '@components/emoji';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
+import {durationValues} from '@constants/custom_status';
 import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-import {durationValues} from '@constants/custom_status';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     intl: typeof intlShape;

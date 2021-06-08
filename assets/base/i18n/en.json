@@ -126,6 +126,7 @@
   "create_post.deactivated": "You are viewing an archived channel with a deactivated user.",
   "create_post.write": "Write to {channelDisplayName}",
   "custom_status.expiry.until": "Until",
+  "custom_status.expiry.at": "at",
   "custom_status.expiry_time.today": "Today",
   "custom_status.expiry_time.tomorrow": "Tomorrow",
   "custom_status.failure_message": "Failed to update status. Try again",

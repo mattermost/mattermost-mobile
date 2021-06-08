@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GlobalState} from '@mm-redux/types/store';
-import {getCurrentUser} from '@mm-redux/selectors/entities/common';
 import {createSelector} from 'reselect';
+
+import {getCurrentUser} from '@mm-redux/selectors/entities/common';
+
+import {GlobalState} from '@mm-redux/types/store';
 import {UserProfile} from '@mm-redux/types/users';
 
 export function getUserTimezone(state: GlobalState, id: string) {

@@ -113,15 +113,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         separator: {
             marginTop: 35,
         },
-        errorText: {
-            color: theme.errorTextColor,
-        },
-        emoticonOutline: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-        text: {
-            fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
     };
 });

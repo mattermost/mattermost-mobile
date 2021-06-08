@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import moment from 'moment-timezone';
+import {createSelector} from 'reselect';
+
 import {GlobalState} from '@mm-redux/types/store';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
-
-import {createSelector} from 'reselect';
-import moment from 'moment-timezone';
 
 import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {get} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getCurrentMomentForTimezone} from '@utils/timezone';
 

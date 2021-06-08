@@ -14,6 +14,7 @@ import Clipboard from '@react-native-community/clipboard';
 
 import {popToRoot} from '@actions/navigation';
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
@@ -26,8 +27,8 @@ import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import mattermostManaged from 'app/mattermost_managed';
+
 import {CustomStatusDuration} from '@mm-redux/types/users';
-import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
@@ -161,18 +162,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             android: style.detail,
         });
 
-        const customStatusExpiry = customStatus?.emoji && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
-            (
-                <Text style={style.customStatusExpiry}>
-                    <CustomStatusExpiry
-                        time={customStatus.expires_at}
-                        theme={theme}
-                        textStyles={style.customStatusExpiry}
-                        showPrefix={true}
-                    />
-                </Text>
-            ) : null;
-
         return (
             <View style={style.container}>
                 <View style={[style.channelNameContainer, style.row]}>
@@ -215,7 +204,16 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             />
-                            {customStatusExpiry}
+                            {customStatus.duration === CustomStatusDuration.DONT_CLEAR ? null : (
+                                <Text style={style.customStatusExpiry}>
+                                    <CustomStatusExpiry
+                                        time={customStatus.expires_at}
+                                        theme={theme}
+                                        textStyles={style.customStatusExpiry}
+                                        showPrefix={true}
+                                    />
+                                </Text>
+                            )}
                         </View>
                     </View>
                 }

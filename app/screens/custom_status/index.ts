@@ -4,16 +4,15 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
+import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@actions/views/custom_status';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
-import {getRecentCustomStatuses, isCustomStatusExpired, makeGetCustomStatus} from '@selectors/custom_status';
-import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@actions/views/custom_status';
-
-import CustomStatusModal from '@screens/custom_status/custom_status_modal';
-import {isLandscape} from '@selectors/device';
 import {UserCustomStatus} from '@mm-redux/types/users';
+import CustomStatusModal from '@screens/custom_status/custom_status_modal';
+import {getRecentCustomStatuses, isCustomStatusExpired, makeGetCustomStatus} from '@selectors/custom_status';
+import {isLandscape} from '@selectors/device';
 
 function makeMapStateToProps() {
     const getCustomStatus = makeGetCustomStatus();
