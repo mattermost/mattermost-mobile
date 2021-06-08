@@ -48,7 +48,7 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
 
     const handlePress = useCallback(() => {
         onPress(emojiName, highlight);
-    }, []);
+    }, [highlight]);
 
     return (
         <TouchableWithFeedback
