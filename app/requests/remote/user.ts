@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
@@ -13,7 +14,7 @@ import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@request
 import {logError} from '@requests/remote/error';
 import {loadRolesIfNeeded} from '@requests/remote/role';
 import {getDataRetentionPolicy} from '@requests/remote/systems';
-import {Client4Error} from '@typings/api/client4';
+import {Client4Error, ErrorApi} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
 import {
     LoadMeArgs,
@@ -105,11 +106,14 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
 };
 
 export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
-    let currentUser: RawUser = user;
+    let currentUser = user ?? undefined;
 
     const {activeServerDatabase, error} = await getActiveServerDatabase();
     if (!activeServerDatabase) {
-        return {error};
+        return {
+            error,
+            currentUser: undefined,
+        };
     }
 
     try {
@@ -117,15 +121,24 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             await Client4.attachDevice(deviceToken);
         }
 
-        if (!user) {
+        if (!currentUser) {
             currentUser = ((await Client4.getMe()) as unknown) as RawUser;
         }
     } catch (e) {
         await forceLogoutIfNecessary(e);
-        return {error: e};
+        return {
+            error: e,
+            currentUser: undefined,
+        };
     }
 
     try {
+        if (!currentUser) {
+            return {
+                error,
+                currentUser: undefined,
+            };
+        }
         const analyticsClient = analytics.create(Client4.getUrl());
         analyticsClient.setUserId(currentUser.id);
         analyticsClient.setUserRoles(currentUser.roles);
@@ -197,7 +210,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
                 },
                 {
                     name: 'currentUserId',
-                    value: user.id,
+                    value: currentUser.id,
                 },
                 {
                     name: 'url',
@@ -208,7 +221,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         });
 
         const userRecords = DataOperator.handleUsers({
-            users: [user],
+            users: [currentUser],
             prepareRecordsOnly: true,
         });
 
@@ -218,7 +231,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         });
 
         let roles: string[] = [];
-        for (const role of user.roles.split(' ')) {
+        for (const role of currentUser.roles.split(' ')) {
             roles = roles.concat(role);
         }
 
@@ -261,10 +274,10 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             });
         }
     } catch (e) {
-        return {error: e};
+        return {error: e, currentUser: undefined};
     }
 
-    return {data: currentUser};
+    return {currentUser, error: undefined};
 };
 
 export const completeLogin = async (user: RawUser, deviceToken: string) => {
@@ -379,4 +392,32 @@ export const getSessions = async (currentUserId: string) => {
         logError(e);
         await forceLogoutIfNecessary(e);
     }
+};
+
+type LoadedUser = {
+    currentUser?: RawUser,
+    error?: ErrorApi
+}
+
+export const ssoLogin = async () => {
+    let deviceToken;
+
+    const {error, defaultDatabase} = await getDefaultDatabase();
+    if (!defaultDatabase) {
+        return {error};
+    }
+
+    try {
+        deviceToken = await getDeviceToken(defaultDatabase);
+    } catch (e) {
+        return {error: e};
+    }
+
+    const result = await loadMe({deviceToken}) as unknown as LoadedUser;
+
+    if (!result?.error && result?.currentUser) {
+        await completeLogin(result.currentUser, deviceToken);
+    }
+
+    return result;
 };

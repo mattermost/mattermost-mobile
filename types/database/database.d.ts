@@ -697,7 +697,7 @@ export type LoginArgs = {
   password: string;
 };
 
-export type LoadMeArgs = { user: RawUser; deviceToken?: string };
+export type LoadMeArgs = { user?: RawUser; deviceToken?: string };
 
 export type ServerUrlChangedArgs = {
   configRecord: System;

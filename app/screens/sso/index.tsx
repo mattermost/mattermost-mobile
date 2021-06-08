@@ -1,37 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-
-import {resetToChannel} from 'app/actions/navigation';
-import {ViewTypes} from 'app/constants';
-import {scheduleExpiredNotification} from '@actions/views/session';
-import {ssoLogin} from '@actions/views/user';
-import emmProvider from '@init/emm_provider';
 import {Client4} from '@client/rest';
+import ViewTypes from '@constants/view';
+import emmProvider from '@init/emm_provider';
 
-import {ErrorApi} from '@mm-redux/types/client4';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {scheduleExpiredNotification} from '@requests/remote/push_notification';
+
+import {resetToChannel} from '@screens/navigation';
+import {ErrorApi} from '@typings/api/client4';
+import {isMinimumServerVersion} from '@utils/helpers';
+import React from 'react';
 import {useIntl} from 'react-intl';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
 
 interface SSOProps {
-    ssoType: string;
+  ssoType: string;
+  config: ClientConfig;
+  license: ClientLicense;
+  theme: Theme;
+  serverUrl: string;
 }
 
-const SSO = ({ssoType}: SSOProps) => {
+const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
+    console.log('>>>>>>>>>>>>>>> serverUrl', serverUrl);
     const intl = useIntl();
-
-    const [config, serverUrl, theme] = useSelector(
-        (state: GlobalState) => [
-            getConfig(state),
-            state.views.selectServer.serverUrl,
-            getTheme(state),
-        ],
-        shallowEqual,
-    );
 
     const [loginError, setLoginError] = React.useState<string>('');
 
@@ -63,7 +58,8 @@ const SSO = ({ssoType}: SSOProps) => {
             loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
             break;
         }
-        default: break;
+        default:
+            break;
     }
 
     const onLoadEndError = (e: ErrorApi) => {
@@ -77,15 +73,17 @@ const SSO = ({ssoType}: SSOProps) => {
 
     const onMMToken = async (token: string) => {
         Client4.setToken(token);
-        asyncDispatch(ssoLogin()).then((result: any) => {
-            if (result && result.error) {
-                onLoadEndError(result.error);
-                return;
-            }
-            goToChannel();
-        }).catch(() => {
-            setLoginError('');
-        });
+        asyncDispatch(ssoLogin()).
+            then((result: any) => {
+                if (result && result.error) {
+                    onLoadEndError(result.error);
+                    return;
+                }
+                goToChannel();
+            }).
+            catch(() => {
+                setLoginError('');
+            });
     };
 
     const goToChannel = () => {
@@ -93,8 +91,8 @@ const SSO = ({ssoType}: SSOProps) => {
         resetToChannel();
     };
 
-    const scheduleSessionExpiredNotification = () => {
-        dispatch(scheduleExpiredNotification(intl));
+    const scheduleSessionExpiredNotification = async () => {
+        await scheduleExpiredNotification(intl);
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version, 5, 33, 0);
@@ -109,6 +107,7 @@ const SSO = ({ssoType}: SSOProps) => {
         theme,
     };
 
+    //fixme: where is inAppSessionAuth defined ??
     if (!isSSOWithRedirectURLAvailable || emmProvider.inAppSessionAuth === true) {
         return (
             <SSOWithWebView
@@ -120,9 +119,7 @@ const SSO = ({ssoType}: SSOProps) => {
         );
     }
 
-    return (
-        <SSOWithRedirectURL {...props}/>
-    );
+    return <SSOWithRedirectURL {...props}/>;
 };
 
 export default React.memo(SSO);
