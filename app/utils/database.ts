@@ -19,7 +19,7 @@ export const createAndSetActiveDatabase = async ({
         );
     }
     try {
-        await DatabaseManager.setActiveServerDatabase({displayName, serverUrl});
+        await DatabaseManager.setMostRecentServerConnection(serverUrl);
     } catch (e) {
         throw new DatabaseConnectionException(
             `createAndSetActiveDatabase: Unable to create and set serverUrl ${serverUrl} as current active database with name ${displayName}`,
@@ -44,7 +44,7 @@ export const getDefaultDatabase = async () => {
 
 export const getActiveServerDatabase = async () => {
     try {
-        const activeServerDatabase = await DatabaseManager.getActiveServerDatabase();
+        const activeServerDatabase = await DatabaseManager.getMostRecentServerConnection();
 
         return {
             error: activeServerDatabase ? null : 'Unable to retrieve the current active server database.',
