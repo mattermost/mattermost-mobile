@@ -3,7 +3,7 @@
 
 import moment, {Moment} from 'moment';
 import React, {useCallback, useState} from 'react';
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 import {View, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -42,8 +42,7 @@ const {
     DATE_AND_TIME,
 } = CustomStatusDuration;
 
-const ClearAfterSuggestion = (props: Props) => {
-    const {handleSuggestionClick, duration, theme, separator, isSelected, intl, showExpiryTime} = props;
+const ClearAfterSuggestion = ({handleSuggestionClick, duration, theme, separator, isSelected, intl, showExpiryTime}: Props) => {
     const style = getStyleSheet(theme);
 
     const divider = separator ? <View style={style.divider}/> : null;
@@ -148,7 +147,7 @@ const ClearAfterSuggestion = (props: Props) => {
     );
 };
 
-export default ClearAfterSuggestion;
+export default injectIntl(ClearAfterSuggestion);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

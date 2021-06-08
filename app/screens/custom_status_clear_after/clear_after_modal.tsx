@@ -100,7 +100,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     };
 
     renderClearAfterSuggestions = () => {
-        const {theme, intl} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
         const {duration} = this.state;
 
@@ -115,7 +115,6 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                             theme={theme}
                             separator={index !== arr.length - 2}
                             isSelected={duration === item}
-                            intl={intl}
                         />
                     );
                 }
@@ -135,7 +134,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     };
 
     render() {
-        const {theme, intl} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -155,7 +154,6 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                             theme={theme}
                             separator={false}
                             isSelected={false}
-                            intl={intl}
                             showExpiryTime={true}
                         />
                     </View>

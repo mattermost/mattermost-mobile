@@ -84,7 +84,7 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
             <FormattedDate
                 format={format}
                 timezone={timezone}
-                value={expiryMomentTime}
+                value={expiryMomentTime.toDate()}
             />
         );
     }
@@ -93,11 +93,11 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
         useTime = false;
     }
 
-    const showTime = useTime ? (
+    const renderTime = useTime ? (
         <FormattedTime
-            hour12={!militaryTime}
-            timezone={timezone}
-            value={expiryMomentTime}
+            isMilitaryTime={militaryTime}
+            timezone={timezone || ''}
+            value={expiryMomentTime.toDate()}
         />
     ) : undefined;
 
@@ -118,7 +118,7 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
             {withinBrackets && '('}
             {prefix}
             {renderDayOrDate}
-            {showTime}
+            {renderTime}
             {withinBrackets && ')'}
         </Text>
     );

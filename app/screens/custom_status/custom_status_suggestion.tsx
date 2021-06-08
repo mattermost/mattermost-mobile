@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 import React, {useCallback} from 'react';
 import {View, TouchableOpacity, Text} from 'react-native';
 
@@ -26,8 +26,7 @@ type Props = {
     expires_at?: string;
 };
 
-const CustomStatusSuggestion = (props: Props) => {
-    const {handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at, intl} = props;
+const CustomStatusSuggestion = ({handleSuggestionClick, emoji, text, theme, separator, handleClear, duration, expires_at, intl}: Props) => {
     const style = getStyleSheet(theme);
 
     const handleClick = useCallback(preventDoubleTap(() => {
@@ -92,7 +91,7 @@ const CustomStatusSuggestion = (props: Props) => {
     );
 };
 
-export default CustomStatusSuggestion;
+export default injectIntl(CustomStatusSuggestion);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

@@ -206,7 +206,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     renderRecentCustomStatuses = (style: Record<string, StyleProp<ViewStyle>>) => {
-        const {recentCustomStatuses, theme, intl} = this.props;
+        const {recentCustomStatuses, theme} = this.props;
 
         const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
             <CustomStatusSuggestion
@@ -219,7 +219,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 separator={index !== recentCustomStatuses.length - 1}
                 duration={status.duration}
                 expires_at={status.expires_at}
-                intl={intl}
             />
         ));
 
@@ -263,7 +262,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     theme={theme}
                     separator={index !== arr.length - 1}
                     duration={status.duration}
-                    intl={intl}
                 />
             ));
 
