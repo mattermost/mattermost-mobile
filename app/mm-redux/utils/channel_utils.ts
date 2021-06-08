@@ -476,6 +476,7 @@ function createFakeChannel(userId: string, otherUserId: string): Channel {
         extra_update_at: 0,
         last_post_at: 0,
         total_msg_count: 0,
+        total_msg_count_root: 0,
         type: General.DM_CHANNEL as ChannelType,
         fake: true,
         team_id: '',
@@ -735,4 +736,8 @@ export function filterChannelsMatchingTerm(channels: Array<Channel>, term: strin
         return name.startsWith(lowercasedTerm) ||
             displayName.startsWith(lowercasedTerm);
     });
+}
+
+export function getMsgCountInChannel(collapsed: boolean, channel: Channel, member: ChannelMembership): number {
+    return collapsed ? Math.max(channel.total_msg_count_root - member.msg_count_root, 0) : Math.max(channel.total_msg_count - member.msg_count, 0);
 }

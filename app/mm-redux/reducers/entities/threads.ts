@@ -11,13 +11,17 @@ import {IDMappedObjects} from '@mm-redux/types/utilities';
 export const threadsReducer = (state: ThreadsState['threads'] = {}, action: GenericAction) => {
     switch (action.type) {
     case ThreadTypes.RECEIVED_THREADS: {
-        const {threads} = action.data;
+        const {threads, removeOldThreads} = action.data;
+        const newThreads = threads.reduce((results: IDMappedObjects<UserThread>, thread: UserThread) => {
+            results[thread.id] = thread;
+            return results;
+        }, {});
+        if (removeOldThreads) {
+            return newThreads;
+        }
         return {
             ...state,
-            ...threads.reduce((results: IDMappedObjects<UserThread>, thread: UserThread) => {
-                results[thread.id] = thread;
-                return results;
-            }, {}),
+            ...newThreads,
         };
     }
     case ThreadTypes.RECEIVED_THREAD: {
@@ -70,7 +74,7 @@ export const threadsReducer = (state: ThreadsState['threads'] = {}, action: Gene
 export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, action: GenericAction) => {
     switch (action.type) {
     case ThreadTypes.RECEIVED_THREADS: {
-        const nextSet = new Set(state[action.data.team_id]);
+        const nextSet = new Set(action.data.removeOldThreads ? [] : state[action.data.team_id]);
 
         action.data.threads.forEach((thread: UserThread) => {
             nextSet.add(thread.id);
@@ -114,12 +118,11 @@ export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, 
 export const countsReducer = (state: ThreadsState['counts'] = {}, action: GenericAction) => {
     switch (action.type) {
     case ThreadTypes.ALL_TEAM_THREADS_READ: {
-        const counts = state[action.data.team_id] ?? {unread_mentions_per_channel: {}};
+        const counts = state[action.data.team_id] ?? {};
         return {
             ...state,
             [action.data.team_id]: {
                 ...counts,
-                unread_mentions_per_channel: {},
                 total_unread_mentions: 0,
                 total_unread_threads: 0,
             },
@@ -128,7 +131,6 @@ export const countsReducer = (state: ThreadsState['counts'] = {}, action: Generi
     case ThreadTypes.READ_CHANGED_THREAD: {
         const {
             teamId,
-            channelId,
             prevUnreadMentions = 0,
             newUnreadMentions = 0,
             prevUnreadReplies = 0,
@@ -137,22 +139,11 @@ export const countsReducer = (state: ThreadsState['counts'] = {}, action: Generi
         const counts = state[teamId] ? {
             ...state[teamId],
         } : {
-            unread_mentions_per_channel: {
-                [channelId]: 0,
-            },
             total_unread_threads: 0,
             total: 0,
             total_unread_mentions: 0,
         };
         const unreadMentionDiff = newUnreadMentions - prevUnreadMentions;
-
-        if (counts.unread_mentions_per_channel[channelId]) {
-            const nc = {...counts.unread_mentions_per_channel};
-            nc[channelId] += unreadMentionDiff;
-            counts.unread_mentions_per_channel = nc;
-        } else {
-            counts.unread_mentions_per_channel = {[channelId]: newUnreadMentions};
-        }
 
         counts.total_unread_mentions += unreadMentionDiff;
 
@@ -167,20 +158,10 @@ export const countsReducer = (state: ThreadsState['counts'] = {}, action: Generi
             [action.data.teamId]: counts,
         };
     }
-    case ThreadTypes.RECEIVED_PER_CHANNEL_MENTION_COUNTS: {
-        return {
-            ...state,
-            [action.data.team_id]: {
-                ...state[action.data.team_id] ?? {},
-                unread_mentions_per_channel: action.data.counts,
-            },
-        };
-    }
     case ThreadTypes.RECEIVED_THREADS: {
         return {
             ...state,
             [action.data.team_id]: {
-                unread_mentions_per_channel: state[action.data.team_id]?.unread_mentions_per_channel ?? {},
                 total: action.data.total,
                 total_unread_threads: action.data.total_unread_threads,
                 total_unread_mentions: action.data.total_unread_mentions,

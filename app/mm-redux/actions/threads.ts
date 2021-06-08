@@ -4,6 +4,8 @@
 import {ThreadTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 
 import {Client4} from '@mm-redux/client';
+import { getCurrentUserId } from '@mm-redux/selectors/entities/common';
+import { getCurrentTeamId } from '@mm-redux/selectors/entities/teams';
 import {batchActions, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
 import {UserThread, UserThreadList} from '@mm-redux/types/threads';
 
@@ -13,7 +15,7 @@ import {forceLogoutIfNecessary} from './helpers';
 
 export function getThreads(userId: string, teamId: string, before = '', after = '', perPage = ThreadConstants.THREADS_CHUNK_SIZE, unread = true) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let userThreadList: undefined | UserThreadList;
+        let userThreadList: UserThreadList;
 
         try {
             userThreadList = await Client4.getUserThreads(userId, teamId, before, after, perPage, true, false, unread);
@@ -31,6 +33,7 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                         ...userThreadList,
                         threads: userThreadList?.threads?.map((thread) => ({...thread, is_following: true})),
                         team_id: teamId,
+                        removeOldThreads: !before && !after,
                     },
                 },
             ];
@@ -68,20 +71,24 @@ export function getThread(userId: string, teamId: string, threadId: string, exte
         }
 
         if (thread) {
-            thread = handleThreadArrived(dispatch, thread, teamId);
+            thread = handleThreadArrived(dispatch, getState, thread, teamId);
         }
 
         return {data: thread};
     };
 }
 
-export function handleThreadArrived(dispatch: DispatchFunc, threadData: UserThread, teamId: string) {
+export function handleThreadArrived(dispatch: DispatchFunc, getState: GetStateFunc, threadData: UserThread, teamId: string) {
     const thread = {...threadData, is_following: true};
+
+    const state = getState();
+    const currentUserId = getCurrentUserId(state);
+    const currentTeamId = getCurrentTeamId(state);
 
     dispatch(batchActions([
         {
             type: UserTypes.RECEIVED_PROFILES_LIST,
-            data: thread.participants,
+            data: thread.participants.filter((user) => user.id !== currentUserId),
         },
         {
             type: PostTypes.RECEIVED_POSTS,
@@ -95,6 +102,22 @@ export function handleThreadArrived(dispatch: DispatchFunc, threadData: UserThre
             },
         },
     ]));
+
+    const oldThreadData = state.entities.threads.threads[threadData.id];
+
+    handleReadChanged(
+        dispatch,
+        thread.id,
+        teamId || currentTeamId,
+        thread.post.channel_id,
+        {
+            lastViewedAt: thread.last_viewed_at,
+            prevUnreadMentions: oldThreadData?.unread_mentions ?? 0,
+            newUnreadMentions: thread.unread_mentions,
+            prevUnreadReplies: oldThreadData?.unread_replies ?? 0,
+            newUnreadReplies: thread.unread_replies,
+        },
+    );
 
     return thread;
 }
@@ -158,18 +181,19 @@ export function updateThreadRead(userId: string, teamId: string, threadId: strin
             dispatch(logError(error));
             return {error};
         }
-
-        dispatch({
-            type: ThreadTypes.READ_CHANGED_THREAD,
-            data: {
-                id: threadId,
-                team_id: teamId,
-                timestamp,
-            },
-        });
-
         return {};
     };
+}
+
+export function handleFollowChanged(dispatch: DispatchFunc, threadId: string, teamId: string, following: boolean) {
+    dispatch({
+        type: ThreadTypes.FOLLOW_CHANGED_THREAD,
+        data: {
+            id: threadId,
+            team_id: teamId,
+            following,
+        },
+    });
 }
 
 export function setThreadFollow(userId: string, teamId: string, threadId: string, newState: boolean) {

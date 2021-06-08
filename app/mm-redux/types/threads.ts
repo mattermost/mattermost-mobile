@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Channel} from './channels';
 import {Post} from './posts';
 import {Team} from './teams';
 import {UserProfile} from './users';
@@ -32,6 +31,5 @@ export type ThreadsState = {
         total: number;
         total_unread_threads: number;
         total_unread_mentions: number;
-        unread_mentions_per_channel: Record<$ID<Channel>, number>;
     }>;
 };

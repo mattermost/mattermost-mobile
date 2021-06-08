@@ -51,7 +51,9 @@ export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<User
     getThreadsInCurrentTeam,
     getThreads,
     (threadsInTeam, threads) => {
-        const ids = [...threadsInTeam];
+        const ids = threadsInTeam.filter((id) => {
+            return threads[id].is_following;
+        });
         return sortByLastReply(ids, threads);
     },
 );

@@ -12,6 +12,7 @@ import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
@@ -171,7 +172,8 @@ export function createPostForNotificationReply(post) {
 
         try {
             const data = await Client4.createPost({...newPost, create_at: 0});
-            dispatch(receivedNewPost(data));
+            const crtEnabled = isCollapsedThreadsEnabled(state);
+            dispatch(receivedNewPost(data, crtEnabled));
 
             return {data};
         } catch (error) {

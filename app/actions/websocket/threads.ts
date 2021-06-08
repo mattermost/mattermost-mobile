@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {handleThreadArrived, handleReadChanged, handleAllMarkedRead} from '@mm-redux/actions/threads';
+import {handleThreadArrived, handleReadChanged, handleAllMarkedRead, handleFollowChanged, getThread as fetchThread} from '@mm-redux/actions/threads';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
 import {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 
 export function handleThreadUpdated(msg: WebSocketMessage) {
-    return (dispatch: DispatchFunc): ActionResult => {
+    return (dispatch: DispatchFunc, getState: GetStateFunc): ActionResult => {
         try {
             const threadData = JSON.parse(msg.data.thread);
-            // console.log('$$$$$$$$$$$$$$$: ', threadData);
-            handleThreadArrived(dispatch, threadData, msg.broadcast.team_id);
+            handleThreadArrived(dispatch, getState, threadData, msg.broadcast.team_id);
         } catch {
             // invalid JSON
         }
@@ -45,10 +47,14 @@ export function handleThreadReadChanged(msg: WebSocketMessage) {
     };
 }
 
-/*
-function handleThreadFollowChanged(msg: WebSocketMessage) {
-    return (doDispatch: Dispatch): ActionResult => {
+export function handleThreadFollowChanged(msg: WebSocketMessage) {
+    return async (doDispatch: DispatchFunc, doGetState: GetStateFunc): Promise<ActionResult> => {
+        const state = doGetState();
+        const thread = getThread(state, msg.data.thread_id);
+        if (!thread && msg.data.state) {
+            await doDispatch(fetchThread(getCurrentUserId(state), getCurrentTeamId(state), msg.data.thread_id, true));
+        }
         handleFollowChanged(doDispatch, msg.data.thread_id, msg.broadcast.team_id, msg.data.state);
+        return {data: true};
     };
 }
-*/
