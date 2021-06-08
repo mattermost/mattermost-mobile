@@ -14,6 +14,7 @@ import {
 import Clipboard from '@react-native-community/clipboard';
 import parseUrl from 'url-parse';
 
+import {SVG_DEFAULT_HEIGHT, SVG_DEFAULT_WIDTH} from '@constants/image';
 import CompassIcon from '@components/compass_icon';
 import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
@@ -22,7 +23,8 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
+import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {fileNameFromLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
@@ -230,18 +232,20 @@ export default class MarkdownImage extends ImageViewPort {
             if (fileInfo.uri) {
                 source = {uri: fileInfo.uri};
             }
+            const svgHeight = height || SVG_DEFAULT_HEIGHT;
+            const svgWidth = width || SVG_DEFAULT_WIDTH;
 
             image = (
                 <TouchableWithFeedback
                     onLongPress={this.handleLinkLongPress}
                     onPress={this.handlePreviewImage}
-                    style={{width, height}}
+                    style={{width: svgWidth, height: svgHeight}}
                 >
                     <ProgressiveImage
                         id={fileInfo.id}
                         defaultSource={source}
                         resizeMode='contain'
-                        style={{width, height}}
+                        style={{width: svgWidth, height: svgHeight}}
                     />
                 </TouchableWithFeedback>
             );

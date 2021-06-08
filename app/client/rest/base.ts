@@ -186,6 +186,10 @@ export default class ClientBase {
         return `${this.getPostsRoute()}/${postId}`;
     }
 
+    getSharedChannelsRoute() {
+        return `${this.getBaseRoute()}/sharedchannels`;
+    }
+
     getReactionsRoute() {
         return `${this.getBaseRoute()}/reactions`;
     }

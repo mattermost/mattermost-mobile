@@ -5,10 +5,12 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import ChannelIcon from '@components/channel_icon';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {General} from '@mm-redux/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/preferences';
@@ -18,6 +20,7 @@ interface AtMentionItemProps {
     isBot: boolean;
     isCurrentUser: boolean;
     isGuest: boolean;
+    isShared: boolean;
     lastName: string;
     nickname: string;
     onPress: (username: string) => void;
@@ -45,6 +48,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             justifyContent: 'center',
         },
+        rowInfo: {
+            flexDirection: 'row',
+            flex: 1,
+        },
         rowFullname: {
             fontSize: 15,
             color: theme.centerChannelColor,
@@ -66,6 +73,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
         isBot,
         isCurrentUser,
         isGuest,
+        isShared,
         lastName,
         nickname,
         onPress,
@@ -115,36 +123,52 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         size={24}
                         status={null}
                         showStatus={false}
-                        testID={`${testID}.profile_picture`}
+                        testID='at_mention_item.profile_picture'
                     />
                 </View>
-                <BotTag
-                    show={isBot}
-                    theme={theme}
-                />
-                <GuestTag
-                    show={isGuest}
-                    theme={theme}
-                />
-                {Boolean(name.length) &&
-                <Text
-                    style={style.rowFullname}
-                    numberOfLines={1}
-                >
-                    {name}
-                </Text>
-                }
-                <Text
-                    style={style.rowUsername}
-                    numberOfLines={1}
-                >
-                    {isCurrentUser &&
-                    <FormattedText
-                        id='suggestion.mention.you'
-                        defaultMessage='(you)'
-                    />}
-                    {` @${username}`}
-                </Text>
+                <View style={style.rowInfo}>
+                    <BotTag
+                        show={isBot}
+                        theme={theme}
+                    />
+                    <GuestTag
+                        show={isGuest}
+                        theme={theme}
+                    />
+                    {Boolean(name.length) &&
+                    <Text
+                        style={style.rowFullname}
+                        numberOfLines={1}
+                        testID='at_mention_item.name'
+                    >
+                        {name}
+                    </Text>
+                    }
+                    <Text
+                        style={style.rowUsername}
+                        numberOfLines={1}
+                        testID='at_mention_item.username'
+                    >
+                        {isCurrentUser &&
+                        <FormattedText
+                            id='suggestion.mention.you'
+                            defaultMessage='(you)'
+                        />}
+                        {` @${username}`}
+                    </Text>
+                </View>
+                {isShared && (
+                    <ChannelIcon
+                        isActive={false}
+                        isArchived={false}
+                        isInfo={true}
+                        isUnread={true}
+                        size={18}
+                        shared={true}
+                        theme={theme}
+                        type={General.DM_CHANNEL}
+                    />
+                )}
             </View>
         </TouchableWithFeedback>
     );

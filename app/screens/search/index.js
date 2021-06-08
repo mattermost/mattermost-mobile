@@ -4,10 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {closePermalink, showPermalink} from '@actions/views/permalink';
-import {getPostThread} from '@actions/views/post';
 import {handleSearchDraftChanged} from '@actions/views/search';
-import {selectPost} from '@mm-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSearch} from '@mm-redux/actions/search';
 import {getCurrentChannelId, filterPostIds} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -72,14 +69,10 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
-            closePermalink,
             handleSearchDraftChanged,
-            getPostThread,
             removeSearchTerms,
             searchPostsWithParams,
             getMorePostsForSearch,
-            selectPost,
-            showPermalink,
         }, dispatch),
     };
 }

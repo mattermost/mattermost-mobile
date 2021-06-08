@@ -6,16 +6,15 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     DeviceEventEmitter,
-    Keyboard,
     FlatList,
     StyleSheet,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {dismissModal, goToScreen, showSearchModal} from '@actions/navigation';
+import {dismissModal} from '@actions/navigation';
 import ChannelLoader from '@components/channel_loader';
-import DateHeader from '@components/post_list/date_header';
+import DateSeparator from '@components/post_list/date_separator';
 import FailedNetworkAction from '@components/failed_network_action';
 import NoResults from '@components/no_results';
 import PostSeparator from '@components/post_separator';
@@ -23,16 +22,11 @@ import StatusBar from '@components/status_bar';
 import {isDateLine, getDateForDateLine} from '@mm-redux/utils/post_list';
 import SearchResultPost from '@screens/search/search_result_post';
 
-import mattermostManaged from 'app/mattermost_managed';
-
 export default class PinnedPosts extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
-            getPostThread: PropTypes.func.isRequired,
             getPinnedPosts: PropTypes.func.isRequired,
-            selectPost: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string.isRequired,
         postIds: PropTypes.array,
@@ -86,31 +80,6 @@ export default class PinnedPosts extends PureComponent {
         this.listRef = ref;
     }
 
-    goToThread = (post) => {
-        const {actions} = this.props;
-        const channelId = post.channel_id;
-        const rootId = (post.root_id || post.id);
-        const screen = 'Thread';
-        const title = '';
-        const passProps = {
-            channelId,
-            rootId,
-        };
-        Keyboard.dismiss();
-        actions.getPostThread(rootId);
-        actions.selectPost(rootId);
-        goToScreen(screen, title, passProps);
-    };
-
-    handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
-    };
-
-    handleHashtagPress = async (hashtag) => {
-        dismissModal();
-        showSearchModal('#' + hashtag);
-    };
-
     keyExtractor = (item) => item;
 
     onViewableItemsChanged = ({viewableItems}) => {
@@ -126,10 +95,6 @@ export default class PinnedPosts extends PureComponent {
         }, {});
 
         DeviceEventEmitter.emit('scrolled', viewableItemsMap);
-    };
-
-    previewPost = (post) => {
-        this.props.actions.showPermalink(this.context.intl, '', post.id, false);
     };
 
     renderEmpty = () => {
@@ -153,9 +118,9 @@ export default class PinnedPosts extends PureComponent {
         const {postIds, theme} = this.props;
         if (isDateLine(item)) {
             return (
-                <DateHeader
+                <DateSeparator
                     date={getDateForDateLine(item)}
-                    index={index}
+                    theme={theme}
                 />
             );
         }
@@ -167,21 +132,16 @@ export default class PinnedPosts extends PureComponent {
         }
 
         return (
-            <React.Fragment>
+            <>
                 <SearchResultPost
                     postId={item}
-                    previewPost={this.previewPost}
                     highlightPinnedOrFlagged={true}
-                    goToThread={this.goToThread}
-                    onHashtagPress={this.handleHashtagPress}
-                    onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={mattermostManaged.getCachedConfig()}
-                    showFullDate={false}
                     skipFlaggedHeader={false}
                     skipPinnedHeader={true}
+                    theme={theme}
                 />
                 {separator}
-            </React.Fragment>
+            </>
         );
     };
 

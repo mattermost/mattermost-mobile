@@ -15,6 +15,7 @@ import ClientGroups, {ClientGroupsMix} from './groups';
 import ClientIntegrations, {ClientIntegrationsMix} from './integrations';
 import ClientPosts, {ClientPostsMix} from './posts';
 import ClientPreferences, {ClientPreferencesMix} from './preferences';
+import ClientSharedChannels, {ClientSharedChannelsMix} from './shared_channels';
 import ClientTeams, {ClientTeamsMix} from './teams';
 import ClientTos, {ClientTosMix} from './tos';
 import ClientUsers, {ClientUsersMix} from './users';
@@ -30,6 +31,7 @@ interface Client extends ClientBase,
     ClientIntegrationsMix,
     ClientPostsMix,
     ClientPreferencesMix,
+    ClientSharedChannelsMix,
     ClientTeamsMix,
     ClientTosMix,
     ClientUsersMix
@@ -46,6 +48,7 @@ class Client extends mix(ClientBase).with(
     ClientIntegrations,
     ClientPosts,
     ClientPreferences,
+    ClientSharedChannels,
     ClientTeams,
     ClientTos,
     ClientUsers,

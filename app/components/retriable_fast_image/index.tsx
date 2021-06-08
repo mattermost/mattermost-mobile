@@ -5,7 +5,7 @@ import {ErrorBoundary} from '@sentry/react-native';
 import {isSVGLink} from '@utils/url';
 import React, {PureComponent} from 'react';
 import FastImage, {FastImageProps} from 'react-native-fast-image';
-import {SvgCssUri} from 'react-native-svg';
+import {SvgUri} from 'react-native-svg';
 
 export const FAST_IMAGE_MAX_RETRIES = 3;
 
@@ -43,11 +43,10 @@ export default class RetriableFastImage extends PureComponent<RetriableFastImage
         const {source} = this.props;
         if (typeof (source) === 'object' && source.uri && isSVGLink(source.uri)) {
             image = (
-                <SvgCssUri
+                <SvgUri
                     uri={source.uri}
                     width={'100%'}
-                    height={'200'}
-                    style={{maxWidth: '100%', maxHeight: '100%'}}
+                    height={'100%'}
                 />
             );
         }
