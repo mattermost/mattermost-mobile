@@ -56,11 +56,13 @@ import {
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import IServers from '@typings/database/servers';
+import IGlobal from '@typings/database/global';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import urlParse from 'url-parse';
 
-const {SERVERS} = MM_TABLES.DEFAULT;
+const {SERVERS, GLOBAL} = MM_TABLES.DEFAULT;
 const DEFAULT_DATABASE = 'default';
+const RECENTLY_VIEWED_SERVERS = 'RECENTLY_VIEWED_SERVERS';
 
 class DatabaseManager {
   private activeDatabase: DatabaseInstance;
@@ -147,7 +149,7 @@ class DatabaseManager {
       }
 
       return connection;
-  }
+  };
 
   /**
    * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
@@ -200,33 +202,48 @@ class DatabaseManager {
    * @returns {Promise<void>}
    */
   setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabaseArgs) => {
-      const isServerPresent = await this.isServerPresent(serverUrl);
-
+      // const isServerPresent = await this.isServerPresent(serverUrl);
       //fixme: use a 'flag' under the GLOBAL entity called 'recentlyUsedServer'. This flag will contain an array of recently connected servers and the server at index 0 will be the last server visited/viewed
-      this.activeDatabase = await this.createDatabaseConnection({
-          configs: {
-              actionsEnabled: true,
-              dbName: displayName,
-              dbType: DatabaseType.SERVER,
-              serverUrl,
-          },
-          shouldAddToDefaultDatabase: Boolean(!isServerPresent),
-      });
-  };
-
-  /**
-   * isServerPresent : Confirms if the current serverUrl does not already exist in the database
-   * @param {String} serverUrl
-   * @returns {Promise<boolean>}
-   */
-  private isServerPresent = async (serverUrl: string) => {
-      const allServers = await this.getAllServers([serverUrl]);
-
-      // const existingServer = allServers?.filter((server) => {
-      //     return server.url === serverUrl;
+      // this.activeDatabase = await this.createDatabaseConnection({
+      //     configs: {
+      //         actionsEnabled: true,
+      //         dbName: displayName,
+      //         dbType: DatabaseType.SERVER,
+      //         serverUrl,
+      //     },
+      //     shouldAddToDefaultDatabase: Boolean(!isServerPresent),
       // });
 
-      return allServers?.length > 0;
+      const defaultDatabase = await this.getDefaultDatabase();
+
+      if (defaultDatabase) {
+          // retrieve recentlyViewedServers from Global entity
+          const recentlyViewedServers = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+
+          if (recentlyViewedServers.length) {
+              // we have previously written something for this flag
+              const flagRecord = recentlyViewedServers[0];
+              const recentList = Array.from(flagRecord.value);
+              recentList.unshift(serverUrl);
+
+              // so as to avoid duplicate in this array
+              const sanitizedList = Array.from(new Set(recentList));
+
+              await defaultDatabase.action(async () => {
+                  await flagRecord.update((record) => {
+                      record.value = sanitizedList;
+                  });
+              });
+          } else {
+              // you create the record
+              await defaultDatabase.action(async () => {
+                  const newFlagRecord = await defaultDatabase.collections.get(GLOBAL).create((record: IGlobal) => {
+                      record.name = RECENTLY_VIEWED_SERVERS;
+                      record.value = [serverUrl];
+                  });
+              });
+          }
+      }
   };
 
   /**
@@ -234,9 +251,23 @@ class DatabaseManager {
    * Use this getter method to retrieve the active database if it has been set in your code.
    * @returns {DatabaseInstance}
    */
-  getActiveServerDatabase = (): DatabaseInstance => {
+  getActiveServerDatabase = async (): Promise<DatabaseInstance> => {
       //fixme: read index 0 from 'flag' from GLOBAL entity  and return it.
-      return this.activeDatabase;
+      //fixme:  do we need this since we have the getDatabaseConnection method and all components will be aware (through the WDB Provider) of the serverUrl ?
+      const defaultDatabase = await this.getDefaultDatabase();
+
+      if (defaultDatabase) {
+          const serverRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+
+          if (serverRecords.length) {
+              const activeServer = serverRecords[0].value as string[];
+              const activeServerUrl = activeServer[0];
+              const activeServerDatabase = await this.getDatabaseConnection({serverUrl: activeServerUrl, setAsActiveDatabase: false});
+              return activeServerDatabase;
+          }
+          return undefined;
+      }
+      return undefined;
   };
 
   /**
@@ -354,6 +385,16 @@ class DatabaseManager {
           return false;
       }
   };
+
+    /**
+     * isServerPresent : Confirms if the current serverUrl does not already exist in the database
+     * @param {String} serverUrl
+     * @returns {Promise<boolean>}
+     */
+    private isServerPresent = async (serverUrl: string) => {
+        const allServers = await this.getAllServers([serverUrl]);
+        return allServers?.length > 0;
+    };
 
   /**
    * getAllServers : Retrieves all the servers registered in the default database
