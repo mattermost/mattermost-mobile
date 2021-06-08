@@ -13,9 +13,6 @@ import {registerScreens} from '@screens/index';
 import EphemeralStore from '@store/ephemeral_store';
 
 Navigation.events().registerAppLaunchedListener(() => {
-    // TODO: is this called when MattermostShare is launched? If so
-    // don't do any of the below?
-
     GlobalEventHandler.init();
     ManagedApp.init();
     registerNavigationListeners();
