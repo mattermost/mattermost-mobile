@@ -5,6 +5,7 @@ import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as KeyChain from 'react-native-keychain';
 
+import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
 import EphemeralStore from '@store/ephemeral_store';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
@@ -12,12 +13,20 @@ import {getCSRFFromCookie} from '@utils/security';
 
 const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
 
+// TODO: This function should be in DatabaseManager?
 export const getCurrentServerUrl = async () => {
-    // TODO: Use default database to retrieve the current server url
-    // and fallback to AsyncStorage if needed
+    let serverUrl = await DatabaseManager.getActiveServerUrl(); // TODO: need funciton to get active server url
+    if (!serverUrl) {
+        // If upgrading from non-Gekidou, the server URL might be in
+        // AsyncStorage. If so, retrieve the server URL, create a DB for it,
+        // then delete the AsyncStorage item.
+        serverUrl = await AsyncStorage.getItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+        if (serverUrl) {
+            DatabaseManager.setActiveServerDatabase(serverUrl);
+            AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+        }
+    }
 
-    const serverUrl = await AsyncStorage.getItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
-    EphemeralStore.currentServerUrl = serverUrl;
     return serverUrl;
 };
 
@@ -51,9 +60,11 @@ export const setAppCredentials = (deviceToken: string, currentUserId: string, to
     }
 };
 
+// TODO: rename this to getActiveServerCredentials
 export const getAppCredentials = async () => {
     const serverUrl = await getCurrentServerUrl();
 
+    // TODO: Why are we passing '' ?
     return getInternetCredentials(serverUrl || '');
 };
 

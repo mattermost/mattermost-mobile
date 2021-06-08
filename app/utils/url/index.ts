@@ -135,26 +135,26 @@ export function getScheme(url: string) {
 export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
 
 export function parseDeepLink(deepLinkUrl: string) {
-    let linkRoot = 'mattermost:\\/\\/(.*)';
+    const linkRoot = 'mattermost:\\/\\/(.*)';
+    
     let match = new RegExp(`${linkRoot}\\/([^\\/]+)\\/channels\\/(\\S+)`).exec(deepLinkUrl);
-
     if (match) {
-        return {type: DeepLink.CHANNEL, serverUrl: match[1], teamName: match[2], channelName: match[3]}; 
+        return {serverUrl: match[1], teamName: match[2], channelName: match[3]}; 
     }
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(deepLinkUrl);
     if (match) {
-        return {type: DeepLink.PERMALINK, serverUrl: match[1], teamName: match[2], postId: match[3]};
+        return {serverUrl: match[1], teamName: match[2], postId: match[3]};
     }
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(deepLinkUrl);
     if (match) {
-        return {type: DeepLink.DM, serverUrl: match[1],teamName: match[2], userName: match[3]};
+        return {serverUrl: match[1], teamName: match[2], userName: match[3]};
     }
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(deepLinkUrl);
     if (match) {
-        return {type: DeepLink.GM, serverUrl: match[1], teamName: match[2], id: match[3]};
+        return {serverUrl: match[1], teamName: match[2], id: match[3]};
     }
 
     return null;

@@ -105,7 +105,6 @@ class PushNotifications {
       const notification: | NotificationWithData | undefined = await Notifications.getInitialNotification();
 
       if (notification) {
-          EphemeralStore.setStartFromNotification(true);
           notification.userInteraction = true;
           this.handleNotification(notification);
       }

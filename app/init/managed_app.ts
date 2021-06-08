@@ -21,16 +21,19 @@ class ManagedApp {
     backgroundSince = 0;
     blurApplicationScreen = false;
     config: ManagedConfig | undefined;
+    previousConfig: ManagedConfig | undefined;
     enabled = false;
     inAppPinCode = false;
     jailbreakProtection = false;
     performingAuthentication = false;
     previousAppState: AppStateStatus | undefined;
     processConfigTimeout: NodeJS.Timeout | undefined;
+    serverUrl: string | undefined;
     vendor = 'Mattermost';
 
     constructor() {
         this.setConfig();
+        this.processConfig();
         this.setIOSAppGroupIdentifier();
 
         Emm.addListener(this.onManagedConfigChange);
@@ -71,11 +74,6 @@ class ManagedApp {
             this.processConfigTimeout = setTimeout(this.processConfig, 500);
         }
 
-        if (LocalConfig.AutoSelectServerUrl) {
-            // TODO: Set server url based on EMM config
-            this.allowOtherServers = false;
-        }
-
         const blurScreen = this.config!.blurApplicationScreen === 'true';
         Emm.enableBlurScreen(blurScreen);
 
@@ -91,19 +89,15 @@ class ManagedApp {
 
         const inAppPinCode = this.config!.inAppPinCode === 'true';
         if (inAppPinCode) {
-            this.handleAuthentication(); // TODO: Handle authentication
+            this.handleDeviceAuthentication();
         }
 
-        const credentials = await getAppCredentials();
-        if (!credentials) {
-            if (this.config!.serverUrl) {
-                // TODO: Set server url based on EMM config
-            }
-
-            if (this.config!.allowOtherServers === 'false') {
-                this.allowOtherServers = false;
-            }
+        this.allowOtherServers = this.config!.allowOtherServers === 'false' || !LocalConfig.AutoSelectServerUrl;
+        if (!this.allowOtherServers) {        
+            this.serverUrl = this.config!.serverUrl || LocalConfig.DefaultServerUrl;
+            // TODO: remove all databases and set active database to this server's database
         }
+
     };
 
     alertIfDeviceIsUntrusted = () => {
@@ -128,7 +122,7 @@ class ManagedApp {
     };
 
 
-    handleAuthentication = async (authExpired = true) => {
+    handleDeviceAuthentication = async (authExpired = true) => {
         this.performingAuthentication = true;
         const isSecured = await Emm.isDeviceSecured();
         const locale = DEFAULT_LOCALE;
@@ -167,7 +161,7 @@ class ManagedApp {
         if (isActive && this.previousAppState === 'background') {
             if (this.enabled && this.inAppPinCode) {
                 let authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
-                await this.handleAuthentication(authExpired);
+                await this.handleDeviceAuthentication(authExpired);
             }
 
             this.backgroundSince = 0;

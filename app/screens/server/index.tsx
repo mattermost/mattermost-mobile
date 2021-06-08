@@ -24,14 +24,16 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-type ServerProps = {
+interface ServerProps extends LaunchOptions {
     componentId: string;
     theme: Theme;
 }
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
+const Server: NavigationFunctionComponent = (props: ServerProps) => {
+    const {theme} = props;
+
     const intl = useIntl();
     const managedConfig = useManagedConfig();
     const input = useRef<TextInput>(null);
@@ -63,6 +65,13 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             visible = false;
         }
 
+        const passProps = {
+            config,
+            license,
+            theme,
+            // TODO: pass LaunchOptions
+        };
+
         const defaultOptions = {
             popGesture: visible,
             topBar: {
@@ -71,7 +80,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             },
         };
 
-        goToScreen(screen, title, {config, license, theme}, defaultOptions);
+        goToScreen(screen, title, passProps, defaultOptions);
         setConnecting(false);
     };
 
@@ -161,6 +170,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
         return () => listener?.remove();
     }, []);
 
+    // TODO: Discuss with Elias how to handle managedConfig, either here or in init?
     useEffect(() => {
         const serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
 
@@ -172,6 +182,13 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
                 // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
                 handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
             }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (props.serverUrl) {
+            setUrl(props.serverUrl);
+            handleConnect(props.serverUrl);
         }
     }, []);
 

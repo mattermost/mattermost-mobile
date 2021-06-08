@@ -80,44 +80,46 @@ export function resetToChannel(passProps = {}) {
     });
 }
 
-export function resetToSelectServer(allowOtherServers: boolean) {
+export function resetToSelectServer(passProps = {}) {
     const theme = getThemeFromState();
 
     EphemeralStore.clearNavigationComponents();
 
+    const children = [{
+        component: {
+            id: Screens.SERVER,
+            name: Screens.SERVER,
+            passProps: {
+                theme,
+                ...passProps,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                },
+                topBar: {
+                    backButton: {
+                        color: theme.sidebarHeaderTextColor,
+                        title: '',
+                    },
+                    background: {
+                        color: theme.sidebarHeaderBg,
+                    },
+                    visible: false,
+                    height: 0,
+                },
+            },
+        },
+    }];
+
     Navigation.setRoot({
         root: {
             stack: {
-                children: [{
-                    component: {
-                        id: Screens.SERVER,
-                        name: Screens.SERVER,
-                        passProps: {
-                            allowOtherServers,
-                            theme,
-                        },
-                        options: {
-                            layout: {
-                                backgroundColor: theme.centerChannelBg,
-                                componentBackgroundColor: theme.centerChannelBg,
-                            },
-                            statusBar: {
-                                visible: true,
-                            },
-                            topBar: {
-                                backButton: {
-                                    color: theme.sidebarHeaderTextColor,
-                                    title: '',
-                                },
-                                background: {
-                                    color: theme.sidebarHeaderBg,
-                                },
-                                visible: false,
-                                height: 0,
-                            },
-                        },
-                    },
-                }],
+                children,
             },
         },
     });
