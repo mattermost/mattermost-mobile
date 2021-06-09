@@ -2,16 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import {DataOperator} from '@database/operator';
+import Operator from '@database/operator';
 import {getRoles} from '@queries/role';
 import {IsolatedEntities} from '@typings/database/enums';
 import {getActiveServerDatabase} from '@utils/database';
 
 export const loadRolesIfNeeded = async (updatedRoles: string[]) => {
-    const {
-        activeServerDatabase: database,
-        error: e,
-    } = await getActiveServerDatabase();
+    const {activeServerDatabase: database, error: e} = await getActiveServerDatabase();
     if (!database) {
         return {error: e};
     }
@@ -27,8 +24,9 @@ export const loadRolesIfNeeded = async (updatedRoles: string[]) => {
     });
 
     try {
+        const operator = new Operator(database);
         const data = await Client4.getRolesByNames(newRoles);
-        await DataOperator.handleIsolatedEntity({
+        await operator.handleIsolatedEntity({
             tableName: IsolatedEntities.ROLE,
             values: data,
             prepareRecordsOnly: false,

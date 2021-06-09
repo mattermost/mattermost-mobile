@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Operator} from '@database/operator';
+import Operator from '@database/operator';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 import DatabaseManager from '@database/manager';
@@ -83,8 +83,7 @@ describe('DataOperator: Utils tests', () => {
         });
         await databaseManagerClient.setMostRecentServerConnection(serverUrl);
 
-        const operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
+        const operatorClient = new Operator(database!);
 
         // we commit one Reaction to our database
         const prepareRecords = await operatorClient.handleReactions({
