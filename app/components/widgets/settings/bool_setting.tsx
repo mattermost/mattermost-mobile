@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -28,97 +28,93 @@ type Props = {
     onChange: (name: string, value: boolean) => void;
 }
 
-export default class BoolSetting extends PureComponent<Props> {
-    handleChange = (value: boolean) => {
-        this.props.onChange(this.props.id, value);
-    };
+export default function BoolSetting(props: Props) {
+    const {
+        id,
+        label,
+        value,
+        placeholder,
+        helpText,
+        errorText,
+        optional,
+        theme,
+        disabled,
+        onChange,
+    } = props;
+    const style = getStyleSheet(theme);
 
-    render() {
-        const {
-            label,
-            value,
-            placeholder,
-            helpText,
-            errorText,
-            optional,
-            theme,
-            disabled,
-        } = this.props;
-        const style = getStyleSheet(theme);
+    let optionalContent;
+    let asterisk;
+    if (optional) {
+        optionalContent = (
+            <FormattedText
+                style={style.optional}
+                id='channel_modal.optional'
+                defaultMessage='(optional)'
+            />
+        );
+    } else {
+        asterisk = <Text style={style.asterisk}>{' *'}</Text>;
+    }
 
-        let optionalContent;
-        let asterisk;
-        if (optional) {
-            optionalContent = (
-                <FormattedText
-                    style={style.optional}
-                    id='channel_modal.optional'
-                    defaultMessage='(optional)'
-                />
-            );
-        } else {
-            asterisk = <Text style={style.asterisk}>{' *'}</Text>;
-        }
-
-        let labelContent;
-        if (label) {
-            labelContent = (
-                <View style={style.labelContainer}>
-                    <Text style={style.label}>
-                        {label}
-                    </Text>
-                    {asterisk}
-                    {optionalContent}
-                </View>
-
-            );
-        }
-
-        let helpTextContent;
-        if (helpText) {
-            helpTextContent = (
-                <Text style={style.helpText}>
-                    {helpText}
+    let labelContent;
+    if (label) {
+        labelContent = (
+            <View style={style.labelContainer}>
+                <Text style={style.label}>
+                    {label}
                 </Text>
-            );
-        }
+                {asterisk}
+                {optionalContent}
+            </View>
 
-        let errorTextContent;
-        if (errorText) {
-            errorTextContent = (
-                <Text style={style.errorText}>
-                    {errorText}
-                </Text>
-            );
-        }
-
-        const noediting = disabled ? style.disabled : null;
-
-        return (
-            <>
-                <View>
-                    {labelContent}
-                </View>
-                <View style={style.separator}/>
-                <View style={[style.inputContainer, noediting]}>
-                    <Text style={style.placeholderText}>
-                        {placeholder}
-                    </Text>
-                    <Switch
-                        onValueChange={this.handleChange}
-                        value={value}
-                        style={style.inputSwitch}
-                        disabled={disabled}
-                    />
-                </View>
-                <View style={style.separator}/>
-                <View>
-                    {helpTextContent}
-                    {errorTextContent}
-                </View>
-            </>
         );
     }
+
+    let helpTextContent;
+    if (helpText) {
+        helpTextContent = (
+            <Text style={style.helpText}>
+                {helpText}
+            </Text>
+        );
+    }
+
+    let errorTextContent;
+    if (errorText) {
+        errorTextContent = (
+            <Text style={style.errorText}>
+                {errorText}
+            </Text>
+        );
+    }
+
+    const noediting = disabled ? style.disabled : null;
+
+    return (
+        <>
+            <View>
+                {labelContent}
+            </View>
+            <View style={style.separator}/>
+            <View style={[style.inputContainer, noediting]}>
+                <Text style={style.placeholderText}>
+                    {placeholder}
+                </Text>
+                <Switch
+                    onValueChange={(newValue: boolean) => onChange(id, newValue)}
+                    value={value}
+                    style={style.inputSwitch}
+                    disabled={disabled}
+                />
+            </View>
+            <View style={style.separator}/>
+            <View>
+                {helpTextContent}
+                {errorTextContent}
+            </View>
+        </>
+    );
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
