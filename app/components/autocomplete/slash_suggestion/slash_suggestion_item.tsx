@@ -4,15 +4,12 @@
 import React from 'react';
 import {Image, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import FastImage from 'react-native-fast-image';
 
 import {Theme} from '@mm-redux/types/preferences';
 
-import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-
+import FastImage from 'react-native-fast-image';
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
 const bangIcon = require('@assets/images/autocomplete/slash_command_error.png');
 
@@ -27,7 +24,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             justifyContent: 'center',
             alignItems: 'center',
-            alignSelf: 'flex-start',
             marginTop: 8,
         },
         iconColor: {
@@ -134,12 +130,13 @@ const SlashSuggestionItem = (props: Props) => {
                 </View>
                 <View style={style.suggestionContainer}>
                     <Text style={style.suggestionName}>{`${suggestionText}`}</Text>
-                    <Markdown
-                        baseTextStyle={style.suggestionDescription}
-                        textStyles={getMarkdownTextStyles(theme)}
-                        blockStyles={getMarkdownBlockStyles(theme)}
-                        value={description}
-                    />
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={style.suggestionDescription}
+                    >
+                        {description}
+                    </Text>
                 </View>
             </View>
         </TouchableWithFeedback>
