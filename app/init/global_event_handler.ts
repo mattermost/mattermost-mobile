@@ -11,7 +11,7 @@ import {Navigation} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
-import {launchApp} from '@init/launch';
+import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import {deleteFileCache} from '@utils/file';
 
@@ -125,6 +125,7 @@ class GlobalEventHandler {
         }
 
         removeServerCredentials(serverUrl);
+
         // TODO: remove files for the server
         deleteFileCache();
         PushNotifications.clearNotifications();
@@ -135,7 +136,7 @@ class GlobalEventHandler {
 
         await this.clearCookiesAndWebData();
 
-        launchApp();
+        relaunchApp();
     };
 
     onServerConfigChanged = (serverUrl: string, config: ClientConfig) => {

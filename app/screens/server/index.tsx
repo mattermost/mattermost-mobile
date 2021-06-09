@@ -24,9 +24,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
 import type {ManagedConfig} from '@mattermost/react-native-emm';
-import type {LaunchOptions} from '@typings/launch';
+import type {LaunchProps} from '@typings/launch';
 
-interface ServerProps extends LaunchOptions {
+interface ServerProps extends LaunchProps {
     componentId: string;
     managedConfig: ManagedConfig;
     theme: Theme;
@@ -35,6 +35,9 @@ interface ServerProps extends LaunchOptions {
 let cancelPing: undefined | (() => void);
 
 const Server: NavigationFunctionComponent = (props: ServerProps) => {
+    // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
+    // so that they are eventually accessible in the Channel screen.
+
     const {theme, managedConfig} = props;
 
     const intl = useIntl();
@@ -71,7 +74,6 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
             config,
             license,
             theme,
-            // TODO: pass LaunchOptions
         };
 
         const defaultOptions = {

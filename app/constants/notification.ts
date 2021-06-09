@@ -2,9 +2,5 @@
 // See LICENSE.txt for license information.
 
 export default {
-    CHANNEL: 'channel',
-    DM: 'dmchannel',
-    GM: 'groupchannel',
-    INVALID: 'invalid',
-    PERMALINK: 'permalink',
+    NOTIFICATION: 'notification',
 };

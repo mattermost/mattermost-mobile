@@ -9,6 +9,7 @@ import Files from './files';
 import General from './general';
 import List from './list';
 import Navigation from './navigation';
+import Notification from './notification';
 import Preferences from './preferences';
 import Screens from './screens';
 import View, {Upgrade} from './view';
@@ -23,6 +24,7 @@ export {
     General,
     List,
     Navigation,
+    Notification,
     Preferences,
     Screens,
     Upgrade,

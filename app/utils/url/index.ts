@@ -134,34 +134,30 @@ export function getScheme(url: string) {
 
 export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
 
-export function parseDeepLink(deepLinkUrl: string) {
-    const linkRoot = 'mattermost:\\/\\/(.*)';
-    
+export function parseDeepLink(deepLinkUrl: string, linkRoot = 'mattermost:\\/\\/(.*)') {
     let match = new RegExp(`${linkRoot}\\/([^\\/]+)\\/channels\\/(\\S+)`).exec(deepLinkUrl);
     if (match) {
-        return {serverUrl: match[1], teamName: match[2], channelName: match[3]}; 
+        return {type: DeepLink.CHANNEL, serverUrl: match[1], teamName: match[2], channelName: match[3]};
     }
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(deepLinkUrl);
     if (match) {
-        return {serverUrl: match[1], teamName: match[2], postId: match[3]};
+        return {type: DeepLink.PERMALINK, serverUrl: match[1], teamName: match[2], postId: match[3]};
     }
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(deepLinkUrl);
     if (match) {
-        return {serverUrl: match[1], teamName: match[2], userName: match[3]};
+        return {type: DeepLink.DM, serverUrl: match[1], teamName: match[2], userName: match[3]};
     }
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(deepLinkUrl);
     if (match) {
-        return {serverUrl: match[1], teamName: match[2], channelId: match[3]};
+        return {type: DeepLink.GM, serverUrl: match[1], teamName: match[2], channelId: match[3]};
     }
 
-    return null;
+    return {type: DeepLink.INVALID};
 }
 
-
-// TODO: Unused function, remove
 export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
     if (!url || (!serverURL && !siteURL)) {
         return null;
@@ -172,7 +168,7 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
     // If url doesn't contain site or server URL, tack it on.
     // e.g. <jump to convo> URLs from autolink plugin.
     const urlBase = serverURL || siteURL || '';
-    let match = new RegExp(escapeRegex(urlBase)).exec(url);
+    const match = new RegExp(escapeRegex(urlBase)).exec(url);
     if (!match) {
         urlToMatch = urlBase + url;
     }
@@ -181,25 +177,9 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     const linkRoot = `(?:${escapeRegex(urlBaseWithoutProtocol)})`;
 
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(urlToMatch);
-
-    if (match) {
-        return {type: DeepLink.CHANNEL, teamName: match[1], channelName: match[2]};
-    }
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(urlToMatch);
-    if (match) {
-        return {type: DeepLink.PERMALINK, teamName: match[1], postId: match[2]};
-    }
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(urlToMatch);
-    if (match) {
-        return {type: DeepLink.DM, teamName: match[1], userName: match[2]};
-    }
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(urlToMatch);
-    if (match) {
-        return {type: DeepLink.GM, teamName: match[1], id: match[2]};
+    const parsedDeepLink = parseDeepLink(urlToMatch, linkRoot);
+    if (parsedDeepLink.type !== DeepLink.INVALID) {
+        return parsedDeepLink;
     }
 
     return null;

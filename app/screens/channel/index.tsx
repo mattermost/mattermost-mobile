@@ -11,9 +11,17 @@ import {
     ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import type {LaunchProps} from '@typings/launch';
+
 declare const global: {HermesInternal: null | {}};
 
-const Channel = () => {
+type ChannelProps = LaunchProps
+
+const Channel = (props: ChannelProps) => {
+    // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
+    const {launchType} = props;
+    console.log(launchType); // eslint-disable-line no-console
+
     return (
         <>
             <StatusBar barStyle='dark-content'/>

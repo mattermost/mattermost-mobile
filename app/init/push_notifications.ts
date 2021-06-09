@@ -44,8 +44,6 @@ class PushNotifications {
       Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
       Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
       AppState.addEventListener('change', this.onAppStateChange);
-
-      this.getInitialNotification();
   }
 
   cancelAllLocalNotifications = () => {
@@ -100,15 +98,6 @@ class PushNotifications {
       const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
       const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
       return new NotificationCategory(CATEGORY, [replyAction]);
-  };
-
-  getInitialNotification = async () => {
-      const notification: | NotificationWithData | undefined = await Notifications.getInitialNotification();
-
-      if (notification) {
-          notification.userInteraction = true;
-          this.handleNotification(notification);
-      }
   };
 
   handleNotification = async (notification: NotificationWithData) => {

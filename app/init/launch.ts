@@ -2,66 +2,125 @@
 // See LICENSE.txt for license information.
 
 import {Linking} from 'react-native';
+import {Notifications} from 'react-native-notifications';
 
+import {DeepLink, Notification, Screens} from '@constants';
 import {getActiveServerCredentials, getServerCredentials} from '@init/credentials';
-import {resetToChannel, resetToSelectServer} from '@screens/navigation';
+import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
 import {parseDeepLink} from '@utils/url';
 
-import type {LaunchOptions} from '@typings/launch';
+import type {LaunchProps} from '@typings/launch';
 
 export const initialLaunch = async () => {
-    let launchOptions;
-
-    const initialUrl = await Linking.getInitialURL();
-    if (initialUrl) {
-        launchOptions = parseDeepLink(initialUrl) as LaunchOptions;
-        if (!launchOptions?.serverUrl) {
-            // TODO: we should display an error to the user that the
-            // deeplink is not valid, but we can't do it yet since a
-            // navigation root has not been set. Maybe we need a
-            // launchOption for this?
-        }
+    const deepLinkUrl = await Linking.getInitialURL();
+    if (deepLinkUrl) {
+        launchAppFromDeepLink(deepLinkUrl);
+        return;
     }
 
-    launchApp(launchOptions);
-}
+    const notification = await Notifications.getInitialNotification();
+    if (notification) {
+        launchAppFromNotification(notification);
+        return;
+    }
 
-export const launchApp = async (options?: LaunchOptions) => {
-    const credentials = options?.serverUrl ? 
-        await getServerCredentials(options.serverUrl) :
+    launchApp();
+};
+
+export const relaunchApp = () => {
+    launchApp(null, false);
+};
+
+const launchAppFromDeepLink = (deepLinkUrl: string) => {
+    const props = getLaunchPropsFromDeepLink(deepLinkUrl);
+    launchApp(props);
+};
+
+const launchAppFromNotification = (notification: NotificationWithData) => {
+    const props = getLaunchPropsFromNotification(notification);
+    launchApp(props);
+};
+
+const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
+    const credentials = props?.serverUrl ?
+        await getServerCredentials(props.serverUrl) :
         await getActiveServerCredentials();
 
     if (credentials) {
-        launchToChannel(options);
+        launchToChannel(props, resetNavigation);
         return;
     }
-    
-    launchToServer(options);
+
+    launchToServer(props, resetNavigation);
 };
 
-// TODO: This func is probably not needed. A PushNotification func can just call
-// launchApp with the appropriate launchOptions.
-export const launchFromPushNotification = () => {
-    // TODO: the same will be needed for launching from push notification, however,
-    // with push notifications the current payload does not include the server URL.
-    // We'll do the following on the native side:
-    // 1. Payload includes server URL (need server change), proceed to process push notif
-    // 2. Only one server DB exists: add the server URL to the payload, proceed to process push notif
-    // 3. Multiple servers exist: override payload with warning, proceed to process push notif
-    // On the JS side, once the push notification is opened if there is no server URL do nothing
-}
+const launchToChannel = (props: LaunchProps | null, resetNavigation: Boolean) => {
+    // TODO: Use LaunchProps to fetch posts for channel and then load user profile, etc...
 
-const launchToChannel = (options: LaunchOptions = {}) => {
-    // TODO: Use LaunchOptions to fetch posts for channel and then load user profile, etc...
+    const passProps = {
+        skipMetrics: true,
+        ...props,
+    };
 
-    // eslint-disable-next-line no-console
-    console.log('Launch app in Channel screen');
-    const passProps = {skipMetrics: true};
-    resetToChannel(passProps);
-}
+    if (resetNavigation) {
+        // eslint-disable-next-line no-console
+        console.log('Launch app in Channel screen');
+        resetToChannel(passProps);
+        return;
+    }
 
-const launchToServer = (options: LaunchOptions = {}) => {
-    // TODO: Do we need to do anythin with LaunchOptions prior
-    // to resetting navigation?
-    resetToSelectServer(options);
-}
+    const title = '';
+    goToScreen(Screens.CHANNEL, title, passProps);
+};
+
+const launchToServer = (props: LaunchProps | null, resetNavigation: Boolean) => {
+    // TODO: Do we need to do anything else with LaunchProps?
+    const passProps = {...props};
+
+    if (resetNavigation) {
+        resetToSelectServer(passProps);
+        return;
+    }
+
+    const title = '';
+    goToScreen(Screens.SERVER, title, passProps);
+};
+
+const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
+    const parsed = parseDeepLink(deepLinkUrl);
+    const launchProps: LaunchProps = {
+        launchType: parsed.type,
+    };
+
+    if (parsed.type === DeepLink.INVALID) {
+        launchProps.errorMessage = 'Did not find a server for this deep link';
+    } else {
+        launchProps.channelId = parsed.channelId;
+        launchProps.channelName = parsed.channelName;
+        launchProps.postId = parsed.postId;
+        launchProps.serverUrl = parsed.serverUrl;
+        launchProps.teamName = parsed.teamName;
+        launchProps.userName = parsed.userName;
+    }
+
+    return launchProps;
+};
+
+const getLaunchPropsFromNotification = (notification: NotificationWithData): LaunchProps => {
+    const {payload} = notification;
+    const launchProps: LaunchProps = {
+        launchType: Notification.NOTIFICATION,
+    };
+
+    if (payload?.server_url) {
+        launchProps.channelId = payload.channel_id;
+        launchProps.channelName = payload.channel_name;
+        launchProps.postId = payload.post_id;
+        launchProps.serverUrl = payload.server_url;
+        launchProps.teamId = payload.team_id;
+    } else {
+        launchProps.errorMessage = 'Did not find a server for this notification';
+    }
+
+    return launchProps;
+};
