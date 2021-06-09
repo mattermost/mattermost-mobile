@@ -11,7 +11,7 @@ import {Navigation} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
-import {relaunchApp} from '@init/launch';
+import {getLaunchPropsFromDeepLink, launchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import {deleteFileCache} from '@utils/file';
 
@@ -46,12 +46,9 @@ class GlobalEventHandler {
     };
 
     onDeepLink = (event: LinkingCallbackArg) => {
-        const {url} = event;
-        if (url) {
-            // TODO: Handle deeplink
-            // if server is not added go to add new server screen
-            // if server is added but no credentials found take to server login screen
-            // Do we want to reset navigation in this case?
+        if (event.url) {
+            const props = getLaunchPropsFromDeepLink(event.url);
+            launchApp(props, false);
         }
     };
 
@@ -136,7 +133,7 @@ class GlobalEventHandler {
 
         await this.clearCookiesAndWebData();
 
-        relaunchApp();
+        launchApp(null, false);
     };
 
     onServerConfigChanged = (serverUrl: string, config: ClientConfig) => {

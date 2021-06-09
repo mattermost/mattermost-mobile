@@ -18,9 +18,9 @@ import {
 
 import {Device, Navigation, View} from '@constants';
 import Operator from '@database/operator';
+import {getLaunchPropsFromNotification, launchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
-import {dismissAllModals, popToRoot, showOverlay} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import {showOverlay} from '@screens/navigation';
 import {IsolatedEntities} from '@typings/database/enums';
 
 const CATEGORY = 'CAN_REPLY';
@@ -114,15 +114,8 @@ class PushNotifications {
                   if (foreground) {
                       // Show the in-app notification
                   } else if (userInteraction && !payload.userInfo?.local) {
-                      // Swith to the server / team / channel that matches the notification
-
-                      const componentId = EphemeralStore.getNavigationTopComponentId();
-                      if (componentId) {
-                          // Emit events to close the sidebars
-
-                          await dismissAllModals();
-                          await popToRoot();
-                      }
+                    const props = getLaunchPropsFromNotification(notification);
+                    launchApp(props, false);
                   }
                   break;
               case NOTIFICATION_TYPE.SESSION:

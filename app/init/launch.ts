@@ -27,10 +27,6 @@ export const initialLaunch = async () => {
     launchApp();
 };
 
-export const relaunchApp = () => {
-    launchApp(null, false);
-};
-
 const launchAppFromDeepLink = (deepLinkUrl: string) => {
     const props = getLaunchPropsFromDeepLink(deepLinkUrl);
     launchApp(props);
@@ -41,7 +37,7 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
     launchApp(props);
 };
 
-const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
+export const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
     const credentials = props?.serverUrl ?
         await getServerCredentials(props.serverUrl) :
         await getActiveServerCredentials();
@@ -86,7 +82,7 @@ const launchToServer = (props: LaunchProps | null, resetNavigation: Boolean) => 
     goToScreen(Screens.SERVER, title, passProps);
 };
 
-const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
+export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
     const parsed = parseDeepLink(deepLinkUrl);
     const launchProps: LaunchProps = {
         launchType: parsed.type,
@@ -106,7 +102,7 @@ const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
     return launchProps;
 };
 
-const getLaunchPropsFromNotification = (notification: NotificationWithData): LaunchProps => {
+export const getLaunchPropsFromNotification = (notification: NotificationWithData): LaunchProps => {
     const {payload} = notification;
     const launchProps: LaunchProps = {
         launchType: Notification.NOTIFICATION,
