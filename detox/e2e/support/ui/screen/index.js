@@ -18,7 +18,6 @@ import EditPostScreen from './edit_post';
 import EditProfileScreen from './edit_profile';
 import GeneralSettingsScreen from './general_settings';
 import LoginScreen from './login';
-import LongPostScreen from './long_post';
 import MoreChannelsScreen from './more_channels';
 import MoreDirectMessagesScreen from './more_direct_messages';
 import NotificationScreen from './notification';
@@ -55,7 +54,6 @@ export {
     EditProfileScreen,
     GeneralSettingsScreen,
     LoginScreen,
-    LongPostScreen,
     MoreChannelsScreen,
     MoreDirectMessagesScreen,
     NotificationScreen,
