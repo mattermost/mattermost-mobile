@@ -29,11 +29,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             marginTop: 8,
         },
-        httpIcon: {
-            width: 16,
-            height: 16,
-        },
-        dataIcon: {
+        uriIcon: {
             width: 16,
             height: 16,
         },
@@ -123,7 +119,7 @@ const SlashSuggestionItem = (props: Props) => {
         image = (
             <FastImage
                 source={{uri: props.icon}}
-                style={style.httpIcon}
+                style={style.uriIcon}
             />
         );
     } else if (props.icon && props.icon.startsWith('data:')) {
@@ -140,7 +136,7 @@ const SlashSuggestionItem = (props: Props) => {
             image = (
                 <Image
                     source={{uri: props.icon}}
-                    style={style.dataIcon}
+                    style={style.uriIcon}
                 />
             );
         }
