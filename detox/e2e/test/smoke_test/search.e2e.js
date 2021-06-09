@@ -226,7 +226,7 @@ async function postMessageAndSearchFrom(testMessage, testUser, atMentionSuggesti
 
     // # Select user from autocomplete
     await expect(atMentionSuggestionList).toExist();
-    const userAtMentionAutocomplete = await Autocomplete.getAtMentionItem(testUser.id);
+    const {atMentionItem: userAtMentionAutocomplete} = await Autocomplete.getAtMentionItem(testUser.id);
     await userAtMentionAutocomplete.tap();
 
     // # Type end of search term

@@ -20,7 +20,7 @@ import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
-import {openGalleryAtIndex} from '@utils/images';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';

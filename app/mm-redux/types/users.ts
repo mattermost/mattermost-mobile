@@ -3,7 +3,7 @@
 import {Channel} from './channels';
 import {Team} from './teams';
 import {PostType} from './posts';
-import {$ID, IDMappedObjects, RelationOneToMany, RelationOneToOne} from './utilities';
+import {$ID, IDMappedObjects, RelationOneToMany, RelationOneToOne, Dictionary} from './utilities';
 export type UserNotifyProps = {
     auto_responder_active?: 'true' | 'false';
     auto_responder_message?: string;
@@ -35,7 +35,9 @@ export type UserProfile = {
     last_name: string;
     position: string;
     roles: string;
+    remote_id?: string;
     locale: string;
+    props: Dictionary<string>;
     notify_props: UserNotifyProps;
     terms_of_service_id: string;
     terms_of_service_create_at: number;
@@ -76,4 +78,9 @@ export type UserStatus = {
 	manual: boolean;
 	last_activity_at: number;
 	active_channel?: string;
+}
+
+export type UserCustomStatus = {
+    emoji: string;
+    text: string;
 }

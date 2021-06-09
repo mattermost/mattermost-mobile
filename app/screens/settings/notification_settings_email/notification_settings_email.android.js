@@ -15,7 +15,7 @@ import {Preferences} from '@mm-redux/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';
 import SectionItem from 'app/screens/settings/section_item';
 

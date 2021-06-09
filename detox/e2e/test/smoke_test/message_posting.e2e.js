@@ -9,10 +9,7 @@
 
 import moment from 'moment-timezone';
 
-import {
-    ChannelScreen,
-    LongPostScreen,
-} from '@support/ui/screen';
+import {ChannelScreen} from '@support/ui/screen';
 import {
     Channel,
     Post,
@@ -23,7 +20,6 @@ import {isAndroid} from '@support/utils';
 describe('Message Posting', () => {
     const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(30);
     const {
-        getLongPostItem,
         getPostListPostItem,
         goToChannel,
         postMessage,
@@ -62,15 +58,21 @@ describe('Message Posting', () => {
     it('MM-T3229 should be able to open long post via show more', async () => {
         // # Open long post via show more
         const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
-        const {postListPostItemShowMoreButton} = await getPostListPostItem(post.id, longMessage);
+        const {
+            postListPostItem,
+            postListPostItemShowLessButton,
+            postListPostItemShowMoreButton,
+        } = await getPostListPostItem(post.id, longMessage);
         await postListPostItemShowMoreButton.tap();
 
         // * Verify long post is displayed
-        const {longPostItem} = getLongPostItem(post.id, longMessage);
-        await expect(longPostItem).toExist();
+        await expect(postListPostItem).toExist();
 
-        // # Close long post screen
-        await LongPostScreen.closeLongPostButton.tap();
+        // # Close long post
+        await postListPostItemShowLessButton.tap();
+
+        // * Verify show more button is displayed again
+        await expect(postListPostItemShowMoreButton).toExist();
     });
 
     it('MM-T3269 should be able to post a markdown image', async () => {
@@ -123,19 +125,21 @@ describe('Message Posting', () => {
             createAt: lastMessageDate.getTime(),
         });
 
+        // # Switch channels
+        await goToChannel(townSquareChannel.display_name);
+        await goToChannel(testChannel.display_name);
+
         // Detox is having trouble scrolling
         if (isAndroid()) {
             return;
         }
 
         // * Verify last message is posted
-        await goToChannel(townSquareChannel.display_name);
-        await goToChannel(testChannel.display_name);
         const {postListPostItem: lastPostItem} = await getPostListPostItem(lastPost.post.id, lastMessage);
         await waitFor(lastPostItem).toBeVisible().whileElement(by.id(ChannelScreen.testID.channelPostList)).scroll(1000, 'down');
 
         // * Verify user can scroll up multiple times until first matching post is seen
         const {postListPostItem: firstPostItem} = await getPostListPostItem(firstPost.post.id, firstMessage);
-        await waitFor(firstPostItem).toBeVisible().whileElement(by.id(ChannelScreen.testID.channelPostList)).scroll(1000, 'up');
+        await waitFor(firstPostItem).toBeVisible().whileElement(by.id(ChannelScreen.testID.channelPostList)).scroll(2000, 'up');
     });
 });

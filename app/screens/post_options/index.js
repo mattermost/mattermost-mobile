@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {addReaction} from '@actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
-import {THREAD, CHANNEL} from '@constants/screen';
+import {THREAD} from '@constants/screen';
 import {
     deletePost,
     flagPost,
@@ -16,18 +16,19 @@ import {
     removePost,
     setUnreadPost,
 } from '@mm-redux/actions/posts';
-import {General, Permissions} from '@mm-redux/constants';
+import {General, Permissions, Posts} from '@mm-redux/constants';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
-import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {isChannelReadOnlyById, getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
-import {canEditPost} from '@mm-redux/utils/post_utils';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {canEditPost, isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {getDimensions} from '@selectors/device';
+import {canDeletePost} from '@selectors/permissions';
 import {selectEmojisCountFromReactions} from '@selectors/emojis';
+import mattermostManaged from 'app/mattermost_managed';
 
 import PostOptions from './post_options';
 
@@ -35,60 +36,57 @@ export function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();
 
     return (state, ownProps) => {
+        const managedConfig = mattermostManaged.getCachedConfig();
         const post = ownProps.post;
-        const channel = getChannel(state, post.channel_id) || {};
+        const channel = getChannel(state, post.channel_id);
         const config = getConfig(state);
         const license = getLicense(state);
         const currentUserId = getCurrentUserId(state);
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const reactions = getReactionsForPostSelector(state, post.id);
+        const channelIsReadOnly = isChannelReadOnlyById(state, post.channel_id);
+        const myPreferences = getMyPreferences(state);
         const channelIsArchived = channel.delete_at !== 0;
-        const {serverVersion} = state.entities.general;
+        const isSystemPost = isSystemMessage(post);
+        const hasBeenDeleted = (post.delete_at !== 0 || post.state === Posts.POST_DELETED);
 
         let canMarkAsUnread = true;
-        let canAddReaction = true;
         let canReply = true;
         let canCopyPermalink = true;
         let canCopyText = false;
         let canEdit = false;
         let canEditUntil = -1;
-        let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
-        let showAppOptions = true;
 
-        let canPost = true;
-        if (isMinimumServerVersion(serverVersion, 5, 22)) {
-            canPost = haveIChannelPermission(
-                state,
-                {
-                    channel: post.channel_id,
-                    team: channel.team_id,
-                    permission: Permissions.CREATE_POST,
-                    default: true,
-                },
-            );
-        }
-
-        if (hasNewPermissions(state)) {
-            canAddReaction = haveIChannelPermission(state, {
-                team: currentTeamId,
+        const canPost = haveIChannelPermission(
+            state,
+            {
                 channel: post.channel_id,
-                permission: Permissions.ADD_REACTION,
+                team: channel.team_id || currentTeamId,
+                permission: Permissions.CREATE_POST,
                 default: true,
-            });
+            },
+        );
+
+        let canAddReaction = haveIChannelPermission(state, {
+            team: currentTeamId,
+            channel: post.channel_id,
+            permission: Permissions.ADD_REACTION,
+            default: true,
+        });
+
+        let canDelete = false;
+        if (post && channel?.delete_at === 0) {
+            canDelete = canDeletePost(state, channel?.team_id || currentTeamId, post?.channel_id, post, false);
         }
 
         if (ownProps.location === THREAD) {
             canReply = false;
         }
 
-        if (ownProps.location !== CHANNEL) {
-            showAppOptions = false;
-        }
-
-        if (channelIsArchived || ownProps.channelIsReadOnly) {
+        if (channelIsArchived || channelIsReadOnly) {
             canAddReaction = false;
             canReply = false;
             canDelete = false;
@@ -106,7 +104,7 @@ export function makeMapStateToProps() {
             canReply = false;
         }
 
-        if (ownProps.isSystemMessage) {
+        if (isSystemPost) {
             canAddReaction = false;
             canReply = false;
             canCopyPermalink = false;
@@ -114,7 +112,7 @@ export function makeMapStateToProps() {
             canPin = false;
             canFlag = false;
         }
-        if (ownProps.hasBeenDeleted) {
+        if (hasBeenDeleted) {
             canDelete = false;
         }
 
@@ -122,11 +120,11 @@ export function makeMapStateToProps() {
             canAddReaction = false;
         }
 
-        if (!ownProps.isSystemMessage && ownProps.managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
+        if (!isSystemPost && managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
             canCopyText = true;
         }
 
-        if (!isMinimumServerVersion(serverVersion, 5, 18) || channelIsArchived) {
+        if (channelIsArchived) {
             canMarkAsUnread = false;
         }
 
@@ -144,7 +142,7 @@ export function makeMapStateToProps() {
             canMarkAsUnread,
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
-            showAppOptions,
+            isFlagged: isPostFlagged(post.id, myPreferences),
             theme: getTheme(state),
         };
     };
