@@ -114,8 +114,8 @@ class PushNotifications {
                   if (foreground) {
                       // Show the in-app notification
                   } else if (userInteraction && !payload.userInfo?.local) {
-                    const props = getLaunchPropsFromNotification(notification);
-                    launchApp(props, false);
+                      const props = getLaunchPropsFromNotification(notification);
+                      launchApp(props, false);
                   }
                   break;
               case NOTIFICATION_TYPE.SESSION:
