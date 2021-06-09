@@ -134,23 +134,25 @@ export function getScheme(url: string) {
 
 export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
 
-export function parseDeepLink(deepLinkUrl: string, linkRoot = 'mattermost:\\/\\/(.*)') {
-    let match = new RegExp(`${linkRoot}\\/([^\\/]+)\\/channels\\/(\\S+)`).exec(deepLinkUrl);
+export function parseDeepLink(deepLinkUrl: string) {
+    const url = removeProtocol(deepLinkUrl);
+
+    let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
     if (match) {
         return {type: DeepLink.CHANNEL, serverUrl: match[1], teamName: match[2], channelName: match[3]};
     }
 
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(deepLinkUrl);
+    match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
     if (match) {
         return {type: DeepLink.PERMALINK, serverUrl: match[1], teamName: match[2], postId: match[3]};
     }
 
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(deepLinkUrl);
+    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
     if (match) {
         return {type: DeepLink.DM, serverUrl: match[1], teamName: match[2], userName: match[3]};
     }
 
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(deepLinkUrl);
+    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
     if (match) {
         return {type: DeepLink.GM, serverUrl: match[1], teamName: match[2], channelId: match[3]};
     }
@@ -165,19 +167,17 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     let urlToMatch = url;
 
-    // If url doesn't contain site or server URL, tack it on.
-    // e.g. <jump to convo> URLs from autolink plugin.
-    const urlBase = serverURL || siteURL || '';
-    const match = new RegExp(escapeRegex(urlBase)).exec(url);
-    if (!match) {
-        urlToMatch = urlBase + url;
+    if (!url.startsWith('mattermost://')) {
+        // If url doesn't contain site or server URL, tack it on.
+        // e.g. <jump to convo> URLs from autolink plugin.
+        const urlBase = serverURL || siteURL || '';
+        let match = new RegExp(escapeRegex(urlBase)).exec(url);
+        if (!match) {
+            urlToMatch = urlBase + url;
+        }
     }
 
-    const urlBaseWithoutProtocol = removeProtocol(urlBase);
-
-    const linkRoot = `(?:${escapeRegex(urlBaseWithoutProtocol)})`;
-
-    const parsedDeepLink = parseDeepLink(urlToMatch, linkRoot);
+    const parsedDeepLink = parseDeepLink(urlToMatch);
     if (parsedDeepLink.type !== DeepLink.INVALID) {
         return parsedDeepLink;
     }

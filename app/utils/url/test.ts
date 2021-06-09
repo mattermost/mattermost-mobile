@@ -3,6 +3,7 @@
 
 import {Linking} from 'react-native';
 
+import {DeepLink} from '@app/constants';
 import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
@@ -125,9 +126,10 @@ describe('UrlUtils', () => {
     });
 
     describe('matchDeepLink', () => {
-        const SITE_URL = 'http://localhost:8065';
-        const SERVER_URL = 'http://localhost:8065';
-        const DEEPLINK_URL_ROOT = 'mattermost://localhost:8065';
+        const URL_NO_PROTOCOL = 'localhost:8065/subdir';
+        const SITE_URL = `http://${URL_NO_PROTOCOL}`;
+        const SERVER_URL = `http://${URL_NO_PROTOCOL}`;
+        const DEEPLINK_URL_ROOT = `mattermost://${URL_NO_PROTOCOL}`;
 
         const tests = [
             {
@@ -173,8 +175,9 @@ describe('UrlUtils', () => {
                 },
                 expected: {
                     postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
+                    serverUrl: URL_NO_PROTOCOL,
                     teamName: 'ad-1',
-                    type: 'permalink',
+                    type: DeepLink.PERMALINK,
                 },
             },
             {
@@ -186,8 +189,9 @@ describe('UrlUtils', () => {
                 },
                 expected: {
                     channelName: 'town-square',
+                    serverUrl: URL_NO_PROTOCOL,
                     teamName: 'ad-1',
-                    type: 'channel',
+                    type: DeepLink.CHANNEL,
                 },
             },
             {
@@ -199,8 +203,9 @@ describe('UrlUtils', () => {
                 },
                 expected: {
                     postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
+                    serverUrl: URL_NO_PROTOCOL,
                     teamName: 'ad-1',
-                    type: 'permalink',
+                    type: DeepLink.PERMALINK,
                 },
             },
             {
@@ -212,8 +217,9 @@ describe('UrlUtils', () => {
                 },
                 expected: {
                     channelName: 'town-square',
+                    serverUrl: URL_NO_PROTOCOL,
                     teamName: 'ad-1',
-                    type: 'channel',
+                    type: DeepLink.CHANNEL,
                 },
             },
             {
@@ -225,6 +231,7 @@ describe('UrlUtils', () => {
                 },
                 expected: {
                     postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
+                    serverUrl: URL_NO_PROTOCOL,
                     teamName: 'ad-1',
                     type: 'permalink',
                 },
