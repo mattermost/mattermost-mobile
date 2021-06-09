@@ -191,6 +191,8 @@ export default class AutocompleteSelector extends PureComponent {
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={errorText}
+                        disableAtChannelMentionHighlight={true}
+                        disableHashtags={true}
                     />
                 </View>
             );
