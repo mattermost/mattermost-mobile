@@ -81,7 +81,7 @@ describe('DataOperator: Utils tests', () => {
                 serverUrl,
             },
         });
-        await databaseManagerClient.setMostRecentServerConnection(serverUrl);
+        await databaseManagerClient.setActiveServerDatabase(serverUrl);
 
         const operatorClient = new Operator(database!);
 

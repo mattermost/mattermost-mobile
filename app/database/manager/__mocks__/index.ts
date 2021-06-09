@@ -48,7 +48,6 @@ import {
     DefaultNewServerArgs,
     GetDatabaseConnectionArgs,
     Models,
-    MostRecentConnection,
     RetrievedDatabase,
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
@@ -151,7 +150,7 @@ class DatabaseManager {
       }
 
       if (setAsActiveDatabase) {
-          await this.setMostRecentServerConnection(serverUrl);
+          await this.setActiveServerDatabase(serverUrl);
       }
 
       return connection;
@@ -196,12 +195,12 @@ class DatabaseManager {
   };
 
   /**
-   * setMostRecentServerConnection: Set the new active server database.  The serverUrl is used to ensure that we do not duplicate entries in the default database.
+   * setActiveServerDatabase: Set the new active server database.  The serverUrl is used to ensure that we do not duplicate entries in the default database.
    * This method should be called when switching to another server.
    * @param {string} serverUrl
    * @returns {Promise<void>}
    */
-  setMostRecentServerConnection = async (serverUrl: string) => {
+  setActiveServerDatabase = async (serverUrl: string) => {
       const defaultDatabase = await this.getDefaultDatabase();
 
       if (defaultDatabase) {
@@ -245,29 +244,38 @@ class DatabaseManager {
   };
 
   /**
-   * getMostRecentServerConnection: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
-   * Use this getter method to retrieve the active database if it has been set in your code.
-   * @returns {DatabaseInstance}
+   * getActiveServerUrl: Use this getter method to retrieve the active server URL.
+   * @returns {string}
    */
-  getMostRecentServerConnection = async (): Promise<MostRecentConnection | undefined> => {
-      const defaultDatabase = await this.getDefaultDatabase();
+   getActiveServerUrl = async (): Promise<string|undefined> => {
+       const defaultDatabase = await this.getDefaultDatabase();
 
-      if (defaultDatabase) {
-          const serverRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+       if (defaultDatabase) {
+           const serverRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
 
-          if (serverRecords.length) {
-              const activeServer = serverRecords[0].value as string[];
-              const activeServerUrl = activeServer[0];
-              const activeServerDatabase = await this.getDatabaseConnection({serverUrl: activeServerUrl, setAsActiveDatabase: false});
-              return {
-                  connection: activeServerDatabase,
-                  serverUrl: activeServerUrl,
-              };
-          }
-          return undefined;
-      }
-      return undefined;
-  };
+           if (serverRecords.length) {
+               const recentServers = serverRecords[0].value as string[];
+               return recentServers[0];
+           }
+           return undefined;
+       }
+       return undefined;
+   };
+
+   /**
+   * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database. Hence, we have made the activeDatabase property private.
+   * Use this getter method to retrieve the active database if it has been set in your code.
+   * @returns {Promise<DatabaseInstance | undefined>}
+   */
+   getActiveServerDatabase = async (): Promise<DatabaseInstance> => {
+       const serverUrl = await this.getActiveServerUrl();
+
+       if (serverUrl) {
+           const serverDatabase = await this.getDatabaseConnection({serverUrl, setAsActiveDatabase: false});
+           return serverDatabase;
+       }
+       return undefined;
+   };
 
   /**
    * getDefaultDatabase : Returns the default database.
