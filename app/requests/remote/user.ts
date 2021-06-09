@@ -3,7 +3,7 @@
 import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
-import {DataOperator} from '@database/operator';
+import Operator from '@database/operator';
 import analytics from '@init/analytics';
 import {setAppCredentials} from '@init/credentials';
 import {getDeviceToken} from '@queries/global';
@@ -157,12 +157,14 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             licenseRequest,
         ]);
 
-        const teamRecords = DataOperator.handleTeam({
+        const operator = new Operator(activeServerDatabase);
+
+        const teamRecords = operator.handleTeam({
             prepareRecordsOnly: true,
             teams: teams as RawTeam[],
         });
 
-        const teamMembershipRecords = DataOperator.handleTeamMemberships({
+        const teamMembershipRecords = operator.handleTeamMemberships({
             prepareRecordsOnly: true,
             teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
         });
@@ -179,12 +181,12 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             };
         });
 
-        const myTeamRecords = DataOperator.handleMyTeam({
+        const myTeamRecords = operator.handleMyTeam({
             prepareRecordsOnly: true,
             myTeams: (myTeams as unknown) as RawMyTeam[],
         });
 
-        const systemRecords = DataOperator.handleIsolatedEntity({
+        const systemRecords = operator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
             values: [
                 {
@@ -207,12 +209,12 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             prepareRecordsOnly: true,
         });
 
-        const userRecords = DataOperator.handleUsers({
+        const userRecords = operator.handleUsers({
             users: [user],
             prepareRecordsOnly: true,
         });
 
-        const preferenceRecords = DataOperator.handlePreferences({
+        const preferenceRecords = operator.handlePreferences({
             prepareRecordsOnly: true,
             preferences: (preferences as unknown) as RawPreference[],
         });
@@ -235,7 +237,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             )) as unknown) as RawRole[];
 
             if (rolesByName?.length) {
-                rolesRecords = DataOperator.handleIsolatedEntity({
+                rolesRecords = operator.handleIsolatedEntity({
                     tableName: IsolatedEntities.ROLE,
                     prepareRecordsOnly: true,
                     values: rolesByName,
@@ -255,7 +257,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         const flattenedModels = models.flat();
         if (flattenedModels?.length > 0) {
-            await DataOperator.batchOperations({
+            await operator.batchOperations({
                 database: activeServerDatabase,
                 models: flattenedModels,
             });
@@ -273,13 +275,7 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
         return {error};
     }
 
-    const {
-        config,
-        license,
-    }: {
-    config: Partial<Config>;
-    license: Partial<License>;
-  } = await getCommonSystemValues(activeServerDatabase);
+    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(activeServerDatabase);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
@@ -297,6 +293,7 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     }
 
     let dataRetentionPolicy: any;
+    const operator = new Operator(activeServerDatabase);
 
     // Data retention
     if (
@@ -305,7 +302,7 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     license?.DataRetention === 'true'
     ) {
         dataRetentionPolicy = await getDataRetentionPolicy();
-        await DataOperator.handleIsolatedEntity({
+        await operator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
             values: [
                 {
@@ -332,8 +329,9 @@ export const updateMe = async (user: User) => {
         logError(e);
         return {error: e};
     }
+    const operator = new Operator(activeServerDatabase);
 
-    const systemRecords = DataOperator.handleIsolatedEntity({
+    const systemRecords = operator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [
             {name: 'currentUserId', value: data.id},
@@ -342,7 +340,7 @@ export const updateMe = async (user: User) => {
         prepareRecordsOnly: true,
     });
 
-    const userRecord = DataOperator.handleUsers({
+    const userRecord = operator.handleUsers({
         prepareRecordsOnly: true,
         users: [data],
     });
@@ -357,7 +355,7 @@ export const updateMe = async (user: User) => {
     ]);
 
     if (models?.length) {
-        await DataOperator.batchOperations({
+        await operator.batchOperations({
             database: activeServerDatabase,
             models: models.flat(),
         });

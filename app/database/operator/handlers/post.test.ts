@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {Operator} from '@database/operator';
+import Operator from '@database/operator';
 import {isRecordDraftEqualToRaw} from '@database/operator/comparators';
 import {prepareDraftRecord} from '@database/operator/prepareRecords/post';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
@@ -28,8 +28,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         });
 
-        operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
+        operatorClient = new Operator(database!);
     });
 
     it('=> HandleDraft: should write to the Draft entity', async () => {

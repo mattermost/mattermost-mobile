@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {Operator} from '@database/operator';
+import Operator from '@database/operator';
 import {
     isRecordChannelEqualToRaw,
     isRecordChannelInfoEqualToRaw,
@@ -38,8 +38,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             },
         });
 
-        operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
+        operatorClient = new Operator(database!);
     });
 
     it('=> HandleChannel: should write to CHANNEL entity', async () => {

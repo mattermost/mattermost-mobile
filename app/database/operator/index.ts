@@ -7,18 +7,18 @@ import GroupHandler, {GroupHandlerMix} from '@database/operator/handlers/group';
 import PostHandler, {PostHandlerMix} from '@database/operator/handlers/post';
 import TeamHandler, {TeamHandlerMix} from '@database/operator/handlers/team';
 import UserHandler, {UserHandlerMix} from '@database/operator/handlers/user';
+import {Database} from '@nozbe/watermelondb';
 import mix from '@utils/mix';
 
 interface Operator extends BaseHandlerMix, PostHandlerMix, UserHandlerMix, GroupHandlerMix, ChannelHandlerMix, TeamHandlerMix {}
 
-class Operator extends mix(BaseHandler).with(
-    PostHandler,
-    UserHandler,
-    GroupHandler,
-    ChannelHandler,
-    TeamHandler,
-) {}
+class Operator extends mix(BaseHandler).with(PostHandler, UserHandler, GroupHandler, ChannelHandler, TeamHandler) {
+    database!: Database;
 
-const DataOperator = new Operator();
+    constructor(database: Database) {
+        super();
+        this.activeDatabase = database;
+    }
+}
 
-export {DataOperator, Operator};
+export default Operator;

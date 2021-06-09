@@ -3,7 +3,7 @@
 
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import DatabaseManager from '@database/manager';
-import {Operator} from '@database/operator';
+import Operator from '@database/operator';
 import {
     isRecordAppEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
@@ -46,8 +46,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             },
         });
 
-        operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
+        operatorClient = new Operator(database!);
     });
 
     it('=> HandleApp: should write to APP entity', async () => {

@@ -717,3 +717,8 @@ export type GetDatabaseConnectionArgs = {
   connectionName?: string;
   setAsActiveDatabase: boolean;
 }
+
+export type MostRecentConnection = {
+  connection: DatabaseInstance,
+  serverUrl: string,
+}

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
+import {getActiveServerDatabase} from '@utils/database';
 import {AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {
@@ -16,7 +17,7 @@ import {
 } from 'react-native-notifications';
 
 import {Device, Navigation, View} from '@constants';
-import {DataOperator} from '@database/operator';
+import Operator from '@database/operator';
 import NativeNotifications from '@notifications';
 import {dismissAllModals, popToRoot, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -201,7 +202,7 @@ class PushNotifications {
       this.handleNotification(notification);
   };
 
-  onRemoteNotificationsRegistered = (event: Registered) => {
+  onRemoteNotificationsRegistered = async (event: Registered) => {
       if (!this.configured) {
           this.configured = true;
           const {deviceToken} = event;
@@ -216,7 +217,15 @@ class PushNotifications {
               prefix = Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
           }
 
-          DataOperator.handleIsolatedEntity({
+          const {activeServerDatabase, error} = await getActiveServerDatabase();
+
+          if (!activeServerDatabase) {
+              return {error};
+          }
+
+          const operator = new Operator(activeServerDatabase);
+
+          operator.handleIsolatedEntity({
               tableName: IsolatedEntities.GLOBAL,
               values: [{name: 'deviceToken', value: `${prefix}:${deviceToken}`}],
               prepareRecordsOnly: false,
@@ -225,6 +234,7 @@ class PushNotifications {
           // Store the device token in the default database
           this.requestNotificationReplyPermissions();
       }
+      return null;
   };
 
   requestNotificationReplyPermissions = () => {
