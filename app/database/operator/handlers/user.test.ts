@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {Operator} from '@database/operator';
+import Operator from '@database/operator';
 import {
     isRecordChannelMembershipEqualToRaw,
     isRecordPreferenceEqualToRaw,
@@ -36,8 +36,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             },
         });
 
-        operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
+        operatorClient = new Operator(database!);
     });
 
     it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {

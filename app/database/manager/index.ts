@@ -202,7 +202,6 @@ class DatabaseManager {
    */
   setMostRecentServerConnection = async (serverUrl: string) => {
       const defaultDatabase = await this.getDefaultDatabase();
-
       if (defaultDatabase) {
           // retrieve recentlyViewedServers from Global entity
           const recentlyViewedServers = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
@@ -255,7 +254,7 @@ class DatabaseManager {
   /**
    * getMostRecentServerConnection: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
    * Use this getter method to retrieve the active database if it has been set in your code.
-   * @returns {DatabaseInstance}
+   * @returns {Promise<MostRecentConnection | undefined>}
    */
   getMostRecentServerDatabase = async (): Promise<DatabaseInstance> => {
       const serverUrl = await this.getMostRecentServerUrl();

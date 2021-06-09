@@ -244,29 +244,35 @@ class DatabaseManager {
   };
 
   /**
+   * getMostRecentServerUrl: Use this getter method to retrieve the active server URL.
+   * @returns {string}
+   */
+   getMostRecentServerUrl = async (): Promise<string|undefined> => {
+       const defaultDatabase = await this.getDefaultDatabase();
+
+       if (defaultDatabase) {
+           const serverRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+
+           if (serverRecords.length) {
+               const recentServers = serverRecords[0].value as string[];
+               return recentServers[0];
+           }
+           return undefined;
+       }
+       return undefined;
+   };
+
+  /**
    * getMostRecentServerConnection: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
    * Use this getter method to retrieve the active database if it has been set in your code.
-   * @returns {DatabaseInstance}
+   * @returns {Promise<MostRecentConnection | undefined>}
    */
-  getMostRecentServerConnection = async (): Promise<DatabaseInstance> => {
-      const defaultDatabase = await this.getDefaultDatabase();
+  getMostRecentServerDatabase = async (): Promise<DatabaseInstance> => {
+      const serverUrl = await this.getMostRecentServerUrl();
 
-      if (defaultDatabase) {
-          const serverRecords = (await defaultDatabase.collections.
-              get(GLOBAL).
-              query(Q.where('name', RECENTLY_VIEWED_SERVERS)).
-              fetch()) as IGlobal[];
-
-          if (serverRecords.length) {
-              const activeServer = serverRecords[0].value as string[];
-              const activeServerUrl = activeServer[0];
-              const activeServerDatabase = await this.getDatabaseConnection({
-                  serverUrl: activeServerUrl,
-                  setAsActiveDatabase: false,
-              });
-              return activeServerDatabase;
-          }
-          return undefined;
+      if (serverUrl) {
+          const serverDatabase = await this.getDatabaseConnection({serverUrl, setAsActiveDatabase: false});
+          return serverDatabase;
       }
       return undefined;
   };

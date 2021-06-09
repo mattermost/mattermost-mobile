@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {Operator} from '@database/operator';
 import {
     prepareAppRecord,
     prepareCustomEmojiRecord,
@@ -13,28 +12,15 @@ import {
     prepareTermsOfServiceRecord,
 } from '@database/operator/prepareRecords/general';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {DatabaseType, OperationType} from '@typings/database/enums';
+import {OperationType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 describe('*** Isolated Prepare Records Test ***', () => {
     let databaseManagerClient: DatabaseManager;
-    let operatorClient: Operator;
 
     beforeAll(async () => {
         databaseManagerClient = new DatabaseManager();
-        const database = await databaseManagerClient.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            configs: {
-                actionsEnabled: true,
-                dbName: 'base_handler',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'baseHandler.test.com',
-            },
-        });
-
-        operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
     });
 
     it('=> prepareAppRecord: should return an array of type App', async () => {
