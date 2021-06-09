@@ -37,7 +37,7 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
     launchApp(props);
 };
 
-export const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
+const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
     const credentials = props?.serverUrl ?
         await getServerCredentials(props.serverUrl) :
         await getActiveServerCredentials();
@@ -80,6 +80,10 @@ const launchToServer = (props: LaunchProps | null, resetNavigation: Boolean) => 
 
     const title = '';
     goToScreen(Screens.SERVER, title, passProps);
+};
+
+export const relaunchApp = (props: LaunchProps | null = null) => {
+    launchApp(props, false);
 };
 
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {

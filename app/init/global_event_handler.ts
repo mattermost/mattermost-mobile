@@ -11,7 +11,7 @@ import {Navigation} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
-import {getLaunchPropsFromDeepLink, launchApp} from '@init/launch';
+import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import {deleteFileCache} from '@utils/file';
 
@@ -48,7 +48,7 @@ class GlobalEventHandler {
     onDeepLink = (event: LinkingCallbackArg) => {
         if (event.url) {
             const props = getLaunchPropsFromDeepLink(event.url);
-            launchApp(props, false);
+            relaunchApp(props);
         }
     };
 
@@ -133,7 +133,7 @@ class GlobalEventHandler {
 
         await this.clearCookiesAndWebData();
 
-        launchApp(null, false);
+        relaunchApp();
     };
 
     onServerConfigChanged = (serverUrl: string, config: ClientConfig) => {

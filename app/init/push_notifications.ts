@@ -18,7 +18,7 @@ import {
 
 import {Device, Navigation, View} from '@constants';
 import Operator from '@database/operator';
-import {getLaunchPropsFromNotification, launchApp} from '@init/launch';
+import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
 import {showOverlay} from '@screens/navigation';
 import {IsolatedEntities} from '@typings/database/enums';
@@ -115,7 +115,7 @@ class PushNotifications {
                       // Show the in-app notification
                   } else if (userInteraction && !payload.userInfo?.local) {
                       const props = getLaunchPropsFromNotification(notification);
-                      launchApp(props, false);
+                      relaunchApp(props);
                   }
                   break;
               case NOTIFICATION_TYPE.SESSION:
