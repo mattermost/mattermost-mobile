@@ -18,7 +18,7 @@ index fabd291..45b322b 100644
  @implementation RCTYouTubeStandalone {
      RCTPromiseResolveBlock resolver;
      RCTPromiseRejectBlock rejecter;
-@@ -14,6 +23,7 @@ @implementation RCTYouTubeStandalone {
+@@ -14,6 +23,7 @@ RCT_EXPORT_MODULE();
  
  RCT_REMAP_METHOD(playVideo,
                   playVideoWithResolver:(NSString*)videoId
@@ -26,7 +26,7 @@ index fabd291..45b322b 100644
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
  {
-@@ -22,10 +32,10 @@ @implementation RCTYouTubeStandalone {
+@@ -22,10 +32,10 @@ RCT_REMAP_METHOD(playVideo,
      #else
          dispatch_async(dispatch_get_main_queue(), ^{
              UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
@@ -39,7 +39,7 @@ index fabd291..45b322b 100644
  
              [[XCDYouTubeClient defaultClient] getVideoWithIdentifier:videoId
                                                     completionHandler:^(XCDYouTubeVideo * _Nullable video, NSError * _Nullable error) {
-@@ -38,10 +48,18 @@ @implementation RCTYouTubeStandalone {
+@@ -38,10 +48,18 @@ RCT_REMAP_METHOD(playVideo,
                          streamURLs[@(XCDYouTubeVideoQualitySmall240)
                      ];
  
@@ -72,3 +72,16 @@ index 0ee59c6..4a8294b 100644
    ? null
 -  : { playVideo: (videoId) => YouTubeStandalone.playVideo(videoId) };
 +  : { playVideo: (videoId, startTime) => YouTubeStandalone.playVideo(videoId, startTime) };
+diff --git a/node_modules/react-native-youtube/main.d.ts b/node_modules/react-native-youtube/main.d.ts
+index d771db7..410709d 100644
+--- a/node_modules/react-native-youtube/main.d.ts
++++ b/node_modules/react-native-youtube/main.d.ts
+@@ -35,7 +35,7 @@ declare class YouTube extends React.Component<YouTubeProps> {
+ }
+ 
+ export declare const YouTubeStandaloneIOS: {
+-  playVideo(videoId: string): Promise<void>;
++  playVideo(videoId: string, startTime: number): Promise<void>;
+ };
+ 
+ export declare const YouTubeStandaloneAndroid: {

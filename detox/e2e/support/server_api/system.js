@@ -42,8 +42,7 @@ export const apiCheckSystemHealth = async () => {
  */
 export const apiEmailTest = async () => {
     try {
-        const response = await client.post('/api/v4/email/test');
-        return response;
+        return await client.post('/api/v4/email/test');
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -174,9 +173,7 @@ export const apiUpdateConfig = async (newConfig = {}) => {
  */
 export const apiUploadLicense = async () => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');
-    const response = await apiUploadFile('license', absFilePath, {url: '/api/v4/license', method: 'POST'});
-
-    return response;
+    return apiUploadFile('license', absFilePath, {url: '/api/v4/license', method: 'POST'});
 };
 
 /**

@@ -34,6 +34,7 @@ export default class MoreChannels extends PureComponent {
         actions: PropTypes.shape({
             getArchivedChannels: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
+            getSharedChannels: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
@@ -42,6 +43,8 @@ export default class MoreChannels extends PureComponent {
         componentId: PropTypes.string,
         canCreateChannels: PropTypes.bool.isRequired,
         channels: PropTypes.array,
+        sharedChannels: PropTypes.array,
+        sharedChannelsEnabled: PropTypes.bool,
         archivedChannels: PropTypes.array,
         closeButton: PropTypes.object,
         currentUserId: PropTypes.string.isRequired,
@@ -63,13 +66,16 @@ export default class MoreChannels extends PureComponent {
 
         this.searchTimeoutId = 0;
         this.publicPage = -1;
+        this.sharedPage = -1;
         this.archivedPage = -1;
         this.nextPublic = true;
+        this.nextShared = true;
         this.nextArchived = true;
         this.mounted = false;
 
         this.state = {
             channels: props.channels.slice(0, General.CHANNELS_CHUNK_SIZE),
+            sharedChannels: props.sharedChannels.slice(0, General.CHANNELS_CHUNK_SIZE),
             archivedChannels: props.archivedChannels.slice(0, General.CHANNELS_CHUNK_SIZE),
             typeOfChannels: 'public',
             loading: false,
@@ -186,6 +192,15 @@ export default class MoreChannels extends PureComponent {
                         ).then(this.loadedChannels);
                     }
                     break;
+                case 'shared':
+                    if (this.nextShared) {
+                        actions.getSharedChannels(
+                            currentTeamId,
+                            this.sharedPage + 1,
+                            General.CHANNELS_CHUNK_SIZE,
+                        ).then(this.loadedChannels);
+                    }
+                    break;
                 case 'archived':
                     if (canShowArchivedChannels && this.nextArchived) {
                         actions.getArchivedChannels(
@@ -226,8 +241,12 @@ export default class MoreChannels extends PureComponent {
         if (this.mounted) {
             const {typeOfChannels} = this.state;
             const isPublic = typeOfChannels === 'public';
+            const isShared = typeOfChannels === 'shared';
 
-            if (isPublic) {
+            if (isShared) {
+                this.sharedPage += 1;
+                this.nextShared = data?.length > 0;
+            } else if (isPublic) {
                 this.publicPage += 1;
                 this.nextPublic = data?.length > 0;
             } else {
@@ -355,7 +374,7 @@ export default class MoreChannels extends PureComponent {
     }
 
     searchChannels = (text) => {
-        const {actions, channels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
+        const {actions, channels, sharedChannels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
         const {typeOfChannels} = this.state;
 
         if (text) {
@@ -363,6 +382,13 @@ export default class MoreChannels extends PureComponent {
                 const filtered = this.filterChannels(channels, text);
                 this.setState({
                     channels: filtered,
+                    term: text,
+                });
+                clearTimeout(this.searchTimeoutId);
+            } else if (typeOfChannels === 'shared') {
+                const filtered = this.filterChannels(sharedChannels, text);
+                this.setState({
+                    sharedChannels: filtered,
                     term: text,
                 });
                 clearTimeout(this.searchTimeoutId);
@@ -384,13 +410,25 @@ export default class MoreChannels extends PureComponent {
 
     handleDropdownClick = () => {
         const {formatMessage} = this.context.intl;
+        const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
         const publicChannelsText = formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'});
         const archivedChannelsText = formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'});
-        const titleText = formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'});
         const cancelText = 'Cancel';
+        const options = [publicChannelsText, archivedChannelsText, cancelText];
+
+        let archivedChannelsIndex = 1;
+        let sharedChannelsIndex;
+
+        if (this.props.sharedChannelsEnabled) {
+            const sharedChannelsText = formatMessage({id: 'more_channels.sharedChannels', defaultMessage: 'Shared Channels'});
+            options.splice(1, 0, sharedChannelsText);
+            sharedChannelsIndex = 1;
+            archivedChannelsIndex = 2;
+        }
+
         BottomSheet.showBottomSheetWithOptions({
-            options: [publicChannelsText, archivedChannelsText, cancelText],
-            cancelButtonIndex: 2,
+            options,
+            cancelButtonIndex: 3,
             title: titleText,
         }, (value) => {
             let typeOfChannels;
@@ -398,7 +436,10 @@ export default class MoreChannels extends PureComponent {
             case 0:
                 typeOfChannels = 'public';
                 break;
-            case 1:
+            case sharedChannelsIndex:
+                typeOfChannels = 'shared';
+                break;
+            case archivedChannelsIndex:
                 typeOfChannels = 'archived';
                 break;
             default:
@@ -413,13 +454,10 @@ export default class MoreChannels extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, canShowArchivedChannels} = this.props;
-        const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
+        const {canShowArchivedChannels, sharedChannelsEnabled, theme} = this.props;
+        const {adding, channels, sharedChannels, archivedChannels, loading, term, typeOfChannels} = this.state;
         const more = term ? emptyFunction : this.getChannels;
         const style = getStyleFromTheme(theme);
-
-        const publicChannelsText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
-        const archivedChannelsText = formatMessage({id: 'more_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
 
         let content;
         if (adding) {
@@ -433,12 +471,22 @@ export default class MoreChannels extends PureComponent {
 
             let activeChannels = channels;
 
-            if (canShowArchivedChannels && typeOfChannels === 'archived') {
+            if (typeOfChannels === 'shared') {
+                activeChannels = sharedChannels;
+            } else if (canShowArchivedChannels && typeOfChannels === 'archived') {
                 activeChannels = archivedChannels;
             }
 
             let channelDropdown;
-            if (canShowArchivedChannels) {
+            if (canShowArchivedChannels || sharedChannelsEnabled) {
+                let channelDropdownText;
+                if (typeOfChannels === 'public') {
+                    channelDropdownText = formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
+                } else if (typeOfChannels === 'shared') {
+                    channelDropdownText = formatMessage({id: 'more_channels.showSharedChannels', defaultMessage: 'Show: Shared Channels'});
+                } else {
+                    channelDropdownText = formatMessage({id: 'more_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
+                }
                 channelDropdown = (
                     <View
                         style={style.titleContainer}
@@ -450,7 +498,7 @@ export default class MoreChannels extends PureComponent {
                             onPress={this.handleDropdownClick}
                             testID={`more_channels.channel.dropdown.${typeOfChannels}`}
                         >
-                            {typeOfChannels === 'public' ? publicChannelsText : archivedChannelsText}
+                            {channelDropdownText}
                             {'  '}
                             <CompassIcon
                                 name='menu-down'

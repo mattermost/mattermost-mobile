@@ -74,10 +74,31 @@ export const apiGetLastPostInChannel = async (channelId) => {
     return {post: posts[0]};
 };
 
+/**
+ * Patch a post.
+ * See https://api.mattermost.com/#operation/PatchPost
+ * @param {string} postId - the post ID
+ * @param {Object} postData - data to partially update a post
+ * @return {Object} returns {post} on success or {error, status} on error
+ */
+export const apiPatchPost = async (postId, postData) => {
+    try {
+        const response = await client.put(
+            `/api/v4/posts/${postId}/patch`,
+            postData,
+        );
+
+        return {post: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Post = {
     apiCreatePost,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
+    apiPatchPost,
 };
 
 export default Post;

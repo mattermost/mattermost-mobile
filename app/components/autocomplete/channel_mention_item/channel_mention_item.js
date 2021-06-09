@@ -47,6 +47,7 @@ const ChannelMentionItem = (props) => {
         isGuest,
         name,
         onPress,
+        shared,
         testID,
         theme,
         type,
@@ -64,7 +65,9 @@ const ChannelMentionItem = (props) => {
     const margins = {marginLeft: insets.left, marginRight: insets.right};
     let iconName = 'globe';
     let component;
-    if (type === General.PRIVATE_CHANNEL) {
+    if (shared) {
+        iconName = type === General.PRIVATE_CHANNEL ? 'circle-multiple-outline-lock' : 'circle-multiple-outline';
+    } else if (type === General.PRIVATE_CHANNEL) {
         iconName = 'lock';
     }
 

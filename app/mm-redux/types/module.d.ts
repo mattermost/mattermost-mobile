@@ -6,3 +6,4 @@ declare module 'redux-action-buffer';
 declare module 'react-intl';
 declare module 'react-native-local-auth';
 declare module 'react-native-cookies';
+declare module 'react-native-keyboard-aware-scrollview';
