@@ -10,8 +10,8 @@ import {Theme} from '@mm-redux/types/preferences';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import FastImage from 'react-native-fast-image';
-import {SvgCss} from 'react-native-svg';
-import base64 from 'react-native-base64';
+import {SvgXml} from 'react-native-svg';
+import base64 from 'base-64'
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
 const bangIcon = require('@assets/images/autocomplete/slash_command_error.png');
@@ -28,6 +28,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             alignItems: 'center',
             marginTop: 8,
+        },
+        httpIcon: {
+            width: 16,
+            height: 16,
+        },
+        dataIcon: {
+            width: 16,
+            height: 16,
         },
         iconColor: {
             tintColor: theme.centerChannelColor,
@@ -115,14 +123,14 @@ const SlashSuggestionItem = (props: Props) => {
         image = (
             <FastImage
                 source={{uri: props.icon}}
-                style={{width: 16, height: 16}}
+                style={style.httpIcon}
             />
         );
     } else if (props.icon && props.icon.startsWith('data:')) {
         if (props.icon.startsWith('data:image/svg+xml')) {
             const xml = base64.decode(props.icon.substring('data:image/svg+xml;base64,'.length));
             image = (
-                <SvgCss
+                <SvgXml
                     xml={xml}
                     width={32}
                     height={32}
@@ -132,7 +140,7 @@ const SlashSuggestionItem = (props: Props) => {
             image = (
                 <Image
                     source={{uri: props.icon}}
-                    style={{width: 16, height: 16}}
+                    style={style.dataIcon}
                 />
             );
         }

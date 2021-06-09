@@ -51,7 +51,7 @@ export type Command = {
     'display_name': string;
     'description': string;
     'url': string;
-    'autocomplete_icon_data': string;
+    'autocomplete_icon_data'?: string;
 };
 
 // AutocompleteSuggestion represents a single suggestion downloaded from the server.
