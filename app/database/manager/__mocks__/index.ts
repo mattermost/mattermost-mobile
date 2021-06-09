@@ -265,7 +265,7 @@ class DatabaseManager {
    /**
    * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database. Hence, we have made the activeDatabase property private.
    * Use this getter method to retrieve the active database if it has been set in your code.
-   * @returns {Promise<MostRecentConnection | undefined>}
+   * @returns {Promise<DatabaseInstance | undefined>}
    */
    getActiveServerDatabase = async (): Promise<DatabaseInstance> => {
        const serverUrl = await this.getActiveServerUrl();
