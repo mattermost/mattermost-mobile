@@ -3,8 +3,6 @@
 
 class EphemeralStore {
     allNavigationComponentIds: string[] = [];
-    currentServerUrl: string | null | undefined;
-    deviceToken: string | null | undefined;
     navigationComponentIdStack: string[] = [];
     navigationModalStack: string[] = [];
 

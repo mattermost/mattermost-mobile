@@ -236,7 +236,7 @@ class DatabaseManager {
    * getActiveServerUrl: Use this getter method to retrieve the active server URL.
    * @returns {string}
    */
-   getActiveServerUrl = async (): Promise<string|undefined> => {
+   getActiveServerUrl = async (): Promise<string|null> => {
        const defaultDatabase = await this.getDefaultDatabase();
 
        if (defaultDatabase) {
@@ -246,9 +246,9 @@ class DatabaseManager {
                const recentServers = serverRecords[0].value as string[];
                return recentServers[0];
            }
-           return undefined;
+           return null;
        }
-       return undefined;
+       return null;
    };
 
   /**
