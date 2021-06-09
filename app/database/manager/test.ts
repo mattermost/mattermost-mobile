@@ -84,7 +84,7 @@ describe('*** Database Manager tests ***', () => {
         expect(spyOnAddServerToDefaultDatabase).toHaveBeenCalledTimes(1);
     });
 
-    it.only('=> should switch between active server connections', async () => {
+    it('=> should switch between active server connections', async () => {
         expect.assertions(6);
         let activeServer: DatabaseInstance;
         let adapter;

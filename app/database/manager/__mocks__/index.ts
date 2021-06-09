@@ -48,6 +48,7 @@ import {
     DefaultNewServerArgs,
     GetDatabaseConnectionArgs,
     Models,
+    MostRecentConnection,
     RetrievedDatabase,
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
@@ -248,23 +249,20 @@ class DatabaseManager {
    * Use this getter method to retrieve the active database if it has been set in your code.
    * @returns {DatabaseInstance}
    */
-  getMostRecentServerConnection = async (): Promise<DatabaseInstance> => {
+  getMostRecentServerConnection = async (): Promise<MostRecentConnection | undefined> => {
       const defaultDatabase = await this.getDefaultDatabase();
 
       if (defaultDatabase) {
-          const serverRecords = (await defaultDatabase.collections.
-              get(GLOBAL).
-              query(Q.where('name', RECENTLY_VIEWED_SERVERS)).
-              fetch()) as IGlobal[];
+          const serverRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
 
           if (serverRecords.length) {
               const activeServer = serverRecords[0].value as string[];
               const activeServerUrl = activeServer[0];
-              const activeServerDatabase = await this.getDatabaseConnection({
+              const activeServerDatabase = await this.getDatabaseConnection({serverUrl: activeServerUrl, setAsActiveDatabase: false});
+              return {
+                  connection: activeServerDatabase,
                   serverUrl: activeServerUrl,
-                  setAsActiveDatabase: false,
-              });
-              return activeServerDatabase;
+              };
           }
           return undefined;
       }
