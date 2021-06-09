@@ -51,6 +51,7 @@ import {
     GetDatabaseConnectionArgs,
     MigrationEvents,
     Models,
+    MostRecentConnection,
     RetrievedDatabase,
 } from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
@@ -202,7 +203,6 @@ class DatabaseManager {
    */
   setMostRecentServerConnection = async (serverUrl: string) => {
       const defaultDatabase = await this.getDefaultDatabase();
-
       if (defaultDatabase) {
           // retrieve recentlyViewedServers from Global entity
           const recentlyViewedServers = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
@@ -236,9 +236,9 @@ class DatabaseManager {
   /**
    * getMostRecentServerConnection: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
    * Use this getter method to retrieve the active database if it has been set in your code.
-   * @returns {DatabaseInstance}
+   * @returns {Promise<MostRecentConnection | undefined>}
    */
-  getMostRecentServerConnection = async (): Promise<DatabaseInstance> => {
+  getMostRecentServerConnection = async (): Promise<MostRecentConnection | undefined> => {
       const defaultDatabase = await this.getDefaultDatabase();
 
       if (defaultDatabase) {
@@ -248,7 +248,10 @@ class DatabaseManager {
               const activeServer = serverRecords[0].value as string[];
               const activeServerUrl = activeServer[0];
               const activeServerDatabase = await this.getDatabaseConnection({serverUrl: activeServerUrl, setAsActiveDatabase: false});
-              return activeServerDatabase;
+              return {
+                  connection: activeServerDatabase,
+                  serverUrl: activeServerUrl,
+              };
           }
           return undefined;
       }

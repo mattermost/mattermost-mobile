@@ -89,7 +89,8 @@ describe('*** Database Manager tests ***', () => {
         let activeServer: DatabaseInstance;
         let adapter;
 
-        activeServer = await databaseManagerClient!.getMostRecentServerConnection();
+        const recentConnectionA = await databaseManagerClient!.getMostRecentServerConnection();
+        activeServer = recentConnectionA?.connection;
 
         // as we haven't set an active server yet, we should be getting undefined in the activeServer variable
         expect(activeServer).toBeUndefined();
@@ -102,8 +103,8 @@ describe('*** Database Manager tests ***', () => {
         await setActiveServer('https://appv1.mattermost.com');
 
         // let's verify if we now have a value for activeServer
-        activeServer = await databaseManagerClient!.getMostRecentServerConnection();
-
+        const recentConnectionB = await databaseManagerClient!.getMostRecentServerConnection();
+        activeServer = recentConnectionB?.connection;
         expect(activeServer).toBeDefined();
 
         adapter = activeServer!.adapter as any;
@@ -112,7 +113,8 @@ describe('*** Database Manager tests ***', () => {
 
         // spice things up; we'll set a new server and verify if the value of activeServer changes
         await setActiveServer('https://appv2.mattermost.com');
-        activeServer = await databaseManagerClient!.getMostRecentServerConnection();
+        const recentConnectionC = await databaseManagerClient!.getMostRecentServerConnection();
+        activeServer = recentConnectionC?.connection;
         expect(activeServer).toBeDefined();
 
         adapter = activeServer!.adapter as any;
