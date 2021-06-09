@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {
-    View,
-} from 'react-native';
+import {View} from 'react-native';
 
 import {Theme} from '@mm-redux/types/preferences';
 import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
@@ -18,6 +16,7 @@ import TextSetting from '@components/widgets/settings/text_setting';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import Markdown from '@components/markdown/markdown';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -36,6 +35,20 @@ export type Props = {
 type State = {
     selected: DialogOption | null;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        markdownFieldContainer: {
+            marginTop: 15,
+            marginBottom: 10,
+            marginLeft: 15,
+        },
+        markdownFieldText: {
+            fontSize: 14,
+            color: theme.centerChannelColor,
+        },
+    };
+});
 
 export default class AppsFormField extends React.PureComponent<Props, State> {
     state = {
@@ -211,24 +224,18 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
             if (!field.description) {
                 return null;
             }
+            const style = getStyleSheet(theme);
 
             return (
                 <View
-                    style={{
-                        marginTop: 15,
-                        marginBottom: 10,
-                        marginLeft: 15,
-                    }}
+                    style={style.markdownFieldContainer}
                 >
                     <Markdown
                         value={field.value}
                         mentionKeys={[]}
                         blockStyles={getMarkdownBlockStyles(theme)}
                         textStyles={getMarkdownTextStyles(theme)}
-                        baseTextStyle={{
-                            fontSize: 14,
-                            color: theme.centerChannelColor,
-                        }}
+                        baseTextStyle={style.markdownFieldText}
                         theme={theme}
                     />
                 </View>
