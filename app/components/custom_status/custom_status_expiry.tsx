@@ -25,9 +25,10 @@ type Props = {
     testID?: string;
     showPrefix?: boolean;
     withinBrackets?: boolean;
+    showTimeCompulsory?: boolean;
 }
 
-const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets, testID}: Props) => {
+const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets, testID, showTimeCompulsory}: Props) => {
     const timezone = useSelector(getCurrentUserTimezone);
     const styles = createStyleSheet(theme);
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
@@ -87,9 +88,21 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
                 value={expiryMomentTime.toDate()}
             />
         );
+
+        renderDayOrDate = showTimeCompulsory ? (
+            <Text>
+                {renderDayOrDate}
+                {' '}
+                <FormattedText
+                    id='custom_status.expiry.at'
+                    defaultMessage='at'
+                />
+                {' '}
+            </Text>
+        ) : renderDayOrDate;
     }
 
-    if (expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowEndTime)) {
+    if (expiryMomentTime.isSame(todayEndTime) || (expiryMomentTime.isAfter(tomorrowEndTime) && !showTimeCompulsory)) {
         useTime = false;
     }
 
