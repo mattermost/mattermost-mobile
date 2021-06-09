@@ -3,7 +3,7 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import {DataOperator} from '@database/operator';
+import {Operator} from '@database/operator';
 import {ServerUrlChangedArgs} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import System from '@typings/database/system';

@@ -68,7 +68,7 @@ class BaseHandler {
    */
   activeDatabase: DatabaseInstance;
 
-  constructor(serverDatabase?: Database) {
+  constructor(serverDatabase: Database) {
       this.activeDatabase = serverDatabase;
   }
 
@@ -416,7 +416,8 @@ class BaseHandler {
    * @returns {Promise<Database>}
    */
   getDefaultDatabase = async () => {
-      const connection = await DatabaseManager.getDefaultDatabase();
+      const databaseManagerClient = new DatabaseManager();
+      const connection = await databaseManagerClient.getDefaultDatabase();
       if (connection === undefined) {
           throw new DatabaseConnectionException(
               'An error occurred while retrieving the default database',
@@ -437,16 +438,10 @@ class BaseHandler {
           return this.activeDatabase;
       }
 
-      // NOTE: here we are getting the active server directly as in a multi-server support system, the current
-      // active server connection will already be set on application init
-      const connection = await DatabaseManager.getActiveServerDatabase();
-      if (connection === undefined) {
-          throw new DatabaseConnectionException(
-              'An error occurred while retrieving the server database',
-              '',
-          );
-      }
-      return connection;
+      throw new DatabaseConnectionException(
+          "This operator client didn't have its activeDatabase set",
+          '',
+      );
   };
 }
 

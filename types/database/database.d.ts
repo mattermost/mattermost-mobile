@@ -705,3 +705,20 @@ export type ServerUrlChangedArgs = {
   selectServerRecord: System;
   serverUrl: string;
 };
+
+export type RetrievedDatabase = {
+  dbInstance: DatabaseInstance;
+  displayName: string;
+  url: string;
+}
+
+export type GetDatabaseConnectionArgs = {
+  serverUrl: string;
+  connectionName?: string;
+  setAsActiveDatabase: boolean;
+}
+
+export type MostRecentConnection = {
+  connection: DatabaseInstance,
+  serverUrl: string,
+}
