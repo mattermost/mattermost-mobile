@@ -4,7 +4,6 @@
 import {Database, Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {DatabaseInstance} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import IGlobal from '@typings/database/global';
 import IServers from '@typings/database/servers';
@@ -86,38 +85,34 @@ describe('*** Database Manager tests ***', () => {
 
     it('=> should switch between active server connections', async () => {
         expect.assertions(6);
-        let activeServer: DatabaseInstance;
         let adapter;
 
-        const recentConnectionA = await databaseManagerClient!.getMostRecentServerConnection();
-        activeServer = recentConnectionA?.connection;
+        const activeServerA = await databaseManagerClient!.getActiveServerDatabase();
 
         // as we haven't set an active server yet, we should be getting undefined in the activeServer variable
-        expect(activeServer).toBeUndefined();
+        expect(activeServerA).toBeUndefined();
 
         const setActiveServer = async (serverUrl: string) => {
             // now we set the active database
-            await databaseManagerClient!.setMostRecentServerConnection(serverUrl);
+            await databaseManagerClient!.setActiveServerDatabase(serverUrl);
         };
 
         await setActiveServer('https://appv1.mattermost.com');
 
         // let's verify if we now have a value for activeServer
-        const recentConnectionB = await databaseManagerClient!.getMostRecentServerConnection();
-        activeServer = recentConnectionB?.connection;
-        expect(activeServer).toBeDefined();
+        const activeServerB = await databaseManagerClient!.getActiveServerDatabase();
+        expect(activeServerB).toBeDefined();
 
-        adapter = activeServer!.adapter as any;
+        adapter = activeServerB!.adapter as any;
         const currentDBName = adapter.underlyingAdapter._dbName;
         expect(currentDBName).toStrictEqual('appv1.mattermost.com');
 
         // spice things up; we'll set a new server and verify if the value of activeServer changes
         await setActiveServer('https://appv2.mattermost.com');
-        const recentConnectionC = await databaseManagerClient!.getMostRecentServerConnection();
-        activeServer = recentConnectionC?.connection;
-        expect(activeServer).toBeDefined();
+        const activeServerC = await databaseManagerClient!.getActiveServerDatabase();
+        expect(activeServerC).toBeDefined();
 
-        adapter = activeServer!.adapter as any;
+        adapter = activeServerC!.adapter as any;
         const newDBName = adapter.underlyingAdapter._dbName;
         expect(newDBName).toStrictEqual('appv2.mattermost.com');
 
@@ -170,7 +165,7 @@ describe('*** Database Manager tests ***', () => {
         const serversRecords = await defaultDB!.collections.get(SERVERS).query().fetch() as IServers[];
         expect(serversRecords).toBeDefined();
 
-        // We have call the 'DatabaseManager.setMostRecentServerConnection' twice in the previous test case; that implies that we have 2 records in the 'servers' table
+        // We have call the 'DatabaseManager.setActiveServerDatabase' twice in the previous test case; that implies that we have 2 records in the 'servers' table
         expect(serversRecords.length).toEqual(2);
     });
 
@@ -180,8 +175,8 @@ describe('*** Database Manager tests ***', () => {
 
         const defaultDatabase = await databaseManagerClient!.getDefaultDatabase();
 
-        await databaseManagerClient?.setMostRecentServerConnection('https://appv1.mattermost.com');
-        await databaseManagerClient?.setMostRecentServerConnection('https://appv2.mattermost.com');
+        await databaseManagerClient?.setActiveServerDatabase('https://appv1.mattermost.com');
+        await databaseManagerClient?.setActiveServerDatabase('https://appv2.mattermost.com');
 
         const fetchGlobalRecords = async () => {
             const initialGlobalRecords = await defaultDatabase!.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];

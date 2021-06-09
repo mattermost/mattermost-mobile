@@ -47,11 +47,11 @@ export const getDefaultDatabase = async () => {
 export const getActiveServerDatabase = async () => {
     try {
         const databaseClient = new DatabaseManager();
-        const recentConnection = await databaseClient.getMostRecentServerConnection();
+        const activeServerDatabase = await databaseClient.getActiveServerDatabase();
 
         return {
-            error: recentConnection?.connection ? null : 'Unable to retrieve the current active server database.',
-            activeServerDatabase: recentConnection?.connection ?? null,
+            error: activeServerDatabase ? null : 'Unable to retrieve the current active server database.',
+            activeServerDatabase,
         };
     } catch (e) {
         return {
