@@ -27,7 +27,7 @@ public class ReceiptDelivery {
     public static void send(Context context, final String ackId, final String serverUrl, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
 
-        Credentials.getCredentialsForCurrentServer(reactApplicationContext, serverUrl, new ResolvePromise() {
+        Credentials.getCredentialsForServer(reactApplicationContext, serverUrl, new ResolvePromise() {
             @Override
             public void resolve(@Nullable Object value) {
                 if (value instanceof Boolean && !(Boolean)value) {

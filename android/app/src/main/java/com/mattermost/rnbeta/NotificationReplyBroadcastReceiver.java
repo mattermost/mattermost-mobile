@@ -52,7 +52,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             final String serverUrl = notification.getString("serverUrl");
 
 
-            Credentials.getCredentialsForCurrentServer(reactApplicationContext, serverUrl, new ResolvePromise() {
+            Credentials.getCredentialsForServer(reactApplicationContext, serverUrl, new ResolvePromise() {
                 @Override
                 public void resolve(@Nullable Object value) {
                     if (value instanceof Boolean && !(Boolean)value) {

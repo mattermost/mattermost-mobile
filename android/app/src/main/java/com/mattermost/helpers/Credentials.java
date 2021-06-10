@@ -7,7 +7,7 @@ import com.oblador.keychain.KeychainModule;
 
 
 public class Credentials {
-    public static void getCredentialsForCurrentServer(ReactApplicationContext context, String serverUrl, ResolvePromise promise) {
+    public static void getCredentialsForServer(ReactApplicationContext context, String serverUrl, ResolvePromise promise) {
         final KeychainModule keychainModule = new KeychainModule(context);
 
         final WritableMap options = Arguments.createMap();
