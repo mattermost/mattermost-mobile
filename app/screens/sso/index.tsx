@@ -19,9 +19,9 @@ import SSOWithWebView from './sso_with_webview';
 
 interface SSOProps {
   ssoType: string;
-  config: ClientConfig;
-  license: ClientLicense;
-  theme: Theme;
+  config: Partial<ClientConfig>;
+  license: Partial<ClientLicense>;
+  theme: Partial<Theme>;
   serverUrl: string;
 }
 
@@ -94,7 +94,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         await scheduleExpiredNotification(intl);
     };
 
-    const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version, 5, 33, 0);
+    const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
 
     const props = {
         intl,

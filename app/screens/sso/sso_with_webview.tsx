@@ -3,7 +3,7 @@
 
 import CookieManager, {Cookies} from '@react-native-community/cookies';
 import React from 'react';
-import {IntlShape} from 'react-intl';
+import {IntlShape, useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
@@ -60,28 +60,27 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
-    intl: IntlShape;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
     onMMToken: (token: string) => void;
     serverUrl: string;
     ssoType: string;
-    theme: Theme
+    theme: Partial<Theme>
 }
 
-type CookieResponseType = {
-    MMAUTHTOKEN: string | {
-        value: string
-    };
-    MMCSRF: string | {
-        value: string
-    };
-}
+// type CookieResponseType = {
+//     MMAUTHTOKEN: string | {
+//         value: string
+//     };
+//     MMCSRF: string | {
+//         value: string
+//     };
+// }
 
-function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
+function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
     const style = getStyleSheet(theme);
-
+    const intl = useIntl();
     const [error, setError] = React.useState(null);
     const [jsCode, setJSCode] = React.useState('');
     const [messagingEnabled, setMessagingEnabled] = React.useState(false);

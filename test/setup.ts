@@ -21,6 +21,7 @@ global.window = {};
 
 jest.doMock('react-native', () => {
     const {
+        Appearance,
         Platform,
         StyleSheet,
         ViewPropTypes,
@@ -85,6 +86,9 @@ jest.doMock('react-native', () => {
         RNFastStorage: {
             setupLibrary: jest.fn(),
             setStringAsync: jest.fn(),
+        },
+        Appearance: {
+            getColorScheme: jest.fn().mockReturnValue('light'),
         },
     };
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {IntlShape} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -15,19 +15,18 @@ import {tryOpenURL} from '@utils/url';
 import {setDeepLinkUrl} from '@requests/local/systems';
 
 interface SSOWithRedirectURLProps {
-    intl: IntlShape;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
     onMMToken: (token: string) => void;
     setLoginError: (value: string) => void;
-    theme: Theme
+    theme: Partial<Theme>
 }
 
-function SSOWithRedirectURL({intl, loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) {
+function SSOWithRedirectURL({loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) {
     const [error, setError] = React.useState<string>('');
     const style = getStyleSheet(theme);
-
+    const intl = useIntl();
     let customUrlScheme = 'mmauth://';
     if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
         customUrlScheme = 'mmauthbeta://';
@@ -118,12 +117,14 @@ function SSOWithRedirectURL({intl, loginError, loginUrl, onCSRFToken, onMMToken,
                 <View style={style.infoContainer}>
                     <FormattedText
                         id='mobile.oauth.switch_to_browser'
+                        testID='mobile.oauth.switch_to_browser'
                         defaultMessage='Please use your browser to complete the login'
                         style={style.infoText}
                     />
                     <TouchableOpacity onPress={() => init()}>
                         <FormattedText
                             id='mobile.oauth.restart_login'
+                            testID='mobile.oauth.restart_login'
                             defaultMessage='Restart login'
                             style={style.button}
                         />
