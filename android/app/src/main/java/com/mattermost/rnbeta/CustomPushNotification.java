@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.nozbe.watermelondb.Database;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -40,6 +42,7 @@ import com.mattermost.helpers.ResolvePromise;
 public class CustomPushNotification extends PushNotification {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
+    public static final String NOTIFICATION = "notification";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
     public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
@@ -58,9 +61,15 @@ public class CustomPushNotification extends PushNotification {
     private static Context context;
     private static int badgeCount = 0;
 
+    private static Database defaultDatabase;
+
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         this.context = context;
+
+        String defaultDatabaseName = Uri.fromFile(context.getFilesDir()).toString() + "/default.db";
+        this.defaultDatabase  = new Database(defaultDatabaseName, context);
+
         createNotificationChannels();
     }
 
@@ -106,8 +115,14 @@ public class CustomPushNotification extends PushNotification {
         final boolean isIdLoaded = initialData.getString("id_loaded") != null ? initialData.getString("id_loaded").equals("true") : false;
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
-        if (ackId != null) {
-            notificationReceiptDelivery(ackId, postId, type, isIdLoaded, new ResolvePromise() {
+        String serverUrl = initialData.getString("server_url", getServerUrl());
+
+        if (serverUrl == null) {
+            // TODO: Add warning to message
+        }
+
+        if (ackId != null && serverUrl != null) {
+            notificationReceiptDelivery(ackId, serverUrl, postId, type, isIdLoaded, new ResolvePromise() {
                 @Override
                 public void resolve(@Nullable Object value) {
                     if (isIdLoaded) {
@@ -465,15 +480,18 @@ public class CustomPushNotification extends PushNotification {
 
     private void addNotificationReplyAction(Notification.Builder notification, int notificationId, Bundle bundle) {
         String postId = bundle.getString("post_id");
+        String serverUrl = bundle.getString("server_url", getServerUrl());
 
-        if (android.text.TextUtils.isEmpty(postId) || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        if (android.text.TextUtils.isEmpty(postId) ||
+                serverUrl == null ||
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return;
         }
 
         Intent replyIntent = new Intent(mContext, NotificationReplyBroadcastReceiver.class);
         replyIntent.setAction(KEY_TEXT_REPLY);
         replyIntent.putExtra(NOTIFICATION_ID, notificationId);
-        replyIntent.putExtra("pushNotification", bundle);
+        replyIntent.putExtra(NOTIFICATION, bundle);
 
         PendingIntent replyPendingIntent = PendingIntent.getBroadcast(
             mContext,
@@ -540,8 +558,8 @@ public class CustomPushNotification extends PushNotification {
         return message.replaceFirst(": ", "").trim();
     }
 
-    private void notificationReceiptDelivery(String ackId, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
-        ReceiptDelivery.send(context, ackId, postId, type, isIdLoaded, promise);
+    private void notificationReceiptDelivery(String ackId, String serverUrl, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
+        ReceiptDelivery.send(context, ackId, serverUrl, postId, type, isIdLoaded, promise);
     }
 
     private void createNotificationChannels() {
@@ -559,5 +577,18 @@ public class CustomPushNotification extends PushNotification {
         mMinImportanceChannel = new NotificationChannel("channel_02", "Min Importance", NotificationManager.IMPORTANCE_MIN);
         mMinImportanceChannel.setShowBadge(true);
         notificationManager.createNotificationChannel(mMinImportanceChannel);
+    }
+
+    private String getServerUrl() {
+        String emptyArray[] = {};
+        String query = "SELECT url FROM servers";
+        Cursor cursor = defaultDatabase.rawQuery(query, emptyArray);
+
+        if (cursor.getCount() == 1) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
+        }
+
+        return null;
     }
 }
