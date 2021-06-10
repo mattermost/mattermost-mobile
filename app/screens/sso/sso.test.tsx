@@ -9,6 +9,12 @@ import {renderWithIntl} from '@test/intl-test-helper';
 
 import SSOComponent from './index';
 
+jest.mock('@screens/navigation', () => {
+    return {
+        getThemeFromState: () => 'light',
+    };
+});
+
 describe('SSO', () => {
     const baseProps = {
         config: {},
