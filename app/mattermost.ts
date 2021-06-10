@@ -23,7 +23,7 @@ Navigation.events().registerAppLaunchedListener(() => {
 const registerNavigationListeners = () => {
     Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
     Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
-}
+};
 
 function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
     EphemeralStore.addNavigationComponentId(componentId);

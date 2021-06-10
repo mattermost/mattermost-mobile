@@ -1,15 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Emm, {ManagedConfig} from '@mattermost/react-native-emm';
 import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
 
-import Emm from '@mattermost/react-native-emm';
-
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
-
-import type {ManagedConfig} from '@mattermost/react-native-emm';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
@@ -101,7 +98,6 @@ class ManagedApp {
         );
     };
 
-
     handleDeviceAuthentication = async (authExpired = true) => {
         this.performingAuthentication = true;
         const isSecured = await Emm.isDeviceSecured();
@@ -140,7 +136,7 @@ class ManagedApp {
 
         if (isActive && this.previousAppState === 'background') {
             if (this.enabled && this.inAppPinCode) {
-                let authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
+                const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
                 await this.handleDeviceAuthentication(authExpired);
             }
 
