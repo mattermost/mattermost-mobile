@@ -22,6 +22,7 @@ import SamlOption from './saml';
 
 type LoginOptionsProps = {
     componentId: string;
+    serverUrl: string;
     config: ClientConfig;
     license: ClientLicense;
     theme: Theme;
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const LoginOptions: NavigationFunctionComponent = ({config, license, theme}: LoginOptionsProps) => {
+const LoginOptions: NavigationFunctionComponent = ({config, license, theme, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
 
     const displayLogin = preventDoubleTap(() => {
@@ -69,7 +70,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, license, theme}: Log
         const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
 
-        goToScreen(screen, title, {config, license, theme, ssoType});
+        goToScreen(screen, title, {config, license, theme, ssoType, serverUrl});
     });
 
     return (

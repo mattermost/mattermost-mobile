@@ -3,7 +3,7 @@
 
 import CookieManager, {Cookies} from '@react-native-community/cookies';
 import React from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';

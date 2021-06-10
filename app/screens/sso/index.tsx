@@ -27,7 +27,6 @@ interface SSOProps {
 
 const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const intl = useIntl();
-
     const [loginError, setLoginError] = React.useState<string>('');
 
     let completeUrlPath = '';
