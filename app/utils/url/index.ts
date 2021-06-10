@@ -4,7 +4,7 @@
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
-import {DeepLink, Files} from '@constants';
+import {Files} from '@constants';
 import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 
@@ -134,30 +134,30 @@ export function getScheme(url: string) {
 
 export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
 
-export function parseDeepLink(deepLinkUrl: string) {
+export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
     const url = removeProtocol(deepLinkUrl);
 
     let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLink.CHANNEL, serverUrl: match[1], teamName: match[2], channelName: match[3]};
+        return {type: DeepLinkType.Channel, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
     }
 
     match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
     if (match) {
-        return {type: DeepLink.PERMALINK, serverUrl: match[1], teamName: match[2], postId: match[3]};
+        return {type: DeepLinkType.Permalink, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
     }
 
     match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLink.DM, serverUrl: match[1], teamName: match[2], userName: match[3]};
+        return {type: DeepLinkType.DirectMessage, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
     }
 
     match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
     if (match) {
-        return {type: DeepLink.GM, serverUrl: match[1], teamName: match[2], channelId: match[3]};
+        return {type: DeepLinkType.GroupMessage, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
     }
 
-    return {type: DeepLink.INVALID};
+    return {type: DeepLinkType.Invalid};
 }
 
 export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
@@ -178,7 +178,7 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
     }
 
     const parsedDeepLink = parseDeepLink(urlToMatch);
-    if (parsedDeepLink.type !== DeepLink.INVALID) {
+    if (parsedDeepLink.type !== DeepLinkType.Invalid) {
         return parsedDeepLink;
     }
 

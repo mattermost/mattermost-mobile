@@ -24,7 +24,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
 import type {ManagedConfig} from '@mattermost/react-native-emm';
-import type {LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
@@ -174,15 +173,31 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
         return () => listener?.remove();
     }, []);
 
-    // TODO: need autoconnect
     useEffect(() => {
-        const serverUrl = props.serverUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+
+        if (props.launchType === LaunchType.DeepLink) {
+            const deepLinkServerUrl = (props.extra as DeepLinkWithData).data?.serverUrl;
+            if (managedConfig) {
+                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
+                if (managedConfig.serverUrl !== deepLinkServerUrl) {
+                    setError(intl.formatMessage({
+                        id: 'mobile.server_url.deeplink.emm.denied',
+                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
+                    }));
+                }
+            } else {
+                autoconnect = true;
+                serverUrl = deepLinkServerUrl;
+            }
+        }
 
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
             setUrl(serverUrl);
 
-            if (managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl) {
+            if (autoconnect) {
                 // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
                 handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
             }

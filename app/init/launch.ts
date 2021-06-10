@@ -4,12 +4,10 @@
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
-import {DeepLink, Notification, Screens} from '@constants';
+import {Screens} from '@constants';
 import {getActiveServerCredentials, getServerCredentials} from '@init/credentials';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
 import {parseDeepLink} from '@utils/url';
-
-import type {LaunchProps} from '@typings/launch';
 
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
@@ -38,9 +36,22 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
 };
 
 const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
-    const credentials = props?.serverUrl ?
-        await getServerCredentials(props.serverUrl) :
-        await getActiveServerCredentials();
+    let serverUrl;
+    switch (props?.launchType) {
+        case LaunchType.DeepLink:
+            if (props.extra?.type !== DeepLinkType.Invalid) {
+                const extra = props.extra as DeepLinkWithData;
+                serverUrl = extra.data?.serverUrl;
+            }
+            break;
+        case LaunchType.Notification: {
+            const extra = props.extra as NotificationWithData;
+            serverUrl = extra.payload?.server_url;
+            break;
+        }
+    }
+
+    const credentials = serverUrl ? await getServerCredentials(serverUrl) : await getActiveServerCredentials();
 
     if (credentials) {
         launchToChannel(props, resetNavigation);
@@ -70,16 +81,13 @@ const launchToChannel = (props: LaunchProps | null, resetNavigation: Boolean) =>
 };
 
 const launchToServer = (props: LaunchProps | null, resetNavigation: Boolean) => {
-    // TODO: Do we need to do anything else with LaunchProps?
-    const passProps = {...props};
-
     if (resetNavigation) {
-        resetToSelectServer(passProps);
+        resetToSelectServer(props);
         return;
     }
 
     const title = '';
-    goToScreen(Screens.SERVER, title, passProps);
+    goToScreen(Screens.SERVER, title, {...props});
 };
 
 export const relaunchApp = (props: LaunchProps | null = null) => {
@@ -89,18 +97,33 @@ export const relaunchApp = (props: LaunchProps | null = null) => {
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
     const parsed = parseDeepLink(deepLinkUrl);
     const launchProps: LaunchProps = {
-        launchType: parsed.type,
+        launchType: LaunchType.DeepLink,
     };
 
-    if (parsed.type === DeepLink.INVALID) {
-        launchProps.errorMessage = 'Did not find a server for this deep link';
-    } else {
-        launchProps.channelId = parsed.channelId;
-        launchProps.channelName = parsed.channelName;
-        launchProps.postId = parsed.postId;
-        launchProps.serverUrl = parsed.serverUrl;
-        launchProps.teamName = parsed.teamName;
-        launchProps.userName = parsed.userName;
+    switch (parsed.type) {
+        case DeepLinkType.Invalid:
+            launchProps.errorMessage = 'Did not find a server for this deep link';
+            break;
+        case DeepLinkType.Channel: {
+            const parsedData = parsed.data as DeepLinkChannel;
+            (launchProps.extra as DeepLinkWithData).data = parsedData;
+            break;
+        }
+        case DeepLinkType.DirectMessage: {
+            const parsedData = parsed.data as DeepLinkDM;
+            (launchProps.extra as DeepLinkWithData).data = parsedData;
+            break;
+        }
+        case DeepLinkType.GroupMessage: {
+            const parsedData = parsed.data as DeepLinkGM;
+            (launchProps.extra as DeepLinkWithData).data = parsedData;
+            break;
+        }
+        case DeepLinkType.Permalink: {
+            const parsedData = parsed.data as DeepLinkPermalink;
+            (launchProps.extra as DeepLinkWithData).data = parsedData;
+            break;
+        }
     }
 
     return launchProps;
@@ -109,15 +132,11 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => 
 export const getLaunchPropsFromNotification = (notification: NotificationWithData): LaunchProps => {
     const {payload} = notification;
     const launchProps: LaunchProps = {
-        launchType: Notification.NOTIFICATION,
+        launchType: LaunchType.Notification,
     };
 
     if (payload?.server_url) {
-        launchProps.channelId = payload.channel_id;
-        launchProps.channelName = payload.channel_name;
-        launchProps.postId = payload.post_id;
-        launchProps.serverUrl = payload.server_url;
-        launchProps.teamId = payload.team_id;
+        (launchProps.extra as NotificationWithData) = notification;
     } else {
         launchProps.errorMessage = 'Did not find a server for this notification';
     }

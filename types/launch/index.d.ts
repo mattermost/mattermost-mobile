@@ -1,14 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export type LaunchProps = {
-    launchType?: string;
-    channelName?: string;
-    channelId?: string;
+interface DeepLink {
+    serverUrl: string;
+    teamName: string;
+}
+
+interface DeepLinkChannel extends DeepLink {
+    channelName: string;
+}
+
+interface DeepLinkDM extends DeepLink {
+    userName: string;
+}
+
+interface DeepLinkPermalink extends DeepLink {
+    postId: string;
+}
+
+interface DeepLinkGM extends DeepLink {
+    channelId: string;
+}
+
+const DeepLinkType = {
+    Channel: 'channel',
+    DirectMessage: 'dm',
+    GroupMessage: 'gm',
+    Invalid: 'invalid',
+    Permalink: 'permalink',
+} as const;
+
+type DeepLinkType = typeof DeepLinkType[keyof typeof DeepLinkType];
+
+interface DeepLinkWithData {
+    type: DeepLinkType;
+    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink;
+}
+
+enum LaunchType {
+    Normal = 'normal',
+    DeepLink = 'deeplink',
+    Notification = 'notification',
+}
+
+interface LaunchProps {
+    launchType: LaunchType;
+    extra?: DeepLinkWithData | NotificationWithData;
     errorMessage?: string;
-    postId?: string;
-    serverUrl?: string;
-    teamId?: string;
-    teamName?: string;
-    userName?: string;
 }
