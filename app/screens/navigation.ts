@@ -80,7 +80,7 @@ export function resetToChannel(passProps = {}) {
     });
 }
 
-export function resetToSelectServer(passProps: LaunchProps|null) {
+export function resetToSelectServer(passProps: OptionalLaunchProps) {
     const theme = getThemeFromState();
 
     EphemeralStore.clearNavigationComponents();

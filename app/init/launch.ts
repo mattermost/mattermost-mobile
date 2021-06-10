@@ -35,7 +35,7 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
     launchApp(props);
 };
 
-const launchApp = async (props: LaunchProps | null = null, resetNavigation = true) => {
+const launchApp = async (props: OptionalLaunchProps = undefined, resetNavigation = true) => {
     let serverUrl;
     switch (props?.launchType) {
         case LaunchType.DeepLink:
@@ -61,7 +61,7 @@ const launchApp = async (props: LaunchProps | null = null, resetNavigation = tru
     launchToServer(props, resetNavigation);
 };
 
-const launchToChannel = (props: LaunchProps | null, resetNavigation: Boolean) => {
+const launchToChannel = (props: OptionalLaunchProps, resetNavigation: Boolean) => {
     // TODO: Use LaunchProps to fetch posts for channel and then load user profile, etc...
 
     const passProps = {
@@ -80,7 +80,7 @@ const launchToChannel = (props: LaunchProps | null, resetNavigation: Boolean) =>
     goToScreen(Screens.CHANNEL, title, passProps);
 };
 
-const launchToServer = (props: LaunchProps | null, resetNavigation: Boolean) => {
+const launchToServer = (props: OptionalLaunchProps, resetNavigation: Boolean) => {
     if (resetNavigation) {
         resetToSelectServer(props);
         return;
@@ -90,7 +90,7 @@ const launchToServer = (props: LaunchProps | null, resetNavigation: Boolean) => 
     goToScreen(Screens.SERVER, title, {...props});
 };
 
-export const relaunchApp = (props: LaunchProps | null = null) => {
+export const relaunchApp = (props: OptionalLaunchProps = undefined) => {
     launchApp(props, false);
 };
 

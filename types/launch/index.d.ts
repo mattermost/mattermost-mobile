@@ -48,3 +48,5 @@ interface LaunchProps {
     extra?: DeepLinkWithData | NotificationWithData;
     errorMessage?: string;
 }
+
+type OptionalLaunchProps = LaunchProps | undefined;
