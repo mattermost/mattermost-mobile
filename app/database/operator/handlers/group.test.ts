@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {Operator} from '@database/operator';
+import Operator from '@database/operator';
 import {
     isRecordGroupEqualToRaw,
     isRecordGroupMembershipEqualToRaw,
@@ -38,8 +38,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
             },
         });
 
-        operatorClient = new Operator();
-        operatorClient.setActiveDatabase(database!);
+        operatorClient = new Operator(database!);
     });
 
     it('=> HandleGroup: should write to GROUP entity', async () => {

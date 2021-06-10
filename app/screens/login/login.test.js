@@ -3,17 +3,18 @@
 
 import React from 'react';
 
-import FormattedText from '@components/formatted_text';
+import {Preferences, Screens} from '@constants';
+import {login} from '@requests/remote/user';
+import * as NavigationActions from '@screens/navigation';
+import {waitFor, renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
-import {shallowWithIntl} from '@test/intl-test-helper';
+import Login, {MFA_EXPECTED_ERRORS} from './index';
 
-import * as NavigationActions from 'app/actions/navigation';
-
-import {MFA_EXPECTED_ERRORS} from '@screens/login/index';
-import Login from './index';
+jest.mock('@requests/remote/user');
 
 describe('Login', () => {
     const baseProps = {
+        componentId: Screens.LOGIN,
         config: {
             EnableSignInWithEmail: 'true',
             EnableSignInWithUsername: 'true',
@@ -21,12 +22,16 @@ describe('Login', () => {
         license: {
             IsLicensed: 'false',
         },
-        loginRequest: {},
-        actions: {
-            scheduleExpiredNotification: jest.fn(),
-            login: jest.fn(),
-        },
+        theme: Preferences.THEMES.default,
     };
+
+    test('Login screen should match snapshot', () => {
+        const {toJSON} = renderWithIntl(
+            <Login {...baseProps}/>,
+        );
+
+        expect(toJSON()).toMatchSnapshot();
+    });
 
     test('should show "I forgot my password" with only email login enabled', () => {
         const props = {
@@ -37,9 +42,9 @@ describe('Login', () => {
             },
         };
 
-        const wrapper = shallowWithIntl(<Login {...props}/>);
+        const {getByTestId} = renderWithIntl(<Login {...props}/>, {locale: 'es'});
 
-        expect(wrapper.find(FormattedText).find({id: 'login.forgot'}).exists()).toBe(true);
+        expect(getByTestId('login.forgot')).toBeDefined();
     });
 
     test('should show "I forgot my password" with only username login enabled', () => {
@@ -51,9 +56,9 @@ describe('Login', () => {
             },
         };
 
-        const wrapper = shallowWithIntl(<Login {...props}/>);
+        const {getByTestId} = renderWithIntl(<Login {...props}/>, {locale: 'fr'});
 
-        expect(wrapper.find(FormattedText).find({id: 'login.forgot'}).exists()).toBe(true);
+        expect(getByTestId('login.forgot')).toBeDefined();
     });
 
     test('should not show "I forgot my password" without email or username login enabled', () => {
@@ -66,33 +71,42 @@ describe('Login', () => {
             },
         };
 
-        const wrapper = shallowWithIntl(<Login {...props}/>);
+        const {getByTestId} = renderWithIntl(<Login {...props}/>);
+        let forgot;
 
-        expect(wrapper.find(FormattedText).find({id: 'login.forgot'}).exists()).toBe(false);
+        try {
+            forgot = getByTestId('login.forgot');
+        } catch {
+            // do nothing
+        }
+
+        expect(forgot).toBeUndefined();
     });
 
-    test('should go to MFA screen when login response returns MFA error', () => {
+    test('should go to MFA screen when login response returns MFA error', async () => {
         const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
+        login.mockResolvedValue({error: {
+            server_error_id: MFA_EXPECTED_ERRORS[0],
+        }});
 
-        const mfaError = {
-            error: {
-                server_error_id: MFA_EXPECTED_ERRORS[0],
-            },
-        };
-
-        const wrapper = shallowWithIntl(<Login {...baseProps}/>);
+        const {getByTestId} = renderWithIntl(<Login {...baseProps}/>);
+        const loginInput = getByTestId('login.username.input');
+        const passwordInput = getByTestId('login.password.input');
+        const loginButton = getByTestId('login.signin.button');
         const loginId = 'user';
         const password = 'password';
-        wrapper.instance().loginId = loginId;
-        wrapper.instance().password = password;
-        wrapper.instance().checkLoginResponse(mfaError);
+
+        fireEvent.changeText(loginInput, loginId);
+        fireEvent.changeText(passwordInput, password);
+
+        await waitFor(() => fireEvent.press(loginButton), {timeout: 300});
 
         expect(goToScreen).
             toHaveBeenCalledWith(
                 'MFA',
                 'Multi-factor Authentication',
                 {
-                    goToChannel: wrapper.instance().goToChannel,
+                    goToChannel: expect.anything(),
                     loginId,
                     password,
                 },
@@ -102,8 +116,10 @@ describe('Login', () => {
     test('should go to ForgotPassword screen when forgotPassword is called', () => {
         const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
 
-        const wrapper = shallowWithIntl(<Login {...baseProps}/>);
-        wrapper.instance().forgotPassword();
+        const {getByTestId} = renderWithIntl(<Login {...baseProps}/>);
+        const forgot = getByTestId('login.forgot');
+
+        fireEvent.press(forgot);
 
         expect(goToScreen).
             toHaveBeenCalledWith(

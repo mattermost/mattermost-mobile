@@ -4,7 +4,7 @@
 import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
-import {DataOperator} from '@database/operator';
+import Operator from '@database/operator';
 import analytics from '@init/analytics';
 import {setAppCredentials} from '@init/credentials';
 import {getDeviceToken} from '@queries/global';
@@ -170,34 +170,23 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             licenseRequest,
         ]);
 
-        const teamRecords = DataOperator.handleTeam({
-            prepareRecordsOnly: true,
-            teams: teams as RawTeam[],
-        });
+        const operator = new Operator(activeServerDatabase);
 
-        const teamMembershipRecords = DataOperator.handleTeamMemberships({
-            prepareRecordsOnly: true,
-            teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
-        });
+        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams as RawTeam[]});
+
+        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers as unknown) as RawTeamMembership[]});
 
         const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMembers.find(
-                (team) => team.team_id === unread.team_id,
-            );
-            return {
-                team_id: unread.team_id,
-                roles: matchingTeam?.roles ?? '',
-                is_unread: unread.msg_count > 0,
-                mentions_count: unread.mention_count,
-            };
+            const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
+            return {team_id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
         });
 
-        const myTeamRecords = DataOperator.handleMyTeam({
+        const myTeamRecords = operator.handleMyTeam({
             prepareRecordsOnly: true,
             myTeams: (myTeams as unknown) as RawMyTeam[],
         });
 
-        const systemRecords = DataOperator.handleIsolatedEntity({
+        const systemRecords = operator.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
             values: [
                 {
@@ -220,12 +209,12 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             prepareRecordsOnly: true,
         });
 
-        const userRecords = DataOperator.handleUsers({
+        const userRecords = operator.handleUsers({
             users: [currentUser],
             prepareRecordsOnly: true,
         });
 
-        const preferenceRecords = DataOperator.handlePreferences({
+        const preferenceRecords = operator.handlePreferences({
             prepareRecordsOnly: true,
             preferences: (preferences as unknown) as RawPreference[],
         });
@@ -243,35 +232,18 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         let rolesRecords: Role[] = [];
         if (rolesToLoad.size > 0) {
-            const rolesByName = ((await Client4.getRolesByNames(
-                Array.from(rolesToLoad),
-            )) as unknown) as RawRole[];
+            const rolesByName = ((await Client4.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
 
             if (rolesByName?.length) {
-                rolesRecords = DataOperator.handleIsolatedEntity({
-                    tableName: IsolatedEntities.ROLE,
-                    prepareRecordsOnly: true,
-                    values: rolesByName,
-                }) as Role[];
+                rolesRecords = operator.handleIsolatedEntity({tableName: IsolatedEntities.ROLE, prepareRecordsOnly: true, values: rolesByName}) as Role[];
             }
         }
 
-        const models = await Promise.all([
-            teamRecords,
-            teamMembershipRecords,
-            myTeamRecords,
-            systemRecords,
-            preferenceRecords,
-            rolesRecords,
-            userRecords,
-        ]);
+        const models = await Promise.all([teamRecords, teamMembershipRecords, myTeamRecords, systemRecords, preferenceRecords, rolesRecords, userRecords]);
 
         const flattenedModels = models.flat();
         if (flattenedModels?.length > 0) {
-            await DataOperator.batchOperations({
-                database: activeServerDatabase,
-                models: flattenedModels,
-            });
+            await operator.batchOperations({database: activeServerDatabase, models: flattenedModels});
         }
     } catch (e) {
         return {error: e, currentUser: undefined};
@@ -286,13 +258,7 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
         return {error};
     }
 
-    const {
-        config,
-        license,
-    }: {
-    config: Partial<Config>;
-    license: Partial<License>;
-  } = await getCommonSystemValues(activeServerDatabase);
+    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(activeServerDatabase);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
@@ -310,24 +276,12 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     }
 
     let dataRetentionPolicy: any;
+    const operator = new Operator(activeServerDatabase);
 
     // Data retention
-    if (
-        config?.DataRetentionEnableMessageDeletion === 'true' &&
-    license?.IsLicensed === 'true' &&
-    license?.DataRetention === 'true'
-    ) {
+    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
         dataRetentionPolicy = await getDataRetentionPolicy();
-        await DataOperator.handleIsolatedEntity({
-            tableName: IsolatedEntities.SYSTEM,
-            values: [
-                {
-                    name: 'dataRetentionPolicy',
-                    value: dataRetentionPolicy,
-                },
-            ],
-            prepareRecordsOnly: false,
-        });
+        await operator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values: [{name: 'dataRetentionPolicy', value: dataRetentionPolicy}], prepareRecordsOnly: false});
     }
 
     return null;
@@ -346,7 +300,8 @@ export const updateMe = async (user: User) => {
         return {error: e};
     }
 
-    const systemRecords = DataOperator.handleIsolatedEntity({
+    const operator = new Operator(activeServerDatabase);
+    const systemRecords = operator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [
             {name: 'currentUserId', value: data.id},
@@ -355,10 +310,7 @@ export const updateMe = async (user: User) => {
         prepareRecordsOnly: true,
     });
 
-    const userRecord = DataOperator.handleUsers({
-        prepareRecordsOnly: true,
-        users: [data],
-    });
+    const userRecord = operator.handleUsers({prepareRecordsOnly: true, users: [data]});
 
     //todo: ?? Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
     // tosRecords = await DataOperator.handleIsolatedEntity({ tableName: TERMS_OF_SERVICE, values: [{}], });
@@ -370,10 +322,7 @@ export const updateMe = async (user: User) => {
     ]);
 
     if (models?.length) {
-        await DataOperator.batchOperations({
-            database: activeServerDatabase,
-            models: models.flat(),
-        });
+        await operator.batchOperations({database: activeServerDatabase, models: models.flat()});
     }
 
     const updatedRoles: string[] = data.roles.split(' ');

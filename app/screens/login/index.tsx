@@ -379,6 +379,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                                 id='login.forgot'
                                 defaultMessage='I forgot my password'
                                 style={styles.forgotPasswordTxt}
+                                testID={'login.forgot'}
                             />
                         </Button>
                     )}

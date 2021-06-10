@@ -5,19 +5,17 @@
 
 import * as ReactNative from 'react-native';
 
-// import MockAsyncStorage from 'mock-async-storage';
-// import {configure} from 'enzyme';
-// import Adapter from 'enzyme-adapter-react-16';
+import MockAsyncStorage from 'mock-async-storage';
 import 'react-native-gesture-handler/jestSetup';
 require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 
 require('isomorphic-fetch');
 
-// configure({adapter: new Adapter()});
+const mockImpl = new MockAsyncStorage();
+jest.mock('@react-native-community/async-storage', () => mockImpl);
 
-// const mockImpl = new MockAsyncStorage();
-// jest.mock('@react-native-community/async-storage', () => mockImpl);
-// global.window = {};
+// @ts-expect-error no window exist in global
+global.window = {};
 
 /* eslint-disable no-console */
 
@@ -51,14 +49,6 @@ jest.doMock('react-native', () => {
                 directEventTypes: {},
             },
         },
-        BlurAppScreen: () => true,
-        MattermostManaged: {
-            getConfig: jest.fn(),
-        },
-        MattermostShare: {
-            close: jest.fn(),
-            cacheDirName: 'mmShare',
-        },
         PlatformConstants: {
             forceTouchAvailable: false,
         },
@@ -71,6 +61,9 @@ jest.doMock('react-native', () => {
             },
         },
         KeyboardObserver: {},
+        JailMonkey: {
+            trustFall: jest.fn().mockReturnValue(true),
+        },
         RNCNetInfo: {
             getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
             addListener: jest.fn(),
@@ -84,9 +77,6 @@ jest.doMock('react-native', () => {
         },
         RNReactNativeHapticFeedback: {
             trigger: jest.fn(),
-        },
-        StatusBarManager: {
-            getHeight: jest.fn(),
         },
         RNDocumentPicker: {
             pick: jest.fn(),
@@ -108,6 +98,12 @@ jest.doMock('react-native', () => {
             ...Platform,
             OS: 'ios',
             Version: 12,
+            constants: {
+                reactNativeVersion: {
+                    major: 0,
+                    minor: 64,
+                },
+            },
         },
         StyleSheet,
         ViewPropTypes,
@@ -141,6 +137,17 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
+jest.mock('react-native-unimodules', () => ({
+    FileSystem: {
+        cacheDirectory: 'root/cache',
+        documentDirectory: 'root/documents',
+        deleteAsync: jest.fn().mockResolvedValue(true),
+        getInfoAsync: jest.fn().mockResolvedValue({exists: false}),
+        makeDirectoryAsync: jest.fn().mockResolvedValue(true),
+        readDirectoryAsync: jest.fn().mockResolvedValue([]),
+    },
+}));
+
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
@@ -155,32 +162,6 @@ jest.mock('react-native-device-info', () => {
     };
 });
 
-jest.mock('rn-fetch-blob', () => ({
-    fs: {
-        dirs: {
-            DocumentDir: '/data/com.mattermost.beta/documents',
-            CacheDir: '/data/com.mattermost.beta/cache',
-        },
-        exists: jest.fn(),
-        existsWithDiffExt: jest.fn(),
-        unlink: jest.fn(),
-        mv: jest.fn(),
-    },
-    fetch: jest.fn(),
-    config: jest.fn(),
-}));
-
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: '/data/com.mattermost.beta/cache',
-    },
-    exists: jest.fn(),
-    existsWithDiffExt: jest.fn(),
-    unlink: jest.fn(),
-    mv: jest.fn(),
-}));
-
 jest.mock('react-native-localize', () => ({
     getTimeZone: () => 'World/Somewhere',
     getLocales: () => ([
@@ -190,24 +171,20 @@ jest.mock('react-native-localize', () => ({
     ]),
 }));
 
-// jest.mock('react-native-cookies', () => ({
-//     addEventListener: jest.fn(),
-//     removeEventListener: jest.fn(),
-//     openURL: jest.fn(),
-//     getInitialURL: jest.fn(),
-//     clearAll: jest.fn(),
-//     get: () => Promise.resolve(({
-//         res: {
-//             MMCSRF: {
-//                 value: 'the cookie',
-//             },
-//         },
-//     })),
-// }));
-
-// jest.mock('react-native-image-picker', () => ({
-//     launchCamera: jest.fn(),
-// }));
+jest.mock('@react-native-community/cookies', () => ({
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    getInitialURL: jest.fn(),
+    clearAll: jest.fn(),
+    get: () => Promise.resolve(({
+        res: {
+            MMCSRF: {
+                value: 'the cookie',
+            },
+        },
+    })),
+}));
 
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
@@ -273,71 +250,24 @@ jest.mock('react-native-share', () => ({
     default: jest.fn(),
 }));
 
-// jest.mock('app/actions/navigation', () => ({
-//     resetToChannel: jest.fn(),
-//     resetToSelectServer: jest.fn(),
-//     resetToTeams: jest.fn(),
-//     goToScreen: jest.fn(),
-//     popTopScreen: jest.fn(),
-//     showModal: jest.fn(),
-//     showModalOverCurrentContext: jest.fn(),
-//     showSearchModal: jest.fn(),
-//     setButtons: jest.fn(),
-//     showOverlay: jest.fn(),
-//     mergeNavigationOptions: jest.fn(),
-//     popToRoot: jest.fn(() => Promise.resolve()),
-//     dismissModal: jest.fn(() => Promise.resolve()),
-//     dismissAllModals: jest.fn(() => Promise.resolve()),
-//     dismissOverlay: jest.fn(() => Promise.resolve()),
-// }));
+jest.mock('@screens/navigation', () => ({
+    resetToChannel: jest.fn(),
+    resetToSelectServer: jest.fn(),
+    resetToTeams: jest.fn(),
+    goToScreen: jest.fn(),
+    popTopScreen: jest.fn(),
+    showModal: jest.fn(),
+    showModalOverCurrentContext: jest.fn(),
+    showSearchModal: jest.fn(),
+    setButtons: jest.fn(),
+    showOverlay: jest.fn(),
+    mergeNavigationOptions: jest.fn(),
+    popToRoot: jest.fn(() => Promise.resolve()),
+    dismissModal: jest.fn(() => Promise.resolve()),
+    dismissAllModals: jest.fn(() => Promise.resolve()),
+    dismissOverlay: jest.fn(() => Promise.resolve()),
+}));
 
-// jest.mock('app/utils/file', () => {
-//     const file = jest.requireActual('../app/utils/file');
-//
-//     return {
-//         ...file,
-//         generateId: jest.fn().mockReturnValue('123'),
-//     };
-// });
-
-let logs = [];
-let warns = [];
-let errors = [];
-beforeAll(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    console.originalLog = console.log;
-    console.log = jest.fn((...params) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        console.originalLog(...params);
-        logs.push(params);
-    });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    console.originalWarn = console.warn;
-    console.warn = jest.fn((...params) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        console.originalWarn(...params);
-        warns.push(params);
-    });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    console.originalError = console.error;
-    console.error = jest.fn((...params) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        console.originalError(...params);
-        errors.push(params);
-    });
-});
-
-beforeEach(() => {
-    logs = [];
-    warns = [];
-    errors = [];
-});
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);

@@ -21,7 +21,7 @@ export const createTestConnection = async ({databaseName = 'db_name', setActive 
     });
 
     if (setActive) {
-        await databaseClient.setMostRecentServerConnection(serverUrl);
+        await databaseClient.setActiveServerDatabase(serverUrl);
     }
 
     return database;
