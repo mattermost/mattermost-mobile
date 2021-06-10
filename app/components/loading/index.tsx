@@ -6,12 +6,12 @@ import React from 'react';
 import {ActivityIndicator, StyleSheet, View, ViewStyle} from 'react-native';
 
 type LoadingProps = {
-    color: string,
-    size: 'small' | 'large',
-    style: ViewStyle,
+    color?: string,
+    size?: 'small' | 'large',
+    style?: ViewStyle,
 }
 
-const Loading = ({size = 'large', color = 'grey', style = {}}: LoadingProps) => {
+const Index = ({size = 'large', color = 'grey', style = {}}: LoadingProps) => {
     return (
         <View style={styles.container}>
             <ActivityIndicator
@@ -36,4 +36,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Loading;
+export default Index;

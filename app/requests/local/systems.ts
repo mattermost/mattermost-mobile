@@ -5,7 +5,7 @@ import Operator from '@database/operator';
 import {ServerUrlChangedArgs} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import System from '@typings/database/system';
-import {getActiveServerDatabase} from '@utils/database';
+import {getActiveServerDatabase, getDefaultDatabase} from '@utils/database';
 
 /**
  * setLastUpgradeCheck: Takes in 'config' record from System entity and update its lastUpdateCheck to Date.now()
@@ -69,4 +69,16 @@ export const createSessions = async (sessions: any) => {
         prepareRecordsOnly: false,
     });
     return null;
+};
+
+export const setDeepLinkUrl = async (url: string) => {
+    const operator = new Operator();
+    await operator.handleIsolatedEntity({
+        tableName: IsolatedEntities.GLOBAL,
+        values: [{
+            name: 'deepLinkUrl',
+            value: url,
+        }],
+        prepareRecordsOnly: false,
+    });
 };

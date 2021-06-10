@@ -1,23 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CookieManager, {Cookies} from '@react-native-community/cookies';
 import React from 'react';
-import {intlShape} from 'react-intl';
+import {IntlShape} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
-import CookieManager from 'react-native-cookies';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
-import {WebViewErrorEvent, WebViewMessageEvent, WebViewNavigation, WebViewNavigationEvent} from 'react-native-webview/lib/WebViewTypes';
+import {
+    WebViewErrorEvent,
+    WebViewMessageEvent,
+    WebViewNavigation,
+    WebViewNavigationEvent,
+} from 'react-native-webview/lib/WebViewTypes';
 import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
-import type {Theme} from '@mm-redux/types/preferences';
-
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import {ViewTypes} from 'app/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {popTopScreen} from '@actions/navigation';
+import Loading from '@components/loading';
+import StatusBar from '@components/status_bar';
+import ViewTypes from '@constants/view';
+import {popTopScreen} from '@screens/navigation';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',
@@ -57,7 +60,7 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
-    intl: typeof intlShape;
+    intl: IntlShape;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
@@ -83,7 +86,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
     const [jsCode, setJSCode] = React.useState('');
     const [messagingEnabled, setMessagingEnabled] = React.useState(false);
     const [shouldRenderWebView, setShouldRenderWebView] = React.useState(true);
-    const cookiesTimeout = React.useRef<number>();
+    const cookiesTimeout = React.useRef<NodeJS.Timeout>();
     const webView = React.useRef<WebView>(null);
 
     React.useEffect(() => {
@@ -105,7 +108,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
             const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
             Client4.setUrl(url);
 
-            CookieManager.get(url, true).then((res: CookieResponseType) => {
+            CookieManager.get(url, true).then((res: Cookies) => {
                 const mmtoken = res.MMAUTHTOKEN;
                 const csrf = res.MMCSRF;
                 const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
@@ -215,7 +218,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
                 />
             );
         }
-        return <Loading/>;
+        return (<Loading/>);
     };
 
     return (

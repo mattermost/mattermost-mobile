@@ -6,6 +6,7 @@ import ViewTypes from '@constants/view';
 import emmProvider from '@init/emm_provider';
 
 import {scheduleExpiredNotification} from '@requests/remote/push_notification';
+import {ssoLogin} from '@requests/remote/user';
 
 import {resetToChannel} from '@screens/navigation';
 import {ErrorApi} from '@typings/api/client4';
@@ -25,7 +26,6 @@ interface SSOProps {
 }
 
 const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
-    console.log('>>>>>>>>>>>>>>> serverUrl', serverUrl);
     const intl = useIntl();
 
     const [loginError, setLoginError] = React.useState<string>('');
@@ -73,17 +73,16 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
 
     const onMMToken = async (token: string) => {
         Client4.setToken(token);
-        asyncDispatch(ssoLogin()).
-            then((result: any) => {
-                if (result && result.error) {
-                    onLoadEndError(result.error);
-                    return;
-                }
-                goToChannel();
-            }).
-            catch(() => {
-                setLoginError('');
-            });
+        try {
+            const result = await ssoLogin();
+            if (result && result.error) {
+                onLoadEndError(result.error);
+                return;
+            }
+            goToChannel();
+        } catch (e) {
+            setLoginError('');
+        }
     };
 
     const goToChannel = () => {

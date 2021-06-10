@@ -9,7 +9,7 @@ import {Screens, Preferences} from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
-function getThemeFromState() {
+export function getThemeFromState() {
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
     }
@@ -206,7 +206,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     });
 }
 
-export function popTopScreen(screenId: string) {
+export function popTopScreen(screenId?: string) {
     if (screenId) {
         Navigation.pop(screenId);
     } else {

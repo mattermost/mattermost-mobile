@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DatabaseManager from '@database/manager';
 import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
@@ -8,7 +9,7 @@ import {IntlProvider} from 'react-intl';
 
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
-
+import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import {Screens} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
@@ -34,6 +35,23 @@ const withIntl = (Screen: React.ComponentType) => {
             </IntlProvider>
     );
         }
+}
+
+const withDatabaseProvider = async (Screens: React.ComponentType) => {
+
+    const databaseClient = new DatabaseManager()
+    const serverDatabase = await databaseClient.getActiveServerDatabase();
+
+    if(!serverDatabase){
+       // server database has not been set yet
+       return (<Screens/>);
+    }
+    return (
+        <DatabaseProvider database={serverDatabase}>
+            <Screens/>
+        </DatabaseProvider>
+    )
+
 }
 
 Navigation.setLazyComponentRegistrator((screenName) => {
@@ -185,9 +203,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'SidebarSettings':
     //     screen = require('@screens/settings/sidebar').default;
     //     break;
-    // case 'SSO':
-    //     screen = require('@screens/sso').default;
-    //     break;
+    case 'SSO':
+        screen = require('@screens/sso').default;
+        break;
     // case 'Table':
     //     screen = require('@screens/table').default;
     //     break;

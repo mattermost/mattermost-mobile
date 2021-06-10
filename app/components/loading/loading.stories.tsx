@@ -5,7 +5,7 @@ import React from 'react';
 import {storiesOf} from '@storybook/react-native';
 import {withKnobs, select} from '@storybook/addon-knobs';
 
-import Loading from './loading';
+import Loading from './index';
 
 storiesOf('Loading Icon Story', module).
     addDecorator(withKnobs).

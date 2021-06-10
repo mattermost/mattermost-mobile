@@ -1,23 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {intlShape} from 'react-intl';
+import {IntlShape} from 'react-intl';
 import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {setDeepLinkURL} from '@actions/views/root';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Theme} from '@mm-redux/types/preferences';
-import Store from '@store/store';
+
 import {tryOpenURL} from '@utils/url';
+import {setDeepLinkUrl} from '@requests/local/systems';
 
 interface SSOWithRedirectURLProps {
-    intl: typeof intlShape;
+    intl: IntlShape;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
@@ -26,15 +24,7 @@ interface SSOWithRedirectURLProps {
     theme: Theme
 }
 
-function SSOWithRedirectURL({
-    intl,
-    loginError,
-    loginUrl,
-    onCSRFToken,
-    onMMToken,
-    setLoginError,
-    theme,
-}: SSOWithRedirectURLProps) {
+function SSOWithRedirectURL({intl, loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) {
     const [error, setError] = React.useState<string>('');
     const style = getStyleSheet(theme);
 
@@ -77,25 +67,26 @@ function SSOWithRedirectURL({
         tryOpenURL(url, onError);
     };
 
-    const onURLChange = ({url}: { url: string }) => {
-        if (url && url.startsWith(redirectUrl)) {
-            Store?.redux?.dispatch(setDeepLinkURL(''));
-            const parsedUrl = urlParse(url, true);
-            if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
-                onCSRFToken(parsedUrl.query.MMCSRF);
-                onMMToken(parsedUrl.query.MMAUTHTOKEN);
-            } else {
-                setError(
-                    intl.formatMessage({
-                        id: 'mobile.oauth.failed_to_login',
-                        defaultMessage: 'Your login attempt failed. Please try again.',
-                    }),
-                );
-            }
-        }
-    };
-
     React.useEffect(() => {
+        const onURLChange = ({url}: { url: string }) => {
+            if (url && url.startsWith(redirectUrl)) {
+                // save deepLinkUrl under Global
+                setDeepLinkUrl('');
+                const parsedUrl = urlParse(url, true);
+                if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
+                    onCSRFToken(parsedUrl.query.MMCSRF);
+                    onMMToken(parsedUrl.query.MMAUTHTOKEN);
+                } else {
+                    setError(
+                        intl.formatMessage({
+                            id: 'mobile.oauth.failed_to_login',
+                            defaultMessage: 'Your login attempt failed. Please try again.',
+                        }),
+                    );
+                }
+            }
+        };
+
         Linking.addEventListener('url', onURLChange);
         init(false);
         return () => {
