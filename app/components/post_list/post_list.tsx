@@ -217,7 +217,7 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [postIds]);
+    }, [postIds, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true) => {
         flatListRef.current?.scrollToIndex({
