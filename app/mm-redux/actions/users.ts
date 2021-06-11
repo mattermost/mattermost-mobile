@@ -815,7 +815,7 @@ export function startPeriodicStatusUpdates(forceStatusUpdate = false): ActionFun
                 return;
             }
 
-            const userIds = Object.keys(statuses);
+            const userIds = Object.keys(statuses).filter((u) => u);
             if (!userIds.length) {
                 return;
             }
