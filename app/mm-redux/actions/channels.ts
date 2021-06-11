@@ -58,6 +58,8 @@ export function createChannel(channel: Channel, userId: string): ActionFunc {
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -108,6 +110,8 @@ export function createDirectChannel(userId: string, otherUserId: string): Action
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };

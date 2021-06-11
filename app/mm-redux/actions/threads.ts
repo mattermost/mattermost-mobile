@@ -4,8 +4,8 @@
 import {ThreadTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 
 import {Client4} from '@mm-redux/client';
-import { getCurrentUserId } from '@mm-redux/selectors/entities/common';
-import { getCurrentTeamId } from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {batchActions, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
 import {UserThread, UserThreadList} from '@mm-redux/types/threads';
 

@@ -335,6 +335,7 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
 
         if (channel) {
             const unreadMessageCount = channel.total_msg_count - member.msg_count;
+            const unreadMessageCountRoot = channel.total_msg_count_root - member.msg_count_root;
             actions.push({
                 type: ChannelTypes.SET_UNREAD_MSG_COUNT,
                 data: {
@@ -347,6 +348,7 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
                     teamId: channel.team_id,
                     channelId,
                     amount: unreadMessageCount,
+                    amountRoot: unreadMessageCountRoot,
                 },
             }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
@@ -354,6 +356,7 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
                     teamId: channel.team_id,
                     channelId,
                     amount: member.mention_count,
+                    amountRoot: member.mention_count_root,
                 },
             });
         }
@@ -374,6 +377,7 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
                     teamId: prevChannel.team_id,
                     channelId: prevChannelId,
                     amount: prevChannel.total_msg_count - prevMember.msg_count,
+                    amountRoot: prevChannel.total_msg_count_root - prevMember.msg_count_root,
                 },
             }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
@@ -381,6 +385,7 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
                     teamId: prevChannel.team_id,
                     channelId: prevChannelId,
                     amount: prevMember.mention_count,
+                    amountRoot: prevMember.mention_count_root,
                 },
             });
         }
