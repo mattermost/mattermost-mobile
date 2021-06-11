@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Keyboard,
     Platform,
-    Text,
     View,
     ViewPropTypes,
 } from 'react-native';
@@ -337,14 +336,9 @@ export default class Post extends PureComponent {
             if (thread.unread_replies && thread.unread_replies > 0) {
                 badgeComponent = (<View style={style.unreadDot}/>);
             }
-            if (thread.unread_mentions && thread.unread_mentions > 0) {
-                badgeComponent = (
-                    <View style={style.mentionBadge}>
-                        <Text style={style.mentionBadgeText}>{thread.unread_mentions}</Text>
-                    </View>
-                );
-            }
         }
+
+        const threadFooterVisible = thread?.id && post.state !== Posts.POST_DELETED;
 
         return (
             <View
@@ -393,11 +387,12 @@ export default class Post extends PureComponent {
                                     location={location}
                                 />
                                 {
-                                    thread?.id ? (
+                                    threadFooterVisible ? (
                                         <View style={style.footerContainer}>
                                             <ThreadFooter
                                                 thread={thread}
                                                 threadStarter={threadStarter}
+                                                location='channel'
                                             />
                                         </View>
                                     ) : null
@@ -495,7 +490,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         badgeContainer: {
             position: 'absolute',
             left: 28,
-            bottom: 12,
+            bottom: 14,
         },
         unreadDot: {
             width: 8,
@@ -505,21 +500,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignSelf: 'center',
             top: -6,
             left: 4,
-        },
-        mentionBadge: {
-            width: 18,
-            height: 18,
-            borderRadius: 9,
-            backgroundColor: theme.mentionColor,
-            alignSelf: 'center',
-        },
-        mentionBadgeText: {
-            fontFamily: 'Open Sans',
-            fontSize: 10,
-            lineHeight: 16,
-            fontWeight: '700',
-            alignSelf: 'center',
-            color: theme.centerChannelBg,
         },
     };
 });

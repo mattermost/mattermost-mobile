@@ -77,6 +77,26 @@ function makeMapStateToProps() {
 
         const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
 
+        let thread = Types.EMTPY_OBJECT;
+        if (collapsedThreadsEnabled && ownProps.location !== THREAD) {
+            thread = getThread(state, post.id);
+
+            // If user is not following the thread, make thread object from the post
+            if (!thread && post.participants?.length && !post.is_following) {
+                const {id, reply_count, last_reply_at, participants} = post;
+                thread = {
+                    id,
+                    reply_count,
+                    participants,
+                    last_reply_at,
+                    post,
+                    last_viewed_at: 0,
+                    unread_mentions: 0,
+                    unread_replies: 0,
+                };
+            }
+        }
+
         return {
             channelIsReadOnly: isChannelReadOnlyById(state, post.channel_id),
             currentUserId,
@@ -92,7 +112,7 @@ function makeMapStateToProps() {
             isFlagged: isPostFlagged(post.id, myPreferences),
             isCommentMention,
             previousPostExists: Boolean(previousPost),
-            thread: collapsedThreadsEnabled && ownProps.location !== THREAD ? getThread(state, post.id) : Types.EMTPY_OBJECT,
+            thread,
             threadStarter: getUser(state, post.user_id),
             beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
         };

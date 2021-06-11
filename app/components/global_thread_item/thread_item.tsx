@@ -116,6 +116,7 @@ const ThreadItem = ({postId}: Props) => {
                     <ThreadFooter
                         thread={thread}
                         threadStarter={threadStarter}
+                        location='globalThreads'
                     />
                 </View>
             </View>
