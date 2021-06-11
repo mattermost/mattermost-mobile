@@ -10,6 +10,8 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import {Screens} from '@constants';
 
+import {withServerDatabase} from '@database/components';
+
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable */
 
@@ -202,6 +204,6 @@ export function registerScreens() {
     const channelScreen = require('@screens/channel').default;
     const serverScreen = require('@screens/server').default;
 
-    Navigation.registerComponent(Screens.CHANNEL, () => withManagedConfig(channelScreen));
+    Navigation.registerComponent(Screens.CHANNEL, () => withServerDatabase(withManagedConfig(channelScreen)));
     Navigation.registerComponent(Screens.SERVER, () => withManagedConfig(serverScreen));
 }
