@@ -24,7 +24,7 @@ type Props = {
     initWebSocket: (additionalOptions: {forceConnection: boolean}) => void;
     markChannelViewedAndReadOnReconnect: (channelId: string) => void;
     setCurrentUserStatusOffline: () => void;
-    startPeriodicStatusUpdates: () => void;
+    startPeriodicStatusUpdates: (forceStatusUpdate: boolean) => void;
     status: string;
     stopPeriodicStatusUpdates: () => void;
 }
@@ -142,7 +142,7 @@ const NetworkIndicator = ({
     const handleWebSocket = (connect: boolean) => {
         if (connect) {
             initWebSocket({forceConnection: true});
-            startPeriodicStatusUpdates();
+            startPeriodicStatusUpdates(true);
         } else {
             closeWebSocket(true);
             stopPeriodicStatusUpdates();
