@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mattermost.database.DatabaseModule;
+import com.mattermost.helpers.DatabaseHelper;
+import com.mattermost.helpers.ResolvePromise;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -35,8 +36,6 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
-
-import com.mattermost.helpers.ResolvePromise;
 
 public class CustomPushNotification extends PushNotification {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
@@ -109,7 +108,7 @@ public class CustomPushNotification extends PushNotification {
         final boolean isIdLoaded = initialData.getString("id_loaded") != null ? initialData.getString("id_loaded").equals("true") : false;
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
-        String serverUrl = initialData.getString("server_url", DatabaseModule.getOnlyServerUrl());
+        String serverUrl = initialData.getString("server_url", DatabaseHelper.getOnlyServerUrl(context));
 
         if (ackId != null && serverUrl != null) {
             notificationReceiptDelivery(ackId, serverUrl, postId, type, isIdLoaded, new ResolvePromise() {
@@ -475,7 +474,7 @@ public class CustomPushNotification extends PushNotification {
 
     private void addNotificationReplyAction(Notification.Builder notification, int notificationId, Bundle bundle) {
         String postId = bundle.getString("post_id");
-        String serverUrl = bundle.getString("server_url", DatabaseModule.getOnlyServerUrl());
+        String serverUrl = bundle.getString("server_url", DatabaseHelper.getOnlyServerUrl(context));
 
         if (android.text.TextUtils.isEmpty(postId) ||
                 serverUrl == null ||
