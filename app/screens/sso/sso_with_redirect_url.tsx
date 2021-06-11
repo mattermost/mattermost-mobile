@@ -33,7 +33,6 @@ function SSOWithRedirectURL({loginError, loginUrl, onCSRFToken, onMMToken, setLo
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-
     const init = (resetErrors?: boolean) => {
         if (resetErrors !== false) {
             setError('');

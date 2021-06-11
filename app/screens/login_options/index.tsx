@@ -69,7 +69,6 @@ const LoginOptions: NavigationFunctionComponent = ({config, license, theme, serv
     const displaySSO = preventDoubleTap((ssoType: string) => {
         const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
-
         goToScreen(screen, title, {config, license, theme, ssoType, serverUrl});
     });
 

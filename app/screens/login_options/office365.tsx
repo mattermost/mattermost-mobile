@@ -6,7 +6,7 @@ import Button from 'react-native-button';
 
 import LocalConfig from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
-import {View} from '@constants';
+import ViewTypes from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const Office365Option = ({config, license, onPress, theme}: LoginOptionWithConfigAndLicenseProps) => {
@@ -16,7 +16,7 @@ const Office365Option = ({config, license, onPress, theme}: LoginOptionWithConfi
         license.Office365OAuth === 'true';
 
     const handlePress = () => {
-        onPress(View.OFFICE365);
+        onPress(ViewTypes.OFFICE365);
     };
 
     if (!forceHideFromLocal && o365Enabled) {

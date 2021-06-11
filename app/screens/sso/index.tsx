@@ -28,7 +28,6 @@ interface SSOProps {
 const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const intl = useIntl();
     const [loginError, setLoginError] = React.useState<string>('');
-
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {
@@ -116,7 +115,6 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
             />
         );
     }
-
     return <SSOWithRedirectURL {...props}/>;
 };
 
