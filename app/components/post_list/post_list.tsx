@@ -6,6 +6,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {DeviceEventEmitter, FlatList, Platform, StyleSheet, ViewToken} from 'react-native';
 
 import {DeepLinkTypes, NavigationTypes} from '@constants';
+import {UPDATE_NATIVE_SCROLLVIEW} from '@constants/post_draft';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
@@ -227,6 +228,12 @@ const PostList = ({
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
+
+    useEffect(() => {
+        if (scrollViewNativeID) {
+            EventEmitter.emit(UPDATE_NATIVE_SCROLLVIEW, scrollViewNativeID);
+        }
+    }, [scrollViewNativeID]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
