@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mattermost.database.DatabaseModule;
 import com.mattermost.helpers.RealPathUtil;
 import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
@@ -46,7 +47,6 @@ import com.facebook.soloader.SoLoader;
 
 import org.unimodules.adapters.react.ModuleRegistryAdapter;
 import org.unimodules.adapters.react.ReactModuleRegistryProvider;
-import org.unimodules.core.interfaces.SingletonModule;
 
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
@@ -93,6 +93,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                 @Override
                 public NativeModule getModule(String name, ReactApplicationContext reactContext) {
                   switch (name) {
+                    case "MattermostDatabase":
+                      return new DatabaseModule(reactContext);
                     case "MattermostShare":
                       return new ShareModule(instance, reactContext);
                     case "NotificationPreferences":
@@ -110,6 +112,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     @Override
                     public Map<String, ReactModuleInfo> getReactModuleInfos() {
                       Map<String, ReactModuleInfo> map = new HashMap<>();
+                      map.put("MattermostDatabase", new ReactModuleInfo("MattermostDatabase", "com.mattermost.database.DatabaseModule", false, false, false, false, false));
                       map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                       map.put("NotificationPreferences", new ReactModuleInfo("NotificationPreferences", "com.mattermost.rnbeta.NotificationPreferencesModule", false, false, false, false, false));
                       map.put("RNTextInputReset", new ReactModuleInfo("RNTextInputReset", "com.mattermost.rnbeta.RNTextInputResetModule", false, false, false, false, false));

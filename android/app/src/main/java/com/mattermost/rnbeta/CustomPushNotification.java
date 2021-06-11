@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -28,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.nozbe.watermelondb.Database;
+import com.mattermost.database.DatabaseModule;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -61,14 +60,9 @@ public class CustomPushNotification extends PushNotification {
     private static Context context;
     private static int badgeCount = 0;
 
-    private static Database defaultDatabase;
-
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         this.context = context;
-
-        String defaultDatabaseName = Uri.fromFile(context.getFilesDir()).toString() + "/default.db";
-        this.defaultDatabase  = new Database(defaultDatabaseName, context);
 
         createNotificationChannels();
     }
@@ -115,11 +109,7 @@ public class CustomPushNotification extends PushNotification {
         final boolean isIdLoaded = initialData.getString("id_loaded") != null ? initialData.getString("id_loaded").equals("true") : false;
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
-        String serverUrl = initialData.getString("server_url", getServerUrl());
-
-        if (serverUrl == null) {
-            // TODO: Add warning to message
-        }
+        String serverUrl = initialData.getString("server_url", DatabaseModule.getOnlyServerUrl());
 
         if (ackId != null && serverUrl != null) {
             notificationReceiptDelivery(ackId, serverUrl, postId, type, isIdLoaded, new ResolvePromise() {
@@ -141,6 +131,11 @@ public class CustomPushNotification extends PushNotification {
         // notificationReceiptDelivery can override mNotificationProps
         // so we fetch the bundle again
         final Bundle data = mNotificationProps.asBundle();
+
+        if (serverUrl == null) {
+            String message = data.getString("message");
+            data.putString("message", "Unknown Server\n" + message);
+        }
 
         if (channelId != null) {
             notificationId = channelId.hashCode();
@@ -480,7 +475,7 @@ public class CustomPushNotification extends PushNotification {
 
     private void addNotificationReplyAction(Notification.Builder notification, int notificationId, Bundle bundle) {
         String postId = bundle.getString("post_id");
-        String serverUrl = bundle.getString("server_url", getServerUrl());
+        String serverUrl = bundle.getString("server_url", DatabaseModule.getOnlyServerUrl());
 
         if (android.text.TextUtils.isEmpty(postId) ||
                 serverUrl == null ||
@@ -577,18 +572,5 @@ public class CustomPushNotification extends PushNotification {
         mMinImportanceChannel = new NotificationChannel("channel_02", "Min Importance", NotificationManager.IMPORTANCE_MIN);
         mMinImportanceChannel.setShowBadge(true);
         notificationManager.createNotificationChannel(mMinImportanceChannel);
-    }
-
-    private String getServerUrl() {
-        String emptyArray[] = {};
-        String query = "SELECT url FROM servers";
-        Cursor cursor = defaultDatabase.rawQuery(query, emptyArray);
-
-        if (cursor.getCount() == 1) {
-            cursor.moveToFirst();
-            return cursor.getString(0);
-        }
-
-        return null;
     }
 }

@@ -4,7 +4,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter, NativeModules, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
@@ -58,6 +58,8 @@ import IServers from '@typings/database/servers';
 import IGlobal from '@typings/database/global';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import urlParse from 'url-parse';
+
+const {MattermostDatabase} = NativeModules;
 
 const {SERVERS, GLOBAL} = MM_TABLES.DEFAULT;
 const DEFAULT_DATABASE = 'default';
@@ -176,6 +178,11 @@ class DatabaseManager {
               migrations,
               schema,
           });
+
+          if (databaseName === DEFAULT_DATABASE) {
+              // Register the default database with the MattermostDatabase native module
+              MattermostDatabase.setDefaultDatabase(databaseFilePath);
+          }
 
           // Registers the new server connection into the DEFAULT database
           if (serverUrl && shouldAddToDefaultDatabase) {
