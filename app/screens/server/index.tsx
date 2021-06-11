@@ -36,6 +36,16 @@ let cancelPing: undefined | (() => void);
 const Server: NavigationFunctionComponent = (props: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
+    // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
+    // error message to display. For example:
+    // if (props.launchError) {
+    //     let erroMessage;
+    //     if (props.launchType === LaunchType.DeepLink) {
+    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.deepLink', defaultMessage: 'Did not find a server for this deep link'});
+    //     } else if (props.launchType === LaunchType.Notification) {
+    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
+    //     }
+    // }
 
     const {theme, managedConfig} = props;
 

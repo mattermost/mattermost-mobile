@@ -44,9 +44,9 @@ enum LaunchType {
 }
 
 interface LaunchProps {
-    launchType: LaunchType;
     extra?: DeepLinkWithData | NotificationWithData;
-    errorMessage?: string;
+    launchType: LaunchType;
+    launchError?: Boolean;
 }
 
 type OptionalLaunchProps = LaunchProps | undefined;

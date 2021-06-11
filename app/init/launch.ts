@@ -102,7 +102,7 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => 
 
     switch (parsed.type) {
         case DeepLinkType.Invalid:
-            launchProps.errorMessage = 'Did not find a server for this deep link';
+            launchProps.launchError = true;
             break;
         case DeepLinkType.Channel: {
             const parsedData = parsed.data as DeepLinkChannel;
@@ -138,7 +138,7 @@ export const getLaunchPropsFromNotification = (notification: NotificationWithDat
     if (payload?.server_url) {
         (launchProps.extra as NotificationWithData) = notification;
     } else {
-        launchProps.errorMessage = 'Did not find a server for this notification';
+        launchProps.launchError = true;
     }
 
     return launchProps;
