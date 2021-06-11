@@ -10,7 +10,7 @@ import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
-import {UPDATE_NATIVE_SCROLLVIEW, TYPING_VISIBLE} from '@constants/post_draft';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 import CompassIcon from '@components/compass_icon';
 import PushNotifications from '@init/push_notifications';
 import EphemeralStore from '@store/ephemeral_store';
@@ -127,7 +127,6 @@ export default class ChannelBase extends PureComponent {
 
             requestAnimationFrame(() => {
                 this.props.actions.getChannelStats(this.props.currentChannelId);
-                this.updateNativeScrollView();
             });
         }
     }
@@ -295,10 +294,6 @@ export default class ChannelBase extends PureComponent {
 
             showModalOverCurrentContext(screen, passProps, options);
         });
-    };
-
-    updateNativeScrollView = () => {
-        EventEmitter.emit(UPDATE_NATIVE_SCROLLVIEW, this.props.currentChannelId);
     };
 
     render() {
