@@ -20,15 +20,13 @@ public class DatabaseHelper {
             setDefaultDatabase(context);
         }
 
-        if (defaultDatabase != null) {
-            String emptyArray[] = {};
-            String query = "SELECT url FROM servers";
-            Cursor cursor = defaultDatabase.rawQuery(query, emptyArray);
+        String emptyArray[] = {};
+        String query = "SELECT url FROM servers";
+        Cursor cursor = defaultDatabase.rawQuery(query, emptyArray);
 
-            if (cursor.getCount() == 1) {
-                cursor.moveToFirst();
-                return cursor.getString(0);
-            }
+        if (cursor.getCount() == 1) {
+            cursor.moveToFirst();
+            return cursor.getString(0);
         }
 
         return null;
