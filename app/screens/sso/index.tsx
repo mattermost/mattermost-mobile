@@ -5,7 +5,7 @@ import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {Client4} from '@client/rest';
-import {Authentication} from '@constants';
+import {SSO} from '@constants';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {scheduleExpiredNotification} from '@requests/remote/push_notification';
 import {ssoLogin} from '@requests/remote/user';
@@ -32,27 +32,27 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {
-        case Authentication.GOOGLE: {
+        case SSO.GOOGLE: {
             completeUrlPath = '/signup/google/complete';
             loginUrl = `${serverUrl}/oauth/google/mobile_login`;
             break;
         }
-        case Authentication.GITLAB: {
+        case SSO.GITLAB: {
             completeUrlPath = '/signup/gitlab/complete';
             loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
             break;
         }
-        case Authentication.SAML: {
+        case SSO.SAML: {
             completeUrlPath = '/login/sso/saml';
             loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
             break;
         }
-        case Authentication.OFFICE365: {
+        case SSO.OFFICE365: {
             completeUrlPath = '/signup/office365/complete';
             loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
             break;
         }
-        case Authentication.OPENID: {
+        case SSO.OPENID: {
             completeUrlPath = '/signup/openid/complete';
             loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
             break;

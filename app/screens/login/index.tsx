@@ -159,7 +159,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
 
     const goToMfa = () => {
         const screen = 'MFA';
-        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
+        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor SSO'});
 
         goToScreen(screen, title, {goToChannel, loginId, password});
     };

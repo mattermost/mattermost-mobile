@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@client/rest';
+import urlParse from 'url-parse';
+
 import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import DatabaseManager from '@database/manager';
-import urlParse from 'url-parse';
 
 type SetActiveDatabaseArgs = {
   serverUrl: string;
@@ -12,7 +12,7 @@ type SetActiveDatabaseArgs = {
 };
 
 export const createAndSetActiveDatabase = async ({serverUrl, displayName}: SetActiveDatabaseArgs) => {
-    const connectionName = displayName ?? urlParse(Client4.getUrl())?.hostname;
+    const connectionName = displayName ?? urlParse(serverUrl)?.hostname;
 
     try {
         const databaseClient = new DatabaseManager();

@@ -103,7 +103,7 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
 };
 
 export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
-    let currentUser = user ?? undefined;
+    let currentUser = user;
 
     const {activeServerDatabase, error} = await getActiveServerDatabase();
     if (!activeServerDatabase) {
@@ -130,12 +130,6 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
     }
 
     try {
-        if (!currentUser) {
-            return {
-                error,
-                currentUser: undefined,
-            };
-        }
         const analyticsClient = analytics.create(Client4.getUrl());
         analyticsClient.setUserId(currentUser.id);
         analyticsClient.setUserRoles(currentUser.roles);

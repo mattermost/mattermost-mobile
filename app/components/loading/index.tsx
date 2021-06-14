@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-
 import {ActivityIndicator, StyleSheet, View, ViewStyle} from 'react-native';
 
 type LoadingProps = {
@@ -11,7 +10,7 @@ type LoadingProps = {
     style?: ViewStyle,
 }
 
-const Loading = ({size = 'large', color = 'grey', style = {}}: LoadingProps) => {
+const Loading = ({size = 'large', color = 'grey', style}: LoadingProps) => {
     return (
         <View style={styles.container}>
             <ActivityIndicator

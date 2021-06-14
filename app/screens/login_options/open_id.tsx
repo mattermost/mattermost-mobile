@@ -5,7 +5,7 @@ import React from 'react';
 import Button from 'react-native-button';
 
 import FormattedText from '@components/formatted_text';
-import {Authentication} from '@constants';
+import {SSO} from '@constants';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -14,7 +14,7 @@ const OpenIdOption = ({config, license, onPress, theme}: LoginOptionWithConfigAn
     const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
 
     const handlePress = () => {
-        onPress(Authentication.OPENID);
+        onPress(SSO.OPENID);
     };
 
     if (openIdEnabled) {

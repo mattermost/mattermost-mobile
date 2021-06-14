@@ -104,7 +104,7 @@ describe('Login', () => {
         expect(goToScreen).
             toHaveBeenCalledWith(
                 'MFA',
-                'Multi-factor Authentication',
+                'Multi-factor SSO',
                 {
                     goToChannel: expect.anything(),
                     loginId,

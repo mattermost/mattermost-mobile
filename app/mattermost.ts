@@ -85,7 +85,6 @@ export function componentDidAppearListener({componentId}: ComponentDidAppearEven
         case 'SettingsSidebar':
             DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
             break;
-        default: break;
     }
 }
 
