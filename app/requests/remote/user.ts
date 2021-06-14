@@ -78,7 +78,6 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
     }
 
     const url = Client4.getUrl();
-    const hostname = urlParse(url)?.hostname;
 
     try {
         deviceToken = await getDeviceToken(defaultDatabase);
@@ -90,7 +89,7 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
             ldapOnly,
         )) as unknown) as RawUser;
 
-        await createAndSetActiveDatabase({serverUrl: url, displayName: hostname});
+        await createAndSetActiveDatabase({serverUrl: url});
         await getCSRFFromCookie(Client4.getUrl());
     } catch (e) {
         return {error: e};
@@ -348,24 +347,32 @@ type LoadedUser = {
     error?: ErrorApi
 }
 
-export const ssoLogin = async () => {
+export const ssoLogin = async (serverUrl: string) => {
     let deviceToken;
 
     const {error, defaultDatabase} = await getDefaultDatabase();
+
     if (!defaultDatabase) {
         return {error};
     }
 
+    // Setting up active database for this SSO login flow
     try {
+        await createAndSetActiveDatabase({serverUrl});
         deviceToken = await getDeviceToken(defaultDatabase);
     } catch (e) {
         return {error: e};
     }
 
-    const result = await loadMe({deviceToken}) as unknown as LoadedUser;
+    let result;
 
-    if (!result?.error && result?.currentUser) {
-        await completeLogin(result.currentUser, deviceToken);
+    try {
+        result = await loadMe({deviceToken}) as unknown as LoadedUser;
+        if (!result?.error && result?.currentUser) {
+            await completeLogin(result.currentUser, deviceToken);
+        }
+    } catch (e) {
+        return {error: e};
     }
 
     return result;

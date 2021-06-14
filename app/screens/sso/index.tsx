@@ -73,7 +73,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const onMMToken = async (token: string) => {
         Client4.setToken(token);
         try {
-            const result = await ssoLogin();
+            const result = await ssoLogin(serverUrl);
             if (result && result.error) {
                 onLoadEndError(result.error);
                 return;

@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-
-import {tryOpenURL} from '@utils/url';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {setDeepLinkUrl} from '@requests/local/systems';
+import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
     loginError: string;
@@ -23,8 +22,8 @@ interface SSOWithRedirectURLProps {
     theme: Partial<Theme>
 }
 
-function SSOWithRedirectURL({loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) {
-    const [error, setError] = React.useState<string>('');
+const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) => {
+    const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
     let customUrlScheme = 'mmauth://';
@@ -65,7 +64,7 @@ function SSOWithRedirectURL({loginError, loginUrl, onCSRFToken, onMMToken, setLo
         tryOpenURL(url, onError);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 // save deepLinkUrl under Global
@@ -133,7 +132,7 @@ function SSOWithRedirectURL({loginError, loginUrl, onCSRFToken, onMMToken, setLo
             )}
         </SafeAreaView>
     );
-}
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
