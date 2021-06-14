@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from '@constants';
 import React from 'react';
-import {Linking} from 'react-native';
 
+import {Preferences} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import SSOComponent from './index';
+import SSOLogin from './index';
 
 jest.mock('@screens/navigation', () => {
     return {
@@ -15,27 +14,31 @@ jest.mock('@screens/navigation', () => {
     };
 });
 
+jest.mock('@utils/url', () => {
+    return {
+        tryOpenURL: () => true,
+    };
+});
+
 describe('SSO', () => {
     const baseProps = {
-        config: {},
         license: {
             IsLicensed: 'true',
         },
-        ssoType: '',
+        ssoType: 'GITLAB',
         theme: Preferences.THEMES.default,
-        serverUrl: '',
+        serverUrl: 'https://rc.test.mattermost.com',
     };
 
     test('implement with webview when version is less than 5.32 version', async () => {
-        const {getByTestId} = renderWithIntl(<SSOComponent {...baseProps}/>);
+        const props = {...baseProps, config: {Version: '5.32.0'}};
+        const {getByTestId} = renderWithIntl(<SSOLogin {...props}/>);
         expect(getByTestId('sso.webview')).toBeTruthy();
-        expect(getByTestId('sso.redirect_url')).toBeFalsy();
     });
 
     test('implement with OS browser & redirect url from version 5.33', async () => {
-        (Linking.openURL as jest.Mock).mockResolvedValueOnce('');
-        const {getByTestId} = renderWithIntl(<SSOComponent {...baseProps}/>);
-        expect(getByTestId('sso.webview')).toBeFalsy();
+        const props = {...baseProps, config: {Version: '5.36.0'}};
+        const {getByTestId} = renderWithIntl(<SSOLogin {...props}/>);
         expect(getByTestId('sso.redirect_url')).toBeTruthy();
     });
 });
