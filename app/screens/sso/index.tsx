@@ -17,11 +17,11 @@ import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
 
 interface SSOProps {
-  ssoType: string;
   config: Partial<ClientConfig>;
   license: Partial<ClientLicense>;
-  theme: Partial<Theme>;
   serverUrl: string;
+  ssoType: string;
+  theme: Partial<Theme>;
 }
 
 const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
@@ -96,10 +96,11 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
 
     const props = {
-        intl,
         loginError,
         loginUrl,
-        onCSRFToken: Client4.setCSRF,
+        onCSRFToken: (csrfToken: string) => {
+            Client4.setCSRF(csrfToken);
+        },
         onMMToken,
         setLoginError,
         theme,
