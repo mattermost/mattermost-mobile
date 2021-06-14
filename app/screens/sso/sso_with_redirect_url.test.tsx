@@ -10,7 +10,7 @@ import SSOWithRedirectURL from './sso_with_redirect_url';
 
 jest.mock('@utils/url', () => {
     return {
-        tryOpenURL: () => {},
+        tryOpenURL: () => null,
     };
 });
 
@@ -32,10 +32,12 @@ describe('SSO with redirect url', () => {
     });
 
     test('should show "try again" and hide default message when error text is displayed', () => {
-        const {getByTestId} = renderWithIntl(<SSOWithRedirectURL
-            {...baseProps}
-            loginError='some error'
-        />);
+        const {getByTestId} = renderWithIntl(
+            <SSOWithRedirectURL
+                {...baseProps}
+                loginError='some error'
+            />,
+        );
         expect(getByTestId('mobile.oauth.try_again')).toBeDefined();
         let browser;
         try {

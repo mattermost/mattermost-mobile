@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import urlParse from 'url-parse';
-
 import {Client4} from '@client/rest';
 import Operator from '@database/operator';
 import analytics from '@init/analytics';
