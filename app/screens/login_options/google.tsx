@@ -6,14 +6,14 @@ import {Image} from 'react-native';
 import Button from 'react-native-button';
 
 import FormattedText from '@components/formatted_text';
-import ViewTypes from '@constants/view';
+import {Authentication} from '@constants';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const GoogleOption = ({config, onPress, theme}: LoginOptionWithConfigProps) => {
     const styles = getStyleSheet(theme);
 
     const handlePress = () => {
-        onPress(ViewTypes.GOOGLE);
+        onPress(Authentication.GOOGLE);
     };
 
     if (config.EnableSignUpWithGoogle === 'true') {

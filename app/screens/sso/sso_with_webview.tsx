@@ -17,8 +17,7 @@ import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
 import Loading from '@components/loading';
-import StatusBar from '@components/status_bar';
-import ViewTypes from '@constants/view';
+import {Authentication} from '@constants';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -68,15 +67,6 @@ interface SSOWithWebViewProps {
     ssoType: string;
     theme: Partial<Theme>
 }
-
-// type CookieResponseType = {
-//     MMAUTHTOKEN: string | {
-//         value: string
-//     };
-//     MMCSRF: string | {
-//         value: string
-//     };
-// }
 
 function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
     const style = getStyleSheet(theme);
@@ -187,7 +177,7 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
         const parsed = urlParse(url);
 
         let isLastRedirect = url.includes(completeUrlPath);
-        if (ssoType === ViewTypes.SAML) {
+        if (ssoType === Authentication.SAML) {
             isLastRedirect = isLastRedirect && !parsed.query;
         }
 
@@ -198,7 +188,7 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
 
     const renderWebView = () => {
         if (shouldRenderWebView) {
-            const userAgent = ssoType === ViewTypes.GOOGLE ? 'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86 Build/LMY48X) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/81.0.4044.117 Mobile Safari/608.2.11' : undefined;
+            const userAgent = ssoType === Authentication.GOOGLE ? 'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86 Build/LMY48X) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/81.0.4044.117 Mobile Safari/608.2.11' : undefined;
             return (
                 <WebView
                     automaticallyAdjustContentInsets={false}
@@ -225,7 +215,6 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
             style={style.container}
             testID='sso.webview'
         >
-            <StatusBar/>
             {error || loginError ? (
                 <View style={style.errorContainer}>
                     <Text style={style.errorText}>{error || loginError}</Text>

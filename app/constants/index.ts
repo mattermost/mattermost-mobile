@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Attachment from './attachment';
+import Authentication from './authentication';
 import Database from './database';
 import DeepLink from './deep_linking';
 import Device from './device';
@@ -16,6 +17,7 @@ import WebsocketEvents from './websocket';
 
 export {
     Attachment,
+    Authentication,
     Database,
     DeepLink,
     Device,

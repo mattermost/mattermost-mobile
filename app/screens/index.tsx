@@ -37,23 +37,6 @@ const withIntl = (Screen: React.ComponentType) => {
         }
 }
 
-const withDatabaseProvider = async (Screens: React.ComponentType) => {
-
-    const databaseClient = new DatabaseManager()
-    const serverDatabase = await databaseClient.getActiveServerDatabase();
-
-    if(!serverDatabase){
-       // server database has not been set yet
-       return (<Screens/>);
-    }
-    return (
-        <DatabaseProvider database={serverDatabase}>
-            <Screens/>
-        </DatabaseProvider>
-    )
-
-}
-
 Navigation.setLazyComponentRegistrator((screenName) => {
     let screen: any|undefined;
     let extraStyles: StyleProp<ViewStyle>;
