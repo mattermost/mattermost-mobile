@@ -106,6 +106,7 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
                     <TouchableOpacity onPress={() => init()}>
                         <FormattedText
                             id='mobile.oauth.try_again'
+                            testID='mobile.oauth.try_again'
                             defaultMessage='Try again'
                             style={style.button}
                         />
