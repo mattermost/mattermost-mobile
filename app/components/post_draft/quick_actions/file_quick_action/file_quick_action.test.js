@@ -3,17 +3,14 @@
 
 import React from 'react';
 import {Alert, Platform} from 'react-native';
-import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import FileQuickAction from './index';
 
-jest.mock('react-intl');
-
 describe('FileQuickAction', () => {
-    const formatMessage = jest.fn();
     const baseProps = {
         testID: 'post_draft.quick_actions.file_action',
         fileCount: 0,
@@ -32,7 +29,7 @@ describe('FileQuickAction', () => {
     });
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<FileQuickAction {...baseProps}/>);
+        const wrapper = shallowWithIntl(<FileQuickAction {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -41,9 +38,8 @@ describe('FileQuickAction', () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.UNAVAILABLE);
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <FileQuickAction {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const hasPermission = await wrapper.instance().hasStoragePermission();
@@ -57,9 +53,8 @@ describe('FileQuickAction', () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.BLOCKED);
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <FileQuickAction {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const hasPermission = await wrapper.instance().hasStoragePermission();
@@ -70,9 +65,8 @@ describe('FileQuickAction', () => {
     });
 
     test('hasStoragePermission returns true when permission has been granted', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <FileQuickAction {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
         const instance = wrapper.instance();
         const check = jest.spyOn(Permissions, 'check');

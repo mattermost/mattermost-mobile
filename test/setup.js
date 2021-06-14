@@ -8,6 +8,7 @@ import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import 'react-native-gesture-handler/jestSetup';
+require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 
 require('isomorphic-fetch');
 

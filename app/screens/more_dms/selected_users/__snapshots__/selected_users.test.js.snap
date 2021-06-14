@@ -57,7 +57,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
       }
     />
   </View>
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="You can add {remaining, number} more users"
     id="mobile.more_dms.add_more"
     style={
@@ -233,7 +233,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
       }
     />
   </View>
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="You can add 1 more user"
     id="mobile.more_dms.one_more"
     style={

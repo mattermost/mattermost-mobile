@@ -61,10 +61,7 @@ export default class ChannelIOS extends ChannelBase {
             renderDraftArea = true;
             component = (
                 <>
-                    <ChannelPostList
-                        updateNativeScrollView={this.updateNativeScrollView}
-                        registerTypingAnimation={this.registerTypingAnimation}
-                    />
+                    <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
                 </>
             );
         }

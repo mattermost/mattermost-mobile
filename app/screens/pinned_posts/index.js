@@ -4,9 +4,6 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {showPermalink} from '@actions/views/permalink';
-import {getPostThread} from '@actions/views/post';
-import {selectPost} from '@mm-redux/actions/posts';
 import {clearSearch, getPinnedPosts} from '@mm-redux/actions/search';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makePreparePostIdsForSearchPosts} from '@selectors/post_list';
@@ -31,10 +28,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
-            getPostThread,
             getPinnedPosts,
-            selectPost,
-            showPermalink,
         }, dispatch),
     };
 }

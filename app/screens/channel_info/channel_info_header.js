@@ -14,6 +14,8 @@ import Clipboard from '@react-native-community/clipboard';
 
 import {popToRoot} from '@actions/navigation';
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusText from '@components/custom_status/custom_status_text';
+import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
@@ -22,6 +24,7 @@ import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
 import mattermostManaged from 'app/mattermost_managed';
 
 export default class ChannelInfoHeader extends React.PureComponent {
@@ -31,7 +34,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
         memberCount: PropTypes.number,
         displayName: PropTypes.string.isRequired,
         header: PropTypes.string,
-        onPermalinkPress: PropTypes.func,
         purpose: PropTypes.string,
         shared: PropTypes.bool,
         teammateId: PropTypes.string,
@@ -42,7 +44,9 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         testID: PropTypes.string,
-        timeZone: PropTypes.string,
+        timezone: PropTypes.string,
+        customStatus: PropTypes.object,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -132,7 +136,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             displayName,
             header,
             memberCount,
-            onPermalinkPress,
             purpose,
             shared,
             teammateId,
@@ -141,7 +144,9 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isArchived,
             isGroupConstrained,
             testID,
-            timeZone,
+            timezone,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -175,6 +180,26 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
+                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji &&
+                    <View
+                        style={[style.row, style.customStatusContainer]}
+                        testID={`${testID}.custom_status`}
+                    >
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                            textStyle={style.iconContainer}
+                            testID={`custom_status.emoji.${customStatus.emoji}`}
+                        />
+                        <CustomStatusText
+                            text={customStatus.text}
+                            theme={theme}
+                            textStyle={style.customStatusText}
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                        />
+                    </View>
+                }
                 {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
                     <View style={style.section}>
@@ -211,7 +236,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     defaultMessage='Header'
                                 />
                                 <Markdown
-                                    onPermalinkPress={onPermalinkPress}
                                     baseTextStyle={baseTextStyle}
                                     textStyles={textStyles}
                                     blockStyles={blockStyles}
@@ -244,7 +268,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         />
                         <FormattedDate
                             format='LL'
-                            timeZone={timeZone}
+                            timezone={timezone}
                             value={createAt}
                         />
                     </Text>
@@ -269,6 +293,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             color: theme.centerChannelColor,
             marginLeft: 13,
+        },
+        iconContainer: {
+            marginRight: 8,
+            color: theme.centerChannelColor,
+        },
+        customStatusContainer: {
+            position: 'relative',
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 10,
+        },
+        customStatusText: {
+            flex: 1,
+            fontSize: 15,
+            color: theme.centerChannelColor,
+            width: '80%',
         },
         channelNameContainer: {
             flexDirection: 'row',

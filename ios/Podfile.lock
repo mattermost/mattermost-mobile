@@ -336,12 +336,12 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.14.0):
+  - ReactNativeNavigation (7.13.0):
     - React-Core
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.14.0)
-  - ReactNativeNavigation/Core (7.14.0):
+    - ReactNativeNavigation/Core (= 7.13.0)
+  - ReactNativeNavigation/Core (7.13.0):
     - React-Core
     - React-RCTImage
     - React-RCTText
@@ -429,7 +429,7 @@ PODS:
     - Sentry/Core (= 6.1.4)
   - Sentry/Core (6.1.4)
   - Swime (3.0.6)
-  - XCDYouTubeKit (2.8.2)
+  - XCDYouTubeKit (2.8.3)
   - Yoga (1.14.0)
   - YoutubePlayer-in-WKWebView (0.3.5)
 
@@ -511,7 +511,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
-  - XCDYouTubeKit (= 2.8.2)
+  - XCDYouTubeKit (= 2.8.3)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -738,7 +738,7 @@ SPEC CHECKSUMS:
   ReactCommon: bedc99ed4dae329c4fcf128d0c31b9115e5365ca
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: ff4873e683e5f23822af097e4fe643c82469c3d2
+  ReactNativeNavigation: 4c4ca87edc0da4ee818158a62cb6188088454e5c
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: cb9a623793918c6699586281f0b51cbc38f046f9
   RNCClipboard: 5e299c6df8e0c98f3d7416b86ae563d3a9f768a3
@@ -764,10 +764,10 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   Sentry: 9d055e2de30a77685e86b219acf02e59b82091fc
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
+  XCDYouTubeKit: 46df93c4dc4d48763ad720d997704384635c4335
   Yoga: a7de31c64fe738607e7a3803e3f591a4b1df7393
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: 8f9184e7a51675aa02c8489226782a6a87b8d987
+PODFILE CHECKSUM: a4402d26aaec4ef7e58bd8304848d89c876d285a
 
 COCOAPODS: 1.10.1

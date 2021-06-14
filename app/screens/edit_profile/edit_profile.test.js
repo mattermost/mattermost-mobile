@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import EditProfile from './edit_profile.js';
 
-jest.mock('react-intl');
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');
     return {
@@ -45,20 +44,18 @@ describe('edit_profile', () => {
     };
 
     test('should match snapshot', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <EditProfile {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.instance().renderProfilePicture()).toMatchSnapshot();
     });
 
     test('should match state on handleRemoveProfileImage', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <EditProfile
                 {...baseProps}
                 profilePictureDisabled={false}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         wrapper.setProps({profileImageRemove: false});
 

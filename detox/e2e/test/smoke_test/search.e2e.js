@@ -13,7 +13,6 @@ import {
 } from '@support/ui/component';
 import {
     ChannelScreen,
-    PermalinkScreen,
     SearchScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -60,7 +59,7 @@ describe('Search', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T3235 search on text, jump to result', async () => {
+    it('MM-T3235 search on text, go to result', async () => {
         // # Post message and search on text
         await postMessageAndSearchText(testMessage, testPartialSearchTerm);
 
@@ -70,18 +69,14 @@ describe('Search', () => {
         await expect(searchResultPostItem).toBeVisible();
         await searchResultPostItem.tap();
 
-        // * Verify permalink post list has the message
-        await PermalinkScreen.toBeVisible();
-        const {postListPostItem: permalinkPostItem} = await PermalinkScreen.getPostListPostItem(lastPost.post.id, testMessage);
-        await waitFor(permalinkPostItem).toBeVisible();
+        // * Verify message opens in a thread
+        await expect(element(by.text(`${testChannel.display_name} Thread`))).toBeVisible();
+        const {postListPostItem: threadPostItem} = await ThreadScreen.getPostListPostItem(lastPost.post.id, testMessage);
+        await expect(threadPostItem).toBeVisible();
 
-        // # Jump to recent messages
-        await PermalinkScreen.jumpToRecentMessages();
-
-        // * Verify user is on channel where message is posted
-        await expect(ChannelScreen.channelNavBarTitle).toHaveText(testChannel.display_name);
-        const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(lastPost.post.id, testMessage);
-        await expect(channelPostItem).toBeVisible();
+        // # Go back to channel
+        await ThreadScreen.back();
+        await SearchScreen.cancel();
     });
 
     it('MM-T3236 search on sender, select from autocomplete, reply from search results', async () => {

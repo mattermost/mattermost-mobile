@@ -7,11 +7,13 @@ import {
     TouchableHighlight,
     Text,
     View,
+    Platform,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import {General} from '@mm-redux/constants';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -37,6 +39,7 @@ export default class ChannelItem extends PureComponent {
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
+        customStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -175,6 +178,15 @@ export default class ChannelItem extends PureComponent {
         const itemTestID = `${testID}.${channelId}`;
         const displayNameTestID = `${testID}.display_name`;
 
+        const customStatus = this.props.teammateId && this.props.customStatusEnabled ?
+            (
+                <CustomStatusEmoji
+                    userID={this.props.teammateId}
+                    style={[style.emoji, extraTextStyle]}
+                    testID={displayName}
+                />
+            ) : null;
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
@@ -198,6 +210,7 @@ export default class ChannelItem extends PureComponent {
                         >
                             {channelDisplayName}
                         </Text>
+                        {customStatus}
                         {badge}
                     </View>
                 </View>
@@ -234,16 +247,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 10,
             marginLeft: 13,
             maxWidth: '80%',
-            flex: 1,
             alignSelf: 'center',
             fontFamily: 'Open Sans',
         },
         textActive: {
             color: theme.sidebarTextActiveColor,
+            opacity: 1,
         },
         textUnread: {
+            opacity: 1,
             color: theme.sidebarUnreadText,
             fontWeight: '500',
+            maxWidth: '70%',
+        },
+        emoji: {
+            color: changeOpacity(theme.sidebarText, 0.6),
+            opacity: Platform.OS === 'ios' ? 0.6 : 1,
         },
         badge: {
             backgroundColor: theme.mentionBg,

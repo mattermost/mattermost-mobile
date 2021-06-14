@@ -184,7 +184,10 @@ export default class ReactionList extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.flex}>
+            <View
+                style={style.flex}
+                testID='reaction_list.screen'
+            >
                 <SlideUpPanel
                     ref={this.refSlideUpPanel}
                     onRequestClose={this.close}
