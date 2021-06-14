@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {Client4} from '@client/rest';
@@ -28,7 +28,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig();
 
-    const [loginError, setLoginError] = React.useState<string>('');
+    const [loginError, setLoginError] = useState<string>('');
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {

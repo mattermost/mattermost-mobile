@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import CookieManager, {Cookies} from '@react-native-community/cookies';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -78,7 +78,7 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
     const cookiesTimeout = React.useRef<NodeJS.Timeout>();
     const webView = React.useRef<WebView>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             if (cookiesTimeout.current) {
                 clearTimeout(cookiesTimeout.current);
@@ -192,7 +192,7 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
             return (
                 <WebView
                     automaticallyAdjustContentInsets={false}
-                    cacheEnabled={false}
+                    cacheEnabled={true}
                     injectedJavaScript={jsCode}
                     javaScriptEnabled={true}
                     onLoadEnd={onLoadEnd}

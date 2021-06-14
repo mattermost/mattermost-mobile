@@ -253,7 +253,7 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webview (11.4.0):
+  - react-native-webview (11.6.2):
     - React-Core
   - React-perflogger (0.64.0)
   - React-RCTActionSheet (0.64.0):
@@ -744,7 +744,7 @@ SPEC CHECKSUMS:
   react-native-paste-input: 003693cff6fcea476066172e66901beb7ef25670
   react-native-safe-area-context: e471852c5ed67eea4b10c5d9d43c1cebae3b231d
   react-native-video: 1574074179ecaf6a9dd067116c8f31bf9fec15c8
-  react-native-webview: fdd3c7c2ad173e8ca8c82729ed05f3fda2491a82
+  react-native-webview: 1f56115845c98f0a59dfbbac685797c014a821be
   React-perflogger: 9c547d8f06b9bf00cb447f2b75e8d7f19b7e02af
   React-RCTActionSheet: 3080b6e12e0e1a5b313c8c0050699b5c794a1b11
   React-RCTAnimation: 3f96f21a497ae7dabf4d2f150ee43f906aaf516f
