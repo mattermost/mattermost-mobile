@@ -11,7 +11,7 @@ type LoadingProps = {
     style?: ViewStyle,
 }
 
-const Index = ({size = 'large', color = 'grey', style = {}}: LoadingProps) => {
+const Loading = ({size = 'large', color = 'grey', style = {}}: LoadingProps) => {
     return (
         <View style={styles.container}>
             <ActivityIndicator
@@ -36,4 +36,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Index;
+export default Loading;
