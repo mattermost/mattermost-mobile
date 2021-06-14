@@ -28,6 +28,7 @@ describe('Saved Messages', () => {
         postMessage,
     } = ChannelScreen;
     const {
+        reactionPickerAction,
         saveAction,
         unsaveAction,
     } = PostOptions;
@@ -37,7 +38,7 @@ describe('Saved Messages', () => {
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         // # Open channel screen
@@ -83,6 +84,23 @@ describe('Saved Messages', () => {
         await openSettingsSidebar();
         await SavedMessagesScreen.open();
         await expect(element(by.text('No Saved messages yet'))).toBeVisible();
+
+        // # Close saved messages screen
+        await SavedMessagesScreen.close();
+    });
+
+    it('MM-T3220 should not be able to add a reaction on saved messages', async () => {
+        // # Save message from channel post list
+        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        await openPostOptionsFor(post.id, message);
+        await saveAction.tap();
+
+        // * Verify add a reaction is not available in post options
+        await openSettingsSidebar();
+        await SavedMessagesScreen.open();
+        await SavedMessagesScreen.openPostOptionsFor(post.id, message);
+        await expect(reactionPickerAction).not.toBeVisible();
+        await PostOptions.close();
 
         // # Close saved messages screen
         await SavedMessagesScreen.close();

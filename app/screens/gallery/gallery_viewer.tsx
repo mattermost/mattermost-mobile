@@ -4,11 +4,11 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, Easing} from 'react-native-reanimated';
+import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, EasingNode, ceil} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
 import {isImage, isVideo} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {GalleryProps} from 'types/screens/gallery';
 
@@ -95,7 +95,7 @@ const GalleryViewer = (props: GalleryProps) => {
     const imgHeight = currentFile.height || height;
     const imgWidth = currentFile.width || width;
     const calculatedDimensions = calculateDimensions(imgHeight, imgWidth, width, height);
-    const imgCanvas = vec.create(calculatedDimensions.width, calculatedDimensions.height);
+    const imgCanvas = vec.create(calculatedDimensions.width || 0, calculatedDimensions.height || 0);
     const minImgVec = vec.min(vec.multiply(-0.5, imgCanvas, sub(scale, 1)), 0);
     const maxImgVec = vec.max(vec.minus(minImgVec), 0);
 
@@ -137,6 +137,7 @@ const GalleryViewer = (props: GalleryProps) => {
             file,
             deviceWidth: width,
             deviceHeight: height,
+            theme: props.theme,
         };
 
         if (isImage(file)) {
@@ -147,6 +148,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 >
                     <GalleryImage
                         style={{
+                            backgroundColor: changeOpacity(props.theme.centerChannelColor, 0.08),
                             transform: [
                                 {translateX: cond(isActive, translate.x, 0)},
                                 {translateY: cond(isActive, translate.y, 0)},
@@ -166,7 +168,6 @@ const GalleryViewer = (props: GalleryProps) => {
                     <GalleryVideo
                         isActive={currentIndex === i}
                         showHideHeaderFooter={props.onTap}
-                        theme={props.theme}
                         {...itemProps}
                     />
                 </View>
@@ -178,10 +179,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 key={file.id}
                 style={styles.item}
             >
-                <GalleryFile
-                    theme={props.theme}
-                    {...itemProps}
-                />
+                <GalleryFile {...itemProps}/>
             </View>
         );
     });
@@ -213,16 +211,16 @@ const GalleryViewer = (props: GalleryProps) => {
                 ]),
             ),
             cond(and(eq(pan.state, State.END), neq(translateY, 0)), [
-                cond(greaterOrEq(abs(translateY), 10), [
+                cond(greaterOrEq(abs(translateY), 50), [
                     cond(not(clockRunning(clock)), call([], props.onClose)),
                 ], set(translateY, timing({from: translateY, to: 0}))),
             ]),
             cond(and(eq(pan.state, State.END), neq(translationX, 0)), [
-                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 150, easing: Easing.out(Easing.quad)})),
+                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 250, easing: EasingNode.out(EasingNode.quad)})),
                 set(offsetX, translateX),
                 cond(not(clockRunning(clock)), [
                     vec.set(translate, 0),
-                    set(index, floor(divide(translateX, -width))),
+                    set(index, ceil(divide(translateX, -width))),
                     call([abs(index)], indexChanged),
                 ]),
             ]),

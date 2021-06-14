@@ -8,7 +8,7 @@ import {useSelector} from 'react-redux';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getUser} from '@mm-redux/selectors/entities/users';
 import type {GlobalState} from '@mm-redux/types/store';

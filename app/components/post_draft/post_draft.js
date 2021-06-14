@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {Platform} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
+import {DeviceTypes} from '@constants';
 import {UPDATE_NATIVE_SCROLLVIEW} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
@@ -50,7 +51,10 @@ export default class PostDraft extends PureComponent {
 
     updateNativeScrollView = (scrollViewNativeID) => {
         if (this.keyboardTracker?.current) {
-            this.keyboardTracker.current.resetScrollView(scrollViewNativeID);
+            const resetScrollView = requestAnimationFrame(() => {
+                this.keyboardTracker.current.resetScrollView(scrollViewNativeID);
+                cancelAnimationFrame(resetScrollView);
+            });
         }
     };
 
@@ -121,6 +125,7 @@ export default class PostDraft extends PureComponent {
                 accessoriesContainerID={accessoriesContainerID}
                 ref={this.keyboardTracker}
                 scrollViewNativeID={scrollViewNativeID}
+                inverted={DeviceTypes.IS_TABLET}
             >
                 {draftInput}
             </KeyboardTrackingView>

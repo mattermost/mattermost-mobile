@@ -1,20 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import keyMirror from '@mm-redux/utils/key_mirror';
 
 // The iPhone 11 and iPhone 11 Pro Max have a navbar height of 44 and iPhone 11 Pro has 32
 const IPHONE_11_LANDSCAPE_HEIGHT = ['iPhone 11', 'iPhone 11 Pro Max'];
-
-export const UpgradeTypes = {
-    CAN_UPGRADE: 'can_upgrade',
-    MUST_UPGRADE: 'must_upgrade',
-    NO_UPGRADE: 'no_upgrade',
-    IS_BETA: 'is_beta',
-};
 
 export const SidebarSectionTypes = {
     UNREADS: 'unreads',
@@ -89,8 +81,6 @@ const ViewTypes = keyMirror({
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
 
-    SET_LAST_UPGRADE_CHECK: null,
-
     ADD_RECENT_EMOJI: null,
     ADD_RECENT_EMOJI_ARRAY: null,
     ANNOUNCEMENT_BANNER: null,
@@ -112,16 +102,16 @@ const ViewTypes = keyMirror({
 });
 
 const RequiredServer = {
-    FULL_VERSION: 5.25,
+    FULL_VERSION: '5.31.3',
     MAJOR_VERSION: 5,
-    MIN_VERSION: 25,
-    PATCH_VERSION: 0,
+    MIN_VERSION: 31,
+    PATCH_VERSION: 3,
 };
 
 export default {
     ...ViewTypes,
     RequiredServer,
-    POST_VISIBILITY_CHUNK_SIZE: Platform.OS === 'android' ? 15 : 60,
+    POST_VISIBILITY_CHUNK_SIZE: 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',
@@ -137,6 +127,7 @@ export default {
     PROFILE_PICTURE_EMOJI_SIZE: 28,
     DATA_SOURCE_USERS: 'users',
     DATA_SOURCE_CHANNELS: 'channels',
+    DATA_SOURCE_DYNAMIC: 'dynamic',
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,

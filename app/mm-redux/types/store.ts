@@ -6,20 +6,20 @@ import {UsersState} from './users';
 import {TeamsState} from './teams';
 import {ChannelsState} from './channels';
 import {PostsState} from './posts';
-import {JobsState} from './jobs';
 import {SearchState} from './search';
 import {IntegrationsState} from './integrations';
 import {FilesState} from './files';
 import {EmojisState} from './emojis';
-import {SchemesState} from './schemes';
 import {Typing} from './typing';
 import {GroupsState} from './groups';
-import {ChannelsRequestsStatuses, GeneralRequestsStatuses, PostsRequestsStatuses, TeamsRequestsStatuses, UsersRequestsStatuses, FilesRequestsStatuses, RolesRequestsStatuses, JobsRequestsStatuses} from './requests';
+import {ChannelsRequestsStatuses, GeneralRequestsStatuses, PostsRequestsStatuses, TeamsRequestsStatuses, UsersRequestsStatuses, FilesRequestsStatuses, RolesRequestsStatuses} from './requests';
 import {Role} from './roles';
 import {PreferenceType} from './preferences';
 import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
+import {RemoteCluster} from './remote_cluster';
 import {Dictionary} from './utilities';
+import {AppsState} from './apps';
 
 export type GlobalState = {
     entities: {
@@ -36,7 +36,6 @@ export type GlobalState = {
                 [x: string]: PreferenceType;
             };
         };
-        jobs: JobsState;
         search: SearchState;
         integrations: IntegrationsState;
         files: FilesState;
@@ -48,10 +47,15 @@ export type GlobalState = {
             };
             pending: Set<string>;
         };
-        schemes: SchemesState;
         gifs: any;
         groups: GroupsState;
         channelCategories: ChannelCategoriesState;
+        remoteCluster: {
+            info: {
+                [x: string]: RemoteCluster;
+            };
+        };
+        apps: AppsState;
     };
     errors: Array<any>;
     requests: {
@@ -62,7 +66,6 @@ export type GlobalState = {
         users: UsersRequestsStatuses;
         files: FilesRequestsStatuses;
         roles: RolesRequestsStatuses;
-        jobs: JobsRequestsStatuses;
     };
     views: any;
     websocket: {

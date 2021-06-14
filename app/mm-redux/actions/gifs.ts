@@ -4,7 +4,7 @@ import {GifTypes} from '@mm-redux/action_types';
 import gfycatSdk from '@mm-redux/utils/gfycat_sdk';
 import {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 // APP PROPS
 

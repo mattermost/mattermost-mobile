@@ -18,7 +18,7 @@ import {getResponseFromError} from './common';
 
 /**
  * Get user status.
- * See https://api.mattermost.com/#tag/status/paths/~1users~1{user_id}~1status/get
+ * See https://api.mattermost.com/#operation/GetUserStatus
  * @param {string} userId - the user ID
  * @return {Object} returns {userStatus} on success or {error, status} on error
  */
@@ -34,7 +34,7 @@ export const apiGetUserStatus = async (userId) => {
 
 /**
  * Update user status.
- * See https://api.mattermost.com/#tag/status/paths/~1users~1{user_id}~1status/put
+ * See https://api.mattermost.com/#operation/UpdateUserStatus
  * @param {string} userId - the user ID
  * @param {string} status - the user status, can be online, away, offline and dnd
  * @return {Object} returns {userStatus} on success or {error, status} on error

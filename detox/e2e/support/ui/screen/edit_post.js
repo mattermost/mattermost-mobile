@@ -39,8 +39,8 @@ class EditPostScreen {
         return this.toBeVisible();
     }
 
-    back = async () => {
-        await this.backButton.tap();
+    close = async () => {
+        await this.closeEditPostButton.tap();
         await expect(this.editPostScreen).not.toBeVisible();
     }
 }

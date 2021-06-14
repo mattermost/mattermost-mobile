@@ -19,11 +19,11 @@ import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {CustomPropTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
+import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
@@ -35,7 +35,7 @@ export default class MarkdownImage extends ImageViewPort {
     static propTypes = {
         children: PropTypes.node,
         disable: PropTypes.bool,
-        errorTextStyle: CustomPropTypes.Style,
+        errorTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         imagesMetadata: PropTypes.object,
         isReplyPost: PropTypes.bool,
         linkDestination: PropTypes.string,
@@ -50,7 +50,7 @@ export default class MarkdownImage extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        const metadata = props.imagesMetadata?.[props.source];
+        const metadata = props.imagesMetadata?.[props.source] || Object.values(props.imagesMetadata || {})[0];
         this.fileId = generateId();
         this.state = {
             originalHeight: metadata?.height || 0,
@@ -239,7 +239,10 @@ export default class MarkdownImage extends ImageViewPort {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID='markdown_image'
+            >
                 {image}
             </View>
         );

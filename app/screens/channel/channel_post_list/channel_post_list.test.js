@@ -15,7 +15,6 @@ describe('ChannelPostList', () => {
             getPostThread: jest.fn(),
             increasePostVisibility: jest.fn(),
             selectPost: jest.fn(),
-            recordLoadTime: jest.fn(),
             refreshChannelWithRetry: jest.fn(),
         },
         channelId: 'channel-id',

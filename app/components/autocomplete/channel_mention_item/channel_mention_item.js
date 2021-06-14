@@ -47,6 +47,7 @@ const ChannelMentionItem = (props) => {
         isGuest,
         name,
         onPress,
+        shared,
         testID,
         theme,
         type,
@@ -64,7 +65,9 @@ const ChannelMentionItem = (props) => {
     const margins = {marginLeft: insets.left, marginRight: insets.right};
     let iconName = 'globe';
     let component;
-    if (type === General.PRIVATE_CHANNEL) {
+    if (shared) {
+        iconName = type === General.PRIVATE_CHANNEL ? 'circle-multiple-outline-lock' : 'circle-multiple-outline';
+    } else if (type === General.PRIVATE_CHANNEL) {
         iconName = 'lock';
     }
 
@@ -78,8 +81,8 @@ const ChannelMentionItem = (props) => {
                 key={channelId}
                 onPress={completeMention}
                 style={[style.row, margins]}
-                type={'opacity'}
                 testID={testID}
+                type={'opacity'}
             >
                 <Text style={style.rowDisplayName}>{'@' + displayName}</Text>
                 <BotTag
@@ -99,8 +102,8 @@ const ChannelMentionItem = (props) => {
                 onPress={completeMention}
                 style={margins}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
-                type={'native'}
                 testID={testID}
+                type={'native'}
             >
                 <View style={style.row}>
                     <CompassIcon

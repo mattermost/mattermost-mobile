@@ -6,7 +6,7 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {PostTypes, UserTypes} from '@mm-redux/action_types';
 
 import * as PostSelectors from '@mm-redux/selectors/entities/posts';

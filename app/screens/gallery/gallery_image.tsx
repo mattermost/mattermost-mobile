@@ -10,6 +10,7 @@ import {calculateDimensions} from '@utils/images';
 
 import {GalleryItemProps} from 'types/screens/gallery';
 
+// @ts-expect-error: Ignore the typescript error for createAnimatedComponent
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 
 const GalleryImage = ({file, deviceHeight, deviceWidth, style}: GalleryItemProps) => {

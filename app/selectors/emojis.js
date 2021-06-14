@@ -74,7 +74,9 @@ export const selectEmojisByName = createIdsSelector(
     (customEmojis) => {
         const emoticons = new Set();
         for (const [key] of [...EmojiIndicesByAlias.entries(), ...customEmojis.entries()]) {
-            emoticons.add(key);
+            if (!key.includes('skin_tone')) {
+                emoticons.add(key);
+            }
         }
 
         return Array.from(emoticons);
@@ -85,7 +87,7 @@ export const selectEmojisBySection = createSelector(
     selectCustomEmojisByName,
     (state) => state.views.recentEmojis,
     (customEmojis, recentEmojis) => {
-        const emoticons = CategoryNames.filter((name) => name !== 'custom').map((category) => {
+        const emoticons = CategoryNames.filter((name) => name !== 'custom' && name !== 'skintone').map((category) => {
             const items = EmojiIndicesByCategory.get(category).map(fillEmoji);
 
             const section = {

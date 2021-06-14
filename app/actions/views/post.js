@@ -15,7 +15,7 @@ import {
     receivedPostsSince,
     receivedPostsInThread,
 } from '@mm-redux/actions/posts';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {Posts} from '@mm-redux/constants';
 import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
@@ -27,6 +27,28 @@ import {generateId} from '@utils/file';
 import {getChannelSinceValue} from '@utils/channels';
 
 import {getEmojisInPosts} from './emoji';
+
+export function sendEphemeralPost(message, channelId = '', parentId = '', userId = '0') {
+    return async (dispatch, getState) => {
+        const timestamp = Date.now();
+        const post = {
+            id: generateId(),
+            user_id: userId,
+            channel_id: channelId || getCurrentChannelId(getState()),
+            message,
+            type: Posts.POST_TYPES.EPHEMERAL,
+            create_at: timestamp,
+            update_at: timestamp,
+            root_id: parentId,
+            parent_id: parentId,
+            props: {},
+        };
+
+        dispatch(receivedNewPost(post));
+
+        return {};
+    };
+}
 
 export function sendAddToChannelEphemeralPost(user, addedUsername, message, channelId, postRootId = '') {
     return async (dispatch) => {
@@ -51,13 +73,14 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
     };
 }
 
-export function setAutocompleteSelector(dataSource, onSelect, options) {
+export function setAutocompleteSelector(dataSource, onSelect, options, getDynamicOptions) {
     return {
         type: ViewTypes.SELECTED_ACTION_MENU,
         data: {
             dataSource,
             onSelect,
             options,
+            getDynamicOptions,
         },
     };
 }

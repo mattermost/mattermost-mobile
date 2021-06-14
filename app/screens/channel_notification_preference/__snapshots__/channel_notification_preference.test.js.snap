@@ -19,7 +19,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
       ]
     }
   >
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="Send Notifications"
       id="channel_notifications.preference.header"
       style={
@@ -72,7 +72,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             actionType="select"
             actionValue="default"
             label={
-              <FormattedText
+              <InjectIntl(FormattedText)
                 defaultMessage="Global default ({notifyLevel})"
                 id="channel_notifications.preference.global_default"
                 values={
@@ -130,7 +130,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             actionType="select"
             actionValue="all"
             label={
-              <FormattedText
+              <InjectIntl(FormattedText)
                 defaultMessage="For all activity"
                 id="channel_notifications.preference.all_activity"
               />
@@ -183,7 +183,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             actionType="select"
             actionValue="mention"
             label={
-              <FormattedText
+              <InjectIntl(FormattedText)
                 defaultMessage="Only mentions and direct messages"
                 id="channel_notifications.preference.only_mentions"
               />
@@ -236,7 +236,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             actionType="select"
             actionValue="none"
             label={
-              <FormattedText
+              <InjectIntl(FormattedText)
                 defaultMessage="Never"
                 id="channel_notifications.preference.never"
               />

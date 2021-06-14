@@ -41,11 +41,12 @@ describe('Select Team', () => {
 
     it('MM-T3619 should be able to select a team', async () => {
         // # Tap on team to join
+        await waitFor(SelectTeamScreen.getTeamByDisplayName(testTeam.display_name)).toBeVisible().whileElement(by.id(SelectTeamScreen.testID.teamsList)).scroll(500, 'down');
         const team = await SelectTeamScreen.getTeamByDisplayName(testTeam.display_name);
         await team.tap();
 
         // * Verify redirect to default channel of joined team
-        const {channel} = await Channel.apiGetChannelByName(testTeam.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(testTeam.id, 'town-square');
         const {channelNavBarTitle} = ChannelScreen;
         await ChannelScreen.toBeVisible();
         await expect(channelNavBarTitle).toHaveText(channel.display_name);

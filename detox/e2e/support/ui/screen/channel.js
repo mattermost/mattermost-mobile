@@ -15,7 +15,6 @@ import {
 } from '@support/ui/component';
 import {
     LoginScreen,
-    LongPostScreen,
     SelectServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -25,6 +24,7 @@ class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
+        channelPostList: 'channel.post_list',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
         mainSidebarDrawerButtonBadge: 'main_sidebar_drawer.button.badge',
         mainSidebarDrawerButtonBadgeUnreadCount: 'main_sidebar_drawer.button.badge.unread_count',
@@ -37,6 +37,7 @@ class ChannelScreen {
     }
 
     channelScreen = element(by.id(this.testID.channelScreen));
+    channelPostList = element(by.id(this.testID.channelPostList));
     mainSidebarDrawerButton = element(by.id(this.testID.mainSidebarDrawerButton));
     mainSidebarDrawerButtonBadge = element(by.id(this.testID.mainSidebarDrawerButtonBadge));
     mainSidebarDrawerButtonBadgeUnreadCount = element(by.id(this.testID.mainSidebarDrawerButtonBadgeUnreadCount));
@@ -67,12 +68,12 @@ class ChannelScreen {
 
     postList = new PostList(this.testID.channelScreenPrefix);
 
-    getLongPostItem = (postId, text, postProfileOptions = {}) => {
-        return LongPostScreen.getPost(postId, text, postProfileOptions);
+    getMoreMessagesButton = () => {
+        return this.postList.getMoreMessagesButton();
     }
 
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
+    getNewMessagesDivider = () => {
+        return this.postList.getNewMessagesDivider();
     }
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {
@@ -131,12 +132,19 @@ class ChannelScreen {
         await this.closeMainSidebar();
     }
 
-    deletePost = async (postId, text, confirm = true) => {
+    deletePost = async (postId, text, {confirm = true} = {}) => {
         await this.openPostOptionsFor(postId, text);
 
         // # Delete post
-        await PostOptions.deletePost(confirm);
+        await PostOptions.deletePost({confirm});
         await this.toBeVisible();
+    }
+
+    goToChannel = async (displayName) => {
+        await this.openMainSidebar();
+        const channelItem = MainSidebar.getChannelByDisplayName(displayName);
+        await channelItem.tap();
+        await expect(this.channelNavBarTitle).toHaveText(displayName);
     }
 
     openMainSidebar = async () => {
@@ -175,10 +183,14 @@ class ChannelScreen {
         await ThreadScreen.toBeVisible();
     }
 
-    postMessage = async (message) => {
+    postMessage = async (message, {quickReplace = false} = {}) => {
         // # Post message
         await this.postInput.tap();
-        await this.postInput.typeText(message);
+        if (quickReplace) {
+            await this.postInput.replaceText(message);
+        } else {
+            await this.postInput.typeText(message);
+        }
         await this.tapSendButton();
     }
 
@@ -201,6 +213,11 @@ class ChannelScreen {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
+    }
+
+    hasPostMessage = async (postId, postMessage) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
+        await expect(postListPostItem).toBeVisible();
     }
 
     hasPostMessageAtIndex = async (index, postMessage) => {

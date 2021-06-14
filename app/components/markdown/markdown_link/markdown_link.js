@@ -10,7 +10,6 @@ import urlParse from 'url-parse';
 
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
-import CustomPropTypes from '@constants/custom_prop_types';
 import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
@@ -23,17 +22,16 @@ export default class MarkdownLink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             handleSelectChannelByName: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
-        children: CustomPropTypes.Children.isRequired,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         href: PropTypes.string.isRequired,
-        onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string,
         siteURL: PropTypes.string.isRequired,
         currentTeamName: PropTypes.string,
     };
 
     static defaultProps = {
-        onPermalinkPress: () => true,
         serverURL: '',
         siteURL: '',
     };
@@ -43,7 +41,9 @@ export default class MarkdownLink extends PureComponent {
     };
 
     handlePress = preventDoubleTap(async () => {
-        const {href, onPermalinkPress, serverURL, siteURL} = this.props;
+        const {intl} = this.context;
+        const {actions, currentTeamName, href, serverURL, siteURL} = this.props;
+        const {handleSelectChannelByName, showPermalink} = actions;
         const url = normalizeProtocol(href);
 
         if (!url) {
@@ -59,14 +59,10 @@ export default class MarkdownLink extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                const {intl} = this.context;
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel.bind(null, intl), intl);
+                handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel, intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
-                if (match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
-                    onPermalinkPress(match.postId, this.props.currentTeamName);
-                } else {
-                    onPermalinkPress(match.postId, match.teamName);
-                }
+                const teamName = match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? currentTeamName : match.teamName;
+                showPermalink(intl, teamName, match.postId);
             }
         } else {
             const onError = () => {

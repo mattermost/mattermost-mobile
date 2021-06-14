@@ -194,7 +194,7 @@ export default class DraftInput extends PureComponent {
             this.setState(nextState, callback);
         }
 
-        EventEmitter.emit('scroll-to-bottom');
+        EventEmitter.emit('scroll-to-bottom', EphemeralStore.getNavigationTopComponentId());
     };
 
     handleHardwareEnterPress = (keyEvent) => {
@@ -303,7 +303,7 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
-        const {data, error} = await executeCommand(msg, channelId, rootId);
+        const {data, error} = await executeCommand(msg, channelId, rootId, intl);
         this.setState({sendingMessage: false});
 
         if (error) {

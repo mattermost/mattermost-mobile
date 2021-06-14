@@ -592,7 +592,6 @@ platform :android do
     unless configured
       configure
     end
-    configure_telemetry_android
     update_identifiers
     replace_assets
     link_sentry_android
@@ -620,27 +619,6 @@ platform :android do
     )
 
     sh "mv #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]} #{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/Mattermost-unsigned.apk"
-  end
-
-  desc 'Update config and module/listener for Android telemetry'
-  lane :configure_telemetry_android do
-    if ENV['TELEMETRY_ENABLED'] == 'true' && ENV['TELEMETRY_URL'] != '' && ENV['TELEMETRY_API_KEY'] != ''
-      # Update telemetry config
-      json = load_config_json('../dist/assets/config.json')
-      json['TelemetryEnabled'] = true
-      json['TelemetryUrl'] = ENV['TELEMETRY_URL']
-      json['TelemetryApiKey'] = ENV['TELEMETRY_API_KEY']
-      save_json_as_file('../dist/assets/config.json', json)
-
-      beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
-
-      # Listen to telemetry react markers
-      find_replace_string(
-          path_to_file: "#{beta_dir}MainApplication.java",
-          old_string: '// addReactMarkerListener();',
-          new_string: 'addReactMarkerListener();'
-      )
-    end
   end
 
   lane :update_identifiers do
@@ -765,13 +743,21 @@ platform :android do
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
     apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-    outputJson = load_config_json(lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH])
+    json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+
+    if json_path.nil? || json_path.empty?
+      dir_name = File.dirname(apks.first)
+      json_path = Dir.glob(File.join(dir_name, '*.json')).first
+    end
+
+    UI.message("JSON PATH APK #{json_path}")
+    outputJson = load_config_json(json_path)
     paths = []
     apks.each do |apk|
       filename = File.basename(apk)
-      output = outputJson.find { |o| o["path"] === filename }
+      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
       unless output.nil?
-        filterName = output["apkData"]["filterName"]
+        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
         name = "#{app_name_sub}"
         unless filterName.nil? || filterName.empty?
           name += "-#{filterName}"

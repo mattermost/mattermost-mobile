@@ -50,6 +50,7 @@ export type Config = {
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
     EnableCustomTermsOfService: string;
+    EnableCustomUserStatuses: string;
     EnableDeveloper: string;
     EnableDiagnostics: string;
     EnableEmailBatching: string;
@@ -75,6 +76,7 @@ export type Config = {
     EnablePreviewFeatures: string;
     EnablePreviewModeBanner: string;
     EnablePublicLink: string;
+    EnableReliableWebSockets: string;
     EnableSaml: string;
     EnableSignInWithEmail: string;
     EnableSignInWithUsername: string;

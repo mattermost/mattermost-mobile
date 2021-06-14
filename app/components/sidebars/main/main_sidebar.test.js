@@ -2,20 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
 import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import MainSidebar from './main_sidebar.ios';
-
-jest.mock('react-intl');
 
 describe('MainSidebar', () => {
     const baseProps = {
         actions: {
             getTeams: jest.fn(),
-            logChannelSwitch: jest.fn(),
             makeDirectChannel: jest.fn(),
             setChannelDisplayName: jest.fn(),
             setChannelLoading: jest.fn(),
@@ -31,7 +28,7 @@ describe('MainSidebar', () => {
     };
 
     const loadShallow = (props) => {
-        return shallow(
+        return shallowWithIntl(
             <MainSidebar {...(props || baseProps)}/>,
         );
     };

@@ -71,13 +71,13 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
         action={[Function]}
         actionType="toggle"
         description={
-          <FormattedText
+          <InjectIntl(FormattedText)
             defaultMessage="Keep the sidebar open permanently"
             id="mobile.sidebar_settings.permanent_description"
           />
         }
         label={
-          <FormattedText
+          <InjectIntl(FormattedText)
             defaultMessage="Permanent Sidebar"
             id="mobile.sidebar_settings.permanent"
           />

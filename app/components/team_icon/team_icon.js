@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 

@@ -7,10 +7,12 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Autocomplete} from '@support/ui/component';
+import {
+    Autocomplete,
+    PostOptions,
+} from '@support/ui/component';
 import {
     ChannelScreen,
-    PermalinkScreen,
     SearchScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -21,12 +23,19 @@ import {
 } from '@support/server_api';
 
 describe('Search', () => {
-    const testMessage = `test ${Date.now().toString()}`;
-    const partialSearchTerm = testMessage.split('-')[0];
     const {
         atMentionSuggestionList,
         channelMentionSuggestionList,
     } = Autocomplete;
+    const {
+        getRecentSearchItem,
+        getSearchResultPostItem,
+        searchFromModifier,
+        searchInModifier,
+        searchInput,
+    } = SearchScreen;
+    let testMessage;
+    let testPartialSearchTerm;
     let testUser;
     let testChannel;
 
@@ -34,51 +43,52 @@ describe('Search', () => {
         const {team, user} = await Setup.apiInit();
         testUser = user;
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         // # Open channel screen
         await ChannelScreen.open(user);
     });
 
+    beforeEach(async () => {
+        testPartialSearchTerm = Date.now().toString();
+        testMessage = `${testPartialSearchTerm} test`;
+    });
+
     afterAll(async () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T3235 search on text, jump to result', async () => {
+    it('MM-T3235 search on text, go to result', async () => {
         // # Post message and search on text
-        await postMessageAndSearchText(testMessage, partialSearchTerm);
+        await postMessageAndSearchText(testMessage, testPartialSearchTerm);
 
         // # Open permalink from search result post item
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
-        const {searchResultPostItem} = await SearchScreen.getSearchResultPostItem(lastPost.post.id, testMessage);
+        const {searchResultPostItem} = await getSearchResultPostItem(lastPost.post.id, testMessage);
         await expect(searchResultPostItem).toBeVisible();
         await searchResultPostItem.tap();
 
-        // * Verify permalink post list has the message
-        await PermalinkScreen.toBeVisible();
-        const {postListPostItem: permalinkPostItem} = await PermalinkScreen.getPostListPostItem(lastPost.post.id, testMessage);
-        await waitFor(permalinkPostItem).toBeVisible();
+        // * Verify message opens in a thread
+        await expect(element(by.text(`${testChannel.display_name} Thread`))).toBeVisible();
+        const {postListPostItem: threadPostItem} = await ThreadScreen.getPostListPostItem(lastPost.post.id, testMessage);
+        await expect(threadPostItem).toBeVisible();
 
-        // # Jump to recent messages
-        await PermalinkScreen.jumpToRecentMessages();
-
-        // * Verify user is on channel where message is posted
-        await expect(ChannelScreen.channelNavBarTitle).toHaveText(testChannel.display_name);
-        const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(lastPost.post.id, testMessage);
-        await expect(channelPostItem).toBeVisible();
+        // # Go back to channel
+        await ThreadScreen.back();
+        await SearchScreen.cancel();
     });
 
     it('MM-T3236 search on sender, select from autocomplete, reply from search results', async () => {
         // # Post message and search on sender
-        await postMessageAndSearchFrom(testMessage, testUser, atMentionSuggestionList, partialSearchTerm);
+        await postMessageAndSearchFrom(testMessage, testUser, atMentionSuggestionList, testPartialSearchTerm);
 
         // * Verify search result post has the message
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
         const {
             searchResultPostItem,
             searchResultPostItemHeaderReply,
-        } = await SearchScreen.getSearchResultPostItem(lastPost.post.id, testMessage);
+        } = await getSearchResultPostItem(lastPost.post.id, testMessage);
         await expect(searchResultPostItem).toBeVisible();
 
         // # Open reply thread from search result post item
@@ -101,11 +111,11 @@ describe('Search', () => {
 
     it('MM-T3237 search on channel, select from autocomplete, search in combination with a text string as well', async () => {
         // # Post message and search in channel
-        await postMessageAndSearchIn(testMessage, testChannel, channelMentionSuggestionList, partialSearchTerm);
+        await postMessageAndSearchIn(testMessage, testChannel, channelMentionSuggestionList, testPartialSearchTerm);
 
         // * Verify search result post has the message
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
-        const {searchResultPostItem} = await SearchScreen.getSearchResultPostItem(lastPost.post.id, testMessage);
+        const {searchResultPostItem} = await getSearchResultPostItem(lastPost.post.id, testMessage);
         await expect(searchResultPostItem).toBeVisible();
 
         // # Go back to channel
@@ -113,37 +123,81 @@ describe('Search', () => {
     });
 
     it('MM-T3238 delete one previous search, tap on another', async () => {
-        const {
-            getRecentSearchItem,
-            searchInModifier,
-        } = SearchScreen;
+        // # Post message and search in channel
+        await postMessageAndSearchIn(testMessage, testChannel, channelMentionSuggestionList, testPartialSearchTerm);
 
-        // # Open search screen
-        await SearchScreen.open();
+        // # Post message and search on sender
+        await SearchScreen.cancel();
+        await postMessageAndSearchFrom(testMessage, testUser, atMentionSuggestionList, testPartialSearchTerm);
 
         // # Delete one previous text search
-        const previousTextSearch = await getRecentSearchItem(testMessage);
+        const fromSearchTerms = `${searchFromModifier} ${testUser.username} ${testPartialSearchTerm}`;
+        const previousTextSearch = await getRecentSearchItem(fromSearchTerms);
         await previousTextSearch.recentSearchItemRemoveButton.tap();
 
         // * Verify previous text search is removed
         await expect(previousTextSearch.recentSearchItem).not.toBeVisible();
 
         // # Tap on previous in search
-        const inSearchTerms = `${searchInModifier} ${testChannel.name} ${partialSearchTerm}`;
+        const inSearchTerms = `${searchInModifier} ${testChannel.name} ${testPartialSearchTerm}`;
         const previousInSearch = await getRecentSearchItem(inSearchTerms);
         await previousInSearch.recentSearchItem.tap();
 
         // * Verify search result post has the message
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
-        const {searchResultPostItem} = await SearchScreen.getSearchResultPostItem(lastPost.post.id, testMessage);
+        const {searchResultPostItem} = await getSearchResultPostItem(lastPost.post.id, testMessage);
         await expect(searchResultPostItem).toBeVisible();
+
+        // # Go back to channel
+        await SearchScreen.cancel();
+    });
+
+    it('MM-T3240 should not be able to add a reaction on search results', async () => {
+        // # Post message and search on text
+        await postMessageAndSearchText(testMessage, testPartialSearchTerm);
+
+        // * Verify add a reaction is not visible
+        const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
+        await SearchScreen.openPostOptionsFor(lastPost.post.id, testMessage);
+        await expect(PostOptions.reactionPickerAction).not.toBeVisible();
+        await PostOptions.close();
+
+        // # Go back to channel
+        await SearchScreen.cancel();
+    });
+
+    it('MM-T3239 should be able to scroll through long list of search results', async () => {
+        // # Post messages
+        const keyword = 'qa';
+        const firstMessage = `${Date.now().toString()} ${keyword} first`;
+        const firstPost = await Post.apiCreatePost({
+            channelId: testChannel.id,
+            message: firstMessage,
+        });
+        [...Array(50).keys()].forEach(async () => {
+            const message = `${Date.now().toString()} ${keyword}`;
+            await Post.apiCreatePost({
+                channelId: testChannel.id,
+                message,
+            });
+        });
+
+        // # Perform search on keyword
+        await SearchScreen.open();
+        await searchInput.clearText();
+        await searchInput.typeText(keyword);
+        await searchInput.tapReturnKey();
+
+        // * Verify user can scroll down multiple times until first matching post is seen
+        const {searchResultPostItem} = await getSearchResultPostItem(firstPost.post.id, firstMessage);
+        await waitFor(searchResultPostItem).toBeVisible().whileElement(by.id(SearchScreen.testID.searchResultsList)).scroll(1000, 'down');
 
         // # Go back to channel
         await SearchScreen.cancel();
     });
 });
 
-async function postMessageAndSearchFrom(testMessage, testUser, atMentionSuggestionList, partialSearchTerm) {
+async function postMessageAndSearchFrom(testMessage, testUser, atMentionSuggestionList, testPartialSearchTerm) {
     const {
         getRecentSearchItem,
         searchFromModifier,
@@ -167,23 +221,23 @@ async function postMessageAndSearchFrom(testMessage, testUser, atMentionSuggesti
 
     // # Select user from autocomplete
     await expect(atMentionSuggestionList).toExist();
-    const userAtMentionAutocomplete = await Autocomplete.getAtMentionItem(testUser.id);
+    const {atMentionItem: userAtMentionAutocomplete} = await Autocomplete.getAtMentionItem(testUser.id);
     await userAtMentionAutocomplete.tap();
 
     // # Type end of search term
-    await searchInput.typeText(partialSearchTerm);
+    await searchInput.typeText(testPartialSearchTerm);
 
     // # Search user
     await searchInput.tapReturnKey();
     await expect(atMentionSuggestionList).not.toExist();
 
     // * Verify recent search item is displayed
-    const searchTerms = `${searchFromModifier} ${testUser.username} ${partialSearchTerm}`;
+    const searchTerms = `${searchFromModifier} ${testUser.username} ${testPartialSearchTerm}`;
     const {recentSearchItem} = await getRecentSearchItem(searchTerms);
     await expect(recentSearchItem).toBeVisible();
 }
 
-async function postMessageAndSearchIn(testMessage, testChannel, channelMentionSuggestionList, partialSearchTerm) {
+async function postMessageAndSearchIn(testMessage, testChannel, channelMentionSuggestionList, testPartialSearchTerm) {
     const {
         getRecentSearchItem,
         searchInModifier,
@@ -211,19 +265,19 @@ async function postMessageAndSearchIn(testMessage, testChannel, channelMentionSu
     await channelMentionAutocomplete.tap();
 
     // # Type end of search term
-    await searchInput.typeText(partialSearchTerm);
+    await searchInput.typeText(testPartialSearchTerm);
 
     // # Search channel
     await searchInput.tapReturnKey();
     await expect(channelMentionSuggestionList).not.toExist();
 
     // * Verify recent search item is displayed
-    const searchTerms = `${searchInModifier} ${testChannel.name} ${partialSearchTerm}`;
+    const searchTerms = `${searchInModifier} ${testChannel.name} ${testPartialSearchTerm}`;
     const {recentSearchItem} = await getRecentSearchItem(searchTerms);
     await expect(recentSearchItem).toBeVisible();
 }
 
-async function postMessageAndSearchText(testMessage, partialSearchTerm) {
+async function postMessageAndSearchText(testMessage, testPartialSearchTerm) {
     const {
         getRecentSearchItem,
         searchInput,
@@ -237,12 +291,12 @@ async function postMessageAndSearchText(testMessage, partialSearchTerm) {
 
     // # Type beginning of search term
     await searchInput.clearText();
-    await searchInput.typeText(partialSearchTerm);
+    await searchInput.typeText(testPartialSearchTerm);
 
     // # Search text
     await searchInput.tapReturnKey();
 
     // * Verify recent search item is displayed
-    const {recentSearchItem} = await getRecentSearchItem(testMessage);
+    const {recentSearchItem} = await getRecentSearchItem(testPartialSearchTerm);
     await expect(recentSearchItem).toBeVisible();
 }

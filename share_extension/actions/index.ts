@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {loadSidebar} from '@actions/views/channel';
 import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getRedirectChannelNameForTeam, getChannelsNameMapInTeam} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';

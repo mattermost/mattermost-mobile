@@ -3,15 +3,18 @@
 
 import {Alert} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 
 class ChannelInfoScreen {
     testID = {
         channelInfoScreen: 'channel_info.screen',
         channelInfoScrollView: 'channel_info.scroll_view',
         closeChannelInfoButton: 'close.channel_info.button',
-        headerChannelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
-        headerDisplayName: 'channel_info.header.display_name',
+        channelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
+        channelDisplayName: 'channel_info.header.display_name',
+        channelHeader: 'channel_info.header.header',
+        channelPurpose: 'channel_info.header.purpose',
+        headerCustomStatus: 'channel_info.header.custom_status',
         favoritePreferenceAction: 'channel_info.favorite.action',
         favoriteSwitchFalse: 'channel_info.favorite.action.switch.false',
         favoriteSwitchTrue: 'channel_info.favorite.action.switch.true',
@@ -34,8 +37,10 @@ class ChannelInfoScreen {
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
     channelInfoScrollView = element(by.id(this.testID.channelInfoScrollView));
     closeChannelInfoButton = element(by.id(this.testID.closeChannelInfoButton));
-    headerChannelIconGMMemberCount = element(by.id(this.testID.headerChannelIconGMMemberCount));
-    headerDisplayName = element(by.id(this.testID.headerDisplayName));
+    channelIconGMMemberCount = element(by.id(this.testID.channelIconGMMemberCount));
+    channelDisplayName = element(by.id(this.testID.channelDisplayName));
+    channelHeader = element(by.id('markdown_text').withAncestor(by.id(this.testID.channelHeader)));
+    channelPurpose = element(by.id(this.testID.channelPurpose));
     favoritePreferenceAction = element(by.id(this.testID.favoritePreferenceAction));
     favoriteSwitchFalse = element(by.id(this.testID.favoriteSwitchFalse));
     favoriteSwitchTrue = element(by.id(this.testID.favoriteSwitchTrue));
@@ -74,22 +79,66 @@ class ChannelInfoScreen {
         await expect(this.channelInfoScreen).not.toBeVisible();
     }
 
-    archiveChannel = async (confirm = true) => {
+    archiveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.archiveAction.tap();
         const {
+            archivePrivateChannelTitle,
             archivePublicChannelTitle,
             noButton,
             yesButton,
         } = Alert;
-        await expect(archivePublicChannelTitle).toBeVisible();
+        if (publicChannel) {
+            await expect(archivePublicChannelTitle).toBeVisible();
+        } else {
+            await expect(archivePrivateChannelTitle).toBeVisible();
+        }
+        if (description) {
+            const descriptionElement = isAndroid() ? element(by.text(description)) : element(by.label(description)).atIndex(0);
+            await expect(descriptionElement).toBeVisible();
+        }
+        await expect(noButton).toBeVisible();
+        await expect(yesButton).toBeVisible();
         if (confirm) {
             yesButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).not.toBeVisible();
         } else {
             noButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toBeVisible();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.channelInfoScreen).not.toBeVisible();
+    }
+
+    leaveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
+        await this.channelInfoScrollView.scrollTo('bottom');
+        await this.leaveAction.tap();
+        const {
+            leavePrivateChannelTitle,
+            leavePublicChannelTitle,
+            noButton,
+            yesButton,
+        } = Alert;
+        if (publicChannel) {
+            await expect(leavePublicChannelTitle).toBeVisible();
+        } else {
+            await expect(leavePrivateChannelTitle).toBeVisible();
+        }
+        if (description) {
+            const descriptionElement = isAndroid() ? element(by.text(description)) : element(by.label(description)).atIndex(0);
+            await expect(descriptionElement).toBeVisible();
+        }
+        await expect(noButton).toBeVisible();
+        await expect(yesButton).toBeVisible();
+        if (confirm) {
+            yesButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).not.toBeVisible();
+        } else {
+            noButton.tap();
+            await wait(timeouts.ONE_SEC);
+            await expect(this.channelInfoScreen).toBeVisible();
+        }
     }
 }
 
