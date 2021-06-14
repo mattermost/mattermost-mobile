@@ -107,7 +107,6 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     };
 
     if (!isSSOWithRedirectURLAvailable || managedConfig?.inAppSessionAuth === 'true') {
-        //fixme: force it to get here
         return (
             <SSOWithWebView
                 {...props}

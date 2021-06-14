@@ -68,7 +68,7 @@ interface SSOWithWebViewProps {
     theme: Partial<Theme>
 }
 
-function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
+const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
     const [error, setError] = React.useState(null);
@@ -222,7 +222,7 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
             ) : renderWebView()}
         </SafeAreaView>
     );
-}
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
