@@ -9,10 +9,6 @@ export function getConnection(state) {
     return state.device.connection;
 }
 
-export function getStatusBarHeight(state) {
-    return state.device.statusBarHeight;
-}
-
 export function isLandscape(state) {
     return state.device.dimension.deviceWidth > state.device.dimension.deviceHeight;
 }

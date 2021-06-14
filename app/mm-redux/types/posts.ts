@@ -121,3 +121,7 @@ export type PostProps = {
     disable_group_highlight?: boolean;
     mentionHighlightDisabled: boolean;
 }
+
+export type PostResponse = PostOrderBlock & {
+    posts: IDMappedObjects<Post>;
+};

@@ -5,11 +5,10 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {loadChannelsForTeam, selectInitialChannel} from '@actions/views/channel';
-import {recordLoadTime} from '@actions/views/root';
 import {selectDefaultTeam} from '@actions/views/select_team';
 import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -22,6 +21,7 @@ import Channel from './channel';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
+    const currentUserId = getCurrentUserId(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const serverVersion = Client4.getServerVersion() || getServerVersion(state);
@@ -36,14 +36,18 @@ function mapStateToProps(state) {
         );
     }
 
+    const currentTeamId = currentTeam?.delete_at === 0 ? currentTeam?.id : '';
+    const currentChannelId = currentTeam?.delete_at === 0 ? getCurrentChannelId(state) : '';
+
     return {
-        currentTeamId: currentTeam?.id,
-        currentChannelId: getCurrentChannelId(state),
+        currentChannelId,
+        currentTeamId,
+        currentUserId,
         isSupportedServer,
         isSystemAdmin,
+        showTermsOfService: shouldShowTermsOfService(state),
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
-        showTermsOfService: shouldShowTermsOfService(state),
     };
 }
 
@@ -54,7 +58,6 @@ function mapDispatchToProps(dispatch) {
             loadChannelsForTeam,
             selectDefaultTeam,
             selectInitialChannel,
-            recordLoadTime,
         }, dispatch),
     };
 }

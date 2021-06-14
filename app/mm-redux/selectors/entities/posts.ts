@@ -25,10 +25,20 @@ export function getPostsInThread(state: GlobalState): RelationOneToMany<Post, Po
     return state.entities.posts.postsInThread;
 }
 
+export function getThreadForPost(state: GlobalState, postId: string, rootId?: string): string[] | undefined {
+    const id = rootId || postId;
+    return state.entities.posts.postsInThread[id];
+}
+
 export function getReactionsForPosts(state: GlobalState): RelationOneToOne<Post, {
   [x: string]: Reaction;
 }> {
     return state.entities.posts.reactions;
+}
+
+export function postHasReactions(state: GlobalState, postId: string): boolean {
+    const reactions = getReactionsForPosts(state);
+    return Boolean(reactions[postId] && Object.keys(reactions[postId]).length);
 }
 
 export function makeGetReactionsForPost(): (b: GlobalState, a: $ID<Post>) => {
@@ -337,14 +347,12 @@ export function makeGetPostsForThread(): (b: GlobalState, a: {
     });
 }
 
-export function makeGetCommentCountForPost(): (b: GlobalState, a: {
-  post: Post;
-}) => number {
+export function makeGetCommentCountForPost(): (b: GlobalState, a: Post) => number {
     return createSelector(
         getAllPosts,
-        (state: GlobalState, {post}: {post: Post}) => state.entities.posts.postsInThread[post ? post.id : ''] || [],
-        (state, props) => props,
-        (posts, postsForThread, {post: currentPost}) => {
+        (state: GlobalState, post: Post) => state.entities.posts.postsInThread[post ? post.id : ''] || [],
+        (state, post) => post,
+        (posts, postsForThread, currentPost) => {
             if (!currentPost) {
                 return 0;
             }
@@ -601,24 +609,25 @@ export function getUnreadPostsChunk(state: GlobalState, channelId: $ID<Channel>,
 export const isPostIdSending = (state: GlobalState, postId: $ID<Post>): boolean =>
     state.entities.posts.pendingPostIds.some((sendingPostId) => sendingPostId === postId);
 
-export const makeIsPostCommentMention = (): ((b: GlobalState, a: $ID<Post>) => boolean) => {
+export const isRootPost = (state: GlobalState, postId: $ID<Post>): boolean => {
+    return Boolean(getThreadForPost(state, postId)?.length);
+};
+
+export const makeIsPostCommentMention = (): ((b: GlobalState, postId: $ID<Post>, rootId?: $ID<Post>) => boolean) => {
     return createSelector(
         getAllPosts,
-        getPostsInThread,
+        getThreadForPost,
         getCurrentUser,
         getPost,
-        (allPosts, postsInThread, currentUser, post) => {
+        (allPosts, postsForThread, currentUser, post) => {
             if (!post) {
                 return false;
             }
 
             let threadRepliedToByCurrentUser = false;
             let isCommentMention = false;
-            if (currentUser) {
-                const rootId = post.root_id || post.id;
-                const threadIds = postsInThread[rootId] || [];
-
-                for (const pid of threadIds) {
+            if (currentUser && postsForThread?.length) {
+                for (const pid of postsForThread) {
                     const p = allPosts[pid];
                     if (!p) {
                         continue;
@@ -629,6 +638,7 @@ export const makeIsPostCommentMention = (): ((b: GlobalState, a: $ID<Post>) => b
                     }
                 }
 
+                const rootId = post.root_id || post.id;
                 const rootPost = allPosts[rootId];
 
                 isCommentMention = isPostCommentMention({post, currentUser, threadRepliedToByCurrentUser, rootPost});

@@ -52,6 +52,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                         actionValue={Preferences.INTERVAL_IMMEDIATE.toString()}
                         selected={newInterval === Preferences.INTERVAL_IMMEDIATE.toString()}
                         theme={theme}
+                        testID='notification_settings_email.immediately.action'
                     />
                     <View style={style.separator}/>
                     {enableEmailBatching &&
@@ -98,6 +99,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                         actionValue={Preferences.INTERVAL_NEVER.toString()}
                         selected={newInterval === Preferences.INTERVAL_NEVER.toString()}
                         theme={theme}
+                        testID='notification_settings_email.never.action'
                     />
                 </View>
                 }
@@ -120,6 +122,7 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
             <SafeAreaView
                 edges={['left', 'right']}
                 style={style.container}
+                testID='notification_settings_email.screen'
             >
                 <StatusBar/>
                 <ScrollView

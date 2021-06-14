@@ -10,7 +10,6 @@ import {
 
 import CompassIcon from '@components/compass_icon';
 import ConditionalTouchable from '@components/conditional_touchable';
-import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class CustomListRow extends React.PureComponent {
     static propTypes = {
@@ -18,7 +17,7 @@ export default class CustomListRow extends React.PureComponent {
         enabled: PropTypes.bool,
         selectable: PropTypes.bool,
         selected: PropTypes.bool,
-        children: CustomPropTypes.Children,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         testID: PropTypes.string,
     };
 
@@ -77,7 +76,7 @@ const style = StyleSheet.create({
         width: 28,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: '#888',
+        borderColor: 'rgba(61, 60, 64, 0.32)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -88,7 +87,7 @@ const style = StyleSheet.create({
         justifyContent: 'center',
     },
     selectorDisabled: {
-        backgroundColor: '#888',
+        borderColor: 'rgba(61, 60, 64, 0.16)',
     },
     selectorFilled: {
         backgroundColor: '#166DE0',

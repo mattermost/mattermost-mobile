@@ -179,6 +179,7 @@ export default class EmojiPicker extends PureComponent {
         const nextState = {
             searchTerm: rawText,
         };
+        const prevSearchTerm = this.state.searchTerm;
         this.setState(nextState);
 
         if (!searchTerm) {
@@ -187,13 +188,19 @@ export default class EmojiPicker extends PureComponent {
         }
 
         clearTimeout(this.searchTermTimeout);
-        const timeout = searchTerm ? 100 : 0;
-        this.searchTermTimeout = setTimeout(() => {
+        if (prevSearchTerm === '') {
             const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,
             });
-        }, timeout);
+        } else {
+            this.searchTermTimeout = setTimeout(() => {
+                const filteredEmojis = this.searchEmojis(searchTerm);
+                this.setState({
+                    filteredEmojis,
+                });
+            }, 100);
+        }
     };
 
     cancelSearch = () => {
@@ -257,15 +264,16 @@ export default class EmojiPicker extends PureComponent {
 
             listComponent = (
                 <FlatList
+                    contentContainerStyle={contentContainerStyle}
                     data={filteredEmojis}
-                    initialListSize={10}
                     keyboardShouldPersistTaps='always'
                     keyExtractor={this.flatListKeyExtractor}
+                    initialListSize={10}
+                    ListEmptyComponent={this.renderEmptyList}
                     nativeID={SCROLLVIEW_NATIVE_ID}
                     pageSize={10}
                     renderItem={this.flatListRenderItem}
-                    ListEmptyComponent={this.renderEmptyList}
-                    contentContainerStyle={contentContainerStyle}
+                    removeClippedSubviews={true}
                     style={styles.flatList}
                 />
             );
@@ -285,7 +293,7 @@ export default class EmojiPicker extends PureComponent {
                     onScroll={this.onScroll}
                     onScrollToIndexFailed={this.handleScrollToSectionFailed}
                     pageSize={50}
-                    removeClippedSubviews={false}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     sections={emojis}

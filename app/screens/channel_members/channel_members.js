@@ -18,7 +18,7 @@ import SearchBar from '@components/search_bar';
 import StatusBar from '@components/status_bar';
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
-import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
+import {filterProfilesMatchingTerm, isShared} from '@mm-redux/utils/user_utils';
 import {alertErrorIfInvalidPermissions} from '@utils/general';
 import {createProfilesSections, loadingText} from '@utils/member_list';
 import {
@@ -67,6 +67,7 @@ export default class ChannelMembers extends PureComponent {
             enabled: false,
             id: 'remove-members',
             showAsAction: 'always',
+            testID: 'channel_members.remove.button',
             text: context.intl.formatMessage({id: 'channel_members_modal.remove', defaultMessage: 'Remove'}),
         };
 
@@ -242,7 +243,7 @@ export default class ChannelMembers extends PureComponent {
         const selectProps = {
             selectable: true,
             selected: this.state.selectedIds[props.id],
-            enabled: props.id !== this.props.currentUserId,
+            enabled: props.id !== this.props.currentUserId && !isShared(props.item),
         };
 
         return this.renderItem(props, selectProps);
@@ -391,6 +392,7 @@ export default class ChannelMembers extends PureComponent {
                         onLoadMore={this.getProfiles}
                         onRowPress={this.handleSelectProfile}
                         renderItem={canManageUsers ? this.renderSelectableItem : this.renderUnselectableItem}
+                        testID='channel_members.custom_list'
                         theme={theme}
                     />
                 </SafeAreaView>

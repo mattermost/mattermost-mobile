@@ -25,6 +25,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           backArrowSize={24}
           backgroundColor="transparent"
           blurOnSubmit={false}
+          cancelTitle="Cancel"
           containerHeight={40}
           deleteIconSize={20}
           editable={true}
@@ -44,6 +45,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           onChangeText={[Function]}
           onSearchButtonPress={[Function]}
           onSelectionChange={[Function]}
+          placeholder="Search"
           placeholderTextColor="rgba(61,60,64,0.5)"
           returnKeyType="search"
           searchBarRightMargin={0}
@@ -57,7 +59,9 @@ exports[`MoreChannels should match snapshot 1`] = `
           value=""
         />
       </View>
-      <View>
+      <View
+        testID="more_channels.channel.dropdown"
+      >
         <Text
           accessibilityRole="button"
           onPress={[Function]}
@@ -70,7 +74,9 @@ exports[`MoreChannels should match snapshot 1`] = `
               "marginTop": 20,
             }
           }
+          testID="more_channels.channel.dropdown.public"
         >
+          Show: Public Channels
             
           <CompassIcon
             name="menu-down"
@@ -102,7 +108,7 @@ exports[`MoreChannels should match snapshot 1`] = `
               }
             }
           >
-            <FormattedText
+            <InjectIntl(FormattedText)
               defaultMessage="Loading Channels..."
               id="mobile.loading_channels"
               style={
@@ -119,6 +125,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         renderItem={[Function]}
         shouldRenderSeparator={true}
         showNoResults={true}
+        testID="more_channels.custom_list"
         theme={
           Object {
             "awayIndicator": "#ffbc42",

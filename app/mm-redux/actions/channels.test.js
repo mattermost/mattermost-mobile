@@ -5,11 +5,9 @@ import assert from 'assert';
 import nock from 'nock';
 
 import * as Actions from '@mm-redux/actions/channels';
-import {addUserToTeam} from '@mm-redux/actions/teams';
 import {getProfilesByIds, login} from '@mm-redux/actions/users';
-import {createIncomingHook, createOutgoingHook} from '@mm-redux/actions/integrations';
-import {Client4} from '@mm-redux/client';
-import {General, RequestStatus, Preferences, Permissions} from '../constants';
+import {Client4} from '@client/rest';
+import {General, RequestStatus, Preferences} from '../constants';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
@@ -451,56 +449,10 @@ describe('Actions.Channels', () => {
         await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
-            post('/hooks/incoming').
-            reply(201, {
-                id: TestHelper.generateId(),
-                create_at: 1507840900004,
-                update_at: 1507840900004,
-                delete_at: 0,
-                user_id: TestHelper.basicUser.id,
-                channel_id: secondChannel.id,
-                team_id: TestHelper.basicTeam.id,
-                display_name: 'TestIncomingHook',
-                description: 'Some description.',
-            });
-        const incomingHook = await store.dispatch(createIncomingHook({channel_id: secondChannel.id, display_name: 'test', description: 'test'}));
-
-        nock(Client4.getBaseRoute()).
-            post('/hooks/outgoing').
-            reply(201, {
-                id: TestHelper.generateId(),
-                token: TestHelper.generateId(),
-                create_at: 1507841118796,
-                update_at: 1507841118796,
-                delete_at: 0,
-                creator_id: TestHelper.basicUser.id,
-                channel_id: secondChannel.id,
-                team_id: TestHelper.basicTeam.id,
-                trigger_words: ['testword'],
-                trigger_when: 0,
-                callback_urls: ['http://notarealurl'],
-                display_name: 'TestOutgoingHook',
-                description: '',
-                content_type: 'application/x-www-form-urlencoded',
-            });
-        const outgoingHook = await store.dispatch(createOutgoingHook({
-            channel_id: secondChannel.id,
-            team_id: TestHelper.basicTeam.id,
-            display_name: 'TestOutgoingHook',
-            trigger_words: [TestHelper.generateId()],
-            callback_urls: ['http://notarealurl']},
-        ));
-
-        nock(Client4.getBaseRoute()).
             delete(`/channels/${secondChannel.id}`).
             reply(200, OK_RESPONSE);
 
         await store.dispatch(Actions.deleteChannel(secondChannel.id));
-
-        const {incomingHooks, outgoingHooks} = store.getState().entities.integrations;
-
-        assert.ifError(incomingHooks[incomingHook.id]);
-        assert.ifError(outgoingHooks[outgoingHook.id]);
     });
 
     it('unarchiveChannel', async () => {
@@ -551,56 +503,10 @@ describe('Actions.Channels', () => {
         await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
-            post('/hooks/incoming').
-            reply(201, {
-                id: TestHelper.generateId(),
-                create_at: 1507840900004,
-                update_at: 1507840900004,
-                delete_at: 1609090954545,
-                user_id: TestHelper.basicUser.id,
-                channel_id: secondChannel.id,
-                team_id: TestHelper.basicTeam.id,
-                display_name: 'TestIncomingHook',
-                description: 'Some description.',
-            });
-        const incomingHook = await store.dispatch(createIncomingHook({channel_id: secondChannel.id, display_name: 'test', description: 'test'}));
-
-        nock(Client4.getBaseRoute()).
-            post('/hooks/outgoing').
-            reply(201, {
-                id: TestHelper.generateId(),
-                token: TestHelper.generateId(),
-                create_at: 1507841118796,
-                update_at: 1507841118796,
-                delete_at: 1609090954545,
-                creator_id: TestHelper.basicUser.id,
-                channel_id: secondChannel.id,
-                team_id: TestHelper.basicTeam.id,
-                trigger_words: ['testword'],
-                trigger_when: 0,
-                callback_urls: ['http://notarealurl'],
-                display_name: 'TestOutgoingHook',
-                description: '',
-                content_type: 'application/x-www-form-urlencoded',
-            });
-        const outgoingHook = await store.dispatch(createOutgoingHook({
-            channel_id: secondChannel.id,
-            team_id: TestHelper.basicTeam.id,
-            display_name: 'TestOutgoingHook',
-            trigger_words: [TestHelper.generateId()],
-            callback_urls: ['http://notarealurl']},
-        ));
-
-        nock(Client4.getBaseRoute()).
             delete(`/channels/${secondChannel.id}`).
             reply(200, OK_RESPONSE);
 
         await store.dispatch(Actions.unarchiveChannel(secondChannel.id));
-
-        const {incomingHooks, outgoingHooks} = store.getState().entities.integrations;
-
-        assert.ifError(incomingHooks[incomingHook.id]);
-        assert.ifError(outgoingHooks[outgoingHook.id]);
     });
 
     describe('viewChannel', () => {
@@ -1615,60 +1521,6 @@ describe('Actions.Channels', () => {
         assert.ok(store.getState().entities.channels.totalCount === mockTotalCount);
     });
 
-    it('searchAllChannels', async () => {
-        const userClient = TestHelper.createClient();
-
-        nock(Client4.getBaseRoute()).
-            post('/users').
-            query(true).
-            reply(201, TestHelper.fakeUserWithId());
-
-        const user = await TestHelper.basicClient4.createUser(
-            TestHelper.fakeUser(),
-            null,
-            null,
-            TestHelper.basicTeam.invite_id,
-        );
-
-        nock(Client4.getBaseRoute()).
-            post('/users/login').
-            reply(200, user);
-
-        await userClient.login(user.email, 'password1');
-
-        nock(Client4.getBaseRoute()).
-            post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
-
-        const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
-        );
-
-        nock(Client4.getBaseRoute()).
-            post('/channels/search').
-            reply(200, [TestHelper.basicChannel, userChannel]);
-
-        await store.dispatch(Actions.searchAllChannels('test', 0));
-
-        const moreRequest = store.getState().requests.channels.getAllChannels;
-        if (moreRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(moreRequest.error));
-        }
-
-        nock(Client4.getBaseRoute()).
-            post('/channels/search').
-            reply(200, {channels: [TestHelper.basicChannel, userChannel], total_count: 2});
-
-        const response = await store.dispatch(Actions.searchAllChannels('test', '', false, 0, 100));
-
-        const paginatedRequest = store.getState().requests.channels.getAllChannels;
-        if (paginatedRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(paginatedRequest.error));
-        }
-
-        assert.ok(response.data.channels.length === 2);
-    });
-
     it('searchArchivedChannels', async () => {
         const userClient = TestHelper.createClient();
 
@@ -1901,38 +1753,6 @@ describe('Actions.Channels', () => {
         assert.ok(stats[channelId].member_count >= 1, 'incorrect member count for channel');
     });
 
-    it('updateChannelMemberRoles', async () => {
-        nock(Client4.getBaseRoute()).
-            post('/users').
-            reply(201, TestHelper.fakeUserWithId());
-
-        const user = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
-
-        nock(Client4.getTeamsRoute()).
-            post(`/${TestHelper.basicChannel.id}/members`).
-            reply(201, {team_id: TestHelper.basicTeam.id, roles: 'channel_user', user_id: user.id});
-
-        await store.dispatch(addUserToTeam(TestHelper.basicTeam.id, user.id));
-        nock(Client4.getBaseRoute()).
-            post(`/channels/${TestHelper.basicChannel.id}/members`).
-            reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: user.id});
-
-        await store.dispatch(Actions.addChannelMember(TestHelper.basicChannel.id, user.id));
-
-        const roles = General.CHANNEL_USER_ROLE + ' ' + General.CHANNEL_ADMIN_ROLE;
-
-        nock(Client4.getBaseRoute()).
-            put(`/channels/${TestHelper.basicChannel.id}/members/${user.id}/roles`).
-            reply(200, {roles});
-        await store.dispatch(Actions.updateChannelMemberRoles(TestHelper.basicChannel.id, user.id, roles));
-
-        const members = store.getState().entities.channels.membersInChannel;
-
-        assert.ok(members[TestHelper.basicChannel.id]);
-        assert.ok(members[TestHelper.basicChannel.id][user.id]);
-        assert.ok(members[TestHelper.basicChannel.id][user.id].roles === roles);
-    });
-
     it('updateChannelHeader', async () => {
         nock(Client4.getBaseRoute()).
             get(`/channels/${TestHelper.basicChannel.id}`).
@@ -2158,73 +1978,6 @@ describe('Actions.Channels', () => {
         assert.deepEqual(result, {data: [TestHelper.basicChannel]});
     });
 
-    it('updateChannelScheme', async () => {
-        TestHelper.mockLogin();
-        await store.dispatch(login(TestHelper.basicChannelMember.email, 'password1'));
-
-        nock(Client4.getBaseRoute()).
-            post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
-
-        await store.dispatch(Actions.createChannel(TestHelper.fakeChannel(TestHelper.basicTeam.id), TestHelper.basicUser.id));
-
-        const createRequest = store.getState().requests.channels.createChannel;
-
-        if (createRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(createRequest.error));
-        }
-
-        const {channels} = store.getState().entities.channels;
-        const schemeId = 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
-        const {id} = channels[Object.keys(channels)[0]];
-
-        nock(Client4.getBaseRoute()).
-            put('/channels/' + id + '/scheme').
-            reply(200, OK_RESPONSE);
-
-        await store.dispatch(Actions.updateChannelScheme(id, schemeId));
-        const updated = store.getState().entities.channels.channels[id];
-        assert.ok(updated);
-        assert.equal(updated.scheme_id, schemeId);
-    });
-
-    it('updateChannelMemberSchemeRoles', async () => {
-        TestHelper.mockLogin();
-        await store.dispatch(login(TestHelper.basicChannelMember.email, 'password1'));
-
-        nock(Client4.getBaseRoute()).
-            post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
-
-        const userId = TestHelper.basicChannelMember.id;
-
-        await store.dispatch(Actions.createChannel(TestHelper.fakeChannel(TestHelper.basicTeam.id), userId));
-
-        const {channels} = store.getState().entities.channels;
-        const channelId = channels[Object.keys(channels)[0]].id;
-
-        nock(Client4.getBaseRoute()).
-            put(`/channels/${channelId}/members/${userId}/schemeRoles`).
-            reply(200, OK_RESPONSE);
-
-        await store.dispatch(Actions.updateChannelMemberSchemeRoles(channelId, userId, true, true));
-        const update1 = store.getState().entities.channels.membersInChannel[channelId][userId];
-        assert.ok(update1);
-        assert.equal(update1.scheme_admin, true);
-        assert.equal(update1.scheme_user, true);
-
-        nock(Client4.getBaseRoute()).
-            put(`/channels/${channelId}/members/${userId}/schemeRoles`).
-            reply(200, OK_RESPONSE);
-
-        await store.dispatch(Actions.updateChannelMemberSchemeRoles(channelId, userId, false, false));
-
-        const update2 = store.getState().entities.channels.membersInChannel[channelId][userId];
-        assert.ok(update2);
-        assert.equal(update2.scheme_admin, false);
-        assert.equal(update2.scheme_user, false);
-    });
-
     it('markGroupChannelOpen', async () => {
         const channelId = TestHelper.generateId();
         const now = new Date().getTime();
@@ -2264,65 +2017,6 @@ describe('Actions.Channels', () => {
         const {data} = await Actions.getChannelTimezones(channelId)(dispatch, getState);
 
         assert.deepEqual(response, data);
-    });
-
-    it('membersMinusGroupMembers', async () => {
-        const channelID = 'cid10000000000000000000000';
-        const groupIDs = ['gid10000000000000000000000', 'gid20000000000000000000000'];
-        const page = 7;
-        const perPage = 63;
-
-        nock(Client4.getBaseRoute()).get(
-            `/channels/${channelID}/members_minus_group_members?group_ids=${groupIDs.join(',')}&page=${page}&per_page=${perPage}`).
-            reply(200, {users: [], total_count: 0});
-
-        const {error} = await Actions.membersMinusGroupMembers(channelID, groupIDs, page, perPage)(store.dispatch, store.getState);
-
-        assert.equal(error, null);
-    });
-
-    it('getChannelModerations', async () => {
-        const channelID = 'cid10000000000000000000000';
-
-        nock(Client4.getBaseRoute()).get(
-            `/channels/${channelID}/moderations`).
-            reply(200, [{
-                name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST,
-                roles: {
-                    members: true,
-                    guests: false,
-                },
-            }]);
-
-        const {error} = await store.dispatch(Actions.getChannelModerations(channelID));
-        const moderations = store.getState().entities.channels.channelModerations[channelID];
-
-        assert.equal(error, null);
-        assert.equal(moderations[0].name, Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST);
-        assert.equal(moderations[0].roles.members, true);
-        assert.equal(moderations[0].roles.guests, false);
-    });
-
-    it('patchChannelModerations', async () => {
-        const channelID = 'cid10000000000000000000000';
-
-        nock(Client4.getBaseRoute()).put(
-            `/channels/${channelID}/moderations/patch`).
-            reply(200, [{
-                name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_REACTIONS,
-                roles: {
-                    members: true,
-                    guests: false,
-                },
-            }]);
-
-        const {error} = await store.dispatch(Actions.patchChannelModerations(channelID, {}));
-        const moderations = store.getState().entities.channels.channelModerations[channelID];
-
-        assert.equal(error, null);
-        assert.equal(moderations[0].name, Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_REACTIONS);
-        assert.equal(moderations[0].roles.members, true);
-        assert.equal(moderations[0].roles.guests, false);
     });
 
     it('getChannelMemberCountsByGroup', async () => {

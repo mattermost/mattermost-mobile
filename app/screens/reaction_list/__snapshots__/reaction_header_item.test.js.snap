@@ -79,7 +79,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
 
 exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
 <React.Fragment>
-  <FormattedText
+  <InjectIntl(FormattedText)
     defaultMessage="All"
     id="mobile.reaction_header.all_emojis"
     style={

@@ -11,17 +11,18 @@ import {
     PostOptions,
     SendButton,
 } from '@support/ui/component';
-import {LongPostScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 
 class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
+        threadPostList: 'thread.post_list',
         backButton: 'screen.back.button',
     }
 
     threadScreen = element(by.id(this.testID.threadScreen));
+    threadPostList = element(by.id(this.testID.threadPostList));
     backButton = element(by.id(this.testID.backButton));
 
     // convenience props
@@ -44,16 +45,8 @@ class ThreadScreen {
 
     postList = new PostList(this.testID.threadScreenPrefix);
 
-    getLongPostItem = (postId, text) => {
-        return LongPostScreen.getPost(postId, text);
-    }
-
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
-    }
-
-    getPostListPostItem = (postId, text) => {
-        return this.postList.getPost(postId, text);
+    getPostListPostItem = (postId, text, postProfileOptions = {}) => {
+        return this.postList.getPost(postId, text, postProfileOptions);
     }
 
     getPostMessageAtIndex = (index) => {
@@ -72,11 +65,11 @@ class ThreadScreen {
         await expect(this.threadScreen).not.toBeVisible();
     }
 
-    deletePost = async (postId, text, confirm = true, isParentPost = true) => {
+    deletePost = async (postId, text, {confirm = true, isParentPost = true} = {}) => {
         await this.openPostOptionsFor(postId, text);
 
         // # Delete post
-        await PostOptions.deletePost(confirm);
+        await PostOptions.deletePost({confirm});
         if (isParentPost) {
             await expect(this.threadScreen).not.toBeVisible();
         } else {
@@ -93,10 +86,14 @@ class ThreadScreen {
         await PostOptions.toBeVisible();
     }
 
-    postMessage = async (message) => {
+    postMessage = async (message, {quickReplace = false} = {}) => {
         // # Post message
         await this.postInput.tap();
-        await this.postInput.typeText(message);
+        if (quickReplace) {
+            await this.postInput.replaceText(message);
+        } else {
+            await this.postInput.typeText(message);
+        }
         await this.tapSendButton();
     }
 
@@ -111,6 +108,11 @@ class ThreadScreen {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
+    }
+
+    hasPostMessage = async (postId, postMessage) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
+        await expect(postListPostItem).toBeVisible();
     }
 
     hasPostMessageAtIndex = async (index, postMessage) => {

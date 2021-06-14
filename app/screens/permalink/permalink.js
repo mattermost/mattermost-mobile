@@ -3,19 +3,13 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Platform,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
 import {Navigation} from 'react-native-navigation';
 
 import {
     resetToChannel,
-    goToScreen,
     dismissModal,
     dismissAllModals,
     popToRoot,
@@ -28,9 +22,9 @@ import PostListRetry from '@components/post_list_retry';
 import SafeAreaView from '@components/safe_area_view';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getLastPostIndex} from '@mm-redux/utils/post_list';
-import {preventDoubleTap} from '@utils/tap';
+import {privateChannelJoinPrompt} from '@utils/channels';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {PERMALINK} from '@constants/screen';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -52,12 +46,16 @@ Animatable.initializeRegistryWithDefinitions({
 export default class Permalink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addUserToTeam: PropTypes.func.isRequired,
+            closePermalink: PropTypes.func.isRequired,
             getPostsAround: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
+            getTeamByName: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            removeUserFromTeam: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -68,9 +66,11 @@ export default class Permalink extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
-        myMembers: PropTypes.object.isRequired,
-        onClose: PropTypes.func,
+        myChannelMemberships: PropTypes.object.isRequired,
+        myTeamMemberships: PropTypes.object.isRequired,
         postIds: PropTypes.array,
+        team: PropTypes.object,
+        teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         error: PropTypes.string,
     };
@@ -96,6 +96,7 @@ export default class Permalink extends PureComponent {
         this.state = {
             title: '',
             loading,
+            joinChannelPromptVisible: false,
             error: error || '',
             retry: false,
         };
@@ -132,40 +133,16 @@ export default class Permalink extends PureComponent {
         this.viewRef = ref;
     }
 
-    goToThread = preventDoubleTap((post) => {
-        const {actions} = this.props;
-        const channelId = post.channel_id;
-        const rootId = (post.root_id || post.id);
-        const screen = 'Thread';
-        const title = '';
-        const passProps = {
-            channelId,
-            rootId,
-        };
-
-        actions.getPostThread(rootId);
-        actions.selectPost(rootId);
-
-        goToScreen(screen, title, passProps);
-    });
-
     handleClose = () => {
-        const {actions, onClose} = this.props;
+        const {actions} = this.props;
         if (this.viewRef) {
             this.mounted = false;
             this.viewRef.zoomOut().then(() => {
                 actions.selectPost('');
                 dismissModal();
-
-                if (onClose) {
-                    onClose();
-                }
+                actions.closePermalink();
             });
         }
-    };
-
-    handleHashtagPress = () => {
-        // Do nothing because we're already in a modal
     };
 
     handlePress = () => {
@@ -178,8 +155,8 @@ export default class Permalink extends PureComponent {
 
     jumpToChannel = async (channelId) => {
         if (channelId) {
-            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId, onClose} = this.props;
-            const {handleSelectChannel, handleTeamChange} = actions;
+            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId} = this.props;
+            const {closePermalink, handleSelectChannel, handleTeamChange} = actions;
 
             actions.selectPost('');
 
@@ -195,9 +172,7 @@ export default class Permalink extends PureComponent {
                 resetToChannel(passProps);
             }
 
-            if (onClose) {
-                onClose();
-            }
+            closePermalink();
 
             if (channelTeamId && currentTeamId !== channelTeamId) {
                 handleTeamChange(channelTeamId);
@@ -240,13 +215,60 @@ export default class Permalink extends PureComponent {
                 return;
             }
 
-            if (!channelId) {
+            if (!focusChannelId) {
                 const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
                 focusChannelId = focusedPost ? focusedPost.channel_id : '';
-                if (focusChannelId) {
-                    const {data: channel} = await actions.getChannel(focusChannelId);
-                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+            }
+
+            if (focusChannelId) {
+                const {teamName} = this.props;
+                let {team} = this.props;
+                let joinedNewTeam = false;
+
+                // teamname is only passed for permalinks and not post previews in mentions, search & pinned posts
+                if (teamName) {
+                    if (!team) {
+                        const teamResponse = await actions.getTeamByName(teamName);
+                        if (teamResponse.error) {
+                            this.setState({error: teamResponse.error.message, loading: false});
+                            return;
+                        }
+                        team = teamResponse.data;
+                    }
+                    if (!this.props.myTeamMemberships[team.id]) {
+                        const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
+                        if (teamJoinResponse.error) {
+                            this.setState({error: teamJoinResponse.error.message, loading: false});
+                            return;
+                        }
+                        joinedNewTeam = true;
+                    }
+                }
+
+                if (!this.props.myChannelMemberships[focusChannelId]) {
+                    const {error: channelError, data: channel} = await actions.getChannel(focusChannelId);
+                    if (channelError) {
+                        this.setState({error: channelError.message, loading: false});
+                    } else {
+                        if (channel.type === General.PRIVATE_CHANNEL) {
+                            this.setState({joinChannelPromptVisible: true});
+                            const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
+                            if (!join) {
+                                if (joinedNewTeam) {
+                                    await actions.removeUserFromTeam(team.id, currentUserId);
+                                }
+                                this.handleClose();
+                                return;
+                            }
+                            this.setState({joinChannelPromptVisible: false});
+                        }
+
+                        // Join Open/Private channel
+                        const channelJoinResponse = await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                        if (channelJoinResponse.error) {
+                            this.setState({error: channelJoinResponse.error.message, loading: false});
+                            return;
+                        }
                     }
                 }
             }
@@ -286,7 +308,7 @@ export default class Permalink extends PureComponent {
 
     render() {
         const {channelName, currentUserId, focusedPostId, postIds, theme} = this.props;
-        const {error, loading, retry, title} = this.state;
+        const {error, joinChannelPromptVisible, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
         let postList;
@@ -306,23 +328,19 @@ export default class Permalink extends PureComponent {
                 </View>
             );
         } else if (loading) {
-            postList = <Loading color={theme.centerChannelColor}/>;
+            postList = joinChannelPromptVisible ? null : <Loading color={theme.centerChannelColor}/>;
         } else {
             postList = (
                 <PostList
                     testID='permalink.post_list'
                     highlightPostId={focusedPostId}
                     indicateNewMessages={false}
-                    isSearchResult={false}
                     shouldRenderReplyButton={false}
-                    renderReplies={true}
-                    onHashtagPress={this.handleHashtagPress}
-                    onPostPress={this.goToThread}
                     postIds={postIds}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds || []) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}
+                    location={PERMALINK}
                 />
             );
         }

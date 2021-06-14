@@ -30,6 +30,7 @@ import ManageMembers from './manage_members';
 import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
+import Bindings from './bindings';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
@@ -37,19 +38,18 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelGuestCount: PropTypes.number,
         currentChannelMemberCount: PropTypes.number,
         currentUserId: PropTypes.string,
-        isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
-        status: PropTypes.string,
+        teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        customStatus: PropTypes.object,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -80,10 +80,6 @@ export default class ChannelInfo extends PureComponent {
         }
 
         dismissModal();
-    };
-
-    handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     permalinkBadTeam = () => {
@@ -158,6 +154,9 @@ export default class ChannelInfo extends PureComponent {
                     testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
+                <Bindings
+                    theme={theme}
+                />
             </>
         );
     };
@@ -168,10 +167,11 @@ export default class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             currentChannelGuestCount,
-            status,
+            teammateId,
             theme,
-            isBot,
             isTeammateGuest,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -186,6 +186,7 @@ export default class ChannelInfo extends PureComponent {
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
+                    testID='channel_info.scroll_view'
                 >
                     {Boolean(currentChannel?.id) &&
                     <ChannelInfoHeader
@@ -194,16 +195,18 @@ export default class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
-                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
-                        status={status}
+                        shared={currentChannel.shared}
+                        teammateId={teammateId}
                         theme={theme}
                         type={currentChannel.type}
                         isArchived={channelIsArchived}
-                        isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        testID='channel_info.header'
+                        customStatus={customStatus}
+                        isCustomStatusEnabled={isCustomStatusEnabled}
                     />
                     }
                     <View style={style.rowsContainer}>
@@ -212,10 +215,12 @@ export default class ChannelInfo extends PureComponent {
                     <View style={style.footer}>
                         <Leave
                             close={this.close}
+                            testID='channel_info.leave.action'
                             theme={theme}
                         />
                         <Archive
                             close={this.close}
+                            testID='channel_info.archive.action'
                             theme={theme}
                         />
                     </View>

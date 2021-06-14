@@ -23,7 +23,7 @@ describe('Autocomplete', () => {
 
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         // # Open channel screen
@@ -50,16 +50,19 @@ describe('Autocomplete', () => {
         await EditPostScreen.open();
 
         const {atMentionSuggestionList} = Autocomplete;
-        const {editPostInput, editPostClose} = EditPostScreen;
+        const {
+            closeEditPostButton,
+            messageInput,
+        } = EditPostScreen;
 
         // # Open autocomplete
         await expect(atMentionSuggestionList).not.toExist();
-        await editPostInput.typeText(' @');
+        await messageInput.typeText(' @');
 
         // * Expect at_mention autocomplete to render
         await expect(atMentionSuggestionList).toExist();
 
         // # Close edit post screen
-        await editPostClose.tap();
+        await closeEditPostButton.tap();
     });
 });

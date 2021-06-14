@@ -137,6 +137,7 @@ export default class Timezone extends PureComponent {
                 </View>
                 <FlatList
                     data={this.filteredTimezones(value)}
+                    removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
                     getItemLayout={this.getItemLayout}

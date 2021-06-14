@@ -4,7 +4,7 @@
 import moment from 'moment-timezone';
 
 import {getSessions} from '@mm-redux/actions/users';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 

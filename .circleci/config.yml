@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
+  node: circleci/node@4.4.0
 
 executors:
   android:
@@ -23,7 +24,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "12.0.0"
+      xcode: "12.1.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
@@ -91,6 +92,8 @@ commands:
   npm-dependencies:
     description: "Get JavaScript dependencies"
     steps:
+      - node/install-npm:
+          version: '6.14.11'
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
@@ -455,10 +458,10 @@ workflows:
   build:
     jobs:
       - test
-      - check-deps:
-          context: sast-webhook
-          requires:
-            - test
+      # - check-deps:
+      #     context: sast-webhook
+      #     requires:
+      #       - test
 
       - build-android-release:
           context: mattermost-mobile-android-release
@@ -550,14 +553,14 @@ workflows:
             - test
           filters:
             branches:
-              only: /^build-pr-.*/
+              only: /^(build|android)-pr-.*/
       - build-ios-pr:
           context: mattermost-mobile-ios-pr
           requires:
             - test
           filters:
             branches:
-              only: /^build-pr-.*/
+              only: /^(build|ios)-pr-.*/
 
       - build-android-unsigned:
           context: mattermost-mobile-unsigned
@@ -587,6 +590,7 @@ workflows:
                 - /^build-\d+$/
                 - /^build-ios-\d+$/
                 - /^build-ios-beta-\d+$/
+                - /^build-ios-sim-\d+$/
                 
       - github-release:
           context: mattermost-mobile-unsigned

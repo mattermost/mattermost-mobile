@@ -5,12 +5,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-
 export default class ConditionalTouchable extends React.PureComponent {
     static propTypes = {
         touchable: PropTypes.bool,
-        children: CustomPropTypes.Children.isRequired,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
     };
 
     render() {

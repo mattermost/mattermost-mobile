@@ -19,7 +19,6 @@ import {SearchBar} from 'react-native-elements';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import CompassIcon from '@components/compass_icon';
-import CustomPropTypes from '@constants/custom_prop_types';
 
 const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
 
@@ -38,9 +37,9 @@ export default class Search extends PureComponent {
         tintColorSearch: PropTypes.string,
         tintColorDelete: PropTypes.string,
         selectionColor: PropTypes.string,
-        inputStyle: CustomPropTypes.Style,
-        containerStyle: CustomPropTypes.Style,
-        cancelButtonStyle: CustomPropTypes.Style,
+        inputStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
+        containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
+        cancelButtonStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         autoFocus: PropTypes.bool,
         placeholder: PropTypes.string,
         cancelTitle: PropTypes.oneOfType([

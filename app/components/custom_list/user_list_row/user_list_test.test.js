@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import UserListRow from './user_list_row';
 
-jest.mock('react-intl');
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../../utils/theme');
     return {
@@ -18,7 +17,6 @@ jest.mock('@utils/theme', () => {
 });
 
 describe('UserListRow', () => {
-    const formatMessage = jest.fn();
     const baseProps = {
         id: '123455',
         isMyUser: false,
@@ -29,12 +27,12 @@ describe('UserListRow', () => {
         },
         theme: Preferences.THEMES.default,
         teammateNameDisplay: 'test',
+        testID: 'custom_list.user_item',
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserListRow {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -51,9 +49,8 @@ describe('UserListRow', () => {
             user: deactivatedUser,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserListRow {...newProps}/>,
-            {context: {intl: {formatMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -67,9 +64,23 @@ describe('UserListRow', () => {
             },
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserListRow {...newProps}/>,
-            {context: {intl: {formatMessage}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for remote user', () => {
+        const newProps = {
+            ...baseProps,
+            user: {
+                ...baseProps.user,
+                remote_id: 'abc123',
+            },
+        };
+
+        const wrapper = shallowWithIntl(
+            <UserListRow {...newProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -80,9 +91,8 @@ describe('UserListRow', () => {
             isMyUser: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserListRow {...newProps}/>,
-            {context: {intl: {formatMessage}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });

@@ -9,6 +9,7 @@ exports[`UserStatus should match snapshot, away status 1`] = `
       "fontSize": 32,
     }
   }
+  testID="user_status.icon.away"
 />
 `;
 
@@ -21,6 +22,7 @@ exports[`UserStatus should match snapshot, dnd status 1`] = `
       "fontSize": 32,
     }
   }
+  testID="user_status.icon.dnd"
 />
 `;
 
@@ -33,6 +35,7 @@ exports[`UserStatus should match snapshot, online status 1`] = `
       "fontSize": 32,
     }
   }
+  testID="user_status.icon.online"
 />
 `;
 
@@ -41,9 +44,10 @@ exports[`UserStatus should match snapshot, should default to offline status 1`] 
   name="circle-outline"
   style={
     Object {
-      "color": "rgba(61,60,64,0.3)",
+      "color": "rgba(184,184,184,0.64)",
       "fontSize": 32,
     }
   }
+  testID="user_status.icon.offline"
 />
 `;

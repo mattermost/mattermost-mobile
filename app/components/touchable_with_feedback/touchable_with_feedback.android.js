@@ -7,12 +7,10 @@ import React, {PureComponent} from 'react';
 import {TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-
 export default class TouchableWithFeedbackAndroid extends PureComponent {
     static propTypes = {
         testID: PropTypes.string,
-        children: CustomPropTypes.Children,
+        children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf([PropTypes.node])]),
         underlayColor: PropTypes.string,
         type: PropTypes.oneOf(['native', 'opacity', 'none']),
     };

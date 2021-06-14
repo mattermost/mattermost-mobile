@@ -16,7 +16,7 @@ export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembers
 import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 import {ThreadsState} from '@mm-redux/types/threads';
-import {Channel, ChannelStats, ChannelMembership, ChannelModeration, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
+import {Channel, ChannelStats, ChannelMembership, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
@@ -944,10 +944,6 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
     }
 
     return Boolean(state.entities.channels.manuallyUnread[channelId]);
-}
-
-export function getChannelModerations(state: GlobalState, channelId: string): Array<ChannelModeration> {
-    return state.entities.channels.channelModerations[channelId];
 }
 
 export function getChannelMemberCountsByGroup(state: GlobalState, channelId: string): ChannelMemberCountsByGroup {

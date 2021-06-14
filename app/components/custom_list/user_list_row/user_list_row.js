@@ -9,7 +9,9 @@ import {
     View,
 } from 'react-native';
 
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import ChannelIcon from '@components/channel_icon';
+import {General} from '@mm-redux/constants';
+import {displayUsername, isShared} from '@mm-redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
@@ -38,6 +40,27 @@ export default class UserListRow extends React.PureComponent {
         }
     };
 
+    renderIcon = (style) => {
+        const {theme, user} = this.props;
+        if (!isShared(user)) {
+            return null;
+        }
+        return (
+            <ChannelIcon
+                isActive={false}
+                isArchived={false}
+                isBot={false}
+                isUnread={true}
+                isInfo={true}
+                size={18}
+                shared={true}
+                style={style.sharedUserIcon}
+                theme={theme}
+                type={General.DM_CHANNEL}
+            />
+        );
+    };
+
     render() {
         const {formatMessage} = this.context.intl;
         const {
@@ -63,6 +86,10 @@ export default class UserListRow extends React.PureComponent {
 
         const teammateDisplay = displayUsername(user, teammateNameDisplay);
         const showTeammateDisplay = teammateDisplay !== username;
+        const testID = this.props.testID;
+        const itemTestID = `${testID}.${id}`;
+        const displayUsernameTestID = `${testID}.display_username`;
+        const profilePictureTestID = `${itemTestID}.profile_picture`;
 
         return (
             <View style={style.container}>
@@ -72,22 +99,27 @@ export default class UserListRow extends React.PureComponent {
                     enabled={enabled}
                     selectable={selectable}
                     selected={selected}
-                    testID={this.props.testID}
+                    testID={testID}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture
                             userId={id}
                             size={32}
                             iconSize={24}
+                            testID={profilePictureTestID}
                         />
                     </View>
-                    <View style={style.textContainer}>
+                    <View
+                        style={style.textContainer}
+                        testID={itemTestID}
+                    >
                         <View>
                             <View style={style.indicatorContainer}>
                                 <Text
                                     style={style.username}
                                     ellipsizeMode='tail'
                                     numberOfLines={1}
+                                    testID={displayUsernameTestID}
                                 >
                                     {usernameDisplay}
                                 </Text>
@@ -122,6 +154,7 @@ export default class UserListRow extends React.PureComponent {
                         </View>
                         }
                     </View>
+                    {this.renderIcon(style)}
                 </CustomListRow>
             </View>
         );
@@ -162,6 +195,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginTop: 2,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        sharedUserIcon: {
+            alignSelf: 'center',
+            opacity: 0.75,
         },
     };
 });

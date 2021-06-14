@@ -7,7 +7,7 @@ import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import TestHelper from 'test/test_helper';
 import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import * as Selectors from '@mm-redux/selectors/entities/channels';
-import {General, Preferences, Permissions} from '../../constants';
+import {General, Preferences} from '../../constants';
 
 const sortUsernames = (a, b) => a.localeCompare(b, General.DEFAULT_LOCALE, {numeric: true});
 
@@ -3787,29 +3787,6 @@ test('Selectors.Channels.isManuallyUnread', () => {
     assert.equal(Selectors.isManuallyUnread(state, undefined), false);
     assert.equal(Selectors.isManuallyUnread(state, 'channel2'), false);
     assert.equal(Selectors.isManuallyUnread(state, 'channel3'), false);
-});
-
-test('Selectors.Channels.getChannelModerations', () => {
-    const moderations = [{
-        name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST,
-        roles: {
-            members: true,
-        },
-    }];
-
-    const state = {
-        entities: {
-            channels: {
-                channelModerations: {
-                    channel1: moderations,
-                },
-            },
-        },
-    };
-
-    assert.equal(Selectors.getChannelModerations(state, 'channel1'), moderations);
-    assert.equal(Selectors.getChannelModerations(state, undefined), undefined);
-    assert.equal(Selectors.getChannelModerations(state, 'undefined'), undefined);
 });
 
 test('Selectors.Channels.getChannelMemberCountsByGroup', () => {

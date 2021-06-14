@@ -3,12 +3,10 @@
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
 
 import {handleSelectChannel, setChannelDisplayName} from '@actions/views/channel';
 import {General} from '@mm-redux/constants';
-import {getArchivedChannels, getChannels, joinChannel, searchChannels} from '@mm-redux/actions/channels';
-import {getChannelsInCurrentTeam, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
+import {getArchivedChannels, getChannels, getSharedChannels, joinChannel, searchChannels} from '@mm-redux/actions/channels';
 import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
@@ -17,30 +15,19 @@ import {isAdmin, isSystemAdmin} from '@mm-redux/utils/user_utils';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 
+import {teamArchivedChannels, joinablePublicChannels, joinableSharedChannels} from '@selectors/channel';
+
 import MoreChannels from './more_channels';
 
-const joinablePublicChannels = createSelector(
-    getChannelsInCurrentTeam,
-    getMyChannelMemberships,
-    (channels, myMembers) => {
-        return channels.filter((c) => {
-            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL && c.delete_at === 0);
-        });
-    },
-);
-
-const teamArchivedChannels = createSelector(
-    getChannelsInCurrentTeam,
-    (channels) => {
-        return channels.filter((c) => c.delete_at !== 0);
-    },
-);
+const defaultSharedChannels = [];
 
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
+    const sharedChannelsEnabled = config.ExperimentalSharedChannels === 'true';
     const roles = getCurrentUserRoles(state);
     const channels = joinablePublicChannels(state);
+    const sharedChannels = sharedChannelsEnabled ? joinableSharedChannels(state) : defaultSharedChannels;
     const archivedChannels = teamArchivedChannels(state);
     const currentTeamId = getCurrentTeamId(state);
     const canShowArchivedChannels = config.ExperimentalViewArchivedChannels === 'true' &&
@@ -51,6 +38,8 @@ function mapStateToProps(state) {
         currentUserId: getCurrentUserId(state),
         currentTeamId,
         channels,
+        sharedChannels,
+        sharedChannelsEnabled,
         archivedChannels,
         theme: getTheme(state),
         canShowArchivedChannels,
@@ -62,6 +51,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getArchivedChannels,
             getChannels,
+            getSharedChannels,
             handleSelectChannel,
             joinChannel,
             searchChannels,

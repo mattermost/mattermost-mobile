@@ -46,6 +46,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'AdvancedSettings':
         screen = require('@screens/settings/advanced_settings').default;
         break;
+    case 'AppForm':
+        screen = require('@screens/apps_form').default;
+        break;
     case 'ChannelAddMembers':
         screen = require('@screens/channel_add_members').default;
         break;
@@ -58,9 +61,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'ChannelNotificationPreference':
         screen = require('@screens/channel_notification_preference').default;
         break;
-    case 'ClientUpgrade':
-        screen = require('@screens/client_upgrade').default;
-        break;
     case 'ClockDisplaySettings':
         screen = require('@screens/settings/clock_display').default;
         break;
@@ -69,6 +69,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'CreateChannel':
         screen = require('@screens/create_channel').default;
+        break;
+    case 'CustomStatus':
+        screen = require('@screens/custom_status').default;
         break;
     case 'DisplaySettings':
         screen = require('@screens/settings/display_settings').default;
@@ -106,9 +109,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'LoginOptions':
         screen = require('@screens/login_options').default;
         break;
-    case 'LongPost':
-        screen = require('@screens/long_post').default;
-        break;
     case 'MainSidebar':
         screen = require('app/components/sidebars/main').default;
         break;
@@ -145,6 +145,12 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'OptionsModal':
         screen = require('@screens/options_modal').default;
+        break;
+    case 'ParticipantsList':
+        screen = require('@screens/participants_list').default;
+        break;
+    case 'PerfMetrics':
+        screen = require('@screens/perf_metrics').default;
         break;
     case 'Permalink':
         screen = require('@screens/permalink').default;

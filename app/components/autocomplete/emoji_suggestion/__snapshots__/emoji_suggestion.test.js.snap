@@ -200,6 +200,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
       "bust_in_silhouette",
       "busts_in_silhouette",
       "butterfly",
+      "ca",
       "cactus",
       "cake",
       "calendar",
@@ -1023,6 +1024,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
       "pisces",
       "pitcairn_islands",
       "pizza",
+      "pk",
       "place_of_worship",
       "plate_with_cutlery",
       "play_or_pause_button",
@@ -1505,6 +1507,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
       "yen",
       "yin_yang",
       "yum",
+      "za",
       "zambia",
       "zap",
       "zero",
@@ -1712,6 +1715,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
         "bust_in_silhouette",
         "busts_in_silhouette",
         "butterfly",
+        "ca",
         "cactus",
         "cake",
         "calendar",
@@ -2535,6 +2539,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
         "pisces",
         "pitcairn_islands",
         "pizza",
+        "pk",
         "place_of_worship",
         "plate_with_cutlery",
         "play_or_pause_button",
@@ -3017,6 +3022,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
         "yen",
         "yin_yang",
         "yum",
+        "za",
         "zambia",
         "zap",
         "zero",
@@ -3036,7 +3042,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
   numColumns={1}
   onEndReachedThreshold={2}
   pageSize={10}
-  removeClippedSubviews={false}
+  removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={50}
   style={

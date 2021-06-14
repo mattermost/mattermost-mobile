@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {View, ViewPropTypes} from 'react-native';
 import PropTypes from 'prop-types';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
@@ -42,6 +42,7 @@ export default class Tag extends PureComponent {
         inTitle: PropTypes.bool,
         show: PropTypes.bool,
         style: ViewPropTypes.style,
+        testID: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
@@ -61,6 +62,7 @@ export default class Tag extends PureComponent {
                     id={this.props.id}
                     defaultMessage={this.props.defaultMessage}
                     style={[style.text, this.props.inTitle ? style.title : null]}
+                    testID={this.props.testID}
                 />
             </View>
         );
