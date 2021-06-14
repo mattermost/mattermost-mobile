@@ -5,7 +5,7 @@ import Operator from '@database/operator';
 import {ServerUrlChangedArgs} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import System from '@typings/database/system';
-import {getActiveServerDatabase, getDefaultDatabase} from '@utils/database';
+import {getActiveServerDatabase} from '@utils/database';
 
 /**
  * setLastUpgradeCheck: Takes in 'config' record from System entity and update its lastUpdateCheck to Date.now()

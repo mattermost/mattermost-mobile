@@ -21,7 +21,6 @@ global.window = {};
 
 jest.doMock('react-native', () => {
     const {
-        Appearance,
         Platform,
         StyleSheet,
         ViewPropTypes,
