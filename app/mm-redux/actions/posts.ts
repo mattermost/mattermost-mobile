@@ -1322,7 +1322,7 @@ export function lastPostActions(post: Post, websocketMessageProps: any) {
             await dispatch(markChannelAsRead(post.channel_id, undefined, markAsReadOnServer));
             await dispatch(markChannelAsViewed(post.channel_id));
         } else {
-            await dispatch(markChannelAsUnread(websocketMessageProps.team_id, post.channel_id, websocketMessageProps.mentions, post.root_id === ''));
+            await dispatch(markChannelAsUnread(websocketMessageProps.team_id, post.channel_id, websocketMessageProps.mentions));
         }
     };
 }

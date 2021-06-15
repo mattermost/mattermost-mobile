@@ -18,7 +18,7 @@ export interface ClientPostsMix {
     getPosts: (channelId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
     getPostsSince: (channelId: string, since: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
     getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
-    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
+    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
     getUserThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, extended?: boolean, deleted?: boolean, unread?: boolean, since?: number) => Promise<any>;
     getUserThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
     getThreadMentionCountsByChannel: (userId: string, teamId: string) => Promise<any>;
@@ -104,7 +104,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
     getPostsSince = async (channelId: string, since: number, fetchThreads = true, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({since, collapsedThreads, collapsedThreadsExtended})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({since, skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
@@ -113,7 +113,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
         analytics.trackAPI('api_posts_get_before', {channel_id: channelId});
 
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage, skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
