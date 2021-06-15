@@ -11,8 +11,13 @@ import Login from './index';
 
 jest.mock('@requests/remote/user', () => {
     return {
-        error: {
-            server_error_id: 'mfa.validate_token.authenticate.app_error',
+        login: () => {
+            return {
+                data: undefined,
+                error: {
+                    server_error_id: 'mfa.validate_token.authenticate.app_error',
+                },
+            };
         },
     };
 });
@@ -106,11 +111,13 @@ describe('Login', () => {
         expect(goToScreen).
             toHaveBeenCalledWith(
                 'MFA',
-                'Multi-factor SSO',
+                'Multi-factor Authentication',
                 {
                     goToChannel: expect.anything(),
                     loginId,
                     password,
+                    config: {EnableSignInWithEmail: 'true', EnableSignInWithUsername: 'true'},
+                    license: {IsLicensed: 'false'},
                 },
             );
     });
