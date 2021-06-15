@@ -21,7 +21,6 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 
-import {GlobalStyles} from '@app/styles';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import FormattedText from '@components/formatted_text';
@@ -294,7 +293,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                 <FormattedText
                     id='login.signIn'
                     defaultMessage='Sign in'
-                    style={[GlobalStyles.signupButtonText, additionalTextStyle]}
+                    style={[styles.signupButtonText, additionalTextStyle]}
                 />
             </Button>
         );
@@ -319,7 +318,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         style={{height: 72, resizeMode: 'contain'}}
                     />
                     {config?.SiteName && (<View testID='login.screen'>
-                        <Text style={GlobalStyles.header}>{config?.SiteName}</Text>
+                        <Text style={styles.header}>{config?.SiteName}</Text>
                         <FormattedText
                             style={styles.subheader}
                             id='web.root.signup_info'
@@ -437,6 +436,18 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         alignSelf: 'stretch',
         marginTop: 10,
         padding: 15,
+    },
+    signupButtonText: {
+        textAlign: 'center',
+        color: '#2389D7',
+        fontSize: 17,
+    },
+    header: {
+        textAlign: 'center',
+        marginTop: 15,
+        marginBottom: 15,
+        fontSize: 32,
+        fontWeight: '600',
     },
 }));
 
