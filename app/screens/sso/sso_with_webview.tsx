@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CookieManager, {Cookies} from '@react-native-cookies/cookies';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
-import CookieManager from 'react-native-cookies';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
 import {WebViewErrorEvent, WebViewMessageEvent, WebViewNavigation, WebViewNavigationEvent} from 'react-native-webview/lib/WebViewTypes';
@@ -67,15 +67,6 @@ interface SSOWithWebViewProps {
     theme: Theme
 }
 
-type CookieResponseType = {
-    MMAUTHTOKEN: string | {
-        value: string
-    };
-    MMCSRF: string | {
-        value: string
-    };
-}
-
 function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
     const style = getStyleSheet(theme);
 
@@ -105,7 +96,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
             const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
             Client4.setUrl(url);
 
-            CookieManager.get(url, true).then((res: CookieResponseType) => {
+            CookieManager.get(url, true).then((res: Cookies) => {
                 const mmtoken = res.MMAUTHTOKEN;
                 const csrf = res.MMCSRF;
                 const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
@@ -200,7 +191,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
             return (
                 <WebView
                     automaticallyAdjustContentInsets={false}
-                    cacheEnabled={false}
+                    cacheEnabled={true}
                     injectedJavaScript={jsCode}
                     javaScriptEnabled={true}
                     onLoadEnd={onLoadEnd}
