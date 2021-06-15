@@ -6,6 +6,7 @@ import React from 'react';
 import {renderWithIntl, fireEvent, waitFor} from '@test/intl-test-helper';
 
 import ForgotPassword from './index';
+import * as UserAPICalls from '@requests/remote/user';
 
 describe('ForgotPassword', () => {
     const baseProps = {
@@ -32,22 +33,16 @@ describe('ForgotPassword', () => {
     });
 
     test('Should show password link sent texts', async () => {
+        const spyOnResetAPICall = jest.spyOn(UserAPICalls, 'sendPasswordResetEmail');
         const {getByTestId} = renderWithIntl(<ForgotPassword {...baseProps}/>);
         const emailTextInput = getByTestId('forgot.password.email');
         const resetButton = getByTestId('forgot.password.button');
 
         fireEvent.changeText(emailTextInput, 'test@test.com');
-        fireEvent.changeText(emailTextInput, 'bar');
-
         await waitFor(() => {
             fireEvent.press(resetButton);
         }, {timeout: 300});
 
-        // When testing for appearance of views, we have to use this work-around as the library is a bit glitchy when we have more than one await in a test.
-        // Issue https://github.com/callstack/react-native-testing-library/issues/379
-        const t = setTimeout(() => {
-            clearTimeout(t);
-            expect(getByTestId('password_send.link.view')).toBeDefined();
-        }, 500);
+        expect(spyOnResetAPICall).toHaveBeenCalled();
     });
 });

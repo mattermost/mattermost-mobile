@@ -44,6 +44,7 @@ const ForgotPassword: NavigationFunctionComponent = () => {
             setError(apiError);
         }
 
+        //fixme: why were we doing this ?
         // else if (this.state.error) {
         //     this.setState({error: ''});
         // }
@@ -71,7 +72,7 @@ const ForgotPassword: NavigationFunctionComponent = () => {
             return (
                 <View
                     style={styles.resetSuccessContainer}
-                    testID={'password_send.link.view'}
+                    testID={'password_send.link.sent'}
                 >
                     <FormattedText
                         style={styles.successTxtColor}
@@ -94,7 +95,7 @@ const ForgotPassword: NavigationFunctionComponent = () => {
         }
 
         return (
-            <View>
+            <View testID={'password_send.link.prepare'}>
                 <FormattedText
                     style={[styles.subheader, styles.defaultTopPadding]}
                     id='password_send.description'
