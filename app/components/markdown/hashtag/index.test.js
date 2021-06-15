@@ -37,25 +37,4 @@ describe('Hashtag', () => {
         expect(popToRoot).toHaveBeenCalled();
         expect(showSearchModal).toHaveBeenCalledWith('#test');
     });
-
-    test('handlePress should call onHashtagPress if provided', async () => {
-        const dismissAllModals = jest.spyOn(NavigationActions, 'dismissAllModals');
-        const popToRoot = jest.spyOn(NavigationActions, 'popToRoot');
-        const showSearchModal = jest.spyOn(NavigationActions, 'showSearchModal');
-
-        const props = {
-            ...baseProps,
-            onHashtagPress: jest.fn(),
-        };
-
-        const wrapper = shallow(<Hashtag {...props}/>);
-
-        await wrapper.instance().handlePress();
-
-        expect(dismissAllModals).not.toBeCalled();
-        expect(popToRoot).not.toBeCalled();
-        expect(showSearchModal).not.toBeCalled();
-
-        expect(props.onHashtagPress).toBeCalled();
-    });
 });

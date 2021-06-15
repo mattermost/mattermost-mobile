@@ -43,12 +43,13 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       actionType="select"
       actionValue="30"
       label={
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Immediately"
           id="user.settings.notifications.email.immediately"
         />
       }
       selected={true}
+      testID="notification_settings_email.immediately.action"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -94,12 +95,13 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       actionType="select"
       actionValue="0"
       label={
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Never"
           id="user.settings.notifications.email.never"
         />
       }
       selected={false}
+      testID="notification_settings_email.never.action"
       theme={
         Object {
           "awayIndicator": "#ffbc42",

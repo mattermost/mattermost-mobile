@@ -35,7 +35,7 @@ describe('in-app Notification', () => {
         testChannel1 = channel;
         testNotification = getNotification(testChannel1, team, user);
 
-        ({channel: testChannel2} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: testChannel2} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         // # Open channel screen
         await ChannelScreen.open(user);

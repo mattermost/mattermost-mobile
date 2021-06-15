@@ -2,30 +2,23 @@
 // See LICENSE.txt for license information.
 
 import {PostList} from '@support/ui/component';
-import {LongPostScreen} from '@support/ui/screen';
 
 class PermalinkScreen {
     testID = {
         permalinkScreenPrefix: 'permalink.',
         permalinkScreen: 'permalink.screen',
+        permalinkPostList: 'permalink.post_list',
         searchJump: 'permalink.search.jump',
     }
 
     permalinkScreen = element(by.id(this.testID.permalinkScreen));
+    permalinkPostList = element(by.id(this.testID.permalinkPostList));
     searchJump = element(by.id(this.testID.searchJump));
 
     postList = new PostList(this.testID.permalinkScreenPrefix);
 
-    getLongPostItem = (postId, text) => {
-        return LongPostScreen.getPost(postId, text);
-    }
-
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
-    }
-
-    getPostListPostItem = (postId, text) => {
-        return this.postList.getPost(postId, text);
+    getPostListPostItem = (postId, text, postProfileOptions = {}) => {
+        return this.postList.getPost(postId, text, postProfileOptions);
     }
 
     getPostMessageAtIndex = (index) => {
@@ -48,6 +41,11 @@ class PermalinkScreen {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
+    }
+
+    hasPostMessage = async (postId, postMessage) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
+        await expect(postListPostItem).toBeVisible();
     }
 
     hasPostMessageAtIndex = async (index, postMessage) => {

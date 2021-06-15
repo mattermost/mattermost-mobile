@@ -8,14 +8,14 @@ import {ViewTypes} from 'app/constants';
 import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
-    getChannelByNameAndTeamName,
+    getChannelByName,
     joinChannel,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
-import {selectTeam} from '@mm-redux/actions/teams';
-import {Client4} from '@mm-redux/client';
 import {getLicense} from '@mm-redux/selectors/entities/general';
+import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
+import {Client4} from '@client/rest';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {
@@ -26,7 +26,7 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {getTeamByName, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import {getTeamByName as selectTeamByName, getCurrentTeam, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -37,9 +37,11 @@ import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
 import {getViewingGlobalThreads} from '@selectors/threads';
-import telemetry from '@telemetry';
-import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
+import telemetry, {PERF_MARKERS} from '@telemetry';
+import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
+import {fetchAppBindings} from '@mm-redux/actions/apps';
+import {appsEnabled} from '@utils/apps';
 
 const MAX_RETRIES = 3;
 
@@ -49,7 +51,7 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
         const {currentTeamId} = state.entities.teams;
 
         if (teamName) {
-            const team = getTeamByName(state, teamName);
+            const team = selectTeamByName(state, teamName);
 
             if (!team && errorHandler) {
                 errorHandler();
@@ -187,12 +189,21 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const dt = Date.now();
         const state = getState();
+        const {currentUserId} = state.entities.users;
         const {channels, currentChannelId, myMembers} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
         const channel = channels[channelId];
         const member = myMembers[channelId];
 
         if (channel) {
+            let markerExtra;
+            if (channel.display_name) {
+                markerExtra = `Channel: ${channel.display_name}`;
+            } else {
+                markerExtra = `Channel: ${channel.type === General.DM_CHANNEL ? 'Direct Channel' : channel.name}`;
+            }
+
+            telemetry.start([PERF_MARKERS.CHANNEL_RENDER], Date.now(), [markerExtra]);
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
             let previousChannelId = null;
@@ -216,6 +227,10 @@ export function handleSelectChannel(channelId) {
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
+            if (appsEnabled(state)) {
+                //TODO improve sync method
+                dispatch(fetchAppBindings(currentUserId, channelId));
+            }
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
 
@@ -223,15 +238,34 @@ export function handleSelectChannel(channelId) {
     };
 }
 
-export function handleSelectChannelByName(channelName, teamName, errorHandler) {
+export function handleSelectChannelByName(channelName, teamName, errorHandler, intl) {
     return async (dispatch, getState) => {
         let state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
-        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName, true));
-        const {error, data: channel} = response;
+        const currentUserId = getCurrentUserId(state);
         const currentChannelId = getCurrentChannelId(state);
+
+        const {error: teamError, data: team} = await dispatch(getTeamByName(teamName || currentTeamName));
+
+        // Fallback to API response error, if any.
+        if (teamError) {
+            if (errorHandler) {
+                errorHandler(intl);
+            }
+            return {error: teamError};
+        }
+
+        // Join team if not a member already
+        const myTeamMemberships = getTeamMemberships(state);
+        let joinedNewTeam = false;
+        if (!myTeamMemberships[team.id]) {
+            await dispatch(addUserToTeam(team.id, currentUserId));
+            joinedNewTeam = true;
+        }
+
+        const {error: channelError, data: channel} = await dispatch(getChannelByName(team.id, channelName));
 
         state = getState();
         const reachable = getChannelReachable(state, channelName, teamName);
@@ -241,27 +275,39 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         }
 
         // Fallback to API response error, if any.
-        if (error) {
-            return {error};
+        if (channelError) {
+            return {error: channelError};
+        }
+
+        // Join Channel if not a member already
+        if (channel && currentChannelId !== channel.id) {
+            const myChannelMemberships = getMyChannelMemberships(state);
+            if (!myChannelMemberships[channel.id]) {
+                if (channel.type === General.PRIVATE_CHANNEL) {
+                    const {join} = await privateChannelJoinPrompt(channel, intl);
+                    if (!join) {
+                        if (joinedNewTeam) {
+                            await dispatch(removeUserFromTeam(team.id, currentUserId));
+                        }
+                        return {data: true};
+                    }
+                }
+                console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
+                const result = await dispatch(joinChannel(currentUserId, '', channel.id));
+                if (result.error || !result.data || !result.data.channel) {
+                    if (joinedNewTeam) {
+                        await dispatch(removeUserFromTeam(team.id, currentUserId));
+                    }
+                    return result;
+                }
+            }
         }
 
         if (teamName && teamName !== currentTeamName) {
-            const team = getTeamByName(state, teamName);
             dispatch(selectTeam(team));
         }
 
         if (channel && currentChannelId !== channel.id) {
-            if (channel.type === General.OPEN_CHANNEL) {
-                const myMemberships = getMyChannelMemberships(state);
-                if (!myMemberships[channel.id]) {
-                    const currentUserId = getCurrentUserId(state);
-                    console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
-                    const result = await dispatch(joinChannel(currentUserId, '', channel.id));
-                    if (result.error || !result.data || !result.data.channel) {
-                        return result;
-                    }
-                }
-            }
             dispatch(handleSelectChannel(channel.id));
         }
 
@@ -503,12 +549,6 @@ export function leaveChannel(channel, reset = false) {
 }
 
 export function setChannelLoading(loading = true) {
-    if (loading) {
-        telemetry.start(['channel:loading']);
-    } else {
-        telemetry.end(['channel:loading']);
-    }
-
     return {
         type: ViewTypes.SET_CHANNEL_LOADER,
         loading,
@@ -557,9 +597,6 @@ export function increasePostVisibility(channelId, postId) {
             return true;
         }
 
-        telemetry.reset();
-        telemetry.start(['posts:loading']);
-
         dispatch({
             type: ViewTypes.LOADING_POSTS,
             data: true,
@@ -590,8 +627,6 @@ export function increasePostVisibility(channelId, postId) {
         }
 
         dispatch(batchActions(actions, 'BATCH_LOAD_MORE_POSTS'));
-        telemetry.end(['posts:loading']);
-        telemetry.save();
 
         return hasMorePost;
     };
@@ -604,7 +639,7 @@ function setLoadMorePostsVisible(visible) {
     };
 }
 
-function loadGroupData() {
+function loadGroupData(isReconnect = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const actions = [];
@@ -637,9 +672,10 @@ function loadGroupData() {
                             });
                         }
                     } else {
+                        const getGroupsSince = isReconnect ? (state.websocket?.lastDisconnectAt || 0) : undefined;
                         const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
-                            Client4.getGroups(true, 0, 0),
+                            Client4.getGroups(false, 0, 0, getGroupsSince),
                         ]);
 
                         if (getAllGroupsAssociatedToChannelsInTeam.groups) {
@@ -685,10 +721,11 @@ function loadGroupData() {
     };
 }
 
-export function loadChannelsForTeam(teamId, skipDispatch = false) {
+export function loadChannelsForTeam(teamId, skipDispatch = false, isReconnect = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
+        const lastConnectAt = state.websocket?.lastConnectAt || 0;
         const data = {
             sync: true,
             teamId,
@@ -696,13 +733,12 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         };
 
         const actions = [];
-
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
-                    console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
+                    console.log('Fetching channels attempt', (i + 1), teamId, 'include deleted since', lastConnectAt); //eslint-disable-line no-console
                     const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                        Client4.getMyChannels(teamId, true),
+                        Client4.getMyChannels(teamId, true, lastConnectAt),
                         Client4.getMyChannelMembers(teamId),
                     ]);
 
@@ -756,7 +792,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
 
-            dispatch(loadGroupData());
+            dispatch(loadGroupData(isReconnect));
         }
 
         return {data};

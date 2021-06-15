@@ -10,7 +10,7 @@ import {Files} from '@mm-redux/constants';
 import {getCurrentServerUrl} from '@init/credentials';
 
 import {DeepLinkTypes} from '@constants';
-import {emptyFunction} from '@utils/general';
+import {emptyErrorHandlingFunction, emptyFunction} from '@utils/general';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 
@@ -102,6 +102,8 @@ export function getScheme(url) {
     return match && match[1];
 }
 
+export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
+
 export function matchDeepLink(url, serverURL, siteURL) {
     if (!url || (!serverURL && !siteURL)) {
         return null;
@@ -184,7 +186,7 @@ export async function getURLAndMatch(href, serverURL, siteURL) {
     return {url, match};
 }
 
-export function tryOpenURL(url, onError = emptyFunction, onSuccess = emptyFunction) {
+export function tryOpenURL(url, onError = emptyErrorHandlingFunction, onSuccess = emptyFunction) {
     Linking.openURL(url).
         then(onSuccess).
         catch(onError);

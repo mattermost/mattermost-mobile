@@ -8,13 +8,13 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 
-import Emoji from 'app/components/emoji';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {hapticFeedback} from 'app/utils/general';
+import Emoji from '@components/emoji';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {hapticFeedback} from '@utils/general';
 import {
     LARGE_CONTAINER_SIZE,
     LARGE_ICON_SIZE,
-} from 'app/constants/reaction_picker';
+} from '@constants/reaction_picker';
 
 export default class ReactionButton extends PureComponent {
     static propTypes = {

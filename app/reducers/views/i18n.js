@@ -6,7 +6,7 @@ import {getLocales} from 'react-native-localize';
 
 import {UserTypes} from '@mm-redux/action_types';
 
-const defaultLocale = getLocales()[0].languageCode;
+const defaultLocale = getLocales()[0].languageTag;
 
 function locale(state = defaultLocale, action) {
     switch (action.type) {

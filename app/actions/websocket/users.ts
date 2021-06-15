@@ -6,7 +6,7 @@ import {loadChannelsForTeam} from '@actions/views/channel';
 import {getMe} from '@actions/views/user';
 import {ChannelTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {notVisibleUsersActions} from '@mm-redux/actions/helpers';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getAllChannels, getCurrentChannelId, getChannelMembersInChannels} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -171,7 +171,7 @@ export function handleUserRoleUpdated(msg: WebSocketMessage) {
 
             dispatch({
                 type: RoleTypes.RECEIVED_ROLES,
-                data: data.roles,
+                data,
             });
         } catch {
             // do nothing

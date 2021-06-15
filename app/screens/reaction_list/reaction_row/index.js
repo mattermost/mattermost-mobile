@@ -53,6 +53,7 @@ export default class ReactionRow extends React.PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -90,6 +91,7 @@ export default class ReactionRow extends React.PureComponent {
                                 showStatus={false}
                                 size={24}
                                 iconSize={18}
+                                testID='reaction_row.profile_picture'
                             />
                         </View>
                     </TouchableOpacity>
@@ -98,6 +100,7 @@ export default class ReactionRow extends React.PureComponent {
                     style={style.textContainer}
                     ellipsizeMode='tail'
                     numberOfLines={1}
+                    testID={`reaction_row.user.${id}`}
                 >
                     <Text style={style.username}>
                         {usernameDisplay}
@@ -112,6 +115,7 @@ export default class ReactionRow extends React.PureComponent {
                         emojiName={emojiName}
                         textStyle={style.emojiText}
                         size={24}
+                        testID={`reaction_row.emoji.${emojiName}.${id}`}
                     />
                 </View>
             </View>

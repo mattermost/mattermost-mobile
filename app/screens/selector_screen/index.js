@@ -20,6 +20,7 @@ function mapStateToProps(state) {
         data,
         dataSource: menuAction.dataSource,
         onSelect: menuAction.onSelect,
+        getDynamicOptions: menuAction.getDynamicOptions,
         theme: getTheme(state),
     };
 }

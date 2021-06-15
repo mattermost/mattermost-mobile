@@ -15,8 +15,6 @@ import {NavigationTypes, WebsocketEvents} from '@constants';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
-import tracker from '@utils/time_tracker';
-import telemetry from '@telemetry/';
 
 import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swiper';
@@ -28,7 +26,6 @@ export default class MainSidebarBase extends Component {
             getTeams: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func,
             joinChannel: PropTypes.func.isRequired,
-            logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             handleNotViewingGlobalThreadsScreen: PropTypes.func,
@@ -276,10 +273,9 @@ export default class MainSidebarBase extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {logChannelSwitch, handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;
+        const {handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;
 
         if (closeDrawer) {
-            telemetry.start(['channel:close_drawer']);
             this.closeMainSidebar();
         }
 
@@ -287,10 +283,6 @@ export default class MainSidebarBase extends Component {
             handleNotViewingGlobalThreadsScreen();
             return;
         }
-
-        logChannelSwitch(channel.id, currentChannelId);
-
-        tracker.channelSwitch = Date.now();
 
         if (!channel) {
             const utils = require('app/utils/general');

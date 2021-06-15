@@ -1,15 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@mm-redux/client';
-import {HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
+import '@init/fetch';
+import {Client4} from '@client/rest';
+import {HEADER_X_CLUSTER_ID, HEADER_X_VERSION_ID, HEADER_TOKEN} from '@client/rest/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
-
-import {
-    HEADER_X_CLUSTER_ID,
-    HEADER_TOKEN,
-} from 'app/init/fetch';
 
 describe('Fetch', () => {
     beforeAll(() => {

@@ -25,13 +25,13 @@ describe('Teams', () => {
         const {team, user} = await Setup.apiInit({teamOptions: {prefix: 'team-a'}});
         testTeam1 = team;
 
-        const {channel} = await Channel.apiGetChannelByName(testTeam1.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(testTeam1.id, 'town-square');
         testTeam1Channel = channel;
 
         ({team: testTeam2} = await Team.apiCreateTeam({prefix: 'team-b'}));
         await Team.apiAddUserToTeam(user.id, testTeam2.id);
 
-        ({channel: testTeam2Channel} = await Channel.apiGetChannelByName(testTeam2.name, 'town-square'));
+        ({channel: testTeam2Channel} = await Channel.apiGetChannelByName(testTeam2.id, 'town-square'));
 
         // # Open channel screen
         await ChannelScreen.open(user);

@@ -16,6 +16,7 @@ import {getViewingGlobalThreads} from '@selectors/threads';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getMsgCountInChannel, getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {isCustomStatusEnabled} from '@selectors/custom_status';
 import {getDraftForChannel} from '@selectors/views';
 import {isGuest as isGuestUser} from '@utils/users';
 
@@ -32,15 +33,13 @@ function makeMapStateToProps() {
         const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
 
         let displayName = channel.display_name;
-        let isBot = false;
         let isGuest = false;
         let isArchived = channel.delete_at > 0;
+        let teammateId;
 
         if (channel.type === General.DM_CHANNEL) {
-            const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+            teammateId = getUserIdFromChannelName(currentUserId, channel.name);
             const teammate = getUser(state, teammateId);
-
-            isBot = Boolean(ownProps.isSearchResult ? channel.isBot : teammate?.is_bot); //eslint-disable-line camelcase
 
             if (teammate) {
                 const teammateNameDisplay = getTeammateNameDisplaySetting(state);
@@ -82,16 +81,17 @@ function makeMapStateToProps() {
             displayName,
             hasDraft: Boolean(channelDraft.draft.trim() || channelDraft?.files?.length),
             isArchived,
-            isBot,
             isChannelMuted: isChannelMuted(member),
             isGuest,
             isManualUnread: isManuallyUnread(state, ownProps.channelId),
             mentions: member?.mention_count_root ?? 0,
             shouldHideChannel,
             showUnreadForMsgs,
+            teammateId,
             theme: getTheme(state),
             unreadMsgs,
             viewingGlobalThreads,
+            customStatusEnabled: isCustomStatusEnabled(state),
         };
     };
 }

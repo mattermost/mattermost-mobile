@@ -6,7 +6,7 @@ import assert from 'assert';
 import nock from 'nock';
 
 import * as Actions from '@mm-redux/actions/emojis';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 
 import {GeneralTypes} from '@mm-redux/action_types';
 import TestHelper from 'test/test_helper';

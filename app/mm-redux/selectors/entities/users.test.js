@@ -61,16 +61,6 @@ describe('Selectors.Users', () => {
         roles: '',
     }];
 
-    const userAudits = [{
-        action: 'test_user_action',
-        create_at: 1535007018934,
-        extra_info: 'success',
-        id: 'test_id',
-        ip_address: '::1',
-        session_id: '',
-        user_id: 'test_user_id',
-    }];
-
     const myPreferences = {};
     myPreferences[`${Preferences.CATEGORY_DIRECT_CHANNEL_SHOW}--${user2.id}`] = {category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: user2.id, value: 'true'};
     myPreferences[`${Preferences.CATEGORY_DIRECT_CHANNEL_SHOW}--${user3.id}`] = {category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: user3.id, value: 'false'};
@@ -86,7 +76,6 @@ describe('Selectors.Users', () => {
                 profilesInChannel,
                 profilesNotInChannel,
                 mySessions: userSessions,
-                myAudits: userAudits,
             },
             teams: {
                 currentTeamId: team1.id,
@@ -122,10 +111,6 @@ describe('Selectors.Users', () => {
 
     it('getUserSessions', () => {
         assert.deepEqual(Selectors.getUserSessions(testState), userSessions);
-    });
-
-    it('getUserAudits', () => {
-        assert.deepEqual(Selectors.getUserAudits(testState), userAudits);
     });
 
     it('getUser', () => {
@@ -417,7 +402,24 @@ describe('Selectors.Users', () => {
         ];
 
         testCases.forEach((testCase) => {
-            assert.deepEqual(getProfilesByIdsAndUsernames(testState, testCase.input), testCase.output);
+            assert.deepEqual(getProfilesByIdsAndUsernames(testState, testCase.input.allUserIds, testCase.input.allUsernames), testCase.output);
+        });
+    });
+
+    it('makeGetProfilesByIds', () => {
+        const getProfilesByIds = Selectors.makeGetProfilesByIds();
+
+        const testCases = [
+            {input: [], output: []},
+            {input: ['nonexistentid'], output: []},
+            {input: [user1.id], output: [user1]},
+            {input: [user1.id, 'nonexistentid'], output: [user1]},
+            {input: [user1.id, user2.id], output: [user1, user2]},
+            {input: ['nonexistentid', user1.id, user2.id], output: [user1, user2]},
+        ];
+
+        testCases.forEach((testCase) => {
+            assert.deepStrictEqual(getProfilesByIds(testState, testCase.input), testCase.output);
         });
     });
 

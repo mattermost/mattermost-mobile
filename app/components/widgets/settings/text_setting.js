@@ -18,6 +18,8 @@ import {
 } from '@utils/theme';
 
 export default class TextSetting extends PureComponent {
+    static validTypes = ['input', 'textarea', 'number', 'email', 'tel', 'url', 'password'];
+
     static propTypes = {
         id: PropTypes.string.isRequired,
         label: PropTypes.oneOfType([
@@ -48,6 +50,7 @@ export default class TextSetting extends PureComponent {
             'url',
         ]),
         secureTextEntry: PropTypes.bool,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -76,6 +79,7 @@ export default class TextSetting extends PureComponent {
             value,
             multiline,
             secureTextEntry,
+            testID,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -86,10 +90,17 @@ export default class TextSetting extends PureComponent {
                     style={style.title}
                     id={label.id}
                     defaultMessage={label.defaultMessage}
+                    testID={`${testID}.label_content`}
                 />
             );
         } else if (typeof label === 'string') {
-            labelContent = <Text style={style.title}>{label}</Text>;
+            labelContent = (
+                <Text
+                    style={style.title}
+                    testID={`${testID}.label`}
+                >
+                    {label}
+                </Text>);
         }
 
         let optionalContent;
@@ -146,7 +157,7 @@ export default class TextSetting extends PureComponent {
         const noediting = disabled ? style.disabled : null;
 
         return (
-            <View>
+            <View testID={testID}>
                 <View style={style.titleContainer}>
                     {labelContent}
                     {asterisk}
@@ -170,6 +181,7 @@ export default class TextSetting extends PureComponent {
                             keyboardType={keyboardType}
                             secureTextEntry={secureTextEntry}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            testID={`${testID}.input`}
                         />
                     </View>
                 </View>

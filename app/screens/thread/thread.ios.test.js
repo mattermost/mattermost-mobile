@@ -2,18 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
+import PostList from '@components/post_list';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 import Preferences from '@mm-redux/constants/preferences';
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import PostList from 'app/components/post_list';
-import {TYPING_VISIBLE} from '@constants/post_draft';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ThreadIOS from './thread.ios';
-
-jest.mock('react-intl');
 
 describe('thread', () => {
     const baseProps = {
@@ -32,29 +29,26 @@ describe('thread', () => {
     };
 
     test('should match snapshot, has root post', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ThreadIOS {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot, no root post, loading', () => {
         const newPostIds = ['post_id_1', 'post_id_2'];
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ThreadIOS
                 {...baseProps}
                 postIds={newPostIds}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot, render footer', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ThreadIOS {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         // return loading
@@ -71,9 +65,8 @@ describe('thread', () => {
     });
 
     test('should add/remove typing animation on mount/unmount', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ThreadIOS {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
         instance.registerTypingAnimation = jest.fn(() => {

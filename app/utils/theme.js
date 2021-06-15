@@ -11,7 +11,6 @@ import {mergeNavigationOptions} from 'app/actions/navigation';
 const MODAL_SCREENS_WITHOUT_BACK = [
     'AddReaction',
     'ChannelInfo',
-    'ClientUpgrade',
     'CreateChannel',
     'EditPost',
     'ErrorTeamsList',

@@ -8,6 +8,7 @@ import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import 'react-native-gesture-handler/jestSetup';
+require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 
 require('isomorphic-fetch');
 
@@ -141,7 +142,7 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-device-info', () => {

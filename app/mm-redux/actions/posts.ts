@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General, Preferences, Posts} from '@mm-redux/constants';
 import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
@@ -22,7 +22,7 @@ import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelA
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
-import {analytics} from '@init/analytics.ts';
+import {analytics} from '@init/analytics';
 
 import {
     deletePreferences,
@@ -1322,7 +1322,7 @@ export function lastPostActions(post: Post, websocketMessageProps: any) {
             await dispatch(markChannelAsRead(post.channel_id, undefined, markAsReadOnServer));
             await dispatch(markChannelAsViewed(post.channel_id));
         } else {
-            await dispatch(markChannelAsUnread(websocketMessageProps.team_id, post.channel_id, websocketMessageProps.mentions, post.root_id === ''));
+            await dispatch(markChannelAsUnread(websocketMessageProps.team_id, post.channel_id, websocketMessageProps.mentions));
         }
     };
 }

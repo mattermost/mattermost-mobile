@@ -9,7 +9,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -26,6 +26,7 @@ export default class ClockDisplay extends ClockDisplayBase {
             <SafeAreaView
                 edges={['left', 'right']}
                 style={style.container}
+                testID='clock_display_settings.screen'
             >
                 <StatusBar/>
                 <View style={style.wrapper}>
@@ -46,6 +47,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionType='select'
                             actionValue='false'
                             selected={newMilitaryTime === 'false'}
+                            testID='clock_display_settings.normal_clock.action'
                             theme={theme}
                         />
                         <View style={style.divider}/>
@@ -60,6 +62,7 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionType='select'
                             actionValue='true'
                             selected={newMilitaryTime === 'true'}
+                            testID='clock_display_settings.military_clock.action'
                             theme={theme}
                         />
                     </Section>

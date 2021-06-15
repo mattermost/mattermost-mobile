@@ -58,8 +58,10 @@ describe('Teams Order', () => {
 
         // # Re-arrange teams order via API
         await Preference.apiSaveTeamsOrderPreference(testUser.id, [testTeam3.id, testTeam1.id, testTeam2.id]);
+        await closeTeamSidebar();
 
         // * Verify updated teams order
+        await openTeamSidebar();
         await hasTeamDisplayNameAtIndex(0, testTeam3.display_name);
         await hasTeamDisplayNameAtIndex(1, testTeam1.display_name);
         await hasTeamDisplayNameAtIndex(2, testTeam2.display_name);
@@ -71,9 +73,9 @@ describe('Teams Order', () => {
         await Team.apiAddUserToTeam(testUser.id, testTeam5.id);
         ({team: testTeam6} = await Team.apiCreateTeam({prefix: 'team-d'}));
         await Team.apiAddUserToTeam(testUser.id, testTeam6.id);
+        await device.reloadReactNative();
 
         // * Verify additional teams order is ascending
-        await device.reloadReactNative();
         await openTeamSidebar();
         await hasTeamDisplayNameAtIndex(3, testTeam6.display_name);
         await hasTeamDisplayNameAtIndex(4, testTeam5.display_name);

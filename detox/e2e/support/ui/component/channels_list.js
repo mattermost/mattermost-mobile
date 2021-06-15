@@ -1,9 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import SearchBar from './search_bar';
+
 class ChannelsList {
     testID = {
+        channelsListPrefix: 'main.sidebar.channels_list.',
         channelsList: 'main.sidebar.channels_list.list',
+        channelsListUnreadIndicator: 'channels_list.unread_indicator',
         channelItem: 'main.sidebar.channels_list.list.channel_item',
         channelItemDisplayName: 'main.sidebar.channels_list.list.channel_item.display_name',
         filteredChannelsList: 'main.sidebar.channels_list.filtered_list',
@@ -16,11 +20,18 @@ class ChannelsList {
     }
 
     channelsList = element(by.id(this.testID.channelsList));
-    filteredChannelsList = element(by.id(this.testID.channelsList));
+    channelsListUnreadIndicator = element(by.id(this.testID.channelsListUnreadIndicator));
+    filteredChannelsList = element(by.id(this.testID.filteredChannelsList));
     switchTeamsButton = element(by.id(this.testID.switchTeamsButton));
     switchTeamsButtonBadge = element(by.id(this.testID.switchTeamsButtonBadge));
     switchTeamsButtonBadgeUnreadCount = element(by.id(this.testID.switchTeamsButtonBadgeUnreadCount));
     switchTeamsButtonBadgeUnreadIndicator = element(by.id(this.testID.switchTeamsButtonBadgeUnreadIndicator));
+
+    // convenience props
+    searchBar = SearchBar.getSearchBar(this.testID.channelsListPrefix);
+    searchInput = SearchBar.getSearchInput(this.testID.channelsListPrefix);
+    cancelButton = SearchBar.getCancelButton(this.testID.channelsListPrefix);
+    clearButton = SearchBar.getClearButton(this.testID.channelsListPrefix);
 
     getChannelItem = (channelId, displayName) => {
         const channelItemTestID = `${this.testID.channelItem}.${channelId}`;

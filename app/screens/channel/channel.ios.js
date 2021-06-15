@@ -5,7 +5,6 @@ import React from 'react';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import LocalConfig from '@assets/config';
 import AnnouncementBanner from 'app/components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
@@ -19,7 +18,7 @@ import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHA
 import GlobalThreads from '@screens/global_threads';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import ChannelBase, {ClientUpgradeListener} from './channel_base';
+import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
@@ -69,11 +68,7 @@ export default class ChannelIOS extends ChannelBase {
             renderDraftArea = true;
             component = (
                 <>
-                    <ChannelPostList
-                        updateNativeScrollView={this.updateNativeScrollView}
-                        registerTypingAnimation={this.registerTypingAnimation}
-                    />
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                    <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
                 </>
             );
         }

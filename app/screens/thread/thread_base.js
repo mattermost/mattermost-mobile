@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Keyboard} from 'react-native';
+import {Animated} from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
@@ -173,10 +173,6 @@ export default class ThreadBase extends PureComponent {
 
     hasRootPost = () => {
         return this.props.postIds.includes(this.props.rootId);
-    };
-
-    hideKeyboard = () => {
-        Keyboard.dismiss();
     };
 
     renderFooter = () => {

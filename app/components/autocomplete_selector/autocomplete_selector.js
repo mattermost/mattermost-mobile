@@ -21,6 +21,7 @@ export default class AutocompleteSelector extends PureComponent {
         actions: PropTypes.shape({
             setAutocompleteSelector: PropTypes.func.isRequired,
         }).isRequired,
+        getDynamicOptions: PropTypes.func,
         label: PropTypes.string,
         placeholder: PropTypes.string.isRequired,
         dataSource: PropTypes.string,
@@ -98,11 +99,11 @@ export default class AutocompleteSelector extends PureComponent {
 
     goToSelectorScreen = preventDoubleTap(() => {
         const {formatMessage} = this.context.intl;
-        const {actions, dataSource, options, placeholder} = this.props;
+        const {actions, dataSource, options, placeholder, getDynamicOptions} = this.props;
         const screen = 'SelectorScreen';
         const title = placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
 
-        actions.setAutocompleteSelector(dataSource, this.handleSelect, options);
+        actions.setAutocompleteSelector(dataSource, this.handleSelect, options, getDynamicOptions);
         goToScreen(screen, title);
     });
 

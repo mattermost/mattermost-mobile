@@ -16,7 +16,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
-import telemetry from '@telemetry';
 import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION, MAX_BADGE_RIGHT_POSITION} from '@constants/view';
 
 export default class MainSidebarDrawerButton extends PureComponent {
@@ -56,7 +55,6 @@ export default class MainSidebarDrawerButton extends PureComponent {
     }
 
     handlePress = preventDoubleTap(() => {
-        telemetry.start(['channel:open_drawer']);
         this.props.openSidebar();
     });
 

@@ -4,13 +4,12 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {NavigationTypes, ViewTypes} from '@constants';
-import {analytics} from '@init/analytics.ts';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {fetchMyChannelsAndMembers, getChannelAndMyMember} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -179,14 +178,6 @@ export function createPostForNotificationReply(post) {
         } catch (error) {
             return {error};
         }
-    };
-}
-
-export function recordLoadTime(screenName, category) {
-    return async (dispatch, getState) => {
-        const {currentUserId} = getState().entities.users;
-
-        analytics.recordTime(screenName, category, currentUserId);
     };
 }
 

@@ -13,28 +13,9 @@ import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {handleNotViewingGlobalThreadsScreen} from '@actions/views/threads';
-import telemetry from 'app/telemetry';
 
 import MainSidebar from './main_sidebar';
 import {getViewingGlobalThreads} from '@selectors/threads';
-
-export function logChannelSwitch(channelId, currentChannelId) {
-    return (dispatch, getState) => {
-        if (channelId === currentChannelId) {
-            return;
-        }
-
-        const metrics = [];
-        if (getState().entities.posts.postsInChannel[channelId]) {
-            metrics.push('channel:switch_loaded');
-        } else {
-            metrics.push('channel:switch_initial');
-        }
-
-        telemetry.reset();
-        telemetry.start(metrics);
-    };
-}
 
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);
@@ -54,7 +35,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getTeams,
             joinChannel,
-            logChannelSwitch,
             makeDirectChannel,
             setChannelDisplayName,
             handleSelectChannel,

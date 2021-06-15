@@ -6,8 +6,8 @@ import {connect} from 'react-redux';
 
 import {selectPost} from '@mm-redux/actions/posts';
 import {setThreadFollow, updateThreadRead} from '@mm-redux/actions/threads';
-import {makeGetChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -17,10 +17,8 @@ import Thread from './thread';
 
 function makeMapStateToProps() {
     const getPostIdsForThread = makeGetPostIdsForThread();
-    const getChannel = makeGetChannel();
-
     return function mapStateToProps(state, ownProps) {
-        const channel = getChannel(state, {id: ownProps.channelId});
+        const channel = getChannel(state, ownProps.channelId);
         const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
         return {
             channelId: ownProps.channelId,

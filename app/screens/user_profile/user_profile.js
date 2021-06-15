@@ -20,11 +20,15 @@ import {
     dismissAllModalsAndPopToRoot,
 } from '@actions/navigation';
 import Config from '@assets/config';
+import Emoji from '@components/emoji';
+import ClearButton from '@components/custom_status/clear_button';
+import ChannelIcon from '@components/channel_icon';
 import FormattedTime from '@components/formatted_time';
 import ProfilePicture from '@components/profile_picture';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {BotTag, GuestTag} from '@components/tag';
+import {General} from '@mm-redux/constants';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
@@ -41,6 +45,8 @@ export default class UserProfile extends PureComponent {
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             loadBot: PropTypes.func.isRequired,
+            getRemoteClusterInfo: PropTypes.func.isRequired,
+            unsetCustomStatus: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
@@ -49,9 +55,11 @@ export default class UserProfile extends PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         bot: PropTypes.object,
-        militaryTime: PropTypes.bool.isRequired,
+        isMilitaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
+        remoteClusterInfo: PropTypes.object,
+        customStatus: PropTypes.object,
     };
 
     static contextTypes = {
@@ -61,6 +69,7 @@ export default class UserProfile extends PureComponent {
     rightButton = {
         id: 'edit-profile',
         showAsAction: 'always',
+        testID: 'user_profile.edit.button',
     };
 
     constructor(props, context) {
@@ -81,8 +90,14 @@ export default class UserProfile extends PureComponent {
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
-        if (this.props.user && this.props.user.is_bot) {
-            this.props.actions.loadBot(this.props.user.id);
+        const {user} = this.props;
+        if (user) {
+            if (user.is_bot) {
+                this.props.actions.loadBot(user.id);
+            }
+            if (user.remote_id) {
+                this.props.actions.getRemoteClusterInfo(user.remote_id);
+            }
         }
     }
 
@@ -117,15 +132,20 @@ export default class UserProfile extends PureComponent {
         if (displayName && (config.ShowFullName === 'true' || user.is_bot || showGuest)) {
             return (
                 <View style={style.indicatorContainer}>
-                    <Text style={style.displayName}>
+                    <Text
+                        style={style.displayName}
+                        testID='user_profile.display_name'
+                    >
                         {displayName}
                     </Text>
                     <BotTag
                         show={Boolean(user.is_bot)}
+                        testID='user_profile.bot_tag'
                         theme={theme}
                     />
                     <GuestTag
                         show={showGuest}
+                        testID='user_profile.guest_tag'
                         theme={theme}
                     />
                 </View>
@@ -160,9 +180,19 @@ export default class UserProfile extends PureComponent {
             }
 
             return (
-                <View>
-                    <Text style={style.header}>{label}</Text>
-                    <Text style={style.text}>{user[property]}</Text>
+                <View testID='user_profile.display_block'>
+                    <Text
+                        style={style.header}
+                        testID={`user_profile.display_block.${property}.label`}
+                    >
+                        {label}
+                    </Text>
+                    <Text
+                        style={style.text}
+                        testID={`user_profile.display_block.${property}.value`}
+                    >
+                        {user[property]}
+                    </Text>
                 </View>
             );
         }
@@ -170,8 +200,82 @@ export default class UserProfile extends PureComponent {
         return null;
     };
 
+    buildOrganizationBlock = () => {
+        const {theme, remoteClusterInfo} = this.props;
+        if (!remoteClusterInfo) {
+            return null;
+        }
+        const style = createStyleSheet(theme);
+        return (
+            <View>
+                <FormattedText
+                    id='mobile.routes.user_profile.organization'
+                    defaultMessage='ORGANIZATION'
+                    style={style.header}
+                />
+                <View style={style.organizationDataContainer}>
+                    <ChannelIcon
+                        isActive={true}
+                        isArchived={false}
+                        isBot={false}
+                        isInfo={true}
+                        size={16}
+                        shared={true}
+                        theme={theme}
+                        type={General.OPEN_CHANNEL}
+                    />
+                    <Text style={style.text}>{remoteClusterInfo.display_name}</Text>
+                </View>
+            </View>
+        );
+    }
+
+    buildCustomStatusBlock = () => {
+        const {formatMessage} = this.context.intl;
+        const {customStatus, theme, isMyUser} = this.props;
+        const style = createStyleSheet(theme);
+        const isStatusSet = customStatus?.emoji;
+
+        if (!isStatusSet) {
+            return null;
+        }
+
+        const label = formatMessage({id: 'user.settings.general.status', defaultMessage: 'Status'});
+        return (
+            <View
+                testID='user_profile.custom_status'
+            >
+                <Text style={style.header}>{label}</Text>
+                <View style={style.customStatus}>
+                    <Text
+                        style={style.iconContainer}
+                        testID={`custom_status.emoji.${customStatus.emoji}`}
+                    >
+                        <Emoji
+                            emojiName={customStatus.emoji}
+                            size={20}
+                        />
+                    </Text>
+                    <View style={style.customStatusTextContainer}>
+                        <Text style={style.text}>
+                            {customStatus.text}
+                        </Text>
+                    </View>
+                    {isMyUser && (
+                        <View style={style.clearButton}>
+                            <ClearButton
+                                theme={theme}
+                                handlePress={this.props.actions.unsetCustomStatus}
+                            />
+                        </View>
+                    )}
+                </View>
+            </View>
+        );
+    }
+
     buildTimezoneBlock = () => {
-        const {theme, user, militaryTime} = this.props;
+        const {theme, user, isMilitaryTime} = this.props;
         const style = createStyleSheet(theme);
 
         const currentTimezone = getUserCurrentTimezone(user.timezone);
@@ -186,11 +290,15 @@ export default class UserProfile extends PureComponent {
                     id='mobile.routes.user_profile.local_time'
                     defaultMessage='LOCAL TIME'
                     style={style.header}
+                    testID='user_profile.timezone_block.local_time.label'
                 />
-                <Text style={style.text}>
+                <Text
+                    style={style.text}
+                    testID='user_profile.timezone_block.local_time.value'
+                >
                     <FormattedTime
-                        timeZone={currentTimezone}
-                        hour12={!militaryTime}
+                        timezone={currentTimezone}
+                        isMilitaryTime={isMilitaryTime}
                         value={nowDate}
                     />
                 </Text>
@@ -287,6 +395,7 @@ export default class UserProfile extends PureComponent {
                     icon={l.icon}
                     theme={this.props.theme}
                     iconSize={l.iconSize}
+                    testID='user_profile.additional_options.action'
                 />
             );
         });
@@ -315,7 +424,9 @@ export default class UserProfile extends PureComponent {
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('first_name')}
                 {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.props.config.EnableCustomUserStatuses === 'true' && this.buildCustomStatusBlock()}
                 {this.buildDisplayBlock('nickname')}
+                {this.buildOrganizationBlock()}
                 {this.buildDisplayBlock('position')}
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
             </View>
@@ -331,11 +442,15 @@ export default class UserProfile extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
+            <SafeAreaView
+                style={style.container}
+                testID='user_profile.screen'
+            >
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
                     contentContainerStyle={style.contentContainer}
+                    testID='user_profile.scroll_view'
                 >
                     <View style={style.top}>
                         <ProfilePicture
@@ -344,9 +459,15 @@ export default class UserProfile extends PureComponent {
                             iconSize={104}
                             statusBorderWidth={6}
                             statusSize={36}
+                            testID='user_profile.profile_picture'
                         />
                         {this.getDisplayName()}
-                        <Text style={style.username}>{`@${user.username}`}</Text>
+                        <Text
+                            style={style.username}
+                            testID='user_profile.username'
+                        >
+                            {`@${user.username}`}
+                        </Text>
                     </View>
                     <View style={style.divider}/>
                     {this.renderDetailsBlock(style)}
@@ -358,6 +479,7 @@ export default class UserProfile extends PureComponent {
                         iconSize={24}
                         textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
+                        testID='user_profile.send_message.action'
                     />
                     {this.renderAdditionalOptions()}
                 </ScrollView>
@@ -370,6 +492,22 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+        },
+        iconContainer: {
+            marginRight: 5,
+            color: theme.centerChannelColor,
+        },
+        customStatus: {
+            flexDirection: 'row',
+        },
+        customStatusTextContainer: {
+            justifyContent: 'center',
+            width: '80%',
+        },
+        clearButton: {
+            position: 'absolute',
+            top: -8,
+            right: 0,
         },
         content: {
             marginBottom: 25,
@@ -419,6 +557,9 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginRight: 22,
             backgroundColor: '#EBEBEC',
         },
+        organizationDataContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
+        },
     };
 });
-

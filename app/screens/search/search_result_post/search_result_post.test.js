@@ -3,23 +3,19 @@
 
 import React from 'react';
 
+import {Preferences} from '@mm-redux/constants';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import SearchResultPost from './search_result_post';
 
 describe('SearchResultPost', () => {
     const baseProps = {
-        goToThread: jest.fn(),
-        onHashtagPress: jest.fn(),
-        onPermalinkPress: jest.fn(),
-        previewPost: jest.fn(),
         postId: 'post-id',
         isDeleted: false,
         highlightPinnedOrFlagged: false,
-        managedConfig: {},
-        showFullDate: false,
         skipFlaggedHeader: false,
         skipPinnedHeader: false,
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', async () => {
