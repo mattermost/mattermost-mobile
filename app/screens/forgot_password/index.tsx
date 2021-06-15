@@ -3,14 +3,8 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
+import {Image, Text, TextInput, TouchableWithoutFeedback, View} from 'react-native';
 import Button from 'react-native-button';
-import {
-    Image,
-    Text,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
-} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 

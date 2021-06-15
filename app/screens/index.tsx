@@ -114,9 +114,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'MainSidebar':
     //     screen = require('app/components/sidebars/main').default;
     //     break;
-    // case 'MFA':
-    //     screen = require('@screens/mfa').default;
-    //     break;
+    case 'MFA':
+        screen = require('@screens/mfa').default;
+        break;
     // case 'MoreChannels':
     //     screen = require('@screens/more_channels').default;
     //     break;
