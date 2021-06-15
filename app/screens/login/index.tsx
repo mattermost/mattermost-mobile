@@ -23,6 +23,7 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 
 import {GlobalStyles} from '@app/styles';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
+import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import FormattedText from '@components/formatted_text';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {scheduleExpiredNotification} from '@requests/remote/push_notification';
@@ -158,7 +159,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     };
 
     const goToMfa = () => {
-        const screen = 'MFA';
+        const screen = MFA;
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor SSO'});
 
         goToScreen(screen, title, {goToChannel, loginId, password});
@@ -201,7 +202,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     };
 
     const onPressForgotPassword = () => {
-        const screen = 'ForgotPassword';
+        const screen = FORGOT_PASSWORD;
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
         goToScreen(screen, title);

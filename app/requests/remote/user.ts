@@ -369,3 +369,18 @@ export const ssoLogin = async (serverUrl: string) => {
 
     return result;
 };
+
+export const sendPasswordResetEmail = async (email: string) => {
+    let data;
+    try {
+        data = await Client4.sendPasswordResetEmail(email);
+    } catch (e) {
+        return {
+            error: e,
+        };
+    }
+    return {
+        data,
+        error: undefined,
+    };
+};

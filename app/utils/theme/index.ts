@@ -62,7 +62,7 @@ export function getComponents(inColor: string): {red: number; green: number; blu
     };
 }
 
-export function makeStyleSheetFromTheme(getStyleFromTheme: (a: any) => any): (a: any) => any {
+export function makeStyleSheetFromTheme(getStyleFromTheme: (a: any) => any): (a?: any) => any {
     let lastTheme: any;
     let style: any;
     return (theme: any) => {

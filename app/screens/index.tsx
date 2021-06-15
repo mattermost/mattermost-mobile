@@ -93,9 +93,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'FlaggedPosts':
     //     screen = require('@screens/flagged_posts').default;
     //     break;
-    // case 'ForgotPassword':
-    //     screen = require('@screens/forgot_password').default;
-    //     break;
+    case 'ForgotPassword':
+        screen = require('@screens/forgot_password').default;
+        break;
     // case 'Gallery':
     //     screen = require('@screens/gallery').default;
     //     break;
