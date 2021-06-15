@@ -85,12 +85,8 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     };
 
     const goToChannel = () => {
-        scheduleSessionExpiredNotification();
+        scheduleExpiredNotification(intl);
         resetToChannel();
-    };
-
-    const scheduleSessionExpiredNotification = async () => {
-        await scheduleExpiredNotification(intl);
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
