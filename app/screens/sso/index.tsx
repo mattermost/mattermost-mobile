@@ -73,8 +73,6 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const onMMToken = async (token: string) => {
         Client4.setToken(token);
         try {
-            console.log('>>>>>>>>>>>>>>> in  onMMToken');
-
             const result = await ssoLogin(serverUrl);
             if (result && result.error) {
                 onLoadEndError(result.error);
@@ -82,8 +80,6 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
             }
             goToChannel();
         } catch (e) {
-            console.log('>>>>>>>>>>>>>>> in  onMMToken', e);
-
             setLoginError('');
         }
     };
@@ -103,7 +99,6 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         loginError,
         loginUrl,
         onCSRFToken: (csrfToken: string) => {
-            console.log('>>>>>>>>>>>>>>> in  onCSRFToken');
             Client4.setCSRF(csrfToken);
         },
         onMMToken,
