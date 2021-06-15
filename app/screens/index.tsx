@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 
 import {Screens} from '@constants';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable */

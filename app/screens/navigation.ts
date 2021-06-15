@@ -9,7 +9,7 @@ import {Screens, Preferences} from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
-export function getThemeFromState() {
+function getThemeFromState() {
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
     }
