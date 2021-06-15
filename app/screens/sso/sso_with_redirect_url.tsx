@@ -66,11 +66,13 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
 
     useEffect(() => {
         const onURLChange = ({url}: { url: string }) => {
+            console.log('>>>>>>>>>>>>>>> onURLChange called with ', url);
             if (url && url.startsWith(redirectUrl)) {
                 // save deepLinkUrl under Global
                 setDeepLinkUrl('');
                 const parsedUrl = urlParse(url, true);
                 if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
+                    console.log('>>>>>>>>>>>>>>> inside here ', parsedUrl);
                     onCSRFToken(parsedUrl.query.MMCSRF);
                     onMMToken(parsedUrl.query.MMAUTHTOKEN);
                 } else {
