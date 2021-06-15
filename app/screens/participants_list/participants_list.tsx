@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {View} from 'react-native';
-import {UserProfile} from '@mm-redux/types/users';
+
+import {dismissModal} from '@actions/navigation';
+import FormattedText from '@components/formatted_text';
+import SlideUpPanel from '@components/slide_up_panel';
+import type {UserProfile} from '@mm-redux/types/users';
 import type {Theme} from '@mm-redux/types/preferences';
-import SlideUpPanel from 'app/components/slide_up_panel';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import FormattedText from 'app/components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
 import ParticipantRow from './participant_row';
-import {dismissModal} from 'app/actions/navigation';
 
 interface ParticipantsListProps {
     userProfiles: UserProfile[];
