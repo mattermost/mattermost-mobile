@@ -290,7 +290,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
             <Button
                 testID='login.signin.button'
                 onPress={preSignIn}
-                containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                containerStyle={[styles.signupButton, additionalStyle]}
             >
                 <FormattedText
                     id='login.signIn'
@@ -322,7 +322,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                     {config?.SiteName && (<View testID='login.screen'>
                         <Text style={GlobalStyles.header}>{config?.SiteName}</Text>
                         <FormattedText
-                            style={GlobalStyles.subheader}
+                            style={styles.subheader}
                             id='web.root.signup_info'
                             defaultMessage='All team communication in one place, searchable and accessible anywhere'
                         />
@@ -347,7 +347,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         placeholderTextColor={changeOpacity('#000', 0.5)}
                         ref={loginRef}
                         returnKeyType='next'
-                        style={GlobalStyles.inputBox}
+                        style={styles.inputBox}
                         underlineColorAndroid='transparent'
                         value={loginId} //to remove
                     />
@@ -358,7 +358,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         disableFullscreenUI={true}
                         onChangeText={onPasswordChange}
                         onSubmitEditing={preSignIn}
-                        style={GlobalStyles.inputBox}
+                        style={styles.inputBox}
                         placeholder={intl.formatMessage({
                             id: 'login.password',
                             defaultMessage: 'Password',
@@ -409,6 +409,35 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     },
     forgotPasswordTxt: {
         color: '#2389D7',
+    },
+    inputBox: {
+        fontSize: 16,
+        height: 45,
+        borderColor: 'gainsboro',
+        borderWidth: 1,
+        marginTop: 5,
+        marginBottom: 5,
+        paddingLeft: 10,
+        alignSelf: 'stretch',
+        borderRadius: 3,
+        color: '#3d3c40',
+    },
+    subheader: {
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '300',
+        color: '#777',
+        marginBottom: 15,
+        lineHeight: 22,
+    },
+    signupButton: {
+        borderRadius: 3,
+        borderColor: '#2389D7',
+        borderWidth: 1,
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        marginTop: 10,
+        padding: 15,
     },
 }));
 

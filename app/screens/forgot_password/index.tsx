@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {sendPasswordResetEmail} from '@requests/remote/user';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import Button from 'react-native-button';
@@ -12,14 +11,16 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
+import {sendPasswordResetEmail} from '@requests/remote/user';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const ForgotPassword = () => {
+const ForgotPassword: NavigationFunctionComponent = () => {
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
@@ -64,17 +65,20 @@ const ForgotPassword = () => {
     const getDisplayErrorView = () => {
         return (
             <ErrorText
-                testID='forgot_password.error.text'
+                testID='forgot.password.error.text'
                 error={error}
                 textStyle={styles.errorText}
             />
         );
     };
 
-    const getPasswordView = () => {
+    const getCentreContent = () => {
         if (isPasswordLinkSent) {
             return (
-                <View style={styles.resetSuccessContainer}>
+                <View
+                    style={styles.resetSuccessContainer}
+                    testID={'password_send.link.view'}
+                >
                     <FormattedText
                         style={styles.successTxtColor}
                         id='password_send.link'
@@ -94,6 +98,7 @@ const ForgotPassword = () => {
                 </View>
             );
         }
+
         return (
             <View>
                 <FormattedText
@@ -116,8 +121,10 @@ const ForgotPassword = () => {
                     underlineColorAndroid='transparent'
                     blurOnSubmit={false}
                     disableFullscreenUI={true}
+                    testID={'forgot.password.email'}
                 />
                 <Button
+                    testID='forgot.password.button'
                     containerStyle={styles.signupButton}
                     disabled={!email}
                     onPress={submitResetPassword}
@@ -134,7 +141,7 @@ const ForgotPassword = () => {
 
     return (
         <SafeAreaView
-            testID='forgot_password.screen'
+            testID='forgot.password.screen'
             style={styles.container}
         >
             <TouchableWithoutFeedback onPress={onBlur}>
@@ -144,7 +151,7 @@ const ForgotPassword = () => {
                         style={{height: 72, resizeMode: 'contain'}}
                     />
                     {getDisplayErrorView()}
-                    {getPasswordView()}
+                    {getCentreContent()}
                 </View>
             </TouchableWithoutFeedback>
         </SafeAreaView>
