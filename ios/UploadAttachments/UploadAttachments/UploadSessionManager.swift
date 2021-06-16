@@ -1,6 +1,7 @@
 import Foundation
 
 @objc public class UploadSessionData: NSObject {
+    public var serverUrl: String?
     public var channelId: String?
     public var fileIds: [String] = []
     public var message: String = ""
@@ -17,9 +18,10 @@ import Foundation
         return Singleton.instance
     }
     
-    public func createUploadSessionData(identifier: String, channelId: String, message: String, totalFiles: Int) {
+    public func createUploadSessionData(identifier: String, serverUrl: String, channelId: String, message: String, totalFiles: Int) {
         let fileIds: [String] = []
         let uploadSessionData:  NSDictionary = [
+            "serverUrl": serverUrl,
             "channelId": channelId,
             "fileIds": fileIds,
             "message": message,
@@ -33,6 +35,7 @@ import Foundation
         let dictionary = bucket?.object(forKey: identifier) as? NSDictionary
         let sessionData = UploadSessionData()
 
+        sessionData.serverUrl = dictionary?.object(forKey: "serverUrl") as? String
         sessionData.channelId = dictionary?.object(forKey: "channelId") as? String
         sessionData.fileIds = dictionary?.object(forKey: "fileIds") as? [String] ?? []
         sessionData.message = dictionary?.object(forKey: "message") as! String
@@ -58,23 +61,23 @@ import Foundation
         }
     }
     
-    public func tempContainerURL() -> URL? {
+    public func tempContainerUrl() -> URL? {
         let filemgr = FileManager.default
         let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String
-        let containerURL = filemgr.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
-        guard let tempDirectoryURL = containerURL?.appendingPathComponent("shareTempItems") else {return nil}
+        let containerUrl = filemgr.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
+        guard let tempDirectoryUrl = containerUrl?.appendingPathComponent("shareTempItems") else {return nil}
         var isDirectory = ObjCBool(false)
-        let exists = filemgr.fileExists(atPath: tempDirectoryURL.path, isDirectory: &isDirectory)
+        let exists = filemgr.fileExists(atPath: tempDirectoryUrl.path, isDirectory: &isDirectory)
         if !exists && !isDirectory.boolValue {
-            try? filemgr.createDirectory(atPath: tempDirectoryURL.path, withIntermediateDirectories: true, attributes: nil)
+            try? filemgr.createDirectory(atPath: tempDirectoryUrl.path, withIntermediateDirectories: true, attributes: nil)
         }
         
-        return tempDirectoryURL
+        return tempDirectoryUrl
     }
     
     public func clearTempDirectory() {
-        guard let tempURL = tempContainerURL() else {return}
+        guard let tempUrl = tempContainerUrl() else {return}
         let fileMgr = FileManager.default
-        try? fileMgr.removeItem(atPath: tempURL.path)
+        try? fileMgr.removeItem(atPath: tempUrl.path)
     }
 }

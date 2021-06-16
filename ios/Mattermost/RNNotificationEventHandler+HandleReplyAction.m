@@ -44,8 +44,11 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
 - (void)sendReply:(UNNotificationResponse *)response completionHandler:(void (^)(void))notificationCompletionHandler {
   StoreManager *store = [StoreManager shared];
   [store getEntities:true];
-  NSString *serverUrl = [store getServerUrl];
-  NSString *sessionToken = [store getToken];
+  
+  // TODO: Need the serverUrl. Is this in response?
+  NSString *serverUrl = nil; //[store getServerUrl];
+  NSString *sessionToken = nil; //[store getToken];
+  
   if (serverUrl == nil || sessionToken == nil) {
     [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
     return;
