@@ -26,8 +26,6 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-//todo:  why are we even using the react-native-button ?
-
 type MFAProps = {
     loginId : string,
     password: string,
