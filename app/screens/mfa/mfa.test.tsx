@@ -30,7 +30,7 @@ describe('*** MFA Screen ***', () => {
             goToChannel: jest.fn(),
         };
 
-        const spyOnProps = jest.spyOn(props, 'goToChannel');
+        const spyOnGoToChannel = jest.spyOn(props, 'goToChannel');
         const {getByTestId} = renderWithIntl(<Mfa {...props}/>);
         const submitBtn = getByTestId('login_mfa.submit');
         const inputText = getByTestId('login_mfa.input');
@@ -40,6 +40,6 @@ describe('*** MFA Screen ***', () => {
             fireEvent.press(submitBtn);
         }, {timeout: 300});
 
-        expect(spyOnProps).toHaveBeenCalled();
+        expect(spyOnGoToChannel).toHaveBeenCalled();
     });
 });

@@ -127,7 +127,7 @@ const MFA: NavigationFunctionComponent = ({loginId, password, goToChannel, confi
                     <View style={[styles.container, styles.signupContainer]}>
                         <Image
                             source={require('@assets/images/logo.png')}
-                            style={{height: 72, resizeMode: 'contain'}}
+                            style={styles.containerImage}
                         />
                         <View>
                             <FormattedText
@@ -209,6 +209,10 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     signupContainer: {
         paddingRight: 15,
         paddingLeft: 15,
+    },
+    containerImage: {
+        height: 72,
+        resizeMode: 'contain',
     },
 }));
 

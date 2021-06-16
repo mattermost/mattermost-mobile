@@ -12,7 +12,7 @@ import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@request
 import {logError} from '@requests/remote/error';
 import {loadRolesIfNeeded} from '@requests/remote/role';
 import {getDataRetentionPolicy} from '@requests/remote/systems';
-import {Client4Error, ErrorApi} from '@typings/api/client4';
+import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/config';
 import {
     LoadMeArgs,
@@ -336,7 +336,7 @@ export const getSessions = async (currentUserId: string) => {
 
 type LoadedUser = {
     currentUser?: RawUser,
-    error?: ErrorApi
+    error?: Client4Error
 }
 
 export const ssoLogin = async (serverUrl: string) => {

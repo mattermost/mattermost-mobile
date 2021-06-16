@@ -29,7 +29,7 @@ const ForgotPassword: NavigationFunctionComponent = () => {
     };
 
     const submitResetPassword = async () => {
-        if (!email || !isEmail(email)) {
+        if (!isEmail(email)) {
             setError(
                 formatMessage({
                     id: 'password_send.error',
@@ -39,18 +39,13 @@ const ForgotPassword: NavigationFunctionComponent = () => {
             return;
         }
 
-        const {data, error: apiError} = await sendPasswordResetEmail(email);
-        if (apiError) {
-            setError(apiError);
-        }
+        const {data, error: apiError = undefined} = await sendPasswordResetEmail(email);
 
-        //fixme: why were we doing this ?
-        // else if (this.state.error) {
-        //     this.setState({error: ''});
-        // }
         if (data) {
             setIsPasswordLinkSent(true);
         }
+
+        setError(apiError);
     };
 
     const onBlur = useCallback(() => {
@@ -67,7 +62,7 @@ const ForgotPassword: NavigationFunctionComponent = () => {
         );
     };
 
-    const getCentreContent = () => {
+    const getCenterContent = () => {
         if (isPasswordLinkSent) {
             return (
                 <View
@@ -143,10 +138,10 @@ const ForgotPassword: NavigationFunctionComponent = () => {
                 <View style={styles.innerContainer}>
                     <Image
                         source={require('@assets/images/logo.png')}
-                        style={{height: 72, resizeMode: 'contain'}}
+                        style={styles.innerContainerImage}
                     />
                     {getDisplayErrorView()}
-                    {getCentreContent()}
+                    {getCenterContent()}
                 </View>
             </TouchableWithoutFeedback>
         </SafeAreaView>
@@ -216,6 +211,10 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         textAlign: 'center',
         color: '#2389D7',
         fontSize: 17,
+    },
+    innerContainerImage: {
+        height: 72,
+        resizeMode: 'contain',
     },
 }));
 
