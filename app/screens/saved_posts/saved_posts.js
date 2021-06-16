@@ -173,6 +173,7 @@ export default class SavedPosts extends PureComponent {
                     ref={this.setListRef}
                     contentContainerStyle={style.sectionList}
                     data={postIds}
+                    extraData={theme}
                     keyExtractor={this.keyExtractor}
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'

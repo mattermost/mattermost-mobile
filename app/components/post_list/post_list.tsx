@@ -6,6 +6,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {DeviceEventEmitter, FlatList, Platform, StyleSheet, ViewToken} from 'react-native';
 
 import {DeepLinkTypes, NavigationTypes} from '@constants';
+import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
@@ -217,7 +218,7 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [postIds]);
+    }, [postIds, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true) => {
         flatListRef.current?.scrollToIndex({
@@ -227,6 +228,8 @@ const PostList = ({
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
+
+    useResetNativeScrollView(scrollViewNativeID, postIds);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
