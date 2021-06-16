@@ -10,6 +10,7 @@
 #import "RNNotificationEventHandler+HandleReplyAction.h"
 #import <react-native-notifications/RNNotificationParser.h>
 #import <UploadAttachments-Bridging-Header.h>
+#import <DatabaseHelper-Bridging-Header.h>
 #import <objc/runtime.h>
 
 #define notificationCenterKey @"notificationCenter"
@@ -45,17 +46,24 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   StoreManager *store = [StoreManager shared];
   [store getEntities:true];
   
-  // TODO: Need the serverUrl. Is this in response?
-  NSString *serverUrl = nil; //[store getServerUrl];
-  NSString *sessionToken = nil; //[store getToken];
+  NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
+  NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
+  if (serverUrl == nil) {
+    // TODO: Currently the throwable getOnlyServerUrl is not compatible with Objective-C
+    // serverUrl = [[DatabaseHelper default] getOnlyServerUrl];
+    if (serverUrl == nil) {
+      [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
+      return;
+    }
+  }
   
-  if (serverUrl == nil || sessionToken == nil) {
+  NSString *sessionToken = [store getTokenForServerUrl:serverUrl];
+  if (sessionToken == nil) {
     [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
     return;
   }
 
   NSString *completionKey = response.notification.request.identifier;
-  NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
   NSString *message = [parsedResponse valueForKeyPath:@"action.text"];
   NSString *channelId = [parsedResponse valueForKeyPath:@"notification.channel_id"];
   NSString *rootId = [parsedResponse valueForKeyPath:@"notification.root_id"];
