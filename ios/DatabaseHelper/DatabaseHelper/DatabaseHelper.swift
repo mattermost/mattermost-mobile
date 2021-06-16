@@ -44,7 +44,16 @@ public class DatabaseHelper: NSObject {
         DEFAULT_DB_PATH = databaseUrl.path
     }
     
-    @objc public func getOnlyServerUrl() throws -> String {
+    @objc public func getOnlyServerUrlObjc() -> String {
+        do {
+            return try getOnlyServerUrl()
+        } catch {
+            print(error)
+            return ""
+        }
+    }
+    
+    public func getOnlyServerUrl() throws -> String {
         if sqlite3_open(DEFAULT_DB_PATH, &defaultDB) != SQLITE_OK {
             throw DatabaseError.OpenFailure(DEFAULT_DB_PATH)
         }

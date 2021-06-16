@@ -95,9 +95,12 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   
   NSString* serverUrl = [userInfo objectForKey:@"server_url"];
   if (serverUrl == nil) {
-    // TODO: Currently the throwable getOnlyServerUrl is not compatible with Objective-C
-//    serverUrl = [[DatabaseHelper default] getOnlyServerUrl];
+    NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+    if ([onlyServerUrl length] > 0) {
+      serverUrl = onlyServerUrl;
+    }
   }
+
   RuntimeUtils *utils = [[RuntimeUtils alloc] init];
 
   if ((action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) || (state == UIApplicationStateInactive)) {

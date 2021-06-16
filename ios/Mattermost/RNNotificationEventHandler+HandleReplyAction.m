@@ -10,7 +10,7 @@
 #import "RNNotificationEventHandler+HandleReplyAction.h"
 #import <react-native-notifications/RNNotificationParser.h>
 #import <UploadAttachments-Bridging-Header.h>
-#import <DatabaseHelper-Bridging-Header.h>
+#import <DatabaseHelper/DatabaseHelper-Swift.h>
 #import <objc/runtime.h>
 
 #define notificationCenterKey @"notificationCenter"
@@ -48,12 +48,13 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   
   NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
   NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
+  
   if (serverUrl == nil) {
-    // TODO: Currently the throwable getOnlyServerUrl is not compatible with Objective-C
-    // serverUrl = [[DatabaseHelper default] getOnlyServerUrl];
-    if (serverUrl == nil) {
+    NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+    if ([onlyServerUrl length] > 0) {
+      serverUrl = onlyServerUrl;
+    } else {
       [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
-      return;
     }
   }
   

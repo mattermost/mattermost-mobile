@@ -153,7 +153,10 @@
     
     NSString *serverUrl = url;
     if (serverUrl == nil) {
-//        serverUrl = [[DatabaseHelper default] getOnlyServerUrl];
+      NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+      if ([onlyServerUrl length] > 0) {
+        serverUrl = onlyServerUrl;
+      }
     }
 
     if (serverUrl) {

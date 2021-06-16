@@ -35,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		49415298267AA00C0039D64E /* libDatabaseHelper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDatabaseHelper.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F82906F22C295AB0035544F /* MMKeychainManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMKeychainManager.h; sourceTree = "<group>"; };
 		7F82907022C295AC0035544F /* MMKeychainManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMKeychainManager.m; sourceTree = "<group>"; };
 		7F82907222C296970035544F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -70,6 +71,7 @@
 		7F82901A22C28F770035544F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				49415298267AA00C0039D64E /* libDatabaseHelper.a */,
 				7F82907422C296A10035544F /* LocalAuthentication.framework */,
 				7F82907222C296970035544F /* Security.framework */,
 			);
