@@ -34,32 +34,3 @@ if (Platform.OS === 'android') {
     const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
-
-// Uncomment the snippet below if you want to update the modules
-// defined in packager/modulePaths.js so they are included in the main bundle.
-
-/*
-//!* eslint-disable no-console *!/
-if (__DEV__) {
-    const modules = require.getModules();
-    const moduleIds = Object.keys(modules);
-    const loadedModuleNames = moduleIds.
-        filter((moduleId) => modules[moduleId].isInitialized).
-        map((moduleId) => modules[moduleId].verboseName);
-
-    const waitingModuleNames = moduleIds.
-        filter((moduleId) => !modules[moduleId].isInitialized).
-        map((moduleId) => modules[moduleId].verboseName);
-
-    // make sure that the modules you expect to be waiting are actually waiting
-    console.log(
-        'loaded:',
-        loadedModuleNames.length,
-        'waiting:',
-        waitingModuleNames.length,
-    );
-
-    // grab this text blob, and put it in a file named packager/moduleNames.js
-    console.log(`module.exports = ${JSON.stringify(loadedModuleNames.sort())};`);
-}
-*/
