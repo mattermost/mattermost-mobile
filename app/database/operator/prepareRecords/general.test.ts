@@ -74,6 +74,8 @@ describe('*** Isolated Prepare Records Test ***', () => {
                     mention_count: 1,
                     unread_count: 0,
                     url: 'https://community.mattermost.com',
+                    isSecured: true,
+                    lastActiveAt: 1623926359,
                 },
             },
         });

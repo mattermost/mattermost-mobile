@@ -118,6 +118,8 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
                 mention_count: 0,
                 unread_count: 0,
                 url: 'https://community.mattermost.com',
+                isSecured: true,
+                lastActiveAt: 1623926359,
             },
         ];
 
@@ -138,6 +140,8 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
                     mention_count: 0,
                     unread_count: 0,
                     url: 'https://community.mattermost.com',
+                    isSecured: true,
+                    lastActiveAt: 1623926359,
                 },
             ],
             tableName: 'servers',
