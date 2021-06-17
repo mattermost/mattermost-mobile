@@ -118,6 +118,7 @@ describe('Login', () => {
                     password,
                     config: {EnableSignInWithEmail: 'true', EnableSignInWithUsername: 'true'},
                     license: {IsLicensed: 'false'},
+                    theme: baseProps.theme,
                 },
             );
     });
@@ -134,6 +135,7 @@ describe('Login', () => {
             toHaveBeenCalledWith(
                 'ForgotPassword',
                 'Password Reset',
+                {theme: baseProps.theme},
             );
     });
 });
