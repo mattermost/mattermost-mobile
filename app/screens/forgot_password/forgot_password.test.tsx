@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act} from '@testing-library/react-native';
+import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import {renderWithIntl, fireEvent, waitFor} from '@test/intl-test-helper';
+import {Preferences} from '@constants';
+import * as UserAPICalls from '@requests/remote/user';
+import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import ForgotPassword from './index';
-import * as UserAPICalls from '@requests/remote/user';
 
 describe('ForgotPassword', () => {
     const baseProps = {
         componentId: 'ForgotPassword',
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', () => {
@@ -40,9 +42,10 @@ describe('ForgotPassword', () => {
         const resetButton = getByTestId('forgot.password.button');
 
         fireEvent.changeText(emailTextInput, 'test@test.com');
+
         await waitFor(() => {
             fireEvent.press(resetButton);
-        }, {timeout: 300});
+        });
 
         expect(spyOnResetAPICall).toHaveBeenCalled();
     });

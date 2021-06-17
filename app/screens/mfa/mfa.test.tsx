@@ -3,6 +3,7 @@
 
 import React from 'react';
 
+import {Preferences} from '@constants';
 import {fireEvent, waitFor} from '@testing-library/react-native';
 import {renderWithIntl} from '@test/intl-test-helper';
 
@@ -16,7 +17,12 @@ jest.mock('@requests/remote/user', () => {
 
 describe('*** MFA Screen ***', () => {
     const baseProps = {
-        componentId: 'MFA',
+        config: {},
+        goToChannel: jest.fn(),
+        loginId: 'loginId',
+        password: 'passwd',
+        license: {},
+        theme: Preferences.THEMES.default,
     };
 
     test('MFA screen should match snapshot', () => {
@@ -38,7 +44,7 @@ describe('*** MFA Screen ***', () => {
 
         await waitFor(() => {
             fireEvent.press(submitBtn);
-        }, {timeout: 300});
+        });
 
         expect(spyOnGoToChannel).toHaveBeenCalled();
     });

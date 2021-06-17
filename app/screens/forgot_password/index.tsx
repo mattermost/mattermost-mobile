@@ -5,7 +5,6 @@ import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Image, Text, TextInput, TouchableWithoutFeedback, View} from 'react-native';
 import Button from 'react-native-button';
-import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
@@ -14,15 +13,17 @@ import {sendPasswordResetEmail} from '@requests/remote/user';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const ForgotPassword: NavigationFunctionComponent = () => {
+type Props = {
+    theme: Theme;
+}
+
+const ForgotPassword = ({theme}: Props) => {
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const emailIdRef = useRef<TextInput>(null);
-
-    const styles = getStyleSheet();
-    const {formatMessage} = intl;
+    const styles = getStyleSheet(theme);
 
     const changeEmail = (emailAddress: string) => {
         setEmail(emailAddress);
@@ -55,9 +56,10 @@ const ForgotPassword: NavigationFunctionComponent = () => {
     const getDisplayErrorView = () => {
         return (
             <ErrorText
-                testID='forgot.password.error.text'
                 error={error}
+                testID='forgot.password.error.text'
                 textStyle={styles.errorText}
+                theme={theme}
             />
         );
     };

@@ -14,7 +14,7 @@ type ErrorProps = {
     error: ClientErrorWithIntl | string;
     testID?: string;
     textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>
-    theme?: Theme;
+    theme: Theme;
 }
 
 const ErrorText = ({error, testID, textStyle, theme}: ErrorProps) => {

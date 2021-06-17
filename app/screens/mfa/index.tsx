@@ -14,7 +14,6 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
@@ -27,23 +26,22 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
+    config: Partial<Config>,
+    goToChannel: () => void,
+    license: Partial<License>,
     loginId : string,
     password: string,
-    goToChannel: () => void,
-    config: Partial<Config>,
-    license: Partial<License>,
-    componentId: string
+    theme: Theme;
 }
 
-const MFA: NavigationFunctionComponent = ({loginId, password, goToChannel, config, license}: MFAProps) => {
+const MFA = ({config, goToChannel, license, loginId, password, theme}: MFAProps) => {
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const intl = useIntl();
-    const {formatMessage} = intl;
+    const {formatMessage} = useIntl();
     const textInputRef = useRef<TextInput>(null);
 
-    const styles = getStyleSheet();
+    const styles = getStyleSheet(theme);
 
     const onBlur = useCallback(() => {
         textInputRef?.current?.blur();
@@ -135,8 +133,9 @@ const MFA: NavigationFunctionComponent = ({loginId, password, goToChannel, confi
                             />
                         </View>
                         <ErrorText
-                            testID='mfa.error.text'
                             error={error}
+                            testID='mfa.error.text'
+                            theme={theme}
                         />
                         <TextInput
                             testID={'login_mfa.input'}

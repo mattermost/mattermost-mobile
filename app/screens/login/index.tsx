@@ -160,7 +160,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     const goToMfa = () => {
         const screen = MFA;
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
-        goToScreen(screen, title, {goToChannel, loginId, password, config, license});
+        goToScreen(screen, title, {goToChannel, loginId, password, config, license, theme});
     };
 
     const getLoginErrorMessage = (loginError: any) => {
@@ -203,7 +203,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
         const screen = FORGOT_PASSWORD;
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {theme});
     };
 
     const createLoginPlaceholder = () => {
