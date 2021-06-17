@@ -67,8 +67,9 @@ class ManagedApp {
         }
 
         const jailbreakProtection = config!.jailbreakProtection === 'true';
-        if (jailbreakProtection) {
-            this.alertIfDeviceIsUntrusted();
+        if (jailbreakProtection && !this.isTrustedDevice()) {
+            this.alertDeviceIsUntrusted();
+            return;
         }
 
         const inAppPinCode = config!.inAppPinCode === 'true';
@@ -77,11 +78,7 @@ class ManagedApp {
         }
     };
 
-    alertIfDeviceIsUntrusted = () => {
-        if (this.isTrustedDevice()) {
-            return;
-        }
-
+    alertDeviceIsUntrusted = () => {
         const locale = DEFAULT_LOCALE; // TODO: Get current user or system locale
         const translations = getTranslations(locale);
         Alert.alert(
