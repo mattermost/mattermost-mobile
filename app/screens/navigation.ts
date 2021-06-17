@@ -206,7 +206,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     });
 }
 
-export function popTopScreen(screenId: string) {
+export function popTopScreen(screenId?: string) {
     if (screenId) {
         Navigation.pop(screenId);
     } else {

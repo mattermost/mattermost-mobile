@@ -86,6 +86,9 @@ jest.doMock('react-native', () => {
             setupLibrary: jest.fn(),
             setStringAsync: jest.fn(),
         },
+        Appearance: {
+            getColorScheme: jest.fn().mockReturnValue('light'),
+        },
     };
 
     const Linking = {

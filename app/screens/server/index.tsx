@@ -71,7 +71,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             },
         };
 
-        goToScreen(screen, title, {config, license, theme}, defaultOptions);
+        goToScreen(screen, title, {config, license, theme, serverUrl: url}, defaultOptions);
         setConnecting(false);
     };
 

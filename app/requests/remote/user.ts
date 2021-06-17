@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import urlParse from 'url-parse';
 
 import {Client4} from '@client/rest';
 import Operator from '@database/operator';
@@ -77,7 +76,6 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
     }
 
     const url = Client4.getUrl();
-    const hostname = urlParse(url)?.hostname;
 
     try {
         deviceToken = await getDeviceToken(defaultDatabase);
@@ -89,7 +87,7 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
             ldapOnly,
         )) as unknown) as RawUser;
 
-        await createAndSetActiveDatabase({serverUrl: url, displayName: hostname});
+        await createAndSetActiveDatabase({serverUrl: url});
         await getCSRFFromCookie(Client4.getUrl());
     } catch (e) {
         return {error: e};
@@ -105,11 +103,14 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
 };
 
 export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
-    let currentUser: RawUser = user;
+    let currentUser = user;
 
     const {activeServerDatabase, error} = await getActiveServerDatabase();
     if (!activeServerDatabase) {
-        return {error};
+        return {
+            error,
+            currentUser: undefined,
+        };
     }
 
     try {
@@ -117,12 +118,15 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             await Client4.attachDevice(deviceToken);
         }
 
-        if (!user) {
+        if (!currentUser) {
             currentUser = ((await Client4.getMe()) as unknown) as RawUser;
         }
     } catch (e) {
         await forceLogoutIfNecessary(e);
-        return {error: e};
+        return {
+            error: e,
+            currentUser: undefined,
+        };
     }
 
     try {
@@ -159,26 +163,13 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         const operator = new Operator(activeServerDatabase);
 
-        const teamRecords = operator.handleTeam({
-            prepareRecordsOnly: true,
-            teams: teams as RawTeam[],
-        });
+        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams as RawTeam[]});
 
-        const teamMembershipRecords = operator.handleTeamMemberships({
-            prepareRecordsOnly: true,
-            teamMemberships: (teamMembers as unknown) as RawTeamMembership[],
-        });
+        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers as unknown) as RawTeamMembership[]});
 
         const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMembers.find(
-                (team) => team.team_id === unread.team_id,
-            );
-            return {
-                team_id: unread.team_id,
-                roles: matchingTeam?.roles ?? '',
-                is_unread: unread.msg_count > 0,
-                mentions_count: unread.mention_count,
-            };
+            const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
+            return {team_id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
         });
 
         const myTeamRecords = operator.handleMyTeam({
@@ -199,7 +190,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
                 },
                 {
                     name: 'currentUserId',
-                    value: user.id,
+                    value: currentUser.id,
                 },
                 {
                     name: 'url',
@@ -210,7 +201,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         });
 
         const userRecords = operator.handleUsers({
-            users: [user],
+            users: [currentUser],
             prepareRecordsOnly: true,
         });
 
@@ -220,7 +211,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
         });
 
         let roles: string[] = [];
-        for (const role of user.roles.split(' ')) {
+        for (const role of currentUser.roles.split(' ')) {
             roles = roles.concat(role);
         }
 
@@ -232,41 +223,24 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         let rolesRecords: Role[] = [];
         if (rolesToLoad.size > 0) {
-            const rolesByName = ((await Client4.getRolesByNames(
-                Array.from(rolesToLoad),
-            )) as unknown) as RawRole[];
+            const rolesByName = ((await Client4.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
 
             if (rolesByName?.length) {
-                rolesRecords = operator.handleIsolatedEntity({
-                    tableName: IsolatedEntities.ROLE,
-                    prepareRecordsOnly: true,
-                    values: rolesByName,
-                }) as Role[];
+                rolesRecords = operator.handleIsolatedEntity({tableName: IsolatedEntities.ROLE, prepareRecordsOnly: true, values: rolesByName}) as Role[];
             }
         }
 
-        const models = await Promise.all([
-            teamRecords,
-            teamMembershipRecords,
-            myTeamRecords,
-            systemRecords,
-            preferenceRecords,
-            rolesRecords,
-            userRecords,
-        ]);
+        const models = await Promise.all([teamRecords, teamMembershipRecords, myTeamRecords, systemRecords, preferenceRecords, rolesRecords, userRecords]);
 
         const flattenedModels = models.flat();
         if (flattenedModels?.length > 0) {
-            await operator.batchOperations({
-                database: activeServerDatabase,
-                models: flattenedModels,
-            });
+            await operator.batchOperations({database: activeServerDatabase, models: flattenedModels});
         }
     } catch (e) {
-        return {error: e};
+        return {error: e, currentUser: undefined};
     }
 
-    return {data: currentUser};
+    return {currentUser, error: undefined};
 };
 
 export const completeLogin = async (user: RawUser, deviceToken: string) => {
@@ -296,22 +270,9 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     const operator = new Operator(activeServerDatabase);
 
     // Data retention
-    if (
-        config?.DataRetentionEnableMessageDeletion === 'true' &&
-    license?.IsLicensed === 'true' &&
-    license?.DataRetention === 'true'
-    ) {
+    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
         dataRetentionPolicy = await getDataRetentionPolicy();
-        await operator.handleIsolatedEntity({
-            tableName: IsolatedEntities.SYSTEM,
-            values: [
-                {
-                    name: 'dataRetentionPolicy',
-                    value: dataRetentionPolicy,
-                },
-            ],
-            prepareRecordsOnly: false,
-        });
+        await operator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values: [{name: 'dataRetentionPolicy', value: dataRetentionPolicy}], prepareRecordsOnly: false});
     }
 
     return null;
@@ -329,8 +290,8 @@ export const updateMe = async (user: User) => {
         logError(e);
         return {error: e};
     }
-    const operator = new Operator(activeServerDatabase);
 
+    const operator = new Operator(activeServerDatabase);
     const systemRecords = operator.handleIsolatedEntity({
         tableName: IsolatedEntities.SYSTEM,
         values: [
@@ -340,10 +301,7 @@ export const updateMe = async (user: User) => {
         prepareRecordsOnly: true,
     });
 
-    const userRecord = operator.handleUsers({
-        prepareRecordsOnly: true,
-        users: [data],
-    });
+    const userRecord = operator.handleUsers({prepareRecordsOnly: true, users: [data]});
 
     //todo: ?? Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
     // tosRecords = await DataOperator.handleIsolatedEntity({ tableName: TERMS_OF_SERVICE, values: [{}], });
@@ -355,10 +313,7 @@ export const updateMe = async (user: User) => {
     ]);
 
     if (models?.length) {
-        await operator.batchOperations({
-            database: activeServerDatabase,
-            models: models.flat(),
-        });
+        await operator.batchOperations({database: activeServerDatabase, models: models.flat()});
     }
 
     const updatedRoles: string[] = data.roles.split(' ');
@@ -377,4 +332,55 @@ export const getSessions = async (currentUserId: string) => {
         logError(e);
         await forceLogoutIfNecessary(e);
     }
+};
+
+type LoadedUser = {
+    currentUser?: RawUser,
+    error?: Client4Error
+}
+
+export const ssoLogin = async (serverUrl: string) => {
+    let deviceToken;
+
+    const {error, defaultDatabase} = await getDefaultDatabase();
+
+    if (!defaultDatabase) {
+        return {error};
+    }
+
+    // Setting up active database for this SSO login flow
+    try {
+        await createAndSetActiveDatabase({serverUrl});
+        deviceToken = await getDeviceToken(defaultDatabase);
+    } catch (e) {
+        return {error: e};
+    }
+
+    let result;
+
+    try {
+        result = await loadMe({deviceToken}) as unknown as LoadedUser;
+        if (!result?.error && result?.currentUser) {
+            await completeLogin(result.currentUser, deviceToken);
+        }
+    } catch (e) {
+        return {error: e};
+    }
+
+    return result;
+};
+
+export const sendPasswordResetEmail = async (email: string) => {
+    let data;
+    try {
+        data = await Client4.sendPasswordResetEmail(email);
+    } catch (e) {
+        return {
+            error: e,
+        };
+    }
+    return {
+        data,
+        error: undefined,
+    };
 };

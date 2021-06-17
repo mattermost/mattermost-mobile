@@ -3,10 +3,9 @@
 
 import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
-import {Platform, StyleProp, ViewStyle} from 'react-native';
 import {IntlProvider} from 'react-intl';
-
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {Platform, StyleProp, ViewStyle} from 'react-native';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
 import {Screens} from '@constants';
@@ -94,9 +93,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'FlaggedPosts':
     //     screen = require('@screens/flagged_posts').default;
     //     break;
-    // case 'ForgotPassword':
-    //     screen = require('@screens/forgot_password').default;
-    //     break;
+    case 'ForgotPassword':
+        screen = require('@screens/forgot_password').default;
+        break;
     // case 'Gallery':
     //     screen = require('@screens/gallery').default;
     //     break;
@@ -115,9 +114,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'MainSidebar':
     //     screen = require('app/components/sidebars/main').default;
     //     break;
-    // case 'MFA':
-    //     screen = require('@screens/mfa').default;
-    //     break;
+    case 'MFA':
+        screen = require('@screens/mfa').default;
+        break;
     // case 'MoreChannels':
     //     screen = require('@screens/more_channels').default;
     //     break;
@@ -185,9 +184,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'SidebarSettings':
     //     screen = require('@screens/settings/sidebar').default;
     //     break;
-    // case 'SSO':
-    //     screen = require('@screens/sso').default;
-    //     break;
+    case 'SSO':
+        screen = require('@screens/sso').default;
+        break;
     // case 'Table':
     //     screen = require('@screens/table').default;
     //     break;
