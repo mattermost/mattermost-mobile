@@ -12,6 +12,7 @@ import {UserThread, UserThreadList} from '@mm-redux/types/threads';
 import ThreadConstants from '../constants/threads';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
+import {getMissingProfilesByIds} from './users';
 
 export function getThreads(userId: string, teamId: string, before = '', after = '', perPage = ThreadConstants.THREADS_CHUNK_SIZE, unread = true) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -31,7 +32,7 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                     type: ThreadTypes.RECEIVED_THREADS,
                     data: {
                         ...userThreadList,
-                        threads: userThreadList?.threads?.map((thread) => ({...thread, is_following: true})),
+                        threads: userThreadList?.threads?.map((thread) => ({...thread, is_following: true})) ?? [],
                         team_id: teamId,
                         removeOldThreads: !before && !after,
                     },
@@ -39,15 +40,24 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
             ];
 
             if (userThreadList.threads?.length) {
-                const flat = require('array.prototype.flat');
+                await dispatch(
+                    getMissingProfilesByIds([
+                        ...new Set(
+                            userThreadList.threads.map(({participants}) => participants.map(({id}) => id)).flat(),
+                        ),
+                    ]),
+                );
                 getThreadsActions.push(
                     {
                         type: UserTypes.RECEIVED_PROFILES_LIST,
-                        data: flat(userThreadList.threads.map(({participants: users}) => users)),
+                        data: userThreadList.threads.map(({participants: users}) => users).flat(),
                     },
                     {
                         type: PostTypes.RECEIVED_POSTS,
-                        data: {posts: userThreadList.threads.map(({post}) => post)},
+                        data: {posts: userThreadList.threads.map(({participants, post}) => ({
+                            ...post,
+                            participants,
+                        }))},
                     },
                 );
             }

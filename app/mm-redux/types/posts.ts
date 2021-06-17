@@ -58,6 +58,7 @@ export type Post = {
     edit_at: number;
     delete_at: number;
     is_pinned: boolean;
+    is_following: boolean;
     user_id: string;
     channel_id: string;
     root_id: string;
@@ -76,7 +77,7 @@ export type Post = {
     state?: 'DELETED';
     ownPost?: boolean;
     last_reply_at?: number;
-    participants: Array<UserProfile | $ID<UserProfile>>;
+    participants: Array<UserProfile | {id: $ID<UserProfile>}>;
 };
 
 export type PostWithFormatData = Post & {
