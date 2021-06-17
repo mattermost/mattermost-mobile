@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import DateTimePicker from './date_time_selector';
 
 type Props = {
-    handleSuggestionClick: (duration: CustomStatusDuration, expiresAt: string) => void;
+    handleItemClick: (duration: CustomStatusDuration, expiresAt: string) => void;
     duration: CustomStatusDuration;
     theme: Theme;
     separator: boolean;
@@ -26,11 +26,6 @@ type Props = {
     intl: typeof intlShape;
     showExpiryTime?: boolean;
 };
-
-type ExpiryMenuItem = {
-    text: string;
-    value: string;
-}
 
 const {
     DONT_CLEAR,
@@ -42,58 +37,36 @@ const {
     DATE_AND_TIME,
 } = CustomStatusDuration;
 
-const ClearAfterSuggestion = ({handleSuggestionClick, duration, theme, separator, isSelected, intl, showExpiryTime}: Props) => {
+const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime}: Props) => {
     const style = getStyleSheet(theme);
 
     const divider = separator ? <View style={style.divider}/> : null;
     const [showDateAndTimePicker, setShowDateAndTimePicker] = useState<boolean>(false);
     const [expiry, setExpiry] = useState<string>('');
 
-    const expiryMenuItems: { [key in CustomStatusDuration]: ExpiryMenuItem; } = {
-        [DONT_CLEAR]: {
-            text: intl.formatMessage(durationValues[DONT_CLEAR]),
-            value: intl.formatMessage(durationValues[DONT_CLEAR]),
-        },
-        [THIRTY_MINUTES]: {
-            text: intl.formatMessage(durationValues[THIRTY_MINUTES]),
-            value: intl.formatMessage(durationValues[THIRTY_MINUTES]),
-        },
-        [ONE_HOUR]: {
-            text: intl.formatMessage(durationValues[ONE_HOUR]),
-            value: intl.formatMessage(durationValues[ONE_HOUR]),
-        },
-        [FOUR_HOURS]: {
-            text: intl.formatMessage(durationValues[FOUR_HOURS]),
-            value: intl.formatMessage(durationValues[FOUR_HOURS]),
-        },
-        [TODAY]: {
-            text: intl.formatMessage(durationValues[TODAY]),
-            value: intl.formatMessage(durationValues[TODAY]),
-        },
-        [THIS_WEEK]: {
-            text: intl.formatMessage(durationValues[THIS_WEEK]),
-            value: intl.formatMessage(durationValues[THIS_WEEK]),
-        },
-        [DATE_AND_TIME]: {
-            text: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
-            value: intl.formatMessage(durationValues[DATE_AND_TIME]),
-        },
+    const expiryMenuItems: { [key in CustomStatusDuration]: string } = {
+        [DONT_CLEAR]: intl.formatMessage(durationValues[DONT_CLEAR]),
+        [THIRTY_MINUTES]: intl.formatMessage(durationValues[THIRTY_MINUTES]),
+        [ONE_HOUR]: intl.formatMessage(durationValues[ONE_HOUR]),
+        [FOUR_HOURS]: intl.formatMessage(durationValues[FOUR_HOURS]),
+        [TODAY]: intl.formatMessage(durationValues[TODAY]),
+        [THIS_WEEK]: intl.formatMessage(durationValues[THIS_WEEK]),
+        [DATE_AND_TIME]: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
     };
 
     const handleClick = useCallback(
         preventDoubleTap(() => {
+            handleItemClick(duration, '');
             if (duration === CustomStatusDuration.DATE_AND_TIME) {
                 setShowDateAndTimePicker(true);
-            } else {
-                handleSuggestionClick(duration, '');
             }
         }),
-        [handleSuggestionClick, duration],
+        [handleItemClick, duration],
     );
 
     const handleCustomExpiresAtChange = (expiresAt: Moment) => {
         setExpiry(expiresAt.toISOString());
-        handleSuggestionClick(duration, expiresAt.toISOString());
+        handleItemClick(duration, expiresAt.toISOString());
     };
 
     const renderDateTimePicker = showDateAndTimePicker && (
@@ -119,6 +92,7 @@ const ClearAfterSuggestion = ({handleSuggestionClick, duration, theme, separator
                 theme={theme}
                 time={moment(expiry).toDate()}
                 textStyles={style.customStatusExpiry}
+                showTimeCompulsory={true}
             />
         </View>
     );
@@ -126,13 +100,13 @@ const ClearAfterSuggestion = ({handleSuggestionClick, duration, theme, separator
     return (
         <View>
             <TouchableOpacity
-                testID={`clear_after.suggestion.${duration}`}
+                testID={`clear_after.menu.${duration}`}
                 onPress={handleClick}
             >
                 <View style={style.container}>
                     <View style={style.textContainer}>
                         <CustomStatusText
-                            text={expiryMenuItems[duration].text}
+                            text={expiryMenuItems[duration]}
                             theme={theme}
                             textStyle={{color: theme.centerChannelColor}}
                         />
@@ -147,7 +121,7 @@ const ClearAfterSuggestion = ({handleSuggestionClick, duration, theme, separator
     );
 };
 
-export default injectIntl(ClearAfterSuggestion);
+export default injectIntl(ClearAfterMenuItem);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
