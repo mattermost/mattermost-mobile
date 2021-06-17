@@ -361,7 +361,7 @@ export const ssoLogin = async (serverUrl: string) => {
     try {
         result = await loadMe({deviceToken}) as unknown as LoadedUser;
         if (!result?.error && result?.currentUser) {
-            await completeLogin(result.currentUser, deviceToken);
+            await completeLogin(result.currentUser);
         }
     } catch (e) {
         return {error: e};
