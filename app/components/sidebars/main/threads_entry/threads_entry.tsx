@@ -126,61 +126,16 @@ const ThreadsSidebarEntry = ({intl}: Props) => {
 const getExtraStyleSheet = makeStyleFromTheme((theme: Theme) => {
     return {
         iconContainer: {
-            marginRight: 8,
             alignItems: 'center',
         },
         icon: {
             color: changeOpacity(theme.sidebarText, 0.4),
-            fontSize: 16,
+            fontSize: 24,
         },
         iconActive: {
             color: theme.sidebarText,
         },
     };
 });
-
-// const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-//     return {
-//         container: {
-//             flex: 1,
-//             flexDirection: 'row',
-//             height: 44,
-//         },
-//         borderActive: {
-//             backgroundColor: theme.sidebarTextActiveBorder,
-//             width: 5,
-//         },
-//         item: {
-//             alignItems: 'center',
-//             flex: 1,
-//             flexDirection: 'row',
-//             paddingLeft: 16,
-//         },
-//         itemActive: {
-//             backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
-//         },
-//         text: {
-//             color: changeOpacity(theme.sidebarText, 0.6),
-//             fontSize: 16,
-//             lineHeight: 24,
-//             paddingRight: 10,
-//             maxWidth: '80%',
-//             flex: 1,
-//             alignSelf: 'center',
-//             fontFamily: 'Open Sans',
-//         },
-//         textActive: {
-//             color: theme.sidebarTextActiveColor,
-//         },
-//         icon: {
-//             color: changeOpacity(theme.sidebarText, 0.4),
-//             fontSize: 16,
-//         },
-//         iconContainer: {
-//             marginRight: 8,
-//             alignItems: 'center',
-//         },
-//     };
-// });
 
 export default injectIntl(ThreadsSidebarEntry);

@@ -87,10 +87,6 @@ function ThreadFooter({intl, location, thread, threadStarter}: Props) {
         }
     }
 
-    // threadstarter should be the first one in the avatars list
-    const participants = thread.participants.flatMap((participant) => (participant.id === threadStarter?.id ? [] : participant.id));
-    participants?.unshift(threadStarter?.id);
-
     let repliesComponent;
     if (thread.unread_replies && location === 'globalThreads') {
         repliesComponent = (
@@ -116,13 +112,14 @@ function ThreadFooter({intl, location, thread, threadStarter}: Props) {
         );
     }
 
+    // threadstarter should be the first one in the avatars list
+    const participants = thread.participants.flatMap((participant) => (participant.id === threadStarter?.id ? [] : participant.id));
+    participants?.unshift(threadStarter?.id);
+
     return (
         <View style={style.footerContainer}>
             <View style={style.avatarsContainer}>
-                <Avatars
-                    style={style.avatars}
-                    userIds={participants}
-                />
+                <Avatars userIds={participants}/>
             </View>
             {replyIcon}
             {repliesComponent}
@@ -147,7 +144,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         avatarsContainer: {
             marginRight: 12,
         },
-        avatars: {flex: 1},
         replyIconContainer: {
             top: -1,
             marginRight: 5,
