@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 import {useDispatch, useSelector} from 'react-redux';
 
 import {goToScreen} from '@actions/navigation';
@@ -12,7 +13,7 @@ import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
 import ThreadFooter from '@components/thread_item_footer';
 
-import {Preferences} from '@mm-redux/constants';
+import {Posts, Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost as getPostSelector} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -24,10 +25,11 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
+    intl: typeof intlShape;
     postId: string;
 };
 
-const ThreadItem = ({postId}: Props) => {
+const ThreadItem = ({intl, postId}: Props) => {
     const theme = useSelector((state: GlobalState) => getTheme(state));
     let post = useSelector((state: GlobalState) => getPostSelector(state, postId));
     const asyncDispatch: DispatchFunc = useDispatch();
@@ -78,6 +80,38 @@ const ThreadItem = ({postId}: Props) => {
         }
     }
 
+    let name;
+    if (post?.state === Posts.POST_DELETED) {
+        name = (
+            <Text
+                style={[style.threadStarter, style.threadDeleted]}
+                numberOfLines={1}
+            >{intl.formatMessage({
+                    id: 'threads.deleted',
+                    defaultMessage: 'Original Message Deleted',
+                })}</Text>
+        );
+    } else {
+        name = (
+            <Text
+                style={style.threadStarter}
+                numberOfLines={1}
+            >{threadStarterName}</Text>
+        );
+    }
+
+    let postBody;
+    if (post?.state !== Posts.POST_DELETED) {
+        postBody = (
+            <Text
+                style={style.message}
+                numberOfLines={2}
+            >
+                <RemoveMarkdown value={post?.message || ''}/>
+            </Text>
+        );
+    }
+
     return (
         <TouchableHighlight
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
@@ -88,13 +122,10 @@ const ThreadItem = ({postId}: Props) => {
                 <View style={style.badgeContainer}>
                     {badgeComponent}
                 </View>
-                <View style={style.postContainer} >
+                <View style={style.postContainer}>
                     <View style={style.header}>
                         <View style={style.headerInfoContainer}>
-                            <Text
-                                style={style.threadStarter}
-                                numberOfLines={1}
-                            >{threadStarterName}</Text>
+                            {name}
                             <View style={style.channelNameContainer}>
                                 <Text
                                     style={style.channelName}
@@ -107,12 +138,7 @@ const ThreadItem = ({postId}: Props) => {
                             style={style.date}
                         />
                     </View>
-                    <Text
-                        style={style.message}
-                        numberOfLines={2}
-                    >
-                        <RemoveMarkdown value={post?.message || ''}/>
-                    </Text>
+                    {postBody}
                     <ThreadFooter
                         thread={thread}
                         threadStarter={threadStarter}
@@ -136,28 +162,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomWidth: 1,
         },
         badgeContainer: {
-            flex: 8,
             marginTop: 3,
+            width: 32,
         },
         postContainer: {
-            flex: 92,
+            flex: 1,
         },
         header: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
+            marginBottom: 9,
         },
         headerInfoContainer: {
             alignItems: 'center',
             flex: 1,
             flexDirection: 'row',
             marginRight: 12,
+            overflow: 'hidden',
+        },
+        threadDeleted: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            fontStyle: 'italic',
         },
         threadStarter: {
             color: theme.centerChannelColor,
-            flex: 0,
-            flexShrink: 1,
-            fontFamily: 'Open Sans',
             fontSize: 15,
             fontWeight: '600',
             lineHeight: 22,
@@ -170,7 +199,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         channelName: {
             color: theme.centerChannelColor,
-            fontFamily: 'Open Sans',
             fontSize: 10,
             fontWeight: '600',
             lineHeight: 16,
@@ -190,7 +218,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
             lineHeight: 20,
-            marginVertical: 9,
+            marginBottom: 9,
         },
         unreadDot: {
             width: 8,
@@ -218,4 +246,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ThreadItem;
+export default injectIntl(ThreadItem);
