@@ -100,6 +100,27 @@
 			remoteGlobalIDString = 7FABE03522137F2900D0F595;
 			remoteInfo = UploadAttachments;
 		};
+		7FE6E441267C014600C99C18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49415252267955890039D64E;
+			remoteInfo = DatabaseHelper;
+		};
+		7FE6E444267C014E00C99C18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49415252267955890039D64E;
+			remoteInfo = DatabaseHelper;
+		};
+		7FE6E446267C015400C99C18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49415252267955890039D64E;
+			remoteInfo = DatabaseHelper;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -482,6 +503,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FE6E442267C014600C99C18 /* PBXTargetDependency */,
 				7FAB45BA222DD0E300EBFFC8 /* PBXTargetDependency */,
 				7F240A22220D3A2300637665 /* PBXTargetDependency */,
 				7F581D38221ED5C60099E66B /* PBXTargetDependency */,
@@ -502,6 +524,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FE6E445267C014E00C99C18 /* PBXTargetDependency */,
 				7FAB4571222DD0DA00EBFFC8 /* PBXTargetDependency */,
 			);
 			name = MattermostShare;
@@ -520,6 +543,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FE6E447267C015400C99C18 /* PBXTargetDependency */,
 				7FE5F962227739E600FEFFE1 /* PBXTargetDependency */,
 			);
 			name = NotificationService;
@@ -839,6 +863,21 @@
 			isa = PBXTargetDependency;
 			name = UploadAttachments;
 			targetProxy = 7FE5F961227739E600FEFFE1 /* PBXContainerItemProxy */;
+		};
+		7FE6E442267C014600C99C18 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DatabaseHelper;
+			targetProxy = 7FE6E441267C014600C99C18 /* PBXContainerItemProxy */;
+		};
+		7FE6E445267C014E00C99C18 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DatabaseHelper;
+			targetProxy = 7FE6E444267C014E00C99C18 /* PBXContainerItemProxy */;
+		};
+		7FE6E447267C015400C99C18 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DatabaseHelper;
+			targetProxy = 7FE6E446267C015400C99C18 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

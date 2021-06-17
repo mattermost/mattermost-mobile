@@ -28,34 +28,6 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "49415252267955890039D64E"
-               BuildableName = "libDatabaseHelper.a"
-               BlueprintName = "DatabaseHelper"
-               ReferencedContainer = "container:../../DatabaseHelper/DatabaseHelper.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7FABE03522137F2900D0F595"
-               BuildableName = "libUploadAttachments.a"
-               BlueprintName = "UploadAttachments"
-               ReferencedContainer = "container:UploadAttachments/UploadAttachments.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
                BuildableName = "Mattermost.app"
                BlueprintName = "Mattermost"
