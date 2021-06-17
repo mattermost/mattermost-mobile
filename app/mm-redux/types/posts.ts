@@ -77,7 +77,7 @@ export type Post = {
     state?: 'DELETED';
     ownPost?: boolean;
     last_reply_at?: number;
-    participants: Array<UserProfile | $ID<UserProfile>>;
+    participants: Array<UserProfile | {id: $ID<UserProfile>}>;
 };
 
 export type PostWithFormatData = Post & {

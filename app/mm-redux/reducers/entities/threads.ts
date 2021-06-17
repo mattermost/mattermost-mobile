@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
 
-import {TeamTypes, ThreadTypes} from '@mm-redux/action_types';
+import {PostTypes, TeamTypes, ThreadTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
+import {Post} from '@mm-redux/types/posts';
 import {Team} from '@mm-redux/types/teams';
 import {ThreadsState, UserThread} from '@mm-redux/types/threads';
+import {UserProfile} from '@mm-redux/types/users';
 import {IDMappedObjects} from '@mm-redux/types/utilities';
 
 export const threadsReducer = (state: ThreadsState['threads'] = {}, action: GenericAction) => {
@@ -67,6 +69,39 @@ export const threadsReducer = (state: ThreadsState['threads'] = {}, action: Gene
             return newState;
         }, {});
     }
+    case PostTypes.POST_REMOVED: {
+        const post = action.data;
+
+        if (post.root_id || !state[post.id]) {
+            return state;
+        }
+
+        const nextState = {...state};
+        Reflect.deleteProperty(nextState, post.id);
+
+        return nextState;
+    }
+    case PostTypes.RECEIVED_NEW_POST: {
+        const post: Post = action.data;
+        const thread: UserThread | undefined = state[post.root_id];
+        if (post.root_id && thread) {
+            const participants = thread.participants || [];
+            const nextThread = {...thread};
+            if (!participants.find((user: UserProfile | {id: string}) => user.id === post.user_id)) {
+                nextThread.participants = [...participants, {id: post.user_id}];
+            }
+
+            if (post.reply_count) {
+                nextThread.reply_count = post.reply_count;
+            }
+
+            return {
+                ...state,
+                [post.root_id]: nextThread,
+            };
+        }
+        return state;
+    }
     }
     return state;
 };
@@ -110,6 +145,35 @@ export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, 
         Reflect.deleteProperty(nextState, team.id);
 
         return nextState;
+    }
+
+    case PostTypes.POST_REMOVED: {
+        const post = action.data;
+        if (post.root_id) {
+            return state;
+        }
+
+        let postIndex = 0;
+        const teamId = Object.keys(state).find((id) => {
+            const currentPostIndex = state[id].indexOf(post.id);
+            if (currentPostIndex > -1) {
+                postIndex = currentPostIndex;
+                return true;
+            }
+            return false;
+        });
+
+        if (!teamId) {
+            return state;
+        }
+
+        return {
+            ...state,
+            [teamId]: [
+                ...state[teamId].slice(0, postIndex),
+                ...state[teamId].slice(postIndex + 1),
+            ],
+        };
     }
     }
     return state;

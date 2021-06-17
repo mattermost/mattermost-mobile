@@ -361,7 +361,8 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
     const prevChannel = (!prevChanManuallyUnread && prevChannelId) ? channels[prevChannelId] : null; // May be null since prevChannelId is optional
 
     if (markOnServer) {
-        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId).catch(() => {
+        const crtEnabled = isCollapsedThreadsEnabled(state);
+        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId, crtEnabled).catch(() => {
             // do nothing just adding the handler to avoid the warning
         });
     }
