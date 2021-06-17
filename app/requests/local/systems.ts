@@ -70,3 +70,15 @@ export const createSessions = async (sessions: any) => {
     });
     return null;
 };
+
+export const setDeepLinkUrl = async (url: string) => {
+    const operator = new Operator();
+    await operator.handleIsolatedEntity({
+        tableName: IsolatedEntities.GLOBAL,
+        values: [{
+            name: 'deepLinkUrl',
+            value: url,
+        }],
+        prepareRecordsOnly: false,
+    });
+};

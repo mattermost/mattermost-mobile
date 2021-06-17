@@ -83,6 +83,7 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
             config,
             license,
             theme,
+            serverUrl: url,
         };
 
         const defaultOptions = {

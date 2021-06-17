@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export function emptyFunction() {// eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function emptyFunction(e?: any) {
+    // eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
 }
 
 // Generates a RFC-4122 version 4 compliant globally unique identifier.
@@ -16,7 +18,7 @@ export const generateId = (): string => {
             v = r;
         } else {
             // eslint-disable-next-line no-mixed-operators
-            v = r & 0x3 | 0x8;
+            v = (r & 0x3) | 0x8;
         }
 
         return v.toString(16);

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Attachment from './attachment';
+import SSO from './sso';
 import Database from './database';
 import Device from './device';
 import Files from './files';
@@ -15,6 +16,7 @@ import WebsocketEvents from './websocket';
 
 export {
     Attachment,
+    SSO,
     Database,
     Device,
     Files,

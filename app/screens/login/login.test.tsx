@@ -4,13 +4,23 @@
 import React from 'react';
 
 import {Preferences, Screens} from '@constants';
-import {login} from '@requests/remote/user';
 import * as NavigationActions from '@screens/navigation';
 import {waitFor, renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
-import Login, {MFA_EXPECTED_ERRORS} from './index';
+import Login from './index';
 
-jest.mock('@requests/remote/user');
+jest.mock('@requests/remote/user', () => {
+    return {
+        login: () => {
+            return {
+                data: undefined,
+                error: {
+                    server_error_id: 'mfa.validate_token.authenticate.app_error',
+                },
+            };
+        },
+    };
+});
 
 describe('Login', () => {
     const baseProps = {
@@ -85,9 +95,6 @@ describe('Login', () => {
 
     test('should go to MFA screen when login response returns MFA error', async () => {
         const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
-        login.mockResolvedValue({error: {
-            server_error_id: MFA_EXPECTED_ERRORS[0],
-        }});
 
         const {getByTestId} = renderWithIntl(<Login {...baseProps}/>);
         const loginInput = getByTestId('login.username.input');
@@ -109,6 +116,9 @@ describe('Login', () => {
                     goToChannel: expect.anything(),
                     loginId,
                     password,
+                    config: {EnableSignInWithEmail: 'true', EnableSignInWithUsername: 'true'},
+                    license: {IsLicensed: 'false'},
+                    theme: baseProps.theme,
                 },
             );
     });
@@ -125,6 +135,7 @@ describe('Login', () => {
             toHaveBeenCalledWith(
                 'ForgotPassword',
                 'Password Reset',
+                {theme: baseProps.theme},
             );
     });
 });
