@@ -3,8 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {Types} from '@constants';
- import {THREAD} from '@constants/screen';
+import {THREAD} from '@constants/screen';
 import {removePost} from '@mm-redux/actions/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
@@ -13,6 +12,7 @@ import {getMyPreferences, getTeammateNameDisplaySetting, isCollapsedThreadsEnabl
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getThread} from '@mm-redux/selectors/entities/threads';
 import {getUser} from '@mm-redux/selectors/entities/users';
+import {UserThread} from '@mm-redux/types/threads';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {canDeletePost} from '@selectors/permissions';
 import {areConsecutivePosts, postUserDisplayName} from '@utils/post';
@@ -22,7 +22,6 @@ import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 
 import Post from './post';
-import { UserThread } from '@mm-redux/types/threads';
 
 type OwnProps = {
     location: string;
@@ -79,7 +78,6 @@ function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
     if (collapsedThreadsEnabled && ownProps.location !== THREAD) {
         thread = getThread(state, post.id);
 
-        // @TODO FIX TS ERROR
         // If user is not following the thread, make thread object from the post
         if (!thread && post.participants?.length && !post.is_following) {
             const {id, reply_count, last_reply_at, participants} = post;
