@@ -44,6 +44,8 @@ describe('*** Test schema for DEFAULT database ***', () => {
                         mention_count: {name: 'mention_count', type: 'number'},
                         unread_count: {name: 'unread_count', type: 'number'},
                         url: {name: 'url', type: 'string', isIndexed: true},
+                        last_active_at: {name: 'last_active_at', type: 'number', isIndexed: true},
+                        is_secured: {name: 'is_secured', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'db_path', type: 'string'},
@@ -51,6 +53,8 @@ describe('*** Test schema for DEFAULT database ***', () => {
                         {name: 'mention_count', type: 'number'},
                         {name: 'unread_count', type: 'number'},
                         {name: 'url', type: 'string', isIndexed: true},
+                        {name: 'last_active_at', type: 'number', isIndexed: true},
+                        {name: 'is_secured', type: 'boolean'},
                     ],
                 },
             },

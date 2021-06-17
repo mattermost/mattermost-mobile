@@ -25,4 +25,10 @@ export default class Servers extends Model {
 
     /** url : The online address for the Mattermost server */
     url: string;
+
+    /** last_active_at: The last time this server was active */
+    lastActiveAt!: number;
+
+    /** is_secured: Determines if the protocol used for this server url is HTTP or HTTPS */
+    isSecured!: boolean;
 }

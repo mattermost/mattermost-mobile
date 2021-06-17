@@ -32,6 +32,8 @@ export const defaultSchema: AppSchema = appSchema({
                 {name: 'mention_count', type: 'number'},
                 {name: 'unread_count', type: 'number'},
                 {name: 'url', type: 'string', isIndexed: true},
+                {name: 'last_active_at', type: 'number', isIndexed: true},
+                {name: 'is_secured', type: 'boolean'},
             ],
         }),
     ],

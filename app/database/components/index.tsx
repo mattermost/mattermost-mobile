@@ -11,9 +11,7 @@ import Servers from '@database/models/default/servers';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
 
-export function withServerDatabase<T>(
-    Component: ComponentType<T>,
-): ComponentType<T> {
+export function withServerDatabase<T>(Component: ComponentType<T>): ComponentType<T> {
     return function ServerDatabaseComponent(props) {
         const [database, setDatabase] = useState<Database|unknown>();
 
@@ -21,6 +19,8 @@ export function withServerDatabase<T>(
         useEffect(() => {
             const observer = async (servers: Servers[]) => {
                 const server = servers.reduce((a, b) => (a.lastActiveAt > b.lastActiveAt ? a : b));
+
+                //fixme: 1: DatabaseManager should now be called as a client
 
                 // The server database should already exists at this point
                 // there should not be a need to await
