@@ -25,8 +25,8 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
                 // The server database should already exists at this point
                 // there should not be a need to await
                 const serverDatabase = await DatabaseManager.retrieveDatabaseInstances([server.url]);
-                if (serverDatabase?.length) {
-                    setDatabase(serverDatabase[0]);
+                if (serverDatabase?.[0]?.dbInstance) {
+                    setDatabase(serverDatabase[0].dbInstance);
                 }
             };
 
