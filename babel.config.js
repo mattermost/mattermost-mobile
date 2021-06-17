@@ -19,7 +19,6 @@ module.exports = {
         ['module-resolver', {
             root: ['.'],
             alias: {
-                '@actions': './app/actions',
                 '@app': './app/',
                 '@assets': './dist/assets',
                 '@client': './app/client',
@@ -32,7 +31,6 @@ module.exports = {
                 '@queries': './app/queries',
                 '@requests': './app/requests',
                 '@screens': './app/screens',
-                '@selectors': './app/selectors',
                 '@share': './share_extension',
                 '@store': './app/store',
                 '@telemetry': './app/telemetry',
