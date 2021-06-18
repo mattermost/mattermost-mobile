@@ -5,6 +5,8 @@ import {Linking} from 'react-native';
 
 import * as UrlUtils from '@utils/url';
 
+import {DeepLinkType} from '@typings/launch';
+
 /* eslint-disable max-nested-callbacks */
 
 describe('UrlUtils', () => {
@@ -125,9 +127,10 @@ describe('UrlUtils', () => {
     });
 
     describe('matchDeepLink', () => {
-        const SITE_URL = 'http://localhost:8065';
-        const SERVER_URL = 'http://localhost:8065';
-        const DEEPLINK_URL_ROOT = 'mattermost://localhost:8065';
+        const URL_NO_PROTOCOL = 'localhost:8065/subdir';
+        const SITE_URL = `http://${URL_NO_PROTOCOL}`;
+        const SERVER_URL = `http://${URL_NO_PROTOCOL}`;
+        const DEEPLINK_URL_ROOT = `mattermost://${URL_NO_PROTOCOL}`;
 
         const tests = [
             {
@@ -172,9 +175,12 @@ describe('UrlUtils', () => {
                     siteURL: SITE_URL,
                 },
                 expected: {
-                    postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
-                    teamName: 'ad-1',
-                    type: 'permalink',
+                    data: {
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Permalink,
                 },
             },
             {
@@ -185,9 +191,12 @@ describe('UrlUtils', () => {
                     siteURL: SITE_URL,
                 },
                 expected: {
-                    channelName: 'town-square',
-                    teamName: 'ad-1',
-                    type: 'channel',
+                    data: {
+                        channelName: 'town-square',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Channel,
                 },
             },
             {
@@ -198,9 +207,12 @@ describe('UrlUtils', () => {
                     siteURL: SITE_URL,
                 },
                 expected: {
-                    postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
-                    teamName: 'ad-1',
-                    type: 'permalink',
+                    data: {
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Permalink,
                 },
             },
             {
@@ -211,9 +223,12 @@ describe('UrlUtils', () => {
                     siteURL: SITE_URL,
                 },
                 expected: {
-                    channelName: 'town-square',
-                    teamName: 'ad-1',
-                    type: 'channel',
+                    data: {
+                        channelName: 'town-square',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: DeepLinkType.Channel,
                 },
             },
             {
@@ -224,8 +239,11 @@ describe('UrlUtils', () => {
                     siteURL: SITE_URL,
                 },
                 expected: {
-                    postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
-                    teamName: 'ad-1',
+                    data: {
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
+                        serverUrl: URL_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
                     type: 'permalink',
                 },
             },

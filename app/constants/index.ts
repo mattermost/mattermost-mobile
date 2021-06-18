@@ -4,7 +4,6 @@
 import Attachment from './attachment';
 import SSO from './sso';
 import Database from './database';
-import DeepLink from './deep_linking';
 import Device from './device';
 import Files from './files';
 import General from './general';
@@ -19,7 +18,6 @@ export {
     Attachment,
     SSO,
     Database,
-    DeepLink,
     Device,
     Files,
     General,

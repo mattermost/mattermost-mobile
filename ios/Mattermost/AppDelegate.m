@@ -7,9 +7,9 @@
 #import <UMCore/UMModuleRegistry.h>
 #import <UMReactNativeAdapter/UMNativeModulesProxy.h>
 #import <UMReactNativeAdapter/UMModuleRegistryAdapter.h>
-
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UploadAttachments/UploadAttachments-Swift.h>
+#import <DatabaseHelper/DatabaseHelper-Swift.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNHWKeyboardEvent.h>
 
@@ -92,14 +92,25 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
   NSString* ackId = [userInfo objectForKey:@"ack_id"];
+  
+  NSString* serverUrl = [userInfo objectForKey:@"server_url"];
+  if (serverUrl == nil) {
+    NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+    if ([onlyServerUrl length] > 0) {
+      serverUrl = onlyServerUrl;
+    }
+  }
+
   RuntimeUtils *utils = [[RuntimeUtils alloc] init];
 
   if ((action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) || (state == UIApplicationStateInactive)) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     [self cleanNotificationsFromChannel:channelId];
   }
+  
+  // TODO: Fetch channel data if action is of type message
 
-  [[UploadSession shared] notificationReceiptWithNotificationId:ackId receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
+  [[UploadSession shared] notificationReceiptWithNotificationId:ackId serverUrl:serverUrl receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
   [utils delayWithSeconds:0.2 closure:^(void) {
     // This is to notify the NotificationCenter that something has changed.
     completionHandler(UIBackgroundFetchResultNewData);

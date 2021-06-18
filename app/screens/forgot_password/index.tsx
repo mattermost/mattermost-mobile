@@ -106,7 +106,7 @@ const ForgotPassword = ({theme}: Props) => {
                         id: 'login.email',
                         defaultMessage: 'Email',
                     })}
-                    placeholderTextColor={changeOpacity('#000', 0.5)}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     autoCorrect={false}
                     autoCapitalize='none'
                     keyboardType='email-address'
@@ -150,7 +150,7 @@ const ForgotPassword = ({theme}: Props) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
     },
@@ -184,7 +184,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '300',
-        color: '#777',
+        color: changeOpacity(theme.centerChannelColor, 0.6),
         marginBottom: 15,
         lineHeight: 22,
     },
@@ -198,11 +198,11 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         paddingLeft: 10,
         alignSelf: 'stretch',
         borderRadius: 3,
-        color: '#3d3c40',
+        color: theme.centerChannelColor,
     },
     signupButton: {
         borderRadius: 3,
-        borderColor: '#2389D7',
+        borderColor: theme.buttonBg,
         borderWidth: 1,
         alignItems: 'center',
         alignSelf: 'stretch',
@@ -211,7 +211,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     },
     signupButtonText: {
         textAlign: 'center',
-        color: '#2389D7',
+        color: theme.buttonBg,
         fontSize: 17,
     },
     innerContainerImage: {

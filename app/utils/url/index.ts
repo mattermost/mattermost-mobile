@@ -4,7 +4,8 @@
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
-import {DeepLink, Files} from '@constants';
+import {Files} from '@constants';
+import {DeepLinkType, DeepLinkWithData} from '@typings/launch';
 import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 
@@ -134,6 +135,32 @@ export function getScheme(url: string) {
 
 export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
 
+export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
+    const url = removeProtocol(deepLinkUrl);
+
+    let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+    if (match) {
+        return {type: DeepLinkType.Channel, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
+    }
+
+    match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+    if (match) {
+        return {type: DeepLinkType.Permalink, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
+    }
+
+    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
+    if (match) {
+        return {type: DeepLinkType.DirectMessage, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
+    }
+
+    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
+    if (match) {
+        return {type: DeepLinkType.GroupMessage, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
+    }
+
+    return {type: DeepLinkType.Invalid};
+}
+
 export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
     if (!url || (!serverURL && !siteURL)) {
         return null;
@@ -141,37 +168,19 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     let urlToMatch = url;
 
-    // If url doesn't contain site or server URL, tack it on.
-    // e.g. <jump to convo> URLs from autolink plugin.
-    const urlBase = serverURL || siteURL || '';
-    let match = new RegExp(escapeRegex(urlBase)).exec(url);
-    if (!match) {
-        urlToMatch = urlBase + url;
+    if (!url.startsWith('mattermost://')) {
+        // If url doesn't contain site or server URL, tack it on.
+        // e.g. <jump to convo> URLs from autolink plugin.
+        const urlBase = serverURL || siteURL || '';
+        const match = new RegExp(escapeRegex(urlBase)).exec(url);
+        if (!match) {
+            urlToMatch = urlBase + url;
+        }
     }
 
-    const urlBaseWithoutProtocol = removeProtocol(urlBase);
-
-    const linkRoot = `(?:${escapeRegex(urlBaseWithoutProtocol)})`;
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(urlToMatch);
-
-    if (match) {
-        return {type: DeepLink.CHANNEL, teamName: match[1], channelName: match[2]};
-    }
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(urlToMatch);
-    if (match) {
-        return {type: DeepLink.PERMALINK, teamName: match[1], postId: match[2]};
-    }
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(urlToMatch);
-    if (match) {
-        return {type: DeepLink.DM, teamName: match[1], userName: match[2]};
-    }
-
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(urlToMatch);
-    if (match) {
-        return {type: DeepLink.GM, teamName: match[1], id: match[2]};
+    const parsedDeepLink = parseDeepLink(urlToMatch);
+    if (parsedDeepLink.type !== DeepLinkType.Invalid) {
+        return parsedDeepLink;
     }
 
     return null;

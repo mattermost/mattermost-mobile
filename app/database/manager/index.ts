@@ -165,7 +165,7 @@ class DatabaseManager {
       try {
           const databaseName = dbType === DatabaseType.DEFAULT ? DEFAULT_DATABASE : dbName;
 
-          const databaseFilePath = this.getDatabaseDirectory(databaseName);
+          const databaseFilePath = this.getDatabaseFilePath(databaseName);
           const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
           const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
           const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
@@ -234,9 +234,9 @@ class DatabaseManager {
 
   /**
    * getActiveServerUrl: Use this getter method to retrieve the active server URL.
-   * @returns {string}
+   * @returns {string | undefined}
    */
-   getActiveServerUrl = async (): Promise<string|undefined> => {
+   getActiveServerUrl = async (): Promise<string | undefined> => {
        const defaultDatabase = await this.getDefaultDatabase();
 
        if (defaultDatabase) {
@@ -497,7 +497,7 @@ class DatabaseManager {
   };
 
   /**
-   * getDatabaseDirectory: Using the database name, this method will return the database directory for each platform.
+   * getDatabaseFilePath: Using the database name, this method will return the database file path for each platform.
    * On iOS, it will point towards the AppGroup shared directory while on Android, it will point towards the Files Directory.
    * Please note that in each case, the *.db files will be created/grouped under a 'databases' sub-folder.
    * iOS Simulator : appGroup => /Users/{username}/Library/Developer/CoreSimulator/Devices/DA6F1C73/data/Containers/Shared/AppGroup/ACA65327/databases"}
@@ -506,7 +506,7 @@ class DatabaseManager {
    * @param {string} dbName
    * @returns {string}
    */
-  private getDatabaseDirectory = (dbName: string): string => {
+  private getDatabaseFilePath = (dbName: string): string => {
       return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
   };
 }

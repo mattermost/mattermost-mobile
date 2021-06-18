@@ -36,7 +36,6 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         Array [
           Object {
             "alignItems": "center",
-            "backgroundColor": "white",
             "flex": 1,
             "flexDirection": "column",
             "justifyContent": "center",
@@ -73,6 +72,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
                 "textAlign": "center",
               },
               Object {
+                "color": "rgba(61,60,64,0.6)",
                 "fontSize": 20,
                 "fontWeight": "400",
               },
@@ -108,6 +108,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         onChangeText={[Function]}
         onSubmitEditing={[Function]}
         placeholder="MFA Token"
+        placeholderTextColor="rgba(61,60,64,0.5)"
         rejectResponderTermination={true}
         returnKeyType="go"
         style={
@@ -143,7 +144,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
           Object {
             "alignItems": "center",
             "alignSelf": "stretch",
-            "borderColor": "#2389D7",
+            "borderColor": "#166de0",
             "borderRadius": 3,
             "borderWidth": 1,
             "marginTop": 10,
@@ -153,7 +154,15 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         }
         testID="login_mfa.submit"
       >
-        <Text>
+        <Text
+          style={
+            Object {
+              "color": "#166de0",
+              "fontSize": 17,
+              "textAlign": "center",
+            }
+          }
+        >
           Proceed
         </Text>
       </View>

@@ -46,7 +46,6 @@ import com.facebook.soloader.SoLoader;
 
 import org.unimodules.adapters.react.ModuleRegistryAdapter;
 import org.unimodules.adapters.react.ReactModuleRegistryProvider;
-import org.unimodules.core.interfaces.SingletonModule;
 
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 

@@ -4,13 +4,14 @@
 import {LOGIN, SSO} from '@constants/screens';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, ScrollView, StatusBar, StyleSheet, Text} from 'react-native';
+import {Image, ScrollView, StatusBar, Text} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import EmailOption from './email';
 import GitLabOption from './gitlab';
@@ -28,7 +29,7 @@ type LoginOptionsProps = {
     theme: Theme;
 }
 
-const styles = StyleSheet.create({
+const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
     },
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '300',
-        color: '#777',
+        color: changeOpacity(theme.centerChannelColor, 0.6),
         marginBottom: 15,
         lineHeight: 22,
     },
@@ -54,16 +55,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         flex: 1,
     },
-});
+}));
 
 const LoginOptions: NavigationFunctionComponent = ({config, license, theme, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
+    const styles = getStyles(theme);
 
     const displayLogin = preventDoubleTap(() => {
         const screen = LOGIN;
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        goToScreen(screen, title, {config, license});
+        goToScreen(screen, title, {config, license, theme});
     });
 
     const displaySSO = preventDoubleTap((ssoType: string) => {

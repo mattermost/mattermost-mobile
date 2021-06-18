@@ -170,7 +170,7 @@ class DatabaseManager {
       try {
           const databaseName = dbType === DatabaseType.DEFAULT ? DEFAULT_DATABASE : dbName;
 
-          // const databaseFilePath = this.getDatabaseDirectory(databaseName);
+          // const databaseFilePath = this.getDatabaseFilePath(databaseName);
           const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
           const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
           const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;

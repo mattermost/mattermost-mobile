@@ -2,6 +2,7 @@ import UIKit
 import Social
 import MobileCoreServices
 import UploadAttachments
+import DatabaseHelper
 import LocalAuthentication
 
 extension Bundle {
@@ -17,11 +18,11 @@ class ShareViewController: SLComposeServiceViewController {
   private var store = StoreManager.shared() as StoreManager
   private var entities: [AnyHashable:Any]? = nil
   private var sessionToken: String?
-  private var serverURL: String?
+  private var serverUrl: String?
   private var message: String?
-  private var publicURL: String?
+  private var publicUrl: String?
   private var maxPostAlertShown: Bool = false
-  private var tempContainerURL: URL? = UploadSessionManager.shared.tempContainerURL() as URL?
+  private var tempContainerUrl: URL? = UploadSessionManager.shared.tempContainerUrl() as URL?
   
   fileprivate var selectedChannel: Item?
   fileprivate var selectedTeam: Item?
@@ -32,13 +33,18 @@ class ShareViewController: SLComposeServiceViewController {
   private var canUploadFiles: Bool = true
   
   required init?(coder aDecoder: NSCoder) {
-      super.init(coder: aDecoder)
+    super.init(coder: aDecoder)
+
+    entities = store.getEntities(true) as [AnyHashable:Any]?
   
-      entities = store.getEntities(true) as [AnyHashable:Any]?
-      sessionToken = store.getToken()
-      serverURL = store.getServerUrl()
-      maxMessageSize = Int(store.getMaxPostSize())
-      canUploadFiles = store.getCanUploadFiles()
+    // TODO: If we don't have a single server then we'll need the user to
+    // select the server from a dropdown. Once the server is selected we
+    // can fetch its token.
+    serverUrl = try? DatabaseHelper.default.getOnlyServerUrl()
+    sessionToken = serverUrl != nil ? store.getTokenForServerUrl(serverUrl) : nil
+  
+    maxMessageSize = Int(store.getMaxPostSize())
+    canUploadFiles = store.getCanUploadFiles()
   }
 
   // MARK: - Lifecycle methods
@@ -92,7 +98,7 @@ class ShareViewController: SLComposeServiceViewController {
   }
 
   func loadData() {
-    if sessionToken == nil || serverURL == nil {
+    if sessionToken == nil || serverUrl == nil {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
     } else if store.getCurrentTeamId() == "" || store.getMyTeams().count == 0 {
       showErrorMessage(title: "", message: "You must belong to a team before you can share files.", VC: self)
@@ -133,7 +139,7 @@ class ShareViewController: SLComposeServiceViewController {
       }
     }
 
-    return serverURL != nil &&
+    return serverUrl != nil &&
       sessionToken != nil &&
       attachmentsCount() == attachments.count &&
       selectedTeam != nil &&
@@ -147,13 +153,13 @@ class ShareViewController: SLComposeServiceViewController {
   
   override func didSelectPost() {
     // This is called after the user selects Post. Do the upload of contentText and/or NSExtensionContext attachments.
-    if publicURL != nil {
-      self.message = "\(contentText!)\n\n\(publicURL!)"
+    if publicUrl != nil {
+      self.message = "\(contentText!)\n\n\(publicUrl!)"
     } else {
       self.message = contentText
     }
 
-    UploadManager.shared.uploadFiles(baseURL: serverURL!, token: sessionToken!, channelId: selectedChannel!.id!, message: message, attachments: attachments, callback: {
+    UploadManager.shared.uploadFiles(baseUrl: serverUrl!, token: sessionToken!, channelId: selectedChannel!.id!, message: message, attachments: attachments, callback: {
       // Inform the host that we're done, so it un-blocks its UI. Note: Alternatively you could call super's -didSelectPost, which will similarly complete the extension context.
       self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
     })
@@ -304,11 +310,11 @@ class ShareViewController: SLComposeServiceViewController {
                 }
               } else if let image = item as? UIImage {
                 if let data = image.pngData() {
-                  let tempImageURL = self.tempContainerURL?
+                  let tempImageUrl = self.tempContainerUrl?
                     .appendingPathComponent(UUID().uuidString)
                     .appendingPathExtension(".png")
-                  if (try? data.write(to: tempImageURL!)) != nil {
-                    let attachment = self.saveAttachment(url: tempImageURL!)
+                  if (try? data.write(to: tempImageUrl!)) != nil {
+                    let attachment = self.saveAttachment(url: tempImageUrl!)
                     if (attachment != nil) {
                       attachment?.type = kUTTypeImage as String
                       attachment?.imagePixels = self.getImagePixels(image: image)
@@ -337,7 +343,7 @@ class ShareViewController: SLComposeServiceViewController {
         } else if itemProvider.hasItemConformingToTypeIdentifier(kUTTypeURL as String) {
           itemProvider.loadItem(forTypeIdentifier: kUTTypeURL as String, options: nil, completionHandler: ({item, error in
             if let url = item as? URL {
-              self.publicURL = url.absoluteString
+              self.publicUrl = url.absoluteString
             }
           }))
         }
@@ -356,7 +362,7 @@ class ShareViewController: SLComposeServiceViewController {
     
     // If currentChannel is nil it means we don't have the channels for this team
     if (currentChannel == nil) {
-      let urlString = "\(serverURL!)/api/v4/users/me/teams/\(forTeamId)/channels"
+      let urlString = "\(serverUrl!)/api/v4/users/me/teams/\(forTeamId)/channels"
       let url = URL(string: urlString)
       var request = URLRequest(url: url!)
       let auth = "Bearer \(sessionToken!)" as String
@@ -462,18 +468,18 @@ class ShareViewController: SLComposeServiceViewController {
   func saveAttachment(url: URL) -> AttachmentItem? {
     let fileMgr = FileManager.default
     let fileName = url.lastPathComponent
-    let tempFileURL = tempContainerURL?.appendingPathComponent(fileName)
+    let tempFileUrl = tempContainerUrl?.appendingPathComponent(fileName)
 
     do {
-      if (tempFileURL != url) {
-        try? FileManager.default.removeItem(at: tempFileURL!)
-        try fileMgr.copyItem(at: url, to: tempFileURL!)
+      if (tempFileUrl != url) {
+        try? FileManager.default.removeItem(at: tempFileUrl!)
+        try fileMgr.copyItem(at: url, to: tempFileUrl!)
       }
 
-      let attr = try fileMgr.attributesOfItem(atPath: (tempFileURL?.path)!) as NSDictionary
+      let attr = try fileMgr.attributesOfItem(atPath: (tempFileUrl?.path)!) as NSDictionary
       let attachment = AttachmentItem()
       attachment.fileName = fileName
-      attachment.fileURL = tempFileURL
+      attachment.fileUrl = tempFileUrl
       attachment.fileSize = attr.fileSize()
 
       return attachment

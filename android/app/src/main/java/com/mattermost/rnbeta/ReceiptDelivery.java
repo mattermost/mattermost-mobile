@@ -22,14 +22,12 @@ import com.facebook.react.bridge.WritableMap;
 import com.mattermost.helpers.*;
 
 public class ReceiptDelivery {
-    static final String CURRENT_SERVER_URL = "@currentServerUrl";
-
     private static final int[] FIBONACCI_BACKOFFS = new int[] { 0, 1, 2, 3, 5, 8 };
 
-    public static void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
+    public static void send(Context context, final String ackId, final String serverUrl, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
 
-        Credentials.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
+        Credentials.getCredentialsForServer(reactApplicationContext, serverUrl, new ResolvePromise() {
             @Override
             public void resolve(@Nullable Object value) {
                 if (value instanceof Boolean && !(Boolean)value) {

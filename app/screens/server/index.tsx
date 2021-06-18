@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ManagedConfig, useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -8,7 +9,6 @@ import {
     Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {useManagedConfig} from '@mattermost/react-native-emm';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -24,19 +24,28 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-type ServerProps = {
+import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
+
+interface ServerProps extends LaunchProps {
     componentId: string;
     theme: Theme;
 }
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
+const Server: NavigationFunctionComponent = ({extra, launchType, launchError, theme}: ServerProps) => {
+    // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
+    // so that they are eventually accessible in the Channel screen.
+
     const intl = useIntl();
-    const managedConfig = useManagedConfig();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
-    const [error, setError] = useState<ClientErrorWithIntl|string|undefined>();
+    const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
+        id: 'mobile.launchError.notification',
+        defaultMessage: 'Did not find a server for this notification',
+    }) : undefined;
+    const [error, setError] = useState<ClientErrorWithIntl|string|undefined>(initialError);
 
     const [url, setUrl] = useState<string>('');
     const styles = getStyleSheet(theme);
@@ -63,6 +72,13 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             visible = false;
         }
 
+        const passProps = {
+            config,
+            license,
+            theme,
+            serverUrl: url,
+        };
+
         const defaultOptions = {
             popGesture: visible,
             topBar: {
@@ -71,7 +87,7 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
             },
         };
 
-        goToScreen(screen, title, {config, license, theme, serverUrl: url}, defaultOptions);
+        goToScreen(screen, title, passProps, defaultOptions);
         setConnecting(false);
     };
 
@@ -162,13 +178,30 @@ const Server: NavigationFunctionComponent = ({theme}: ServerProps) => {
     }, []);
 
     useEffect(() => {
-        const serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+
+        if (launchType === LaunchType.DeepLink) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
+            if (managedConfig) {
+                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
+                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
+                    setError(intl.formatMessage({
+                        id: 'mobile.server_url.deeplink.emm.denied',
+                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
+                    }));
+                }
+            } else {
+                autoconnect = true;
+                serverUrl = deepLinkServerUrl;
+            }
+        }
 
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
             setUrl(serverUrl);
 
-            if (managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl) {
+            if (autoconnect) {
                 // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
                 handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
             }
@@ -303,7 +336,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingLeft: 15,
     },
     disabledInput: {
-        backgroundColor: '#e3e3e3',
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
     connectButton: {
         borderRadius: 3,

@@ -23,7 +23,7 @@ import {Config} from '@typings/database/config';
 import {License} from '@typings/database/license';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
     config: Partial<Config>,
@@ -148,6 +148,7 @@ const MFA = ({config, goToChannel, license, loginId, password, theme}: MFAProps)
                             autoCorrect={false}
                             keyboardType='numeric'
                             placeholder={formatMessage({id: t('login_mfa.token'), defaultMessage: 'MFA Token'})}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -160,13 +161,13 @@ const MFA = ({config, goToChannel, license, loginId, password, theme}: MFAProps)
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
     },
     signupButton: {
         borderRadius: 3,
-        borderColor: '#2389D7',
+        borderColor: theme.buttonBg,
         borderWidth: 1,
         alignItems: 'center',
         alignSelf: 'stretch',
@@ -183,7 +184,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         paddingLeft: 10,
         alignSelf: 'stretch',
         borderRadius: 3,
-        color: '#3d3c40',
+        color: theme.centerChannelColor,
     },
     header: {
         textAlign: 'center',
@@ -193,6 +194,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         fontWeight: '600',
     },
     label: {
+        color: changeOpacity(theme.centerChannelColor, 0.6),
         fontSize: 20,
         fontWeight: '400',
     },
@@ -201,11 +203,15 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
     },
     signupContainer: {
         paddingRight: 15,
         paddingLeft: 15,
+    },
+    signupButtonText: {
+        color: theme.buttonBg,
+        textAlign: 'center',
+        fontSize: 17,
     },
     containerImage: {
         height: 72,

@@ -1,90 +1,112 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as KeyChain from 'react-native-keychain';
 
+import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
-import emmProvider from '@init/emm_provider';
-import EphemeralStore from '@store/ephemeral_store';
+import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {getCSRFFromCookie} from '@utils/security';
+
+import type {ServerCredentials} from '@typings/credentials';
 
 const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
 
-export const getCurrentServerUrl = async () => {
-    // TODO: Use default database to retrieve the current server url
-    // and fallback to AsyncStorage if needed
+// TODO: This function is only necessary to support pre-Gekidou
+// versions as the active server URL may be stored in AsyncStorage.
+// At some point we can remove this function and rely solely on
+// the database manager's `getActiveServerUrl`.
+export const getActiveServerUrl = async () => {
+    let serverUrl: string | null | undefined;
 
-    const serverUrl = await AsyncStorage.getItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
-    EphemeralStore.currentServerUrl = serverUrl;
+    const databaseManager = new DatabaseManager();
+    serverUrl = await databaseManager.getActiveServerUrl(); // TODO: need funciton to get active server url
+    if (!serverUrl) {
+        // If upgrading from non-Gekidou, the server URL might be in
+        // AsyncStorage. If so, retrieve the server URL, create a DB for it,
+        // then delete the AsyncStorage item.
+        serverUrl = await AsyncStorage.getItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+        if (serverUrl) {
+            databaseManager.setActiveServerDatabase(serverUrl);
+            AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+        }
+    }
+
     return serverUrl;
 };
 
-export const setAppCredentials = (deviceToken: string, currentUserId: string, token: string, url: string) => {
-    if (!currentUserId) {
+export const setServerCredentials = (serverUrl: string, userId: string, token: string) => {
+    if (!(serverUrl && userId && token)) {
         return;
     }
 
-    // Only save to keychain if the url and token are set
-    if (url && token) {
-        try {
-            const username = `${deviceToken}, ${currentUserId}`;
-            const accessGroup = emmProvider.getAppGroupIdentifier();
-
-            EphemeralStore.deviceToken = deviceToken;
-            EphemeralStore.currentServerUrl = url;
-            AsyncStorage.setItem(ASYNC_STORAGE_CURRENT_SERVER_KEY, url);
-            const options: KeyChain.Options = {
-                accessGroup,
-                securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
-            };
-            KeyChain.setInternetCredentials(url, username, token, options);
-        } catch (e) {
-            console.warn('could not set credentials', e); //eslint-disable-line no-console
+    try {
+        let accessGroup;
+        if (Platform.OS === 'ios') {
+            const appGroup = getIOSAppGroupDetails();
+            accessGroup = appGroup.appGroupIdentifier;
         }
+
+        const options: KeyChain.Options = {
+            accessGroup,
+            securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
+        };
+        KeyChain.setInternetCredentials(serverUrl, userId, token, options);
+    } catch (e) {
+        console.warn('could not set credentials', e); //eslint-disable-line no-console
     }
 };
 
-export const getAppCredentials = async () => {
-    const serverUrl = await getCurrentServerUrl();
+export const getActiveServerCredentials = async () => {
+    const serverUrl = await getActiveServerUrl();
+    if (serverUrl) {
+        return getServerCredentials(serverUrl);
+    }
 
-    return getInternetCredentials(serverUrl || '');
+    return null;
 };
 
-export const removeAppCredentials = async () => {
-    const url = await getCurrentServerUrl();
-
+export const removeServerCredentials = async (serverUrl: string) => {
     // TODO: invalidate client and remove tokens
 
-    if (url) {
-        KeyChain.resetInternetCredentials(url);
-    }
+    KeyChain.resetInternetCredentials(serverUrl);
 
-    EphemeralStore.currentServerUrl = null;
     AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
-export async function getInternetCredentials(url: string) {
+export const removeActiveServerCredentials = async () => {
+    const serverUrl = await getActiveServerUrl();
+    if (serverUrl) {
+        removeServerCredentials(serverUrl);
+    }
+};
+
+export const getServerCredentials = async (serverUrl: string): Promise<ServerCredentials|null> => {
     try {
-        const credentials = await KeyChain.getInternetCredentials(url);
+        const credentials = await KeyChain.getInternetCredentials(serverUrl);
 
         if (credentials) {
-            const usernameParsed = credentials.username.split(',');
+            // TODO: Pre-Gekidou we were concatenating the deviceToken and the userId in
+            // credentials.username so we need to check the length of credentials.username.split(',').
+            // This check should be removed at some point.
+            const parts = credentials.username.split(',');
+            const userId = parts[parts.length - 1];
+
             const token = credentials.password;
-            const [deviceToken, currentUserId] = usernameParsed;
 
             if (token && token !== 'undefined') {
-                EphemeralStore.deviceToken = deviceToken;
-                const analyticsClient = analytics.get(url);
-                analyticsClient?.setUserId(currentUserId);
+                const analyticsClient = analytics.get(serverUrl);
+                analyticsClient?.setUserId(userId);
 
-                const csrf = await getCSRFFromCookie(url);
+                const csrf = await getCSRFFromCookie(serverUrl);
                 // eslint-disable-next-line no-console
                 console.log('CSRF', csrf);
 
                 // TODO: Create client and set token / CSRF
 
-                return credentials;
+                return {userId, token};
             }
         }
 
@@ -92,4 +114,4 @@ export async function getInternetCredentials(url: string) {
     } catch (e) {
         return null;
     }
-}
+};

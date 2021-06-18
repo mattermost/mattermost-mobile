@@ -18,9 +18,9 @@ import {
 
 import {Device, Navigation, View} from '@constants';
 import Operator from '@database/operator';
+import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
-import {dismissAllModals, popToRoot, showOverlay} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import {showOverlay} from '@screens/navigation';
 import {IsolatedEntities} from '@typings/database/enums';
 
 const CATEGORY = 'CAN_REPLY';
@@ -44,8 +44,6 @@ class PushNotifications {
       Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
       Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
       AppState.addEventListener('change', this.onAppStateChange);
-
-      this.getInitialNotification();
   }
 
   cancelAllLocalNotifications = () => {
@@ -102,16 +100,6 @@ class PushNotifications {
       return new NotificationCategory(CATEGORY, [replyAction]);
   };
 
-  getInitialNotification = async () => {
-      const notification: | NotificationWithData | undefined = await Notifications.getInitialNotification();
-
-      if (notification) {
-          EphemeralStore.setStartFromNotification(true);
-          notification.userInteraction = true;
-          this.handleNotification(notification);
-      }
-  };
-
   handleNotification = async (notification: NotificationWithData) => {
       const {payload, foreground, userInteraction} = notification;
 
@@ -126,15 +114,8 @@ class PushNotifications {
                   if (foreground) {
                       // Show the in-app notification
                   } else if (userInteraction && !payload.userInfo?.local) {
-                      // Swith to the server / team / channel that matches the notification
-
-                      const componentId = EphemeralStore.getNavigationTopComponentId();
-                      if (componentId) {
-                          // Emit events to close the sidebars
-
-                          await dismissAllModals();
-                          await popToRoot();
-                      }
+                      const props = getLaunchPropsFromNotification(notification);
+                      relaunchApp(props);
                   }
                   break;
               case NOTIFICATION_TYPE.SESSION:

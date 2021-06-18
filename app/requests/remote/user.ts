@@ -4,7 +4,7 @@
 import {Client4} from '@client/rest';
 import Operator from '@database/operator';
 import analytics from '@init/analytics';
-import {setAppCredentials} from '@init/credentials';
+import {setServerCredentials} from '@init/credentials';
 import {getDeviceToken} from '@queries/global';
 import {getCommonSystemValues, getCurrentUserId} from '@queries/system';
 import {createSessions} from '@requests/local/systems';
@@ -96,7 +96,7 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
     const result = await loadMe({user, deviceToken});
 
     if (!result?.error) {
-        await completeLogin(user, deviceToken);
+        await completeLogin(user);
     }
 
     return result;
@@ -243,7 +243,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
     return {currentUser, error: undefined};
 };
 
-export const completeLogin = async (user: RawUser, deviceToken: string) => {
+export const completeLogin = async (user: RawUser) => {
     const {activeServerDatabase, error} = await getActiveServerDatabase();
     if (!activeServerDatabase) {
         return {error};
@@ -256,9 +256,9 @@ export const completeLogin = async (user: RawUser, deviceToken: string) => {
     }
 
     const token = Client4.getToken();
-    const url = Client4.getUrl();
+    const serverUrl = Client4.getUrl();
 
-    setAppCredentials(deviceToken, user.id, token, url);
+    setServerCredentials(serverUrl, user.id, token);
 
     // Set timezone
     if (isTimezoneEnabled(config)) {
@@ -361,7 +361,7 @@ export const ssoLogin = async (serverUrl: string) => {
     try {
         result = await loadMe({deviceToken}) as unknown as LoadedUser;
         if (!result?.error && result?.currentUser) {
-            await completeLogin(result.currentUser, deviceToken);
+            await completeLogin(result.currentUser);
         }
     } catch (e) {
         return {error: e};

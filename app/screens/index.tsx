@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
+
+import {withManagedConfig} from '@mattermost/react-native-emm';
 
 import {Screens} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';

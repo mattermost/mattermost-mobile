@@ -5,6 +5,7 @@
 	};
 	objectVersion = 50;
 	objects = {
+
 /* Begin PBXBuildFile section */
 		7F80232C229C91AD0034D6D4 /* MMMConstants.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE054221387B500D0F595 /* MMMConstants.h */; };
 		7F82907122C295AC0035544F /* MMKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F82907022C295AC0035544F /* MMKeychainManager.m */; };
@@ -34,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		49415298267AA00C0039D64E /* libDatabaseHelper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDatabaseHelper.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F82906F22C295AB0035544F /* MMKeychainManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMKeychainManager.h; sourceTree = "<group>"; };
 		7F82907022C295AC0035544F /* MMKeychainManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMKeychainManager.m; sourceTree = "<group>"; };
 		7F82907222C296970035544F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -69,6 +71,7 @@
 		7F82901A22C28F770035544F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				49415298267AA00C0039D64E /* libDatabaseHelper.a */,
 				7F82907422C296A10035544F /* LocalAuthentication.framework */,
 				7F82907222C296970035544F /* Security.framework */,
 			);
@@ -234,6 +237,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -295,6 +299,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

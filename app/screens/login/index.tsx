@@ -342,7 +342,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                         onChangeText={onLoginChange}
                         onSubmitEditing={onPasswordFocus}
                         placeholder={createLoginPlaceholder()}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         ref={loginRef}
                         returnKeyType='next'
                         style={styles.inputBox}
@@ -361,7 +361,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
                             id: 'login.password',
                             defaultMessage: 'Password',
                         })}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         ref={passwordRef}
                         returnKeyType='go'
                         secureTextEntry={true}
@@ -388,11 +388,9 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
-
-        // backgroundColor: theme.centerChannelBg,
     },
     innerContainer: {
         alignItems: 'center',
@@ -406,7 +404,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         marginTop: 15,
     },
     forgotPasswordTxt: {
-        color: '#2389D7',
+        color: theme.linkColor,
     },
     inputBox: {
         fontSize: 16,
@@ -418,19 +416,19 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         paddingLeft: 10,
         alignSelf: 'stretch',
         borderRadius: 3,
-        color: '#3d3c40',
+        color: theme.centerChannelColor,
     },
     subheader: {
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '300',
-        color: '#777',
+        color: changeOpacity(theme.centerChannelColor, 0.6),
         marginBottom: 15,
         lineHeight: 22,
     },
     signupButton: {
         borderRadius: 3,
-        borderColor: '#2389D7',
+        borderColor: theme.buttonBg,
         borderWidth: 1,
         alignItems: 'center',
         alignSelf: 'stretch',
@@ -439,7 +437,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     },
     signupButtonText: {
         textAlign: 'center',
-        color: '#2389D7',
+        color: theme.buttonBg,
         fontSize: 17,
     },
     header: {

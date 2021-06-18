@@ -10,14 +10,15 @@ import LocalConfig from '@assets/config.json';
 import {Navigation} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import * as analytics from '@init/analytics';
-import {getAppCredentials, removeAppCredentials} from '@init/credentials';
+import {getServerCredentials, removeServerCredentials} from '@init/credentials';
+import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
+import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
 
 type LinkingCallbackArg = {url: string};
 
 class GlobalEventHandler {
-    launchApp: launchAppFunc | undefined;
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
     constructor() {
@@ -29,9 +30,7 @@ class GlobalEventHandler {
         Linking.addEventListener('url', this.onDeepLink);
     }
 
-    configure = (opts: GlobalEventHandlerOpts) => {
-        this.launchApp = opts.launchApp;
-
+    init = () => {
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
     };
@@ -48,11 +47,9 @@ class GlobalEventHandler {
     };
 
     onDeepLink = (event: LinkingCallbackArg) => {
-        const {url} = event;
-        if (url) {
-            // TODO: Handle deeplink
-            // if server is not added go to add new server screen
-            // if server is added but no credentials found take to server login screen
+        if (event.url) {
+            const props = getLaunchPropsFromDeepLink(event.url);
+            relaunchApp(props);
         }
     };
 
@@ -125,8 +122,9 @@ class GlobalEventHandler {
             analytics.invalidate(serverUrl);
         }
 
-        // TODO: remove credentials and files for the server
-        removeAppCredentials();
+        removeServerCredentials(serverUrl);
+
+        // TODO: remove files for the server
         deleteFileCache();
         PushNotifications.clearNotifications();
 
@@ -136,11 +134,7 @@ class GlobalEventHandler {
 
         await this.clearCookiesAndWebData();
 
-        if (this.launchApp) {
-            this.launchApp(true);
-        }
-
-        // TODO: Remove the database
+        relaunchApp({launchType: LaunchType.Normal});
     };
 
     onServerConfigChanged = (serverUrl: string, config: ClientConfig) => {
@@ -178,7 +172,7 @@ class GlobalEventHandler {
     };
 
     serverUpgradeNeeded = async (serverUrl: string) => {
-        const credentials = await getAppCredentials();
+        const credentials = await getServerCredentials(serverUrl);
 
         if (credentials) {
             this.onLogout(serverUrl);
