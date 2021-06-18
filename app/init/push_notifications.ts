@@ -17,7 +17,7 @@ import {
 } from 'react-native-notifications';
 
 import {Device, Navigation, View} from '@constants';
-import Operator from '@database/operator';
+import Operator from '@database/operator/server_data_operator';
 import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
 import {showOverlay} from '@screens/navigation';

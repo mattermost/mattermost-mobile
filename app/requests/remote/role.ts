@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import Operator from '@database/operator';
+import Operator from '@database/operator/server_data_operator';
 import {getRoles} from '@queries/role';
 import {IsolatedEntities} from '@typings/database/enums';
 import {getActiveServerDatabase} from '@utils/database';

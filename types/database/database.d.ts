@@ -483,23 +483,20 @@ export type RawValue =
   | RawTermsOfService
   | RawUser;
 
-export type DataFactoryArgs = {
+export type TransformerArgs = {
   action: string;
   database: Database;
-  generator?: (model: Model) => void;
+  fieldsMapper?: (model: Model) => void;
   tableName?: string;
-  value: MatchExistingRecord;
+  value: RecordPair;
 };
 
-export type PrepareForDatabaseArgs = {
+export type OperationArgs = {
   tableName: string;
-  createRaws?: MatchExistingRecord[];
-  updateRaws?: MatchExistingRecord[];
-  recordOperator: (DataFactoryArgs) => Promise<Model>;
-};
-
-export type PrepareRecordsArgs = PrepareForDatabaseArgs & {
-  database: Database;
+  createRaws?: RecordPair[];
+  updateRaws?: RecordPair[];
+  deleteRaws?: Model[];
+  transformer: (TransformerArgs) => Promise<Model>;
 };
 
 export type BatchOperationsArgs = { database: Database; models: Model[] };
@@ -575,8 +572,9 @@ export type RetrieveRecordsArgs = {
   condition: Clause;
 };
 
-export type ProcessInputsArgs = {
-  rawValues: RawValue[];
+export type ProcessRecordsArgs = {
+  createOrUpdateRawValues: RawValue[];
+  deleteRawValues: RawValue[];
   tableName: string;
   fieldName: string;
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
@@ -585,8 +583,9 @@ export type ProcessInputsArgs = {
 export type HandleEntityRecordsArgs = {
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
-  operator: (DataFactoryArgs) => Promise<Model>;
-  rawValues: RawValue[];
+  transformer: (TransformerArgs) => Promise<Model>;
+  createOrUpdateRawValues: RawValue[];
+  deleteRawValues: RawValue[];
   tableName: string;
   prepareRecordsOnly: boolean;
 };
@@ -606,88 +605,106 @@ export type RecordPair = {
   raw: RawValue;
 };
 
-export type HandleMyChannelArgs = {
+type PrepareOnly = {
+    prepareRecordsOnly: boolean;
+}
+
+export type HandleAppArgs = PrepareOnly & {
+    app: RawApp[]
+}
+export type HandleServersArgs = PrepareOnly & {
+    servers: RawServers[]
+}
+export type HandleGlobalArgs = PrepareOnly & {
+    global: RawGlobal[]
+}
+
+export type HandleRoleArgs = PrepareOnly & {
+    roles: RawRole[]
+}
+
+export type HandleCustomEmojiArgs = PrepareOnly & {
+    emojis: RawCustomEmoji[]
+}
+
+export type HandleSystemArgs = PrepareOnly & {
+    systems: RawSystem[]
+}
+
+export type HandleTOSArgs = PrepareOnly & {
+    termOfService: RawSystem[]
+}
+
+export type HandleMyChannelArgs = PrepareOnly & {
   myChannels: RawMyChannel[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleChannelInfoArgs = {
+export type HandleChannelInfoArgs = PrepareOnly &{
   channelInfos: RawChannelInfo[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleMyChannelSettingsArgs = {
+export type HandleMyChannelSettingsArgs = PrepareOnly & {
   settings: RawMyChannelSettings[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleChannelArgs = {
+export type HandleChannelArgs = PrepareOnly & {
   channels: RawChannel[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleMyTeamArgs = {
+export type HandleMyTeamArgs = PrepareOnly & {
   myTeams: RawMyTeam[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleSlashCommandArgs = {
-  slashCommands: RawSlashCommand[];
-  prepareRecordsOnly: boolean;
+export type HandleSlashCommandArgs = PrepareOnly & {
+    slashCommands: RawSlashCommand[];
 };
 
-export type HandleTeamSearchHistoryArgs = {
+export type HandleTeamSearchHistoryArgs = PrepareOnly &{
   teamSearchHistories: RawTeamSearchHistory[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleTeamChannelHistoryArgs = {
+export type HandleTeamChannelHistoryArgs = PrepareOnly & {
   teamChannelHistories: RawTeamChannelHistory[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleTeamArgs = { teams: RawTeam[]; prepareRecordsOnly: boolean };
+export type HandleTeamArgs = PrepareOnly & {
+    teams: RawTeam[];
+};
 
-export type HandleGroupsInChannelArgs = {
+export type HandleGroupsInChannelArgs = PrepareOnly & {
   groupsInChannels: RawGroupsInChannel[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleGroupsInTeamArgs = {
+export type HandleGroupsInTeamArgs = PrepareOnly &{
   groupsInTeams: RawGroupsInTeam[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleGroupArgs = {
+export type HandleGroupArgs = PrepareOnly & {
   groups: RawGroup[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleChannelMembershipArgs = {
+export type HandleChannelMembershipArgs = PrepareOnly & {
   channelMemberships: RawChannelMembership[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleGroupMembershipArgs = {
+export type HandleGroupMembershipArgs = PrepareOnly & {
   groupMemberships: RawGroupMembership[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleTeamMembershipArgs = {
+export type HandleTeamMembershipArgs = PrepareOnly & {
   teamMemberships: RawTeamMembership[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandlePreferencesArgs = {
+export type HandlePreferencesArgs = PrepareOnly & {
   preferences: RawPreference[];
-  prepareRecordsOnly: boolean;
 };
 
-export type HandleUsersArgs = { users: RawUser[]; prepareRecordsOnly: boolean };
+export type HandleUsersArgs = PrepareOnly & {
+    users: RawUser[];
+ };
 
-export type HandleDraftArgs = {
+export type HandleDraftArgs = PrepareOnly & {
   drafts: RawDraft[];
-  prepareRecordsOnly: boolean;
 };
 
 export type LoginArgs = {
@@ -723,4 +740,10 @@ export type GetDatabaseConnectionArgs = {
 export type MostRecentConnection = {
   connection: DatabaseInstance,
   serverUrl: string,
+}
+
+export type ProcessRecordResults = {
+    createRaws: RecordPair[];
+    updateRaws: RecordPair[];
+    deleteRaws: Model[];
 }

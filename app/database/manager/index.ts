@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Operator from '@database/operator/server_data_operator';
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
@@ -272,7 +273,7 @@ class DatabaseManager {
    */
   getDefaultDatabase = async (): Promise<DatabaseInstance> => {
       if (!this.defaultDatabase) {
-          await this.setDefaultDatabase();
+          await this.setAppDatabase();
       }
       return this.defaultDatabase;
   };
@@ -412,7 +413,7 @@ class DatabaseManager {
    * getAllServers : Retrieves all the servers registered in the default database
    * @returns {Promise<Servers[]>}
    */
-  private getAllServers = async (serverUrls: string[]) => {
+  public init = async (serverUrls: string[]) => {
       // Retrieve all server records from the default db
       const defaultDatabase = await this.getDefaultDatabase();
 
@@ -425,16 +426,20 @@ class DatabaseManager {
   };
 
   /**
-   * setDefaultDatabase : Sets the default database.
-   * @returns {Promise<DatabaseInstance>}
+   * setAppDatabase : Sets the default database.
+   * @returns {Promise<void>}
    */
-  private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
-      this.defaultDatabase = await this.createDatabaseConnection({
+  private setAppDatabase = async (): Promise<void> => {
+      const database = await this.createDatabaseConnection({
           configs: {dbName: DEFAULT_DATABASE},
           shouldAddToDefaultDatabase: false,
       });
 
-      return this.defaultDatabase;
+      const operator = new AppOperator(database);
+      this.appDatabase = {
+          database,
+          operator,
+      };
   };
 
   /**

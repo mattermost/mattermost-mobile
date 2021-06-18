@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Operator from '@database/operator';
+import Operator from '@database/operator/server_data_operator';
 import {ServerUrlChangedArgs} from '@typings/database/database';
 import {IsolatedEntities} from '@typings/database/enums';
 import System from '@typings/database/system';
