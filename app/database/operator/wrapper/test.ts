@@ -3,7 +3,6 @@
 
 import DatabaseManager from '@database/manager';
 import {createDataOperator} from '@database/operator/wrapper/index';
-import DatabaseConnectionException from '@database/exceptions/database_connection_exception';
 import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
@@ -11,13 +10,19 @@ jest.mock('@database/manager');
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** DataOperator Wrapper ***', () => {
+    let databaseManagerClient: DatabaseManager;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+    });
+
     it('=> wrapper should return an instance of DataOperator ', async () => {
         expect.assertions(1);
 
         const serverUrl = 'https://wrapper.mattermost.com';
 
         // first we create the connection and save it into default database
-        await DatabaseManager.createDatabaseConnection({
+        await databaseManagerClient.createDatabaseConnection({
             configs: {
                 actionsEnabled: true,
                 dbName: 'community mattermost',
@@ -30,29 +35,6 @@ describe('*** DataOperator Wrapper ***', () => {
         const dataOperator = await createDataOperator(serverUrl);
 
         expect(dataOperator).toBeTruthy();
-    });
-
-    it('=> wrapper should throw an error due to invalid server url', async () => {
-        expect.assertions(2);
-
-        const serverUrl = 'https://wrapper.mattermost.com';
-
-        // first we create the connection and save it into default database
-        await DatabaseManager.createDatabaseConnection({
-            configs: {
-                actionsEnabled: true,
-                dbName: 'test_database',
-                dbType: DatabaseType.SERVER,
-                serverUrl,
-            },
-            shouldAddToDefaultDatabase: true,
-        });
-
-        await expect(createDataOperator('https://error.com')).rejects.toThrow(
-            'No database has been registered with this url: https://error.com',
-        );
-
-        await expect(createDataOperator('https://error.com')).rejects.toThrow(DatabaseConnectionException);
     });
 
     it('=> wrapper to handlePosts [OTHER DATABASE]: should write to Post and its sub-child entities', async () => {
@@ -212,7 +194,7 @@ describe('*** DataOperator Wrapper ***', () => {
         ];
 
         // create connection to other server in default db
-        await DatabaseManager.createDatabaseConnection({
+        await databaseManagerClient.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             configs: {
                 actionsEnabled: true,

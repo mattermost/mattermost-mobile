@@ -9,7 +9,8 @@ jest.mock('@database/manager');
 
 export const createTestConnection = async ({databaseName = 'db_name', setActive = false}) => {
     const serverUrl = 'https://appv2.mattermost.com';
-    const database = await DatabaseManager.createDatabaseConnection({
+    const databaseClient = new DatabaseManager();
+    const database = await databaseClient.createDatabaseConnection({
         shouldAddToDefaultDatabase: true,
         configs: {
             actionsEnabled: true,
@@ -20,10 +21,7 @@ export const createTestConnection = async ({databaseName = 'db_name', setActive 
     });
 
     if (setActive) {
-        await DatabaseManager.setActiveServerDatabase({
-            displayName: databaseName,
-            serverUrl,
-        });
+        await databaseClient.setActiveServerDatabase(serverUrl);
     }
 
     return database;

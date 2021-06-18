@@ -9,6 +9,8 @@ import {Screens, Preferences} from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
+import type {LaunchProps} from '@typings/launch';
+
 function getThemeFromState() {
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
@@ -80,43 +82,46 @@ export function resetToChannel(passProps = {}) {
     });
 }
 
-export function resetToSelectServer(allowOtherServers: boolean) {
-    const theme = Preferences.THEMES.default;
+export function resetToSelectServer(passProps: LaunchProps) {
+    const theme = getThemeFromState();
 
     EphemeralStore.clearNavigationComponents();
+
+    const children = [{
+        component: {
+            id: Screens.SERVER,
+            name: Screens.SERVER,
+            passProps: {
+                ...passProps,
+                theme,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                },
+                topBar: {
+                    backButton: {
+                        color: theme.sidebarHeaderTextColor,
+                        title: '',
+                    },
+                    background: {
+                        color: theme.sidebarHeaderBg,
+                    },
+                    visible: false,
+                    height: 0,
+                },
+            },
+        },
+    }];
 
     Navigation.setRoot({
         root: {
             stack: {
-                children: [{
-                    component: {
-                        id: Screens.SERVER,
-                        name: Screens.SERVER,
-                        passProps: {
-                            allowOtherServers,
-                        },
-                        options: {
-                            layout: {
-                                backgroundColor: theme.centerChannelBg,
-                                componentBackgroundColor: theme.centerChannelBg,
-                            },
-                            statusBar: {
-                                visible: true,
-                            },
-                            topBar: {
-                                backButton: {
-                                    color: theme.sidebarHeaderTextColor,
-                                    title: '',
-                                },
-                                background: {
-                                    color: theme.sidebarHeaderBg,
-                                },
-                                visible: false,
-                                height: 0,
-                            },
-                        },
-                    },
-                }],
+                children,
             },
         },
     });
@@ -205,7 +210,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     });
 }
 
-export function popTopScreen(screenId: string) {
+export function popTopScreen(screenId?: string) {
     if (screenId) {
         Navigation.pop(screenId);
     } else {

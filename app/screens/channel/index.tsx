@@ -11,9 +11,27 @@ import {
     ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import type {LaunchProps} from '@typings/launch';
+
 declare const global: {HermesInternal: null | {}};
 
-const Channel = () => {
+type ChannelProps = LaunchProps
+
+const Channel = (props: ChannelProps) => {
+    // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
+    const {launchType} = props;
+    console.log(launchType); // eslint-disable-line no-console
+    // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
+    // error message to display. For example:
+    // if (props.launchError) {
+    //     let erroMessage;
+    //     if (props.launchType === LaunchType.DeepLink) {
+    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.deepLink', defaultMessage: 'Did not find a server for this deep link'});
+    //     } else if (props.launchType === LaunchType.Notification) {
+    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
+    //     }
+    // }
+
     return (
         <>
             <StatusBar barStyle='dark-content'/>

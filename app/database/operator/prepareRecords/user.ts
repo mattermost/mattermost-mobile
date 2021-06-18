@@ -104,7 +104,7 @@ export const preparePreferenceRecord = ({action, database, value}: DataFactoryAr
 
     // id of preference comes from server response
     const generator = (preference: Preference) => {
-        preference._raw.id = isCreateAction ? (raw?.id ?? preference.id) : record.id;
+        preference._raw.id = isCreateAction ? preference.id : record.id;
         preference.category = raw.category;
         preference.name = raw.name;
         preference.userId = raw.user_id;

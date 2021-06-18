@@ -48,9 +48,11 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
             final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
             final int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
+            final Bundle notification = intent.getBundleExtra(CustomPushNotification.NOTIFICATION);
+            final String serverUrl = notification.getString("serverUrl");
 
 
-            Credentials.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
+            Credentials.getCredentialsForServer(reactApplicationContext, serverUrl, new ResolvePromise() {
                 @Override
                 public void resolve(@Nullable Object value) {
                     if (value instanceof Boolean && !(Boolean)value) {

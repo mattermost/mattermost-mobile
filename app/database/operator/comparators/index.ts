@@ -80,7 +80,7 @@ export const isRecordRoleEqualToRaw = (record: Role, raw: RawRole) => {
 };
 
 export const isRecordSystemEqualToRaw = (record: System, raw: RawSystem) => {
-    return raw.id === record.id;
+    return raw.name === record.name;
 };
 
 export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfService, raw: RawTermsOfService) => {

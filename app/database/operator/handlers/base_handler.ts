@@ -30,7 +30,7 @@ import {
     getRangeOfValues,
     getRawRecordPairs,
     getUniqueRawsBy,
-    hasSimilarUpdateAt,
+    getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
 import {
@@ -50,7 +50,7 @@ export interface BaseHandlerMix {
   activeDatabase: Database;
   getActiveDatabase: () => DatabaseInstance;
   setActiveDatabase: (database: Database) => void;
-  handleIsolatedEntity: ({tableName, values, prepareRecordsOnly}: HandleIsolatedEntityArgs) => boolean | Model[];
+  handleIsolatedEntity: ({tableName, values, prepareRecordsOnly}: HandleIsolatedEntityArgs) => Model[];
   handleEntityRecords: ({findMatchingRecordBy, fieldName, operator, rawValues, tableName, prepareRecordsOnly}: HandleEntityRecordsArgs) => Promise<null | Model[]>;
   processInputs: ({rawValues, tableName, findMatchingRecordBy, fieldName}: ProcessInputsArgs) => Promise<{ createRaws: RecordPair[]; updateRaws: RecordPair[] }>;
   batchOperations: ({database, models}: BatchOperationsArgs) => Promise<void>;
@@ -68,7 +68,7 @@ class BaseHandler {
    */
   activeDatabase: DatabaseInstance;
 
-  constructor(serverDatabase?: Database) {
+  constructor(serverDatabase: Database) {
       this.activeDatabase = serverDatabase;
   }
 
@@ -94,13 +94,14 @@ class BaseHandler {
    * @param {boolean} isolatedEntityArgs.prepareRecordsOnly
    * @param {RawValue} isolatedEntityArgs.values
    * @throws DataOperatorException
-   * @returns {Model[] | boolean}
+   * @returns {Model[]}
    */
   handleIsolatedEntity = async ({tableName, values, prepareRecordsOnly = true}: HandleIsolatedEntityArgs) => {
       let findMatchingRecordBy;
       let fieldName;
       let operator;
       let rawValues;
+      let records: Model[] = [];
 
       if (!values.length) {
           throw new DataOperatorException(
@@ -146,9 +147,9 @@ class BaseHandler {
           }
           case IsolatedEntities.SYSTEM: {
               findMatchingRecordBy = isRecordSystemEqualToRaw;
-              fieldName = 'id';
+              fieldName = 'name';
               operator = prepareSystemRecord;
-              rawValues = getUniqueRawsBy({raws: values, key: 'id'});
+              rawValues = getUniqueRawsBy({raws: values, key: 'name'});
               break;
           }
           case IsolatedEntities.TERMS_OF_SERVICE: {
@@ -166,7 +167,7 @@ class BaseHandler {
       }
 
       if (fieldName && findMatchingRecordBy) {
-          const records = await this.handleEntityRecords({
+          records = await this.handleEntityRecords({
               fieldName,
               findMatchingRecordBy,
               operator,
@@ -175,10 +176,10 @@ class BaseHandler {
               tableName,
           });
 
-          return prepareRecordsOnly && records?.length && records;
+          return records;
       }
 
-      return false;
+      return records;
   };
 
   /**
@@ -189,13 +190,14 @@ class BaseHandler {
    * @param {(DataFactoryArgs) => Promise<Model>} handleEntityArgs.operator
    * @param {RawValue[]} handleEntityArgs.rawValues
    * @param {string} handleEntityArgs.tableName
-   * @returns {Promise<null | Model[]>}
+   * @returns {Promise<Model[]>}
    */
   handleEntityRecords = async ({findMatchingRecordBy, fieldName, operator, rawValues, tableName, prepareRecordsOnly = true}: HandleEntityRecordsArgs) => {
       if (!rawValues.length) {
-          return null;
+          throw new DataOperatorException(
+              `An empty "rawValues" array has been passed to the handleEntityRecords method for tableName ${tableName}`,
+          );
       }
-
       const {createRaws, updateRaws} = await this.processInputs({
           rawValues,
           tableName,
@@ -205,7 +207,8 @@ class BaseHandler {
 
       const database = await this.getDatabase(tableName);
 
-      const models = await this.prepareRecords({
+      let models: Model[] = [];
+      models = await this.prepareRecords({
           database,
           tableName,
           createRaws,
@@ -221,7 +224,7 @@ class BaseHandler {
           await this.batchOperations({database, models});
       }
 
-      return null;
+      return models;
   };
 
   /**
@@ -263,23 +266,17 @@ class BaseHandler {
                   const existingRecord = existingRecords[findIndex];
 
                   // Some raw value has an update_at field.  We'll proceed to update only if the update_at value is different from the record's value in database
-                  const isUpdateAtSimilar = hasSimilarUpdateAt({
+                  const updateRecords = getValidRecordsForUpdate({
                       tableName,
                       existingRecord,
                       newValue: newElement,
                   });
 
-                  if (!isUpdateAtSimilar) {
-                      return updateRaws.push({
-                          record: existingRecord,
-                          raw: newElement,
-                      });
-                  }
-              } else {
-                  // This RawValue is not present in the database; hence, we need to create it
-                  return createRaws.push({record: undefined, raw: newElement});
+                  return updateRaws.push(updateRecords);
               }
-              return null;
+
+              // This RawValue is not present in the database; hence, we need to create it
+              return createRaws.push({record: undefined, raw: newElement});
           });
 
           return {
@@ -419,7 +416,8 @@ class BaseHandler {
    * @returns {Promise<Database>}
    */
   getDefaultDatabase = async () => {
-      const connection = await DatabaseManager.getDefaultDatabase();
+      const databaseManagerClient = new DatabaseManager();
+      const connection = await databaseManagerClient.getDefaultDatabase();
       if (connection === undefined) {
           throw new DatabaseConnectionException(
               'An error occurred while retrieving the default database',
@@ -440,16 +438,10 @@ class BaseHandler {
           return this.activeDatabase;
       }
 
-      // NOTE: here we are getting the active server directly as in a multi-server support system, the current
-      // active server connection will already be set on application init
-      const connection = await DatabaseManager.getActiveServerDatabase();
-      if (connection === undefined) {
-          throw new DatabaseConnectionException(
-              'An error occurred while retrieving the server database',
-              '',
-          );
-      }
-      return connection;
+      throw new DatabaseConnectionException(
+          "This operator client didn't have its activeDatabase set",
+          '',
+      );
   };
 }
 

@@ -18,11 +18,11 @@ interface UserProps {
 interface Timezone {
     automaticTimezone: string;
     manualTimezone: string;
-    useAutomaticTimezone: boolean;
+    useAutomaticTimezone: string;
 }
 
 interface FileInfo {
-    id?: string;
+    id: string;
     user_id: string;
     post_id: string;
     create_at: number;

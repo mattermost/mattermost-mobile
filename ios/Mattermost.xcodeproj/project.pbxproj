@@ -13,6 +13,9 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2D5296A8926B4D7FBAF2D6E2 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */; };
+		49415295267A91230039D64E /* libDatabaseHelper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49415294267A911C0039D64E /* libDatabaseHelper.a */; };
+		49415296267A91290039D64E /* libDatabaseHelper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49415294267A911C0039D64E /* libDatabaseHelper.a */; };
+		49415297267A91300039D64E /* libDatabaseHelper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49415294267A911C0039D64E /* libDatabaseHelper.a */; };
 		4953BF602368AE8600593328 /* SwimeProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4953BF5F2368AE8600593328 /* SwimeProxy.swift */; };
 		49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		531BEBC72513E93C00BC05B1 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
@@ -48,6 +51,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		49415293267A911C0039D64E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 49415253267955890039D64E;
+			remoteInfo = DatabaseHelper;
+		};
 		7F240A21220D3A2300637665 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -89,6 +99,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = 7FABE03522137F2900D0F595;
 			remoteInfo = UploadAttachments;
+		};
+		7FE6E441267C014600C99C18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49415252267955890039D64E;
+			remoteInfo = DatabaseHelper;
+		};
+		7FE6E444267C014E00C99C18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49415252267955890039D64E;
+			remoteInfo = DatabaseHelper;
+		};
+		7FE6E446267C015400C99C18 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49415252267955890039D64E;
+			remoteInfo = DatabaseHelper;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -137,6 +168,7 @@
 		34B20A903038487E8D7DEA1E /* Roboto-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Light.ttf"; path = "../assets/fonts/Roboto-Light.ttf"; sourceTree = "<group>"; };
 		3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		41F3AFE83AAF4B74878AB78A /* OpenSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Italic.ttf"; path = "../assets/fonts/OpenSans-Italic.ttf"; sourceTree = "<group>"; };
+		4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = DatabaseHelper.xcodeproj; path = DatabaseHelper/DatabaseHelper.xcodeproj; sourceTree = "<group>"; };
 		4953BF5F2368AE8600593328 /* SwimeProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwimeProxy.swift; path = Mattermost/SwimeProxy.swift; sourceTree = "<group>"; };
 		495BC95F23565ABF00C40C83 /* libXCDYouTubeKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libXCDYouTubeKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		495BC96123565ADD00C40C83 /* libYoutubePlayer-in-WKWebView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libYoutubePlayer-in-WKWebView.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -214,6 +246,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49415295267A91230039D64E /* libDatabaseHelper.a in Frameworks */,
 				49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */,
 				6C9B1EFD6561083917AF06CF /* libPods-Mattermost.a in Frameworks */,
 			);
@@ -223,6 +256,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49415296267A91290039D64E /* libDatabaseHelper.a in Frameworks */,
 				7FABE0562213884700D0F595 /* libUploadAttachments.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -231,6 +265,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49415297267A91300039D64E /* libDatabaseHelper.a in Frameworks */,
 				7F581F78221EEA7C0099E66B /* libUploadAttachments.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -328,6 +363,14 @@
 			name = "Recovered References";
 			sourceTree = "<group>";
 		};
+		49415290267A911C0039D64E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				49415294267A911C0039D64E /* libDatabaseHelper.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		4B992D7BAAEDF8759DB525B5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -404,6 +447,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */,
 				7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */,
 			);
 			name = Libraries;
@@ -459,6 +503,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FE6E442267C014600C99C18 /* PBXTargetDependency */,
 				7FAB45BA222DD0E300EBFFC8 /* PBXTargetDependency */,
 				7F240A22220D3A2300637665 /* PBXTargetDependency */,
 				7F581D38221ED5C60099E66B /* PBXTargetDependency */,
@@ -479,6 +524,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FE6E445267C014E00C99C18 /* PBXTargetDependency */,
 				7FAB4571222DD0DA00EBFFC8 /* PBXTargetDependency */,
 			);
 			name = MattermostShare;
@@ -497,6 +543,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				7FE6E447267C015400C99C18 /* PBXTargetDependency */,
 				7FE5F962227739E600FEFFE1 /* PBXTargetDependency */,
 			);
 			name = NotificationService;
@@ -572,6 +619,10 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
+					ProductGroup = 49415290267A911C0039D64E /* Products */;
+					ProjectRef = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
+				},
+				{
 					ProductGroup = 7FABE04122137F2900D0F595 /* Products */;
 					ProjectRef = 7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */;
 				},
@@ -586,6 +637,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		49415294267A911C0039D64E /* libDatabaseHelper.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libDatabaseHelper.a;
+			remoteRef = 49415293267A911C0039D64E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		7FABE04522137F2A00D0F595 /* libUploadAttachments.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -806,6 +864,21 @@
 			name = UploadAttachments;
 			targetProxy = 7FE5F961227739E600FEFFE1 /* PBXContainerItemProxy */;
 		};
+		7FE6E442267C014600C99C18 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DatabaseHelper;
+			targetProxy = 7FE6E441267C014600C99C18 /* PBXContainerItemProxy */;
+		};
+		7FE6E445267C014E00C99C18 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DatabaseHelper;
+			targetProxy = 7FE6E444267C014E00C99C18 /* PBXContainerItemProxy */;
+		};
+		7FE6E447267C015400C99C18 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = DatabaseHelper;
+			targetProxy = 7FE6E446267C015400C99C18 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -836,6 +909,7 @@
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(SRCROOT)/DatabaseHelper/DatabaseHelper",
 					"$(SRCROOT)/UploadAttachments/UploadAttachments",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
@@ -878,6 +952,7 @@
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(SRCROOT)/DatabaseHelper/DatabaseHelper",
 					"$(SRCROOT)/UploadAttachments/UploadAttachments",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;

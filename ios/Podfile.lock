@@ -253,7 +253,7 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webview (11.4.0):
+  - react-native-webview (11.6.2):
     - React-Core
   - React-perflogger (0.64.0)
   - React-RCTActionSheet (0.64.0):
@@ -332,6 +332,8 @@ PODS:
     - React-Core
     - React-RCTImage
     - React-RCTText
+  - rn-fetch-blob (0.12.0):
+    - React-Core
   - RNCAsyncStorage (1.12.1):
     - React-Core
   - RNCClipboard (1.5.1):
@@ -492,6 +494,7 @@ DEPENDENCIES:
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
   - ReactNativeKeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
+  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
@@ -637,6 +640,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keyboard-tracking-view"
   ReactNativeNavigation:
     :path: "../node_modules/react-native-navigation"
+  rn-fetch-blob:
+    :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
   RNCClipboard:
@@ -711,7 +716,7 @@ SPEC CHECKSUMS:
   EXConstants: c00cd53a17a65b2e53ddb3890e4e74d3418e406e
   EXFileSystem: 35769beb727d5341d1276fd222710f9704f7164e
   FBLazyVector: 49cbe4b43e445b06bf29199b6ad2057649e4c8f5
-  FBReactNativeSpec: ebaa990b13e6f0496fd41894a824c585c4afab46
+  FBReactNativeSpec: a804c9d6c798f94831713302354003ee54ea18cb
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   jail-monkey: 80c9e34da2cd54023e5ad08bf7051ec75bd43d5b
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
@@ -739,7 +744,7 @@ SPEC CHECKSUMS:
   react-native-paste-input: 003693cff6fcea476066172e66901beb7ef25670
   react-native-safe-area-context: e471852c5ed67eea4b10c5d9d43c1cebae3b231d
   react-native-video: 1574074179ecaf6a9dd067116c8f31bf9fec15c8
-  react-native-webview: fdd3c7c2ad173e8ca8c82729ed05f3fda2491a82
+  react-native-webview: 1f56115845c98f0a59dfbbac685797c014a821be
   React-perflogger: 9c547d8f06b9bf00cb447f2b75e8d7f19b7e02af
   React-RCTActionSheet: 3080b6e12e0e1a5b313c8c0050699b5c794a1b11
   React-RCTAnimation: 3f96f21a497ae7dabf4d2f150ee43f906aaf516f
@@ -755,6 +760,7 @@ SPEC CHECKSUMS:
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 4c4ca87edc0da4ee818158a62cb6188088454e5c
+  rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: cb9a623793918c6699586281f0b51cbc38f046f9
   RNCClipboard: 5e299c6df8e0c98f3d7416b86ae563d3a9f768a3
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459

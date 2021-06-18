@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DataOperator} from '@database/operator';
+import DatabaseManager from '@database/manager';
+import Operator from '@database/operator';
 import {
     isRecordMyTeamEqualToRaw,
     isRecordSlashCommandEqualToRaw,
@@ -19,20 +20,39 @@ import {
     prepareTeamSearchHistoryRecord,
 } from '@database/operator/prepareRecords/team';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
+import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** Operator: Team Handlers tests ***', () => {
+    let databaseManagerClient: DatabaseManager;
+    let operatorClient: Operator;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            configs: {
+                actionsEnabled: true,
+                dbName: 'base_handler',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'baseHandler.test.com',
+            },
+        });
+
+        operatorClient = new Operator(database!);
+    });
+
     it('=> HandleTeam: should write to TEAM entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'team_handler', setActive: true});
 
-        await DataOperator.handleTeam({
+        await operatorClient.handleTeam({
             teams: [
                 {
                     id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
@@ -89,11 +109,11 @@ describe('*** Operator: Team Handlers tests ***', () => {
     it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'team_handler', setActive: true});
 
-        await DataOperator.handleTeamMemberships({
+        await operatorClient.handleTeamMemberships({
             teamMemberships: [
                 {
                     team_id: 'a',
@@ -134,11 +154,11 @@ describe('*** Operator: Team Handlers tests ***', () => {
     it('=> HandleMyTeam: should write to MY_TEAM entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'team_handler', setActive: true});
 
-        await DataOperator.handleMyTeam({
+        await operatorClient.handleMyTeam({
             myTeams: [
                 {
                     team_id: 'teamA',
@@ -171,11 +191,11 @@ describe('*** Operator: Team Handlers tests ***', () => {
     it('=> HandleTeamChannelHistory: should write to TEAM_CHANNEL_HISTORY entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'team_handler', setActive: true});
 
-        await DataOperator.handleTeamChannelHistory({
+        await operatorClient.handleTeamChannelHistory({
             teamChannelHistories: [
                 {
                     team_id: 'a',
@@ -199,11 +219,11 @@ describe('*** Operator: Team Handlers tests ***', () => {
     it('=> HandleTeamSearchHistory: should write to TEAM_SEARCH_HISTORY entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'team_handler', setActive: true});
 
-        await DataOperator.handleTeamSearchHistory({
+        await operatorClient.handleTeamSearchHistory({
             teamSearchHistories: [
                 {
                     team_id: 'a',
@@ -236,11 +256,11 @@ describe('*** Operator: Team Handlers tests ***', () => {
     it('=> HandleSlashCommand: should write to SLASH_COMMAND entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'team_handler', setActive: true});
 
-        await DataOperator.handleSlashCommand({
+        await operatorClient.handleSlashCommand({
             slashCommands: [
                 {
                     id: 'command_1',

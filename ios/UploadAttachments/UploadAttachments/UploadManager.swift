@@ -9,8 +9,8 @@ import UIKit
         return Singleton.instance
     }
 
-    private func buildUploadURL(baseURL: String, channelId: String, fileName: String?) -> URL? {
-        let urlComponent = NSURLComponents(string: "\(baseURL)/api/v4/files")
+    private func buildUploadUrl(baseUrl: String, channelId: String, fileName: String?) -> URL? {
+        let urlComponent = NSURLComponents(string: "\(baseUrl)/api/v4/files")
         let queryChannel = URLQueryItem(name: "channel_id", value: channelId)
         let queryFile = URLQueryItem(name: "filename", value: fileName)
 
@@ -20,10 +20,11 @@ import UIKit
         return urlComponent?.url
     }
     
-    public func uploadFiles(baseURL: String, token: String, channelId: String, message: String?, attachments: AttachmentArray<AttachmentItem>, callback: () -> Void) {
+    public func uploadFiles(baseUrl: String, token: String, channelId: String, message: String?, attachments: AttachmentArray<AttachmentItem>, callback: () -> Void) {
         let identifier = "mattermost-share-upload-\(UUID().uuidString)"
         UploadSessionManager.shared.createUploadSessionData(
             identifier: identifier,
+            serverUrl: baseUrl,
             channelId: channelId,
             message: message ?? "",
             totalFiles: attachments.count
@@ -36,12 +37,12 @@ import UIKit
             for index in 0..<attachments.count {
                 guard let item = attachments[index] else {return}
 
-                let url = buildUploadURL(baseURL: baseURL, channelId: channelId, fileName: item.fileName)
+                let url = buildUploadUrl(baseUrl: baseUrl, channelId: channelId, fileName: item.fileName)
                 var uploadRequest = URLRequest(url: url!)
                 uploadRequest.httpMethod = "POST"
                 uploadRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-                let task = uploadSession.uploadTask(with: uploadRequest, fromFile: item.fileURL!)
+                let task = uploadSession.uploadTask(with: uploadRequest, fromFile: item.fileUrl!)
                 task.resume()
             }
         } else if message != nil {

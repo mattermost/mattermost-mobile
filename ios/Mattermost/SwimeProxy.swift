@@ -3,7 +3,8 @@
 //  Mattermost
 //
 //  Created by Elias Nahum on 15-10-19.
-//  Copyright © 2019 Facebook. All rights reserved.
+//  Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+//  See License.txt for license information.
 //
 
 import Foundation

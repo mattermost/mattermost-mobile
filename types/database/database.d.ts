@@ -5,6 +5,9 @@ import {Database} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 import {Clause} from '@nozbe/watermelondb/QueryDescription';
 import {Class} from '@nozbe/watermelondb/utils/common';
+import {Config} from '@typings/database/config';
+import {License} from '@typings/database/license';
+import System from '@typings/database/system';
 
 import {DatabaseType, IsolatedEntities} from './enums';
 
@@ -223,7 +226,7 @@ export type RawUser = {
   props: UserProps;
   roles: string;
   timezone: {
-    useAutomaticTimezone: boolean;
+    useAutomaticTimezone: string;
     manualTimezone: string;
     automaticTimezone: string;
   };
@@ -234,7 +237,6 @@ export type RawUser = {
 };
 
 export type RawPreference = {
-  id? : string;
   category: string;
   name: string;
   user_id: string;
@@ -685,3 +687,38 @@ export type HandleDraftArgs = {
   drafts: RawDraft[];
   prepareRecordsOnly: boolean;
 };
+
+export type LoginArgs = {
+  config: Partial<Config>;
+  ldapOnly?: boolean;
+  license: Partial<License>;
+  loginId: string;
+  mfaToken?: string;
+  password: string;
+};
+
+export type LoadMeArgs = { user?: RawUser; deviceToken?: string };
+
+export type ServerUrlChangedArgs = {
+  configRecord: System;
+  licenseRecord: System;
+  selectServerRecord: System;
+  serverUrl: string;
+};
+
+export type RetrievedDatabase = {
+  dbInstance: DatabaseInstance;
+  displayName: string;
+  url: string;
+}
+
+export type GetDatabaseConnectionArgs = {
+  serverUrl: string;
+  connectionName?: string;
+  setAsActiveDatabase: boolean;
+}
+
+export type MostRecentConnection = {
+  connection: DatabaseInstance,
+  serverUrl: string,
+}

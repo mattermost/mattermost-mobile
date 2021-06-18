@@ -10,6 +10,7 @@
 #import "RNNotificationEventHandler+HandleReplyAction.h"
 #import <react-native-notifications/RNNotificationParser.h>
 #import <UploadAttachments-Bridging-Header.h>
+#import <DatabaseHelper/DatabaseHelper-Swift.h>
 #import <objc/runtime.h>
 
 #define notificationCenterKey @"notificationCenter"
@@ -44,15 +45,26 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
 - (void)sendReply:(UNNotificationResponse *)response completionHandler:(void (^)(void))notificationCompletionHandler {
   StoreManager *store = [StoreManager shared];
   [store getEntities:true];
-  NSString *serverUrl = [store getServerUrl];
-  NSString *sessionToken = [store getToken];
-  if (serverUrl == nil || sessionToken == nil) {
+  
+  NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
+  NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
+  
+  if (serverUrl == nil) {
+    NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+    if ([onlyServerUrl length] > 0) {
+      serverUrl = onlyServerUrl;
+    } else {
+      [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
+    }
+  }
+  
+  NSString *sessionToken = [store getTokenForServerUrl:serverUrl];
+  if (sessionToken == nil) {
     [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
     return;
   }
 
   NSString *completionKey = response.notification.request.identifier;
-  NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
   NSString *message = [parsedResponse valueForKeyPath:@"action.text"];
   NSString *channelId = [parsedResponse valueForKeyPath:@"notification.channel_id"];
   NSString *rootId = [parsedResponse valueForKeyPath:@"notification.root_id"];

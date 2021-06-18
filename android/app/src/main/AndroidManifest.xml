@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mattermost.rnbeta">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.mattermost.rnbeta">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -44,17 +43,16 @@
           <category android:name="android.intent.category.BROWSABLE" />
           <data android:scheme="mattermost" />
         </intent-filter>
+          <intent-filter>
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:scheme="mmauthbeta" />
+          </intent-filter>
       </activity>
-      <service android:name=".NotificationDismissService"
-                android:enabled="true"
-                android:exported="false" />
-      <receiver android:name=".NotificationReplyBroadcastReceiver"
-               android:enabled="true"
-               android:exported="false" />
-        <activity
-                android:name="com.reactnativenavigation.controllers.NavigationActivity"
-                android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-                android:resizeableActivity="true"/>
+      <service android:name=".NotificationDismissService" android:enabled="true" android:exported="false" />
+      <receiver android:name=".NotificationReplyBroadcastReceiver" android:enabled="true" android:exported="false" />
+        <activity android:name="com.reactnativenavigation.controllers.NavigationActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:resizeableActivity="true"/>
         <activity
                 android:name="com.mattermost.share.ShareActivity"
                 android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
