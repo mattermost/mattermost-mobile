@@ -6,6 +6,7 @@ import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
 import {Navigation as NavigationConstants, Screens} from './app/constants';
+import {getAllServerCredentials} from './app/init/credentials';
 import GlobalEventHandler from './app/init/global_event_handler';
 import './app/init/fetch';
 import {initialLaunch} from './app/init/launch';
@@ -42,11 +43,19 @@ if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
 
-Navigation.events().registerAppLaunchedListener(() => {
+Navigation.events().registerAppLaunchedListener(async () => {
     GlobalEventHandler.init();
     ManagedApp.init();
     registerNavigationListeners();
     registerScreens();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const serverCredentials = await getAllServerCredentials();
+
+    // TODO:
+    // DatabaseManager.init(serverCredentials);
+    // NetworkClientManager.init(serverCredentials);
+
     initialLaunch();
 });
 
@@ -60,7 +69,7 @@ function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
 
     switch (componentId) {
         case 'MainSidebar':
-            DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+            DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN);
             DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
             break;
         case 'SettingsSidebar':

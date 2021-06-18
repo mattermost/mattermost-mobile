@@ -4,15 +4,56 @@
 import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as KeyChain from 'react-native-keychain';
+import urlParse from 'url-parse';
 
 import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {getCSRFFromCookie} from '@utils/security';
+import {normalizeServerUrl} from '@utils/url';
 
-import type {ServerCredentials} from '@typings/credentials';
+import type {ServerCredential} from '@typings/credentials';
 
 const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
+
+export const getAllServerCredentials = async (): Promise<ServerCredential[]> => {
+    const serverCredentials: ServerCredential[] = [];
+
+    let serverUrls: string[];
+    if (Platform.OS === 'ios') {
+        serverUrls = await KeyChain.getAllInternetPasswordServers();
+    } else {
+        serverUrls = await KeyChain.getAllGenericPasswordServices();
+    }
+
+    /* eslint-disable no-await-in-loop */
+    for (const serverUrl of serverUrls) {
+        let serverCredential: ServerCredential | null;
+
+        const parsed = urlParse(serverUrl);
+        if (parsed.protocol) {
+            serverCredential = await convertV1Credential(serverUrl);
+        } else {
+            serverCredential = await getServerCredentials(serverUrl);
+        }
+
+        if (serverCredential) {
+            serverCredentials.push(serverCredential);
+        }
+    }
+
+    return serverCredentials;
+};
+
+const convertV1Credential = async (serverUrl: string) => {
+    const credentials = await getServerCredentials(serverUrl);
+    await removeServerCredentials(serverUrl);
+
+    setServerCredentials(serverUrl, credentials!.userId, credentials!.token);
+
+    const normalizedServerUrl = normalizeServerUrl(serverUrl);
+    return getServerCredentials(normalizedServerUrl);
+};
 
 // TODO: This function is only necessary to support pre-Gekidou
 // versions as the active server URL may be stored in AsyncStorage.
@@ -42,6 +83,8 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
         return;
     }
 
+    const normalizedServerUrl = normalizeServerUrl(serverUrl);
+
     try {
         let accessGroup;
         if (Platform.OS === 'ios') {
@@ -53,7 +96,7 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
-        KeyChain.setInternetCredentials(serverUrl, userId, token, options);
+        KeyChain.setInternetCredentials(normalizedServerUrl, userId, token, options);
     } catch (e) {
         console.warn('could not set credentials', e); //eslint-disable-line no-console
     }
@@ -83,7 +126,7 @@ export const removeActiveServerCredentials = async () => {
     }
 };
 
-export const getServerCredentials = async (serverUrl: string): Promise<ServerCredentials|null> => {
+export const getServerCredentials = async (serverUrl: string): Promise<ServerCredential|null> => {
     try {
         const credentials = await KeyChain.getInternetCredentials(serverUrl);
 
@@ -106,7 +149,7 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
 
                 // TODO: Create client and set token / CSRF
 
-                return {userId, token};
+                return {serverUrl, userId, token};
             }
         }
 
