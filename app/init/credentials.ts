@@ -26,8 +26,7 @@ export const getAllServerCredentials = async (): Promise<ServerCredential[]> => 
         serverUrls = await KeyChain.getAllGenericPasswordServices();
     }
 
-    /* eslint-disable no-await-in-loop */
-    for (const serverUrl of serverUrls) {
+    for await (const serverUrl of serverUrls) {
         let serverCredential: ServerCredential | null;
 
         const parsed = urlParse(serverUrl);
