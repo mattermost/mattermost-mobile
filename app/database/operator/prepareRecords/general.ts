@@ -105,6 +105,8 @@ export const prepareServersRecord = ({action, database, value}: DataFactoryArgs)
         servers.mentionCount = raw?.mention_count;
         servers.unreadCount = raw?.unread_count;
         servers.url = raw?.url;
+        servers.isSecured = raw?.isSecured;
+        servers.lastActiveAt = raw?.lastActiveAt;
     };
 
     return prepareBaseRecord({

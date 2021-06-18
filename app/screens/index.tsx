@@ -12,6 +12,8 @@ import {withManagedConfig} from '@mattermost/react-native-emm';
 import {Screens} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
+import {withServerDatabase} from '@database/components';
+
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable */
 
@@ -217,6 +219,6 @@ export function registerScreens() {
     const channelScreen = require('@screens/channel').default;
     const serverScreen = require('@screens/server').default;
 
-    Navigation.registerComponent(Screens.CHANNEL, () => withManagedConfig(channelScreen));
+    Navigation.registerComponent(Screens.CHANNEL, () => withIntl(withServerDatabase(withManagedConfig(channelScreen))));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 }

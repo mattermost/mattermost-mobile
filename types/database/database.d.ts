@@ -50,6 +50,8 @@ export type RawServers = {
   mention_count: number;
   unread_count: number;
   url: string;
+  isSecured: boolean;
+  lastActiveAt: number;
 };
 
 export type RawCustomEmoji = {
