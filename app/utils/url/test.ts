@@ -9,15 +9,6 @@ import {DeepLinkType} from '@typings/launch';
 
 /* eslint-disable max-nested-callbacks */
 
-// @ts-expect-error global does not have DeepLinkType
-global.DeepLinkType = {
-    Channel: 'channel',
-    DirectMessage: 'dm',
-    GroupMessage: 'gm',
-    Invalid: 'invalid',
-    Permalink: 'permalink',
-};
-
 describe('UrlUtils', () => {
     describe('isImageLink', () => {
         it('not an image link', () => {
