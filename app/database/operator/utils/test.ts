@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DataOperator} from '@database/operator';
+import Operator from '@database/operator';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 import DatabaseManager from '@database/manager';
@@ -71,7 +71,8 @@ describe('DataOperator: Utils tests', () => {
     it('=> sanitizeReactions: should triage between reactions that needs creation/deletion and emojis to be created', async () => {
         const dbName = 'server_schema_connection';
         const serverUrl = 'https://appv2.mattermost.com';
-        const database = await DatabaseManager.createDatabaseConnection({
+        const databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             configs: {
                 actionsEnabled: true,
@@ -80,13 +81,12 @@ describe('DataOperator: Utils tests', () => {
                 serverUrl,
             },
         });
-        await DatabaseManager.setActiveServerDatabase({
-            displayName: dbName,
-            serverUrl,
-        });
+        await databaseManagerClient.setActiveServerDatabase(serverUrl);
+
+        const operatorClient = new Operator(database!);
 
         // we commit one Reaction to our database
-        const prepareRecords = await DataOperator.handleReactions({
+        const prepareRecords = await operatorClient.handleReactions({
             reactions: [
                 {
                     user_id: 'beqkgo4wzbn98kjzjgc1p5n91o',

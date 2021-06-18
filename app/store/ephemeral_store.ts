@@ -3,10 +3,6 @@
 
 class EphemeralStore {
     allNavigationComponentIds: string[] = [];
-    appStarted = false;
-    appStartedFromPushNotification = false;
-    currentServerUrl: string | null | undefined;
-    deviceToken: string | null | undefined;
     navigationComponentIdStack: string[] = [];
     navigationModalStack: string[] = [];
 
@@ -62,14 +58,6 @@ class EphemeralStore {
             this.navigationModalStack.splice(index, 1);
         }
     }
-
-    getStartFromNotification = () => {
-        return this.appStartedFromPushNotification;
-    };
-
-    setStartFromNotification = (value: boolean) => {
-        this.appStartedFromPushNotification = value;
-    };
 }
 
 export default new EphemeralStore();

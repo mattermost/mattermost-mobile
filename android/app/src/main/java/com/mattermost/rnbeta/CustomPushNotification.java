@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mattermost.helpers.DatabaseHelper;
+import com.mattermost.helpers.ResolvePromise;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -35,11 +37,10 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
 
-import com.mattermost.helpers.ResolvePromise;
-
 public class CustomPushNotification extends PushNotification {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String GROUP_KEY_MESSAGES = "mm_group_key_messages";
+    public static final String NOTIFICATION = "notification";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
     public static final String NOTIFICATION_REPLIED_EVENT_NAME = "notificationReplied";
@@ -61,6 +62,7 @@ public class CustomPushNotification extends PushNotification {
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         this.context = context;
+
         createNotificationChannels();
     }
 
@@ -106,8 +108,10 @@ public class CustomPushNotification extends PushNotification {
         final boolean isIdLoaded = initialData.getString("id_loaded") != null ? initialData.getString("id_loaded").equals("true") : false;
         int notificationId = MESSAGE_NOTIFICATION_ID;
 
-        if (ackId != null) {
-            notificationReceiptDelivery(ackId, postId, type, isIdLoaded, new ResolvePromise() {
+        String serverUrl = initialData.getString("server_url", DatabaseHelper.getOnlyServerUrl(context));
+
+        if (ackId != null && serverUrl != null) {
+            notificationReceiptDelivery(ackId, serverUrl, postId, type, isIdLoaded, new ResolvePromise() {
                 @Override
                 public void resolve(@Nullable Object value) {
                     if (isIdLoaded) {
@@ -126,6 +130,11 @@ public class CustomPushNotification extends PushNotification {
         // notificationReceiptDelivery can override mNotificationProps
         // so we fetch the bundle again
         final Bundle data = mNotificationProps.asBundle();
+
+        if (serverUrl == null) {
+            String message = data.getString("message");
+            data.putString("message", "Unknown Server\n" + message);
+        }
 
         if (channelId != null) {
             notificationId = channelId.hashCode();
@@ -465,15 +474,18 @@ public class CustomPushNotification extends PushNotification {
 
     private void addNotificationReplyAction(Notification.Builder notification, int notificationId, Bundle bundle) {
         String postId = bundle.getString("post_id");
+        String serverUrl = bundle.getString("server_url", DatabaseHelper.getOnlyServerUrl(context));
 
-        if (android.text.TextUtils.isEmpty(postId) || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        if (android.text.TextUtils.isEmpty(postId) ||
+                serverUrl == null ||
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return;
         }
 
         Intent replyIntent = new Intent(mContext, NotificationReplyBroadcastReceiver.class);
         replyIntent.setAction(KEY_TEXT_REPLY);
         replyIntent.putExtra(NOTIFICATION_ID, notificationId);
-        replyIntent.putExtra("pushNotification", bundle);
+        replyIntent.putExtra(NOTIFICATION, bundle);
 
         PendingIntent replyPendingIntent = PendingIntent.getBroadcast(
             mContext,
@@ -540,8 +552,8 @@ public class CustomPushNotification extends PushNotification {
         return message.replaceFirst(": ", "").trim();
     }
 
-    private void notificationReceiptDelivery(String ackId, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
-        ReceiptDelivery.send(context, ackId, postId, type, isIdLoaded, promise);
+    private void notificationReceiptDelivery(String ackId, String serverUrl, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
+        ReceiptDelivery.send(context, ackId, serverUrl, postId, type, isIdLoaded, promise);
     }
 
     private void createNotificationChannels() {

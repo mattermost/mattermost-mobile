@@ -1,0 +1,172 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+  testID="mfa.screen"
+>
+  <View
+    onLayout={[Function]}
+    style={
+      Array [
+        Object {
+          "flex": 1,
+        },
+        Object {
+          "paddingBottom": 0,
+        },
+      ]
+    }
+  >
+    <View
+      accessible={true}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "column",
+            "justifyContent": "center",
+          },
+          Object {
+            "paddingLeft": 15,
+            "paddingRight": 15,
+          },
+        ]
+      }
+    >
+      <Image
+        source={
+          Object {
+            "testUri": "../../../dist/assets/images/logo.png",
+          }
+        }
+        style={
+          Object {
+            "height": 72,
+            "resizeMode": "contain",
+          }
+        }
+      />
+      <View>
+        <Text
+          style={
+            Array [
+              Object {
+                "fontSize": 32,
+                "fontWeight": "600",
+                "marginBottom": 15,
+                "marginTop": 15,
+                "textAlign": "center",
+              },
+              Object {
+                "color": "rgba(61,60,64,0.6)",
+                "fontSize": 20,
+                "fontWeight": "400",
+              },
+            ]
+          }
+        >
+          To complete the sign in process, please enter a token from your smartphone's authenticator
+        </Text>
+      </View>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "#fd5960",
+              "fontSize": 12,
+              "marginBottom": 15,
+              "marginTop": 15,
+              "textAlign": "left",
+            },
+            undefined,
+          ]
+        }
+        testID="mfa.error.text"
+      >
+        
+      </Text>
+      <TextInput
+        allowFontScaling={true}
+        autoCapitalize="none"
+        autoCorrect={false}
+        disableFullscreenUI={true}
+        keyboardType="numeric"
+        onChangeText={[Function]}
+        onSubmitEditing={[Function]}
+        placeholder="MFA Token"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        rejectResponderTermination={true}
+        returnKeyType="go"
+        style={
+          Object {
+            "alignSelf": "stretch",
+            "borderColor": "gainsboro",
+            "borderRadius": 3,
+            "borderWidth": 1,
+            "color": "#3d3c40",
+            "fontSize": 16,
+            "height": 45,
+            "marginBottom": 5,
+            "marginTop": 5,
+            "paddingLeft": 10,
+          }
+        }
+        testID="login_mfa.input"
+        underlineColorAndroid="transparent"
+        value=""
+      />
+      <View
+        accessibilityRole="button"
+        accessible={true}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Object {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "borderColor": "#166de0",
+            "borderRadius": 3,
+            "borderWidth": 1,
+            "marginTop": 10,
+            "opacity": 1,
+            "padding": 15,
+          }
+        }
+        testID="login_mfa.submit"
+      >
+        <Text
+          style={
+            Object {
+              "color": "#166de0",
+              "fontSize": 17,
+              "textAlign": "center",
+            }
+          }
+        >
+          Proceed
+        </Text>
+      </View>
+    </View>
+  </View>
+</RNCSafeAreaView>
+`;

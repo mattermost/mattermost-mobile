@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DatabaseManager from '@database/manager';
 import {
     prepareAppRecord,
     prepareCustomEmojiRecord,
@@ -11,14 +12,21 @@ import {
     prepareTermsOfServiceRecord,
 } from '@database/operator/prepareRecords/general';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import DatabaseManager from '@database/manager';
 import {OperationType} from '@typings/database/enums';
 
+jest.mock('@database/manager');
+
 describe('*** Isolated Prepare Records Test ***', () => {
+    let databaseManagerClient: DatabaseManager;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+    });
+
     it('=> prepareAppRecord: should return an array of type App', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.getDefaultDatabase();
+        const database = await databaseManagerClient.getDefaultDatabase();
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareAppRecord({
@@ -41,7 +49,7 @@ describe('*** Isolated Prepare Records Test ***', () => {
     it('=> prepareGlobalRecord: should return an array of type Global', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.getDefaultDatabase();
+        const database = await databaseManagerClient.getDefaultDatabase();
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareGlobalRecord({
@@ -60,7 +68,7 @@ describe('*** Isolated Prepare Records Test ***', () => {
     it('=> prepareServersRecord: should return an array of type Servers', async () => {
         expect.assertions(3);
 
-        const database = await DatabaseManager.getDefaultDatabase();
+        const database = await databaseManagerClient.getDefaultDatabase();
         expect(database).toBeTruthy();
 
         const preparedRecords = await prepareServersRecord({

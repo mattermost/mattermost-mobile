@@ -3,7 +3,7 @@
 
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import DatabaseManager from '@database/manager';
-import {DataOperator} from '@database/operator';
+import Operator from '@database/operator';
 import {
     isRecordAppEqualToRaw,
     isRecordCustomEmojiEqualToRaw,
@@ -24,22 +24,40 @@ import {
 } from '@database/operator/prepareRecords/general';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {RawGlobal, RawRole, RawServers, RawTermsOfService} from '@typings/database/database';
-import {IsolatedEntities} from '@typings/database/enums';
+import {DatabaseType, IsolatedEntities} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** DataOperator: Base Handlers tests ***', () => {
+    let databaseManagerClient: DatabaseManager;
+    let operatorClient: Operator;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            configs: {
+                actionsEnabled: true,
+                dbName: 'base_handler',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'baseHandler.test.com',
+            },
+        });
+
+        operatorClient = new Operator(database!);
+    });
+
     it('=> HandleApp: should write to APP entity', async () => {
         expect.assertions(3);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
+        expect(defaultDatabase).toBeTruthy();
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.APP,
             values: [
                 {
@@ -81,13 +99,13 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> HandleGlobal: should write to GLOBAL entity', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
+        expect(defaultDatabase).toBeTruthy();
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
         const values: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.GLOBAL,
             values,
             prepareRecordsOnly: false,
@@ -106,10 +124,10 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> HandleServers: should write to SERVERS entity', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
+        expect(defaultDatabase).toBeTruthy();
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         const values: RawServers[] = [
             {
@@ -123,7 +141,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             },
         ];
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.SERVERS,
             values,
             prepareRecordsOnly: false,
@@ -154,7 +172,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         await createTestConnection({databaseName: 'base_handler', setActive: true});
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         const values: RawRole[] = [
             {
@@ -164,7 +182,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             },
         ];
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.ROLE,
             values,
             prepareRecordsOnly: false,
@@ -189,11 +207,11 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'base_handler', setActive: true});
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.CUSTOM_EMOJI,
             values: [
                 {
@@ -233,11 +251,11 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         await createTestConnection({databaseName: 'base_handler', setActive: true});
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         const values = [{id: 'system-id-1', name: 'system-1', value: 'system-1'}];
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.SYSTEM,
             values,
             prepareRecordsOnly: false,
@@ -245,7 +263,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
-            fieldName: 'id',
+            fieldName: 'name',
             operator: prepareSystemRecord,
             rawValues: values,
             tableName: 'System',
@@ -258,7 +276,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         await createTestConnection({databaseName: 'base_handler', setActive: true});
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         const values: RawTermsOfService[] = [
             {
@@ -270,7 +288,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             },
         ];
 
-        await DataOperator.handleIsolatedEntity({
+        await operatorClient.handleIsolatedEntity({
             tableName: IsolatedEntities.TERMS_OF_SERVICE,
             values,
             prepareRecordsOnly: false,
@@ -289,11 +307,11 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
     it('=> No table name: should not call executeInDatabase if tableName is invalid', async () => {
         expect.assertions(2);
 
-        const defaultDB = await DatabaseManager.getDefaultDatabase();
-        expect(defaultDB).toBeTruthy();
+        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
+        expect(defaultDatabase).toBeTruthy();
 
         await expect(
-            DataOperator.handleIsolatedEntity({
+            operatorClient.handleIsolatedEntity({
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 tableName: 'INVALID_TABLE_NAME',

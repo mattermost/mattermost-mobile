@@ -3,7 +3,7 @@
         "experimentalDecorators": true,
         "target": "esnext",
         "lib": [
-            "es6"
+            "es6", "ES2019"
         ],
         "allowJs": true,
         "skipLibCheck": true,
@@ -33,7 +33,9 @@
         "resolveJsonModule": true,
         "baseUrl": ".",
         "paths": {
+            "@app/*": ["app/*"],
             "@assets/*": ["dist/assets/*"],
+            "@client/*": ["app/client/*"],
             "@components/*": ["app/components/*"],
             "@constants": ["app/constants/index"],
             "@constants/*": ["app/constants/*"],
@@ -41,13 +43,16 @@
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
             "@notifications": ["app/notifications/index"],
+            "@queries/*": ["app/queries/*"],
+            "@requests/*": ["app/requests/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
-            "@typings/*": ["types/*"],
             "@telemetry/*": ["/app/telemetry/*"],
+            "@typings/*": ["types/*"],
+            "@test/*": ["test/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"],

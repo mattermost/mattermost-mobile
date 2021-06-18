@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {isRecordDraftEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/comparators';
@@ -14,8 +17,6 @@ import {
 } from '@database/operator/prepareRecords/post';
 import {getRawRecordPairs, getUniqueRawsBy, retrieveRecords} from '@database/operator/utils/general';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
-import {Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
 import {
     HandleDraftArgs,
     HandleFilesArgs,
@@ -64,9 +65,11 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {RawDraft[]} draftsArgs.drafts
      * @param {boolean} draftsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Draft[] | boolean}
+     * @returns {Draft[]}
      */
     handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs) => {
+        let records: Draft[] = [];
+
         if (!drafts.length) {
             throw new DataOperatorException(
                 'An empty "drafts" array has been passed to the handleReactions method',
@@ -75,7 +78,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             operator: prepareDraftRecord,
@@ -84,7 +87,7 @@ const PostHandler = (superclass: any) => class extends superclass {
             tableName: DRAFT,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**

@@ -23,7 +23,7 @@ import User from '@typings/database/user';
 const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
- * hasSimilarUpdateAt: Database Operations on some entities are expensive.  As such, we would like to operate if and only if we are
+ * getValidRecordsForUpdate: Database Operations on some entities are expensive.  As such, we would like to operate if and only if we are
  * 100% sure that the records are actually different from what we already have in the database.
  * @param {IdenticalRecordArgs} identicalRecord
  * @param {string} identicalRecord.tableName
@@ -31,16 +31,26 @@ const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
  * @param {Model} identicalRecord.existingRecord
  * @returns {boolean}
  */
-export const hasSimilarUpdateAt = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
+export const getValidRecordsForUpdate = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
     const guardTables = [CHANNEL, POST, SLASH_COMMAND, TEAM, USER];
-
     if (guardTables.includes(tableName)) {
         type Raw = RawPost | RawUser | RawTeam | RawSlashCommand | RawChannel;
         type ExistingRecord = Post | User | Team | SlashCommand | Channel;
 
-        return (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
+        const shouldUpdate = (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
+
+        if (shouldUpdate) {
+            return {
+                record: existingRecord,
+                raw: newValue,
+            };
+        }
     }
-    return false;
+
+    return {
+        record: existingRecord,
+        raw: newValue,
+    };
 };
 
 /**
@@ -90,7 +100,7 @@ export const getUniqueRawsBy = ({raws, key}:{ raws: RawValue[], key: string}) =>
  * @param {RetrieveRecordsArgs} records
  * @param {Database} records.database
  * @param {string} records.tableName
- * @param {any} records.condition
+ * @param {Clause} records.condition
  * @returns {Promise<Model[]>}
  */
 export const retrieveRecords = ({database, tableName, condition}: RetrieveRecordsArgs) => {

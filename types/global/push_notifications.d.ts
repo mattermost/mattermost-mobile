@@ -29,6 +29,7 @@ interface NotificationData {
     post_id: string;
     root_id?: string;
     sender_id?: string;
+    server_url?: string;
     team_id?: string;
     type: string;
     use_user_icon?: string;

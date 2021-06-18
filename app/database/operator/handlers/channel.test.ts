@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DataOperator} from '@database/operator';
+import DatabaseManager from '@database/manager';
+import Operator from '@database/operator';
 import {
     isRecordChannelEqualToRaw,
     isRecordChannelInfoEqualToRaw,
@@ -15,20 +16,39 @@ import {
     prepareMyChannelSettingsRecord,
 } from '@database/operator/prepareRecords/channel';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
+import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** Operator: Channel Handlers tests ***', () => {
+    let databaseManagerClient: DatabaseManager;
+    let operatorClient: Operator;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            configs: {
+                actionsEnabled: true,
+                dbName: 'base_handler',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'baseHandler.test.com',
+            },
+        });
+
+        operatorClient = new Operator(database!);
+    });
+
     it('=> HandleChannel: should write to CHANNEL entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
-        await DataOperator.handleChannel({
+        await operatorClient.handleChannel({
             channels: [
                 {
                     id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
@@ -89,11 +109,11 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     it('=> HandleMyChannelSettings: should write to MY_CHANNEL_SETTINGS entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
-        await DataOperator.handleMyChannelSettings({
+        await operatorClient.handleMyChannelSettings({
             settings: [
                 {
                     channel_id: 'c',
@@ -138,11 +158,11 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     it('=> HandleChannelInfo: should write to CHANNEL_INFO entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
-        await DataOperator.handleChannelInfo({
+        await operatorClient.handleChannelInfo({
             channelInfos: [
                 {
                     channel_id: 'c',
@@ -180,11 +200,11 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     it('=> HandleMyChannel: should write to MY_CHANNEL entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'channel_handler', setActive: true});
 
-        await DataOperator.handleMyChannel({
+        await operatorClient.handleMyChannel({
             myChannels: [
                 {
                     channel_id: 'c',

@@ -11,7 +11,12 @@ import Servers from '@database/models/default/servers';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
 
-export function withServerDatabase<T>(Component: ComponentType<T>): ComponentType<T> {
+//TODO: Remove when DatabaseManager is Singleton
+const DBManager = new DatabaseManager();
+
+export function withServerDatabase<T>(
+    Component: ComponentType<T>,
+): ComponentType<T> {
     return function ServerDatabaseComponent(props) {
         const [database, setDatabase] = useState<Database|unknown>();
 
@@ -20,13 +25,11 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
             const observer = async (servers: Servers[]) => {
                 const server = servers.reduce((a, b) => (a.lastActiveAt > b.lastActiveAt ? a : b));
 
-                //fixme: 1: DatabaseManager should now be called as a client
-
                 // The server database should already exists at this point
                 // there should not be a need to await
-                const serverDatabase = await DatabaseManager.retrieveDatabaseInstances([server.url]);
-                if (serverDatabase?.[0]?.dbInstance) {
-                    setDatabase(serverDatabase[0].dbInstance);
+                const serverDatabase = await DBManager.retrieveDatabaseInstances([server.url]);
+                if (serverDatabase?.length) {
+                    setDatabase(serverDatabase[0]);
                 }
             };
 
@@ -34,7 +37,7 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
                 // TODO: At this point the database should be already present
                 // there should not be a need to await
 
-                const db = await DatabaseManager.getDefaultDatabase();
+                const db = await DBManager.getDefaultDatabase();
                 db?.collections.
                     get(SERVERS).
                     query().

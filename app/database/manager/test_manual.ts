@@ -6,9 +6,11 @@ import {Platform} from 'react-native';
 import {DatabaseType} from '@typings/database/enums';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-import DBManager from './index';
+import DatabaseManager from './index';
 
 export default async () => {
+    const databaseClient = new DatabaseManager();
+
     // Test: It should return the iOS App-Group shared directory
     const testAppGroupDirectory = () => {
         if (Platform.OS === 'ios') {
@@ -18,12 +20,12 @@ export default async () => {
 
     // Test: It should return an instance of the default database
     const testGetDefaultDatabase = () => {
-        DBManager.getDefaultDatabase();
+        databaseClient.getDefaultDatabase();
     };
 
     // Test: It should creates a new server connection
     const testNewServerConnection = async () => {
-        await DBManager.createDatabaseConnection({
+        await databaseClient.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
             configs: {
                 actionsEnabled: true,
@@ -36,20 +38,17 @@ export default async () => {
 
     // Test: It should return the current active server database
     const testGetActiveServerConnection = () => {
-        // const activeServer = DBManager.getActiveServerDatabase();
+        // const activeServer = DatabaseManager.getActiveServerDatabase();
     };
 
     // Test: It should set the current active server database to the provided server url.
     const testSetActiveServerConnection = async () => {
-        await DBManager.setActiveServerDatabase({
-            displayName: 'comm4',
-            serverUrl: 'https://comm4.mattermost.com',
-        });
+        await databaseClient.setActiveServerDatabase('https://comm4.mattermost.com');
     };
 
     // Test: It should return database instance(s) if there are valid server urls in the provided list.
     const testRetrieveAllDatabaseConnections = async () => {
-        await DBManager.retrieveDatabaseInstances([
+        await databaseClient.retrieveDatabaseInstances([
             'https://xunity2.mattermost.com',
             'https://comm5.mattermost.com',
             'https://comm4.mattermost.com',
@@ -58,12 +57,12 @@ export default async () => {
 
     // Test: It should delete the associated *.db file for this  server url
     const testDeleteSQLFile = async () => {
-        await DBManager.deleteDatabase('https://comm4.mattermost.com');
+        await databaseClient.deleteDatabase('https://comm4.mattermost.com');
     };
 
     // Test: It should wipe out the databases folder under the documents direction on Android and in the shared directory for the AppGroup on iOS
     const testFactoryReset = async () => {
-        await DBManager.factoryReset(true);
+        await databaseClient.factoryReset(true);
     };
 
     // NOTE : Comment and test the below functions one at a time.  It starts with creating a default database and ends with a factory reset.

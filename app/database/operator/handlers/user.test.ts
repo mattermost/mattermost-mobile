@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DataOperator} from '@database/operator';
+import DatabaseManager from '@database/manager';
+import Operator from '@database/operator';
 import {
     isRecordChannelMembershipEqualToRaw,
     isRecordPreferenceEqualToRaw,
@@ -13,21 +14,40 @@ import {
     prepareUserRecord,
 } from '@database/operator/prepareRecords/user';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
+import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** Operator: User Handlers tests ***', () => {
+    let databaseManagerClient: DatabaseManager;
+    let operatorClient: Operator;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            configs: {
+                actionsEnabled: true,
+                dbName: 'base_handler',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'baseHandler.test.com',
+            },
+        });
+
+        operatorClient = new Operator(database!);
+    });
+
     it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
         expect.assertions(2);
 
         await createTestConnection({databaseName: 'user_handler', setActive: true});
 
-        const spyOnPrepareRecords = jest.spyOn(DataOperator as any, 'prepareRecords');
-        const spyOnBatchOperation = jest.spyOn(DataOperator as any, 'batchOperations');
+        const spyOnPrepareRecords = jest.spyOn(operatorClient as any, 'prepareRecords');
+        const spyOnBatchOperation = jest.spyOn(operatorClient as any, 'batchOperations');
 
-        await DataOperator.handleReactions({
+        await operatorClient.handleReactions({
             reactions: [
                 {
                     create_at: 1608263728086,
@@ -88,16 +108,16 @@ describe('*** Operator: User Handlers tests ***', () => {
                 timezone: {
                     automaticTimezone: 'Indian/Mauritius',
                     manualTimezone: '',
-                    useAutomaticTimezone: true,
+                    useAutomaticTimezone: '',
                 },
             },
         ];
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'user_handler', setActive: true});
 
-        await DataOperator.handleUsers({users, prepareRecordsOnly: false});
+        await operatorClient.handleUsers({users, prepareRecordsOnly: false});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
@@ -139,7 +159,7 @@ describe('*** Operator: User Handlers tests ***', () => {
                     timezone: {
                         automaticTimezone: 'Indian/Mauritius',
                         manualTimezone: '',
-                        useAutomaticTimezone: true,
+                        useAutomaticTimezone: '',
                     },
                 },
             ],
@@ -153,11 +173,11 @@ describe('*** Operator: User Handlers tests ***', () => {
     it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'user_handler', setActive: true});
 
-        await DataOperator.handlePreferences({
+        await operatorClient.handlePreferences({
             preferences: [
                 {
                     user_id: '9ciscaqbrpd6d8s68k76xb9bte',
@@ -269,11 +289,11 @@ describe('*** Operator: User Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'user_handler', setActive: true});
 
-        await DataOperator.handleChannelMembership({
+        await operatorClient.handleChannelMembership({
             channelMemberships,
             prepareRecordsOnly: false,
         });

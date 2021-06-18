@@ -76,10 +76,6 @@ const ViewTypes = keyMirror({
 
     REMOVE_LAST_CHANNEL_FOR_TEAM: null,
 
-    GITLAB: null,
-    OFFICE365: null,
-    SAML: null,
-
     SET_INITIAL_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
     LOADING_POSTS: null,

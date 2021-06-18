@@ -17,7 +17,6 @@ import {
 } from '@database/operator/prepareRecords/user';
 import {getRawRecordPairs, getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
-import Model from '@nozbe/watermelondb/Model';
 import ChannelMembership from '@typings/database/channel_membership';
 import CustomEmoji from '@typings/database/custom_emoji';
 import {
@@ -40,10 +39,10 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface UserHandlerMix {
-    handleChannelMembership : ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => ChannelMembership[] | boolean,
-    handlePreferences : ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Preference[] | boolean,
-    handleReactions : ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => boolean | (Reaction | CustomEmoji)[],
-    handleUsers : ({users, prepareRecordsOnly}: HandleUsersArgs) => User[] | boolean
+    handleChannelMembership : ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => ChannelMembership[];
+    handlePreferences : ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Preference[];
+    handleReactions : ({reactions, prepareRecordsOnly}: HandleReactionsArgs) =>(Reaction | CustomEmoji)[];
+    handleUsers : ({users, prepareRecordsOnly}: HandleUsersArgs) => User[];
 }
 
 const UserHandler = (superclass: any) => class extends superclass {
@@ -53,21 +52,20 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {ChannelMembership[] | boolean}
+     * @returns {ChannelMembership[]}
      */
     handleChannelMembership = async ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs) => {
+        let records: ChannelMembership[] = [];
+
         if (!channelMemberships.length) {
             throw new DataOperatorException(
                 'An empty "channelMemberships" array has been passed to the handleChannelMembership method',
             );
         }
 
-        const rawValues = getUniqueRawsBy({
-            raws: channelMemberships,
-            key: 'channel_id',
-        });
+        const rawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             operator: prepareChannelMembershipRecord,
@@ -76,7 +74,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             tableName: CHANNEL_MEMBERSHIP,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -85,9 +83,11 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawPreference[]} preferencesArgs.preferences
      * @param {boolean} preferencesArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Preference[] | boolean}
+     * @returns {Preference[]}
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true}: HandlePreferencesArgs) => {
+        let records: Preference[] = [];
+
         if (!preferences.length) {
             throw new DataOperatorException(
                 'An empty "preferences" array has been passed to the handlePreferences method',
@@ -96,7 +96,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             operator: preparePreferenceRecord,
@@ -105,7 +105,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             tableName: PREFERENCE,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 
     /**
@@ -114,9 +114,11 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawReaction[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {boolean | (Reaction | CustomEmoji)[]}
+     * @returns {(Reaction| CustomEmoji)[]}
      */
     handleReactions = async ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => {
+        let batchRecords: (Reaction| CustomEmoji)[] = [];
+
         if (!reactions.length) {
             throw new DataOperatorException(
                 'An empty "reactions" array has been passed to the handleReactions method',
@@ -136,8 +138,6 @@ const UserHandler = (superclass: any) => class extends superclass {
             post_id: reactions[0].post_id,
             rawReactions: rawValues,
         });
-
-        let batchRecords: Model[] = [];
 
         if (createReactions.length) {
             // Prepares record for model Reactions
@@ -174,7 +174,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             });
         }
 
-        return false;
+        return [];
     };
 
     /**
@@ -183,9 +183,11 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawUser[]} usersArgs.users
      * @param {boolean} usersArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {User[] | boolean}
+     * @returns {User[]}
      */
     handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs) => {
+        let records: User[] = [];
+
         if (!users.length) {
             throw new DataOperatorException(
                 'An empty "users" array has been passed to the handleUsers method',
@@ -194,7 +196,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: users, key: 'id'});
 
-        const records = await this.handleEntityRecords({
+        records = await this.handleEntityRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordUserEqualToRaw,
             operator: prepareUserRecord,
@@ -203,7 +205,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
         });
 
-        return prepareRecordsOnly && records?.length && records;
+        return records;
     };
 };
 

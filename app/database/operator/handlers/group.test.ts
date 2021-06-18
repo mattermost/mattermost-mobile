@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DataOperator} from '@database/operator';
+import DatabaseManager from '@database/manager';
+import Operator from '@database/operator';
 import {
     isRecordGroupEqualToRaw,
     isRecordGroupMembershipEqualToRaw,
@@ -15,20 +16,39 @@ import {
     prepareGroupsInTeamRecord,
 } from '@database/operator/prepareRecords/group';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
+import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** Operator: Group Handlers tests ***', () => {
+    let databaseManagerClient: DatabaseManager;
+    let operatorClient: Operator;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            configs: {
+                actionsEnabled: true,
+                dbName: 'base_handler',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'baseHandler.test.com',
+            },
+        });
+
+        operatorClient = new Operator(database!);
+    });
+
     it('=> HandleGroup: should write to GROUP entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'group_handler', setActive: true});
 
-        await DataOperator.handleGroup({
+        await operatorClient.handleGroup({
             groups: [
                 {
                     id: 'id_groupdfjdlfkjdkfdsf',
@@ -73,11 +93,11 @@ describe('*** Operator: Group Handlers tests ***', () => {
     it('=> HandleGroupsInTeam: should write to GROUPS_IN_TEAM entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'group_handler', setActive: true});
 
-        await DataOperator.handleGroupsInTeam({
+        await operatorClient.handleGroupsInTeam({
             groupsInTeams: [
                 {
                     team_id: 'team_899',
@@ -118,11 +138,11 @@ describe('*** Operator: Group Handlers tests ***', () => {
     it('=> HandleGroupsInChannel: should write to GROUPS_IN_CHANNEL entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'group_handler', setActive: true});
 
-        await DataOperator.handleGroupsInChannel({
+        await operatorClient.handleGroupsInChannel({
             groupsInChannels: [
                 {
                     auto_add: true,
@@ -173,11 +193,11 @@ describe('*** Operator: Group Handlers tests ***', () => {
     it('=> HandleGroupMembership: should write to GROUP_MEMBERSHIP entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
 
         await createTestConnection({databaseName: 'group_handler', setActive: true});
 
-        await DataOperator.handleGroupMembership({
+        await operatorClient.handleGroupMembership({
             groupMemberships: [
                 {
                     user_id: 'u4cprpki7ri81mbx8efixcsb8jo',

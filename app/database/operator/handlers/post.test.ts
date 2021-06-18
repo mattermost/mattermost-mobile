@@ -1,27 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DataOperator} from '@database/operator';
+import DatabaseManager from '@database/manager';
+import Operator from '@database/operator';
 import {isRecordDraftEqualToRaw} from '@database/operator/comparators';
 import {prepareDraftRecord} from '@database/operator/prepareRecords/post';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
+import {DatabaseType} from '@typings/database/enums';
 
 jest.mock('@database/manager');
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 describe('*** Operator: Post Handlers tests ***', () => {
+    let databaseManagerClient: DatabaseManager;
+    let operatorClient: Operator;
+
+    beforeAll(async () => {
+        databaseManagerClient = new DatabaseManager();
+        const database = await databaseManagerClient.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            configs: {
+                actionsEnabled: true,
+                dbName: 'base_handler',
+                dbType: DatabaseType.SERVER,
+                serverUrl: 'baseHandler.test.com',
+            },
+        });
+
+        operatorClient = new Operator(database!);
+    });
+
     it('=> HandleDraft: should write to the Draft entity', async () => {
         expect.assertions(1);
 
         await createTestConnection({databaseName: 'post_handler', setActive: true});
 
-        const spyOnHandleEntityRecords = jest.spyOn(DataOperator as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
         const values = [
             {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
                 files: [
                     {
+                        id: '322dxx',
                         user_id: 'user_id',
                         post_id: 'post_id',
                         create_at: 123,
@@ -42,7 +63,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         ];
 
-        await DataOperator.handleDraft({drafts: values, prepareRecordsOnly: false});
+        await operatorClient.handleDraft({drafts: values, prepareRecordsOnly: false});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
@@ -206,17 +227,17 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleFiles = jest.spyOn(DataOperator as any, 'handleFiles');
-        const spyOnHandlePostMetadata = jest.spyOn(DataOperator as any, 'handlePostMetadata');
-        const spyOnHandleReactions = jest.spyOn(DataOperator as any, 'handleReactions');
-        const spyOnHandleCustomEmojis = jest.spyOn(DataOperator as any, 'handleIsolatedEntity');
-        const spyOnHandlePostsInThread = jest.spyOn(DataOperator as any, 'handlePostsInThread');
-        const spyOnHandlePostsInChannel = jest.spyOn(DataOperator as any, 'handlePostsInChannel');
+        const spyOnHandleFiles = jest.spyOn(operatorClient as any, 'handleFiles');
+        const spyOnHandlePostMetadata = jest.spyOn(operatorClient as any, 'handlePostMetadata');
+        const spyOnHandleReactions = jest.spyOn(operatorClient as any, 'handleReactions');
+        const spyOnHandleCustomEmojis = jest.spyOn(operatorClient as any, 'handleIsolatedEntity');
+        const spyOnHandlePostsInThread = jest.spyOn(operatorClient as any, 'handlePostsInThread');
+        const spyOnHandlePostsInChannel = jest.spyOn(operatorClient as any, 'handlePostsInChannel');
 
         await createTestConnection({databaseName: 'post_handler', setActive: true});
 
         // handlePosts will in turn call handlePostsInThread
-        await DataOperator.handlePosts({
+        await operatorClient.handlePosts({
             orders: [
                 '8swgtrrdiff89jnsiwiip3y1eoe',
                 '8fcnk3p1jt8mmkaprgajoxz115a',

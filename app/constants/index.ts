@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import Attachment from './attachment';
+import SSO from './sso';
 import Database from './database';
-import DeepLink from './deep_linking';
 import Device from './device';
+import Files from './files';
+import General from './general';
 import List from './list';
 import Navigation from './navigation';
 import Preferences from './preferences';
@@ -14,9 +16,11 @@ import WebsocketEvents from './websocket';
 
 export {
     Attachment,
+    SSO,
     Database,
-    DeepLink,
     Device,
+    Files,
+    General,
     List,
     Navigation,
     Preferences,
