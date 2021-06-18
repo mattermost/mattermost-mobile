@@ -9,7 +9,7 @@ import {Screens, Preferences} from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
-import type {OptionalLaunchProps} from '@typings/launch';
+import type {LaunchProps} from '@typings/launch';
 
 function getThemeFromState() {
     if (Appearance.getColorScheme() === 'dark') {
@@ -82,7 +82,7 @@ export function resetToChannel(passProps = {}) {
     });
 }
 
-export function resetToSelectServer(passProps: OptionalLaunchProps) {
+export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
 
     EphemeralStore.clearNavigationComponents();

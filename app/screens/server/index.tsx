@@ -33,25 +33,19 @@ interface ServerProps extends LaunchProps {
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({extra, launchType, theme}: ServerProps) => {
+const Server: NavigationFunctionComponent = ({extra, launchType, launchError, theme}: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
-    // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
-    // error message to display. For example:
-    // if (props.launchError) {
-    //     let erroMessage;
-    //     if (props.launchType === LaunchType.DeepLink) {
-    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.deepLink', defaultMessage: 'Did not find a server for this deep link'});
-    //     } else if (props.launchType === LaunchType.Notification) {
-    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
-    //     }
-    // }
 
-    const managedConfig = useManagedConfig<ManagedConfig>();
     const intl = useIntl();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
-    const [error, setError] = useState<ClientErrorWithIntl|string|undefined>();
+    const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
+        id: 'mobile.launchError.notification',
+        defaultMessage: 'Did not find a server for this notification',
+    }) : undefined;
+    const [error, setError] = useState<ClientErrorWithIntl|string|undefined>(initialError);
 
     const [url, setUrl] = useState<string>('');
     const styles = getStyleSheet(theme);
@@ -191,7 +185,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, theme}: ServerP
             const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
             if (managedConfig) {
                 autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
-                if (managedConfig.serverUrl !== deepLinkServerUrl) {
+                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
                     setError(intl.formatMessage({
                         id: 'mobile.server_url.deeplink.emm.denied',
                         defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',

@@ -13,6 +13,7 @@ import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
+import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
 
 type LinkingCallbackArg = {url: string};
@@ -133,7 +134,7 @@ class GlobalEventHandler {
 
         await this.clearCookiesAndWebData();
 
-        relaunchApp();
+        relaunchApp({launchType: LaunchType.Normal});
     };
 
     onServerConfigChanged = (serverUrl: string, config: ClientConfig) => {

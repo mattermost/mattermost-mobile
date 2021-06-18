@@ -50,5 +50,3 @@ export interface LaunchProps {
     launchType: LaunchType;
     launchError?: Boolean;
 }
-
-export type OptionalLaunchProps = LaunchProps | undefined;

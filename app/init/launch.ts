@@ -7,7 +7,7 @@ import {Notifications} from 'react-native-notifications';
 import {Screens} from '@constants';
 import {getActiveServerCredentials, getServerCredentials} from '@init/credentials';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
-import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType, OptionalLaunchProps} from '@typings/launch';
+import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
 
 export const initialLaunch = async () => {
@@ -36,7 +36,7 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
     launchApp(props);
 };
 
-const launchApp = async (props: OptionalLaunchProps, resetNavigation = true) => {
+const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     let serverUrl;
     switch (props?.launchType) {
         case LaunchType.DeepLink:
@@ -62,7 +62,7 @@ const launchApp = async (props: OptionalLaunchProps, resetNavigation = true) => 
     launchToServer(props, resetNavigation);
 };
 
-const launchToChannel = (props: OptionalLaunchProps, resetNavigation: Boolean) => {
+const launchToChannel = (props: LaunchProps, resetNavigation: Boolean) => {
     // TODO: Use LaunchProps to fetch posts for channel and then load user profile, etc...
 
     const passProps = {
@@ -81,7 +81,7 @@ const launchToChannel = (props: OptionalLaunchProps, resetNavigation: Boolean) =
     goToScreen(Screens.CHANNEL, title, passProps);
 };
 
-const launchToServer = (props: OptionalLaunchProps, resetNavigation: Boolean) => {
+const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
     if (resetNavigation) {
         resetToSelectServer(props);
         return;
@@ -91,7 +91,7 @@ const launchToServer = (props: OptionalLaunchProps, resetNavigation: Boolean) =>
     goToScreen(Screens.SERVER, title, {...props});
 };
 
-export const relaunchApp = (props: OptionalLaunchProps = undefined) => {
+export const relaunchApp = (props: LaunchProps) => {
     launchApp(props, false);
 };
 
