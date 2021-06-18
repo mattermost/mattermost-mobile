@@ -9,6 +9,8 @@ import {Screens, Preferences} from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
+import type {OptionalLaunchProps} from '@typings/launch';
+
 function getThemeFromState() {
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
@@ -90,8 +92,8 @@ export function resetToSelectServer(passProps: OptionalLaunchProps) {
             id: Screens.SERVER,
             name: Screens.SERVER,
             passProps: {
-                theme,
                 ...passProps,
+                theme,
             },
             options: {
                 layout: {

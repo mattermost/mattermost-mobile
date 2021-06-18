@@ -7,6 +7,7 @@ import {Notifications} from 'react-native-notifications';
 import {Screens} from '@constants';
 import {getActiveServerCredentials, getServerCredentials} from '@init/credentials';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
+import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType, OptionalLaunchProps} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
 
 export const initialLaunch = async () => {
@@ -22,7 +23,7 @@ export const initialLaunch = async () => {
         return;
     }
 
-    launchApp();
+    launchApp({launchType: LaunchType.Normal});
 };
 
 const launchAppFromDeepLink = (deepLinkUrl: string) => {
@@ -35,7 +36,7 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
     launchApp(props);
 };
 
-const launchApp = async (props: OptionalLaunchProps = undefined, resetNavigation = true) => {
+const launchApp = async (props: OptionalLaunchProps, resetNavigation = true) => {
     let serverUrl;
     switch (props?.launchType) {
         case LaunchType.DeepLink:

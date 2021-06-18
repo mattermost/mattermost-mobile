@@ -5,6 +5,7 @@ import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
 import {Files} from '@constants';
+import {DeepLinkType, DeepLinkWithData} from '@typings/launch';
 import {emptyFunction} from '@utils/general';
 import {escapeRegex} from '@utils/markdown';
 

@@ -11,6 +11,8 @@ import {
     ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import type {LaunchProps} from '@typings/launch';
+
 declare const global: {HermesInternal: null | {}};
 
 type ChannelProps = LaunchProps

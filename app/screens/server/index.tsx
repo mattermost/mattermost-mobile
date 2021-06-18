@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ManagedConfig, useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -23,17 +24,16 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-import type {ManagedConfig} from '@mattermost/react-native-emm';
+import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
-    managedConfig: ManagedConfig;
     theme: Theme;
 }
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = (props: ServerProps) => {
+const Server: NavigationFunctionComponent = ({extra, launchType, theme}: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
@@ -47,8 +47,7 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
     //     }
     // }
 
-    const {theme, managedConfig} = props;
-
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const intl = useIntl();
     const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
@@ -188,8 +187,8 @@ const Server: NavigationFunctionComponent = (props: ServerProps) => {
         let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
-        if (props.launchType === LaunchType.DeepLink) {
-            const deepLinkServerUrl = (props.extra as DeepLinkWithData).data?.serverUrl;
+        if (launchType === LaunchType.DeepLink) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
             if (managedConfig) {
                 autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
                 if (managedConfig.serverUrl !== deepLinkServerUrl) {
@@ -343,7 +342,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingLeft: 15,
     },
     disabledInput: {
-        backgroundColor: '#e3e3e3',
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
     connectButton: {
         borderRadius: 3,

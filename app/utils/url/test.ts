@@ -5,6 +5,8 @@ import {Linking} from 'react-native';
 
 import * as UrlUtils from '@utils/url';
 
+import {DeepLinkType} from '@typings/launch';
+
 /* eslint-disable max-nested-callbacks */
 
 // @ts-expect-error global does not have DeepLinkType
