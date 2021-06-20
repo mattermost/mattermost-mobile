@@ -36,12 +36,13 @@ type LoginProps = {
     componentId: string;
     config: ClientConfig;
     license: ClientLicense;
+    serverUrl: string;
     theme: Theme;
 };
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
-const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps) => {
+const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
 
     const loginRef = useRef<TextInput>(null);
@@ -128,15 +129,15 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     });
 
     const signIn = async () => {
-        const result = await login({loginId: loginId.toLowerCase(), password, config, license});
+        const result = await login(serverUrl, {loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             await goToChannel();
         }
     };
 
     const goToChannel = async () => {
-        await scheduleExpiredNotification(intl);
-        resetToChannel();
+        await scheduleExpiredNotification(serverUrl, intl);
+        resetToChannel({serverUrl});
     };
 
     const checkLoginResponse = (data: any) => {
@@ -160,7 +161,7 @@ const Login: NavigationFunctionComponent = ({config, license, theme}: LoginProps
     const goToMfa = () => {
         const screen = MFA;
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
-        goToScreen(screen, title, {goToChannel, loginId, password, config, license, theme});
+        goToScreen(screen, title, {goToChannel, loginId, password, config, license, serverUrl, theme});
     };
 
     const getLoginErrorMessage = (loginError: any) => {

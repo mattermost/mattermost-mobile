@@ -11,10 +11,10 @@ import {
     RawGroupsInTeam,
 } from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Group from '@typings/database/group';
-import GroupMembership from '@typings/database/group_membership';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import GroupsInTeam from '@typings/database/groups_in_team';
+import Group from '@typings/database/models/servers/group';
+import GroupMembership from '@typings/database/models/servers/group_membership';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
 
 const {
     GROUP,

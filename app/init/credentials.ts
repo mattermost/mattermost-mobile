@@ -19,22 +19,19 @@ const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
 // At some point we can remove this function and rely solely on
 // the database manager's `getActiveServerUrl`.
 export const getActiveServerUrl = async () => {
-    let serverUrl: string | null | undefined;
-
-    const databaseManager = new DatabaseManager();
-    serverUrl = await databaseManager.getActiveServerUrl(); // TODO: need funciton to get active server url
+    let serverUrl = await DatabaseManager.getActiveServerUrl();
     if (!serverUrl) {
         // If upgrading from non-Gekidou, the server URL might be in
         // AsyncStorage. If so, retrieve the server URL, create a DB for it,
         // then delete the AsyncStorage item.
         serverUrl = await AsyncStorage.getItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
         if (serverUrl) {
-            databaseManager.setActiveServerDatabase(serverUrl);
+            DatabaseManager.setActiveServerDatabase(serverUrl);
             AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
         }
     }
 
-    return serverUrl;
+    return serverUrl || undefined;
 };
 
 export const setServerCredentials = (serverUrl: string, userId: string, token: string) => {
@@ -57,15 +54,6 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
     } catch (e) {
         console.warn('could not set credentials', e); //eslint-disable-line no-console
     }
-};
-
-export const getActiveServerCredentials = async () => {
-    const serverUrl = await getActiveServerUrl();
-    if (serverUrl) {
-        return getServerCredentials(serverUrl);
-    }
-
-    return null;
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {

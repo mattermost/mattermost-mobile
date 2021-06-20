@@ -49,4 +49,5 @@ export interface LaunchProps {
     extra?: DeepLinkWithData | NotificationWithData;
     launchType: LaunchType;
     launchError?: Boolean;
+    serverUrl?: string;
 }

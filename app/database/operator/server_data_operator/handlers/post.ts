@@ -31,14 +31,13 @@ import {
     RawPostsInThread,
     RawReaction, RecordPair,
 } from '@typings/database/database';
-import Draft from '@typings/database/draft';
-import {IsolatedEntities} from '@typings/database/enums';
-import File from '@typings/database/file';
-import Post from '@typings/database/post';
-import PostMetadata from '@typings/database/post_metadata';
-import PostsInChannel from '@typings/database/posts_in_channel';
-import PostsInThread from '@typings/database/posts_in_thread';
-import Reaction from '@typings/database/reaction';
+import Draft from '@typings/database/models/servers/draft';
+import File from '@typings/database/models/servers/file';
+import Post from '@typings/database/models/servers/post';
+import PostMetadata from '@typings/database/models/servers/post_metadata';
+import PostsInChannel from '@typings/database/models/servers/posts_in_channel';
+import PostsInThread from '@typings/database/models/servers/posts_in_thread';
+import Reaction from '@typings/database/models/servers/reaction';
 
 const {
     DRAFT,
@@ -72,18 +71,18 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         if (!drafts.length) {
             throw new DataOperatorException(
-                'An empty "drafts" array has been passed to the handleReactions method',
+                'An empty "drafts" array has been passed to the handleDraft method',
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordDraftEqualToRaw,
-            operator: transformDraftRecord,
+            transformer: transformDraftRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: DRAFT,
         });
 
@@ -120,8 +119,8 @@ const PostHandler = (superclass: any) => class extends superclass {
         });
 
         // Here we verify in our database that the postsOrdered truly need 'CREATION'
-        const futureEntries = await this.processInputs({
-            rawValues: postsOrdered,
+        const futureEntries = await this.processRecords({
+            createOrUpdateRawValues: postsOrdered,
             tableName,
             findMatchingRecordBy: isRecordPostEqualToRaw,
             fieldName: 'id',
@@ -143,13 +142,10 @@ const PostHandler = (superclass: any) => class extends superclass {
                 rawPosts: postsOrdered,
             });
 
-            const database = await this.getDatabase(tableName);
-
             // Prepares records for batch processing onto the 'Post' entity for the server schema
             const posts = (await this.prepareRecords({
                 createRaws: linkedRawPosts,
-                database,
-                recordOperator: transformPostRecord,
+                transformer: transformPostRecord,
                 tableName,
             })) as Post[];
 
@@ -213,14 +209,13 @@ const PostHandler = (superclass: any) => class extends superclass {
             }
 
             if (batch.length) {
-                await this.batchOperations({database, models: batch});
+                await this.batchRecords(batch);
             }
 
             // LAST: calls handler for CustomEmojis, PostsInThread, PostsInChannel
             if (emojis.length) {
-                await this.handleIsolatedEntity({
-                    tableName: IsolatedEntities.CUSTOM_EMOJI,
-                    values: emojis,
+                await this.handleCustomEmojis({
+                    emojis,
                     prepareRecordsOnly: false,
                 });
             }
@@ -239,8 +234,8 @@ const PostHandler = (superclass: any) => class extends superclass {
             await this.handleEntityRecords({
                 findMatchingRecordBy: isRecordPostEqualToRaw,
                 fieldName: 'id',
-                operator: transformPostRecord,
-                rawValues: postsUnordered,
+                trasformer: transformPostRecord,
+                createOrUpdateRawValues: postsUnordered,
                 tableName: POST,
                 prepareRecordsOnly: false,
             });
@@ -259,12 +254,9 @@ const PostHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const database = await this.getDatabase(FILE);
-
         const postFiles = await this.prepareRecords({
             createRaws: getRawRecordPairs(files),
-            database,
-            recordOperator: transformFileRecord,
+            transformer: transformFileRecord,
             tableName: FILE,
         });
 
@@ -273,7 +265,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
 
         if (postFiles?.length) {
-            await this.batchOperations({database, models: [...postFiles]});
+            await this.batchRecords(postFiles);
         }
 
         return [];
@@ -317,12 +309,9 @@ const PostHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const database = await this.getDatabase(POST_METADATA);
-
         const postMetas = await this.prepareRecords({
             createRaws: getRawRecordPairs(metadata),
-            database,
-            recordOperator: transformPostMetadataRecord,
+            transformer: transformPostMetadataRecord,
             tableName: POST_METADATA,
         });
 
@@ -331,7 +320,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
 
         if (postMetas?.length) {
-            await this.batchOperations({database, models: [...postMetas]});
+            await this.batchRecords(postMetas);
         }
 
         return [];
@@ -350,10 +339,8 @@ const PostHandler = (superclass: any) => class extends superclass {
         const postIds = rootPosts.map((postThread) => postThread.post_id);
         const rawPostsInThreads: RawPostsInThread[] = [];
 
-        const database = await this.getDatabase(POSTS_IN_THREAD);
-
         // Retrieves all threads whereby their root_id can be one of the element in the postIds array
-        const threads = (await database.collections.
+        const threads = (await this.database.collections.
             get(POST).
             query(Q.where('root_id', Q.oneOf(postIds))).
             fetch()) as Post[];
@@ -371,13 +358,12 @@ const PostHandler = (superclass: any) => class extends superclass {
         if (rawPostsInThreads.length) {
             const postInThreadRecords = (await this.prepareRecords({
                 createRaws: getRawRecordPairs(rawPostsInThreads),
-                database,
-                recordOperator: transformPostInThreadRecord,
+                transformer: transformPostInThreadRecord,
                 tableName: POSTS_IN_THREAD,
             })) as PostsInThread[];
 
             if (postInThreadRecords?.length) {
-                await this.batchOperations({database, models: postInThreadRecords});
+                await this.batchRecords(postInThreadRecords);
             }
         }
     };
@@ -412,21 +398,19 @@ const PostHandler = (superclass: any) => class extends superclass {
         // Find highest 'create_at' value in chain; -1 means we are dealing with one item in the posts array
         const latest = sortedPosts[sortedPosts.length - 1].create_at;
 
-        const database = await this.getDatabase(POSTS_IN_CHANNEL);
-
         // Find the records in the PostsInChannel table that have a matching channel_id
         // const chunks = (await database.collections.get(POSTS_IN_CHANNEL).query(Q.where('channel_id', channelId)).fetch()) as PostsInChannel[];
         const chunks = (await retrieveRecords({
-            database,
+            database: this.database,
             tableName: POSTS_IN_CHANNEL,
             condition: Q.where('channel_id', channelId),
         })) as PostsInChannel[];
 
         const createPostsInChannelRecord = async () => {
-            await this.executeInDatabase({
+            await this.execute({
                 createRaws: [{record: undefined, raw: {channel_id: channelId, earliest, latest}}],
                 tableName: POSTS_IN_CHANNEL,
-                recordOperator: transformPostsInChannelRecord,
+                transformer: transformPostsInChannelRecord,
             });
         };
 
@@ -459,7 +443,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         if (found) {
         // We have a potential chunk to plug nearby
             const potentialPosts = (await retrieveRecords({
-                database,
+                database: this.database,
                 tableName: POST,
                 condition: Q.where('create_at', earliest),
             })) as Post[];
@@ -472,7 +456,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
                 if (isChainable) {
                     // Update this chunk's data in PostsInChannel table.  earliest comes from tipOfChain while latest comes from chunk
-                    await database.action(async () => {
+                    await this.database.action(async () => {
                         await targetChunk.update((postInChannel) => {
                             postInChannel.earliest = earliest;
                         });

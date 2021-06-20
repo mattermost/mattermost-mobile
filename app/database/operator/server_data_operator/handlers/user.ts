@@ -17,8 +17,8 @@ import {
 } from '@database/operator/server_data_operator/transformers/user';
 import {getRawRecordPairs, getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
-import ChannelMembership from '@typings/database/channel_membership';
-import CustomEmoji from '@typings/database/custom_emoji';
+import ChannelMembership from '@typings/database/models/servers/channel_membership';
+import CustomEmoji from '@typings/database/models/servers/custom_emoji';
 import {
     HandleChannelMembershipArgs,
     HandlePreferencesArgs,
@@ -26,9 +26,9 @@ import {
     HandleUsersArgs,
     RawReaction,
 } from '@typings/database/database';
-import Preference from '@typings/database/preference';
-import Reaction from '@typings/database/reaction';
-import User from '@typings/database/user';
+import Preference from '@typings/database/models/servers/preference';
+import Reaction from '@typings/database/models/servers/reaction';
+import User from '@typings/database/models/servers/user';
 
 const {
     CHANNEL_MEMBERSHIP,
@@ -39,10 +39,10 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface UserHandlerMix {
-    handleChannelMembership : ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => ChannelMembership[];
-    handlePreferences : ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Preference[];
-    handleReactions : ({reactions, prepareRecordsOnly}: HandleReactionsArgs) =>(Reaction | CustomEmoji)[];
-    handleUsers : ({users, prepareRecordsOnly}: HandleUsersArgs) => User[];
+    handleChannelMembership : ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembership[]>;
+    handlePreferences : ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Promise<Preference[]>;
+    handleReactions : ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<(Reaction | CustomEmoji)[]>;
+    handleUsers : ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<User[]>;
 }
 
 const UserHandler = (superclass: any) => class extends superclass {
@@ -52,7 +52,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {ChannelMembership[]}
+     * @returns {Promise<ChannelMembership[]>}
      */
     handleChannelMembership = async ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs) => {
         let records: ChannelMembership[] = [];
@@ -63,14 +63,14 @@ const UserHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
-            operator: transformChannelMembershipRecord,
+            transformer: transformChannelMembershipRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });
 
@@ -83,7 +83,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawPreference[]} preferencesArgs.preferences
      * @param {boolean} preferencesArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Preference[]}
+     * @returns {Promise<Preference[]>}
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true}: HandlePreferencesArgs) => {
         let records: Preference[] = [];
@@ -94,14 +94,14 @@ const UserHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
 
         records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
-            operator: transformPreferenceRecord,
+            transformer: transformPreferenceRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: PREFERENCE,
         });
 
@@ -114,7 +114,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawReaction[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {(Reaction| CustomEmoji)[]}
+     * @returns {Promise<(Reaction| CustomEmoji)[]>}
      */
     handleReactions = async ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => {
         let batchRecords: (Reaction| CustomEmoji)[] = [];
@@ -127,14 +127,12 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as RawReaction[];
 
-        const database = await this.getDatabase(REACTION);
-
         const {
             createEmojis,
             createReactions,
             deleteReactions,
         } = await sanitizeReactions({
-            database,
+            database: this.database,
             post_id: reactions[0].post_id,
             rawReactions: rawValues,
         });
@@ -143,8 +141,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             // Prepares record for model Reactions
             const reactionsRecords = (await this.prepareRecords({
                 createRaws: createReactions,
-                database,
-                recordOperator: transformReactionRecord,
+                transformer: transformReactionRecord,
                 tableName: REACTION,
             })) as Reaction[];
             batchRecords = batchRecords.concat(reactionsRecords);
@@ -154,8 +151,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             // Prepares records for model CustomEmoji
             const emojiRecords = (await this.prepareRecords({
                 createRaws: getRawRecordPairs(createEmojis),
-                database,
-                recordOperator: transformCustomEmojiRecord,
+                transformer: transformCustomEmojiRecord,
                 tableName: CUSTOM_EMOJI,
             })) as CustomEmoji[];
             batchRecords = batchRecords.concat(emojiRecords);
@@ -168,10 +164,7 @@ const UserHandler = (superclass: any) => class extends superclass {
         }
 
         if (batchRecords?.length) {
-            await this.batchOperations({
-                database,
-                models: batchRecords,
-            });
+            await this.batchRecords(batchRecords);
         }
 
         return [];
@@ -183,7 +176,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {RawUser[]} usersArgs.users
      * @param {boolean} usersArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {User[]}
+     * @returns {Promise<User[]>}
      */
     handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs) => {
         let records: User[] = [];
@@ -194,13 +187,13 @@ const UserHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: users, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordUserEqualToRaw,
-            operator: transformUserRecord,
-            rawValues,
+            transformer: transformUserRecord,
+            createOrUpdateRawValues,
             tableName: USER,
             prepareRecordsOnly,
         });

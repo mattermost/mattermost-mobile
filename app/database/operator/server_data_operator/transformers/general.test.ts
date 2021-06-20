@@ -10,8 +10,6 @@ import {
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 
-jest.mock('@database/manager');
-
 describe('*** Role Prepare Records Test ***', () => {
     it('=> transformRoleRecord: should return an array of type Role', async () => {
         expect.assertions(3);

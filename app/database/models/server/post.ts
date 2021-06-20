@@ -6,13 +6,13 @@ import {children, field, immutableRelation, json, lazy} from '@nozbe/watermelond
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
-import Draft from '@typings/database/draft';
-import File from '@typings/database/file';
-import PostInThread from '@typings/database/posts_in_thread';
-import PostMetadata from '@typings/database/post_metadata';
-import Reaction from '@typings/database/reaction';
-import User from '@typings/database/user';
+import Channel from '@typings/database/models/servers/channel';
+import Draft from '@typings/database/models/servers/draft';
+import File from '@typings/database/models/servers/file';
+import PostInThread from '@typings/database/models/servers/posts_in_thread';
+import PostMetadata from '@typings/database/models/servers/post_metadata';
+import Reaction from '@typings/database/models/servers/reaction';
+import User from '@typings/database/models/servers/user';
 
 const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USER} = MM_TABLES.SERVER;
 

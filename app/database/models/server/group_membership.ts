@@ -6,8 +6,8 @@ import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Group from '@typings/database/group';
-import User from '@typings/database/user';
+import Group from '@typings/database/models/servers/group';
+import User from '@typings/database/models/servers/user';
 
 const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 

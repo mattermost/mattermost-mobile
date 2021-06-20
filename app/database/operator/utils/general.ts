@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 import {
     IdenticalRecordArgs,
     RangeOfValueArgs,
@@ -15,10 +15,10 @@ import {
     RecordPair,
     RetrieveRecordsArgs,
 } from '@typings/database/database';
-import Post from '@typings/database/post';
-import SlashCommand from '@typings/database/slash_command';
-import Team from '@typings/database/team';
-import User from '@typings/database/user';
+import Post from '@typings/database/models/servers/post';
+import SlashCommand from '@typings/database/models/servers/slash_command';
+import Team from '@typings/database/models/servers/team';
+import User from '@typings/database/models/servers/user';
 
 const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 

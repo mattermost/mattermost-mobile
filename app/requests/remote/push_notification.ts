@@ -5,11 +5,11 @@ import moment from 'moment-timezone';
 import {IntlShape} from 'react-intl';
 
 import {Client4} from '@client/rest';
+import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
-import {getCommonSystemValues} from '@queries/system';
+import {getCommonSystemValues} from '@app/queries/servers/system';
 import {getSessions} from '@requests/remote/user';
-import {Config} from '@typings/database/config';
-import {getActiveServerDatabase} from '@utils/database';
+import {Config} from '@typings/database/models/servers/config';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 const MAJOR_VERSION = 5;
@@ -23,12 +23,8 @@ const sortByNewest = (a: any, b: any) => {
     return 1;
 };
 
-export const scheduleExpiredNotification = async (intl: IntlShape) => {
-    const {activeServerDatabase: database, error} = await getActiveServerDatabase();
-    if (!database) {
-        return {error};
-    }
-
+export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlShape) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
     const {currentUserId, config}: {currentUserId: string, config: Partial<Config>} = await getCommonSystemValues(database);
 
     if (isMinimumServerVersion(Client4.serverVersion, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
@@ -41,7 +37,7 @@ export const scheduleExpiredNotification = async (intl: IntlShape) => {
         let sessions: any;
 
         try {
-            sessions = await getSessions(currentUserId);
+            sessions = await getSessions(serverUrl, currentUserId);
         } catch (e) {
             // console.warn('Failed to get current session', e);
             return;

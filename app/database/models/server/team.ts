@@ -6,13 +6,13 @@ import {children, field, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
-import GroupsInTeam from '@typings/database/groups_in_team';
-import MyTeam from '@typings/database/my_team';
-import SlashCommand from '@typings/database/slash_command';
-import TeamChannelHistory from '@typings/database/team_channel_history';
-import TeamMembership from '@typings/database/team_membership';
-import TeamSearchHistory from '@typings/database/team_search_history';
+import Channel from '@typings/database/models/servers/channel';
+import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
+import MyTeam from '@typings/database/models/servers/my_team';
+import SlashCommand from '@typings/database/models/servers/slash_command';
+import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
+import TeamMembership from '@typings/database/models/servers/team_membership';
+import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
 
 const {
     CHANNEL,

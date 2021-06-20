@@ -6,16 +6,16 @@ import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/deco
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import ChannelInfo from '@typings/database/channel_info';
-import ChannelMembership from '@typings/database/channel_membership';
-import Draft from '@typings/database/draft';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import MyChannel from '@typings/database/my_channel';
-import MyChannelSettings from '@typings/database/my_channel_settings';
-import Post from '@typings/database/post';
-import PostsInChannel from '@typings/database/posts_in_channel';
-import Team from '@typings/database/team';
-import User from '@typings/database/user';
+import ChannelInfo from '@typings/database/models/servers/channel_info';
+import ChannelMembership from '@typings/database/models/servers/channel_membership';
+import Draft from '@typings/database/models/servers/draft';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import MyChannel from '@typings/database/models/servers/my_channel';
+import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
+import Post from '@typings/database/models/servers/post';
+import PostsInChannel from '@typings/database/models/servers/posts_in_channel';
+import Team from '@typings/database/models/servers/team';
+import User from '@typings/database/models/servers/user';
 
 const {
     CHANNEL,

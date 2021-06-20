@@ -12,8 +12,6 @@ import {
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
 
-/* eslint-disable  @typescript-eslint/no-explicit-any */
-
 describe('***  POST Prepare Records Test ***', () => {
     it('=> transformPostRecord: should return an array of type Post', async () => {
         expect.assertions(3);

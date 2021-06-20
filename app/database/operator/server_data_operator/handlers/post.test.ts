@@ -2,42 +2,24 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import Operator from '@database/operator/server_data_operator';
 import {isRecordDraftEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {transformDraftRecord} from '@database/operator/server_data_operator/transformers/post';
-import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {DatabaseType} from '@typings/database/enums';
 
-jest.mock('@database/manager');
-
-/* eslint-disable  @typescript-eslint/no-explicit-any */
+import ServerDataOperator from '..';
 
 describe('*** Operator: Post Handlers tests ***', () => {
-    let databaseManagerClient: DatabaseManager;
-    let operatorClient: Operator;
+    let operator: ServerDataOperator;
 
     beforeAll(async () => {
-        databaseManagerClient = new DatabaseManager();
-        const database = await databaseManagerClient.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            configs: {
-                actionsEnabled: true,
-                dbName: 'base_handler',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'baseHandler.test.com',
-            },
-        });
-
-        operatorClient = new Operator(database!);
+        await DatabaseManager.init(['baseHandler.test.com']);
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
     it('=> HandleDraft: should write to the Draft entity', async () => {
         expect.assertions(1);
 
-        await createTestConnection({databaseName: 'post_handler', setActive: true});
-
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
-        const values = [
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const drafts = [
             {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
                 files: [
@@ -63,13 +45,13 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         ];
 
-        await operatorClient.handleDraft({drafts: values, prepareRecordsOnly: false});
+        await operator.handleDraft({drafts, prepareRecordsOnly: false});
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
-            operator: transformDraftRecord,
-            rawValues: values,
+            transformer: transformDraftRecord,
+            createOrUpdateRawValues: drafts,
             tableName: 'Draft',
             prepareRecordsOnly: false,
         });
@@ -227,17 +209,15 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleFiles = jest.spyOn(operatorClient as any, 'handleFiles');
-        const spyOnHandlePostMetadata = jest.spyOn(operatorClient as any, 'handlePostMetadata');
-        const spyOnHandleReactions = jest.spyOn(operatorClient as any, 'handleReactions');
-        const spyOnHandleCustomEmojis = jest.spyOn(operatorClient as any, 'handleIsolatedEntity');
-        const spyOnHandlePostsInThread = jest.spyOn(operatorClient as any, 'handlePostsInThread');
-        const spyOnHandlePostsInChannel = jest.spyOn(operatorClient as any, 'handlePostsInChannel');
-
-        await createTestConnection({databaseName: 'post_handler', setActive: true});
+        const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
+        const spyOnHandlePostMetadata = jest.spyOn(operator, 'handlePostMetadata');
+        const spyOnHandleReactions = jest.spyOn(operator, 'handleReactions');
+        const spyOnHandleCustomEmojis = jest.spyOn(operator, 'handleCustomEmojis');
+        const spyOnHandlePostsInThread = jest.spyOn(operator, 'handlePostsInThread');
+        const spyOnHandlePostsInChannel = jest.spyOn(operator, 'handlePostsInChannel');
 
         // handlePosts will in turn call handlePostsInThread
-        await operatorClient.handlePosts({
+        await operator.handlePosts({
             orders: [
                 '8swgtrrdiff89jnsiwiip3y1eoe',
                 '8fcnk3p1jt8mmkaprgajoxz115a',
@@ -338,9 +318,8 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
-            tableName: 'CustomEmoji',
             prepareRecordsOnly: false,
-            values: [
+            emojis: [
                 {
                     id: 'dgwyadacdbbwjc8t357h6hwsrh',
                     create_at: 1502389307432,

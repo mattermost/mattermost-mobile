@@ -22,10 +22,10 @@ import {
     HandleGroupsInChannelArgs,
     HandleGroupsInTeamArgs,
 } from '@typings/database/database';
-import Group from '@typings/database/group';
-import GroupMembership from '@typings/database/group_membership';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import GroupsInTeam from '@typings/database/groups_in_team';
+import Group from '@typings/database/models/servers/group';
+import GroupMembership from '@typings/database/models/servers/group_membership';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
 
 const {
     GROUP,
@@ -59,14 +59,14 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
-            operator: transformGroupMembershipRecord,
+            transformer: transformGroupMembershipRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: GROUP_MEMBERSHIP,
         });
 
@@ -90,14 +90,14 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: groups, key: 'name'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'name'});
 
         records = await this.handleEntityRecords({
             fieldName: 'name',
             findMatchingRecordBy: isRecordGroupEqualToRaw,
-            operator: transformGroupRecord,
+            transformer: transformGroupRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: GROUP,
         });
 
@@ -121,14 +121,14 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
-            operator: transformGroupsInTeamRecord,
+            transformer: transformGroupsInTeamRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: GROUPS_IN_TEAM,
         });
 
@@ -152,14 +152,14 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
-            operator: transformGroupsInChannelRecord,
+            transformer: transformGroupsInChannelRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: GROUPS_IN_CHANNEL,
         });
 

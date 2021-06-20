@@ -3,8 +3,8 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import Channel from '@typings/database/channel';
-import ChannelInfo from '@typings/database/channel_info';
+import Channel from '@typings/database/models/servers/channel';
+import ChannelInfo from '@typings/database/models/servers/channel_info';
 import {
     TransformerArgs,
     RawChannel,
@@ -13,8 +13,8 @@ import {
     RawMyChannelSettings,
 } from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import MyChannel from '@typings/database/my_channel';
-import MyChannelSettings from '@typings/database/my_channel_settings';
+import MyChannel from '@typings/database/models/servers/my_channel';
+import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
 
 const {
     CHANNEL,

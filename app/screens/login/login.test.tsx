@@ -33,6 +33,7 @@ describe('Login', () => {
             IsLicensed: 'false',
         },
         theme: Preferences.THEMES.default,
+        serverUrl: 'https://locahost:8065',
     };
 
     test('Login screen should match snapshot', () => {
@@ -118,6 +119,7 @@ describe('Login', () => {
                     password,
                     config: {EnableSignInWithEmail: 'true', EnableSignInWithUsername: 'true'},
                     license: {IsLicensed: 'false'},
+                    serverUrl: baseProps.serverUrl,
                     theme: baseProps.theme,
                 },
             );

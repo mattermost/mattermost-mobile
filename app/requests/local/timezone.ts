@@ -3,11 +3,11 @@
 
 import {getTimeZone} from 'react-native-localize';
 
-import {getUserById} from '@queries/user';
+import DatabaseManager from '@database/manager';
+import {getUserById} from '@queries/servers/user';
 import {updateMe} from '@requests/remote/user';
-import {Config} from '@typings/database/config';
-import User from '@typings/database/user';
-import {getActiveServerDatabase} from '@utils/database';
+import {Config} from '@typings/database/models/servers/config';
+import User from '@typings/database/models/servers/user';
 
 export const isTimezoneEnabled = (config: Partial<Config>) => {
     return config?.ExperimentalTimezone === 'true';
@@ -17,13 +17,13 @@ export function getDeviceTimezone() {
     return getTimeZone();
 }
 
-export const autoUpdateTimezone = async ({deviceTimezone, userId}: {deviceTimezone: string, userId: string}) => {
-    const {activeServerDatabase, error} = await getActiveServerDatabase();
-    if (!activeServerDatabase) {
-        return {error};
+export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string, userId: string}) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `No database present for ${serverUrl}`};
     }
 
-    const currentUser = await getUserById({userId, database: activeServerDatabase}) ?? null;
+    const currentUser = await getUserById({userId, database}) ?? null;
 
     if (!currentUser) {
         return null;
@@ -35,7 +35,7 @@ export const autoUpdateTimezone = async ({deviceTimezone, userId}: {deviceTimezo
     if (currentTimezone.useAutomaticTimezone && newTimezoneExists) {
         const timezone = {useAutomaticTimezone: 'true', automaticTimezone: deviceTimezone, manualTimezone: currentTimezone.manualTimezone};
         const updatedUser = {...currentUser, timezone} as User;
-        await updateMe(updatedUser);
+        await updateMe(serverUrl, updatedUser);
     }
     return null;
 };

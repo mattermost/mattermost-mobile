@@ -6,8 +6,8 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
-import Group from '@typings/database/group';
+import Channel from '@typings/database/models/servers/channel';
+import Group from '@typings/database/models/servers/group';
 
 const {GROUP, GROUPS_IN_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 

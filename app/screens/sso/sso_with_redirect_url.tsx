@@ -10,7 +10,6 @@ import urlParse from 'url-parse';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {setDeepLinkUrl} from '@requests/local/systems';
 import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
@@ -67,8 +66,6 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
     useEffect(() => {
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
-                // save deepLinkUrl under Global
-                setDeepLinkUrl('');
                 const parsedUrl = urlParse(url, true);
                 if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
                     onCSRFToken(parsedUrl.query.MMCSRF);

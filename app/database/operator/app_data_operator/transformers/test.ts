@@ -10,16 +10,14 @@ import {
 import {OperationType} from '@typings/database/enums';
 
 describe('', () => {
-    let databaseManagerClient: DatabaseManager;
-
     beforeAll(async () => {
-        databaseManagerClient = new DatabaseManager();
+        await DatabaseManager.init([]);
     });
 
     it('=> transformServersRecord: should return an array of type Servers', async () => {
         expect.assertions(3);
 
-        const database = await databaseManagerClient.getDefaultDatabase();
+        const database = DatabaseManager.appDatabase?.database;
         expect(database).toBeTruthy();
 
         const preparedRecords = await transformServersRecord({
@@ -46,7 +44,7 @@ describe('', () => {
     it('=> transformAppRecord: should return an array of type App', async () => {
         expect.assertions(3);
 
-        const database = await databaseManagerClient.getDefaultDatabase();
+        const database = DatabaseManager.appDatabase?.database;
         expect(database).toBeTruthy();
 
         const preparedRecords = await transformAppRecord({
@@ -63,13 +61,13 @@ describe('', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('App');
+        expect(preparedRecords!.collection.modelClass.name).toBe('Info');
     });
 
     it('=> transformGlobalRecord: should return an array of type Global', async () => {
         expect.assertions(3);
 
-        const database = await databaseManagerClient.getDefaultDatabase();
+        const database = DatabaseManager.appDatabase?.database;
         expect(database).toBeTruthy();
 
         const preparedRecords = await transformGlobalRecord({

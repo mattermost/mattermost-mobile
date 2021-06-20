@@ -6,7 +6,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/post';
+import Post from '@typings/database/models/servers/post';
 
 const {FILE, POST} = MM_TABLES.SERVER;
 

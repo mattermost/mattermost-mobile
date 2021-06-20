@@ -5,9 +5,9 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import GroupMembership from '@typings/database/group_membership';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import GroupsInTeam from '@typings/database/groups_in_team';
+import GroupMembership from '@typings/database/models/servers/group_membership';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
 
 const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
 

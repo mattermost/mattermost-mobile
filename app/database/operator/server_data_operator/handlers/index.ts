@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import BaseDataOperator, {BaseDataOperatorType} from '@database/operator/base_data_operator';
+import BaseDataOperator from '@database/operator/base_data_operator';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
     isRecordCustomEmojiEqualToRaw,
@@ -18,20 +18,10 @@ import {
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, HandleTOSArgs, OperationArgs} from '@typings/database/database';
-import System from '@typings/database/system';
-import TermsOfService from '@typings/database/terms_of_service';
-
-export interface ServerDataOperatorMix extends BaseDataOperatorType {
-    handleRole : (args: HandleRoleArgs) => Promise<Role[]>,
-    handleCustomEmojis : (args: HandleCustomEmojiArgs) => Promise<CustomEmoji[]>,
-    handleSystem : (args: HandleSystemArgs) => Promise<System[]>,
-    handleTermOfService : (args: HandleTOSArgs) => Promise<TermsOfService[]>,
-    execute: ({createRaws, transformer, tableName, updateRaws}: OperationArgs) => Promise<void>;
-}
 
 const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE}} = MM_TABLES;
 
-export default class ServerDataOperator extends BaseDataOperator {
+export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
         if (!roles.length) {
             throw new DataOperatorException(
@@ -45,7 +35,6 @@ export default class ServerDataOperator extends BaseDataOperator {
             transformer: transformRoleRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: roles, key: 'id'}),
-            deleteRawValues: [],
             tableName: ROLE,
         });
 
@@ -65,7 +54,6 @@ export default class ServerDataOperator extends BaseDataOperator {
             transformer: transformCustomEmojiRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'id'}),
-            deleteRawValues: [],
             tableName: CUSTOM_EMOJI,
         });
 
@@ -85,7 +73,6 @@ export default class ServerDataOperator extends BaseDataOperator {
             transformer: transformSystemRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'name'}),
-            deleteRawValues: [],
             tableName: SYSTEM,
         });
 
@@ -105,7 +92,6 @@ export default class ServerDataOperator extends BaseDataOperator {
             transformer: transformTermsOfServiceRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: termOfService, key: 'id'}),
-            deleteRawValues: [],
             tableName: TERMS_OF_SERVICE,
         });
 
@@ -114,11 +100,11 @@ export default class ServerDataOperator extends BaseDataOperator {
 
   /**
    * execute: Handles the Create/Update operations on an entity.
-   * @param {OperationArgs} executeInDatabase
-   * @param {string} executeInDatabase.tableName
-   * @param {RecordValue[]} executeInDatabase.createRaws
-   * @param {RecordValue[]} executeInDatabase.updateRaws
-   * @param {(TransformerArgs) => Promise<Model>} executeInDatabase.recordOperator
+   * @param {OperationArgs} execute
+   * @param {string} execute.tableName
+   * @param {RecordValue[]} execute.createRaws
+   * @param {RecordValue[]} execute.updateRaws
+   * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
    * @returns {Promise<void>}
    */
   execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs) => {

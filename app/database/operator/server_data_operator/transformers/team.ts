@@ -14,12 +14,12 @@ import type {
     RawTeamSearchHistory,
 } from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import MyTeam from '@typings/database/my_team';
-import SlashCommand from '@typings/database/slash_command';
-import Team from '@typings/database/team';
-import TeamChannelHistory from '@typings/database/team_channel_history';
-import TeamMembership from '@typings/database/team_membership';
-import TeamSearchHistory from '@typings/database/team_search_history';
+import MyTeam from '@typings/database/models/servers/my_team';
+import SlashCommand from '@typings/database/models/servers/slash_command';
+import Team from '@typings/database/models/servers/team';
+import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
+import TeamMembership from '@typings/database/models/servers/team_membership';
+import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
 
 const {
     MY_TEAM,

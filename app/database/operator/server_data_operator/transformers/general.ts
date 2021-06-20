@@ -3,7 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import CustomEmoji from '@typings/database/custom_emoji';
+import CustomEmoji from '@typings/database/models/servers/custom_emoji';
 import {
     TransformerArgs,
     RawCustomEmoji,
@@ -12,9 +12,9 @@ import {
     RawTermsOfService,
 } from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Role from '@typings/database/role';
-import System from '@typings/database/system';
-import TermsOfService from '@typings/database/terms_of_service';
+import Role from '@typings/database/models/servers/role';
+import System from '@typings/database/models/servers/system';
+import TermsOfService from '@typings/database/models/servers/terms_of_service';
 
 const {
     CUSTOM_EMOJI,
@@ -87,12 +87,9 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs) 
  */
 export const transformSystemRecord = ({action, database, value}: TransformerArgs) => {
     const raw = value.raw as RawSystem;
-    const record = value.record as System;
-    const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (system: System) => {
-        system._raw.id = isCreateAction ? (raw?.id ?? system.id) : record.id;
         system.name = raw?.name;
         system.value = raw?.value;
     };

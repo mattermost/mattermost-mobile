@@ -6,7 +6,7 @@ import {field, relation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/team';
+import Team from '@typings/database/models/servers/team';
 
 const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
 

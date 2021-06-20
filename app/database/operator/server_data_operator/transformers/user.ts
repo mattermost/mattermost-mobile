@@ -3,12 +3,12 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import ChannelMembership from '@typings/database/channel_membership';
+import ChannelMembership from '@typings/database/models/servers/channel_membership';
 import {TransformerArgs, RawChannelMembership, RawPreference, RawReaction, RawUser} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Preference from '@typings/database/preference';
-import Reaction from '@typings/database/reaction';
-import User from '@typings/database/user';
+import Preference from '@typings/database/models/servers/preference';
+import Reaction from '@typings/database/models/servers/reaction';
+import User from '@typings/database/models/servers/user';
 
 const {
     CHANNEL_MEMBERSHIP,

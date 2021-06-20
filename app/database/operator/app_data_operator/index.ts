@@ -3,7 +3,6 @@
 
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {App} from '@database/models/default';
 import {
     isRecordAppEqualToRaw,
     isRecordGlobalEqualToRaw,
@@ -14,29 +13,21 @@ import {
     transformGlobalRecord,
     transformServersRecord,
 } from '@database/operator/app_data_operator/transformers';
-import BaseDataOperator, {BaseDataOperatorType} from '@database/operator/base_data_operator';
+import BaseDataOperator from '@database/operator/base_data_operator';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {
-    HandleAppArgs,
-    HandleCustomEmojiArgs,
+    HandleInfoArgs,
     HandleGlobalArgs,
     HandleServersArgs,
 } from '@typings/database/database';
-import Servers from '@typings/database/servers';
 
-const {DEFAULT: {APP, GLOBAL, SERVERS}} = MM_TABLES;
-
-export interface ServerDataOperatorMix extends BaseDataOperatorType {
-    handleApp : (args: HandleAppArgs) => Promise<App[]>,
-    handleGlobal : (args: HandleCustomEmojiArgs) => Promise<HandleGlobalArgs[]>,
-    handleServers : (args: HandleServersArgs) => Promise<Servers[]>,
-}
+const {APP: {INFO, GLOBAL, SERVERS}} = MM_TABLES;
 
 export default class AppDataOperator extends BaseDataOperator {
-    handleApp = async ({app, prepareRecordsOnly = true}: HandleAppArgs) => {
-        if (!app.length) {
+    handleInfo = async ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
+        if (!info.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${APP}`,
+                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${INFO}`,
             );
         }
 
@@ -45,9 +36,8 @@ export default class AppDataOperator extends BaseDataOperator {
             findMatchingRecordBy: isRecordAppEqualToRaw,
             transformer: transformAppRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: getUniqueRawsBy({raws: app, key: 'version_number'}),
-            deleteRawValues: [],
-            tableName: APP,
+            createOrUpdateRawValues: getUniqueRawsBy({raws: info, key: 'version_number'}),
+            tableName: INFO,
         });
 
         return records;
@@ -66,7 +56,6 @@ export default class AppDataOperator extends BaseDataOperator {
             transformer: transformGlobalRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: global, key: 'name'}),
-            deleteRawValues: [],
             tableName: GLOBAL,
         });
 
@@ -86,7 +75,6 @@ export default class AppDataOperator extends BaseDataOperator {
             transformer: transformServersRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: servers, key: 'display_name'}),
-            deleteRawValues: [],
             tableName: SERVERS,
         });
 

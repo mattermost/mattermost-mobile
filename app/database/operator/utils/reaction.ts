@@ -4,7 +4,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {RecordPair, SanitizeReactionsArgs} from '@typings/database/database';
-import Reaction from '@typings/database/reaction';
+import Reaction from '@typings/database/models/servers/reaction';
 
 const {REACTION} = MM_TABLES.SERVER;
 

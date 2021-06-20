@@ -5,9 +5,9 @@ import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/user';
+import User from '@typings/database/models/servers/user';
 
 const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 

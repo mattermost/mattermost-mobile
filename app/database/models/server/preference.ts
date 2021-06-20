@@ -6,7 +6,7 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/user';
+import User from '@typings/database/models/servers/user';
 
 const {PREFERENCE, USER} = MM_TABLES.SERVER;
 

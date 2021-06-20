@@ -13,13 +13,13 @@ import type{
     RawPostsInChannel,
     RawPostsInThread,
 } from '@typings/database/database';
-import Draft from '@typings/database/draft';
+import Draft from '@typings/database/models/servers/draft';
 import {OperationType} from '@typings/database/enums';
-import File from '@typings/database/file';
-import Post from '@typings/database/post';
-import PostMetadata from '@typings/database/post_metadata';
-import PostsInChannel from '@typings/database/posts_in_channel';
-import PostsInThread from '@typings/database/posts_in_thread';
+import File from '@typings/database/models/servers/file';
+import Post from '@typings/database/models/servers/post';
+import PostMetadata from '@typings/database/models/servers/post_metadata';
+import PostsInChannel from '@typings/database/models/servers/posts_in_channel';
+import PostsInThread from '@typings/database/models/servers/posts_in_thread';
 
 const {
     DRAFT,

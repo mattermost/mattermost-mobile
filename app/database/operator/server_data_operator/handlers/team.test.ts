@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import Operator from '@database/operator/server_data_operator';
 import {
     isRecordMyTeamEqualToRaw,
     isRecordSlashCommandEqualToRaw,
@@ -19,300 +18,214 @@ import {
     transformTeamRecord,
     transformTeamSearchHistoryRecord,
 } from '@database/operator/server_data_operator/transformers/team';
-import {createTestConnection} from '@database/operator/utils/create_test_connection';
-import {DatabaseType} from '@typings/database/enums';
 
-jest.mock('@database/manager');
-
-/* eslint-disable  @typescript-eslint/no-explicit-any */
+import ServerDataOperator from '..';
 
 describe('*** Operator: Team Handlers tests ***', () => {
-    let databaseManagerClient: DatabaseManager;
-    let operatorClient: Operator;
-
+    let operator: ServerDataOperator;
     beforeAll(async () => {
-        databaseManagerClient = new DatabaseManager();
-        const database = await databaseManagerClient.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            configs: {
-                actionsEnabled: true,
-                dbName: 'base_handler',
-                dbType: DatabaseType.SERVER,
-                serverUrl: 'baseHandler.test.com',
-            },
-        });
-
-        operatorClient = new Operator(database!);
+        await DatabaseManager.init(['baseHandler.test.com']);
+        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
     it('=> HandleTeam: should write to TEAM entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const teams = [
+            {
+                id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
+                create_at: 1445538153952,
+                update_at: 1588876392150,
+                delete_at: 0,
+                display_name: 'Contributors',
+                name: 'core',
+                description: '',
+                email: '',
+                type: 'O',
+                company_name: '',
+                allowed_domains: '',
+                invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
+                allow_open_invite: true,
+                last_team_icon_update: 1525181587639,
+                scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
+                group_constrained: null,
+            },
+        ];
 
-        await createTestConnection({databaseName: 'team_handler', setActive: true});
-
-        await operatorClient.handleTeam({
-            teams: [
-                {
-                    id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
-                    create_at: 1445538153952,
-                    update_at: 1588876392150,
-                    delete_at: 0,
-                    display_name: 'Contributors',
-                    name: 'core',
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
-                    allow_open_invite: true,
-                    last_team_icon_update: 1525181587639,
-                    scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
-                    group_constrained: null,
-                },
-            ],
+        await operator.handleTeam({
+            teams,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'id',
-            rawValues: [
-                {
-                    id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
-                    create_at: 1445538153952,
-                    update_at: 1588876392150,
-                    delete_at: 0,
-                    display_name: 'Contributors',
-                    name: 'core',
-                    description: '',
-                    email: '',
-                    type: 'O',
-                    company_name: '',
-                    allowed_domains: '',
-                    invite_id: 'codoy5s743rq5mk18i7u5dfdfksz7e',
-                    allow_open_invite: true,
-                    last_team_icon_update: 1525181587639,
-                    scheme_id: 'hbwgrncq1pfcdkpotzidfdmarn95o',
-                    group_constrained: null,
-                },
-            ],
+            createOrUpdateRawValues: teams,
             tableName: 'Team',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordTeamEqualToRaw,
-            operator: transformTeamRecord,
+            transformer: transformTeamRecord,
         });
     });
 
     it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const teamMemberships = [
+            {
+                team_id: 'a',
+                user_id: 'ab',
+                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                delete_at: 0,
+                scheme_guest: false,
+                scheme_user: true,
+                scheme_admin: false,
+                explicit_roles: '',
+            },
+        ];
 
-        await createTestConnection({databaseName: 'team_handler', setActive: true});
-
-        await operatorClient.handleTeamMemberships({
-            teamMemberships: [
-                {
-                    team_id: 'a',
-                    user_id: 'ab',
-                    roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
-                    delete_at: 0,
-                    scheme_guest: false,
-                    scheme_user: true,
-                    scheme_admin: false,
-                    explicit_roles: '',
-                },
-            ],
+        await operator.handleTeamMemberships({
+            teamMemberships,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
-            rawValues: [
-                {
-                    team_id: 'a',
-                    user_id: 'ab',
-                    roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
-                    delete_at: 0,
-                    scheme_guest: false,
-                    scheme_user: true,
-                    scheme_admin: false,
-                    explicit_roles: '',
-                },
-            ],
+            createOrUpdateRawValues: teamMemberships,
             tableName: 'TeamMembership',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
-            operator: transformTeamMembershipRecord,
+            transformer: transformTeamMembershipRecord,
         });
     });
 
     it('=> HandleMyTeam: should write to MY_TEAM entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const myTeams = [
+            {
+                team_id: 'teamA',
+                roles: 'roleA, roleB, roleC',
+                is_unread: true,
+                mentions_count: 3,
+            },
+        ];
 
-        await createTestConnection({databaseName: 'team_handler', setActive: true});
-
-        await operatorClient.handleMyTeam({
-            myTeams: [
-                {
-                    team_id: 'teamA',
-                    roles: 'roleA, roleB, roleC',
-                    is_unread: true,
-                    mentions_count: 3,
-                },
-            ],
+        await operator.handleMyTeam({
+            myTeams,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'team_id',
-            rawValues: [
-                {
-                    team_id: 'teamA',
-                    roles: 'roleA, roleB, roleC',
-                    is_unread: true,
-                    mentions_count: 3,
-                },
-            ],
+            createOrUpdateRawValues: myTeams,
             tableName: 'MyTeam',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordMyTeamEqualToRaw,
-            operator: transformMyTeamRecord,
+            transformer: transformMyTeamRecord,
         });
     });
 
     it('=> HandleTeamChannelHistory: should write to TEAM_CHANNEL_HISTORY entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const teamChannelHistories = [
+            {
+                team_id: 'a',
+                channel_ids: ['ca', 'cb'],
+            },
+        ];
 
-        await createTestConnection({databaseName: 'team_handler', setActive: true});
-
-        await operatorClient.handleTeamChannelHistory({
-            teamChannelHistories: [
-                {
-                    team_id: 'a',
-                    channel_ids: ['ca', 'cb'],
-                },
-            ],
+        await operator.handleTeamChannelHistory({
+            teamChannelHistories,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'team_id',
-            rawValues: [{team_id: 'a', channel_ids: ['ca', 'cb']}],
+            createOrUpdateRawValues: teamChannelHistories,
             tableName: 'TeamChannelHistory',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
-            operator: transformTeamChannelHistoryRecord,
+            transformer: transformTeamChannelHistoryRecord,
         });
     });
 
     it('=> HandleTeamSearchHistory: should write to TEAM_SEARCH_HISTORY entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const teamSearchHistories = [
+            {
+                team_id: 'a',
+                term: 'termA',
+                display_term: 'termA',
+                created_at: 1445538153952,
+            },
+        ];
 
-        await createTestConnection({databaseName: 'team_handler', setActive: true});
-
-        await operatorClient.handleTeamSearchHistory({
-            teamSearchHistories: [
-                {
-                    team_id: 'a',
-                    term: 'termA',
-                    display_term: 'termA',
-                    created_at: 1445538153952,
-                },
-            ],
+        await operator.handleTeamSearchHistory({
+            teamSearchHistories,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'team_id',
-            rawValues: [
-                {
-                    team_id: 'a',
-                    term: 'termA',
-                    display_term: 'termA',
-                    created_at: 1445538153952,
-                },
-            ],
+            createOrUpdateRawValues: teamSearchHistories,
             tableName: 'TeamSearchHistory',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
-            operator: transformTeamSearchHistoryRecord,
+            transformer: transformTeamSearchHistoryRecord,
         });
     });
 
     it('=> HandleSlashCommand: should write to SLASH_COMMAND entity', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
+        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const slashCommands = [
+            {
+                id: 'command_1',
+                auto_complete: true,
+                auto_complete_desc: 'mock_command',
+                auto_complete_hint: 'hint',
+                create_at: 1445538153952,
+                creator_id: 'creator_id',
+                delete_at: 1445538153952,
+                description: 'description',
+                display_name: 'display_name',
+                icon_url: 'display_name',
+                method: 'get',
+                team_id: 'teamA',
+                token: 'token',
+                trigger: 'trigger',
+                update_at: 1445538153953,
+                url: 'url',
+                username: 'userA',
+            },
+        ];
 
-        await createTestConnection({databaseName: 'team_handler', setActive: true});
-
-        await operatorClient.handleSlashCommand({
-            slashCommands: [
-                {
-                    id: 'command_1',
-                    auto_complete: true,
-                    auto_complete_desc: 'mock_command',
-                    auto_complete_hint: 'hint',
-                    create_at: 1445538153952,
-                    creator_id: 'creator_id',
-                    delete_at: 1445538153952,
-                    description: 'description',
-                    display_name: 'display_name',
-                    icon_url: 'display_name',
-                    method: 'get',
-                    team_id: 'teamA',
-                    token: 'token',
-                    trigger: 'trigger',
-                    update_at: 1445538153953,
-                    url: 'url',
-                    username: 'userA',
-                },
-            ],
+        await operator.handleSlashCommand({
+            slashCommands,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'id',
-            rawValues: [
-                {
-                    id: 'command_1',
-                    auto_complete: true,
-                    auto_complete_desc: 'mock_command',
-                    auto_complete_hint: 'hint',
-                    create_at: 1445538153952,
-                    creator_id: 'creator_id',
-                    delete_at: 1445538153952,
-                    description: 'description',
-                    display_name: 'display_name',
-                    icon_url: 'display_name',
-                    method: 'get',
-                    team_id: 'teamA',
-                    token: 'token',
-                    trigger: 'trigger',
-                    update_at: 1445538153953,
-                    url: 'url',
-                    username: 'userA',
-                },
-            ],
+            createOrUpdateRawValues: slashCommands,
             tableName: 'SlashCommand',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
-            operator: transformSlashCommandRecord,
+            transformer: transformSlashCommandRecord,
         });
     });
 });

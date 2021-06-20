@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Channel from '@typings/database/channel';
-import ChannelInfo from '@typings/database/channel_info';
-import ChannelMembership from '@typings/database/channel_membership';
-import CustomEmoji from '@typings/database/custom_emoji';
+import Channel from '@typings/database/models/servers/channel';
+import ChannelInfo from '@typings/database/models/servers/channel_info';
+import ChannelMembership from '@typings/database/models/servers/channel_membership';
+import CustomEmoji from '@typings/database/models/servers/custom_emoji';
 import {
     RawChannel,
     RawChannelInfo,
@@ -30,25 +30,25 @@ import {
     RawTermsOfService,
     RawUser,
 } from '@typings/database/database';
-import Draft from '@typings/database/draft';
-import Group from '@typings/database/group';
-import GroupMembership from '@typings/database/group_membership';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import GroupsInTeam from '@typings/database/groups_in_team';
-import MyChannel from '@typings/database/my_channel';
-import MyChannelSettings from '@typings/database/my_channel_settings';
-import MyTeam from '@typings/database/my_team';
-import Post from '@typings/database/post';
-import Preference from '@typings/database/preference';
-import Role from '@typings/database/role';
-import SlashCommand from '@typings/database/slash_command';
-import System from '@typings/database/system';
-import Team from '@typings/database/team';
-import TeamChannelHistory from '@typings/database/team_channel_history';
-import TeamMembership from '@typings/database/team_membership';
-import TeamSearchHistory from '@typings/database/team_search_history';
-import TermsOfService from '@typings/database/terms_of_service';
-import User from '@typings/database/user';
+import Draft from '@typings/database/models/servers/draft';
+import Group from '@typings/database/models/servers/group';
+import GroupMembership from '@typings/database/models/servers/group_membership';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
+import MyChannel from '@typings/database/models/servers/my_channel';
+import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
+import MyTeam from '@typings/database/models/servers/my_team';
+import Post from '@typings/database/models/servers/post';
+import Preference from '@typings/database/models/servers/preference';
+import Role from '@typings/database/models/servers/role';
+import SlashCommand from '@typings/database/models/servers/slash_command';
+import System from '@typings/database/models/servers/system';
+import Team from '@typings/database/models/servers/team';
+import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
+import TeamMembership from '@typings/database/models/servers/team_membership';
+import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
+import TermsOfService from '@typings/database/models/servers/terms_of_service';
+import User from '@typings/database/models/servers/user';
 
 /**
  *  This file contains all the comparators that are used by the handlers to find out which records to truly update and

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DatabaseManager from '@database/manager';
 import {
     isRecordAppEqualToRaw,
     isRecordGlobalEqualToRaw,
@@ -12,20 +13,22 @@ import {
     transformServersRecord,
 } from '@database/operator/app_data_operator/transformers';
 import {RawGlobal, RawServers} from '@typings/database/database';
-import {IsolatedEntities} from '@typings/database/enums';
 
 describe('', () => {
+    beforeAll(async () => {
+        await DatabaseManager.init([]);
+    });
+
     it('=> HandleApp: should write to APP entity', async () => {
-        expect.assertions(3);
+        const appDatabase = DatabaseManager.appDatabase?.database;
+        const appOperator = DatabaseManager.appDatabase?.operator;
+        expect(appDatabase).toBeTruthy();
+        expect(appOperator).toBeTruthy();
 
-        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
-        expect(defaultDatabase).toBeTruthy();
+        const spyOnHandleEntityRecords = jest.spyOn(appOperator as any, 'handleEntityRecords');
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
-
-        await operatorClient.handleIsolatedEntity({
-            tableName: IsolatedEntities.APP,
-            values: [
+        await appOperator?.handleInfo({
+            info: [
                 {
                     build_number: 'build-10x',
                     created_at: 1,
@@ -43,9 +46,9 @@ describe('', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
-            operator: transformAppRecord,
+            transformer: transformAppRecord,
             findMatchingRecordBy: isRecordAppEqualToRaw,
-            rawValues: [
+            createOrUpdateRawValues: [
                 {
                     build_number: 'build-10x',
                     created_at: 1,
@@ -57,45 +60,44 @@ describe('', () => {
                     version_number: 'version-11',
                 },
             ],
-            tableName: 'app',
+            tableName: 'Info',
             prepareRecordsOnly: false,
         });
     });
 
     it('=> HandleGlobal: should write to GLOBAL entity', async () => {
-        expect.assertions(2);
+        const appDatabase = DatabaseManager.appDatabase?.database;
+        const appOperator = DatabaseManager.appDatabase?.operator;
+        expect(appDatabase).toBeTruthy();
+        expect(appOperator).toBeTruthy();
 
-        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
-        expect(defaultDatabase).toBeTruthy();
+        const spyOnHandleEntityRecords = jest.spyOn(appOperator as any, 'handleEntityRecords');
+        const global: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
-        const values: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
-
-        await operatorClient.handleIsolatedEntity({
-            tableName: IsolatedEntities.GLOBAL,
-            values,
+        await appOperator?.handleGlobal({
+            global,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
             fieldName: 'name',
-            operator: transformGlobalRecord,
-            rawValues: values,
-            tableName: 'global',
+            transformer: transformGlobalRecord,
+            createOrUpdateRawValues: global,
+            tableName: 'Global',
             prepareRecordsOnly: false,
         });
     });
 
     it('=> HandleServers: should write to SERVERS entity', async () => {
-        expect.assertions(2);
+        const appDatabase = DatabaseManager.appDatabase?.database;
+        const appOperator = DatabaseManager.appDatabase?.operator;
+        expect(appDatabase).toBeTruthy();
+        expect(appOperator).toBeTruthy();
 
-        const defaultDatabase = await databaseManagerClient.getDefaultDatabase();
-        expect(defaultDatabase).toBeTruthy();
+        const spyOnHandleEntityRecords = jest.spyOn(appOperator as any, 'handleEntityRecords');
 
-        const spyOnHandleEntityRecords = jest.spyOn(operatorClient as any, 'handleEntityRecords');
-
-        const values: RawServers[] = [
+        const servers: RawServers[] = [
             {
                 db_path: 'server.db',
                 display_name: 'community',
@@ -107,17 +109,16 @@ describe('', () => {
             },
         ];
 
-        await operatorClient.handleIsolatedEntity({
-            tableName: IsolatedEntities.SERVERS,
-            values,
+        await appOperator?.handleServers({
+            servers,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'url',
-            operator: transformServersRecord,
+            transformer: transformServersRecord,
             findMatchingRecordBy: isRecordServerEqualToRaw,
-            rawValues: [
+            createOrUpdateRawValues: [
                 {
                     db_path: 'server.db',
                     display_name: 'community',
@@ -128,7 +129,7 @@ describe('', () => {
                     lastActiveAt: 1623926359,
                 },
             ],
-            tableName: 'servers',
+            tableName: 'Servers',
             prepareRecordsOnly: false,
         });
     });

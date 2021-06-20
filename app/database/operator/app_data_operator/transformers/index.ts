@@ -3,13 +3,13 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers';
-import App from '@typings/database/app';
-import {TransformerArgs, RawApp, RawGlobal, RawServers} from '@typings/database/database';
+import Info from '@typings/database/models/app/info';
+import {TransformerArgs, RawInfo, RawGlobal, RawServers} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Global from '@typings/database/global';
-import Servers from '@typings/database/servers';
+import Global from '@typings/database/models/app/global';
+import Servers from '@typings/database/models/app/servers';
 
-const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
+const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
 /**
  * transformAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
@@ -19,11 +19,11 @@ const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
  * @returns {Promise<Model>}
  */
 export const transformAppRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawApp;
-    const record = value.record as App;
+    const raw = value.raw as RawInfo;
+    const record = value.record as Info;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (app: App) => {
+    const fieldsMapper = (app: Info) => {
         app._raw.id = isCreateAction ? app.id : record.id;
         app.buildNumber = raw?.build_number;
         app.createdAt = raw?.created_at;
@@ -34,7 +34,7 @@ export const transformAppRecord = ({action, database, value}: TransformerArgs) =
         action,
         database,
         fieldsMapper,
-        tableName: APP,
+        tableName: INFO,
         value,
     });
 };

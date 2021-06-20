@@ -27,7 +27,7 @@ describe('SSO', () => {
         },
         ssoType: 'GITLAB',
         theme: Preferences.THEMES.default,
-        serverUrl: 'https://rc.test.mattermost.com',
+        serverUrl: 'https://locahost:8065',
     };
 
     test('implement with webview when version is less than 5.32 version', async () => {

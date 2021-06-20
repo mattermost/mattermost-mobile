@@ -28,12 +28,12 @@ import {
     HandleTeamMembershipArgs,
     HandleTeamSearchHistoryArgs,
 } from '@typings/database/database';
-import MyTeam from '@typings/database/my_team';
-import SlashCommand from '@typings/database/slash_command';
-import Team from '@typings/database/team';
-import TeamChannelHistory from '@typings/database/team_channel_history';
-import TeamMembership from '@typings/database/team_membership';
-import TeamSearchHistory from '@typings/database/team_search_history';
+import MyTeam from '@typings/database/models/servers/my_team';
+import SlashCommand from '@typings/database/models/servers/slash_command';
+import Team from '@typings/database/models/servers/team';
+import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
+import TeamMembership from '@typings/database/models/servers/team_membership';
+import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
 
 const {
     MY_TEAM,
@@ -70,13 +70,13 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
-            operator: transformTeamMembershipRecord,
-            rawValues,
+            transformer: transformTeamMembershipRecord,
+            createOrUpdateRawValues,
             tableName: TEAM_MEMBERSHIP,
             prepareRecordsOnly,
         });
@@ -101,14 +101,14 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: teams, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: teams, key: 'id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordTeamEqualToRaw,
-            operator: transformTeamRecord,
+            transformer: transformTeamRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: TEAM,
         });
 
@@ -132,14 +132,14 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'team_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'team_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
-            operator: transformTeamChannelHistoryRecord,
+            transformer: transformTeamChannelHistoryRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: TEAM_CHANNEL_HISTORY,
         });
 
@@ -163,14 +163,14 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
 
         records = await this.handleEntityRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
-            operator: transformTeamSearchHistoryRecord,
+            transformer: transformTeamSearchHistoryRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: TEAM_SEARCH_HISTORY,
         });
 
@@ -194,14 +194,14 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
-            operator: transformSlashCommandRecord,
+            transformer: transformSlashCommandRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: SLASH_COMMAND,
         });
 
@@ -225,14 +225,14 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordMyTeamEqualToRaw,
-            operator: transformMyTeamRecord,
+            transformer: transformMyTeamRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: MY_TEAM,
         });
 

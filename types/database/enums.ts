@@ -7,16 +7,6 @@ export enum OperationType {
   DELETE = 'DELETE',
 }
 
-export enum IsolatedEntities {
-  APP = 'app',
-  CUSTOM_EMOJI = 'CustomEmoji',
-  GLOBAL = 'global',
-  SERVERS = 'servers',
-  ROLE = 'Role',
-  SYSTEM = 'System',
-  TERMS_OF_SERVICE = 'TermsOfService',
-}
-
 // The only two types of databases in the app
 export enum DatabaseType {
   DEFAULT,

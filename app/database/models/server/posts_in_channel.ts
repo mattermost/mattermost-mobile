@@ -6,7 +6,7 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
 

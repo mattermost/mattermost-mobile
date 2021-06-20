@@ -16,16 +16,16 @@ import {
     transformMyChannelSettingsRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import Channel from '@typings/database/channel';
-import ChannelInfo from '@typings/database/channel_info';
+import Channel from '@typings/database/models/servers/channel';
+import ChannelInfo from '@typings/database/models/servers/channel_info';
 import {
     HandleChannelArgs,
     HandleChannelInfoArgs,
     HandleMyChannelArgs,
     HandleMyChannelSettingsArgs,
 } from '@typings/database/database';
-import MyChannel from '@typings/database/my_channel';
-import MyChannelSettings from '@typings/database/my_channel_settings';
+import MyChannel from '@typings/database/models/servers/my_channel';
+import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
 
 const {
     CHANNEL,
@@ -59,14 +59,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordChannelEqualToRaw,
-            operator: transformChannelRecord,
+            transformer: transformChannelRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: CHANNEL,
         });
 
@@ -90,14 +90,14 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
 
         records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
-            operator: transformMyChannelSettingsRecord,
+            transformer: transformMyChannelSettingsRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: MY_CHANNEL_SETTINGS,
         });
 
@@ -121,7 +121,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({
+        const createOrUpdateRawValues = getUniqueRawsBy({
             raws: channelInfos,
             key: 'channel_id',
         });
@@ -129,9 +129,9 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
-            operator: transformChannelInfoRecord,
+            transformer: transformChannelInfoRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: CHANNEL_INFO,
         });
 
@@ -155,7 +155,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({
+        const createOrUpdateRawValues = getUniqueRawsBy({
             raws: myChannels,
             key: 'channel_id',
         });
@@ -163,9 +163,9 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         records = await this.handleEntityRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
-            operator: transformMyChannelRecord,
+            transformer: transformMyChannelRecord,
             prepareRecordsOnly,
-            rawValues,
+            createOrUpdateRawValues,
             tableName: MY_CHANNEL,
         });
 

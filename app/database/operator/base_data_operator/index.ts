@@ -47,13 +47,23 @@ export default class BaseDataOperator {
      * @param {(existing: Model, newElement: RawValue) => boolean} inputsArg.findMatchingRecordBy
      * @returns {Promise<{ProcessRecordResults}>}
      */
-    processRecords = async ({createOrUpdateRawValues, deleteRawValues, tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
+    processRecords = async ({createOrUpdateRawValues, deleteRawValues = [], tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
         const getRecords = async (rawValues : RawValue[]) => {
             // We will query an entity where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
             const columnValues: string[] = getRangeOfValues({
                 fieldName,
                 raws: rawValues,
             });
+
+            if (!columnValues.length && rawValues.length) {
+                throw new DataOperatorException(
+                    `Invalid "fieldName" or "tableName" has been passed to the processRecords method for tableName ${tableName} fieldName ${fieldName}`,
+                );
+            }
+
+            if (!rawValues.length) {
+                return [];
+            }
 
             const existingRecords = await retrieveRecords({
                 database: this.database,
@@ -72,7 +82,7 @@ export default class BaseDataOperator {
 
         // for create or update flow
         const createOrUpdateRaws = await getRecords(createOrUpdateRawValues);
-        if (createOrUpdateRaws.length > 0) {
+        if (createOrUpdateRawValues.length > 0) {
             createOrUpdateRawValues.forEach((newElement: RawValue) => {
                 const findIndex = createOrUpdateRaws.findIndex((existing) => {
                     return findMatchingRecordBy(existing, newElement);
@@ -196,7 +206,7 @@ export default class BaseDataOperator {
      * @param {string} handleEntityArgs.tableName
      * @returns {Promise<Model[]>}
      */
-    handleEntityRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly = true}: HandleEntityRecordsArgs) => {
+    handleEntityRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleEntityRecordsArgs) => {
         if (!createOrUpdateRawValues.length) {
             throw new DataOperatorException(
                 `An empty "rawValues" array has been passed to the handleEntityRecords method for tableName ${tableName}`,

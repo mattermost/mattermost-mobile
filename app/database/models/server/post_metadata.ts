@@ -7,7 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {PostMetadataData, PostMetadataType} from '@typings/database/database';
-import Post from '@typings/database/post';
+import Post from '@typings/database/models/servers/post';
 
 const {POST, POST_METADATA} = MM_TABLES.SERVER;
 

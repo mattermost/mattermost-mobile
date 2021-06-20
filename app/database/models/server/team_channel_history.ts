@@ -6,7 +6,7 @@ import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/team';
+import Team from '@typings/database/models/servers/team';
 
 const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 
