@@ -12,10 +12,19 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ThreadIOS from './thread.ios';
 
+jest.mock('react-native-navigation', () => {
+    return {
+        Navigation: {
+            registerComponent: jest.fn(),
+        },
+    };
+});
+
 describe('thread', () => {
     const baseProps = {
         actions: {
             selectPost: jest.fn(),
+            setThreadFollow: jest.fn(),
         },
         channelId: 'channel_id',
         channelType: General.OPEN_CHANNEL,
@@ -25,6 +34,7 @@ describe('thread', () => {
         theme: Preferences.THEMES.default,
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
+        teamId: 'team_id',
         threadLoadingStatus: {status: RequestStatus.STARTED},
     };
 

@@ -15,6 +15,7 @@ describe('ChannelsList List', () => {
         canJoinPublicChannels: true,
         canCreatePrivateChannels: true,
         canCreatePublicChannels: true,
+        collapsedThreadsEnabled: false,
         favoriteChannelIds: [],
         unreadChannelIds: [],
         styles: {},
