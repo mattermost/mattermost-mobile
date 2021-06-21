@@ -3350,12 +3350,21 @@ describe('Selectors.Channels.getUnreads', () => {
                 teams,
                 myMembers: myTeamMembers,
             },
+            threads: {
+                count: {},
+            },
             channels: {
                 channels,
                 myMembers: myChannelMembers,
             },
             users: {
                 profiles: {},
+            },
+            general: {
+                config: {},
+            },
+            preferences: {
+                myPreferences: {},
             },
         },
     });
@@ -3467,6 +3476,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     currentUserId: 'user1',
                     profiles: {},
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3503,6 +3521,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     currentUserId: 'user1',
                     profiles: {},
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3537,6 +3564,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     profiles: {
                         user2: {delete_at: 0},
                     },
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
@@ -3573,6 +3609,15 @@ describe('Selectors.Channels.getUnreads', () => {
                         user2: {delete_at: 1},
                     },
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3605,6 +3650,15 @@ describe('Selectors.Channels.getUnreads', () => {
                 users: {
                     currentUserId: 'user1',
                     profiles: {},
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
@@ -3648,6 +3702,15 @@ describe('Selectors.Channels.getUnreads', () => {
                 users: {
                     currentUserId: 'user1',
                     profiles: {},
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
