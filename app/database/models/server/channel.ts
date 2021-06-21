@@ -6,16 +6,16 @@ import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/deco
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import ChannelInfo from '@typings/database/channel_info';
-import ChannelMembership from '@typings/database/channel_membership';
-import Draft from '@typings/database/draft';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import MyChannel from '@typings/database/my_channel';
-import MyChannelSettings from '@typings/database/my_channel_settings';
-import Post from '@typings/database/post';
-import PostsInChannel from '@typings/database/posts_in_channel';
-import Team from '@typings/database/team';
-import User from '@typings/database/user';
+import ChannelInfo from '@typings/database/models/servers/channel_info';
+import ChannelMembership from '@typings/database/models/servers/channel_membership';
+import Draft from '@typings/database/models/servers/draft';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import MyChannel from '@typings/database/models/servers/my_channel';
+import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
+import Post from '@typings/database/models/servers/post';
+import PostsInChannel from '@typings/database/models/servers/posts_in_channel';
+import Team from '@typings/database/models/servers/team';
+import User from '@typings/database/models/servers/user';
 
 const {
     CHANNEL,
@@ -35,10 +35,10 @@ const {
  * The Channel model represents a channel in the Mattermost app.
  */
 export default class Channel extends Model {
-    /** table (entity name) : Channel */
+    /** table (name) : Channel */
     static table = CHANNEL;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
@@ -123,7 +123,7 @@ export default class Channel extends Model {
     /** creator : The USER who created this CHANNEL*/
     @immutableRelation(USER, 'creator_id') creator!: Relation<User>;
 
-    /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
+    /** info : Query returning extra information about this channel from CHANNEL_INFO table */
     @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfo>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */

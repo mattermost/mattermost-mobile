@@ -6,7 +6,7 @@ import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/team';
+import Team from '@typings/database/models/servers/team';
 
 const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
  * by the user.
  */
 export default class TeamChannelHistory extends Model {
-    /** table (entity name) : TeamChannelHistory */
+    /** table (name) : TeamChannelHistory */
     static table = TEAM_CHANNEL_HISTORY;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A TEAM and TEAM_CHANNEL_HISTORY share a 1:1 relationship */

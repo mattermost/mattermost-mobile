@@ -4,10 +4,10 @@
 import keyMirror from '@utils/key_mirror';
 
 export const MM_TABLES = {
-    DEFAULT: {
-        APP: 'app',
-        GLOBAL: 'global',
-        SERVERS: 'servers',
+    APP: {
+        INFO: 'Info',
+        GLOBAL: 'Global',
+        SERVERS: 'Servers',
     },
     SERVER: {
         CHANNEL: 'Channel',

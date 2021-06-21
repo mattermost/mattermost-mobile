@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 import {
     IdenticalRecordArgs,
     RangeOfValueArgs,
@@ -15,15 +15,15 @@ import {
     RecordPair,
     RetrieveRecordsArgs,
 } from '@typings/database/database';
-import Post from '@typings/database/post';
-import SlashCommand from '@typings/database/slash_command';
-import Team from '@typings/database/team';
-import User from '@typings/database/user';
+import Post from '@typings/database/models/servers/post';
+import SlashCommand from '@typings/database/models/servers/slash_command';
+import Team from '@typings/database/models/servers/team';
+import User from '@typings/database/models/servers/user';
 
 const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
- * getValidRecordsForUpdate: Database Operations on some entities are expensive.  As such, we would like to operate if and only if we are
+ * getValidRecordsForUpdate: Database Operations on some tables are expensive.  As such, we would like to operate if and only if we are
  * 100% sure that the records are actually different from what we already have in the database.
  * @param {IdenticalRecordArgs} identicalRecord
  * @param {string} identicalRecord.tableName

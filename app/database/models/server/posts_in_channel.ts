@@ -6,7 +6,7 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
  * gaps in between for an efficient user reading experience of posts.
  */
 export default class PostsInChannel extends Model {
-    /** table (entity name) : PostsInChannel */
+    /** table (name) : PostsInChannel */
     static table = POSTS_IN_CHANNEL;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL can have multiple POSTS_IN_CHANNEL. (relationship is 1:N)*/

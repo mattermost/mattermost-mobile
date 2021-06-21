@@ -5,13 +5,13 @@ import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
-import ChannelMembership from '@typings/database/channel_membership';
-import GroupMembership from '@typings/database/group_membership';
-import Post from '@typings/database/post';
-import Preference from '@typings/database/preference';
-import Reaction from '@typings/database/reaction';
-import TeamMembership from '@typings/database/team_membership';
+import Channel from '@typings/database/models/servers/channel';
+import ChannelMembership from '@typings/database/models/servers/channel_membership';
+import GroupMembership from '@typings/database/models/servers/group_membership';
+import Post from '@typings/database/models/servers/post';
+import Preference from '@typings/database/models/servers/preference';
+import Reaction from '@typings/database/models/servers/reaction';
+import TeamMembership from '@typings/database/models/servers/team_membership';
 
 const {
     CHANNEL,
@@ -25,14 +25,14 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * The User model represents the 'USER' entity and its relationship to other
+ * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
 export default class User extends Model {
-    /** table (entity name) : User */
+    /** table (name) : User */
     static table = USER;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** USER has a 1:N relationship with CHANNEL.  A user can create multiple channels */

@@ -2,18 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import Operator from '@database/operator';
+import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
-import {getDeviceToken} from '@queries/global';
-import {getCommonSystemValues, getCurrentUserId} from '@queries/system';
+import {getDeviceToken} from '@app/queries/app/global';
+import {getCommonSystemValues, getCurrentUserId} from '@app/queries/servers/system';
 import {createSessions} from '@requests/local/systems';
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
 import {logError} from '@requests/remote/error';
 import {loadRolesIfNeeded} from '@requests/remote/role';
 import {getDataRetentionPolicy} from '@requests/remote/systems';
 import {Client4Error} from '@typings/api/client4';
-import {Config} from '@typings/database/config';
+import {Config} from '@typings/database/models/servers/config';
 import {
     LoadMeArgs,
     LoginArgs,
@@ -24,16 +24,17 @@ import {
     RawTeamMembership,
     RawUser,
 } from '@typings/database/database';
-import {IsolatedEntities} from '@typings/database/enums';
-import {License} from '@typings/database/license';
-import Role from '@typings/database/role';
-import User from '@typings/database/user';
-import {createAndSetActiveDatabase, getActiveServerDatabase, getDefaultDatabase} from '@utils/database';
+import {License} from '@typings/database/models/servers/license';
+import Role from '@typings/database/models/servers/role';
+import User from '@typings/database/models/servers/user';
 import {getCSRFFromCookie} from '@utils/security';
 
 const HTTP_UNAUTHORIZED = 401;
 
-export const logout = async (skipServerLogout = false) => {
+// TODO: Requests should know the server url
+// To select the right DB & Client
+
+export const logout = async (serverUrl: string, skipServerLogout = false) => {
     return async () => {
         if (!skipServerLogout) {
             try {
@@ -46,39 +47,38 @@ export const logout = async (skipServerLogout = false) => {
         //fixme: uncomment below EventEmitter.emit
         // EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
 
+        DatabaseManager.deleteServerDatabase(serverUrl);
+
         return {data: true};
     };
 };
 
-export const forceLogoutIfNecessary = async (err: Client4Error) => {
-    const {activeServerDatabase, error} = await getActiveServerDatabase();
-
-    if (!activeServerDatabase) {
-        return {error};
+export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Error) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
     }
 
-    const currentUserId = await getCurrentUserId(activeServerDatabase);
+    const currentUserId = await getCurrentUserId(database);
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(false);
+        await logout(serverUrl);
     }
 
     return {error: null};
 };
 
-export const login = async ({ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
+export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
     let deviceToken;
     let user;
 
-    const {error, defaultDatabase} = await getDefaultDatabase();
-    if (!defaultDatabase) {
-        return {error};
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
+        return {error: 'App database not found.'};
     }
 
-    const url = Client4.getUrl();
-
     try {
-        deviceToken = await getDeviceToken(defaultDatabase);
+        deviceToken = await getDeviceToken(appDatabase);
         user = ((await Client4.login(
             loginId,
             password,
@@ -87,30 +87,33 @@ export const login = async ({ldapOnly = false, loginId, mfaToken, password}: Log
             ldapOnly,
         )) as unknown) as RawUser;
 
-        await createAndSetActiveDatabase({serverUrl: url});
-        await getCSRFFromCookie(Client4.getUrl());
+        await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                serverUrl,
+            },
+        });
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        await getCSRFFromCookie(serverUrl);
     } catch (e) {
         return {error: e};
     }
 
-    const result = await loadMe({user, deviceToken});
+    const result = await loadMe(serverUrl, {user, deviceToken});
 
     if (!result?.error) {
-        await completeLogin(user);
+        await completeLogin(serverUrl, user);
     }
 
-    return result;
+    return {result};
 };
 
-export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
+export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs) => {
     let currentUser = user;
 
-    const {activeServerDatabase, error} = await getActiveServerDatabase();
-    if (!activeServerDatabase) {
-        return {
-            error,
-            currentUser: undefined,
-        };
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
     }
 
     try {
@@ -122,7 +125,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             currentUser = ((await Client4.getMe()) as unknown) as RawUser;
         }
     } catch (e) {
-        await forceLogoutIfNecessary(e);
+        await forceLogoutIfNecessary(serverUrl, e);
         return {
             error: e,
             currentUser: undefined,
@@ -161,10 +164,8 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             licenseRequest,
         ]);
 
-        const operator = new Operator(activeServerDatabase);
-
+        const operator = DatabaseManager.serverDatabases[serverUrl].operator;
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams as RawTeam[]});
-
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers as unknown) as RawTeamMembership[]});
 
         const myTeams = teamUnreads.map((unread) => {
@@ -177,16 +178,15 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             myTeams: (myTeams as unknown) as RawMyTeam[],
         });
 
-        const systemRecords = operator.handleIsolatedEntity({
-            tableName: IsolatedEntities.SYSTEM,
-            values: [
+        const systemRecords = operator.handleSystem({
+            systems: [
                 {
                     name: 'config',
-                    value: config,
+                    value: JSON.stringify(config),
                 },
                 {
                     name: 'license',
-                    value: license,
+                    value: JSON.stringify(license),
                 },
                 {
                     name: 'currentUserId',
@@ -226,7 +226,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
             const rolesByName = ((await Client4.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
 
             if (rolesByName?.length) {
-                rolesRecords = operator.handleIsolatedEntity({tableName: IsolatedEntities.ROLE, prepareRecordsOnly: true, values: rolesByName}) as Role[];
+                rolesRecords = await operator.handleRole({prepareRecordsOnly: true, roles: rolesByName}) as Role[];
             }
         }
 
@@ -234,7 +234,7 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
 
         const flattenedModels = models.flat();
         if (flattenedModels?.length > 0) {
-            await operator.batchOperations({database: activeServerDatabase, models: flattenedModels});
+            await operator.batchRecords(flattenedModels);
         }
     } catch (e) {
         return {error: e, currentUser: undefined};
@@ -243,46 +243,47 @@ export const loadMe = async ({deviceToken, user}: LoadMeArgs) => {
     return {currentUser, error: undefined};
 };
 
-export const completeLogin = async (user: RawUser) => {
-    const {activeServerDatabase, error} = await getActiveServerDatabase();
-    if (!activeServerDatabase) {
-        return {error};
+export const completeLogin = async (serverUrl: string, user: RawUser) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
     }
 
-    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(activeServerDatabase);
+    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
     }
 
     const token = Client4.getToken();
-    const serverUrl = Client4.getUrl();
 
     setServerCredentials(serverUrl, user.id, token);
 
     // Set timezone
     if (isTimezoneEnabled(config)) {
         const timezone = getDeviceTimezone();
-        await autoUpdateTimezone({deviceTimezone: timezone, userId: user.id});
+        await autoUpdateTimezone(serverUrl, {deviceTimezone: timezone, userId: user.id});
     }
 
     let dataRetentionPolicy: any;
-    const operator = new Operator(activeServerDatabase);
+    const operator = DatabaseManager.serverDatabases[Client4.getUrl()].operator;
 
     // Data retention
     if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-        dataRetentionPolicy = await getDataRetentionPolicy();
-        await operator.handleIsolatedEntity({tableName: IsolatedEntities.SYSTEM, values: [{name: 'dataRetentionPolicy', value: dataRetentionPolicy}], prepareRecordsOnly: false});
+        dataRetentionPolicy = await getDataRetentionPolicy(serverUrl);
+        await operator.handleSystem({systems: [{name: 'dataRetentionPolicy', value: dataRetentionPolicy}], prepareRecordsOnly: false});
     }
 
     return null;
 };
 
-export const updateMe = async (user: User) => {
-    const {activeServerDatabase, error} = await getActiveServerDatabase();
-    if (!activeServerDatabase) {
-        return {error};
+export const updateMe = async (serverUrl: string, user: User) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
     }
+
     let data;
     try {
         data = ((await Client4.patchMe(user._raw)) as unknown) as RawUser;
@@ -291,10 +292,8 @@ export const updateMe = async (user: User) => {
         return {error: e};
     }
 
-    const operator = new Operator(activeServerDatabase);
-    const systemRecords = operator.handleIsolatedEntity({
-        tableName: IsolatedEntities.SYSTEM,
-        values: [
+    const systemRecords = operator.handleSystem({
+        systems: [
             {name: 'currentUserId', value: data.id},
             {name: 'locale', value: data?.locale},
         ],
@@ -303,34 +302,33 @@ export const updateMe = async (user: User) => {
 
     const userRecord = operator.handleUsers({prepareRecordsOnly: true, users: [data]});
 
-    //todo: ?? Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
+    //todo: ?? Do we need to write to TOS table ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
     // tosRecords = await DataOperator.handleIsolatedEntity({ tableName: TERMS_OF_SERVICE, values: [{}], });
     const models = await Promise.all([
-        ...systemRecords,
-        ...userRecord,
+        systemRecords,
+        userRecord,
 
     // ...tosRecords,
     ]);
 
     if (models?.length) {
-        await operator.batchOperations({database: activeServerDatabase, models: models.flat()});
+        await operator.batchRecords(models.flat());
     }
 
     const updatedRoles: string[] = data.roles.split(' ');
     if (updatedRoles.length) {
-        await loadRolesIfNeeded(updatedRoles);
+        await loadRolesIfNeeded(serverUrl, updatedRoles);
     }
 
     return {data};
 };
-
-export const getSessions = async (currentUserId: string) => {
+export const getSessions = async (serverUrl: string, currentUserId: string) => {
     try {
         const sessions = await Client4.getSessions(currentUserId);
-        await createSessions(sessions);
+        await createSessions(serverUrl, sessions);
     } catch (e) {
         logError(e);
-        await forceLogoutIfNecessary(e);
+        await forceLogoutIfNecessary(serverUrl, e);
     }
 };
 
@@ -342,16 +340,22 @@ type LoadedUser = {
 export const ssoLogin = async (serverUrl: string) => {
     let deviceToken;
 
-    const {error, defaultDatabase} = await getDefaultDatabase();
+    const database = DatabaseManager.appDatabase?.database;
 
-    if (!defaultDatabase) {
-        return {error};
+    if (!database) {
+        return {error: 'App database not found'};
     }
 
     // Setting up active database for this SSO login flow
     try {
-        await createAndSetActiveDatabase({serverUrl});
-        deviceToken = await getDeviceToken(defaultDatabase);
+        await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                serverUrl,
+            },
+        });
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        deviceToken = await getDeviceToken(database);
     } catch (e) {
         return {error: e};
     }
@@ -359,9 +363,9 @@ export const ssoLogin = async (serverUrl: string) => {
     let result;
 
     try {
-        result = await loadMe({deviceToken}) as unknown as LoadedUser;
+        result = await loadMe(serverUrl, {deviceToken}) as unknown as LoadedUser;
         if (!result?.error && result?.currentUser) {
-            await completeLogin(result.currentUser);
+            await completeLogin(serverUrl, result.currentUser);
         }
     } catch (e) {
         return {error: e};

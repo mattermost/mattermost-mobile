@@ -6,7 +6,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/post';
+import Post from '@typings/database/models/servers/post';
 
 const {FILE, POST} = MM_TABLES.SERVER;
 
@@ -14,10 +14,10 @@ const {FILE, POST} = MM_TABLES.SERVER;
  * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
  */
 export default class File extends Model {
-    /** table (entity name) : File */
+    /** table (name) : File */
     static table = FILE;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A POST has a 1:N relationship with FILE. */

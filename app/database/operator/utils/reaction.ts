@@ -4,7 +4,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {RecordPair, SanitizeReactionsArgs} from '@typings/database/database';
-import Reaction from '@typings/database/reaction';
+import Reaction from '@typings/database/models/servers/reaction';
 
 const {REACTION} = MM_TABLES.SERVER;
 
@@ -24,7 +24,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
         query(Q.where('post_id', post_id)).
         fetch()) as Reaction[];
 
-    // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
+    // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction table
     const similarObjects: Reaction[] = [];
 
     const createReactions: RecordPair[] = [];

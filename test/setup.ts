@@ -11,14 +11,12 @@ require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 
 require('isomorphic-fetch');
 
-const mockImpl = new MockAsyncStorage();
-jest.mock('@react-native-community/async-storage', () => mockImpl);
-
 // @ts-expect-error no window exist in global
 global.window = {};
 
 /* eslint-disable no-console */
-
+jest.mock('@react-native-community/async-storage', () => new MockAsyncStorage());
+jest.mock('@database/manager');
 jest.doMock('react-native', () => {
     const {
         Platform,
@@ -88,6 +86,15 @@ jest.doMock('react-native', () => {
         },
         Appearance: {
             getColorScheme: jest.fn().mockReturnValue('light'),
+        },
+        MattermostManaged: {
+            getConstants: () => ({
+                appGroupIdentifier: 'group.mattermost.rnbeta',
+                appGroupSharedDirectory: {
+                    sharedDirectory: '',
+                    databasePath: '',
+                },
+            }),
         },
     };
 

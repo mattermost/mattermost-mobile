@@ -6,187 +6,95 @@ import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
-
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import DefaultMigration from '@database/migration/default';
-import {App, Global, Servers} from '@database/models/default';
-import {defaultSchema} from '@database/schema/default';
-import ServerMigration from '@database/migration/server';
-import {
-    Channel,
-    ChannelInfo,
-    ChannelMembership,
-    CustomEmoji,
-    Draft,
-    File,
-    Group,
-    GroupMembership,
-    GroupsInChannel,
-    GroupsInTeam,
-    MyChannel,
-    MyChannelSettings,
-    MyTeam,
-    Post,
-    PostMetadata,
-    PostsInChannel,
-    PostsInThread,
-    Preference,
-    Reaction,
-    Role,
-    SlashCommand,
-    System,
-    Team,
-    TeamChannelHistory,
-    TeamMembership,
-    TeamSearchHistory,
-    TermsOfService,
-    User,
-} from '@database/models/server';
-import {serverSchema} from '@database/schema/server';
-import {
-    DatabaseConnectionArgs,
-    DatabaseInstance,
-    DatabaseInstances,
-    DefaultNewServerArgs,
-    GetDatabaseConnectionArgs,
-    MigrationEvents,
-    Models,
-    RetrievedDatabase,
-} from '@typings/database/database';
-import {DatabaseType} from '@typings/database/enums';
-import IServers from '@typings/database/servers';
-import IGlobal from '@typings/database/global';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import urlParse from 'url-parse';
 
-const {SERVERS, GLOBAL} = MM_TABLES.DEFAULT;
-const DEFAULT_DATABASE = 'default';
-const RECENTLY_VIEWED_SERVERS = 'RECENTLY_VIEWED_SERVERS';
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import AppDataOperator from '@database/operator/app_data_operator';
+import AppDatabaseMigrations from '@app/database/migration/app';
+import {Info, Global, Servers} from '@app/database/models/app';
+import {schema as appSchema} from '@app/database/schema/app';
+import ServerDatabaseMigrations from '@database/migration/server';
+import {Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
+    Group, GroupMembership, GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam,
+    Post, PostMetadata, PostsInChannel, PostsInThread, Preference, Reaction, Role,
+    SlashCommand, System, Team, TeamChannelHistory, TeamMembership, TeamSearchHistory,
+    TermsOfService, User,
+} from '@database/models/server';
+import {serverSchema} from '@database/schema/server';
+import {getActiveServer, getServer} from '@queries/app/servers';
+import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {hashCode} from '@utils/security';
+
+import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, MigrationEvents, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
+import {DatabaseType} from '@typings/database/enums';
+import type IServers from '@typings/database/models/app/servers';
+
+import ServerDataOperator from '../operator/server_data_operator';
+
+const {SERVERS} = MM_TABLES.APP;
+const APP_DATABASE = 'app';
 
 class DatabaseManager {
-  private defaultDatabase: DatabaseInstance;
-  private readonly defaultModels: Models;
-  private readonly iOSAppGroupDatabase: string | null;
-  private readonly androidFilesDirectory: string | null;
+  public appDatabase?: AppDatabase;
+  public serverDatabases: ServerDatabases = {};
+  private readonly appModels: Models;
+  private readonly databaseDirectory: string | null;
   private readonly serverModels: Models;
 
   constructor() {
-      this.defaultModels = [App, Global, Servers];
+      this.appModels = [Info, Global, Servers];
       this.serverModels = [
-          Channel,
-          ChannelInfo,
-          ChannelMembership,
-          CustomEmoji,
-          Draft,
-          File,
-          Group,
-          GroupMembership,
-          GroupsInChannel,
-          GroupsInTeam,
-          MyChannel,
-          MyChannelSettings,
-          MyTeam,
-          Post,
-          PostMetadata,
-          PostsInChannel,
-          PostsInThread,
-          Preference,
-          Reaction,
-          Role,
-          SlashCommand,
-          System,
-          Team,
-          TeamChannelHistory,
-          TeamMembership,
-          TeamSearchHistory,
-          TermsOfService,
-          User,
+          Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
+          Group, GroupMembership, GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam,
+          Post, PostMetadata, PostsInChannel, PostsInThread, Preference, Reaction, Role,
+          SlashCommand, System, Team, TeamChannelHistory, TeamMembership, TeamSearchHistory,
+          TermsOfService, User,
       ];
 
-      this.iOSAppGroupDatabase = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : null;
-      this.androidFilesDirectory = Platform.OS === 'android' ? FileSystem.documentDirectory : null;
+      this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : FileSystem.documentDirectory;
   }
 
   /**
-     * getDatabaseConnection: Given a server url (serverUrl) and a flag (setAsActiveDatabase), this method will attempt
-     * to retrieve an existing database connection previously created for that url.
-     * If not found, it will create a new connection and register it in the DEFAULT_DATABASE. In this case, it will also
-     * use the provided connectionName as display_name for this server
-     * @param {GetDatabaseConnectionArgs} getDatabaseConnection
-     * @param {string} getDatabaseConnection.connectionName
-     * @param {string} getDatabaseConnection.serverUrl
-     * @param {boolean} getDatabaseConnection.setAsActiveDatabase
-     * @returns {Promise<DatabaseInstance>}
-     */
-  getDatabaseConnection = async ({serverUrl, setAsActiveDatabase, connectionName}: GetDatabaseConnectionArgs) => {
-      // We potentially already have this server registered; so we'll try to retrieve it if it is present under DEFAULT_DATABASE/GLOBAL entity
-      const existingServers = await this.retrieveDatabaseInstances([serverUrl]) as RetrievedDatabase[];
-
-      // Since we only passed one serverUrl, we'll expect only one value in the array
-      const serverDatabase = existingServers?.[0];
-
-      let connection: DatabaseInstance;
-
-      if (serverDatabase) {
-          // This serverUrl has previously been registered on the app
-          connection = serverDatabase.dbInstance;
-      } else {
-          // Or, it might be that the user has this server on the web-app but not mobile-app; so we'll need to create a new entry for this new serverUrl
-          const databaseName = connectionName ?? urlParse(serverUrl).hostname;
-          connection = await this.createDatabaseConnection({
-              shouldAddToDefaultDatabase: true,
-              configs: {
-                  actionsEnabled: true,
-                  dbName: databaseName,
-                  dbType: DatabaseType.SERVER,
-                  serverUrl,
-              },
-          });
+  * init : Retrieves all the servers registered in the default database
+  * @param {string[]} serverUrls
+  * @returns {Promise<void>}
+  */
+  public init = async (serverUrls: string[]): Promise<void> => {
+      await this.createAppDatabase();
+      for await (const serverUrl of serverUrls) {
+          await this.initServerDatabase(serverUrl);
       }
-
-      if (setAsActiveDatabase) {
-          await this.setActiveServerDatabase(serverUrl);
-      }
-
-      return connection;
   };
 
   /**
-   * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
-   * if a database connection could not be created, it will return undefined.
-   * @param {MMDatabaseConnection} databaseConnection
-   * @param {boolean} shouldAddToDefaultDatabase
-   *
-   * @returns {Promise<DatabaseInstance>}
+   * createAppDatabase: Creates the App database. However,
+   * if a database could not be created, it will return undefined.
+   * @returns {Promise<AppDatabase|undefined>}
    */
-  createDatabaseConnection = async ({configs, shouldAddToDefaultDatabase = true}: DatabaseConnectionArgs): Promise<DatabaseInstance> => {
-      const {actionsEnabled = true, dbName = DEFAULT_DATABASE, dbType = DatabaseType.DEFAULT, serverUrl = undefined} = configs;
-
+  private createAppDatabase = async (): Promise<AppDatabase|undefined> => {
       try {
-          const databaseName = dbType === DatabaseType.DEFAULT ? DEFAULT_DATABASE : dbName;
+          const databaseName = APP_DATABASE;
 
           const databaseFilePath = this.getDatabaseFilePath(databaseName);
-          const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
-          const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
-          const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
+          const modelClasses = this.appModels;
+          const schema = appSchema;
 
           const adapter = new SQLiteAdapter({
               dbName: databaseFilePath,
               migrationEvents: this.buildMigrationCallbacks(databaseName),
-              migrations,
+              migrations: AppDatabaseMigrations,
               schema,
           });
 
-          // Registers the new server connection into the DEFAULT database
-          if (serverUrl && shouldAddToDefaultDatabase) {
-              await this.addServerToDefaultDatabase({
-                  databaseFilePath,
-                  displayName: dbName,
-                  serverUrl,
-              });
-          }
+          const database = new Database({adapter, actionsEnabled: true, modelClasses});
+          const operator = new AppDataOperator(database);
 
-          return new Database({adapter, actionsEnabled, modelClasses});
+          this.appDatabase = {
+              database,
+              operator,
+          };
+
+          return this.appDatabase;
       } catch (e) {
           // TODO : report to sentry? Show something on the UI ?
       }
@@ -195,186 +103,228 @@ class DatabaseManager {
   };
 
   /**
-   * setActiveServerDatabase: Set the new active server database.  The serverUrl is used to ensure that we do not duplicate entries in the default database.
-   * This method should be called when switching to another server.
-   * @param {string} serverUrl
-   * @returns {Promise<void>}
+   * createServerDatabase: Creates a server database and registers the the server in the app database. However,
+   * if a database connection could not be created, it will return undefined.
+   * @param {CreateServerDatabaseArgs} createServerDatabaseArgs
+   *
+   * @returns {Promise<ServerDatabase|undefined>}
    */
-  setActiveServerDatabase = async (serverUrl: string) => {
-      const defaultDatabase = await this.getDefaultDatabase();
-      if (defaultDatabase) {
-          // retrieve recentlyViewedServers from Global entity
-          const recentlyViewedServers = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+   public createServerDatabase = async ({config}: CreateServerDatabaseArgs): Promise<ServerDatabase|undefined> => {
+       const {dbName, displayName, serverUrl} = config;
 
-          if (recentlyViewedServers.length) {
-              // We have previously written something for this flag
-              const flagRecord = recentlyViewedServers[0];
-              const recentList = Array.from(flagRecord.value);
-              recentList.unshift(serverUrl);
+       if (serverUrl) {
+           try {
+               const databaseName = hashCode(dbName);
+               const databaseFilePath = this.getDatabaseFilePath(databaseName);
+               const migrations = ServerDatabaseMigrations;
+               const modelClasses = this.serverModels;
+               const schema = serverSchema;
 
-              // so as to avoid duplicate in this array
-              const sanitizedList = Array.from(new Set(recentList));
+               const adapter = new SQLiteAdapter({
+                   dbName: databaseFilePath,
+                   migrationEvents: this.buildMigrationCallbacks(databaseName),
+                   migrations,
+                   schema,
+               });
 
-              await defaultDatabase.action(async () => {
-                  await flagRecord.update((record) => {
-                      record.value = sanitizedList;
-                  });
-              });
-          } else {
-              // The flag hasn't been set; so we create the record
-              await defaultDatabase.action(async () => {
-                  await defaultDatabase.collections.get(GLOBAL).create((record: IGlobal) => {
-                      record.name = RECENTLY_VIEWED_SERVERS;
-                      record.value = [serverUrl];
-                  });
-              });
-          }
-      }
-  };
+               // Registers the new server connection into the DEFAULT database
+               await this.addServerToAppDatabase({
+                   databaseFilePath,
+                   displayName: displayName || dbName,
+                   serverUrl,
+               });
 
-  /**
-   * getActiveServerUrl: Use this getter method to retrieve the active server URL.
-   * @returns {string | undefined}
-   */
-   getActiveServerUrl = async (): Promise<string | undefined> => {
-       const defaultDatabase = await this.getDefaultDatabase();
+               const database = new Database({adapter, actionsEnabled: true, modelClasses});
+               const operator = new ServerDataOperator(database);
+               const serverDatabase = {database, operator};
 
-       if (defaultDatabase) {
-           const serverRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
+               this.serverDatabases[serverUrl] = serverDatabase;
 
-           if (serverRecords.length) {
-               const recentServers = serverRecords[0].value as string[];
-               return recentServers[0];
+               return serverDatabase;
+           } catch (e) {
+               // TODO : report to sentry? Show something on the UI ?
            }
-           return undefined;
        }
+
        return undefined;
    };
 
   /**
-   * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
-   * Use this getter method to retrieve the active database if it has been set in your code.
-   * @returns {Promise<MostRecentConnection | undefined>}
-   */
-  getActiveServerDatabase = async (): Promise<DatabaseInstance> => {
-      const serverUrl = await this.getActiveServerUrl();
-
-      if (serverUrl) {
-          const serverDatabase = await this.getDatabaseConnection({serverUrl, setAsActiveDatabase: false});
-          return serverDatabase;
-      }
-      return undefined;
+  * initServerDatabase : initializes the server database.
+  * @param {string} serverUrl
+  * @returns {Promise<void>}
+  */
+  private initServerDatabase = async (serverUrl: string): Promise<void> => {
+      await this.createServerDatabase({
+          config: {
+              dbName: serverUrl,
+              dbType: DatabaseType.SERVER,
+              serverUrl,
+          },
+      });
   };
 
   /**
-   * getDefaultDatabase : Returns the default database.
-   * @returns {Database} default database
-   */
-  getDefaultDatabase = async (): Promise<DatabaseInstance> => {
-      if (!this.defaultDatabase) {
-          await this.setDefaultDatabase();
-      }
-      return this.defaultDatabase;
-  };
+  * addServerToAppDatabase: Adds a record in the 'app' database - into the 'servers' table - for this new server connection
+  * @param {string} databaseFilePath
+  * @param {string} displayName
+  * @param {string} serverUrl
+  * @returns {Promise<void>}
+  */
+  private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl}: RegisterServerDatabaseArgs): Promise<void> => {
+      try {
+          const isServerPresent = await this.isServerPresent(serverUrl); // TODO: Use normalized serverUrl
 
-  /**
-   * retrieveDatabaseInstances: Using an array of server URLs, this method creates a database connection for each URL
-   * and return them to the caller.
-   *
-   * @param {string[]} serverUrls
-   * @returns {Promise<RetrievedDatabase[] | null>}
-   */
-  retrieveDatabaseInstances = async (serverUrls: string[]): Promise<DatabaseInstances[] | null> => {
-      // Retrieve all server records from the default db
-      const allServers = await this.getAllServers(serverUrls);
-
-      // Creates server database instances
-      if (allServers.length) {
-          const databasePromises = await allServers.map(async (server: IServers) => {
-              const {displayName, url} = server;
-
-              // Since we are retrieving existing URL ( and so database connections ) from the 'DEFAULT' database, shouldAddToDefaultDatabase is set to false
-              const dbInstance = await this.createDatabaseConnection({
-                  configs: {
-                      actionsEnabled: true,
-                      dbName: displayName,
-                      dbType: DatabaseType.SERVER,
-                      serverUrl: url,
-                  },
-                  shouldAddToDefaultDatabase: false,
+          if (this.appDatabase?.database && !isServerPresent) {
+              const appDatabase = this.appDatabase.database;
+              await appDatabase.action(async () => {
+                  const serversCollection = appDatabase.collections.get(SERVERS);
+                  await serversCollection.create((server: IServers) => {
+                      server.dbPath = databaseFilePath;
+                      server.displayName = displayName;
+                      server.mentionCount = 0;
+                      server.unreadCount = 0;
+                      server.url = serverUrl; // TODO: Use normalized serverUrl
+                      server.isSecured = urlParse(serverUrl).protocol === 'https';
+                      server.lastActiveAt = 0;
+                  });
               });
-
-              return {dbInstance, displayName, url};
-          });
-          const databaseInstances = await Promise.all(databasePromises);
-          return databaseInstances;
+          }
+      } catch (e) {
+          // TODO : report to sentry? Show something on the UI ?
       }
-      return null;
   };
 
   /**
-   * deleteDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
-   * Also, it removes its entry in the 'servers' table from the DEFAULT database
+  * isServerPresent : Confirms if the current serverUrl does not already exist in the database
+  * @param {String} serverUrl
+  * @returns {Promise<boolean>}
+  */
+  private isServerPresent = async (serverUrl: string): Promise<boolean> => {
+      if (this.appDatabase?.database) {
+          const server = await getServer(this.appDatabase.database, serverUrl);
+          return Boolean(server);
+      }
+
+      return false;
+  }
+
+  /**
+   * getActiveServerUrl: Get the record for active server database.
+   * @returns {Promise<string|null|undefined>}
+   */
+  public getActiveServerUrl = async (): Promise<string|null|undefined> => {
+      const database = this.appDatabase?.database;
+      if (database) {
+          const server = await getActiveServer(database);
+          return server?.url;
+      }
+
+      return null;
+  }
+
+  /**
+   * getActiveServerDatabase: Get the record for active server database.
+   * @returns {Promise<Database|undefined>}
+   */
+   public getActiveServerDatabase = async (): Promise<Database|undefined> => {
+       const database = this.appDatabase?.database;
+       if (database) {
+           const server = await getActiveServer(database);
+           if (server?.url) {
+               return this.serverDatabases[server.url].database;
+           }
+       }
+
+       return undefined;
+   }
+
+  /**
+   * setActiveServerDatabase: Set the new active server database.
+   * This method should be called when switching to another server.
+   * @param {string} serverUrl
+   * @returns {Promise<void>}
+   */
+  public setActiveServerDatabase = async (serverUrl: string): Promise<void> => {
+      if (this.appDatabase?.database) {
+          const database = this.appDatabase?.database;
+          await database.action(async () => {
+              const servers = await database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch();
+              if (servers.length) {
+                  servers[0].update((server: Servers) => {
+                      server.lastActiveAt = Date.now();
+                  });
+              }
+          });
+      }
+  };
+
+  /**
+   * deleteServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
+   * Also, it sets the last_active_at to '0' entry in the 'servers' table from the APP database
    * @param  {string} serverUrl
    * @returns {Promise<boolean>}
    */
-  deleteDatabase = async (serverUrl: string): Promise<boolean> => {
-      try {
-          const defaultDatabase = await this.getDefaultDatabase();
-          let server: IServers;
-          let result = true;
-
-          if (defaultDatabase) {
-              // NOTE: We are deleting this 'database' entry in the SERVERS entity on the DEFAULT database; for that we retrieve its record first.
-              const serversRecords = (await defaultDatabase.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch()) as IServers[];
-              server = serversRecords?.[0] ?? undefined;
-
-              const globalRecords = await defaultDatabase.collections.get(GLOBAL).query(Q.where('name', RECENTLY_VIEWED_SERVERS)).fetch() as IGlobal[];
-              const global = globalRecords?.[0] ?? undefined;
-
-              if (server) {
-                  const databaseName = server.displayName;
-
-                  // Perform a delete operation for this server record on the 'servers' table in default database
-                  await defaultDatabase.action(async () => {
-                      await server.destroyPermanently();
+  public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
+      if (this.appDatabase?.database) {
+          const database = this.appDatabase?.database;
+          const server = await getServer(database, serverUrl);
+          if (server) {
+              database.action(() => {
+                  server.update((record) => {
+                      record.lastActiveAt = 0;
                   });
+              });
 
-                  if (Platform.OS === 'ios') {
-                      // On iOS, we'll delete the *.db file under the shared app-group/databases folder
-                      deleteIOSDatabase({databaseName});
-                      return true;
-                  }
-
-                  // On Android, we'll delete both the *.db file and the *.db-journal file
-                  const androidFilesDir = `${this.androidFilesDirectory}databases/`;
-                  const databaseFile = `${androidFilesDir}${databaseName}.db`;
-                  const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
-
-                  await FileSystem.deleteAsync(databaseFile);
-                  await FileSystem.deleteAsync(databaseJournal);
-
-                  result = result && true;
-              }
-
-              if (global) {
-                  // filter out the deleted serverURL
-                  const urls = global.value as string[];
-                  const filtered = urls.filter((url) => url !== serverUrl);
-                  await defaultDatabase.action(async () => {
-                      await global.update((record) => {
-                          record.value = filtered;
-                      });
-                  });
-                  result = result && true;
-              }
-              return result;
+              delete this.serverDatabases[serverUrl];
+              this.deleteServerDatabaseFiles(serverUrl);
           }
-          return false;
-      } catch (e) {
-          return false;
       }
-  };
+  }
+
+  /**
+   * destroyServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
+   * Also, removes the entry in the 'servers' table from the APP database
+   * @param  {string} serverUrl
+   * @returns {Promise<boolean>}
+   */
+  public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
+      if (this.appDatabase?.database) {
+          const database = this.appDatabase?.database;
+          const server = await getServer(database, serverUrl);
+          if (server) {
+              database.action(async () => {
+                  await server.destroyPermanently();
+              });
+
+              delete this.serverDatabases[serverUrl];
+              this.deleteServerDatabaseFiles(serverUrl);
+          }
+      }
+  }
+
+  /**
+   * deleteServerDatabaseFiles: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
+   * @param  {string} serverUrl
+   * @returns {Promise<void>}
+   */
+  private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+      const databaseName = hashCode(serverUrl);
+
+      if (Platform.OS === 'ios') {
+          // On iOS, we'll delete the *.db file under the shared app-group/databases folder
+          deleteIOSDatabase({databaseName});
+          return;
+      }
+
+      // On Android, we'll delete both the *.db file and the *.db-journal file
+      const androidFilesDir = `${this.databaseDirectory}databases/`;
+      const databaseFile = `${androidFilesDir}${databaseName}.db`;
+      const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
+
+      await FileSystem.deleteAsync(databaseFile);
+      await FileSystem.deleteAsync(databaseJournal);
+  }
 
   /**
    * factoryReset: Removes the databases directory and all its contents on the respective platform
@@ -390,79 +340,11 @@ class DatabaseManager {
           }
 
           // On Android, we'll remove the databases folder under the Document Directory
-          const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
+          const androidFilesDir = `${this.databaseDirectory}databases/`;
           await FileSystem.deleteAsync(androidFilesDir);
           return true;
       } catch (e) {
           return false;
-      }
-  };
-
-    /**
-     * isServerPresent : Confirms if the current serverUrl does not already exist in the database
-     * @param {String} serverUrl
-     * @returns {Promise<boolean>}
-     */
-    private isServerPresent = async (serverUrl: string) => {
-        const allServers = await this.getAllServers([serverUrl]);
-        return allServers?.length > 0;
-    };
-
-  /**
-   * getAllServers : Retrieves all the servers registered in the default database
-   * @returns {Promise<Servers[]>}
-   */
-  private getAllServers = async (serverUrls: string[]) => {
-      // Retrieve all server records from the default db
-      const defaultDatabase = await this.getDefaultDatabase();
-
-      if (defaultDatabase) {
-          const allServers = (await defaultDatabase.collections.get(SERVERS).query(Q.where('url', Q.oneOf(serverUrls))).fetch() as IServers[]);
-          return allServers;
-      }
-
-      return [];
-  };
-
-  /**
-   * setDefaultDatabase : Sets the default database.
-   * @returns {Promise<DatabaseInstance>}
-   */
-  private setDefaultDatabase = async (): Promise<DatabaseInstance> => {
-      this.defaultDatabase = await this.createDatabaseConnection({
-          configs: {dbName: DEFAULT_DATABASE},
-          shouldAddToDefaultDatabase: false,
-      });
-
-      return this.defaultDatabase;
-  };
-
-  /**
-   * addServerToDefaultDatabase: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
-   * @param {string} databaseFilePath
-   * @param {string} displayName
-   * @param {string} serverUrl
-   * @returns {Promise<void>}
-   */
-  private addServerToDefaultDatabase = async ({databaseFilePath, displayName, serverUrl}: DefaultNewServerArgs) => {
-      try {
-          const defaultDatabase = await this.getDefaultDatabase();
-          const isServerPresent = await this.isServerPresent(serverUrl);
-
-          if (defaultDatabase && !isServerPresent) {
-              await defaultDatabase.action(async () => {
-                  const serversCollection = defaultDatabase.collections.get(SERVERS);
-                  await serversCollection.create((server: IServers) => {
-                      server.dbPath = databaseFilePath;
-                      server.displayName = displayName;
-                      server.mentionCount = 0;
-                      server.unreadCount = 0;
-                      server.url = serverUrl;
-                  });
-              });
-          }
-      } catch (e) {
-          // TODO : report to sentry? Show something on the UI ?
       }
   };
 
@@ -507,7 +389,7 @@ class DatabaseManager {
    * @returns {string}
    */
   private getDatabaseFilePath = (dbName: string): string => {
-      return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
+      return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}${dbName}.db`;
   };
 }
 
@@ -517,4 +399,4 @@ if (!__DEV__) {
     logger.silence();
 }
 
-export default DatabaseManager;
+export default new DatabaseManager();

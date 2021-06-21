@@ -5,7 +5,7 @@ import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {Screens} from '@constants';
-import {getActiveServerCredentials, getServerCredentials} from '@init/credentials';
+import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
@@ -52,11 +52,14 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    const credentials = serverUrl ? await getServerCredentials(serverUrl) : await getActiveServerCredentials();
+    serverUrl = await getActiveServerUrl();
+    if (serverUrl) {
+        const credentials = await getServerCredentials(serverUrl);
 
-    if (credentials) {
-        launchToChannel(props, resetNavigation);
-        return;
+        if (credentials) {
+            launchToChannel({...props, serverUrl}, resetNavigation);
+            return;
+        }
     }
 
     launchToServer(props, resetNavigation);

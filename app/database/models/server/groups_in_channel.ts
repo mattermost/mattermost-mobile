@@ -6,8 +6,8 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
-import Group from '@typings/database/group';
+import Channel from '@typings/database/models/servers/channel';
+import Group from '@typings/database/models/servers/group';
 
 const {GROUP, GROUPS_IN_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {GROUP, GROUPS_IN_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
  * The GroupsInChannel links the Channel model with the Group model
  */
 export default class GroupsInChannel extends Model {
-    /** table (entity name) : GroupsInChannel */
+    /** table (name) : GroupsInChannel */
     static table = GROUPS_IN_CHANNEL;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A GROUP can be associated with multiple GROUPS_IN_CHANNEL (relationship is 1:N)  */

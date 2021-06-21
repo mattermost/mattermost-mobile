@@ -7,7 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {PostMetadataData, PostMetadataType} from '@typings/database/database';
-import Post from '@typings/database/post';
+import Post from '@typings/database/models/servers/post';
 
 const {POST, POST_METADATA} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {POST, POST_METADATA} = MM_TABLES.SERVER;
  * PostMetadata provides additional information on a POST
  */
 export default class PostMetadata extends Model {
-    /** table (entity name) : PostMetadata */
+    /** table (name) : PostMetadata */
     static table = POST_METADATA;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A POST can have multiple POST_METADATA.(relationship is 1:N)*/

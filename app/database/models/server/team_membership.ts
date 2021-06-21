@@ -6,8 +6,8 @@ import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/team';
-import User from '@typings/database/user';
+import Team from '@typings/database/models/servers/team';
+import User from '@typings/database/models/servers/user';
 
 const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
@@ -16,10 +16,10 @@ const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * teams (relationship type N:N)
  */
 export default class TeamMembership extends Model {
-    /** table (entity name) : TeamMembership */
+    /** table (name) : TeamMembership */
     static table = TEAM_MEMBERSHIP;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** TEAM and TEAM_MEMBERSHIP share a 1:N relationship;  USER can be part of multiple teams */

@@ -6,7 +6,7 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/post';
+import Post from '@typings/database/models/servers/post';
 
 const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
  * gaps in between for an efficient user reading experience for threads.
  */
 export default class PostsInThread extends Model {
-    /** table (entity name) : PostsInThread */
+    /** table (name) : PostsInThread */
     static table = POSTS_IN_THREAD;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A POST can have multiple POSTS_IN_THREAD.(relationship is 1:N)*/

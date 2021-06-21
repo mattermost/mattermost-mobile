@@ -2,17 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import Operator from '@database/operator';
-import {getRoles} from '@queries/role';
-import {IsolatedEntities} from '@typings/database/enums';
-import {getActiveServerDatabase} from '@utils/database';
+import DatabaseManager from '@database/manager';
+import {getRoles} from '@app/queries/servers/role';
 
-export const loadRolesIfNeeded = async (updatedRoles: string[]) => {
-    const {activeServerDatabase: database, error: e} = await getActiveServerDatabase();
-    if (!database) {
-        return {error: e};
-    }
-
+export const loadRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
     const existingRoles = ((await getRoles(database)) as unknown) as Role[];
 
     const roleNames = existingRoles.map((role) => {
@@ -24,11 +19,10 @@ export const loadRolesIfNeeded = async (updatedRoles: string[]) => {
     });
 
     try {
-        const operator = new Operator(database);
-        const data = await Client4.getRolesByNames(newRoles);
-        await operator.handleIsolatedEntity({
-            tableName: IsolatedEntities.ROLE,
-            values: data,
+        const roles = await Client4.getRolesByNames(newRoles);
+
+        await operator.handleRole({
+            roles,
             prepareRecordsOnly: false,
         });
     } catch (error) {

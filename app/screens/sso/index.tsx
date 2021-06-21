@@ -83,7 +83,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     };
 
     const goToChannel = () => {
-        scheduleExpiredNotification(intl);
+        scheduleExpiredNotification(serverUrl, intl);
         resetToChannel();
     };
 

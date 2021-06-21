@@ -5,7 +5,7 @@ import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 import {MM_TABLES} from '@constants/database';
 
 const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
@@ -15,10 +15,10 @@ const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
  * the channel this user belongs to.
  */
 export default class MyChannelSettings extends Model {
-    /** table (entity name) : MyChannelSettings */
+    /** table (name) : MyChannelSettings */
     static table = MY_CHANNEL_SETTINGS;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL is related to only one MY_CHANNEL_SETTINGS (relationship is 1:1) */
@@ -31,6 +31,6 @@ export default class MyChannelSettings extends Model {
     /** notify_props : Configurations with regards to this channel */
     @json('notify_props', (rawJson) => rawJson) notifyProps!: NotifyProps;
 
-    /** channel : The relation pointing to entity CHANNEL */
+    /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

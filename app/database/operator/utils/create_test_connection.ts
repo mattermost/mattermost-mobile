@@ -4,25 +4,20 @@
 import DatabaseManager from '@database/manager';
 import {DatabaseType} from '@typings/database/enums';
 
-// NOTE: uncomment the below line if you are manually testing the database
-jest.mock('@database/manager');
-
 export const createTestConnection = async ({databaseName = 'db_name', setActive = false}) => {
     const serverUrl = 'https://appv2.mattermost.com';
-    const databaseClient = new DatabaseManager();
-    const database = await databaseClient.createDatabaseConnection({
-        shouldAddToDefaultDatabase: true,
-        configs: {
-            actionsEnabled: true,
+    await DatabaseManager.init([]);
+    const server = await DatabaseManager.createServerDatabase({
+        config: {
             dbName: databaseName,
             dbType: DatabaseType.SERVER,
             serverUrl,
         },
     });
 
-    if (setActive) {
-        await databaseClient.setActiveServerDatabase(serverUrl);
+    if (setActive && server) {
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
     }
 
-    return database;
+    return server?.database;
 };

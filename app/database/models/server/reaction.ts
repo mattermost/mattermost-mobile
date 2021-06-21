@@ -6,8 +6,8 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/post';
-import User from '@typings/database/user';
+import Post from '@typings/database/models/servers/post';
+import User from '@typings/database/models/servers/user';
 
 const {POST, REACTION, USER} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {POST, REACTION, USER} = MM_TABLES.SERVER;
  * The Reaction Model is used to present the reactions a user had on a particular post
  */
 export default class Reaction extends Model {
-    /** table (entity name) : Reaction */
+    /** table (name) : Reaction */
     static table = REACTION;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A POST can have multiple REACTION. (relationship is 1:N) */

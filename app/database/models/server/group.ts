@@ -5,9 +5,9 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import GroupMembership from '@typings/database/group_membership';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import GroupsInTeam from '@typings/database/groups_in_team';
+import GroupMembership from '@typings/database/models/servers/group_membership';
+import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
+import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
 
 const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
 
@@ -17,10 +17,10 @@ const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.S
  * name in the message. (e.g @mobile_team)
  */
 export default class Group extends Model {
-    /** table (entity name) : Group */
+    /** table (name) : Group */
     static table = GROUP;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A GROUP has a 1:N relationship with GROUPS_IN_CHANNEL */

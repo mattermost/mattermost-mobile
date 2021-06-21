@@ -6,20 +6,20 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
 
 /**
- * ChannelInfo is an extension of the information contained in the Channel entity.
+ * ChannelInfo is an extension of the information contained in the Channel table.
  * In a Separation of Concerns approach, ChannelInfo will provide additional information about a channel but on a more
  * specific level.
  */
 export default class ChannelInfo extends Model {
-    /** table (entity name) : ChannelInfo */
+    /** table (name) : ChannelInfo */
     static table = CHANNEL_INFO;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
@@ -44,6 +44,6 @@ export default class ChannelInfo extends Model {
     /** purpose: The intention behind this channel */
     @field('purpose') purpose!: string;
 
-    /** channel : The lazy query property to the record from  entity CHANNEL */
+    /** channel : The lazy query property to the record from CHANNEL table */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

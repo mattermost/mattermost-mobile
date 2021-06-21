@@ -22,6 +22,7 @@ describe('*** MFA Screen ***', () => {
         loginId: 'loginId',
         password: 'passwd',
         license: {},
+        serverUrl: 'https://locahost:8065',
         theme: Preferences.THEMES.default,
     };
 

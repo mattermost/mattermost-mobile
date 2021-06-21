@@ -5,9 +5,9 @@ import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from '@typings/database/channel';
+import Channel from '@typings/database/models/servers/channel';
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/user';
+import User from '@typings/database/models/servers/user';
 
 const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
@@ -16,10 +16,10 @@ const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * channels ( N:N relationship between model Users and model Channel)
  */
 export default class ChannelMembership extends Model {
-    /** table (entity name) : ChannelMembership */
+    /** table (name) : ChannelMembership */
     static table = CHANNEL_MEMBERSHIP;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL can have multiple USER */

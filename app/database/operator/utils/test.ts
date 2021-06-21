@@ -1,17 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Operator from '@database/operator';
+import DatabaseManager from '@database/manager';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
-import DatabaseManager from '@database/manager';
-import {DatabaseType} from '@typings/database/enums';
 import {RawPost} from '@typings/database/database';
-import Reaction from '@typings/database/reaction';
+import Reaction from '@typings/database/models/servers/reaction';
 
 import {mockedPosts, mockedReactions} from './mock';
-
-jest.mock('@database/manager');
 
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {
@@ -71,22 +67,15 @@ describe('DataOperator: Utils tests', () => {
     it('=> sanitizeReactions: should triage between reactions that needs creation/deletion and emojis to be created', async () => {
         const dbName = 'server_schema_connection';
         const serverUrl = 'https://appv2.mattermost.com';
-        const databaseManagerClient = new DatabaseManager();
-        const database = await databaseManagerClient.createDatabaseConnection({
-            shouldAddToDefaultDatabase: true,
-            configs: {
-                actionsEnabled: true,
+        const server = await DatabaseManager.createServerDatabase({
+            config: {
                 dbName,
-                dbType: DatabaseType.SERVER,
                 serverUrl,
             },
         });
-        await databaseManagerClient.setActiveServerDatabase(serverUrl);
-
-        const operatorClient = new Operator(database!);
 
         // we commit one Reaction to our database
-        const prepareRecords = await operatorClient.handleReactions({
+        const prepareRecords = await server?.operator.handleReactions({
             reactions: [
                 {
                     user_id: 'beqkgo4wzbn98kjzjgc1p5n91o',
@@ -102,8 +91,8 @@ describe('DataOperator: Utils tests', () => {
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here
         // eslint-disable-next-line max-nested-callbacks
-        await database!.action(async () => {
-            await database!.batch(...prepareRecords);
+        await server?.database!.action(async () => {
+            await server.database!.batch(...prepareRecords);
         });
 
         const {
@@ -111,7 +100,7 @@ describe('DataOperator: Utils tests', () => {
             createEmojis,
             deleteReactions,
         } = await sanitizeReactions({
-            database: database!,
+            database: server!.database,
             post_id: '8ww8kb1dbpf59fu4d5xhu5nf5w',
             rawReactions: mockedReactions,
         });

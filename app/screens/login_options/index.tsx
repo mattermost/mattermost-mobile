@@ -57,7 +57,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginOptions: NavigationFunctionComponent = ({config, license, theme, serverUrl}: LoginOptionsProps) => {
+const LoginOptions: NavigationFunctionComponent = ({config, license, serverUrl, theme}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyles(theme);
 
@@ -65,7 +65,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, license, theme, serv
         const screen = LOGIN;
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        goToScreen(screen, title, {config, license, theme});
+        goToScreen(screen, title, {config, license, serverUrl, theme});
     });
 
     const displaySSO = preventDoubleTap((ssoType: string) => {

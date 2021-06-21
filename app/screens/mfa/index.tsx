@@ -19,8 +19,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {login} from '@requests/remote/user';
-import {Config} from '@typings/database/config';
-import {License} from '@typings/database/license';
+import {Config} from '@typings/database/models/servers/config';
+import {License} from '@typings/database/models/servers/license';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,10 +31,11 @@ type MFAProps = {
     license: Partial<License>,
     loginId : string,
     password: string,
+    serverUrl: string;
     theme: Theme;
 }
 
-const MFA = ({config, goToChannel, license, loginId, password, theme}: MFAProps) => {
+const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}: MFAProps) => {
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -75,7 +76,7 @@ const MFA = ({config, goToChannel, license, loginId, password, theme}: MFAProps)
             return;
         }
         setIsLoading(true);
-        const result = await login({loginId, password, mfaToken: token, config, license});
+        const result = await login(serverUrl, {loginId, password, mfaToken: token, config, license});
         setIsLoading(false);
         if (result?.error) {
             setError(result?.error);

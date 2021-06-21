@@ -5,9 +5,9 @@ import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Group from '@typings/database/group';
+import Group from '@typings/database/models/servers/group';
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/team';
+import Team from '@typings/database/models/servers/team';
 
 const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
 
@@ -15,10 +15,10 @@ const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
  * The GroupsInTeam links the Team model with the Group model
  */
 export default class GroupsInTeam extends Model {
-    /** table (entity name) : GroupsInTeam */
+    /** table (name) : GroupsInTeam */
     static table = GROUPS_IN_TEAM;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** GroupsInTeam can belong to only one Group */
