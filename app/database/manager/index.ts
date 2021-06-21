@@ -367,7 +367,7 @@ class DatabaseManager {
                   dbName,
               });
           },
-          onError: (error) => {
+          onError: (error: Error) => {
               return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                   dbName,
                   error,
