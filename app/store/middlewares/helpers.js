@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { isCollapsedThreadsEnabled } from "@mm-redux/selectors/entities/preferences";
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 
 export function getLastChannelForTeam(payload) {
     if (payload?.views?.team?.lastChannelForTeam) {
