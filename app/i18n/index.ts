@@ -7,7 +7,9 @@ import {getLocales} from 'react-native-localize';
 
 import en from '@assets/i18n/en.json';
 
-const deviceLocale = getLocales()[0].languageCode;
+import availableLanguages from './languages';
+
+const deviceLocale = getLocales()[0].languageTag;
 export const DEFAULT_LOCALE = deviceLocale;
 
 function loadTranslation(locale?: string) {
@@ -25,6 +27,16 @@ function loadTranslation(locale?: string) {
 
                 translations = require('@assets/i18n/de.json');
                 momentData = require('moment/locale/de');
+                break;
+            case 'en-AU':
+                if (Platform.OS === 'android') {
+                    require('@formatjs/intl-pluralrules/locale-data/en');
+                    require('@formatjs/intl-numberformat/locale-data/en');
+                    require('@formatjs/intl-datetimeformat/locale-data/en');
+                }
+
+                translations = require('@assets/i18n/en_AU.json');
+                momentData = require('moment/locale/en-au');
                 break;
             case 'es':
                 if (Platform.OS === 'android') {
@@ -187,6 +199,12 @@ function loadChinesePolyfills() {
     }
 }
 
+export function getLocaleFromLanguage(lang: string) {
+    const languageCode = lang.split('-')[0];
+    const locale = availableLanguages[lang] || languageCode;
+    return locale;
+}
+
 export function resetMomentLocale() {
     moment.locale(DEFAULT_LOCALE);
 }
@@ -195,7 +213,8 @@ export function getTranslations(locale?: string) {
     return loadTranslation(locale);
 }
 
-export function getLocalizedMessage(locale: string, id: string) {
+export function getLocalizedMessage(lang: string, id: string) {
+    const locale = getLocaleFromLanguage(lang);
     const translations = getTranslations(locale);
 
     return translations[id];
