@@ -5,7 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 
 /**  The Role model will describe the set of permissions for each role */
 export default class Role extends Model {
-    /** table (entity name) : Role */
+    /** table (name) : Role */
     static table: string;
 
     /** name  : The role's name */

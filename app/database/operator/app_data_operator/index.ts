@@ -9,7 +9,7 @@ import {
     isRecordServerEqualToRaw,
 } from '@database/operator/app_data_operator/comparator';
 import {
-    transformAppRecord,
+    transformInfoRecord,
     transformGlobalRecord,
     transformServersRecord,
 } from '@database/operator/app_data_operator/transformers';
@@ -27,14 +27,14 @@ export default class AppDataOperator extends BaseDataOperator {
     handleInfo = async ({info, prepareRecordsOnly = true}: HandleInfoArgs) => {
         if (!info.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${INFO}`,
+                'An empty "values" array has been passed to the handleInfo',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'version_number',
             findMatchingRecordBy: isRecordInfoEqualToRaw,
-            transformer: transformAppRecord,
+            transformer: transformInfoRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: info, key: 'version_number'}),
             tableName: INFO,
@@ -46,11 +46,11 @@ export default class AppDataOperator extends BaseDataOperator {
     handleGlobal = async ({global, prepareRecordsOnly = true}: HandleGlobalArgs) => {
         if (!global.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${GLOBAL}`,
+                'An empty "values" array has been passed to the handleGlobal',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'name',
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
             transformer: transformGlobalRecord,
@@ -65,11 +65,11 @@ export default class AppDataOperator extends BaseDataOperator {
     handleServers = async ({servers, prepareRecordsOnly = true}: HandleServersArgs) => {
         if (!servers.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${SERVERS}`,
+                'An empty "values" array has been passed to the handleServers',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'url',
             findMatchingRecordBy: isRecordServerEqualToRaw,
             transformer: transformServersRecord,

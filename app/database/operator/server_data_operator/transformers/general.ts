@@ -24,7 +24,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * transformCustomEmojiRecord: Prepares record of entity 'CustomEmoji' from the SERVER database for update or create actions.
+ * transformCustomEmojiRecord: Prepares a record of the SERVER database 'CustomEmoji' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -51,7 +51,7 @@ export const transformCustomEmojiRecord = ({action, database, value}: Transforme
 };
 
 /**
- * transformRoleRecord: Prepares record of entity 'Role' from the SERVER database for update or create actions.
+ * transformRoleRecord: Prepares a record of the SERVER database 'Role' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -79,7 +79,7 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs) 
 };
 
 /**
- * transformSystemRecord: Prepares record of entity 'System' from the SERVER database for update or create actions.
+ * transformSystemRecord: Prepares a record of the SERVER database 'System' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -104,7 +104,7 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
 };
 
 /**
- * transformTermsOfServiceRecord: Prepares record of entity 'TermsOfService' from the SERVER database for update or create actions.
+ * transformTermsOfServiceRecord: Prepares a record of the SERVER database 'TermsOfService' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

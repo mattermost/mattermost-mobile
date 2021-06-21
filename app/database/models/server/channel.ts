@@ -35,10 +35,10 @@ const {
  * The Channel model represents a channel in the Mattermost app.
  */
 export default class Channel extends Model {
-    /** table (entity name) : Channel */
+    /** table (name) : Channel */
     static table = CHANNEL;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
@@ -123,7 +123,7 @@ export default class Channel extends Model {
     /** creator : The USER who created this CHANNEL*/
     @immutableRelation(USER, 'creator_id') creator!: Relation<User>;
 
-    /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
+    /** info : Query returning extra information about this channel from CHANNEL_INFO table */
     @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfo>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */

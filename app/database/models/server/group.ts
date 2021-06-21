@@ -17,10 +17,10 @@ const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.S
  * name in the message. (e.g @mobile_team)
  */
 export default class Group extends Model {
-    /** table (entity name) : Group */
+    /** table (name) : Group */
     static table = GROUP;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A GROUP has a 1:N relationship with GROUPS_IN_CHANNEL */

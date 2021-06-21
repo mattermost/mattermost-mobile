@@ -10,7 +10,7 @@ const {ROLE} = MM_TABLES.SERVER;
 
 /**  The Role model will describe the set of permissions for each role */
 export default class Role extends Model {
-    /** table (entity name) : Role */
+    /** table (name) : Role */
     static table = ROLE;
 
     /** name  : The role's name */

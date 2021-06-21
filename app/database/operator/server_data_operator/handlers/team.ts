@@ -54,7 +54,7 @@ export interface TeamHandlerMix {
 
 const TeamHandler = (superclass: any) => class extends superclass {
     /**
-     * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP entity from the 'Server' schema
+     * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP table from the 'Server' schema
      * @param {HandleTeamMembershipArgs} teamMembershipsArgs
      * @param {RawTeamMembership[]} teamMembershipsArgs.teamMemberships
      * @param {boolean} teamMembershipsArgs.prepareRecordsOnly
@@ -72,7 +72,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
             transformer: transformTeamMembershipRecord,
@@ -85,7 +85,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleTeam: Handler responsible for the Create/Update operations occurring on the TEAM entity from the 'Server' schema
+     * handleTeam: Handler responsible for the Create/Update operations occurring on the TEAM table from the 'Server' schema
      * @param {HandleTeamArgs} teamsArgs
      * @param {RawTeam[]} teamsArgs.teams
      * @param {boolean} teamsArgs.prepareRecordsOnly
@@ -103,7 +103,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teams, key: 'id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordTeamEqualToRaw,
             transformer: transformTeamRecord,
@@ -116,7 +116,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleTeamChannelHistory: Handler responsible for the Create/Update operations occurring on the TEAM_CHANNEL_HISTORY entity from the 'Server' schema
+     * handleTeamChannelHistory: Handler responsible for the Create/Update operations occurring on the TEAM_CHANNEL_HISTORY table from the 'Server' schema
      * @param {HandleTeamChannelHistoryArgs} teamChannelHistoriesArgs
      * @param {RawTeamChannelHistory[]} teamChannelHistoriesArgs.teamChannelHistories
      * @param {boolean} teamChannelHistoriesArgs.prepareRecordsOnly
@@ -134,7 +134,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'team_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
             transformer: transformTeamChannelHistoryRecord,
@@ -147,7 +147,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleTeamSearchHistory: Handler responsible for the Create/Update operations occurring on the TEAM_SEARCH_HISTORY entity from the 'Server' schema
+     * handleTeamSearchHistory: Handler responsible for the Create/Update operations occurring on the TEAM_SEARCH_HISTORY table from the 'Server' schema
      * @param {HandleTeamSearchHistoryArgs} teamSearchHistoriesArgs
      * @param {RawTeamSearchHistory[]} teamSearchHistoriesArgs.teamSearchHistories
      * @param {boolean} teamSearchHistoriesArgs.prepareRecordsOnly
@@ -165,7 +165,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
             transformer: transformTeamSearchHistoryRecord,
@@ -178,7 +178,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND entity from the 'Server' schema
+     * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND table from the 'Server' schema
      * @param {HandleSlashCommandArgs} slashCommandsArgs
      * @param {RawSlashCommand[]} slashCommandsArgs.slashCommands
      * @param {boolean} slashCommandsArgs.prepareRecordsOnly
@@ -196,7 +196,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
             transformer: transformSlashCommandRecord,
@@ -209,7 +209,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleMyTeam: Handler responsible for the Create/Update operations occurring on the MY_TEAM entity from the 'Server' schema
+     * handleMyTeam: Handler responsible for the Create/Update operations occurring on the MY_TEAM table from the 'Server' schema
      * @param {HandleMyTeamArgs} myTeamsArgs
      * @param {RawMyTeam[]} myTeamsArgs.myTeams
      * @param {boolean} myTeamsArgs.prepareRecordsOnly
@@ -227,7 +227,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordMyTeamEqualToRaw,
             transformer: transformMyTeamRecord,

@@ -15,10 +15,10 @@ describe('*** Operator: Post Handlers tests ***', () => {
         operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
-    it('=> HandleDraft: should write to the Draft entity', async () => {
+    it('=> HandleDraft: should write to the the Draft table', async () => {
         expect.assertions(1);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const drafts = [
             {
                 channel_id: '4r9jmr7eqt8dxq3f9woypzurrychannelid',
@@ -47,7 +47,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         await operator.handleDraft({drafts, prepareRecordsOnly: false});
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             fieldName: 'channel_id',
             transformer: transformDraftRecord,
@@ -57,7 +57,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
         });
     });
 
-    it('=> HandlePosts: should write to Post and its sub-child entities', async () => {
+    it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {
         expect.assertions(12);
 
         const posts = [

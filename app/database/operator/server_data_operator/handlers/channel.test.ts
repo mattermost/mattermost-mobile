@@ -26,10 +26,10 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
-    it('=> HandleChannel: should write to CHANNEL entity', async () => {
+    it('=> HandleChannel: should write to the CHANNEL table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const channels: RawChannel[] = [
             {
                 id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
@@ -58,8 +58,8 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             createOrUpdateRawValues: channels,
             tableName: 'Channel',
@@ -69,10 +69,10 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleMyChannelSettings: should write to MY_CHANNEL_SETTINGS entity', async () => {
+    it('=> HandleMyChannelSettings: should write to the MY_CHANNEL_SETTINGS table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const settings = [
             {
                 channel_id: 'c',
@@ -93,8 +93,8 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'channel_id',
             createOrUpdateRawValues: settings,
             tableName: 'MyChannelSettings',
@@ -104,10 +104,10 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleChannelInfo: should write to CHANNEL_INFO entity', async () => {
+    it('=> HandleChannelInfo: should write to the CHANNEL_INFO table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator as any, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator as any, 'handleRecords');
         const channelInfos = [
             {
                 channel_id: 'c',
@@ -124,9 +124,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'channel_id',
             createOrUpdateRawValues: channelInfos,
             tableName: 'ChannelInfo',
@@ -136,10 +136,10 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleMyChannel: should write to MY_CHANNEL entity', async () => {
+    it('=> HandleMyChannel: should write to the MY_CHANNEL table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const myChannels = [
             {
                 channel_id: 'c',
@@ -156,8 +156,8 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'channel_id',
             createOrUpdateRawValues: myChannels,
             tableName: 'MyChannel',

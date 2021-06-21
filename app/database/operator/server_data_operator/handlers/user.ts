@@ -47,7 +47,7 @@ export interface UserHandlerMix {
 
 const UserHandler = (superclass: any) => class extends superclass {
     /**
-     * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP entity from the 'Server' schema
+     * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP table from the 'Server' schema
      * @param {HandleChannelMembershipArgs} channelMembershipsArgs
      * @param {RawChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
@@ -65,7 +65,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             transformer: transformChannelMembershipRecord,
@@ -78,7 +78,7 @@ const UserHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE entity from the 'Server' schema
+     * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE table from the 'Server' schema
      * @param {HandlePreferencesArgs} preferencesArgs
      * @param {RawPreference[]} preferencesArgs.preferences
      * @param {boolean} preferencesArgs.prepareRecordsOnly
@@ -96,7 +96,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             transformer: transformPreferenceRecord,
@@ -109,7 +109,7 @@ const UserHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction entity from the 'Server' schema
+     * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction table from the 'Server' schema
      * @param {HandleReactionsArgs} handleReactions
      * @param {RawReaction[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
@@ -171,7 +171,7 @@ const UserHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleUsers: Handler responsible for the Create/Update operations occurring on the User entity from the 'Server' schema
+     * handleUsers: Handler responsible for the Create/Update operations occurring on the User table from the 'Server' schema
      * @param {HandleUsersArgs} usersArgs
      * @param {RawUser[]} usersArgs.users
      * @param {boolean} usersArgs.prepareRecordsOnly
@@ -189,7 +189,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordUserEqualToRaw,
             transformer: transformUserRecord,

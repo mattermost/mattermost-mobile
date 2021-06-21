@@ -11,10 +11,10 @@ import User from './user';
  * This includes settings about the account, the themes, etc.
  */
 export default class Preference extends Model {
-    /** table (entity name) : Preference */
+    /** table (name) : Preference */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** category : The preference category ( e.g. Themes, Account settings etc..) */

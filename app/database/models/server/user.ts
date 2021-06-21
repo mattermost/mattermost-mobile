@@ -25,14 +25,14 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * The User model represents the 'USER' entity and its relationship to other
+ * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
 export default class User extends Model {
-    /** table (entity name) : User */
+    /** table (name) : User */
     static table = USER;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** USER has a 1:N relationship with CHANNEL.  A user can create multiple channels */

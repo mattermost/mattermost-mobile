@@ -6,7 +6,7 @@ import {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
 
 /**
- * prepareBaseRecord:  This is the last step for each composer and depending on the 'action', it will either prepare an
+ * prepareBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
  * existing record for UPDATE or prepare a collection for CREATE
  *
  * @param {TransformerArgs} operatorBase

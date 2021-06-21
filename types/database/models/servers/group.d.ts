@@ -13,10 +13,10 @@ import GroupsInTeam from './groups_in_team';
  * name in the message. (e.g @mobile_team)
  */
 export default class Group extends Model {
-    /** table (entity name) : Group */
+    /** table (name) : Group */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** display_name : The display name for the group */

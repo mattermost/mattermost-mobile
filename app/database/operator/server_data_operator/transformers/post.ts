@@ -31,7 +31,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * transformPostRecord: Prepares record of entity 'Post' from the SERVER database for update or create actions.
+ * transformPostRecord: Prepares a record of the SERVER database 'Post' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -71,7 +71,7 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs) 
 };
 
 /**
- * transformPostInThreadRecord: Prepares record of entity 'POSTS_IN_THREAD' from the SERVER database for update or create actions.
+ * transformPostInThreadRecord: Prepares a record of the SERVER database 'PostsInThread' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -98,7 +98,7 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
 };
 
 /**
- * transformFileRecord: Prepares record of entity 'FILE' from the SERVER database for update or create actions.
+ * transformFileRecord: Prepares a record of the SERVER database 'Files' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -133,7 +133,7 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs) 
 };
 
 /**
- * transformPostMetadataRecord: Prepares record of entity 'POST_METADATA' from the SERVER database for update or create actions.
+ * transformPostMetadataRecord: Prepares a record of the SERVER database 'PostMetadata' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -161,7 +161,7 @@ export const transformPostMetadataRecord = ({action, database, value}: Transform
 };
 
 /**
- * transformDraftRecord: Prepares record of entity 'DRAFT' from the SERVER database for update or create actions.
+ * transformDraftRecord: Prepares a record of the SERVER database 'Draft' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -190,7 +190,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
 };
 
 /**
- * transformPostsInChannelRecord: Prepares record of entity 'POSTS_IN_CHANNEL' from the SERVER database for update or create actions.
+ * transformPostsInChannelRecord: Prepares a record of the SERVER database 'PostsInChannel' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

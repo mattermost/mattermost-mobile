@@ -14,10 +14,10 @@ const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
  * MyTeam represents only the teams that the current user belongs to
  */
 export default class MyTeam extends Model {
-    /** table (entity name) : MyTeam */
+    /** table (name) : MyTeam */
     static table = MY_TEAM;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** TEAM and MY_TEAM have a 1:1 relationship. */
@@ -33,9 +33,9 @@ export default class MyTeam extends Model {
     /** roles : The different permissions that this user has in the team, concatenated together with comma to form a single string. */
     @field('roles') roles!: string;
 
-    /** team_id : The foreign key of the 'parent' Team entity */
+    /** team_id : The foreign key of the 'parent' Team record */
     @field('team_id') teamId!: string;
 
-    /** team : The relation to the entity TEAM, that this user belongs to  */
+    /** team : The relation to the the TEAM, that this user belongs to  */
     @relation(MY_TEAM, 'team_id') team!: Relation<Team>;
 }

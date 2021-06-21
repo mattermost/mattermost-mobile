@@ -31,7 +31,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * transformTeamMembershipRecord: Prepares record of entity 'TEAM_MEMBERSHIP' from the SERVER database for update or create actions.
+ * transformTeamMembershipRecord: Prepares a record of the SERVER database 'TeamMembership' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -59,7 +59,7 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
 };
 
 /**
- * transformTeamRecord: Prepares record of entity 'TEAM' from the SERVER database for update or create actions.
+ * transformTeamRecord: Prepares a record of the SERVER database 'Team' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -94,7 +94,7 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs) 
 };
 
 /**
- * transformTeamChannelHistoryRecord: Prepares record of entity 'TEAM_CHANNEL_HISTORY' from the SERVER database for update or create actions.
+ * transformTeamChannelHistoryRecord: Prepares a record of the SERVER database 'TeamChannelHistory' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -121,7 +121,7 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
 };
 
 /**
- * transformTeamSearchHistoryRecord: Prepares record of entity 'TEAM_SEARCH_HISTORY' from the SERVER database for update or create actions.
+ * transformTeamSearchHistoryRecord: Prepares a record of the SERVER database 'TeamSearchHistory' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -150,7 +150,7 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
 };
 
 /**
- * transformSlashCommandRecord: Prepares record of entity 'SLASH_COMMAND' from the SERVER database for update or create actions.
+ * transformSlashCommandRecord: Prepares a record of the SERVER database 'SlashCommand' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -185,7 +185,7 @@ export const transformSlashCommandRecord = ({action, database, value}: Transform
 };
 
 /**
- * transformMyTeamRecord: Prepares record of entity 'MY_TEAM' from the SERVER database for update or create actions.
+ * transformMyTeamRecord: Prepares a record of the SERVER database 'MyTeam' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

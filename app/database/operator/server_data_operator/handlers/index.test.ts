@@ -26,10 +26,10 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
-    it('=> HandleRole: should write to ROLE entity', async () => {
+    it('=> HandleRole: should write to the ROLE table', async () => {
         expect.assertions(1);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
         const roles: RawRole[] = [
             {
@@ -44,7 +44,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             transformer: transformRoleRecord,
             findMatchingRecordBy: isRecordRoleEqualToRaw,
@@ -54,10 +54,10 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleCustomEmojis: should write to CUSTOM_EMOJI entity', async () => {
+    it('=> HandleCustomEmojis: should write to the CUSTOM_EMOJI table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const emojis = [
             {
                 id: 'i',
@@ -74,8 +74,8 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             createOrUpdateRawValues: emojis,
             tableName: 'CustomEmoji',
@@ -85,10 +85,10 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleSystem: should write to SYSTEM entity', async () => {
+    it('=> HandleSystem: should write to the SYSTEM table', async () => {
         expect.assertions(1);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
         const systems = [{name: 'system-1', value: 'system-1'}];
 
@@ -97,7 +97,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
             fieldName: 'name',
             transformer: transformSystemRecord,
@@ -107,10 +107,10 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleTermsOfService: should write to TERMS_OF_SERVICE entity', async () => {
+    it('=> HandleTermsOfService: should write to the TERMS_OF_SERVICE table', async () => {
         expect.assertions(1);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
         const termOfService: RawTermsOfService[] = [
             {
@@ -127,7 +127,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
             fieldName: 'id',
             transformer: transformTermsOfServiceRecord,
@@ -146,7 +146,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(appOperator).toBeTruthy();
 
         await expect(
-            operator?.handleEntityRecords({
+            operator?.handleRecords({
                 fieldName: 'invalidField',
                 tableName: 'INVALID_TABLE_NAME',
 

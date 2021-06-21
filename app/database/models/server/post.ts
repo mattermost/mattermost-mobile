@@ -20,10 +20,10 @@ const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USE
  * The Post model is the building block of communication in the Mattermost app.
  */
 export default class Post extends Model {
-    /** table (entity name) : Post */
+    /** table (name) : Post */
     static table = POST;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL can have multiple POST. (relationship is 1:N) */

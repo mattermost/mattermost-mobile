@@ -10,10 +10,10 @@ import Channel from './channel';
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
  */
 export default class MyChannel extends Model {
-    /** table (entity name) : MyChannel */
+    /** table (name) : MyChannel */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** channel_id : The foreign key to the related Channel record  */
@@ -34,6 +34,6 @@ export default class MyChannel extends Model {
     /** roles : The user's privileges on this channel */
     roles: string;
 
-    /** channel : The relation pointing to entity CHANNEL */
+    /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<Channel>;
 }

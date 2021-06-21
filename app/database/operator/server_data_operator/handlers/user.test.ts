@@ -22,7 +22,7 @@ describe('*** Operator: User Handlers tests ***', () => {
         operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
-    it('=> HandleReactions: should write to both Reactions and CustomEmoji entities', async () => {
+    it('=> HandleReactions: should write to both Reactions and CustomEmoji tables', async () => {
         expect.assertions(2);
 
         const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
@@ -45,11 +45,11 @@ describe('*** Operator: User Handlers tests ***', () => {
         // Called twice:  Once for Reaction record and once for CustomEmoji record
         expect(spyOnPrepareRecords).toHaveBeenCalledTimes(2);
 
-        // Only one batch operation for both entities
+        // Only one batch operation for both tables
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
     });
 
-    it('=> HandleUsers: should write to User entity', async () => {
+    it('=> HandleUsers: should write to the User table', async () => {
         expect.assertions(2);
 
         const users = [
@@ -94,12 +94,12 @@ describe('*** Operator: User Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
         await operator.handleUsers({users, prepareRecordsOnly: false});
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             createOrUpdateRawValues: users,
             tableName: 'User',
@@ -109,10 +109,10 @@ describe('*** Operator: User Handlers tests ***', () => {
         });
     });
 
-    it('=> HandlePreferences: should write to PREFERENCE entity', async () => {
+    it('=> HandlePreferences: should write to the PREFERENCE table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const preferences = [
             {
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
@@ -146,8 +146,8 @@ describe('*** Operator: User Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: preferences,
             tableName: 'Preference',
@@ -157,7 +157,7 @@ describe('*** Operator: User Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleChannelMembership: should write to CHANNEL_MEMBERSHIP entity', async () => {
+    it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {
         expect.assertions(2);
         const channelMemberships = [
             {
@@ -202,15 +202,15 @@ describe('*** Operator: User Handlers tests ***', () => {
             },
         ];
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
         await operator.handleChannelMembership({
             channelMemberships,
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: channelMemberships,
             tableName: 'ChannelMembership',

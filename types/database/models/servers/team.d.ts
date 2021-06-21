@@ -16,10 +16,10 @@ import TeamSearchHistory from './team_search_history';
  * A Team houses and enables communication to happen across channels and users.
  */
 export default class Team extends Model {
-    /** table (entity name) : Team */
+    /** table (name) : Team */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */

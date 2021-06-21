@@ -16,10 +16,10 @@ import User from './user';
  * The Post model is the building block of communication in the Mattermost app.
  */
 export default class Post extends Model {
-    /** table (entity name) : Post */
+    /** table (name) : Post */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** channel_id : The foreign key for the Channel to which this post belongs to. */

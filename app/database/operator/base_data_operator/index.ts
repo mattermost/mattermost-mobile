@@ -13,7 +13,7 @@ import {
 import type Model from '@nozbe/watermelondb/Model';
 
 import type {
-    HandleEntityRecordsArgs,
+    HandleRecordsArgs,
     OperationArgs,
     ProcessRecordResults,
     ProcessRecordsArgs,
@@ -24,7 +24,7 @@ import {OperationType} from '@typings/database/enums';
 
 export interface BaseDataOperatorType {
     database: Database;
-    handleEntityRecords: ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly}: HandleEntityRecordsArgs) => Promise<Model[]>;
+    handleRecords: ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly}: HandleRecordsArgs) => Promise<Model[]>;
     processRecords: ({createOrUpdateRawValues, deleteRawValues, tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs) => Promise<ProcessRecordResults>;
     batchRecords: (models: Model[]) => Promise<void>;
     prepareRecords: ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs) => Promise<Model[]>;
@@ -49,7 +49,7 @@ export default class BaseDataOperator {
      */
     processRecords = async ({createOrUpdateRawValues, deleteRawValues = [], tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
         const getRecords = async (rawValues : RawValue[]) => {
-            // We will query an entity where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
+            // We will query a table where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
             const columnValues: string[] = getRangeOfValues({
                 fieldName,
                 raws: rawValues,
@@ -196,20 +196,20 @@ export default class BaseDataOperator {
     };
 
     /**
-     * handleEntityRecords : Utility that processes some entities' data against values already present in the database so as to avoid duplicity.
-     * @param {HandleEntityRecordsArgs} handleEntityArgs
-     * @param {(existing: Model, newElement: RawValue) => boolean} handleEntityArgs.findMatchingRecordBy
-     * @param {string} handleEntityArgs.fieldName
-     * @param {(TransformerArgs) => Promise<Model>} handleEntityArgs.composer
-     * @param {RawValue[]} handleEntityArgs.createOrUpdateRawValues
-     * @param {RawValue[]} handleEntityArgs.deleteRawValues
-     * @param {string} handleEntityArgs.tableName
+     * handleRecords : Utility that processes some records' data against values already present in the database so as to avoid duplicity.
+     * @param {HandleRecordsArgs} handleRecordsArgs
+     * @param {(existing: Model, newElement: RawValue) => boolean} handleRecordsArgs.findMatchingRecordBy
+     * @param {string} handleRecordsArgs.fieldName
+     * @param {(TransformerArgs) => Promise<Model>} handleRecordsArgs.composer
+     * @param {RawValue[]} handleRecordsArgs.createOrUpdateRawValues
+     * @param {RawValue[]} handleRecordsArgs.deleteRawValues
+     * @param {string} handleRecordsArgs.tableName
      * @returns {Promise<Model[]>}
      */
-    handleEntityRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleEntityRecordsArgs) => {
+    handleRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs) => {
         if (!createOrUpdateRawValues.length) {
             throw new DataOperatorException(
-                `An empty "rawValues" array has been passed to the handleEntityRecords method for tableName ${tableName}`,
+                `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,
             );
         }
 

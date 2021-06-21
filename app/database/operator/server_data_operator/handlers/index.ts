@@ -25,11 +25,11 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
         if (!roles.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${ROLE}`,
+                'An empty "values" array has been passed to the handleRole',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordRoleEqualToRaw,
             transformer: transformRoleRecord,
@@ -44,11 +44,11 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     handleCustomEmojis = async ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
         if (!emojis.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${CUSTOM_EMOJI}`,
+                'An empty "values" array has been passed to the handleCustomEmojis',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordCustomEmojiEqualToRaw,
             transformer: transformCustomEmojiRecord,
@@ -63,11 +63,11 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     handleSystem = async ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
         if (!systems.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${SYSTEM}`,
+                'An empty "values" array has been passed to the handleSystem',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'name',
             findMatchingRecordBy: isRecordSystemEqualToRaw,
             transformer: transformSystemRecord,
@@ -82,11 +82,11 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     handleTermOfService = async ({termOfService, prepareRecordsOnly = true}: HandleTOSArgs) => {
         if (!termOfService.length) {
             throw new DataOperatorException(
-                `An empty "values" array has been passed to the handleIsolatedEntity method for entity ${TERMS_OF_SERVICE}`,
+                'An empty "values" array has been passed to the handleTermOfService',
             );
         }
 
-        const records = await this.handleEntityRecords({
+        const records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
             transformer: transformTermsOfServiceRecord,
@@ -99,7 +99,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
     }
 
   /**
-   * execute: Handles the Create/Update operations on an entity.
+   * execute: Handles the Create/Update operations on an table.
    * @param {OperationArgs} execute
    * @param {string} execute.tableName
    * @param {RecordValue[]} execute.createRaws

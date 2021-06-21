@@ -16,10 +16,10 @@ const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * channels ( N:N relationship between model Users and model Channel)
  */
 export default class ChannelMembership extends Model {
-    /** table (entity name) : ChannelMembership */
+    /** table (name) : ChannelMembership */
     static table = CHANNEL_MEMBERSHIP;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A CHANNEL can have multiple USER */

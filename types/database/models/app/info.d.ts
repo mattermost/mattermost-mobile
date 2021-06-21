@@ -8,7 +8,7 @@ import {Model} from '@nozbe/watermelondb';
  * for the Mattermost mobile app.
  */
 export default class Info extends Model {
-    /** table (entity name) : app */
+    /** table (name) : app */
     static table: string;
 
     /** build_number : Build number for the app */

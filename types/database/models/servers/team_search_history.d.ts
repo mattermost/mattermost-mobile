@@ -11,10 +11,10 @@ import Team from './team';
  * at team level in the app.
  */
 export default class TeamSearchHistory extends Model {
-    /** table (entity name) : TeamSearchHistory */
+    /** table (name) : TeamSearchHistory */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** created_at : The timestamp at which this search was performed */

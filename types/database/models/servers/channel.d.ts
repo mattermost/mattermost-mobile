@@ -19,10 +19,10 @@ import User from './user';
  * The Channel model represents a channel in the Mattermost app.
  */
 export default class Channel extends Model {
-    /** table (entity name) : Channel */
+    /** table (name) : Channel */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** create_at : The creation date for this channel */
@@ -73,7 +73,7 @@ export default class Channel extends Model {
     /** creator : The USER who created this CHANNEL*/
     creator: Relation<User>;
 
-    /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
+    /** info : Query returning extra information about this channel from the CHANNEL_INFO table */
     info: Query<ChannelInfo>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */

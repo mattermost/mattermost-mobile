@@ -28,10 +28,10 @@ describe('*** Operator: Team Handlers tests ***', () => {
         operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
-    it('=> HandleTeam: should write to TEAM entity', async () => {
+    it('=> HandleTeam: should write to the TEAM table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const teams = [
             {
                 id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
@@ -58,8 +58,8 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             createOrUpdateRawValues: teams,
             tableName: 'Team',
@@ -69,10 +69,10 @@ describe('*** Operator: Team Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleTeamMemberships: should write to TEAM_MEMBERSHIP entity', async () => {
+    it('=> HandleTeamMemberships: should write to the TEAM_MEMBERSHIP table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const teamMemberships = [
             {
                 team_id: 'a',
@@ -91,8 +91,8 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: teamMemberships,
             tableName: 'TeamMembership',
@@ -102,10 +102,10 @@ describe('*** Operator: Team Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleMyTeam: should write to MY_TEAM entity', async () => {
+    it('=> HandleMyTeam: should write to the MY_TEAM table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const myTeams = [
             {
                 team_id: 'teamA',
@@ -120,8 +120,8 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'team_id',
             createOrUpdateRawValues: myTeams,
             tableName: 'MyTeam',
@@ -131,10 +131,10 @@ describe('*** Operator: Team Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleTeamChannelHistory: should write to TEAM_CHANNEL_HISTORY entity', async () => {
+    it('=> HandleTeamChannelHistory: should write to the TEAM_CHANNEL_HISTORY table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const teamChannelHistories = [
             {
                 team_id: 'a',
@@ -147,8 +147,8 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'team_id',
             createOrUpdateRawValues: teamChannelHistories,
             tableName: 'TeamChannelHistory',
@@ -158,10 +158,10 @@ describe('*** Operator: Team Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleTeamSearchHistory: should write to TEAM_SEARCH_HISTORY entity', async () => {
+    it('=> HandleTeamSearchHistory: should write to the TEAM_SEARCH_HISTORY table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const teamSearchHistories = [
             {
                 team_id: 'a',
@@ -176,8 +176,8 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'team_id',
             createOrUpdateRawValues: teamSearchHistories,
             tableName: 'TeamSearchHistory',
@@ -187,10 +187,10 @@ describe('*** Operator: Team Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleSlashCommand: should write to SLASH_COMMAND entity', async () => {
+    it('=> HandleSlashCommand: should write to the SLASH_COMMAND table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleEntityRecords = jest.spyOn(operator, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const slashCommands = [
             {
                 id: 'command_1',
@@ -218,8 +218,8 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
             createOrUpdateRawValues: slashCommands,
             tableName: 'SlashCommand',

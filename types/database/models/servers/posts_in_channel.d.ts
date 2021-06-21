@@ -11,10 +11,10 @@ import Channel from './channel';
  * gaps in between for an efficient user reading experience of posts.
  */
 export default class PostsInChannel extends Model {
-    /** table (entity name) : PostsInChannel */
+    /** table (name) : PostsInChannel */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** channel_id : The foreign key of the related parent channel */

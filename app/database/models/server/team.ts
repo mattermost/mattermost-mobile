@@ -29,10 +29,10 @@ const {
  * A Team houses and enables communication to happen across channels and users.
  */
 export default class Team extends Model {
-    /** table (entity name) : Team */
+    /** table (name) : Team */
     static table = TEAM;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A TEAM has a 1:N relationship with CHANNEL. A TEAM can possess multiple channels */

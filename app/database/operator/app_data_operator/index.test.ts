@@ -8,7 +8,7 @@ import {
     isRecordServerEqualToRaw,
 } from '@database/operator/app_data_operator/comparator';
 import {
-    transformAppRecord,
+    transformInfoRecord,
     transformGlobalRecord,
     transformServersRecord,
 } from '@database/operator/app_data_operator/transformers';
@@ -19,13 +19,13 @@ describe('** APP DATA OPERATOR **', () => {
         await DatabaseManager.init([]);
     });
 
-    it('=> HandleApp: should write to APP entity', async () => {
+    it('=> HandleApp: should write to INFO table', async () => {
         const appDatabase = DatabaseManager.appDatabase?.database;
         const appOperator = DatabaseManager.appDatabase?.operator;
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
-        const spyOnHandleEntityRecords = jest.spyOn(appOperator as any, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
 
         await appOperator?.handleInfo({
             info: [
@@ -43,10 +43,10 @@ describe('** APP DATA OPERATOR **', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
-            transformer: transformAppRecord,
+            transformer: transformInfoRecord,
             findMatchingRecordBy: isRecordInfoEqualToRaw,
             createOrUpdateRawValues: [
                 {
@@ -65,13 +65,13 @@ describe('** APP DATA OPERATOR **', () => {
         });
     });
 
-    it('=> HandleGlobal: should write to GLOBAL entity', async () => {
+    it('=> HandleGlobal: should write to GLOBAL table', async () => {
         const appDatabase = DatabaseManager.appDatabase?.database;
         const appOperator = DatabaseManager.appDatabase?.operator;
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
-        const spyOnHandleEntityRecords = jest.spyOn(appOperator as any, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
         const global: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
 
         await appOperator?.handleGlobal({
@@ -79,7 +79,7 @@ describe('** APP DATA OPERATOR **', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
             fieldName: 'name',
             transformer: transformGlobalRecord,
@@ -89,13 +89,13 @@ describe('** APP DATA OPERATOR **', () => {
         });
     });
 
-    it('=> HandleServers: should write to SERVERS entity', async () => {
+    it('=> HandleServers: should write to SERVERS table', async () => {
         const appDatabase = DatabaseManager.appDatabase?.database;
         const appOperator = DatabaseManager.appDatabase?.operator;
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
-        const spyOnHandleEntityRecords = jest.spyOn(appOperator as any, 'handleEntityRecords');
+        const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
 
         const servers: RawServers[] = [
             {
@@ -114,7 +114,7 @@ describe('** APP DATA OPERATOR **', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'url',
             transformer: transformServersRecord,
             findMatchingRecordBy: isRecordServerEqualToRaw,

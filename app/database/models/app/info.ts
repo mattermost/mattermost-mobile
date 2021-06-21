@@ -13,7 +13,7 @@ const {INFO} = MM_TABLES.APP;
  * for the Mattermost mobile app.
  */
 export default class Info extends Model {
-    /** table (entity name) : app */
+    /** table (name) : app */
     static table = INFO;
 
     /** build_number : Build number for the app */

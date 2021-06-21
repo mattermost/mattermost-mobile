@@ -59,7 +59,7 @@ export interface PostHandlerMix {
 
 const PostHandler = (superclass: any) => class extends superclass {
     /**
-     * handleDraft: Handler responsible for the Create/Update operations occurring the Draft entity from the 'Server' schema
+     * handleDraft: Handler responsible for the Create/Update operations occurring the Draft table from the 'Server' schema
      * @param {HandleDraftArgs} draftsArgs
      * @param {RawDraft[]} draftsArgs.drafts
      * @param {boolean} draftsArgs.prepareRecordsOnly
@@ -77,7 +77,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             transformer: transformDraftRecord,
@@ -90,7 +90,7 @@ const PostHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handlePosts: Handler responsible for the Create/Update operations occurring on the Post entity from the 'Server' schema
+     * handlePosts: Handler responsible for the Create/Update operations occurring on the Post table from the 'Server' schema
      * @param {HandlePostsArgs} handlePosts
      * @param {string[]} handlePosts.orders
      * @param {RawPost[]} handlePosts.values
@@ -142,7 +142,7 @@ const PostHandler = (superclass: any) => class extends superclass {
                 rawPosts: postsOrdered,
             });
 
-            // Prepares records for batch processing onto the 'Post' entity for the server schema
+            // Prepares records for batch processing onto the 'Post' table for the server schema
             const posts = (await this.prepareRecords({
                 createRaws: linkedRawPosts,
                 transformer: transformPostRecord,
@@ -152,9 +152,9 @@ const PostHandler = (superclass: any) => class extends superclass {
             // Appends the processed records into the final batch array
             batch = batch.concat(posts);
 
-            // Starts extracting information from each post to build up for related entities' data
+            // Starts extracting information from each post to build up for related tables' data
             for (const post of postsOrdered) {
-                // PostInThread handler: checks for id === root_id , if so, then call PostsInThread composer
+                // PostInThread handler: checks for id === root_id , if so, then call PostsInThread operator
                 if (!post.root_id) {
                     postsInThread.push({
                         earliest: post.create_at,
@@ -231,7 +231,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         if (postsUnordered.length) {
         // Truly update those posts that have a different update_at value
-            await this.handleEntityRecords({
+            await this.handleRecords({
                 findMatchingRecordBy: isRecordPostEqualToRaw,
                 fieldName: 'id',
                 trasformer: transformPostRecord,
@@ -243,7 +243,7 @@ const PostHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleFiles: Handler responsible for the Create/Update operations occurring on the File entity from the 'Server' schema
+     * handleFiles: Handler responsible for the Create/Update operations occurring on the File table from the 'Server' schema
      * @param {HandleFilesArgs} handleFiles
      * @param {RawFile[]} handleFiles.files
      * @param {boolean} handleFiles.prepareRecordsOnly
@@ -272,7 +272,7 @@ const PostHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handlePostMetadata: Handler responsible for the Create/Update operations occurring on the PostMetadata entity from the 'Server' schema
+     * handlePostMetadata: Handler responsible for the Create/Update operations occurring on the PostMetadata table from the 'Server' schema
      * @param {HandlePostMetadataArgs} handlePostMetadata
      * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
      * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
@@ -327,7 +327,7 @@ const PostHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread entity from the 'Server' schema
+     * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread table from the 'Server' schema
      * @param {RawPostsInThread[]} rootPosts
      * @returns {Promise<void>}
      */
@@ -369,7 +369,7 @@ const PostHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel entity from the 'Server' schema
+     * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel table from the 'Server' schema
      * @param {RawPost[]} posts
      * @returns {Promise<void>}
      */

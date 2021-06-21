@@ -11,10 +11,10 @@ import urlParse from 'url-parse';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDataOperator from '@database/operator/app_data_operator';
-import AppDatabaseMigration from '@app/database/migration/app';
+import AppDatabaseMigrations from '@app/database/migration/app';
 import {Info, Global, Servers} from '@app/database/models/app';
-import {defaultSchema} from '@app/database/schema/app';
-import ServerDatabaseMigration from '@database/migration/server';
+import {schema as appSchema} from '@app/database/schema/app';
+import ServerDatabaseMigrations from '@database/migration/server';
 import {Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
     Group, GroupMembership, GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam,
     Post, PostMetadata, PostsInChannel, PostsInThread, Preference, Reaction, Role,
@@ -22,11 +22,11 @@ import {Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
     TermsOfService, User,
 } from '@database/models/server';
 import {serverSchema} from '@database/schema/server';
-import {getServer} from '@queries/app/servers';
+import {getActiveServer, getServer} from '@queries/app/servers';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
-import type {AppDatabase, CreateDatabaseArgs, CreateServerDatabaseArgs, MigrationEvents, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
+import type {AppDatabase, CreateServerDatabaseArgs, MigrationEvents, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import type IServers from '@typings/database/models/app/servers';
 
@@ -44,13 +44,12 @@ if (__DEV__) {
 class DatabaseManager {
     public appDatabase?: AppDatabase;
     public serverDatabases: ServerDatabases = {};
-    private readonly defaultModels: Models;
-    private readonly iOSAppGroupDatabase: string | null;
-    private readonly androidFilesDirectory: string | null;
+    private readonly appModels: Models;
+    private readonly databaseDirectory: string | null;
     private readonly serverModels: Models;
 
     constructor() {
-        this.defaultModels = [Info, Global, Servers];
+        this.appModels = [Info, Global, Servers];
         this.serverModels = [
             Channel,
             ChannelInfo,
@@ -81,40 +80,32 @@ class DatabaseManager {
             TermsOfService,
             User,
         ];
-        this.iOSAppGroupDatabase = null;
-        this.androidFilesDirectory = null;
+        this.databaseDirectory = '';
     }
 
     public init = async (serverUrls: string[]): Promise<void> => {
-        await this.initAppDatabase();
+        await this.createAppDatabase();
         for await (const serverUrl of serverUrls) {
             await this.initServerDatabase(serverUrl);
         }
     };
 
-    private createDatabase = async ({config, shouldAddToAppDatabase = true}: CreateDatabaseArgs): Promise<Database|undefined> => {
-        const {dbName = APP_DATABASE, dbType = DatabaseType.DEFAULT, serverUrl = undefined} = config;
-
+    private createAppDatabase = async (): Promise<AppDatabase|undefined> => {
         try {
-            const databaseName = dbType === DatabaseType.DEFAULT ? APP_DATABASE : dbName;
+            const modelClasses = this.appModels;
+            const schema = appSchema;
 
-            const databaseFilePath = this.getDatabaseFilePath(databaseName);
-            const migrations = dbType === DatabaseType.DEFAULT ? AppDatabaseMigration : ServerDatabaseMigration;
-            const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
-            const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
+            const adapter = new LokiJSAdapter({dbName: APP_DATABASE, migrations: AppDatabaseMigrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
 
-            const adapter = new LokiJSAdapter({dbName: databaseName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
+            const database = new Database({adapter, actionsEnabled: true, modelClasses});
+            const operator = new AppDataOperator(database);
 
-            // Registers the new server connection into the DEFAULT database
-            if (serverUrl && shouldAddToAppDatabase) {
-                await this.addServerToAppDatabase({
-                    databaseFilePath,
-                    displayName: dbName,
-                    serverUrl,
-                });
-            }
+            this.appDatabase = {
+                database,
+                operator,
+            };
 
-            return new Database({adapter, actionsEnabled: true, modelClasses});
+            return this.appDatabase;
         } catch (e) {
             // TODO : report to sentry? Show something on the UI ?
         }
@@ -122,13 +113,13 @@ class DatabaseManager {
         return undefined;
     };
 
-    public createServerDatabase = async ({config}: CreateDatabaseArgs): Promise<ServerDatabase|undefined> => {
+    public createServerDatabase = async ({config}: CreateServerDatabaseArgs): Promise<ServerDatabase|undefined> => {
         const {dbName, displayName, serverUrl} = config;
 
         if (serverUrl) {
             try {
                 const databaseFilePath = this.getDatabaseFilePath(dbName);
-                const migrations = ServerDatabaseMigration;
+                const migrations = ServerDatabaseMigrations;
                 const modelClasses = this.serverModels;
                 const schema = serverSchema;
 
@@ -156,21 +147,6 @@ class DatabaseManager {
         return undefined;
     };
 
-    private initAppDatabase = async (): Promise<void> => {
-        const database = await this.createDatabase({
-            config: {dbName: APP_DATABASE},
-            shouldAddToAppDatabase: false,
-        });
-
-        if (database) {
-            const operator = new AppDataOperator(database);
-            this.appDatabase = {
-                database,
-                operator,
-            };
-        }
-    };
-
     private initServerDatabase = async (serverUrl: string): Promise<void> => {
         await this.createServerDatabase({
             config: {
@@ -181,7 +157,7 @@ class DatabaseManager {
         });
     };
 
-    private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl}: CreateServerDatabaseArgs): Promise<void> => {
+    private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl}: RegisterServerDatabaseArgs): Promise<void> => {
         try {
             const isServerPresent = await this.isServerPresent(serverUrl); // TODO: Use normalized serverUrl
 
@@ -207,36 +183,34 @@ class DatabaseManager {
 
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
         if (this.appDatabase?.database) {
-            const servers = (await this.appDatabase.database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch() as IServers[]);
-            return Boolean(servers[0]);
+            const server = await getServer(this.appDatabase.database, serverUrl);
+            return Boolean(server);
         }
 
         return false;
     }
 
-  public getActiveServerUrl = async (): Promise<string|null|undefined> => {
-      const database = this.appDatabase?.database;
-      const servers = (await database?.collections.get(MM_TABLES.APP.SERVERS).query().fetch()) as IServers[];
+    public getActiveServerUrl = async (): Promise<string|null|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await getActiveServer(database);
+            return server?.url;
+        }
 
-      try {
-          const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
-          return server.url;
-      } catch {
-          return null;
-      }
-  }
+        return null;
+    }
 
- public getActiveServerDatabase = async (): Promise<Database|undefined> => {
-     const database = this.appDatabase?.database;
-     const servers = (await database?.collections.get(MM_TABLES.APP.SERVERS).query().fetch()) as IServers[];
+    public getActiveServerDatabase = async (): Promise<Database|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await getActiveServer(database);
+            if (server?.url) {
+                return this.serverDatabases[server.url].database;
+            }
+        }
 
-     try {
-         const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
-         return this.serverDatabases[server.url].database;
-     } catch {
-         return undefined;
-     }
- }
+        return undefined;
+    }
 
     public setActiveServerDatabase = async (serverUrl: string): Promise<void> => {
         if (this.appDatabase?.database) {
@@ -294,7 +268,7 @@ class DatabaseManager {
         }
 
         // On Android, we'll delete both the *.db file and the *.db-journal file
-        const androidFilesDir = `${this.androidFilesDirectory}databases/`;
+        const androidFilesDir = `${this.databaseDirectory}databases/`;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
@@ -311,7 +285,7 @@ class DatabaseManager {
             }
 
             // On Android, we'll remove the databases folder under the Document Directory
-            const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
+            const androidFilesDir = `${this.databaseDirectory}databases/`;
             await FileSystem.deleteAsync(androidFilesDir);
             return true;
         } catch (e) {
@@ -343,7 +317,7 @@ class DatabaseManager {
     };
 
     private getDatabaseFilePath = (dbName: string): string => {
-        return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
+        return Platform.OS === 'ios' ? `${this.databaseDirectory}/${dbName}.db` : `${this.databaseDirectory}${dbName}.db`;
     };
 }
 

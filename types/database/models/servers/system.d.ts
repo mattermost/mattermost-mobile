@@ -9,7 +9,7 @@ import {Model} from '@nozbe/watermelondb';
  * custom data (e.g. recent emoji used)
  */
 export default class System extends Model {
-    /** table (entity name) : System */
+    /** table (name) : System */
     static table: string;
 
     /** name : The name or key value for the config */

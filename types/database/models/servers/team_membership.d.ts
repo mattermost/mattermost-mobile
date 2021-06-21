@@ -12,10 +12,10 @@ import Team from './team';
  * teams (relationship type N:N)
  */
 export default class TeamMembership extends Model {
-    /** table (entity name) : TeamMembership */
+    /** table (name) : TeamMembership */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** team_id : The foreign key to the related Team record */

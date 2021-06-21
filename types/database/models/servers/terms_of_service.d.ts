@@ -7,7 +7,7 @@ import {Model} from '@nozbe/watermelondb';
  * The model for Terms of Service
  */
 export default class TermsOfService extends Model {
-    /** table (entity name) : TermsOfService */
+    /** table (name) : TermsOfService */
     static table: string;
 
     /** accepted_at : the date the term has been accepted */

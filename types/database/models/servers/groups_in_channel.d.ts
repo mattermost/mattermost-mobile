@@ -11,10 +11,10 @@ import Group from './group';
  * The GroupsInChannel links the Channel model with the Group model
  */
 export default class GroupsInChannel extends Model {
-    /** table (entity name) : GroupsInChannel */
+    /** table (name) : GroupsInChannel */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** channel_id : The foreign key of the related CHANNEL model */

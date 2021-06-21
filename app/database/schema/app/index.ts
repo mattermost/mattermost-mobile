@@ -6,7 +6,7 @@ import {MM_TABLES} from '@constants/database';
 
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
-export const defaultSchema: AppSchema = appSchema({
+export const schema: AppSchema = appSchema({
     version: 1,
     tables: [
         tableSchema({

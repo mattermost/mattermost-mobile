@@ -11,10 +11,10 @@ import Team from './team';
  * by the user.
  */
 export default class TeamChannelHistory extends Model {
-    /** table (entity name) : TeamChannelHistory */
+    /** table (name) : TeamChannelHistory */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** team_id : The foreign key to the related Team record */

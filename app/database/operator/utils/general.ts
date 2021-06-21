@@ -23,7 +23,7 @@ import User from '@typings/database/models/servers/user';
 const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
 /**
- * getValidRecordsForUpdate: Database Operations on some entities are expensive.  As such, we would like to operate if and only if we are
+ * getValidRecordsForUpdate: Database Operations on some tables are expensive.  As such, we would like to operate if and only if we are
  * 100% sure that the records are actually different from what we already have in the database.
  * @param {IdenticalRecordArgs} identicalRecord
  * @param {string} identicalRecord.tableName

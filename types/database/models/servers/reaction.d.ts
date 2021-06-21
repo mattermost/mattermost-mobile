@@ -11,10 +11,10 @@ import Post from './post';
  * The Reaction Model is used to present the reactions a user had on a particular post
  */
 export default class Reaction extends Model {
-    /** table (entity name) : Reaction */
+    /** table (name) : Reaction */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** create_at : Creation timestamp used for sorting reactions amongst users on a particular post */

@@ -11,10 +11,10 @@ import Post from './post';
  * gaps in between for an efficient user reading experience for threads.
  */
 export default class PostsInThread extends Model {
-    /** table (entity name) : PostsInThread */
+    /** table (name) : PostsInThread */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** earliest : Lower bound of a timestamp range */

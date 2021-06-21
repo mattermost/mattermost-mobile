@@ -12,13 +12,13 @@ import Servers from '@typings/database/models/app/servers';
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
 /**
- * transformAppRecord: Prepares record of entity 'App' from the DEFAULT database for update or create actions.
+ * transformInfoRecord: Prepares a record of the APP database 'Info' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
-export const transformAppRecord = ({action, database, value}: TransformerArgs) => {
+export const transformInfoRecord = ({action, database, value}: TransformerArgs) => {
     const raw = value.raw as RawInfo;
     const record = value.record as Info;
     const isCreateAction = action === OperationType.CREATE;
@@ -40,7 +40,7 @@ export const transformAppRecord = ({action, database, value}: TransformerArgs) =
 };
 
 /**
- * transformGlobalRecord: Prepares record of entity 'Global' from the DEFAULT database for update or create actions.
+ * transformGlobalRecord: Prepares a record of the APP database 'Global' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -67,7 +67,7 @@ export const transformGlobalRecord = ({action, database, value}: TransformerArgs
 };
 
 /**
- * transformServersRecord: Prepares record of entity 'Servers' from the DEFAULT database for update or create actions.
+ * transformServersRecord: Prepares a record of the APP database 'Servers' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

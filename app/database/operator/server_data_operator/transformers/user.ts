@@ -18,7 +18,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * transformReactionRecord: Prepares record of entity 'REACTION' from the SERVER database for update or create actions.
+ * transformReactionRecord: Prepares a record of the SERVER database 'Reaction' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -48,7 +48,7 @@ export const transformReactionRecord = ({action, database, value}: TransformerAr
 };
 
 /**
- * transformUserRecord: Prepares record of entity 'USER' from the SERVER database for update or create actions.
+ * transformUserRecord: Prepares a record of the SERVER database 'User' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -91,7 +91,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs) 
 };
 
 /**
- * transformPreferenceRecord: Prepares record of entity 'PREFERENCE' from the SERVER database for update or create actions.
+ * transformPreferenceRecord: Prepares a record of the SERVER database 'Preference' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -121,7 +121,7 @@ export const transformPreferenceRecord = ({action, database, value}: Transformer
 };
 
 /**
- * transformChannelMembershipRecord: Prepares record of entity 'CHANNEL_MEMBERSHIP' from the SERVER database for update or create actions.
+ * transformChannelMembershipRecord: Prepares a record of the SERVER database 'ChannelMembership' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

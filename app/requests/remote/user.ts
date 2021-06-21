@@ -302,7 +302,7 @@ export const updateMe = async (serverUrl: string, user: User) => {
 
     const userRecord = operator.handleUsers({prepareRecordsOnly: true, users: [data]});
 
-    //todo: ?? Do we need to write to TOS entity ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
+    //todo: ?? Do we need to write to TOS table ? See app/mm-redux/reducers/entities/users.ts/profiles/line 152 const
     // tosRecords = await DataOperator.handleIsolatedEntity({ tableName: TERMS_OF_SERVICE, values: [{}], });
     const models = await Promise.all([
         systemRecords,

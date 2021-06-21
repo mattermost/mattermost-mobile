@@ -10,10 +10,10 @@ import Team from './team';
  * The SlashCommand model describes the commands of the various commands available in each team.
  */
 export default class SlashCommand extends Model {
-    /** table (entity name) : SlashCommand */
+    /** table (name) : SlashCommand */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** is_auto_complete : Boolean flag for auto-completing slash commands */

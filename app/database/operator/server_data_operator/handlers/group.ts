@@ -43,7 +43,7 @@ export interface GroupHandlerMix {
 
 const GroupHandler = (superclass: any) => class extends superclass {
     /**
-     * handleGroupMembership: Handler responsible for the Create/Update operations occurring on the GROUP_MEMBERSHIP entity from the 'Server' schema
+     * handleGroupMembership: Handler responsible for the Create/Update operations occurring on the GROUP_MEMBERSHIP table from the 'Server' schema
      * @param {HandleGroupMembershipArgs} groupMembershipsArgs
      * @param {RawGroupMembership[]} groupMembershipsArgs.groupMemberships
      * @param {boolean} groupMembershipsArgs.prepareRecordsOnly
@@ -61,7 +61,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             transformer: transformGroupMembershipRecord,
@@ -74,7 +74,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleGroup: Handler responsible for the Create/Update operations occurring on the GROUP entity from the 'Server' schema
+     * handleGroup: Handler responsible for the Create/Update operations occurring on the GROUP table from the 'Server' schema
      * @param {HandleGroupArgs} groupsArgs
      * @param {RawGroup[]} groupsArgs.groups
      * @param {boolean} groupsArgs.prepareRecordsOnly
@@ -92,7 +92,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'name'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'name',
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             transformer: transformGroupRecord,
@@ -105,7 +105,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleGroupsInTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_TEAM entity from the 'Server' schema
+     * handleGroupsInTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_TEAM table from the 'Server' schema
      * @param {HandleGroupsInTeamArgs} groupsInTeamsArgs
      * @param {RawGroupsInTeam[]} groupsInTeamsArgs.groupsInTeams
      * @param {boolean} groupsInTeamsArgs.prepareRecordsOnly
@@ -123,7 +123,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             transformer: transformGroupsInTeamRecord,
@@ -136,7 +136,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL entity from the 'Server' schema
+     * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL table from the 'Server' schema
      * @param {HandleGroupsInChannelArgs} groupsInChannelsArgs
      * @param {RawGroupsInChannel[]} groupsInChannelsArgs.groupsInChannels
      * @param {boolean} groupsInChannelsArgs.prepareRecordsOnly
@@ -154,7 +154,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             transformer: transformGroupsInChannelRecord,

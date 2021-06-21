@@ -13,7 +13,7 @@ const {SERVERS} = MM_TABLES.APP;
  * multi-server support system.  The db_path field will hold the App-Groups file-path
  */
 export default class Servers extends Model {
-    /** table (entity name) : servers */
+    /** table (name) : servers */
     static table = SERVERS;
 
     /** db_path : The file path where the database is stored */

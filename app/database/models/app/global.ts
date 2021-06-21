@@ -15,7 +15,7 @@ const {GLOBAL} = MM_TABLES.APP;
  * data type.  It will hold information that applies to the whole app ( e.g. sidebar settings for tablets)
  */
 export default class Global extends Model {
-    /** table (entity name) : global */
+    /** table (name) : global */
     static table = GLOBAL;
 
     /** name : The label/key to use to retrieve the special 'value' */

@@ -22,14 +22,14 @@ export type MigrationEvents = {
   onFailure: (error: string) => void;
 };
 
-export type CreateDatabaseConfig = {
+export type CreateServerDatabaseConfig = {
   dbName: string;
   dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER;
   displayName?: string;
   serverUrl?: string;
 };
 
-export type CreateServerDatabaseArgs = {
+export type RegisterServerDatabaseArgs = {
   databaseFilePath: string;
   displayName: string;
   serverUrl: string;
@@ -68,8 +68,8 @@ export type OperationArgs = {
 export type Models = Class<Model>[];
 
 // The elements needed to create a new database
-export type CreateDatabaseArgs = {
-  config: CreateDatabaseConfig;
+export type CreateServerDatabaseArgs = {
+  config: CreateServerDatabaseConfig;
   shouldAddToAppDatabase?: boolean;
 };
 
@@ -132,7 +132,7 @@ export type ProcessRecordsArgs = {
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
 };
 
-export type HandleEntityRecordsArgs = {
+export type HandleRecordsArgs = {
   findMatchingRecordBy: (existing: Model, newElement: RawValue) => boolean;
   fieldName: string;
   transformer: (TransformerArgs) => Promise<Model>;

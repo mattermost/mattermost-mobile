@@ -3,7 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {
-    transformAppRecord,
+    transformInfoRecord,
     transformGlobalRecord,
     transformServersRecord,
 } from '@database/operator/app_data_operator/transformers/index';
@@ -41,13 +41,13 @@ describe('** APP DATA TRANSFORMER **', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('Servers');
     });
 
-    it('=> transformAppRecord: should return an array of type App', async () => {
+    it('=> transformInfoRecord: should return an array of type Info', async () => {
         expect.assertions(3);
 
         const database = DatabaseManager.appDatabase?.database;
         expect(database).toBeTruthy();
 
-        const preparedRecords = await transformAppRecord({
+        const preparedRecords = await transformInfoRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

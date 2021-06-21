@@ -16,10 +16,10 @@ const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * teams (relationship type N:N)
  */
 export default class TeamMembership extends Model {
-    /** table (entity name) : TeamMembership */
+    /** table (name) : TeamMembership */
     static table = TEAM_MEMBERSHIP;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** TEAM and TEAM_MEMBERSHIP share a 1:N relationship;  USER can be part of multiple teams */

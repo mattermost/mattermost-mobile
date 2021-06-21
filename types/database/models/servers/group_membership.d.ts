@@ -12,10 +12,10 @@ import User from './user';
  * groups (relationship type N:N)
  */
 export default class GroupMembership extends Model {
-    /** table (entity name) : GroupMembership */
+    /** table (name) : GroupMembership */
     static table: string;
 
-    /** associations : Describes every relationship to this entity */
+    /** associations : Describes every relationship to this table */
     static associations: Associations;
     groupId: string;
     userId: string;

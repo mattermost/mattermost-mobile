@@ -16,10 +16,10 @@ const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * groups (relationship type N:N)
  */
 export default class GroupMembership extends Model {
-    /** table (entity name) : GroupMembership */
+    /** table (name) : GroupMembership */
     static table = GROUP_MEMBERSHIP;
 
-    /** associations : Describes every relationship to this entity */
+    /** associations : Describes every relationship to this table */
     static associations: Associations = {
 
         /** A GROUP can have multiple users in it */

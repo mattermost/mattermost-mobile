@@ -24,7 +24,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * transformChannelRecord: Prepares record of entity 'CHANNEL' from the SERVER database for update or create actions.
+ * transformChannelRecord: Prepares a record of the SERVER database 'Channel' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -58,7 +58,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
 };
 
 /**
- * transformMyChannelSettingsRecord: Prepares record of entity 'MY_CHANNEL_SETTINGS' from the SERVER database for update or create actions.
+ * transformMyChannelSettingsRecord: Prepares a record of the SERVER database 'MyChannelSettings' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -85,7 +85,7 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
 };
 
 /**
- * transformChannelInfoRecord: Prepares record of entity 'CHANNEL_INFO' from the SERVER database for update or create actions.
+ * transformChannelInfoRecord: Prepares a record of the SERVER database 'ChannelInfo' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -116,7 +116,7 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
 };
 
 /**
- * transformMyChannelRecord: Prepares record of entity 'MY_CHANNEL' from the SERVER database for update or create actions.
+ * transformMyChannelRecord: Prepares a record of the SERVER database 'MyChannel' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

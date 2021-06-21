@@ -15,10 +15,10 @@ const {PREFERENCE, USER} = MM_TABLES.SERVER;
  * This includes settings about the account, the themes, etc.
  */
 export default class Preference extends Model {
-    /** table (entity name) : Preference */
+    /** table (name) : Preference */
     static table = PREFERENCE;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A USER can have multiple PREFERENCE.(relationship is 1:N)*/

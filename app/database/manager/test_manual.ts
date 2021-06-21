@@ -22,8 +22,8 @@ export default async () => {
         }
     };
 
-    // Test: It should return an instance of the default database
-    const testGetDefaultDatabase = () => {
+    // Test: It should return the app database
+    const testGetAppDatabase = () => {
         return DatabaseManager.appDatabase?.database;
     };
 
@@ -76,7 +76,7 @@ export default async () => {
     // NOTE : Comment and test the below functions one at a time.  It starts with creating a default database and ends with a factory reset.
 
     testAppGroupDirectory();
-    testGetDefaultDatabase();
+    testGetAppDatabase();
     await testNewServerConnection();
     testGetActiveServerConnection();
     await testSetActiveServerConnection();

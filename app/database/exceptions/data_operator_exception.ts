@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 /**
- * DataOperatorException: This exception can be used whenever an issue arises at the composer level.  For example, if a required field is missing.
+ * DataOperatorException: This exception can be used whenever an issue arises at the operator level.  For example, if a required field is missing.
  */
 class DataOperatorException extends Error {
     error : Error | undefined;

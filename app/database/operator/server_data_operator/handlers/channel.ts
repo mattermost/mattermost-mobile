@@ -43,7 +43,7 @@ export interface ChannelHandlerMix {
 
 const ChannelHandler = (superclass: any) => class extends superclass {
     /**
-     * handleChannel: Handler responsible for the Create/Update operations occurring on the CHANNEL entity from the 'Server' schema
+     * handleChannel: Handler responsible for the Create/Update operations occurring on the CHANNEL table from the 'Server' schema
      * @param {HandleChannelArgs} channelsArgs
      * @param {RawChannel[]} channelsArgs.channels
      * @param {boolean} channelsArgs.prepareRecordsOnly
@@ -61,7 +61,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordChannelEqualToRaw,
             transformer: transformChannelRecord,
@@ -74,7 +74,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleMyChannelSettings: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL_SETTINGS entity from the 'Server' schema
+     * handleMyChannelSettings: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL_SETTINGS table from the 'Server' schema
      * @param {HandleMyChannelSettingsArgs} settingsArgs
      * @param {RawMyChannelSettings[]} settingsArgs.settings
      * @param {boolean} settingsArgs.prepareRecordsOnly
@@ -92,7 +92,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
             transformer: transformMyChannelSettingsRecord,
@@ -105,7 +105,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleChannelInfo: Handler responsible for the Create/Update operations occurring on the CHANNEL_INFO entity from the 'Server' schema
+     * handleChannelInfo: Handler responsible for the Create/Update operations occurring on the CHANNEL_INFO table from the 'Server' schema
      * @param {HandleChannelInfoArgs} channelInfosArgs
      * @param {RawChannelInfo[]} channelInfosArgs.channelInfos
      * @param {boolean} channelInfosArgs.prepareRecordsOnly
@@ -126,7 +126,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             key: 'channel_id',
         });
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
             transformer: transformChannelInfoRecord,
@@ -139,7 +139,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleMyChannel: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL entity from the 'Server' schema
+     * handleMyChannel: Handler responsible for the Create/Update operations occurring on the MY_CHANNEL table from the 'Server' schema
      * @param {HandleMyChannelArgs} myChannelsArgs
      * @param {RawMyChannel[]} myChannelsArgs.myChannels
      * @param {boolean} myChannelsArgs.prepareRecordsOnly
@@ -160,7 +160,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             key: 'channel_id',
         });
 
-        records = await this.handleEntityRecords({
+        records = await this.handleRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
             transformer: transformMyChannelRecord,

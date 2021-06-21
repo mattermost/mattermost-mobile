@@ -15,10 +15,10 @@ const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
  * at team level in the app.
  */
 export default class TeamSearchHistory extends Model {
-    /** table (entity name) : TeamSearchHistory */
+    /** table (name) : TeamSearchHistory */
     static table = TEAM_SEARCH_HISTORY;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A TEAM can have multiple search terms  */

@@ -14,10 +14,10 @@ const {SLASH_COMMAND, TEAM} = MM_TABLES.SERVER;
  * The SlashCommand model describes the commands of the various commands available in each team.
  */
 export default class SlashCommand extends Model {
-    /** table (entity name) : SlashCommand */
+    /** table (name) : SlashCommand */
     static table = SLASH_COMMAND;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
         /** A TEAM can have multiple slash commands. (relationship is 1:N) */

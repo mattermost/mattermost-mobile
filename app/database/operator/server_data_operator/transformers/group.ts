@@ -24,7 +24,7 @@ const {
 } = MM_TABLES.SERVER;
 
 /**
- * transformGroupMembershipRecord: Prepares record of entity 'GROUP_MEMBERSHIP' from the SERVER database for update or create actions.
+ * transformGroupMembershipRecord: Prepares a record of the SERVER database 'GroupMembership' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -52,7 +52,7 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
 };
 
 /**
- * transformGroupRecord: Prepares record of entity 'GROUP' from the SERVER database for update or create actions.
+ * transformGroupRecord: Prepares a record of the SERVER database 'Group' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -80,7 +80,7 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
 };
 
 /**
- * transformGroupsInTeamRecord: Prepares record of entity 'GROUPS_IN_TEAM' from the SERVER database for update or create actions.
+ * transformGroupsInTeamRecord: Prepares a record of the SERVER database 'GroupsInTeam' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
@@ -107,7 +107,7 @@ export const transformGroupsInTeamRecord = ({action, database, value}: Transform
 };
 
 /**
- * transformGroupsInChannelRecord: Prepares record of entity 'GROUPS_IN_CHANNEL' from the SERVER database for update or create actions.
+ * transformGroupsInChannelRecord: Prepares a record of the SERVER database 'GroupsInChannel' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value

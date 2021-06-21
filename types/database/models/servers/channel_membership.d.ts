@@ -12,10 +12,10 @@ import User from './user';
  * channels ( N:N relationship between model Users and model Channel)
  */
 export default class ChannelMembership extends Model {
-    /** table (entity name) : ChannelMembership */
+    /** table (name) : ChannelMembership */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** channel_id : The foreign key to the related Channel record */

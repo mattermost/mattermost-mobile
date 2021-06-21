@@ -11,10 +11,10 @@ import Channel from './channel';
  * the channel this user belongs to.
  */
 export default class MyChannelSettings extends Model {
-    /** table (entity name) : MyChannelSettings */
+    /** table (name) : MyChannelSettings */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** channel_id : The foreign key to the related CHANNEL record */
@@ -23,6 +23,6 @@ export default class MyChannelSettings extends Model {
     /** notify_props : Configurations with regards to this channel */
     notifyProps: NotifyProps;
 
-    /** channel : The relation pointing to entity CHANNEL */
+    /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<Channel>;
 }

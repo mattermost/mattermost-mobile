@@ -24,7 +24,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
         query(Q.where('post_id', post_id)).
         fetch()) as Reaction[];
 
-    // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction entity
+    // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction table
     const similarObjects: Reaction[] = [];
 
     const createReactions: RecordPair[] = [];

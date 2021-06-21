@@ -3,13 +3,13 @@
 
 import {MM_TABLES} from '@constants/database';
 
-import {defaultSchema} from './index';
+import {schema} from './index';
 
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
 describe('*** Test schema for DEFAULT database ***', () => {
     it('=> The DEFAULT SCHEMA should strictly match', () => {
-        expect(defaultSchema).toEqual({
+        expect(schema).toEqual({
             version: 1,
             tables: {
                 [INFO]: {

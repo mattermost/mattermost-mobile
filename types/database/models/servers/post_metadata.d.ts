@@ -10,10 +10,10 @@ import Post from './post';
  * PostMetadata provides additional information on a POST
  */
 export default class PostMetadata extends Model {
-    /** table (entity name) : PostMetadata */
+    /** table (name) : PostMetadata */
     static table: string;
 
-    /** associations : Describes every relationship to this entity. */
+    /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
     /** post_id : The foreign key of the parent POST model */
