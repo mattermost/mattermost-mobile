@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
+import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
@@ -10,9 +10,30 @@ import * as analytics from '@init/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {getCSRFFromCookie} from '@utils/security';
 
-import type {ServerCredentials} from '@typings/credentials';
+import type {ServerCredential} from '@typings/credentials';
 
 const ASYNC_STORAGE_CURRENT_SERVER_KEY = '@currentServerUrl';
+
+export const getAllServerCredentials = async (): Promise<ServerCredential[]> => {
+    const serverCredentials: ServerCredential[] = [];
+
+    let serverUrls: string[];
+    if (Platform.OS === 'ios') {
+        serverUrls = await KeyChain.getAllInternetPasswordServers();
+    } else {
+        serverUrls = await KeyChain.getAllGenericPasswordServices();
+    }
+
+    for await (const serverUrl of serverUrls) {
+        const serverCredential = await getServerCredentials(serverUrl);
+
+        if (serverCredential) {
+            serverCredentials.push(serverCredential);
+        }
+    }
+
+    return serverCredentials;
+};
 
 // TODO: This function is only necessary to support pre-Gekidou
 // versions as the active server URL may be stored in AsyncStorage.
@@ -71,7 +92,7 @@ export const removeActiveServerCredentials = async () => {
     }
 };
 
-export const getServerCredentials = async (serverUrl: string): Promise<ServerCredentials|null> => {
+export const getServerCredentials = async (serverUrl: string): Promise<ServerCredential|null> => {
     try {
         const credentials = await KeyChain.getInternetCredentials(serverUrl);
 
@@ -94,7 +115,7 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
 
                 // TODO: Create client and set token / CSRF
 
-                return {userId, token};
+                return {serverUrl, userId, token};
             }
         }
 
