@@ -35,12 +35,6 @@ export function sanitizeUrl(url: string, useHttp = false) {
     );
 }
 
-export function normalizeServerUrl(serverUrl: string) {
-    const parsed = urlParse(serverUrl);
-
-    return stripTrailingSlashes(`${parsed.host}${parsed.pathname}`);
-}
-
 export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = false) {
     let url = sanitizeUrl(serverUrl, useHttp);
 

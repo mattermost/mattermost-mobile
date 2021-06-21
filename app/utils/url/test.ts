@@ -285,13 +285,4 @@ describe('UrlUtils', () => {
             expect(onSuccess).not.toHaveBeenCalled();
         });
     });
-
-    describe('normalizeServerUrl', () => {
-        it('should return hostname, port, and path without a trailing slash', () => {
-            const serverUrl = 'https://some.domain.com:12345/some/path/?q=query';
-            const expectedUrl = 'some.domain.com:12345/some/path';
-
-            expect(UrlUtils.normalizeServerUrl(serverUrl)).toEqual(expectedUrl);
-        });
-    });
 });

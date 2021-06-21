@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
+import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
-import urlParse from 'url-parse';
 
 import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {getCSRFFromCookie} from '@utils/security';
-import {normalizeServerUrl} from '@utils/url';
 
 import type {ServerCredential} from '@typings/credentials';
 
@@ -27,14 +25,7 @@ export const getAllServerCredentials = async (): Promise<ServerCredential[]> => 
     }
 
     for await (const serverUrl of serverUrls) {
-        let serverCredential: ServerCredential | null;
-
-        const parsed = urlParse(serverUrl);
-        if (parsed.protocol) {
-            serverCredential = await convertV1Credential(serverUrl);
-        } else {
-            serverCredential = await getServerCredentials(serverUrl);
-        }
+        const serverCredential = await getServerCredentials(serverUrl);
 
         if (serverCredential) {
             serverCredentials.push(serverCredential);
@@ -42,16 +33,6 @@ export const getAllServerCredentials = async (): Promise<ServerCredential[]> => 
     }
 
     return serverCredentials;
-};
-
-const convertV1Credential = async (serverUrl: string) => {
-    const credentials = await getServerCredentials(serverUrl);
-    await removeServerCredentials(serverUrl);
-
-    setServerCredentials(serverUrl, credentials!.userId, credentials!.token);
-
-    const normalizedServerUrl = normalizeServerUrl(serverUrl);
-    return getServerCredentials(normalizedServerUrl);
 };
 
 // TODO: This function is only necessary to support pre-Gekidou
@@ -82,8 +63,6 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
         return;
     }
 
-    const normalizedServerUrl = normalizeServerUrl(serverUrl);
-
     try {
         let accessGroup;
         if (Platform.OS === 'ios') {
@@ -95,7 +74,7 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
-        KeyChain.setInternetCredentials(normalizedServerUrl, userId, token, options);
+        KeyChain.setInternetCredentials(serverUrl, userId, token, options);
     } catch (e) {
         console.warn('could not set credentials', e); //eslint-disable-line no-console
     }
