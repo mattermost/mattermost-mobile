@@ -40,17 +40,18 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
             ];
 
             if (userThreadList.threads?.length) {
+                const flat = require('array.prototype.flat');
                 await dispatch(
                     getMissingProfilesByIds([
                         ...new Set(
-                            userThreadList.threads.map(({participants}) => participants.map(({id}) => id)).flat(),
+                            flat(userThreadList.threads.map(({participants}) => participants.map(({id}) => id))) as string[],
                         ),
                     ]),
                 );
                 getThreadsActions.push(
                     {
                         type: UserTypes.RECEIVED_PROFILES_LIST,
-                        data: userThreadList.threads.map(({participants: users}) => users).flat(),
+                        data: flat(userThreadList.threads.map(({participants: users}) => users)),
                     },
                     {
                         type: PostTypes.RECEIVED_POSTS,
