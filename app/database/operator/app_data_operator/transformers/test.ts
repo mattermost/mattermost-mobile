@@ -9,7 +9,7 @@ import {
 } from '@database/operator/app_data_operator/transformers/index';
 import {OperationType} from '@typings/database/enums';
 
-describe('', () => {
+describe('** APP DATA TRANSFORMER **', () => {
     beforeAll(async () => {
         await DatabaseManager.init([]);
     });

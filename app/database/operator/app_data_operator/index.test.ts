@@ -3,7 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {
-    isRecordAppEqualToRaw,
+    isRecordInfoEqualToRaw,
     isRecordGlobalEqualToRaw,
     isRecordServerEqualToRaw,
 } from '@database/operator/app_data_operator/comparator';
@@ -14,7 +14,7 @@ import {
 } from '@database/operator/app_data_operator/transformers';
 import {RawGlobal, RawServers} from '@typings/database/database';
 
-describe('', () => {
+describe('** APP DATA OPERATOR **', () => {
     beforeAll(async () => {
         await DatabaseManager.init([]);
     });
@@ -47,7 +47,7 @@ describe('', () => {
         expect(spyOnHandleEntityRecords).toHaveBeenCalledWith({
             fieldName: 'version_number',
             transformer: transformAppRecord,
-            findMatchingRecordBy: isRecordAppEqualToRaw,
+            findMatchingRecordBy: isRecordInfoEqualToRaw,
             createOrUpdateRawValues: [
                 {
                     build_number: 'build-10x',

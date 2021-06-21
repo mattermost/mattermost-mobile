@@ -6,7 +6,7 @@ import {RawInfo, RawGlobal, RawServers} from '@typings/database/database';
 import Global from '@typings/database/models/app/global';
 import Servers from '@typings/database/models/app/servers';
 
-export const isRecordAppEqualToRaw = (record: Info, raw: RawInfo) => {
+export const isRecordInfoEqualToRaw = (record: Info, raw: RawInfo) => {
     return (raw.build_number === record.buildNumber && raw.version_number === record.versionNumber);
 };
 

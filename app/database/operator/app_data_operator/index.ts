@@ -4,7 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
-    isRecordAppEqualToRaw,
+    isRecordInfoEqualToRaw,
     isRecordGlobalEqualToRaw,
     isRecordServerEqualToRaw,
 } from '@database/operator/app_data_operator/comparator';
@@ -33,7 +33,7 @@ export default class AppDataOperator extends BaseDataOperator {
 
         const records = await this.handleEntityRecords({
             fieldName: 'version_number',
-            findMatchingRecordBy: isRecordAppEqualToRaw,
+            findMatchingRecordBy: isRecordInfoEqualToRaw,
             transformer: transformAppRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: info, key: 'version_number'}),
