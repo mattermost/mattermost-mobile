@@ -13,7 +13,6 @@ import {
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {Channel, ChannelNotifyProps, ChannelMembership} from '@mm-redux/types/channels';
 import {PreferenceType} from '@mm-redux/types/preferences';
@@ -813,8 +812,7 @@ export function viewChannel(channelId: string, prevChannelId = ''): ActionFunc {
         }
 
         try {
-            const crtEnabled = isCollapsedThreadsEnabled(getState());
-            await Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId, crtEnabled);
+            await Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -1261,8 +1259,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
 
         // Send channel last viewed at to the server
         if (updateLastViewedAt) {
-            const crtEnabled = isCollapsedThreadsEnabled(getState());
-            Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId, crtEnabled).then().catch((error) => {
+            Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId).then().catch((error) => {
                 forceLogoutIfNecessary(error, dispatch, getState);
                 dispatch(logError(error));
                 return {error};

@@ -21,7 +21,6 @@ export interface ClientPostsMix {
     getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
     getUserThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, extended?: boolean, deleted?: boolean, unread?: boolean, since?: number) => Promise<any>;
     getUserThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
-    getThreadMentionCountsByChannel: (userId: string, teamId: string) => Promise<any>;
     updateThreadsReadForUser: (userId: string, teamId: string) => Promise<any>;
     updateThreadReadForUser: (userId: string, teamId: string, threadId: string, timestamp: number) => Promise<any>;
     updateThreadFollowForUser: (userId: string, teamId: string, threadId: string, state: boolean) => Promise<any>;
@@ -137,13 +136,6 @@ const ClientPosts = (superclass: any) => class extends superclass {
     getUserThread = async (userId: string, teamId: string, threadId: string, extended = false) => {
         return this.doFetch(
             `${this.getUserThreadRoute(userId, teamId, threadId)}${buildQueryString({extended})}`,
-            {method: 'get'},
-        );
-    };
-
-    getThreadMentionCountsByChannel = async (userId: string, teamId: string) => {
-        return this.doFetch(
-            `${this.getUserThreadsRoute(userId, teamId)}/mention_counts`,
             {method: 'get'},
         );
     };

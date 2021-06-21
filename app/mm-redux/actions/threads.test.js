@@ -5,7 +5,7 @@ import nock from 'nock';
 
 import {getThread as fetchThread, getThreads as fetchThreads} from '@mm-redux/actions/threads';
 import {getThread, getThreadsInCurrentTeam} from '@mm-redux/selectors/entities/threads';
-import {Client4} from '@mm-redux/client';
+import {Client4} from '@client/rest';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 

@@ -29,8 +29,8 @@ describe('Selectors.Threads.getThreadOrderInCurrentTeam', () => {
                 },
                 threads: {
                     threads: {
-                        a: {last_reply_at: 1},
-                        b: {last_reply_at: 2},
+                        a: {last_reply_at: 1, is_following: true},
+                        b: {last_reply_at: 2, is_following: true},
                     },
                     threadsInTeam: {
                         [team1.id]: ['a', 'b'],

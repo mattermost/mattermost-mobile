@@ -21,7 +21,6 @@ describe('threads', () => {
                     {id: 't1'},
                 ],
                 total: 3,
-                unread_mentions_per_channel: {},
                 total_unread_threads: 0,
                 total_unread_mentions: 1,
             },
@@ -34,39 +33,9 @@ describe('threads', () => {
         expect(nextState.counts.a).toEqual({
             total: 3,
             total_unread_threads: 0,
-            unread_mentions_per_channel: {},
             total_unread_mentions: 1,
         });
         expect(nextState.threadsInTeam.a).toContain('t1');
-    });
-    test('RECEIVED_PER_CHANNEL_MENTION_COUNTS should update the state', () => {
-        const state = deepFreeze({
-            threadsInTeam: {},
-            threads: {},
-            counts: {
-                a: {
-                    total: 3,
-                    total_unread_threads: 0,
-                    total_unread_mentions: 2,
-                },
-            },
-        });
-
-        const nextState = threadsReducer(state, {
-            type: ThreadTypes.RECEIVED_PER_CHANNEL_MENTION_COUNTS,
-            data: {
-                team_id: 'a',
-                counts: {a: 2},
-            },
-        });
-
-        expect(nextState).not.toEqual(state);
-        expect(nextState.counts.a).toEqual({
-            total: 3,
-            total_unread_threads: 0,
-            unread_mentions_per_channel: {a: 2},
-            total_unread_mentions: 2,
-        });
     });
     test('LEAVE_TEAM should clean the state', () => {
         const state = deepFreeze({

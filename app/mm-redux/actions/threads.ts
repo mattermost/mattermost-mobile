@@ -40,17 +40,18 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
             ];
 
             if (userThreadList.threads?.length) {
+                const flat = require('array.prototype.flat');
                 await dispatch(
                     getMissingProfilesByIds([
                         ...new Set(
-                            userThreadList.threads.map(({participants}) => participants.map(({id}) => id)).flat(),
+                            flat(userThreadList.threads.map(({participants}) => participants.map(({id}) => id))) as string[],
                         ),
                     ]),
                 );
                 getThreadsActions.push(
                     {
                         type: UserTypes.RECEIVED_PROFILES_LIST,
-                        data: userThreadList.threads.map(({participants: users}) => users).flat(),
+                        data: flat(userThreadList.threads.map(({participants: users}) => users)),
                     },
                     {
                         type: PostTypes.RECEIVED_POSTS,
@@ -130,31 +131,6 @@ export function handleThreadArrived(dispatch: DispatchFunc, getState: GetStateFu
     );
 
     return thread;
-}
-
-export function getThreadMentionCountsByChannel(teamId: string) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let result: Record<string, number>;
-
-        try {
-            const {currentUserId} = getState().entities.users;
-            result = await Client4.getThreadMentionCountsByChannel(currentUserId, teamId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        dispatch({
-            type: ThreadTypes.RECEIVED_PER_CHANNEL_MENTION_COUNTS,
-            data: {
-                counts: result,
-                team_id: teamId,
-            },
-        });
-
-        return {data: result};
-    };
 }
 
 export function handleAllMarkedRead(dispatch: DispatchFunc, teamId: string) {

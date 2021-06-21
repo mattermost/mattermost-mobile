@@ -35,7 +35,7 @@ export interface ClientChannelsMix {
     removeFromChannel: (userId: string, channelId: string) => Promise<any>;
     getChannelStats: (channelId: string) => Promise<ChannelStats>;
     getChannelMemberCountsByGroup: (channelId: string, includeTimezones: boolean) => Promise<ChannelMemberCountByGroup[]>;
-    viewMyChannel: (channelId: string, prevChannelId?: string, collapsedThreads?: boolean) => Promise<any>;
+    viewMyChannel: (channelId: string, prevChannelId?: string) => Promise<any>;
     autocompleteChannels: (teamId: string, name: string) => Promise<Channel[]>;
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
@@ -271,8 +271,8 @@ const ClientChannels = (superclass: any) => class extends superclass {
         );
     };
 
-    viewMyChannel = async (channelId: string, prevChannelId?: string, collapsedThreads = false) => {
-        const data = {channel_id: channelId, prev_channel_id: prevChannelId, collapsed_threads_supported: collapsedThreads};
+    viewMyChannel = async (channelId: string, prevChannelId?: string) => {
+        const data = {channel_id: channelId, prev_channel_id: prevChannelId, collapsed_threads_supported: true};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
             {method: 'post', body: JSON.stringify(data)},
