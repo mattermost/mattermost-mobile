@@ -213,14 +213,14 @@ describe('Custom status', () => {
 
         // # Post a message and check if custom status emoji is present in the post header
         await ChannelScreen.postMessage(message);
-        await expect(element(by.id(`custom_status_emoji.${customStatus.emojiName}`).withAncestor(by.id('post_header')))).toBeVisible();
+        await expect(element(by.id(`post_header.custom_status_emoji.${customStatus.emojiName}`))).toBeVisible();
 
         // # Open the reply thread for the last post
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
         await ChannelScreen.openReplyThreadFor(post.id, message);
 
         // * Check if the custom status emoji is present in the post header and close thread
-        await expect(element(by.id(`custom_status_emoji.${customStatus.emojiName}`).withAncestor(by.id('post_header')))).toBeVisible();
+        await expect(element(by.id(`post_header.custom_status_emoji.${customStatus.emojiName}`))).toBeVisible();
         await ThreadScreen.back();
 
         // # Open user profile screen
