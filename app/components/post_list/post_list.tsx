@@ -246,6 +246,7 @@ const PostList = ({
 
         return () => {
             EventEmitter.off('scroll-to-bottom', scrollToBottom);
+            EventEmitter.off(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, closePermalink);
         };
     }, []);
 
