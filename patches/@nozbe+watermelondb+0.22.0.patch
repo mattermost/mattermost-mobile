@@ -1,0 +1,44 @@
+diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
+index 4b67b51..6eaa23a 100644
+--- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
++++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
+@@ -20,9 +20,16 @@ declare module '@nozbe/watermelondb/adapters/sqlite' {
+ 
+   export type SQLiteQuery = [SQL, SQLiteArg[]]
+ 
++  export type MigrationEvents = {
++    onSuccess: () => void,
++    onStart: () => void,
++    onError: (error: Error) => void,
++  }
++
+   export interface SQLiteAdapterOptions {
+     dbName?: string
+     migrations?: SchemaMigrations
++    migrationEvents?: MigrationEvents
+     schema: AppSchema
+     synchronous?: boolean
+     jsi?: boolean
+diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+index 2217222..49a6ff7 100644
+--- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
++++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+@@ -15,6 +15,18 @@ class Database(private val name: String, private val context: Context) {
+                 if (name == ":memory:" || name.contains("mode=memory")) {
+                     context.cacheDir.delete()
+                     File(context.cacheDir, name).path
++                } else if (name.contains("/") || name.contains("file")) {
++                    // Extracts the database name from the path
++                    val dbName = name.substringAfterLast("/")
++
++                    // Extracts the real path where the *.db file will be created
++                    val truePath = name.substringAfterLast("file://").substringBeforeLast("/")
++
++                    // Creates the directory
++                    val fileObj = File(truePath, "databases")
++                    fileObj.mkdir()
++
++                    File("${truePath}/databases", dbName).path
+                 } else
+                     // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
+                     context.getDatabasePath("$name.db").path.replace("/databases", ""),

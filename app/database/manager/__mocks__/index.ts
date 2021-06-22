@@ -26,7 +26,8 @@ import {getActiveServer, getServer} from '@queries/app/servers';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
-import type {AppDatabase, CreateServerDatabaseArgs, MigrationEvents, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
+import type {MigrationEvents} from '@nozbe/watermelondb/adapters/sqlite';
+import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import type IServers from '@typings/database/models/app/servers';
 
@@ -300,12 +301,12 @@ class DatabaseManager {
                     dbName,
                 });
             },
-            onStarted: () => {
+            onStart: () => {
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {
                     dbName,
                 });
             },
-            onFailure: (error) => {
+            onError: (error) => {
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                     dbName,
                     error,

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {Client4} from '@client/rest';
 import {SSO as SSOEnum} from '@constants';
-import {useManagedConfig} from '@mattermost/react-native-emm';
 import {scheduleExpiredNotification} from '@requests/remote/push_notification';
 import {ssoLogin} from '@requests/remote/user';
 import {resetToChannel} from '@screens/navigation';
