@@ -150,7 +150,6 @@ export default class UploadItem extends PureComponent {
         const options = {
             timeout: 60000,
             certificate,
-            IOSBackgroundTask: true,
         };
         this.uploadPromise = RNFetchBlob.config(options).fetch('POST', Client4.getFilesRoute(), headers, data);
         this.uploadPromise.uploadProgress(this.handleUploadProgress);
