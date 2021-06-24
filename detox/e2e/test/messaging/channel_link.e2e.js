@@ -58,7 +58,7 @@ describe('Channel Link', () => {
     xit('MM-T178 should be able to open channel by tapping on channel link from reply thread', async () => { // related issue https://mattermost.atlassian.net/browse/MM-36532
         // # Post a channel link
         await goToChannel(townSquareChannel.display_name);
-        const channelLink = `http://localhost:8065/${testTeam.name}/channels/${testChannel.name}`;
+        const channelLink = `${testConfig.siteUrl}/${testTeam.name}/channels/${testChannel.name}`;
         await postMessage(channelLink);
 
         // # Tap on the channel link from reply thread
