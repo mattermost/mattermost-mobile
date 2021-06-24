@@ -6,6 +6,7 @@ import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
@@ -29,6 +30,7 @@ interface AtMentionItemProps {
     theme: Theme;
     userId: string;
     username: string;
+    isCustomStatusEnabled: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,18 +52,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         rowInfo: {
             flexDirection: 'row',
-            flex: 1,
         },
         rowFullname: {
             fontSize: 15,
             color: theme.centerChannelColor,
             paddingLeft: 4,
+            maxWidth: '70%',
         },
         rowUsername: {
             color: theme.centerChannelColor,
             fontSize: 15,
             opacity: 0.56,
-            flex: 1,
+            maxWidth: '30%',
         },
     };
 });
@@ -82,6 +84,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
         theme,
         userId,
         username,
+        isCustomStatusEnabled,
     } = props;
 
     const completeMention = () => {
@@ -135,27 +138,34 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         show={isGuest}
                         theme={theme}
                     />
-                    {Boolean(name.length) &&
-                    <Text
-                        style={style.rowFullname}
-                        numberOfLines={1}
-                        testID='at_mention_item.name'
-                    >
-                        {name}
-                    </Text>
-                    }
+                    {Boolean(name.length) && (
+                        <Text
+                            style={style.rowFullname}
+                            numberOfLines={1}
+                            testID='at_mention_item.name'
+                        >
+                            {name}
+                        </Text>
+                    )}
                     <Text
                         style={style.rowUsername}
                         numberOfLines={1}
                         testID='at_mention_item.username'
                     >
-                        {isCurrentUser &&
-                        <FormattedText
-                            id='suggestion.mention.you'
-                            defaultMessage='(you)'
-                        />}
+                        {isCurrentUser && (
+                            <FormattedText
+                                id='suggestion.mention.you'
+                                defaultMessage='(you)'
+                            />
+                        )}
                         {` @${username}`}
                     </Text>
+                    {isCustomStatusEnabled && !isBot && (
+                        <CustomStatusEmoji
+                            userID={userId}
+                            style={{marginLeft: 4}}
+                        />
+                    )}
                 </View>
                 {isShared && (
                     <ChannelIcon
