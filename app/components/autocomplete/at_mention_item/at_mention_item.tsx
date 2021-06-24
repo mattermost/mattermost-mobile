@@ -52,18 +52,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         rowInfo: {
             flexDirection: 'row',
+            width: '100%',
         },
         rowFullname: {
             fontSize: 15,
             color: theme.centerChannelColor,
             paddingLeft: 4,
-            maxWidth: '70%',
+            maxWidth: '42%',
         },
         rowUsername: {
             color: theme.centerChannelColor,
             fontSize: 15,
             opacity: 0.56,
-            maxWidth: '30%',
+            maxWidth: '45%',
         },
     };
 });
