@@ -8,6 +8,7 @@ import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
 import urlParse from 'url-parse';
 
+import {dismissAllModals, popToRoot} from '@actions/navigation';
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
@@ -59,7 +60,9 @@ export default class MarkdownLink extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel, intl);
+                await handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel, intl);
+                await dismissAllModals();
+                await popToRoot();
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 const teamName = match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? currentTeamName : match.teamName;
                 showPermalink(intl, teamName, match.postId);
