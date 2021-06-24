@@ -302,7 +302,15 @@ describe('Channels List', () => {
         // # Open main sidebar
         await openMainSidebar();
 
+        // # Enter joined private channel search term
+        await searchInput.typeText(privateChannel.display_name);
+        await searchInput.tapBackspaceKey();
+
+        // * Verify joined private channel is displayed
+        await expect(element(by.text(privateChannel.display_name))).toBeVisible();
+
         // # Enter non-joined private channel search term
+        await searchInput.clearText();
         await searchInput.typeText(nonJoinedPrivateChannel.display_name);
         await searchInput.tapBackspaceKey();
 
