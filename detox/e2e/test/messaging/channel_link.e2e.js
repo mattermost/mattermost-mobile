@@ -13,6 +13,7 @@ import {
     Post,
     Setup,
 } from '@support/server_api';
+import testConfig from '@support/test_config';
 import {timeouts, wait} from '@support/utils';
 
 describe('Channel Link', () => {
