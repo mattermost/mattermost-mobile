@@ -41,6 +41,7 @@ const HeaderCommentedOn = ({name, theme}: HeaderCommentedOnProps) => {
                 apostrophe,
             }}
             style={style.commentedOn}
+            testId='post_header.commented_on'
         />
     );
 };
