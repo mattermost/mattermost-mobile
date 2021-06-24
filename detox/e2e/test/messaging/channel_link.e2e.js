@@ -41,7 +41,7 @@ describe('Channel Link', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T178 should be able to open channel by tapping on channel link from main channel', async () => {
+    it('MM-T2970 should be able to open channel by tapping on channel link from main channel', async () => {
         // # Post a channel link
         await goToChannel(townSquareChannel.display_name);
         const channelLink = `http://localhost:8065/${testTeam.name}/channels/${testChannel.name}`;
