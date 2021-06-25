@@ -429,7 +429,7 @@ PODS:
     - Sentry/Core (= 6.1.4)
   - Sentry/Core (6.1.4)
   - Swime (3.0.6)
-  - XCDYouTubeKit (2.8.3)
+  - XCDYouTubeKit (2.15.2)
   - Yoga (1.14.0)
   - YoutubePlayer-in-WKWebView (0.3.5)
 
@@ -511,7 +511,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
-  - XCDYouTubeKit (= 2.8.3)
+  - XCDYouTubeKit (from `https://github.com/hinge-agency/XCDYouTubeKit.git`, branch `fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -525,7 +525,6 @@ SPEC REPOS:
     - SDWebImageWebPCoder
     - Sentry
     - Swime
-    - XCDYouTubeKit
     - YoutubePlayer-in-WKWebView
 
 EXTERNAL SOURCES:
@@ -677,8 +676,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  XCDYouTubeKit:
+    :branch: fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3
+    :git: https://github.com/hinge-agency/XCDYouTubeKit.git
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
+
+CHECKOUT OPTIONS:
+  XCDYouTubeKit:
+    :commit: 38170db3934e575ad4bfb782dedc544f304b482f
+    :git: https://github.com/hinge-agency/XCDYouTubeKit.git
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
@@ -764,10 +771,10 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   Sentry: 9d055e2de30a77685e86b219acf02e59b82091fc
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  XCDYouTubeKit: 46df93c4dc4d48763ad720d997704384635c4335
+  XCDYouTubeKit: b120aced3d8638ffb570c5450cddb5a1dac448c7
   Yoga: a7de31c64fe738607e7a3803e3f591a4b1df7393
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: a4402d26aaec4ef7e58bd8304848d89c876d285a
+PODFILE CHECKSUM: c3bbb0fd2d81abb15a1f699210f18b2577ec458f
 
 COCOAPODS: 1.10.1
