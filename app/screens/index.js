@@ -209,6 +209,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'PluginInternal':
         screen = require('@screens/plugin').default;
         break;
+    case 'SlideUp':
+        screen = require('@screens/slide_up').default;
+        break;
     }
 
     if (screen) {

@@ -50,8 +50,11 @@ export default class PostDraft extends PureComponent {
     };
 
     updateNativeScrollView = (scrollViewNativeID) => {
-        if (this.keyboardTracker?.current) {
-            this.keyboardTracker.current.resetScrollView(scrollViewNativeID);
+        if (this.keyboardTracker?.current && this.props.scrollViewNativeID === scrollViewNativeID) {
+            const resetScrollView = requestAnimationFrame(() => {
+                this.keyboardTracker.current.resetScrollView(scrollViewNativeID);
+                cancelAnimationFrame(resetScrollView);
+            });
         }
     };
 

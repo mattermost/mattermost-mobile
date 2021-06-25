@@ -24,7 +24,7 @@ type Props = {
     initWebSocket: (additionalOptions: {forceConnection: boolean}) => void;
     markChannelViewedAndReadOnReconnect: (channelId: string) => void;
     setCurrentUserStatusOffline: () => void;
-    startPeriodicStatusUpdates: () => void;
+    startPeriodicStatusUpdates: (forceStatusUpdate: boolean) => void;
     status: string;
     stopPeriodicStatusUpdates: () => void;
 }
@@ -111,10 +111,7 @@ const NetworkIndicator = ({
     };
 
     const handleConnectionChange = ({hasInternet}: ConnectionChangedEvent) => {
-        if (firstRun.current) {
-            firstRun.current = false;
-            handleWebSocket(true);
-        } else {
+        if (!firstRun.current) {
             if (!hasInternet) {
                 setConnected(false);
             }
@@ -142,13 +139,18 @@ const NetworkIndicator = ({
     const handleWebSocket = (connect: boolean) => {
         if (connect) {
             initWebSocket({forceConnection: true});
-            startPeriodicStatusUpdates();
+            startPeriodicStatusUpdates(true);
         } else {
             closeWebSocket(true);
             stopPeriodicStatusUpdates();
             setCurrentUserStatusOffline();
         }
     };
+
+    useEffect(() => {
+        handleWebSocket(true);
+        firstRun.current = false;
+    }, []);
 
     useEffect(() => {
         const networkListener = networkConnectionListener(handleConnectionChange);
@@ -168,7 +170,6 @@ const NetworkIndicator = ({
     useEffect(() => {
         const handleAppStateChange = stateChange(async (appState: AppStateStatus) => {
             const active = appState === 'active';
-
             handleWebSocket(active);
 
             if (active) {

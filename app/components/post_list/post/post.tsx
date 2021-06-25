@@ -3,6 +3,7 @@
 
 import React, {ReactNode, useRef} from 'react';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import SystemHeader from '@components/post_list/system_header';
@@ -28,6 +29,7 @@ type PostProps = {
     enablePostUsernameOverride: boolean;
     highlight?: boolean;
     highlightPinnedOrFlagged?: boolean;
+    intl: typeof intlShape;
     isConsecutivePost?: boolean;
     isFirstReply?: boolean;
     isFlagged?: boolean;
@@ -38,6 +40,7 @@ type PostProps = {
     rootPostAuthor?: string;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
+    showPermalink: (intl: typeof intlShape, teamName: string, postId: string) => null;
     skipFlaggedHeader?: boolean;
     skipPinnedHeader?: boolean;
     teammateNameDisplay: string;
@@ -86,8 +89,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
-    location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true,
+    canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
+    location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink,
     teammateNameDisplay, testID, theme,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -99,11 +102,14 @@ const Post = ({
         if (post) {
             if (location === Screens.THREAD) {
                 Keyboard.dismiss();
+            } else if (location === Screens.SEARCH) {
+                showPermalink(intl, '', post.id);
+                return;
             }
 
             const isValidSystemMessage = fromAutoResponder(post) || !isSystemMessage(post);
             if (post.state !== Posts.POST_DELETED && isValidSystemMessage && !isPostPendingOrFailed(post)) {
-                if ([Screens.CHANNEL, Screens.PERMALINK, Screens.SEARCH].includes(location)) {
+                if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                     EventEmitter.emit('goToThread', post);
                 }
             } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED)) {
@@ -257,4 +263,4 @@ const Post = ({
     );
 };
 
-export default Post;
+export default injectIntl(Post);

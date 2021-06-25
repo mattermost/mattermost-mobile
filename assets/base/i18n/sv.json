@@ -251,7 +251,7 @@
   "mobile.channel_members.add_members_alert": "Du måste välja minst en medlem att lägga till i kanalen.",
   "mobile.commands.error_title": "Fel när kommandot utfördes",
   "mobile.components.error_list.dismiss_all": "Avfärda alla",
-  "mobile.components.select_server_view.connect": "Ansluten",
+  "mobile.components.select_server_view.connect": "Anslut",
   "mobile.components.select_server_view.connecting": "Ansluter...",
   "mobile.components.select_server_view.enterServerUrl": "Ange serveradress",
   "mobile.components.select_server_view.proceed": "Fortsätt",

@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js b/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js
-index fe25d36..a2a1a34 100644
+index 1bfd2b4..820ccbc 100644
 --- a/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js
 +++ b/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js
 @@ -10,7 +10,7 @@ var __rest = (this && this.__rest) || function (s, e) {
@@ -31,10 +31,10 @@ index fe25d36..a2a1a34 100644
      render() {
          var _a;
 diff --git a/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js b/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js
-index 9581256..b10d579 100644
+index 8fe90be..bb0e071 100644
 --- a/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js
 +++ b/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js
-@@ -79,6 +79,11 @@ class SearchBar extends Component {
+@@ -85,6 +85,11 @@ class SearchBar extends Component {
              cancelButtonWidth: null,
          };
      }
@@ -44,9 +44,9 @@ index 9581256..b10d579 100644
 +        }
 +    }
      render() {
-         const _a = this.props, { theme, cancelButtonProps, cancelButtonTitle, clearIcon, containerStyle, leftIconContainerStyle, rightIconContainerStyle, inputContainerStyle, inputStyle, placeholderTextColor, showLoading, loadingProps, searchIcon, showCancel } = _a, attributes = __rest(_a, ["theme", "cancelButtonProps", "cancelButtonTitle", "clearIcon", "containerStyle", "leftIconContainerStyle", "rightIconContainerStyle", "inputContainerStyle", "inputStyle", "placeholderTextColor", "showLoading", "loadingProps", "searchIcon", "showCancel"]);
-         const { hasFocus, isEmpty } = this.state;
-@@ -154,7 +159,6 @@ const styles = StyleSheet.create({
+         var _a, _b, _c, _d, _e, _f, _g;
+         const _h = this.props, { theme, cancelButtonProps, cancelButtonTitle, clearIcon, containerStyle, leftIconContainerStyle, rightIconContainerStyle, inputContainerStyle, inputStyle, placeholderTextColor, showLoading, loadingProps, searchIcon, showCancel } = _h, attributes = __rest(_h, ["theme", "cancelButtonProps", "cancelButtonTitle", "clearIcon", "containerStyle", "leftIconContainerStyle", "rightIconContainerStyle", "inputContainerStyle", "inputStyle", "placeholderTextColor", "showLoading", "loadingProps", "searchIcon", "showCancel"]);
+@@ -167,7 +172,6 @@ const styles = StyleSheet.create({
          paddingBottom: 13,
          paddingTop: 13,
          flexDirection: 'row',
@@ -54,7 +54,7 @@ index 9581256..b10d579 100644
          alignItems: 'center',
      },
      input: {
-@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
+@@ -177,7 +181,7 @@ const styles = StyleSheet.create({
      inputContainer: {
          borderBottomWidth: 0,
          borderRadius: 9,
