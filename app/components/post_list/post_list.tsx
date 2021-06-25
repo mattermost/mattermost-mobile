@@ -146,7 +146,7 @@ const PostList = ({
         if (onViewableItemsChangedListener.current && !deepLinkURL) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [deepLinkURL]);
+    }, []);
 
     const renderItem = useCallback(({item, index}) => {
         if (isStartOfNewMessages(item)) {
