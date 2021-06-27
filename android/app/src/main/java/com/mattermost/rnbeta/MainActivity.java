@@ -1,6 +1,8 @@
 package com.mattermost.rnbeta;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.view.KeyEvent;
 import android.content.res.Configuration;
@@ -19,7 +21,7 @@ public class MainActivity extends NavigationActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
         if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
@@ -42,7 +44,7 @@ public class MainActivity extends NavigationActivity {
             return true;
         }
         return super.dispatchKeyEvent(event);
-    };
+    }
 
     private void setHWKeyboardConnected() {
         HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;

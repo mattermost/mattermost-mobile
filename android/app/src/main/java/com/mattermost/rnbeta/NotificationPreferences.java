@@ -10,8 +10,7 @@ public class NotificationPreferences {
     public final String SOUND_PREF = "NotificationSound";
     public final String VIBRATE_PREF = "NotificationVibrate";
     public final String BLINK_PREF = "NotificationLights";
-
-    private SharedPreferences mSharedPreferences;
+    private final SharedPreferences mSharedPreferences;
 
     private NotificationPreferences(Context context) {
         mSharedPreferences = context.getSharedPreferences(SHARED_NAME, Context.MODE_PRIVATE);
@@ -40,18 +39,18 @@ public class NotificationPreferences {
     public void setNotificationSound(String soundUri) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putString(SOUND_PREF, soundUri);
-        editor.commit();
+        editor.apply();
     }
 
     public void setShouldVibrate(boolean vibrate) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putBoolean(VIBRATE_PREF, vibrate);
-        editor.commit();
+        editor.apply();
     }
 
     public void setShouldBlink(boolean blink) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putBoolean(BLINK_PREF, blink);
-        editor.commit();
+        editor.apply();
     }
 }

@@ -14,7 +14,7 @@ import com.facebook.react.bridge.WritableMap;
 
 public class RNPasteableActionCallback implements ActionMode.Callback {
 
-    private RNPasteableEditText mEditText;
+    private final RNPasteableEditText mEditText;
 
     RNPasteableActionCallback(RNPasteableEditText editText) {
         mEditText = editText;
@@ -26,6 +26,7 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
         if (config != null) {
             WritableMap result = Arguments.fromBundle(config);
             String copyPasteProtection = result.getString("copyAndPasteProtection");
+            assert copyPasteProtection != null;
             if (copyPasteProtection.equals("true")) {
                 disableMenus(menu);
             }
