@@ -1,11 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Emoji, StandardEmoji, CustomEmoji} from '@mm-redux/types/emojis';
-
-export function isStandardEmoji(emoji: Emoji): emoji is StandardEmoji {
-    return 'batch' in emoji;
-}
+import {Emoji, CustomEmoji} from '@mm-redux/types/emojis';
 
 export function isCustomEmoji(emoji: Emoji): emoji is CustomEmoji {
     return 'id' in emoji;
