@@ -58,13 +58,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 15,
             color: theme.centerChannelColor,
             paddingLeft: 4,
-            maxWidth: '42%',
+            maxWidth: '45%',
         },
         rowUsername: {
             color: theme.centerChannelColor,
             fontSize: 15,
             opacity: 0.56,
-            maxWidth: '45%',
+            maxWidth: '40%',
         },
     };
 });
