@@ -15,7 +15,7 @@ export interface ClientEmojisMix {
     getCustomEmojiByName: (name: string) => Promise<CustomEmoji>;
     getCustomEmojis: (page?: number, perPage?: number, sort?: string) => Promise<CustomEmoji[]>;
     deleteCustomEmoji: (emojiId: string) => Promise<any>;
-    getSystemEmojiImageUrl: (filename: string) => string;
+    getStandardEmojiImageUrl: (filename: string) => string;
     getCustomEmojiImageUrl: (id: string) => string;
     searchCustomEmoji: (term: string, options?: Record<string, any>) => Promise<CustomEmoji[]>;
     autocompleteCustomEmoji: (name: string) => Promise<CustomEmoji[]>;
@@ -75,7 +75,7 @@ const ClientEmojis = (superclass: any) => class extends superclass {
         );
     };
 
-    getSystemEmojiImageUrl = (filename: string) => {
+    getStandardEmojiImageUrl = (filename: string) => {
         return `${this.url}/static/emoji/${filename}.png`;
     };
 
