@@ -336,17 +336,17 @@ describe('compareEmojis', () => {
         expect(emojiArray).toEqual([smileEmoji, dashEmoji, goatEmoji]);
     });
 
-    test('should be able to sort on aliases', () => {
+    test('should be able to sort on short_name', () => {
         const goatEmoji = {
-            aliases: [':goat:'],
+            short_code: ':goat:',
         };
 
         const dashEmoji = {
-            aliases: [':dash:'],
+            short_code: ':dash:',
         };
 
         const smileEmoji = {
-            aliases: [':smile:'],
+            short_code: ':smile:',
         };
 
         const emojiArray = [goatEmoji, dashEmoji, smileEmoji];
@@ -357,15 +357,15 @@ describe('compareEmojis', () => {
 
     test('special case for thumbsup emoji should sort it before thumbsdown by aliases', () => {
         const thumbsUpEmoji = {
-            aliases: ['+1'],
+            short_name: '+1',
         };
 
         const thumbsDownEmoji = {
-            aliases: ['-1'],
+            short_name: '-1',
         };
 
         const smileEmoji = {
-            aliases: ['smile'],
+            short_name: 'smile',
         };
 
         const emojiArray = [thumbsDownEmoji, thumbsUpEmoji, smileEmoji];
