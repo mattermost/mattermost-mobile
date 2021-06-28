@@ -5,7 +5,7 @@ import emojiRegex from 'emoji-regex';
 
 import {Emojis, EmojiIndicesByAlias} from './emojis';
 
-const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_-]+):)/g;
+const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_+-]+):)/g;
 
 const RE_UNICODE_EMOJI = emojiRegex();
 
@@ -28,8 +28,6 @@ const RE_EMOTICON = {
     mask: /(^|\s)(:-x)(?=$|\s)/gi, // :-x
     heart: /(^|\s)(<3|&lt;3)(?=$|\s)/g, // <3
     broken_heart: /(^|\s)(<\/3|&lt;&#x2F;3)(?=$|\s)/g, // </3
-    thumbsup: /(^|\s)(:\+1:)(?=$|\s)/g, // :+1:
-    thumbsdown: /(^|\s)(:-1:)(?=$|\s)/g, // :-1:
 };
 
 const MAX_JUMBO_EMOJIS = 4;
