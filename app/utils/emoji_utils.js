@@ -141,8 +141,25 @@ function doDefaultComparison(aName, bName) {
 }
 
 export function compareEmojis(emojiA, emojiB, searchedName) {
-    const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
-    const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
+    if (!emojiA) {
+        return 1;
+    }
+
+    if (!emojiB) {
+        return -1;
+    }
+    let aName;
+    if (typeof emojiA === 'string') {
+        aName = emojiA;
+    } else {
+        aName = 'short_name' in emojiA ? emojiA.short_name : emojiA.name;
+    }
+    let bName;
+    if (typeof emojiB === 'string') {
+        bName = emojiB;
+    } else {
+        bName = 'short_name' in emojiB ? emojiB.short_name : emojiB.name;
+    }
 
     if (!searchedName) {
         return doDefaultComparison(aName, bName);

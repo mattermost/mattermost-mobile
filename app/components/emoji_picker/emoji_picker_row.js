@@ -51,16 +51,18 @@ export default class EmojiPickerRow extends Component {
             );
         }
 
+        const name = 'shortname' in emoji ? emoji.shortname : emoji.name;
+
         return (
             <TouchableOpacity
-                key={emoji.name}
+                key={name}
                 style={style}
                 onPress={() => {
-                    this.props.onEmojiPress(emoji.name);
+                    this.props.onEmojiPress(name);
                 }}
             >
                 <Emoji
-                    emojiName={emoji.name}
+                    emojiName={name}
                     textStyle={styles.emojiText}
                     size={emojiSize}
                 />

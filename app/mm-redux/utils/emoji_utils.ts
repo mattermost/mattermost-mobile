@@ -17,11 +17,11 @@ export function getEmojiImageUrl(emoji: Emoji): string {
         return Client4.getEmojiRoute(emoji.id) + '/image';
     }
 
-    const filename = emoji.filename || emoji.aliases[0];
+    const filename = emoji.image || emoji.short_name;
     return Client4.getSystemEmojiImageUrl(filename);
 }
 
-export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Set<string>, customEmojisByName: Map<string, CustomEmoji>, nonExistentEmoji: Set<string>): Set<string> {
+export function parseNeededCustomEmojisFromText(text: string, customEmojisByName: Map<string, CustomEmoji>, nonExistentEmoji: Set<string>): Set<string> {
     if (!text.includes(':')) {
         return new Set();
     }
@@ -31,11 +31,6 @@ export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Set<
     let match;
     while ((match = pattern.exec(text)) !== null) {
         if (!match) {
-            continue;
-        }
-
-        if (systemEmojis.has(match[1])) {
-            // It's a system emoji, go the next match
             continue;
         }
 
