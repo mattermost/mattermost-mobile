@@ -1,25 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
-import {
-    Colors,
-    DebugInstructions,
-    Header,
-    LearnMoreLinks,
-    ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import React, {useEffect, useState} from 'react';
+import {SafeAreaView, StyleSheet} from 'react-native';
+
+import {Preferences} from '@constants';
+import {getThemeForUser} from '@queries/servers/preference';
+import {getCurrentUserId} from '@queries/servers/system';
+
+import ChannelNavBar from './channel_nav_bar';
 
 import type {LaunchProps} from '@typings/launch';
 
-declare const global: {HermesInternal: null | {}};
-
 type ChannelProps = LaunchProps
 
-const Channel = (props: ChannelProps) => {
+const Channel = ({launchType}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
-    const {launchType} = props;
     console.log(launchType); // eslint-disable-line no-console
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
@@ -32,90 +29,43 @@ const Channel = (props: ChannelProps) => {
     //     }
     // }
 
+    //todo: Read Messages  - Do we need KeyboardLayout component ?
+    //todo: Read Messages  - Implement goToChannelInfo
+    //todo: read theme from Preference entity
+
+    const serverDatabase = useDatabase();
+    const [theme, setTheme] = useState<Theme>(Preferences.THEMES.default);
+
+    useEffect(() => {
+        // retrieves theme for user
+        const getUserTheme = async () => {
+            const userId = (await getCurrentUserId(serverDatabase)) as string;
+            if (userId) {
+                const currentTheme = await getThemeForUser(serverDatabase, userId);
+                if (currentTheme) {
+                    setTheme(currentTheme);
+                }
+            }
+        };
+
+        getUserTheme();
+    }, [serverDatabase]);
+
     return (
         <>
-            <StatusBar barStyle='dark-content'/>
-            <SafeAreaView>
-                <ScrollView
-                    contentInsetAdjustmentBehavior='automatic'
-                    style={styles.scrollView}
-                >
-                    <Header/>
-                    {global.HermesInternal == null ? null : (
-                        <View style={styles.engine}>
-                            <Text style={styles.footer}>{'Engine: Hermes'}</Text>
-                        </View>
-                    )}
-                    <View style={styles.body}>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Step One'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                {'Edit '}<Text style={styles.highlight}>{'screens/channel/index.tsx'}</Text>{' to change this'}
-                                {'screen and then come back to see your edits.'}
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'See Your Changes'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                <ReloadInstructions/>
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Debug'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                <DebugInstructions/>
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Learn More'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                {'Read the docs to discover what to do next:'}
-                            </Text>
-                        </View>
-                        <LearnMoreLinks/>
-                    </View>
-                </ScrollView>
+            <SafeAreaView style={styles.flex}>
+                <ChannelNavBar
+                    onPress={() => null}
+                    theme={theme}
+                />
             </SafeAreaView>
         </>
     );
 };
 
 const styles = StyleSheet.create({
-    scrollView: {
-        backgroundColor: Colors.lighter,
-    },
-    engine: {
-        position: 'absolute',
-        right: 0,
-    },
-    body: {
-        backgroundColor: Colors.white,
-    },
-    sectionContainer: {
-        marginTop: 32,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        color: Colors.black,
-    },
-    sectionDescription: {
-        marginTop: 8,
-        fontSize: 18,
-        fontWeight: '400',
-        color: Colors.dark,
-    },
-    highlight: {
-        fontWeight: '700',
-    },
-    footer: {
-        color: Colors.dark,
-        fontSize: 12,
-        fontWeight: '600',
-        padding: 4,
-        paddingRight: 12,
-        textAlign: 'right',
+    flex: {
+        flex: 1,
     },
 });
 
