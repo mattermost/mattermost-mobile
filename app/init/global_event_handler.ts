@@ -166,8 +166,10 @@ class GlobalEventHandler {
                 );
             }
 
-            // TODO: Set server version in client and
-            // reload config and license unless done somewhere else
+            // TODO: reload config and license unless done somewhere else
+            //
+            // const {config, license} = await fetchConfigAndLicense(serverUrl);
+            // store config & license in db?
         }
     };
 

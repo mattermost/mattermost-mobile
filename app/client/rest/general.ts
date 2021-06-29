@@ -20,20 +20,20 @@ export interface ClientGeneralMix {
 const ClientGeneral = (superclass: any) => class extends superclass {
     getOpenGraphMetadata = async (url: string) => {
         return this.doFetch(
-            `${this.apiVersion}/opengraph`,
+            `${this.urlVersion}/opengraph`,
             {method: 'post', body: JSON.stringify({url})},
         );
     };
 
     ping = async () => {
         return this.doFetch(
-            `${this.apiVersion}/system/ping?time=${Date.now()}`,
+            `${this.urlVersion}/system/ping?time=${Date.now()}`,
             {method: 'get'},
         );
     };
 
     logClientError = async (message: string, level = 'ERROR') => {
-        const url = `${this.apiVersion}/logs`;
+        const url = `${this.urlVersion}/logs`;
 
         if (!this.enableLogging) {
             throw new ClientError(this.client.baseUrl, {
@@ -50,14 +50,14 @@ const ClientGeneral = (superclass: any) => class extends superclass {
 
     getClientConfigOld = async () => {
         return this.doFetch(
-            `${this.apiVersion}/config/client?format=old`,
+            `${this.urlVersion}/config/client?format=old`,
             {method: 'get'},
         );
     };
 
     getClientLicenseOld = async () => {
         return this.doFetch(
-            `${this.apiVersion}/license/client?format=old`,
+            `${this.urlVersion}/license/client?format=old`,
             {method: 'get'},
         );
     };

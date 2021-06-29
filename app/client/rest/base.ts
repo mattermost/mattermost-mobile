@@ -11,9 +11,11 @@ import {Analytics, create} from '@init/analytics';
 import * as ClientConstants from './constants';
 import ClientError from './error';
 
+import type {APIClient} from '@mattermost/react-native-network-client';
+
 export default class ClientBase {
     analytics: Analytics|undefined;
-    client: any; // TODO: type APIClient
+    client: APIClient; // TODO: type APIClient
     // clusterId = ''; // TODO: remove? not used.
     csrf = '';
     diagnosticId = '';
@@ -24,7 +26,7 @@ export default class ClientBase {
         connectionError: 'There appears to be a problem with your internet connection.',
         unknownError: 'We received an unexpected status code from the server.',
     };
-    apiVersion = '/api/v4';
+    urlVersion = '/api/v4';
 
     // TODO: type APIClient
     constructor(client: any, serverUrl: string) {
@@ -58,7 +60,7 @@ export default class ClientBase {
     }
 
     getWebSocketUrl = () => {
-        return `${this.apiVersion}/websocket`;
+        return `${this.urlVersion}/websocket`;
     }
 
     // TODO: Do we have locale prior to creating an APIClient?
@@ -82,7 +84,7 @@ export default class ClientBase {
     // Routes
 
     getUsersRoute() {
-        return `${this.apiVersion}/users`;
+        return `${this.urlVersion}/users`;
     }
 
     getUserRoute(userId: string) {
@@ -90,7 +92,7 @@ export default class ClientBase {
     }
 
     getTeamsRoute() {
-        return `${this.apiVersion}/teams`;
+        return `${this.urlVersion}/teams`;
     }
 
     getTeamRoute(teamId: string) {
@@ -110,7 +112,7 @@ export default class ClientBase {
     }
 
     getChannelsRoute() {
-        return `${this.apiVersion}/channels`;
+        return `${this.urlVersion}/channels`;
     }
 
     getChannelRoute(channelId: string) {
@@ -126,7 +128,7 @@ export default class ClientBase {
     }
 
     getPostsRoute() {
-        return `${this.apiVersion}/posts`;
+        return `${this.urlVersion}/posts`;
     }
 
     getPostRoute(postId: string) {
@@ -134,15 +136,15 @@ export default class ClientBase {
     }
 
     getReactionsRoute() {
-        return `${this.apiVersion}/reactions`;
+        return `${this.urlVersion}/reactions`;
     }
 
     getCommandsRoute() {
-        return `${this.apiVersion}/commands`;
+        return `${this.urlVersion}/commands`;
     }
 
     getFilesRoute() {
-        return `${this.apiVersion}/files`;
+        return `${this.urlVersion}/files`;
     }
 
     getFileRoute(fileId: string) {
@@ -154,19 +156,19 @@ export default class ClientBase {
     }
 
     getIncomingHooksRoute() {
-        return `${this.apiVersion}/hooks/incoming`;
+        return `${this.urlVersion}/hooks/incoming`;
     }
 
     getIncomingHookRoute(hookId: string) {
-        return `${this.apiVersion}/hooks/incoming/${hookId}`;
+        return `${this.urlVersion}/hooks/incoming/${hookId}`;
     }
 
     getOutgoingHooksRoute() {
-        return `${this.apiVersion}/hooks/outgoing`;
+        return `${this.urlVersion}/hooks/outgoing`;
     }
 
     getOutgoingHookRoute(hookId: string) {
-        return `${this.apiVersion}/hooks/outgoing/${hookId}`;
+        return `${this.urlVersion}/hooks/outgoing/${hookId}`;
     }
 
     getOAuthRoute() {
@@ -174,7 +176,7 @@ export default class ClientBase {
     }
 
     getOAuthAppsRoute() {
-        return `${this.apiVersion}/oauth/apps`;
+        return `${this.urlVersion}/oauth/apps`;
     }
 
     getOAuthAppRoute(appId: string) {
@@ -182,7 +184,7 @@ export default class ClientBase {
     }
 
     getEmojisRoute() {
-        return `${this.apiVersion}/emoji`;
+        return `${this.urlVersion}/emoji`;
     }
 
     getEmojiRoute(emojiId: string) {
@@ -190,7 +192,7 @@ export default class ClientBase {
     }
 
     getBrandRoute() {
-        return `${this.apiVersion}/brand`;
+        return `${this.urlVersion}/brand`;
     }
 
     getBrandImageUrl(timestamp: string) {
@@ -198,23 +200,23 @@ export default class ClientBase {
     }
 
     getDataRetentionRoute() {
-        return `${this.apiVersion}/data_retention`;
+        return `${this.urlVersion}/data_retention`;
     }
 
     getRolesRoute() {
-        return `${this.apiVersion}/roles`;
+        return `${this.urlVersion}/roles`;
     }
 
     getTimezonesRoute() {
-        return `${this.apiVersion}/system/timezones`;
+        return `${this.urlVersion}/system/timezones`;
     }
 
     getRedirectLocationRoute() {
-        return `${this.apiVersion}/redirect_location`;
+        return `${this.urlVersion}/redirect_location`;
     }
 
     getBotsRoute() {
-        return `${this.apiVersion}/bots`;
+        return `${this.urlVersion}/bots`;
     }
 
     getBotRoute(botUserId: string) {

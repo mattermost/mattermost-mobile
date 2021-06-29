@@ -52,8 +52,11 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
+
     serverUrl = await getActiveServerUrl();
     if (serverUrl) {
+        // TODO: No need to get credentials here since we init NetworkManager
+        // with credentials. Let's just check if we have a client for this server url.
         const credentials = await getServerCredentials(serverUrl);
 
         if (credentials) {
