@@ -7,8 +7,8 @@ import {useIntl} from 'react-intl';
 
 import NetworkManager from '@app/init/network_manager';
 import {SSO as SSOEnum} from '@constants';
-import {scheduleExpiredNotification} from '@requests/remote/push_notification';
-import {ssoLogin} from '@requests/remote/user';
+import {scheduleExpiredNotification} from '@actions/remote/push_notification';
+import {ssoLogin} from '@actions/remote/user';
 import {resetToChannel} from '@screens/navigation';
 import {ErrorApi} from '@typings/api/client4';
 import {isMinimumServerVersion} from '@utils/helpers';

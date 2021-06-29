@@ -8,7 +8,7 @@ import NetworkManager from '@app/init/network_manager';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import {getCommonSystemValues} from '@app/queries/servers/system';
-import {getSessions} from '@requests/remote/user';
+import {getSessions} from '@actions/remote/user';
 import {Config} from '@typings/database/models/servers/config';
 import {isMinimumServerVersion} from '@utils/helpers';
 

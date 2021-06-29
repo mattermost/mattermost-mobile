@@ -25,12 +25,16 @@ import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import FormattedText from '@components/formatted_text';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {scheduleExpiredNotification} from '@requests/remote/push_notification';
-import {login} from '@requests/remote/user';
+import {scheduleExpiredNotification} from '@actions/remote/push_notification';
+import {login} from '@actions/remote/user';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+
+// TODO: invalidate client when returning back to the select server screen
+
 
 type LoginProps = {
     componentId: string;

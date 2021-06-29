@@ -18,7 +18,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import {login} from '@requests/remote/user';
+import {login} from '@actions/remote/user';
 import {Config} from '@typings/database/models/servers/config';
 import {License} from '@typings/database/models/servers/license';
 import {t} from '@utils/i18n';

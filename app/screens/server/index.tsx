@@ -18,7 +18,7 @@ import AppVersion from '@components/app_version';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
-import {doPing, fetchConfigAndLicense} from '@requests/remote/general';
+import {doPing, fetchConfigAndLicense} from '@actions/remote/general';
 import {goToScreen} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';

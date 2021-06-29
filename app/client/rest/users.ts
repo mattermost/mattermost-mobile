@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@app/init/network_manager';
 import {General} from '@constants';
 import {buildQueryString, isMinimumServerVersion} from '@utils/helpers';
 
@@ -24,7 +25,7 @@ export interface ClientUsersMix {
     getProfilesInTeam: (teamId: string, page?: number, perPage?: number, sort?: string, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesNotInTeam: (teamId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesWithoutTeam: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
-    getProfilesInChannel: (channelId: string, page?: number, perPage?: number, sort?: string) => Promise<UserProfile[]>;
+    getProfilesInChannel: (serverUrl: string, channelId: string, page?: number, perPage?: number, sort?: string) => Promise<UserProfile[]>;
     getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: () => Promise<UserProfile>;
@@ -243,10 +244,11 @@ const ClientUsers = (superclass: any) => class extends superclass {
         );
     };
 
-    getProfilesInChannel = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '') => {
+    getProfilesInChannel = async (serverUrl: string, channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '') => {
         this.analytics.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
-        const serverVersion = this.getServerVersion();
+        // TODO: get serverVersion from database
+         const serverVersion = NetworkManager.clients[serverUrl].serverVersion;
         let queryStringObj;
         if (isMinimumServerVersion(serverVersion, 4, 7)) {
             queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};

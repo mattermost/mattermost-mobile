@@ -5,7 +5,7 @@ import {getTimeZone} from 'react-native-localize';
 
 import DatabaseManager from '@database/manager';
 import {getUserById} from '@queries/servers/user';
-import {updateMe} from '@requests/remote/user';
+import {updateMe} from '@actions/remote/user';
 import {Config} from '@typings/database/models/servers/config';
 import User from '@typings/database/models/servers/user';
 

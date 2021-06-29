@@ -1,14 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@client/rest';
-import {logError} from '@requests/remote/error';
-import {forceLogoutIfNecessary} from '@requests/remote/user';
+import NetworkManager from '@app/init/network_manager';
+import {logError} from '@actions/remote/error';
+import {forceLogoutIfNecessary} from '@actions/remote/user';
 
 export const getDataRetentionPolicy = async (serverUrl: string) => {
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return {error: `${serverUrl} client not found`};
+    }
+
     let data = {};
     try {
-        data = await Client4.getDataRetentionPolicy();
+        data = await client.getDataRetentionPolicy();
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
 

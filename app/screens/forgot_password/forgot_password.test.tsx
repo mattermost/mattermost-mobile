@@ -5,7 +5,7 @@ import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
-import * as UserAPICalls from '@requests/remote/user';
+import * as UserAPICalls from '@actions/remote/user';
 import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import ForgotPassword from './index';
@@ -13,6 +13,7 @@ import ForgotPassword from './index';
 describe('ForgotPassword', () => {
     const baseProps = {
         componentId: 'ForgotPassword',
+        serverUrl: 'https://community.mattermost.com',
         theme: Preferences.THEMES.default,
     };
 

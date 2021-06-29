@@ -6,11 +6,11 @@ import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import {getDeviceToken} from '@app/queries/app/global';
 import {getCommonSystemValues, getCurrentUserId} from '@app/queries/servers/system';
-import {createSessions} from '@requests/local/systems';
-import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@requests/local/timezone';
-import {logError} from '@requests/remote/error';
-import {loadRolesIfNeeded} from '@requests/remote/role';
-import {getDataRetentionPolicy} from '@requests/remote/systems';
+import {createSessions} from '@actions/local/systems';
+import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
+import {logError} from '@actions/remote/error';
+import {loadRolesIfNeeded} from '@actions/remote/role';
+import {getDataRetentionPolicy} from '@actions/remote/systems';
 import {Client4Error} from '@typings/api/client4';
 import {Config} from '@typings/database/models/servers/config';
 import {
@@ -27,7 +27,6 @@ import {License} from '@typings/database/models/servers/license';
 import Role from '@typings/database/models/servers/role';
 import User from '@typings/database/models/servers/user';
 import {getCSRFFromCookie} from '@utils/security';
-import GenericClient from '@mattermost/react-native-network-client';
 
 const HTTP_UNAUTHORIZED = 401;
 
