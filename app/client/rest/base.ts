@@ -10,10 +10,10 @@ import {Analytics, create} from '@init/analytics';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
-  
+
 export default class ClientBase {
     analytics: Analytics|undefined;
-    client: any; // TODO: type APIClient 
+    client: any; // TODO: type APIClient
     // clusterId = ''; // TODO: remove? not used.
     csrf = '';
     diagnosticId = '';
@@ -226,7 +226,7 @@ export default class ClientBase {
     }
 
     doFetch = async (url: string, options: ClientOptions) => {
-        var request;
+        let request;
         switch (options.method?.toLocaleLowerCase()) {
             case 'get':
                 request = this.client!.get;
@@ -254,7 +254,7 @@ export default class ClientBase {
                 });
         }
 
-        var response;
+        let response;
         try {
             const requestOptions: any = {headers: options.headers, body: options.body};
             response = await request!(url, requestOptions);
@@ -274,6 +274,7 @@ export default class ClientBase {
         if (serverVersion && !headers['Cache-Control']) {
             // TODO: Set server version in DB?
             this.serverVersion = serverVersion;
+
             // EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
         }
 
