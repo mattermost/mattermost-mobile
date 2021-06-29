@@ -9,7 +9,7 @@ import {waitFor, renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import Login from './index';
 
-jest.mock('@requests/remote/user', () => {
+jest.mock('@actions/remote/user', () => {
     return {
         login: () => {
             return {

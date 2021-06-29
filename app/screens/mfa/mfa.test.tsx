@@ -9,7 +9,7 @@ import {renderWithIntl} from '@test/intl-test-helper';
 
 import Mfa from './index';
 
-jest.mock('@requests/remote/user', () => {
+jest.mock('@actions/remote/user', () => {
     return {
         login: jest.fn(),
     };
