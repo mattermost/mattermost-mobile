@@ -263,6 +263,9 @@ export class ParsedCommand {
                     // Em dash, introduced when two '-' are set in iOS. Will be considered as such.
                     this.state = ParseState.Flag;
                     this.i++;
+                    this.incomplete = '';
+                    this.incompleteStart = this.i;
+                    flagEqualsUsed = false;
                     break;
                 }
                 default: {
@@ -1037,9 +1040,13 @@ export class AppCommandParser {
         }
 
         // There have been 0 to 2 dashes in the command prior to this call, adjust.
+        const prevCharIndex = parsed.incompleteStart - 1;
         let prefix = '--';
-        for (let i = parsed.incompleteStart - 1; i > 0 && i >= parsed.incompleteStart - 2 && parsed.command[i] === '-'; i--) {
+        for (let i = prevCharIndex; i > 0 && i >= parsed.incompleteStart - 2 && parsed.command[i] === '-'; i--) {
             prefix = prefix.substring(1);
+        }
+        if (prevCharIndex > 0 && parsed.command[prevCharIndex] === '—') {
+            prefix = '';
         }
 
         const applicable = parsed.form.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
