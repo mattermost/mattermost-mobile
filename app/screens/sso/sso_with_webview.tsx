@@ -15,7 +15,6 @@ import {
 } from 'react-native-webview/lib/WebViewTypes';
 import urlParse from 'url-parse';
 
-import {Client4} from '@client/rest';
 import Loading from '@components/loading';
 import {SSO} from '@constants';
 import {popTopScreen} from '@screens/navigation';
@@ -59,16 +58,16 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
+    doLogin: () => void;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
-    onMMToken: (token: string) => void;
     serverUrl: string;
     ssoType: string;
     theme: Partial<Theme>
 }
 
-const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
+const SSOWithWebView = ({completeUrlPath, doLogin, loginError, loginUrl, onCSRFToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
     const [error, setError] = React.useState(null);
@@ -108,7 +107,7 @@ const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
                     onCSRFToken(csrfToken);
                 }
                 if (token) {
-                    onMMToken(token);
+                    doLogin();
                     if (cookiesTimeout.current) {
                         clearTimeout(cookiesTimeout.current);
                     }

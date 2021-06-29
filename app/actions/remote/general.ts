@@ -34,12 +34,12 @@ export const doPing = async (serverUrl: string) => {
 export const fetchConfigAndLicense = async (serverUrl: string) => {
     const client = NetworkManager.clients[serverUrl];
     try {
-        const [configResponse, licenseResponse] = await Promise.all<any, any>([
+        const [config, license] = await Promise.all<any, any>([
             client.getClientConfigOld(),
             client.getClientLicenseOld(),
         ]);
 
-        return {config: configResponse.data, license: licenseResponse.data};
+        return {config, license};
     } catch (error) {
         return {error};
     }

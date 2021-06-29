@@ -13,15 +13,15 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
+    doLogin: () => void;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
-    onMMToken: (token: string) => void;
     setLoginError: (value: string) => void;
     theme: Partial<Theme>
 }
 
-const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOWithRedirectURL = ({doLogin, loginError, loginUrl, onCSRFToken, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -67,9 +67,9 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
-                if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
+                if (parsedUrl.query && parsedUrl.query.MMCSRF) {
                     onCSRFToken(parsedUrl.query.MMCSRF);
-                    onMMToken(parsedUrl.query.MMAUTHTOKEN);
+                    doLogin();
                 } else {
                     setError(
                         intl.formatMessage({

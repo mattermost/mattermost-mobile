@@ -48,9 +48,11 @@ class GlobalEventHandler {
     };
 
     onDeepLink = (event: LinkingCallbackArg) => {
+        // TODO: this is called when returning from the SSO webview and
+        // causes an error.
         if (event.url) {
-            const props = getLaunchPropsFromDeepLink(event.url);
-            relaunchApp(props);
+            // const props = getLaunchPropsFromDeepLink(event.url);
+            // relaunchApp(props);
         }
     };
 

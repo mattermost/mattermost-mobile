@@ -266,7 +266,7 @@ export default class ClientBase {
         }
 
         if (response.ok) {
-            return returnDataOnly ? {data: response.data} : response;
+            return returnDataOnly ? response.data : response;
         }
 
         throw new ClientError(this.client.baseUrl, {

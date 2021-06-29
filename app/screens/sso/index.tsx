@@ -75,13 +75,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         client.setCSRF(csrfToken);
     };
 
-    // TOOD: So long as the APIClient is configured with `bearerAuthTokenResponseHeader`,
-    // then the token will be automatically extracted and set in the headers via a request
-    // adapter. Do we need this method? Maybe we can passin ssoLogin as a prop instead of
-    // this method?
-    const onMMToken = async (token: string) => {
-        // Client4.setToken(token);
-
+    const doLogin = async () => {
         const {error = undefined} = await ssoLogin(serverUrl);
         if (error) {
             onLoadEndError(error);
@@ -102,7 +96,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         loginError,
         loginUrl,
         onCSRFToken,
-        onMMToken,
+        doLogin,
         setLoginError,
         theme,
     };
