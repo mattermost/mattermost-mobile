@@ -52,19 +52,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         rowInfo: {
             flexDirection: 'row',
-            width: '100%',
+            overflow: 'hidden',
+            maxWidth: '80%',
         },
         rowFullname: {
             fontSize: 15,
             color: theme.centerChannelColor,
             paddingLeft: 4,
-            maxWidth: '45%',
         },
         rowUsername: {
             color: theme.centerChannelColor,
             fontSize: 15,
             opacity: 0.56,
-            maxWidth: '40%',
         },
     };
 });
@@ -161,13 +160,13 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         )}
                         {` @${username}`}
                     </Text>
-                    {isCustomStatusEnabled && !isBot && (
-                        <CustomStatusEmoji
-                            userID={userId}
-                            style={{marginLeft: 4}}
-                        />
-                    )}
                 </View>
+                {isCustomStatusEnabled && !isBot && (
+                    <CustomStatusEmoji
+                        userID={userId}
+                        style={{marginLeft: 4}}
+                    />
+                )}
                 {isShared && (
                     <ChannelIcon
                         isActive={false}
