@@ -10,6 +10,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
 
 import {DeviceTypes, NavigationTypes} from '@constants';
+import {CHANNEL} from '@constants/screen';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
@@ -33,8 +34,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: NavigationTypes.CHANNEL_SCREEN,
-                name: NavigationTypes.CHANNEL_SCREEN,
+                id: CHANNEL,
+                name: CHANNEL,
                 passProps,
                 options: {
                     layout: {
@@ -363,17 +364,20 @@ export async function dismissModal(options = {}) {
     }
 }
 
-export async function dismissAllModals(options = {}) {
+export async function dismissAllModals(options) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    try {
+    if (Platform.OS === 'ios') {
+        const modals = [...EphemeralStore.navigationModalStack];
+        for await (const modal of modals) {
+            await Navigation.dismissModal(modal, options);
+            EphemeralStore.removeNavigationModal(modal);
+        }
+    } else {
         await Navigation.dismissAllModals(options);
         EphemeralStore.clearNavigationModals();
-    } catch (error) {
-        // RNN returns a promise rejection if there are no modals to
-        // dismiss. We'll do nothing in this case.
     }
 }
 
@@ -441,7 +445,7 @@ export function closeMainSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             left: {visible: false},
         },
@@ -453,7 +457,7 @@ export function enableMainSideMenu(enabled, visible = true) {
         return;
     }
 
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             left: {enabled, visible},
         },
@@ -466,7 +470,7 @@ export function openSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             right: {visible: true},
         },
@@ -479,7 +483,7 @@ export function closeSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             right: {visible: false},
         },

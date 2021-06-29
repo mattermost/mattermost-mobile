@@ -245,7 +245,7 @@ export function handleSelectChannel(channelId: string) {
     };
 }
 
-export function handleSelectChannelByName(channelName: string, teamName: string, errorHandler?: () => void, intl?: typeof intlShape) {
+export function handleSelectChannelByName(channelName: string, teamName: string, errorHandler?: (handlerIntl: typeof intlShape) => void, intl?: typeof intlShape) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
@@ -259,7 +259,7 @@ export function handleSelectChannelByName(channelName: string, teamName: string,
         // Fallback to API response error, if any.
         if (teamError) {
             if (errorHandler) {
-                errorHandler();
+                errorHandler(intl);
             }
             return {error: teamError};
         }
@@ -278,7 +278,7 @@ export function handleSelectChannelByName(channelName: string, teamName: string,
         const reachable = getChannelReachable(state, channelName, teamName);
 
         if (!reachable && errorHandler) {
-            errorHandler();
+            errorHandler(intl);
         }
 
         // Fallback to API response error, if any.

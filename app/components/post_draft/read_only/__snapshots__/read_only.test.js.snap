@@ -37,7 +37,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
         }
       }
     />
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="This channel is read-only."
       id="mobile.create_post.read_only"
       style={

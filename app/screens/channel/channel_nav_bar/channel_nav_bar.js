@@ -86,10 +86,9 @@ const ChannelNavBar = (props) => {
         const {height: layouHeight} = nativeEvent.layout;
         if (height !== layouHeight && Platform.OS === 'ios') {
             height = layouHeight;
-            EventEmitter.emit(CHANNEL_NAV_BAR_CHANGED, layouHeight);
-        } else {
-            EventEmitter.emit(CHANNEL_NAV_BAR_CHANGED, layouHeight);
         }
+
+        EventEmitter.emit(CHANNEL_NAV_BAR_CHANGED, layouHeight);
     };
 
     useEffect(() => {

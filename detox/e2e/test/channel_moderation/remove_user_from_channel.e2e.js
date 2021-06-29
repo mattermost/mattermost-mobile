@@ -69,7 +69,7 @@ describe('Channel Moderation', () => {
         await ChannelInfoScreen.close();
 
         // # Remove user while on channel
-        await Channel.apiDeleteUserFromChannel(testChannel.id, testUser.id);
+        await Channel.apiRemoveUserFromChannel(testChannel.id, testUser.id);
 
         // * Verify user is prompted removal alert
         const removeFromChannelTitleText = `Removed from ${testChannel.display_name}`;
@@ -112,7 +112,7 @@ describe('Channel Moderation', () => {
         await goToChannel(townSquareChannel.display_name);
 
         // # Remove user while on channel
-        await Channel.apiDeleteUserFromChannel(testChannel.id, testOtherUser.id);
+        await Channel.apiRemoveUserFromChannel(testChannel.id, testOtherUser.id);
 
         // * Verify channel is not in the channels list anymore
         await openMainSidebar();

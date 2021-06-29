@@ -8,7 +8,7 @@ import {mount, shallow} from 'enzyme';
 import {getTranslations} from '@i18n';
 
 const intlProvider = new IntlProvider({locale: 'en'}, {});
-const {intl} = intlProvider.getChildContext();
+export const {intl} = intlProvider.getChildContext();
 
 export function shallowWithIntl(node, {context} = {}) {
     return shallow(React.cloneElement(node, {intl}), {

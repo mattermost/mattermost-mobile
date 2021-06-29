@@ -32,13 +32,13 @@ import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
 import Bindings from './bindings';
+import {UserCustomStatus} from '@mm-redux/types/users';
 
 type Props = {
     actions: {
         getChannelStats: (channelId: string) => void,
         getCustomEmojisInText: (text: string) => void,
         setChannelDisplayName: (name: string) => void,
-        showPermalink: (intl: typeof intlShape, teamName: string, postId: string) => void,
     },
     currentChannel: Channel,
     currentChannelCreatorName?: string,
@@ -49,6 +49,8 @@ type Props = {
     isDirectMessage: boolean,
     teammateId?: string,
     theme: Theme,
+    customStatus?: UserCustomStatus,
+    isCustomStatusEnabled: boolean,
 }
 
 export default class ChannelInfo extends PureComponent<Props> {
@@ -82,10 +84,6 @@ export default class ChannelInfo extends PureComponent<Props> {
         }
 
         dismissModal();
-    };
-
-    handlePermalinkPress = (postId: string, teamName: string) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     permalinkBadTeam = () => {
@@ -176,6 +174,8 @@ export default class ChannelInfo extends PureComponent<Props> {
             teammateId,
             theme,
             isTeammateGuest,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -199,8 +199,8 @@ export default class ChannelInfo extends PureComponent<Props> {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
-                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
+                        shared={currentChannel.shared}
                         teammateId={teammateId}
                         theme={theme}
                         type={currentChannel.type}
@@ -209,6 +209,8 @@ export default class ChannelInfo extends PureComponent<Props> {
                         hasGuests={(currentChannelGuestCount || 0) > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                         testID='channel_info.header'
+                        customStatus={customStatus}
+                        isCustomStatusEnabled={isCustomStatusEnabled}
                     />
                     }
                     <View style={style.rowsContainer}>

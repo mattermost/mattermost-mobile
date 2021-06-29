@@ -9,37 +9,105 @@
 
 import moment from 'moment-timezone';
 
+import {
+    MainSidebar,
+    PostOptions,
+    TeamsList,
+} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
 import {
     Channel,
     Post,
     Setup,
 } from '@support/server_api';
-import {isAndroid} from '@support/utils';
+import {
+    getAdminAccount,
+    isAndroid,
+} from '@support/utils';
 
 describe('Messaging', () => {
     const {
         getPostListPostItem,
         goToChannel,
+        openTeamSidebar,
         postInput,
+        postMessage,
         sendButton,
         sendButtonDisabled,
     } = ChannelScreen;
     let testChannel;
     let townSquareChannel;
+    let testTeam;
+    let testUser;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit();
         testChannel = channel;
+        testTeam = team;
+        testUser = user;
 
-        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
+        ({channel: townSquareChannel} = await Channel.apiGetChannelByName(testTeam.id, 'town-square'));
 
         // # Open channel screen
-        await ChannelScreen.open(user);
+        await ChannelScreen.open(testUser);
     });
 
     afterAll(async () => {
         await ChannelScreen.logout();
+    });
+
+    it('MM-T108 should be able to post a long message', async () => {
+        // # Post a long message
+        const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(10);
+        await postMessage(longMessage, {quickReplace: true});
+
+        // * Verify message is posted
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        const {postListPostItem} = await getPostListPostItem(post.id, longMessage);
+        await expect(postListPostItem).toExist();
+    });
+
+    it('MM-T151 should only have delete post option for system message as sysadmin', async () => {
+        const {getTeamByDisplayName} = MainSidebar;
+        const {
+            copyAction,
+            deleteAction,
+            editAction,
+            markUnreadAction,
+            permalinkAction,
+            pinAction,
+            reactionPickerAction,
+            replyAction,
+            saveAction,
+        } = PostOptions;
+
+        // # Log in as sysadmin
+        await ChannelScreen.logout();
+        await ChannelScreen.open(getAdminAccount());
+
+        // # Go to channel with system message
+        await openTeamSidebar();
+        await waitFor(getTeamByDisplayName(testTeam.display_name)).toBeVisible().whileElement(by.id(TeamsList.testID.teamsList)).scroll(500, 'down');
+        await getTeamByDisplayName(testTeam.display_name).tap();
+        await goToChannel(testChannel.display_name);
+
+        // * Verify only delete post option is present
+        const systemMessage = `@${testUser.username} added to the channel by you.`;
+        await element(by.text(systemMessage)).longPress();
+        await expect(deleteAction).toBeVisible();
+        await expect(reactionPickerAction).not.toExist();
+        await expect(replyAction).not.toExist();
+        await expect(permalinkAction).not.toExist();
+        await expect(copyAction).not.toExist();
+        await expect(editAction).not.toExist();
+        await expect(saveAction).not.toExist();
+        await expect(pinAction).not.toExist();
+        await expect(markUnreadAction).not.toExist();
+
+        // # Log in as test user
+        await PostOptions.close();
+        await ChannelScreen.logout();
+        await ChannelScreen.open(testUser);
     });
 
     it('MM-T3486 should post a message when send button is tapped', async () => {

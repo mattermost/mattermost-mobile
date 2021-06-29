@@ -39,6 +39,9 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.soloader.SoLoader;
 
+import com.facebook.react.bridge.JSIModulePackage;
+
+
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
 
@@ -110,6 +113,11 @@ private final ReactNativeHost mReactNativeHost =
     @Override
     protected String getJSMainModuleName() {
       return "index";
+    }
+
+    @Override
+    protected JSIModulePackage getJSIModulePackage() {
+      return new CustomMMKVJSIModulePackage();
     }
   };
 
@@ -205,7 +213,7 @@ private final ReactNativeHost mReactNativeHost =
          We use reflection here to pick up the class that initializes Flipper,
         since Flipper library is not available in release mode
         */
-        Class<?> aClass = Class.forName("com.rndiffapp.ReactNativeFlipper");
+        Class<?> aClass = Class.forName("com.rn.ReactNativeFlipper");
         aClass
             .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);

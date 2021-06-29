@@ -37,6 +37,7 @@ export type Channel = {
     status?: string;
     fake?: boolean;
     group_constrained: boolean;
+    shared: boolean;
 };
 export type ChannelWithTeamData = Channel & {
     team_display_name: string;
@@ -107,3 +108,18 @@ export type ChannelMemberCountByGroup = {
 };
 
 export type ChannelMemberCountsByGroup = Record<string, ChannelMemberCountByGroup>;
+
+export type SharedChannel = {
+    channel_id: string;
+    team_id: string;
+    home: boolean;
+    readonly: boolean;
+    share_name: string;
+    share_displayname: string;
+    share_purpose: string;
+    share_header: string;
+    creator_id: string;
+    create_at: number;
+    update_at: number;
+    remote_id: string;
+};

@@ -194,7 +194,7 @@ export default class DraftInput extends PureComponent {
             this.setState(nextState, callback);
         }
 
-        EventEmitter.emit('scroll-to-bottom');
+        EventEmitter.emit('scroll-to-bottom', EphemeralStore.getNavigationTopComponentId());
     };
 
     handleHardwareEnterPress = (keyEvent) => {

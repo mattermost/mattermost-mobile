@@ -51,6 +51,7 @@ export type Config = {
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
     EnableCustomTermsOfService: string;
+    EnableCustomUserStatuses: string;
     EnableDeveloper: string;
     EnableDiagnostics: string;
     EnableEmailBatching: string;

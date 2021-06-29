@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {loadChannelsForTeam} from '@actions/views/channel';
+import {loadChannelsForTeam, setChannelRetryFailed} from '@actions/views/channel';
 import {getPostsSince} from '@actions/views/post';
 import {loadMe} from '@actions/views/user';
 import {WebsocketEvents} from '@constants';
@@ -135,7 +135,10 @@ export function doReconnect(now: number) {
         const {lastDisconnectAt} = state.websocket;
         const actions: Array<GenericAction> = [];
 
-        dispatch(wsConnected(now));
+        dispatch(batchActions([
+            wsConnected(now),
+            setChannelRetryFailed(false),
+        ], 'BATCH_WS_SUCCESS'));
 
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
@@ -148,6 +151,9 @@ export function doReconnect(now: number) {
                 }
 
                 actions.push({
+                    type: UserTypes.RECEIVED_ME,
+                    data: me.user,
+                }, {
                     type: PreferenceTypes.RECEIVED_ALL_PREFERENCES,
                     data: me.preferences,
                 }, {

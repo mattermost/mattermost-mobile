@@ -62,7 +62,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         const indicateNewMessages = true;
 
         // Defaults to show post
-        let now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages});
+        let now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, indicateNewMessages);
         assert.deepEqual(now, [
             '1002',
             '1001',
@@ -88,7 +88,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
             },
         };
 
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, indicateNewMessages);
         assert.deepEqual(now, [
             '1002',
             '1001',
@@ -114,7 +114,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
             },
         };
 
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, indicateNewMessages);
         assert.deepEqual(now, [
             '1001',
             'date-' + today.getTime(),
@@ -135,7 +135,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
             },
         };
 
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, indicateNewMessages);
 
         assert.deepEqual(now, [
             '1002',
@@ -176,7 +176,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         const postIds = ['1010', '1005', '1000']; // Remember that we list the posts backwards
 
         // Do not show new messages indicator before all posts
-        let now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt: 0, indicateNewMessages: true});
+        let now = filterPostsAndAddSeparators(state, postIds, 0, true);
         assert.deepEqual(now, [
             '1010',
             '1005',
@@ -184,7 +184,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
             'date-' + (today.getTime() + 1000),
         ]);
 
-        now = filterPostsAndAddSeparators(state, {postIds, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, undefined, true);
         assert.deepEqual(now, [
             '1010',
             '1005',
@@ -192,7 +192,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
             'date-' + (today.getTime() + 1000),
         ]);
 
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt: time + 999, indicateNewMessages: false});
+        now = filterPostsAndAddSeparators(state, postIds, time + 999, false);
         assert.deepEqual(now, [
             '1010',
             '1005',
@@ -201,7 +201,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         ]);
 
         // Show new messages indicator before all posts
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt: time + 999, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, time + 999, true);
         assert.deepEqual(now, [
             '1010',
             '1005',
@@ -211,7 +211,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         ]);
 
         // Show indicator between posts
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt: time + 1003, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, time + 1003, true);
         assert.deepEqual(now, [
             '1010',
             '1005',
@@ -220,7 +220,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
             'date-' + (today.getTime() + 1000),
         ]);
 
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt: time + 1006, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, time + 1006, true);
         assert.deepEqual(now, [
             '1010',
             START_OF_NEW_MESSAGES,
@@ -230,7 +230,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         ]);
 
         // Don't show indicator when all posts are read
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt: time + 1020});
+        now = filterPostsAndAddSeparators(state, postIds, time + 1020);
         assert.deepEqual(now, [
             '1010',
             '1005',
@@ -288,7 +288,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         ];
         let lastViewedAt = initialPosts['1001'].create_at + 1;
 
-        let now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        let now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.deepEqual(now, [
             '1006',
             '1004',
@@ -301,7 +301,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
 
         // No changes
         let prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -317,7 +317,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         lastViewedAt = initialPosts['1001'].create_at + 2;
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -333,7 +333,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         lastViewedAt = initialPosts['1003'].create_at + 1;
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.notEqual(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -346,7 +346,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         ]);
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -362,7 +362,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         postIds = [...postIds];
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -390,7 +390,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         };
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -418,7 +418,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         };
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1006',
@@ -450,7 +450,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         };
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.notEqual(now, prev);
         assert.deepEqual(now, [
             '1004',
@@ -462,7 +462,7 @@ describe('makeFilterPostsAndAddSeparators', () => {
         ]);
 
         prev = now;
-        now = filterPostsAndAddSeparators(state, {postIds, lastViewedAt, indicateNewMessages: true});
+        now = filterPostsAndAddSeparators(state, postIds, lastViewedAt, true);
         assert.equal(now, prev);
         assert.deepEqual(now, [
             '1004',

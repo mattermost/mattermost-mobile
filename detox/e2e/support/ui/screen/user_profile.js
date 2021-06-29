@@ -10,6 +10,8 @@ class UserProfileScreen {
     testID = {
         userProfilePicturePrefix: 'user_profile.profile_picture.',
         userProfileScreen: 'user_profile.screen',
+        customStatus: 'user_profile.custom_status',
+        profilePicture: 'user_profile.profile_picture',
         userProfileScrollView: 'user_profile.scroll_view',
         closeSettingsButton: 'close.settings.button',
         editButton: 'user_profile.edit.button',
@@ -35,6 +37,8 @@ class UserProfileScreen {
 
     userProfileScreen = element(by.id(this.testID.userProfileScreen));
     userProfileScrollView = element(by.id(this.testID.userProfileScrollView));
+    customStatus = element(by.id(this.testID.customStatus));
+    profilePicture = element(by.id(this.testID.profilePicture))
     closeSettingsButton = element(by.id(this.testID.closeSettingsButton));
     editButton = element(by.id(this.testID.editButton));
     userProfileBotTag = element(by.id(this.testID.userProfileBotTag));

@@ -3,19 +3,13 @@
 
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {
-    Keyboard,
-    Platform,
-    View,
-    Animated,
-} from 'react-native';
+import {Keyboard, View, Animated} from 'react-native';
 
 import {goToScreen} from '@actions/navigation';
 import PostList from '@components/post_list';
 import RetryBarIndicator from '@components/retry_bar_indicator';
 import {TYPING_HEIGHT} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {CHANNEL} from '@constants/screen';
 
@@ -40,7 +34,6 @@ export default class ChannelPostList extends PureComponent {
         postIds: PropTypes.array,
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
-        updateNativeScrollView: PropTypes.func,
         registerTypingAnimation: PropTypes.func.isRequired,
     };
 
@@ -68,11 +61,6 @@ export default class ChannelPostList extends PureComponent {
         if (this.props.channelId !== prevProps.channelId) {
             this.isLoadingMoreTop = false;
         }
-
-        if (!prevProps.postIds?.length && this.props.postIds?.length > 0 && this.props.updateNativeScrollView) {
-            // This is needed to re-bind the scrollview natively when getting the first posts
-            this.props.updateNativeScrollView();
-        }
     }
 
     componentWillUnmount() {
@@ -93,7 +81,7 @@ export default class ChannelPostList extends PureComponent {
     }
 
     goToThread = (post) => {
-        const {actions, channelId} = this.props;
+        const {actions} = this.props;
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
@@ -103,7 +91,7 @@ export default class ChannelPostList extends PureComponent {
         const screen = 'Thread';
         const title = '';
         const passProps = {
-            channelId,
+            channelId: post.channel_id,
             rootId,
         };
 
@@ -189,12 +177,9 @@ export default class ChannelPostList extends PureComponent {
                 <PostList
                     testID='channel.post_list'
                     postIds={postIds}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
                     extraData={postIds.length !== 0}
                     onLoadMoreUp={this.loadMorePostsTop}
-                    onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}
-                    renderReplies={true}
                     indicateNewMessages={true}
                     currentUserId={currentUserId}
                     lastViewedAt={lastViewedAt}

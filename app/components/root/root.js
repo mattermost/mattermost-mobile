@@ -6,12 +6,11 @@ import PropTypes from 'prop-types';
 import {IntlProvider} from 'react-intl';
 import {Platform} from 'react-native';
 
+import {resetToTeams} from '@actions/navigation';
 import {Client4} from '@client/rest';
+import {NavigationTypes} from '@constants';
+import {getTranslations, getLocaleFromLanguage} from '@i18n';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {resetToTeams} from 'app/actions/navigation';
-import {NavigationTypes} from 'app/constants';
-import {getTranslations} from 'app/i18n';
 
 export default class Root extends PureComponent {
     static propTypes = {
@@ -102,7 +101,7 @@ export default class Root extends PureComponent {
     }
 
     render() {
-        const locale = this.props.locale;
+        const locale = getLocaleFromLanguage(this.props.locale);
 
         return (
             <IntlProvider

@@ -91,7 +91,9 @@ export default async function getStorage(identifier = 'default') {
                 callback(null);
             }
 
-            return MMKV.removeItem(key);
+            return new Promise(() => {
+                return MMKV.removeItem(key);
+            });
         },
     };
 }

@@ -70,6 +70,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'CreateChannel':
         screen = require('@screens/create_channel').default;
         break;
+    case 'CustomStatus':
+        screen = require('@screens/custom_status').default;
+        break;
     case 'DisplaySettings':
         screen = require('@screens/settings/display_settings').default;
         break;
@@ -105,9 +108,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'LoginOptions':
         screen = require('@screens/login_options').default;
-        break;
-    case 'LongPost':
-        screen = require('@screens/long_post').default;
         break;
     case 'MainSidebar':
         screen = require('app/components/sidebars/main').default;
@@ -205,6 +205,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'UserProfile':
         screen = require('@screens/user_profile').default;
+        break;
+    case 'SlideUp':
+        screen = require('@screens/slide_up').default;
         break;
     }
 

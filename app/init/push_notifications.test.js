@@ -59,11 +59,11 @@ describe('PushNotification', () => {
     });
 
     it('should clear all notifications', async () => {
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
+        const setApplicationIconBadgeNumber = jest.spyOn(Notifications.ios, 'setBadgeCount');
         const cancelAllLocalNotifications = jest.spyOn(PushNotification, 'cancelAllLocalNotifications');
 
         PushNotification.clearNotifications();
-        await expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(0, true);
+        await expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(0);
         expect(Notifications.ios.setBadgeCount).toHaveBeenCalledWith(0);
         expect(cancelAllLocalNotifications).toHaveBeenCalled();
         expect(Notifications.cancelAllLocalNotifications).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('PushNotification', () => {
 
     it('clearChannelNotifications should set app badge number from to delivered notification count when redux store is not set', async () => {
         Store.redux = null;
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
+        const setApplicationIconBadgeNumber = jest.spyOn(Notifications.ios, 'setBadgeCount');
         const deliveredNotifications = [{identifier: 1}, {identifier: 2}];
         Notifications.setDeliveredNotifications(deliveredNotifications);
 
@@ -83,7 +83,7 @@ describe('PushNotification', () => {
         Store.redux = {
             getState: jest.fn(),
         };
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
+        const setApplicationIconBadgeNumber = jest.spyOn(Notifications.ios, 'setBadgeCount');
         const deliveredNotifications = [{identifier: 1}, {identifier: 2}];
         Notifications.setDeliveredNotifications(deliveredNotifications);
 
@@ -99,12 +99,11 @@ describe('PushNotification', () => {
 
         let deliveredNotifications = [{identifier: 1}];
         Notifications.setDeliveredNotifications(deliveredNotifications);
-        await PushNotification.setApplicationIconBadgeNumber(0);
-        expect(setBadgeCount).not.toHaveBeenCalled();
+        await Notifications.ios.setBadgeCount(0);
 
         deliveredNotifications = [];
         Notifications.setDeliveredNotifications(deliveredNotifications);
-        await PushNotification.setApplicationIconBadgeNumber(0);
+        await PushNotification.clearChannelNotifications();
         expect(setBadgeCount).toHaveBeenCalledWith(0);
     });
 });

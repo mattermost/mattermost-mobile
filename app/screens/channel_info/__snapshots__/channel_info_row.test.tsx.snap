@@ -20,7 +20,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
       name="icon"
       size={24}
     />
-    <FormattedText
+    <InjectIntl(FormattedText)
       defaultMessage="default-message"
       id="text-id"
       style={

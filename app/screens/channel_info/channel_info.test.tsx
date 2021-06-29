@@ -49,6 +49,7 @@ describe('channelInfo', () => {
         isTeammateGuest: false,
         isDirectMessage: false,
         isLandscape: false,
+        isCustomStatusEnabled: false,
         actions: {
             getChannelStats: jest.fn(),
             getCustomEmojisInText: jest.fn(),

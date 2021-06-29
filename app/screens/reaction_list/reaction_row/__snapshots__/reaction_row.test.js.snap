@@ -34,6 +34,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
           iconSize={18}
           showStatus={false}
           size={24}
+          testID="reaction_row.profile_picture"
           userId="user_id"
         />
       </View>
@@ -48,6 +49,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
         "width": "74%",
       }
     }
+    testID="reaction_row.user.user_id"
   >
     <Text
       style={
@@ -86,6 +88,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
     <Connect(Emoji)
       emojiName="smile"
       size={24}
+      testID="reaction_row.emoji.smile.user_id"
       textStyle={
         Object {
           "color": "#000",

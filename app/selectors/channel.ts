@@ -3,10 +3,11 @@
 
 import {createSelector} from 'reselect';
 
+import {General} from '@mm-redux/constants';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-import {getChannelByName} from '@mm-redux/selectors/entities/channels';
-import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getChannelByName, getChannelsInCurrentTeam, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {Channel} from '@mm-redux/types/channels';
 import {isArchivedChannel} from '@mm-redux/utils/channel_utils';
@@ -60,5 +61,32 @@ export const getChannelReachable = createSelector(
             return false;
         }
         return true;
+    },
+);
+
+export const joinablePublicChannels = createSelector(
+    getChannelsInCurrentTeam,
+    getMyChannelMemberships,
+    (channels, myMembers) => {
+        return channels.filter((c) => {
+            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL && c.delete_at === 0);
+        });
+    },
+);
+
+export const joinableSharedChannels = createSelector(
+    getChannelsInCurrentTeam,
+    getMyChannelMemberships,
+    (channels, myMembers) => {
+        return channels.filter((c) => {
+            return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL && c.shared === true && c.delete_at === 0);
+        });
+    },
+);
+
+export const teamArchivedChannels = createSelector(
+    getChannelsInCurrentTeam,
+    (channels) => {
+        return channels.filter((c) => c.delete_at !== 0);
     },
 );

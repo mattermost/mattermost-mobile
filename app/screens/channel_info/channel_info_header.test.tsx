@@ -33,7 +33,6 @@ describe('channel_info_header', () => {
         memberCount: 3,
         displayName: 'Channel name',
         header: 'Header string',
-        onPermalinkPress: jest.fn(),
         purpose: 'Purpose string',
         status: 'status',
         theme: Preferences.THEMES.default,
@@ -44,6 +43,7 @@ describe('channel_info_header', () => {
         hasGuests: false,
         isGroupConstrained: false,
         testID: 'channel_info.header',
+        isCustomStatusEnabled: false,
     };
 
     test('should match snapshot', async () => {
@@ -110,6 +110,24 @@ describe('channel_info_header', () => {
                 {...baseProps}
                 type={General.GM_CHANNEL}
                 hasGuests={true}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status enabled', async () => {
+        const customStatus = {
+            emoji: 'calendar',
+            text: 'In a meeting',
+        };
+
+        const wrapper = shallow(
+            <ChannelInfoHeader
+                {...baseProps}
+                isCustomStatusEnabled={true}
+                type={General.DM_CHANNEL}
+                customStatus={customStatus}
             />,
             {context: {intl: intlMock}},
         );

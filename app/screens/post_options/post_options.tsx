@@ -44,7 +44,6 @@ type Props = {
     canEdit?: boolean,
     canMarkAsUnread?: boolean, //#backwards-compatibility:5.18v
     canEditUntil: number,
-    showAppOptions: boolean,
     currentTeamUrl: string,
     currentUserId: string,
     deviceHeight: number,
