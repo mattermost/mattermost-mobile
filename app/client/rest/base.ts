@@ -260,10 +260,8 @@ export default class ClientBase {
 
         const headers = response.headers;
         const serverVersion = headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()];
-        if (serverVersion && !headers['Cache-Control']) {
-            // TODO: Set server version in DB?
+        if (serverVersion && !headers['Cache-Control'] && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;
-
             // EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
         }
 

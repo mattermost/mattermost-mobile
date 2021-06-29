@@ -6,6 +6,7 @@ import CookieManager, {Cookie} from '@react-native-community/cookies';
 import {FileSystem} from 'react-native-unimodules';
 import semver from 'semver';
 
+import NetworkManager from '@app/init/network_manager';
 import LocalConfig from '@assets/config.json';
 import {Navigation} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
@@ -166,10 +167,8 @@ class GlobalEventHandler {
                 );
             }
 
-            // TODO: reload config and license unless done somewhere else
-            //
-            // const {config, license} = await fetchConfigAndLicense(serverUrl);
-            // store config & license in db?
+            const client = NetworkManager.clients[serverUrl];
+            // TODO: fetch config with client then update config in database
         }
     };
 
