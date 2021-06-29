@@ -4,10 +4,6 @@ import android.content.Context;
 
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.notificationdrawer.PushNotificationsDrawer;
-import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
-import com.wix.reactnativenotifications.core.notificationdrawer.INotificationsDrawerApplication;
-
-import static com.wix.reactnativenotifications.Defs.LOGTAG;
 
 public class CustomPushNotificationDrawer extends PushNotificationsDrawer {
     final protected Context mContext;
