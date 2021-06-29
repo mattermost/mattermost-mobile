@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@client/rest';
+import NetworkManager from '@app/init/network_manager';
 import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
-import {setServerCredentials} from '@init/credentials';
 import {getDeviceToken} from '@app/queries/app/global';
 import {getCommonSystemValues, getCurrentUserId} from '@app/queries/servers/system';
 import {createSessions} from '@requests/local/systems';
@@ -28,6 +27,7 @@ import {License} from '@typings/database/models/servers/license';
 import Role from '@typings/database/models/servers/role';
 import User from '@typings/database/models/servers/user';
 import {getCSRFFromCookie} from '@utils/security';
+import GenericClient from '@mattermost/react-native-network-client';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -38,7 +38,8 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
     return async () => {
         if (!skipServerLogout) {
             try {
-                await Client4.logout();
+                const client = NetworkManager.clients[serverUrl];
+                await client.logout();
             } catch {
                 // Do nothing
             }
@@ -77,9 +78,14 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         return {error: 'App database not found.'};
     }
 
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return {error: `${serverUrl} client not found`};
+    }
+
     try {
         deviceToken = await getDeviceToken(appDatabase);
-        user = ((await Client4.login(
+        user = ((await client.login(
             loginId,
             password,
             mfaToken,
@@ -116,13 +122,18 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         return {error: `${serverUrl} database not found`};
     }
 
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return {error: `${serverUrl} client not found`};
+    }
+
     try {
         if (deviceToken) {
-            await Client4.attachDevice(deviceToken);
+            await client.attachDevice(deviceToken);
         }
 
         if (!currentUser) {
-            currentUser = ((await Client4.getMe()) as unknown) as RawUser;
+            currentUser = ((await client.getMe()) as unknown) as RawUser;
         }
     } catch (e) {
         await forceLogoutIfNecessary(serverUrl, e);
@@ -133,20 +144,21 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
     }
 
     try {
-        const analyticsClient = analytics.create(Client4.getUrl());
+        const analyticsClient = analytics.create(serverUrl);
         analyticsClient.setUserId(currentUser.id);
         analyticsClient.setUserRoles(currentUser.roles);
 
         //todo: Ask for a unified endpoint that will serve all those values in one go.( while ensuring backward-compatibility through fallbacks to previous code-path)
-        const teamsRequest = Client4.getMyTeams();
+        const teamsRequest = client.getMyTeams();
 
         // Goes into myTeam table
-        const teamMembersRequest = Client4.getMyTeamMembers();
-        const teamUnreadRequest = Client4.getMyTeamUnreads();
+        // TODO: Fix return types for all client functions
+        const teamMembersRequest = client.getMyTeamMembers();
+        const teamUnreadRequest = client.getMyTeamUnreads();
 
-        const preferencesRequest = Client4.getMyPreferences();
-        const configRequest = Client4.getClientConfigOld();
-        const licenseRequest = Client4.getClientLicenseOld();
+        const preferencesRequest = client.getMyPreferences();
+        const configRequest = client.getClientConfigOld();
+        const licenseRequest = client.getClientLicenseOld();
 
         const [
             teams,
@@ -165,10 +177,10 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         ]);
 
         const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams as RawTeam[]});
-        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers as unknown) as RawTeamMembership[]});
+        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams.data as RawTeam[]});
+        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers.data as unknown) as RawTeamMembership[]});
 
-        const myTeams = teamUnreads.map((unread) => {
+        const myTeams = teamUnreads.data.map((unread) => {
             const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
             return {team_id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
         });
@@ -194,7 +206,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
                 },
                 {
                     name: 'url',
-                    value: Client4.getUrl(),
+                    value: serverUrl,
                 },
             ],
             prepareRecordsOnly: true,
@@ -207,7 +219,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         const preferenceRecords = operator.handlePreferences({
             prepareRecordsOnly: true,
-            preferences: (preferences as unknown) as RawPreference[],
+            preferences: (preferences.data as unknown) as RawPreference[],
         });
 
         let roles: string[] = [];
@@ -215,7 +227,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
             roles = roles.concat(role);
         }
 
-        for (const teamMember of teamMembers) {
+        for (const teamMember of teamMembers.data) {
             roles = roles.concat(teamMember.roles.split(' '));
         }
 
@@ -223,7 +235,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         let rolesRecords: Role[] = [];
         if (rolesToLoad.size > 0) {
-            const rolesByName = ((await Client4.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
+            const rolesByName = ((await client.getRolesByNames(Array.from(rolesToLoad))) as unknown) as RawRole[];
 
             if (rolesByName?.length) {
                 rolesRecords = await operator.handleRole({prepareRecordsOnly: true, roles: rolesByName}) as Role[];
@@ -249,15 +261,20 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
         return {error: `${serverUrl} database not found`};
     }
 
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return {error: `${serverUrl} client not found`};
+    }
+
     const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
     }
 
-    const token = Client4.getToken();
-
-    setServerCredentials(serverUrl, user.id, token);
+    // No longer needed as it is set by the network client lib
+    // const token = client.getToken();
+    // setServerCredentials(serverUrl, user.id, token);
 
     // Set timezone
     if (isTimezoneEnabled(config)) {
@@ -266,7 +283,7 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
     }
 
     let dataRetentionPolicy: any;
-    const operator = DatabaseManager.serverDatabases[Client4.getUrl()].operator;
+    const operator = DatabaseManager.serverDatabases[serverUrl].operator;
 
     // Data retention
     if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
@@ -284,9 +301,14 @@ export const updateMe = async (serverUrl: string, user: User) => {
         return {error: `${serverUrl} database not found`};
     }
 
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return {error: `${serverUrl} client not found`};
+    }
+
     let data;
     try {
-        data = ((await Client4.patchMe(user._raw)) as unknown) as RawUser;
+        data = ((await client.patchMe(user._raw)) as unknown) as RawUser;
     } catch (e) {
         logError(e);
         return {error: e};
@@ -323,8 +345,13 @@ export const updateMe = async (serverUrl: string, user: User) => {
     return {data};
 };
 export const getSessions = async (serverUrl: string, currentUserId: string) => {
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return;
+    }
+
     try {
-        const sessions = await Client4.getSessions(currentUserId);
+        const sessions = await client.getSessions(currentUserId);
         await createSessions(serverUrl, sessions);
     } catch (e) {
         logError(e);
@@ -374,17 +401,22 @@ export const ssoLogin = async (serverUrl: string) => {
     return result;
 };
 
-export const sendPasswordResetEmail = async (email: string) => {
-    let data;
+export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {
+    const client = NetworkManager.clients[serverUrl];
+    if (!client) {
+        return {error: `${serverUrl} client not found`};
+    }
+
+    let response;
     try {
-        data = await Client4.sendPasswordResetEmail(email);
+        response = await client.sendPasswordResetEmail(email);
     } catch (e) {
         return {
             error: e,
         };
     }
     return {
-        data,
+        data: response.data,
         error: undefined,
     };
 };

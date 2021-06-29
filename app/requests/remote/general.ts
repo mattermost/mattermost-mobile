@@ -1,27 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@client/rest';
+import NetworkManager from '@app/init/network_manager';
 
-export const doPing = async (serverUrl?: string) => {
-    let data;
+export const doPing = async (serverUrl: string) => {
+    const client = NetworkManager.clients[serverUrl!];
+
+    let response;
     const pingError = {
         id: 'mobile.server_ping_failed',
         defaultMessage: 'Cannot connect to the server. Please check your server URL and internet connection.',
     };
 
     try {
-        if (serverUrl) {
-            Client4.setUrl(serverUrl);
-        }
-
-        data = await Client4.ping();
-        if (data.status !== 'OK') {
+        response = await client.ping();
+        if (response.data.status !== 'OK') {
             // successful ping but not the right return {data}
             return {error: {intl: pingError}};
         }
     } catch (error) {
-    // Client4Error
+        // TODO: If client certificate is required, import client p12
+        console.log("Error", error)
         if (error.status_code === 401) {
             // When the server requires a client certificate to connect.
             return {error};
@@ -29,17 +28,18 @@ export const doPing = async (serverUrl?: string) => {
         return {error: {intl: pingError}};
     }
 
-    return {data};
+    return response;
 };
 
-export const fetchConfigAndLicense = async () => {
+export const fetchConfigAndLicense = async (serverUrl: string) => {
+    const client = NetworkManager.clients[serverUrl];
     try {
-        const [config, license] = await Promise.all<ClientConfig, ClientLicense>([
-            Client4.getClientConfigOld(),
-            Client4.getClientLicenseOld(),
+        const [configResponse, licenseResponse] = await Promise.all<any, any>([
+            client.getClientConfigOld(),
+            client.getClientLicenseOld(),
         ]);
 
-        return {config, license};
+        return {config: configResponse.data, license: licenseResponse.data};
     } catch (error) {
         return {error};
     }

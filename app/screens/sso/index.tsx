@@ -4,7 +4,7 @@
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import {Client4} from '@client/rest';
+import NetworkManager from '@app/init/network_manager';
 import {SSO as SSOEnum} from '@constants';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {scheduleExpiredNotification} from '@requests/remote/push_notification';
@@ -70,8 +70,18 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         setLoginError(errorMessage);
     };
 
+    const onCSRFToken = (csrfToken: string) => {
+        const client = NetworkManager.clients[serverUrl];
+        client.setCSRF(csrfToken);
+    }
+
+
+    // TOOD: So long as the APIClient is configured with `bearerAuthTokenResponseHeader`,
+    // then the token will be automatically extracted and set in the headers via a request
+    // adapter. Do we need this method? Maybe we can passin ssoLogin as a prop instead of
+    // this method?
     const onMMToken = async (token: string) => {
-        Client4.setToken(token);
+        // Client4.setToken(token);
 
         const {error = undefined} = await ssoLogin(serverUrl);
         if (error) {
@@ -92,9 +102,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const props = {
         loginError,
         loginUrl,
-        onCSRFToken: (csrfToken: string) => {
-            Client4.setCSRF(csrfToken);
-        },
+        onCSRFToken,
         onMMToken,
         setLoginError,
         theme,

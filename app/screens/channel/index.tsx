@@ -15,7 +15,7 @@ import type {LaunchProps} from '@typings/launch';
 
 declare const global: {HermesInternal: null | {}};
 
-type ChannelProps = LaunchProps
+type ChannelProps = LaunchProps;
 
 const Channel = (props: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.

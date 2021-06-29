@@ -20,23 +20,23 @@ export interface ClientGeneralMix {
 const ClientGeneral = (superclass: any) => class extends superclass {
     getOpenGraphMetadata = async (url: string) => {
         return this.doFetch(
-            `${this.getBaseRoute()}/opengraph`,
+            `${this.apiVersion}/opengraph`,
             {method: 'post', body: JSON.stringify({url})},
         );
     };
 
     ping = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/system/ping?time=${Date.now()}`,
+            `${this.apiVersion}/system/ping?time=${Date.now()}`,
             {method: 'get'},
         );
     };
 
     logClientError = async (message: string, level = 'ERROR') => {
-        const url = `${this.getBaseRoute()}/logs`;
+        const url = `${this.apiVersion}/logs`;
 
         if (!this.enableLogging) {
-            throw new ClientError(this.getUrl(), {
+            throw new ClientError(this.client.baseUrl, {
                 message: 'Logging disabled.',
                 url,
             });
@@ -50,14 +50,14 @@ const ClientGeneral = (superclass: any) => class extends superclass {
 
     getClientConfigOld = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/config/client?format=old`,
+            `${this.apiVersion}/config/client?format=old`,
             {method: 'get'},
         );
     };
 
     getClientLicenseOld = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/license/client?format=old`,
+            `${this.apiVersion}/license/client?format=old`,
             {method: 'get'},
         );
     };

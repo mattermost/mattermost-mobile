@@ -142,11 +142,11 @@ const ClientUsers = (superclass: any) => class extends superclass {
             body.ldap_only = 'true';
         }
 
-        const {data} = await this.doFetchWithResponse(
+        const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
             {
                 method: 'post',
-                body: JSON.stringify(body),
+                body,
                 headers: {'Cache-Control': 'no-store'},
             },
         );
@@ -163,7 +163,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
             token,
         };
 
-        const {data} = await this.doFetchWithResponse(
+        const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
             {method: 'post', body: JSON.stringify(body)},
         );
@@ -172,18 +172,20 @@ const ClientUsers = (superclass: any) => class extends superclass {
     };
 
     logout = async () => {
-        this.analytics.trackAPI('api_users_logout');
+        // this.analytics.trackAPI('api_users_logout');
 
-        const {response} = await this.doFetchWithResponse(
+        const {response} = await this.doFetch(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'},
         );
 
-        if (response.ok) {
-            this.token = '';
-        }
+        // TODO: Invalidate client?
+        // if (response.ok) {
+        //     this.token = '';
+        // }
 
-        this.serverVersion = '';
+        // TODO: Remove server version from DB?
+        // this.serverVersion = '';
 
         return response;
     };

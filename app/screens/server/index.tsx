@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ManagedConfig, useManagedConfig} from '@mattermost/react-native-emm';
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -12,6 +12,7 @@ import Button from 'react-native-button';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import NetworkManager from '@app/init/network_manager';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
@@ -25,6 +26,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
+
+import type {ManagedConfig} from '@mattermost/react-native-emm';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
@@ -51,7 +54,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
-    const displayLogin = (config: ClientConfig, license: ClientLicense) => {
+    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
@@ -76,7 +79,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
             config,
             license,
             theme,
-            serverUrl: url,
+            serverUrl,
         };
 
         const defaultOptions = {
@@ -133,6 +136,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
+        NetworkManager.createClient(serverUrl);
 
         const result = await doPing(serverUrl);
 
@@ -140,24 +144,28 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
             return;
         }
 
-        if (result.error && retryWithHttp) {
-            const nurl = serverUrl.replace('https:', 'http:');
-            pingServer(nurl, false);
-            return;
-        } else if (result.error) {
-            setError(result.error);
-            setConnecting(false);
+        if (result.error) {
+            NetworkManager.invalidateClient[serverUrl];
+            if (retryWithHttp) {
+                const nurl = serverUrl.replace('https:', 'http:');
+                pingServer(nurl, false);
+            } else {
+                setError(result.error);
+                setConnecting(false);
+            }
+
             return;
         }
 
-        const data = await fetchConfigAndLicense();
+
+        const data = await fetchConfigAndLicense(serverUrl);
         if (data.error) {
             setError(data.error);
             setConnecting(false);
             return;
         }
 
-        displayLogin(data.config!, data.license!);
+        displayLogin(serverUrl, data.config!, data.license!);
     };
 
     const blur = useCallback(() => {

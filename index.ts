@@ -6,10 +6,11 @@ import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
 import {Navigation as NavigationConstants, Screens} from './app/constants';
+import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
 import GlobalEventHandler from './app/init/global_event_handler';
-import './app/init/fetch';
 import {initialLaunch} from './app/init/launch';
+import NetworkManager from './app/init/network_manager';
 import ManagedApp from './app/init/managed_app';
 import {registerScreens} from './app/screens/index';
 import EphemeralStore from './app/store/ephemeral_store';
@@ -51,10 +52,10 @@ Navigation.events().registerAppLaunchedListener(async () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const serverCredentials = await getAllServerCredentials();
+    const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
 
-    // TODO:
-    // DatabaseManager.init(serverCredentials);
-    // NetworkClientManager.init(serverCredentials);
+    await DatabaseManager.init(serverUrls);
+    await NetworkManager.init(serverCredentials);
 
     initialLaunch();
 });

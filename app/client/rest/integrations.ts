@@ -57,7 +57,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     submitInteractiveDialog = async (data: DialogSubmission) => {
         this.analytics.trackAPI('api_interactive_messages_dialog_submitted');
         return this.doFetch(
-            `${this.getBaseRoute()}/actions/dialogs/submit`,
+            `${this.apiVersion}/actions/dialogs/submit`,
             {method: 'post', body: JSON.stringify(data)},
         );
     };

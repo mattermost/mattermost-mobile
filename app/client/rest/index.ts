@@ -49,8 +49,11 @@ class Client extends mix(ClientBase).with(
     ClientTeams,
     ClientTos,
     ClientUsers,
-) {}
+) {
+    // TODO: types
+    constructor(client, serverUrl) {
+        super(client, serverUrl)
+    }
+}
 
-const Client4 = new Client();
-
-export {Client4, Client, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID};
+export {Client, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID};

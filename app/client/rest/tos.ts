@@ -16,7 +16,7 @@ const ClientTos = (superclass: any) => class extends superclass {
 
     getTermsOfService = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/terms_of_service`,
+            `${this.apiVersion}/terms_of_service`,
             {method: 'get'},
         );
     }

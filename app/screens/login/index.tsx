@@ -203,8 +203,12 @@ const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}:
     const onPressForgotPassword = () => {
         const screen = FORGOT_PASSWORD;
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
+        const passProps = {
+            theme,
+            serverUrl,
+        };
 
-        goToScreen(screen, title, {theme});
+        goToScreen(screen, title, passProps);
     };
 
     const createLoginPlaceholder = () => {

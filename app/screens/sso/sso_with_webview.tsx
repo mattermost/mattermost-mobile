@@ -95,7 +95,8 @@ const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
 
             // Rebuild the server url without query string and/or hash
             const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
-            Client4.setUrl(url);
+            // TODO: Is the below needed?
+            // Client4.setUrl(url);
 
             CookieManager.get(url, true).then((res: Cookies) => {
                 const mmtoken = res.MMAUTHTOKEN;
