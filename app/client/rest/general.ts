@@ -21,7 +21,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
     getOpenGraphMetadata = async (url: string) => {
         return this.doFetch(
             `${this.urlVersion}/opengraph`,
-            {method: 'post', body: JSON.stringify({url})},
+            {method: 'post', body: {url}},
         );
     };
 
@@ -29,6 +29,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.urlVersion}/system/ping?time=${Date.now()}`,
             {method: 'get'},
+            false,
         );
     };
 
@@ -44,7 +45,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             url,
-            {method: 'post', body: JSON.stringify({message, level})},
+            {method: 'post', body: {message, level}},
         );
     };
 
@@ -79,7 +80,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
     getRolesByNames = async (rolesNames: string[]) => {
         return this.doFetch(
             `${this.getRolesRoute()}/names`,
-            {method: 'post', body: JSON.stringify(rolesNames)},
+            {method: 'post', body: rolesNames},
         );
     };
 

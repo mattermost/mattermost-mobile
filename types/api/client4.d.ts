@@ -25,6 +25,6 @@ export type ErrorApi = {
 };
 export type Client4Error = ErrorOffline | ErrorInvalidResponse | ErrorApi;
 export type ClientOptions = {
-    method?: string;
     body?: any;
+    method?: string;
 };

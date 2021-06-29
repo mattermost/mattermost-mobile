@@ -60,14 +60,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryParams)}`,
-            {method: 'post', body: JSON.stringify(user)},
+            {method: 'post', body: user},
         );
     }
 
     patchMe = async (userPatch: Partial<UserProfile>) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/patch`,
-            {method: 'put', body: JSON.stringify(userPatch)},
+            {method: 'put', body: userPatch},
         );
     }
 
@@ -76,7 +76,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUserRoute(userPatch.id)}/patch`,
-            {method: 'put', body: JSON.stringify(userPatch)},
+            {method: 'put', body: userPatch},
         );
     }
 
@@ -85,7 +85,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUserRoute(user.id)}`,
-            {method: 'put', body: JSON.stringify(user)},
+            {method: 'put', body: user},
         );
     }
 
@@ -112,7 +112,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/password/reset/send`,
-            {method: 'post', body: JSON.stringify({email})},
+            {method: 'post', body: {email}},
         );
     }
 
@@ -166,7 +166,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
-            {method: 'post', body: JSON.stringify(body)},
+            {method: 'post', body: body},
         );
 
         return data;
@@ -199,7 +199,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/ids${buildQueryString(options)}`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -208,7 +208,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/usernames`,
-            {method: 'post', body: JSON.stringify(usernames)},
+            {method: 'post', body: usernames},
         );
     };
 
@@ -266,7 +266,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/group_channels`,
-            {method: 'post', body: JSON.stringify(channelsIds)},
+            {method: 'post', body: channelsIds},
         );
     };
 
@@ -349,14 +349,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
     checkUserMfa = async (loginId: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/mfa`,
-            {method: 'post', body: JSON.stringify({login_id: loginId})},
+            {method: 'post', body: {login_id: loginId}},
         );
     };
 
     attachDevice = async (deviceId: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
-            {method: 'put', body: JSON.stringify({device_id: deviceId})},
+            {method: 'put', body: {device_id: deviceId}},
         );
     };
 
@@ -365,14 +365,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/search`,
-            {method: 'post', body: JSON.stringify({term, ...options})},
+            {method: 'post', body: {term, ...options}},
         );
     };
 
     getStatusesByIds = async (userIds: string[]) => {
         return this.doFetch(
             `${this.getUsersRoute()}/status/ids`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -386,7 +386,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
     updateStatus = async (status: UserStatus) => {
         return this.doFetch(
             `${this.getUserRoute(status.user_id)}/status`,
-            {method: 'put', body: JSON.stringify(status)},
+            {method: 'put', body: status},
         );
     };
 };

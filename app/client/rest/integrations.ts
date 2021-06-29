@@ -41,7 +41,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getCommandsRoute()}/execute`,
-            {method: 'post', body: JSON.stringify({command, ...commandArgs})},
+            {method: 'post', body: {command, ...commandArgs}},
         );
     };
 
@@ -50,7 +50,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getCommandsRoute()}`,
-            {method: 'post', body: JSON.stringify(command)},
+            {method: 'post', body: command},
         );
     };
 
@@ -58,7 +58,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
         this.analytics.trackAPI('api_interactive_messages_dialog_submitted');
         return this.doFetch(
             `${this.urlVersion}/actions/dialogs/submit`,
-            {method: 'post', body: JSON.stringify(data)},
+            {method: 'post', body: data},
         );
     };
 };
