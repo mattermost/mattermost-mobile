@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {renderWithReduxIntl} from 'test/testing_library';
+import {renderWithReduxIntl} from '@test/testing_library';
 
 import {Posts, Preferences} from '@mm-redux/constants';
 

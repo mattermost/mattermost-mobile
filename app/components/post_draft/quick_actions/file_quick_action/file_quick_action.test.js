@@ -7,7 +7,7 @@ import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {renderWithIntl} from 'test/testing_library';
+import {renderWithIntl} from '@test/testing_library';
 
 import FileQuickAction from './index';
 

@@ -8,7 +8,7 @@ import {fireEvent} from '@testing-library/react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
 import * as PermissionUtils from '@utils/permission';
-import {renderWithIntl} from 'test/testing_library';
+import {renderWithIntl} from '@test/testing_library';
 
 import ImageQuickAction from './index';
 

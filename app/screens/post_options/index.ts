@@ -40,7 +40,6 @@ export type OwnProps = {
     canDelete: boolean,
     location: string,
     channelIsReadOnly: boolean,
-    isSystemMessage: boolean,
     hasBeenDeleted: boolean,
     showAddReaction: boolean,
 
