@@ -152,7 +152,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const teamsRequest = client.getMyTeams();
 
         // Goes into myTeam table
-        // TODO: Fix return types for all client functions
         const teamMembersRequest = client.getMyTeamMembers();
         const teamUnreadRequest = client.getMyTeamUnreads();
 
@@ -177,10 +176,10 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         ]);
 
         const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams.data as RawTeam[]});
-        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers.data as unknown) as RawTeamMembership[]});
+        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams as RawTeam[]});
+        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers as unknown) as RawTeamMembership[]});
 
-        const myTeams = teamUnreads.data.map((unread) => {
+        const myTeams = teamUnreads.map((unread) => {
             const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
             return {team_id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
         });
@@ -219,7 +218,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         const preferenceRecords = operator.handlePreferences({
             prepareRecordsOnly: true,
-            preferences: (preferences.data as unknown) as RawPreference[],
+            preferences: (preferences as unknown) as RawPreference[],
         });
 
         let roles: string[] = [];
@@ -227,7 +226,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
             roles = roles.concat(role);
         }
 
-        for (const teamMember of teamMembers.data) {
+        for (const teamMember of teamMembers) {
             roles = roles.concat(teamMember.roles.split(' '));
         }
 

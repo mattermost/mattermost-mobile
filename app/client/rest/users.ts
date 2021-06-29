@@ -172,20 +172,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
     };
 
     logout = async () => {
-        // this.analytics.trackAPI('api_users_logout');
+        this.analytics.trackAPI('api_users_logout');
 
-        const {response} = await this.doFetch(
+        const response = await this.doFetch(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'},
         );
 
-        // TODO: Invalidate client?
-        // if (response.ok) {
-        //     this.token = '';
-        // }
-
-        // TODO: Remove server version from DB?
-        // this.serverVersion = '';
+        this.serverVersion = '';
 
         return response;
     };

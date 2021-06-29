@@ -227,7 +227,7 @@ export default class ClientBase {
         return '/plugins/com.mattermost.apps';
     }
 
-    doFetch = async (url: string, options: ClientOptions) => {
+    doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         let request;
         switch (options.method?.toLocaleLowerCase()) {
             case 'get':
@@ -281,7 +281,7 @@ export default class ClientBase {
         }
 
         if (response.ok) {
-            return response;
+            return returnDataOnly ? {data: response.data} : response;
         }
 
         throw new ClientError(this.client.baseUrl, {
