@@ -22,6 +22,7 @@ if (__DEV__) {
     const LogBox = require('react-native/Libraries/LogBox/LogBox');
     LogBox.ignoreLogs([
         '`-[RCTRootView cancelTouches]`',
+        'scaleY',
     ]);
     require('storybook/mattermost_storybook.ts');
 }

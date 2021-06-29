@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import SQLiteAdapter, {MigrationEvents} from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
@@ -25,7 +25,7 @@ import {getActiveServer, getServer} from '@queries/app/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
-import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, MigrationEvents, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
+import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
 import type IServers from '@typings/database/models/app/servers';
 
@@ -362,12 +362,12 @@ class DatabaseManager {
                   dbName,
               });
           },
-          onStarted: () => {
+          onStart: () => {
               return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {
                   dbName,
               });
           },
-          onFailure: (error) => {
+          onError: (error: Error) => {
               return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                   dbName,
                   error,

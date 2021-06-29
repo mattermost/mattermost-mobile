@@ -16,12 +16,6 @@ import type System from '@typings/database/models/servers/system';
 
 import {DatabaseType} from './enums';
 
-export type MigrationEvents = {
-  onSuccess: () => void;
-  onStarted: () => void;
-  onFailure: (error: string) => void;
-};
-
 export type CreateServerDatabaseConfig = {
   dbName: string;
   dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER;
