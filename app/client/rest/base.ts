@@ -11,13 +11,11 @@ import {Analytics, create} from '@init/analytics';
 import * as ClientConstants from './constants';
 import ClientError from './error';
 
-import type {APIClient} from '@mattermost/react-native-network-client';
-
 export default class ClientBase {
     analytics: Analytics|undefined;
-    client: APIClient; // TODO: type APIClient
-    // clusterId = ''; // TODO: remove? not used.
-    csrf = '';
+    client: APIClient;
+    csrfToken = '';
+    requestHeaders: {[x: string]: string} = {};
     diagnosticId = '';
     enableLogging = false;
     logToConsole = false;
@@ -28,49 +26,33 @@ export default class ClientBase {
     };
     urlVersion = '/api/v4';
 
-    // TODO: type APIClient
-    constructor(client: any, serverUrl: string) {
+    constructor(client, serverUrl: string) {
         this.client = client;
         this.analytics = create(serverUrl);
     }
 
     // TODO: we're now only setting the csrfToken if we have it and only
     // for non GET requests so this can be refactored
-    getOptions(options: ClientOptions) {
-        const newOptions: ClientOptions = {...options};
+    getRequestHeaders(requestMethod: string) {
+        const headers = {...this.requestHeaders};
 
-        const headers: {[x: string]: string} = {
-        };
-
-        // TODO: Apply locale header
-
-        const csrfToken = this.csrf || '';
-        if (options.method && options.method.toLowerCase() !== 'get' && csrfToken) {
-            headers[ClientConstants.HEADER_X_CSRF_TOKEN] = csrfToken;
+        if (this.csrfToken && requestMethod.toLowerCase() !== 'get') {
+            headers[ClientConstants.HEADER_X_CSRF_TOKEN] = this.csrfToken;
         }
 
-        if (newOptions.headers) {
-            Object.assign(headers, newOptions.headers);
-        }
-
-        return {
-            ...newOptions,
-            headers,
-        };
+        return headers;
     }
 
     getWebSocketUrl = () => {
         return `${this.urlVersion}/websocket`;
     }
 
-    // TODO: Do we have locale prior to creating an APIClient?
-    // If so we can just pass it in its configuration
     setAcceptLanguage(locale: string) {
-        // this.defaultHeaders['Accept-Language'] = locale;
+        this.requestHeaders[ClientConstants.HEADER_ACCEPT_LANGUAGE] = locale;
     }
 
     setCSRF(csrfToken: string) {
-        this.csrf = csrfToken;
+        this.csrfToken = csrfToken;
     }
 
     setDiagnosticId(diagnosticId: string) {
@@ -229,7 +211,8 @@ export default class ClientBase {
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         let request;
-        switch (options.method?.toLocaleLowerCase()) {
+        const method = options.method?.toLowerCase();
+        switch (method) {
             case 'get':
                 request = this.client!.get;
                 break;
@@ -258,7 +241,11 @@ export default class ClientBase {
 
         let response;
         try {
-            const requestOptions: any = {headers: options.headers, body: options.body};
+            // TODO: type
+            const requestOptions: any = {
+                body: options.body,
+                headers: this.getRequestHeaders(method),
+            };
             response = await request!(url, requestOptions);
         } catch (error) {
             throw new ClientError(this.client.baseUrl, {

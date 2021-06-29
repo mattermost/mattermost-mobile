@@ -10,6 +10,7 @@ import {getOrCreateAPIClient} from '@mattermost/react-native-network-client';
 import ManagedApp from '@app/init/managed_app';
 import LocalConfig from '@assets/config';
 import {Client} from '@client/rest';
+import * as ClientConstants from '@client/rest/constants';
 
 import type {ServerCredential} from '@typings/credentials';
 
@@ -75,10 +76,10 @@ class NetworkManager {
         const userAgent = await DeviceInfo.getUserAgent();
         const headers: Record<string, any> = {
             ...this.DEFAULT_CONFIG.headers,
-            'User-Agent': userAgent,
+            [ClientConstants.HEADER_USER_AGENT]: userAgent,
         };
         if (token) {
-            headers['Authorization'] = `BEARER ${token}`;
+            headers[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${token}`;
         }
 
         let config = {
