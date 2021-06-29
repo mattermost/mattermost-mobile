@@ -65,10 +65,13 @@ class PushNotifications {
     }
 
     clearNotifications = () => {
-        this.setApplicationIconBadgeNumber(0, true);
-
         // TODO: Only cancel the local notifications that belong to this server
         this.cancelAllLocalNotifications();
+
+        if (Platform.OS === 'ios') {
+            // TODO: Set the badge number to the total amount of mentions on other servers
+            Notifications.ios.setBadgeCount(0);
+        }
     };
 
     clearChannelNotifications = async (channelId: string) => {
@@ -76,16 +79,19 @@ class PushNotifications {
             const notifications = await AndroidNotificationPreferences.getDeliveredNotifications();
             const notificationForChannel = notifications.find((n: NotificationWithChannel) => n.channel_id === channelId);
             if (notificationForChannel) {
-                AndroidNotificationPreferences.removeDeliveredNotifications(notificationForChannel.identifier, channelId);
+                AndroidNotificationPreferences.removeDeliveredNotifications(channelId);
             }
         } else {
             const ids: string[] = [];
             const notifications = await Notifications.ios.getDeliveredNotifications();
+
+            //set the badge count to the total amount of notifications present in the not-center
             let badgeCount = notifications.length;
 
             if (Store.redux) {
                 const totalMentions = getBadgeCount(Store.redux.getState());
                 if (totalMentions > -1) {
+                    // replaces the badge count based on the redux store.
                     badgeCount = totalMentions;
                 }
             }
@@ -101,7 +107,10 @@ class PushNotifications {
                 Notifications.ios.removeDeliveredNotifications(ids);
             }
 
-            this.setApplicationIconBadgeNumber(badgeCount);
+            if (Platform.OS === 'ios') {
+                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
+                Notifications.ios.setBadgeCount(badgeCount);
+            }
         }
     }
 
@@ -240,16 +249,6 @@ class PushNotifications {
         if (Platform.OS === 'ios') {
             const replyCategory = this.createReplyCategory();
             Notifications.setCategories([replyCategory]);
-        }
-    };
-
-    setApplicationIconBadgeNumber = async (value: number, force = false) => {
-        if (Platform.OS === 'ios') {
-            const count = value < 0 ? 0 : value;
-            const notifications = await Notifications.ios.getDeliveredNotifications();
-            if (count === 0 && (force || notifications.length === 0)) {
-                Notifications.ios.setBadgeCount(count);
-            }
         }
     };
 

@@ -43,7 +43,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       actionType="select"
       actionValue="30"
       label={
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Immediately"
           id="user.settings.notifications.email.immediately"
         />
@@ -95,7 +95,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       actionType="select"
       actionValue="0"
       label={
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Never"
           id="user.settings.notifications.email.never"
         />

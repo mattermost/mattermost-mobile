@@ -11,26 +11,16 @@ export default class Hashtag extends React.PureComponent {
     static propTypes = {
         hashtag: PropTypes.string.isRequired,
         linkStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-        onHashtagPress: PropTypes.func,
     };
 
     handlePress = async () => {
-        const {
-            onHashtagPress,
-            hashtag,
-        } = this.props;
-
-        if (onHashtagPress) {
-            onHashtagPress(hashtag);
-
-            return;
-        }
+        const {hashtag} = this.props;
 
         // Close thread view, permalink view, etc
         await dismissAllModals();
         await popToRoot();
 
-        showSearchModal('#' + this.props.hashtag);
+        showSearchModal('#' + hashtag);
     };
 
     render() {

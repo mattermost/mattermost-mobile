@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {shallow} from 'enzyme';
 
+import * as NavigationActions from '@actions/navigation';
+import {BotTag, GuestTag} from '@components/tag';
 import Preferences from '@mm-redux/constants/preferences';
-
-import * as NavigationActions from 'app/actions/navigation';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import UserProfile from './user_profile.js';
-import {BotTag, GuestTag} from 'app/components/tag';
 
-jest.mock('react-intl');
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');
     return {
@@ -24,6 +22,8 @@ describe('user_profile', () => {
         setChannelDisplayName: jest.fn(),
         makeDirectChannel: jest.fn(),
         loadBot: jest.fn(),
+        getRemoteClusterInfo: jest.fn(),
+        unsetCustomStatus: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -34,7 +34,7 @@ describe('user_profile', () => {
         teams: [],
         theme: Preferences.THEMES.default,
         enableTimezone: false,
-        militaryTime: false,
+        isMilitaryTime: false,
         isMyUser: false,
         componentId: 'component-id',
     };
@@ -49,11 +49,45 @@ describe('user_profile', () => {
         is_bot: false,
     };
 
+    const customStatus = {
+        emoji: 'calendar',
+        text: 'In a meeting',
+    };
+
+    const customStatusProps = {
+        ...baseProps,
+        customStatus,
+        config: {
+            EnableCustomUserStatuses: 'true',
+        },
+        user,
+    };
+
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={user}
+            />,
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status', () => {
+        const wrapper = shallowWithIntl(
+            <UserProfile
+                {...customStatusProps}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status and isMyUser true', () => {
+        const wrapper = shallowWithIntl(
+            <UserProfile
+                {...customStatusProps}
+                isMyUser={true}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
@@ -71,12 +105,11 @@ describe('user_profile', () => {
             is_bot: true,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={botUser}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.containsMatchingElement(
             <BotTag
@@ -97,12 +130,11 @@ describe('user_profile', () => {
             roles: 'system_guest',
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={guestUser}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.containsMatchingElement(
             <GuestTag
@@ -116,27 +148,43 @@ describe('user_profile', () => {
         jest.spyOn(global, 'requestAnimationFrame').mockImplementation((cb) => cb());
         const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={user}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.instance().goToEditProfile();
         expect(goToScreen).toHaveBeenCalledTimes(1);
     });
 
+    test('should match snapshot when user is from remote', () => {
+        const remoteUser = {
+            ...user,
+            remote_id: 'sr23g5h456',
+        };
+        const clusterInfo = {
+            display_name: 'Remote Organization',
+        };
+        const wrapper = shallowWithIntl(
+            <UserProfile
+                {...baseProps}
+                remoteClusterInfo={clusterInfo}
+                user={remoteUser}
+            />,
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should call goToEditProfile', () => {
         const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={user}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         const event = {buttonId: wrapper.instance().rightButton.id};
@@ -146,12 +194,11 @@ describe('user_profile', () => {
 
     test('should call close', () => {
         const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={user}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         const close = jest.spyOn(wrapper.instance(), 'close');

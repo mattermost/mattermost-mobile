@@ -18,6 +18,7 @@ import GroupTypes from './groups';
 import BotTypes from './bots';
 import PluginTypes from './plugins';
 import ChannelCategoryTypes from './channel_categories';
+import RemoteClusterTypes from './remote_cluster';
 import AppsTypes from './apps';
 
 export {
@@ -38,5 +39,6 @@ export {
     BotTypes,
     PluginTypes,
     ChannelCategoryTypes,
+    RemoteClusterTypes,
     AppsTypes,
 };

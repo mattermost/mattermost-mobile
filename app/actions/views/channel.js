@@ -247,7 +247,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler, i
         // Fallback to API response error, if any.
         if (teamError) {
             if (errorHandler) {
-                errorHandler();
+                errorHandler(intl);
             }
             return {error: teamError};
         }

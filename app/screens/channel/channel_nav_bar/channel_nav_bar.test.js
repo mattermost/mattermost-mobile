@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelNavBar from './channel_nav_bar';
 
-import {SafeAreaProvider} from 'react-native-safe-area-context';
 export function testSafeAreaProvider(children) {
     return (
         <SafeAreaProvider
@@ -22,7 +22,6 @@ export function testSafeAreaProvider(children) {
     );
 }
 
-jest.mock('react-intl');
 jest.mock('app/mattermost_managed', () => ({
     isRunningInSplitView: jest.fn().mockResolvedValue(false),
 }));
@@ -37,7 +36,7 @@ describe('ChannelNavBar', () => {
     };
 
     test('should match, full snapshot', () => {
-        const wrapper = shallow(testSafeAreaProvider(
+        const wrapper = shallowWithIntl(testSafeAreaProvider(
             <ChannelNavBar {...baseProps}/>,
         ));
 

@@ -29,17 +29,14 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
           }
         }
       >
-        <FileAttachmentIcon
+        <FileIcon
           backgroundColor="rgba(61,60,64,0.08)"
-          defaultImage={false}
-          failed={false}
           file={
             Object {
               "loading": false,
             }
           }
-          iconSize={48}
-          smallImage={false}
+          iconSize={60}
           theme={
             Object {
               "awayIndicator": "#ffbc42",

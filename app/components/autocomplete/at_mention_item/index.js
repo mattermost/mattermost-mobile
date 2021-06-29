@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {isShared} from '@mm-redux/utils/user_utils';
 import {isGuest} from '@utils/users';
 
 import AtMentionItem from './at_mention_item';
@@ -21,6 +22,7 @@ function mapStateToProps(state, ownProps) {
         showFullName: config.ShowFullName,
         isBot: Boolean(user.is_bot),
         isGuest: isGuest(user),
+        isShared: isShared(user),
         theme: getTheme(state),
         isCurrentUser: getCurrentUserId(state) === user.id,
     };

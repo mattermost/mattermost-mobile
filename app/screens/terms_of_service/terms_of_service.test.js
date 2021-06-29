@@ -2,16 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
-
-import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from '@actions/navigation';
+import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 import TestHelper from 'test/test_helper';
 
 import TermsOfService from './terms_of_service.js';
-
-jest.mock('react-intl');
 
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');
@@ -39,18 +36,16 @@ describe('TermsOfService', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for get terms', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         await actions.getTermsOfService();
         wrapper.update();
@@ -72,9 +67,8 @@ describe('TermsOfService', () => {
             },
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...props}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.state('loading')).toEqual(true);
         await getTermsOfService();
@@ -86,9 +80,8 @@ describe('TermsOfService', () => {
     test('should call setButtons on setNavigatorButtons', async () => {
         const setButtons = jest.spyOn(NavigationActions, 'setButtons');
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
 
@@ -100,9 +93,8 @@ describe('TermsOfService', () => {
     });
 
     test('should enable/disable navigator buttons on setNavigatorButtons true/false', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
 
@@ -113,9 +105,8 @@ describe('TermsOfService', () => {
     });
 
     test('should match snapshot on enableNavigatorLogout', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
@@ -124,9 +115,8 @@ describe('TermsOfService', () => {
     });
 
     test('should call dismissAllModals on closeTermsAndLogout', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
@@ -135,11 +125,10 @@ describe('TermsOfService', () => {
     });
 
     test('should NOT call showUnsupportedServer on acceptTerms if server is supported', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService
                 {...baseProps}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
@@ -150,12 +139,11 @@ describe('TermsOfService', () => {
     });
 
     test('should call showUnsupportedServer on acceptTerms if server not supported', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <TermsOfService
                 {...baseProps}
                 isSupportedServer={false}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});

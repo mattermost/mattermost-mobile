@@ -6,6 +6,9 @@ class Autocomplete {
         atMentionItemPrefix: 'autocomplete.at_mention.item.',
         channelMentionItemPrefix: 'autocomplete.channel_mention.item.',
         autocomplete: 'autocomplete',
+        atMentionItemName: 'at_mention_item.name',
+        atMentionItemProfilePicture: 'at_mention_item.profile_picture',
+        atMentionItemUsername: 'at_mention_item.username',
         atMentionSuggestionList: 'at_mention_suggestion.list',
         channelMentionSuggestionList: 'channel_mention_suggestion.list',
         dateSuggestion: 'autocomplete.date_suggestion',
@@ -21,7 +24,17 @@ class Autocomplete {
     slashSuggestionList = element(by.id(this.testID.slashSuggestionList));
 
     getAtMentionItem = (userId) => {
-        return element(by.id(`${this.testID.atMentionItemPrefix}${userId}`));
+        const atMentionItemMatcher = by.id(`${this.testID.atMentionItemPrefix}${userId}`);
+        const atMentionItemNameMatcher = by.id(this.testID.atMentionItemName).withAncestor(atMentionItemMatcher);
+        const atMentionItemProfilePictureMatcher = by.id(this.testID.atMentionItemProfilePicture).withAncestor(atMentionItemMatcher);
+        const atMentionItemUsernameMatcher = by.id(this.testID.atMentionItemUsername).withAncestor(atMentionItemMatcher);
+
+        return {
+            atMentionItem: element(atMentionItemMatcher),
+            atMentionItemName: element(atMentionItemNameMatcher),
+            atMentionItemProfilePicture: element(atMentionItemProfilePictureMatcher),
+            atMentionItemUsername: element(atMentionItemUsernameMatcher),
+        };
     }
 
     getChannelMentionItem = (channelId) => {
