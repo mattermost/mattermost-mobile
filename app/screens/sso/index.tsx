@@ -73,8 +73,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const onCSRFToken = (csrfToken: string) => {
         const client = NetworkManager.clients[serverUrl];
         client.setCSRF(csrfToken);
-    }
-
+    };
 
     // TOOD: So long as the APIClient is configured with `bearerAuthTokenResponseHeader`,
     // then the token will be automatically extracted and set in the headers via a request
