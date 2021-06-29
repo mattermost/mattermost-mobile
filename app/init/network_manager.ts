@@ -4,11 +4,18 @@
 import {Alert} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import Emm from '@mattermost/react-native-emm';
 import {getOrCreateAPIClient} from '@mattermost/react-native-network-client';
 
+import ManagedApp from '@app/init/managed_app';
+import LocalConfig from '@assets/config';
 import {Client} from '@client/rest';
 
 import type {ServerCredential} from '@typings/credentials';
+
+// TODO: Should these constants be part of react-native-network-library?
+const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
+const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 
 class NetworkManager {
     public clients: Record<string, Client> = {};
@@ -16,10 +23,11 @@ class NetworkManager {
     private DEFAULT_CONFIG = {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
+            ...LocalConfig.CustomRequestHeaders,
         },
         sessionConfiguration: {
             allowsCellularAccess: true,
-            waitsForConnectivity: true,
+            waitsForConnectivity: false,
             timeoutIntervalForRequest: 30000,
             timeoutIntervalForResource: 30000,
             httpMaximumConnectionsPerHost: 10,
@@ -47,7 +55,7 @@ class NetworkManager {
     }
 
     public invalidateClient = (serverUrl: string) => {
-        //this.clients[serverUrl]?.client.invalidate();
+        this.clients[serverUrl]?.client.invalidate();
         delete this.clients[serverUrl];
     }
 
@@ -57,13 +65,12 @@ class NetworkManager {
 
     public createClient = async (serverUrl: string, token?: string) => {
         const config = await this.buildConfig(token);
-        // TODO: pass in a clientErrorEventHandler
-        const {client} = await getOrCreateAPIClient(serverUrl, config);
+        const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
         this.clients[serverUrl] = new Client(client, serverUrl);
+
         return this.clients[serverUrl];
     }
 
-    // TODO: Add locale here?
     private buildConfig = async (token?: string) => {
         const userAgent = await DeviceInfo.getUserAgent();
         const headers: Record<string, any> = {
@@ -74,18 +81,33 @@ class NetworkManager {
             headers['Authorization'] = `BEARER ${token}`;
         }
 
-        return {
+        let config = {
             ...this.DEFAULT_CONFIG,
             headers,
         }
+
+        if (ManagedApp.enabled) {
+            const managedConfig = await Emm.getManagedConfig();
+            if (managedConfig?.useVPN === 'true') {
+                config.sessionConfiguration.waitsForConnectivity = true;
+            }
+
+            if (managedConfig?.timeoutVPN) {
+                config.sessionConfiguration.timeoutIntervalForResource = parseInt(managedConfig.timeoutVPN, 10);
+            }
+        }
+
+        return config;
     }
 
     // TODO: typescript, APIClientErrorEventHandler and APIClientErrorEvent
     private clientErrorEventHandler = (event) => {
-        Alert.alert(
-            "Error",
-            `Server: ${event.serverUrl}\nCode: ${event.errorCode}\nDesc: ${event.errorDescription}`
-        );
+        // TODO: handle other errors
+        if (CLIENT_CERTIFICATE_IMPORT_ERROR_CODES.includes(event.errorCode)) {
+            // Emit CLIENT_CERTIFICATE_IMPORT_ERROR event
+        } else if (CLIENT_CERTIFICATE_MISSING_ERROR_CODE === event.errorCode) {
+            // Emit CLIENT_CERTIFICATE_MISSING event
+        }
     };
 }
 
