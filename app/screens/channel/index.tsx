@@ -45,10 +45,10 @@ const Channel = ({launchType, channelId, channel, currentUserId, theme, database
 
     const onPress = () => {
         database.action(async () => {
-            // const userId = await database.collections.get(SYSTEM).query(Q.where('name', 'currentChanne')).fetch();
-            // userId[0].update((m) => {
-            //     m.value = 'Some config';
-            // });
+            const userId = await database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch();
+            userId[0].update((m) => {
+                m.value = 'p9g6rzz3kffhxqxhm1zckjpwd';
+            });
         });
     }
 
@@ -104,16 +104,23 @@ const enhanceChannel = withObservables(['currentChannelId'], ({currentChannelId,
     };
 });
 
-const enhanceChannelPreference = withObservables(['currentUserId'], ({currentUserId = 'p9g6rzz3kffhxqxhm1zckjpwda', database}: ChannelPreferenceObservableProps) => ({
-    theme: database.collections.get(PREFERENCE).query(Q.where('user_id', 'p9g6rzz3kffhxqxhm1zckjpwda'), Q.where('category', 'theme')).observe(),
-}));
+// const enhanceChannelPreference = withObservables(['currentUserId'], ({currentUserId = 'p9g6rzz3kffhxqxhm1zckjpwda', database}: ChannelPreferenceObservableProps) => ({
+//     theme: database.collections.get(PREFERENCE).query(Q.where('user_id', 'p9g6rzz3kffhxqxhm1zckjpwda'), Q.where('category', 'theme')).observe(),
+// }));
 
-const withCurrentUserId = withObservables([], ({database}) => ({
+// TODO: Move as helper methods
+
+export const withCurrentUserId = withObservables([], ({database}) => ({
     currentUserId: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
 }));
 
-const withCurrentChannelId = withObservables([], ({database}) => ({
+export const withCurrentChannelId = withObservables([], ({database}) => ({
     currentChannelId: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
 }));
 
-export default withDatabase(withCurrentUserId(withCurrentChannelId(enhanceChannel(Channel))));
+export const withCurrentUserIdAndChannelId = withObservables([], ({database}) => ({
+    currentChannelId: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
+    currentUserId: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
+}));
+
+export default withDatabase(withCurrentUserIdAndChannelId(enhanceChannel(Channel)));
