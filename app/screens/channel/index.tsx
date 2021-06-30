@@ -16,15 +16,15 @@ import ChannelNavBar from './channel_nav_bar';
 
 const {SERVER: {CHANNEL, PREFERENCE, SYSTEM}} = MM_TABLES;
 
-const Channel = ({launchType, channelId, channel, currentUserId, theme}: ChannelProps) => {
+const Channel = ({launchType, channelId, channel, currentUserId, theme, database}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     console.log('>>>>>>>>>>>>>>>>> launchType >>>>>>>> ', {
         launchType,
 
         // channelId,
         channel: channel.displayName,
-        currentUserId: (currentUserId[0] as SystemModel).name,
-        theme: JSON.parse(theme[0].value).centerChannelBg,
+        currentUserId: (currentUserId as SystemModel).value,
+        // theme: JSON.parse(theme[0].value).centerChannelBg,
 
         // theme,
     }); // eslint-disable-line no-console
@@ -43,11 +43,20 @@ const Channel = ({launchType, channelId, channel, currentUserId, theme}: Channel
     //todo: Read Messages  - Do we need KeyboardLayout component ?
     //todo: Read Messages  - Implement goToChannelInfo
 
+    const onPress = () => {
+        database.action(async () => {
+            // const userId = await database.collections.get(SYSTEM).query(Q.where('name', 'currentChanne')).fetch();
+            // userId[0].update((m) => {
+            //     m.value = 'Some config';
+            // });
+        });
+    }
+
     return (
         <>
             <SafeAreaView style={styles.flex}>
                 <View>
-                    <Text>In channel screen </Text>
+                    <Text onPress={onPress}>In channel screen </Text>
                 </View>
                 {/*<ChannelNavBar*/}
                 {/*    channel={channel}*/}
@@ -89,10 +98,9 @@ type ChannelProps = {
 //     currentUserId: database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).observe(),
 // }));
 
-const enhanceChannelAndUserId = withObservables(['channelId'], ({channelId = '7hob1ggoypydubgje3y9fc15sr', database}: ChannelAndUserIdObservableProps) => {
+const enhanceChannel = withObservables(['currentChannelId'], ({currentChannelId, database}: ChannelAndUserIdObservableProps) => {
     return {
-        channel: database.collections.get(CHANNEL).findAndObserve(channelId),
-        currentUserId: database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).observe(),
+        channel: database.collections.get(CHANNEL).findAndObserve(currentChannelId.value),
     };
 });
 
@@ -100,4 +108,12 @@ const enhanceChannelPreference = withObservables(['currentUserId'], ({currentUse
     theme: database.collections.get(PREFERENCE).query(Q.where('user_id', 'p9g6rzz3kffhxqxhm1zckjpwda'), Q.where('category', 'theme')).observe(),
 }));
 
-export default withDatabase(enhanceChannelPreference(enhanceChannelAndUserId(Channel)));
+const withCurrentUserId = withObservables([], ({database}) => ({
+    currentUserId: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
+}));
+
+const withCurrentChannelId = withObservables([], ({database}) => ({
+    currentChannelId: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
+}));
+
+export default withDatabase(withCurrentUserId(withCurrentChannelId(enhanceChannel(Channel))));
