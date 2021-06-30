@@ -38,6 +38,12 @@ describe('messageRetention', () => {
                         },
                         posts: {
                         },
+                        general: {
+                            config: {},
+                        },
+                        preferences: {
+                            myPreferences: {},
+                        },
                     },
                     views: {
                         team: {
@@ -86,7 +92,13 @@ describe('messageRetention', () => {
         };
         const entities = {
             channels: {},
+            general: {
+                config: {},
+            },
             posts: {},
+            preferences: {
+                myPreferences: {},
+            },
         };
         const views = {
             team: {
@@ -189,6 +201,7 @@ describe('cleanUpState', () => {
                     fileIdsByPostId: {},
                 },
                 general: {
+                    config: {},
                     dataRetentionPolicy: {
                         message_deletion_enabled: true,
                         message_retention_cutoff: 1000,
@@ -206,6 +219,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
                 search: {
                     results: ['post1', 'post2'],
@@ -239,6 +255,9 @@ describe('cleanUpState', () => {
                 files: {
                     fileIdsByPostId: {},
                 },
+                general: {
+                    config: {},
+                },
                 posts: {
                     pendingPostIds: ['pending'],
                     posts: {
@@ -253,6 +272,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
             views: {
@@ -280,6 +302,9 @@ describe('cleanUpState', () => {
                 files: {
                     fileIdsByPostId: {},
                 },
+                general: {
+                    config: {},
+                },
                 posts: {
                     pendingPostIds: ['pending'],
                     posts: {
@@ -294,6 +319,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
             views: {
@@ -321,6 +349,9 @@ describe('cleanUpState', () => {
                 files: {
                     fileIdsByPostId: {},
                 },
+                general: {
+                    config: {},
+                },
                 posts: {
                     pendingPostIds: ['pending'],
                     posts: {
@@ -334,6 +365,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
             views: {

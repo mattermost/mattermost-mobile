@@ -150,7 +150,7 @@ const state = {
             lastTeamId: '',
         },
         threads: {
-            viewingGlobalThreads: true,
+            viewingGlobalThreads: false,
             viewingGlobalThreadsUnreads: false,
         },
         thread: {

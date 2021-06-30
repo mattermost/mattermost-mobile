@@ -193,7 +193,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUserRoute(userId)}/posts/${postId}/set_unread`,
-            {method: 'post'},
+            {method: 'post', body: JSON.stringify({collapsed_threads_supported: true})},
         );
     }
 

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+
 export function getLastChannelForTeam(payload) {
     if (payload?.views?.team?.lastChannelForTeam) {
         const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};
@@ -75,6 +77,7 @@ export function cleanUpState(payload, keepCurrent = false) {
         flagged: flaggedPosts,
     };
 
+    const collapsedThreadsEnabled = isCollapsedThreadsEnabled(payload);
     if (payload.entities.posts?.posts) {
         const reactions = payload.entities.posts.reactions || {};
         const fileIdsByPostId = payload.entities.files?.fileIdsByPostId || {};
@@ -85,7 +88,9 @@ export function cleanUpState(payload, keepCurrent = false) {
             const post = payload.entities.posts.posts[postId];
 
             if (post) {
-                if (retentionPeriod && post.create_at < retentionPeriod) {
+                // Remove thread post if CRT is enabled
+                const crtCleanup = collapsedThreadsEnabled && post.root_id;
+                if ((retentionPeriod && post.create_at < retentionPeriod) || crtCleanup) {
                     // This post has been removed by data retention, so don't keep it
                     removeFromPostsInChannel(nextEntities.posts.postsInChannel, post.channel_id, postId);
 
