@@ -9,7 +9,7 @@ const {SERVER: {PREFERENCE}} = MM_TABLES;
 
 export const getThemeForUser = async (serverDatabase: Database, userId: string): Promise<Theme | undefined> => {
     try {
-        const themes = (await serverDatabase.collections.get(PREFERENCE).query(Q.where('user_id', userId), Q.where('name', 'theme')).fetch()) as Preference[];
+        const themes = (await serverDatabase.collections.get(PREFERENCE).query(Q.where('user_id', userId), Q.where('category', 'theme')).fetch()) as Preference[];
         const theme = JSON.parse(themes?.[0].value);
         return theme;
     } catch (e) {

@@ -351,6 +351,8 @@ export type RawChannel = {
   total_msg_count: number;
   type: ChannelType;
   update_at: number;
+  total_msg_count_root: number;
+  policy_id: string | null;
 };
 
 export type RawCustomEmoji = {
