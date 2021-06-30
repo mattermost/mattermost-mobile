@@ -126,7 +126,7 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
     return (
         <Text
             testID={testID}
-            style={{...styles.text, ...textStyles}}
+            style={[styles.text, textStyles]}
         >
             {withinBrackets && '('}
             {prefix}

@@ -317,7 +317,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const {intl, theme} = this.props;
         const screen = 'ClearAfter';
         const title = intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'});
-        const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration, intl};
+        const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration, intl, theme};
         const backButton = await CompassIcon.getImageSource('chevron-left', 24, theme.sidebarHeaderTextColor);
 
         const options = {
