@@ -149,6 +149,7 @@ export function purgeOfflineStore() {
         });
 
         EventEmitter.emit(NavigationTypes.RESTART_APP);
+        return {data: true};
     };
 }
 
