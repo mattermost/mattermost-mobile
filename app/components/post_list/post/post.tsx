@@ -115,7 +115,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     canDelete, collapsedThreadsEnabled, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
     location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink,
-    teammateNameDisplay, testID, theme,
+    teammateNameDisplay, testID, theme, thread, threadStarter,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const style = getStyleSheet(theme);
