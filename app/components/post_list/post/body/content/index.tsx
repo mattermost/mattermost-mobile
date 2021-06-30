@@ -65,22 +65,28 @@ const Content = ({isReplyPost, post, theme}: ContentProps) => {
             />
         );
     case contentType.message_attachment:
-        return (
-            <MessageAttachments
-                attachments={post.props.attachments}
-                metadata={post.metadata}
-                postId={post.id}
-                theme={theme}
-            />
-        );
+        if (post.props.attachments?.length) {
+            return (
+                <MessageAttachments
+                    attachments={post.props.attachments}
+                    metadata={post.metadata}
+                    postId={post.id}
+                    theme={theme}
+                />
+            );
+        }
+        break;
     case contentType.app_bindings:
-        return (
-            <EmbeddedBindings
-                embeds={post.props.app_bindings}
-                postId={post.id}
-                theme={theme}
-            />
-        );
+        if (post.props.app_bindings?.length) {
+            return (
+                <EmbeddedBindings
+                    embeds={post.props.app_bindings}
+                    postId={post.id}
+                    theme={theme}
+                />
+            );
+        }
+        break;
     }
 
     return null;

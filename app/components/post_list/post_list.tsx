@@ -3,9 +3,10 @@
 
 import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {DeviceEventEmitter, FlatList, Platform, StyleSheet, ViewToken} from 'react-native';
+import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
 
 import {DeepLinkTypes, NavigationTypes} from '@constants';
+import * as Screens from '@constants/screen';
 import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -145,7 +146,7 @@ const PostList = ({
         if (onViewableItemsChangedListener.current && !deepLinkURL) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [deepLinkURL]);
+    }, []);
 
     const renderItem = useCallback(({item, index}) => {
         if (isStartOfNewMessages(item)) {
@@ -246,6 +247,7 @@ const PostList = ({
 
         return () => {
             EventEmitter.off('scroll-to-bottom', scrollToBottom);
+            EventEmitter.off(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, closePermalink);
         };
     }, []);
 
@@ -281,6 +283,18 @@ const PostList = ({
         }
     }, [initialIndex, highlightPostId]);
 
+    let refreshControl;
+    if (location === Screens.PERMALINK) {
+        // Hack so that the scrolling the permalink does not dismisses the modal screens
+        refreshControl = (
+            <RefreshControl
+                refreshing={false}
+                enabled={Platform.OS === 'ios'}
+                colors={[theme.centerChannelColor]}
+                tintColor={theme.centerChannelColor}
+            />);
+    }
+
     return (
         <>
             <FlatList
@@ -309,6 +323,7 @@ const PostList = ({
                 windowSize={Posts.POST_CHUNK_SIZE / 2}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 onViewableItemsChanged={onViewableItemsChanged}
+                refreshControl={refreshControl}
                 testID={testID}
             />
             {showMoreMessagesButton &&

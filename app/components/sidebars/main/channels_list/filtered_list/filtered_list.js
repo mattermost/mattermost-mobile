@@ -120,7 +120,11 @@ class FilteredList extends Component {
             return channels;
         }
 
-        const text = term.toLowerCase();
+        let text = term.toLowerCase();
+        if (text.startsWith('@')) {
+            text = text.substring(1);
+        }
+
         return channels.filter((c) => {
             const fieldsToCheck = ['display_name', 'username', 'email', 'full_name', 'nickname'];
 

@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import fs from 'fs';
 import assert from 'assert';
@@ -548,21 +549,12 @@ describe('Actions.Posts', () => {
             );
         });
 
-        it('system emoji in post', () => {
-            assert.deepEqual(
-                Actions.getNeededCustomEmojis(state, [
-                    {message: ':mattermost:'},
-                ]),
-                new Set(),
-            );
-        });
-
         it('mixed emojis in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
                     {message: ':mattermost: :name1: :name2: :name3:'},
                 ]),
-                new Set(['name3']),
+                new Set(['mattermost', 'name3']),
             );
         });
 
@@ -634,7 +626,7 @@ describe('Actions.Posts', () => {
                 Actions.getNeededCustomEmojis(state, [
                     {message: '', props: {attachments: [{text: ':name4: :name1:', pretext: ':name3: :mattermost:', fields: [{value: ':name3:'}]}]}},
                 ]),
-                new Set(['name3', 'name4']),
+                new Set(['name3', 'mattermost', 'name4']),
             );
         });
 
