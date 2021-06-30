@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
 });
 
 type ChannelAndUserIdObservableProps = {
-    channelId: string;
+    currentChannelId: SystemModel;
     database: Database;
 }
 
