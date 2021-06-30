@@ -171,8 +171,8 @@ export function createPostForNotificationReply(post) {
 
         try {
             const data = await Client4.createPost({...newPost, create_at: 0});
-            const crtEnabled = isCollapsedThreadsEnabled(state);
-            dispatch(receivedNewPost(data, crtEnabled));
+            const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+            dispatch(receivedNewPost(data, collapsedThreadsEnabled));
 
             return {data};
         } catch (error) {
