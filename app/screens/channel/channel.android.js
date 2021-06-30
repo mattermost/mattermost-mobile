@@ -62,31 +62,32 @@ export default class ChannelAndroid extends ChannelBase {
 
     render() {
         const {theme, viewingGlobalThreads} = this.props;
-        let component = this.renderLoadingOrFailedChannel();
+        let component;
 
         if (viewingGlobalThreads) {
             component = (
                 <GlobalThreads/>
             );
-        }
-
-        if (!component) {
-            component = (
-                <KeyboardLayout>
-                    <View
-                        testID='channel.screen'
-                        style={style.flex}
-                    >
-                        <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
-                    </View>
-                    <PostDraft
-                        testID='channel.post_draft'
-                        ref={this.postDraft}
-                        screenId={this.props.componentId}
-                        registerTypingAnimation={this.registerTypingAnimation}
-                    />
-                </KeyboardLayout>
-            );
+        } else {
+            component = this.renderLoadingOrFailedChannel();
+            if (!component) {
+                component = (
+                    <KeyboardLayout>
+                        <View
+                            testID='channel.screen'
+                            style={style.flex}
+                        >
+                            <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
+                        </View>
+                        <PostDraft
+                            testID='channel.post_draft'
+                            ref={this.postDraft}
+                            screenId={this.props.componentId}
+                            registerTypingAnimation={this.registerTypingAnimation}
+                        />
+                    </KeyboardLayout>
+                );
+            }
         }
 
         const drawerContent = (

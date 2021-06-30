@@ -55,22 +55,26 @@ export default class ChannelIOS extends ChannelBase {
 
     render() {
         const {currentChannelId, theme, viewingGlobalThreads} = this.props;
-        let component = this.renderLoadingOrFailedChannel();
+
+        let component;
         let renderDraftArea = false;
+        const safeAreaEdges = ['left', 'right'];
 
         if (viewingGlobalThreads) {
             component = (
                 <GlobalThreads/>
             );
-        }
-
-        if (!component) {
-            renderDraftArea = true;
-            component = (
-                <>
-                    <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
-                </>
-            );
+        } else {
+            safeAreaEdges.push('bottom');
+            component = this.renderLoadingOrFailedChannel();
+            if (!component) {
+                renderDraftArea = true;
+                component = (
+                    <>
+                        <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
+                    </>
+                );
+            }
         }
 
         const style = getStyle(theme);
@@ -96,7 +100,7 @@ export default class ChannelIOS extends ChannelBase {
                 {header}
                 <SafeAreaView
                     mode='margin'
-                    edges={['left', 'right', 'bottom']}
+                    edges={safeAreaEdges}
                     style={style.flex}
                 >
                     {component}
