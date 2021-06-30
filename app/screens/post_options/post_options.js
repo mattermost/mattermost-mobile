@@ -51,6 +51,7 @@ export default class PostOptions extends PureComponent {
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
         isThread: PropTypes.bool,
+        location: PropTypes.string,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -359,11 +360,11 @@ export default class PostOptions extends PureComponent {
     };
 
     handleMarkUnread = () => {
-        const {actions, post, currentUserId} = this.props;
+        const {actions, currentUserId, location, post} = this.props;
 
         this.closeWithAnimation();
         requestAnimationFrame(() => {
-            actions.setUnreadPost(currentUserId, post.id);
+            actions.setUnreadPost(currentUserId, post.id, location);
         });
     }
 

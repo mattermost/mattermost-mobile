@@ -51,7 +51,7 @@ function ThreadFollow({active, intl, onPress, theme}: Props) {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            borderColor: theme.centerChannelColor,
+            borderColor: theme.sidebarHeaderTextColor,
             borderWidth: StyleSheet.hairlineWidth,
             borderRadius: 4,
             paddingVertical: 4.5,
@@ -59,12 +59,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 0.72,
         },
         containerActive: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.24),
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.24),
             borderColor: 'transparent',
             opacity: 1,
         },
         text: {
-            color: theme.centerChannelColor,
+            color: theme.sidebarHeaderTextColor,
             fontWeight: '600',
             fontSize: 12,
         },

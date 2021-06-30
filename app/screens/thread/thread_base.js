@@ -68,12 +68,12 @@ export default class ThreadBase extends PureComponent {
                     text: 'Thread',
                     fontSize: 18,
                     fontWeight: '600',
-                    color: theme.centerChannelColor,
+                    color: theme.sidebarHeaderTextColor,
                 },
                 subtitle: {
                     text: 'in UX Design',
                     fontSize: 13,
-                    color: theme.centerChannelColor,
+                    color: theme.sidebarHeaderTextColor,
                 },
                 rightButtons: [
                     {
