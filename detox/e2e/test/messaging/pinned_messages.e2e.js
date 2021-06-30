@@ -12,6 +12,7 @@ import {
     ChannelInfoScreen,
     ChannelScreen,
     EditPostScreen,
+    PermalinkScreen,
     PinnedMessagesScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -147,7 +148,7 @@ describe('Pinned Messages', () => {
         await ChannelInfoScreen.close();
     });
 
-    it('MM-T851_2 should be able to open reply thread for pinned message by tapping on search result item', async () => {
+    it('MM-T851_2 should be able to jump to recent messages from pinned post', async () => {
         // # Post a message
         const testMessage = Date.now().toString();
         await postMessage(testMessage);
@@ -157,21 +158,17 @@ describe('Pinned Messages', () => {
         await openPostOptionsFor(post.id, testMessage);
         await pinAction.tap();
 
-        // # Tap on search result item to open reply thread for pinned message
+        // # Jump to recent messages from pinned post
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
         const {searchResultPostItem} = await PinnedMessagesScreen.getSearchResultPostItem(post.id, testMessage);
         await searchResultPostItem.tap();
+        await PermalinkScreen.jumpToRecentMessages();
 
-        // * Verify message opens in a thread
-        await expect(element(by.text(`${townSquareChannel.display_name} Thread`))).toBeVisible();
-        const {postListPostItem: threadPostItem} = await ThreadScreen.getPostListPostItem(post.id, testMessage);
-        await expect(threadPostItem).toBeVisible();
-
-        // # Go back to channel
-        await ThreadScreen.back();
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
+        // * Verify user is on channel where message is posted
+        await expect(ChannelScreen.channelNavBarTitle).toHaveText(townSquareChannel.display_name);
+        const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(post.id, testMessage);
+        await expect(channelPostItem).toBeVisible();
     });
 
     it('MM-T851_3 should be able to open reply thread for pinned message by tapping on search result item reply arrow', async () => {

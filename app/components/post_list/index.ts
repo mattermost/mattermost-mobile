@@ -37,7 +37,7 @@ function mapStateToProps() {
         return {
             deepLinkURL: state.views.root.deepLinkURL,
             postIds: ids,
-            initialIndex,
+            initialIndex: Math.max(initialIndex, 0),
             serverURL: getCurrentUrl(state),
             siteURL: getConfig(state)?.SiteURL,
             theme: getTheme(state),

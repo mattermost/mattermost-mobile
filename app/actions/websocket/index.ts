@@ -152,6 +152,9 @@ export function doReconnect(now: number) {
                 }
 
                 actions.push({
+                    type: UserTypes.RECEIVED_ME,
+                    data: me.user,
+                }, {
                     type: PreferenceTypes.RECEIVED_ALL_PREFERENCES,
                     data: me.preferences,
                 }, {

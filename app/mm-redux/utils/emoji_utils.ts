@@ -1,27 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@client/rest';
-import {Emoji, SystemEmoji, CustomEmoji} from '@mm-redux/types/emojis';
-
-export function isSystemEmoji(emoji: Emoji): emoji is SystemEmoji {
-    return 'batch' in emoji;
-}
+import {Emoji, CustomEmoji} from '@mm-redux/types/emojis';
 
 export function isCustomEmoji(emoji: Emoji): emoji is CustomEmoji {
     return 'id' in emoji;
 }
 
-export function getEmojiImageUrl(emoji: Emoji): string {
-    if (isCustomEmoji(emoji)) {
-        return Client4.getEmojiRoute(emoji.id) + '/image';
-    }
-
-    const filename = emoji.filename || emoji.aliases[0];
-    return Client4.getSystemEmojiImageUrl(filename);
-}
-
-export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Set<string>, customEmojisByName: Map<string, CustomEmoji>, nonExistentEmoji: Set<string>): Set<string> {
+export function parseNeededCustomEmojisFromText(text: string, customEmojisByName: Map<string, CustomEmoji>, nonExistentEmoji: Set<string>): Set<string> {
     if (!text.includes(':')) {
         return new Set();
     }
@@ -31,11 +17,6 @@ export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Set<
     let match;
     while ((match = pattern.exec(text)) !== null) {
         if (!match) {
-            continue;
-        }
-
-        if (systemEmojis.has(match[1])) {
-            // It's a system emoji, go the next match
             continue;
         }
 

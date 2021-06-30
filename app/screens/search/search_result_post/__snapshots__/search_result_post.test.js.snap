@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SearchResultPost should match snapshot 1`] = `
-<Connect(Post)
+<Connect(InjectIntl(Post))
   highlightPinnedOrFlagged={false}
   isSearchResult={true}
   location="Search"

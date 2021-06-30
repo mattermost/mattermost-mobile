@@ -10,6 +10,7 @@ class Post {
         emoji: 'markdown_emoji',
         image: 'markdown_image',
         message: 'markdown_text',
+        postHeaderCommentedOn: 'post_header.commented_on',
         postHeaderDateTime: 'post_header.date_time',
         postHeaderDisplayName: 'post_header.display_name',
         postHeaderGuestTag: 'post_header.guest_tag',
@@ -54,6 +55,7 @@ class Post {
     }
 
     getPostHeader = (postItemMatcher) => {
+        const postItemHeaderCommentedOnMatcher = by.id(this.testID.postHeaderCommentedOn).withAncestor(postItemMatcher);
         const postItemHeaderDateTimeMatcher = by.id(this.testID.postHeaderDateTime).withAncestor(postItemMatcher);
         const postItemHeaderDisplayNameMatcher = by.id(this.testID.postHeaderDisplayName).withAncestor(postItemMatcher);
         const postItemHeaderGuestTagMatcher = by.id(this.testID.postHeaderGuestTag).withAncestor(postItemMatcher);
@@ -61,6 +63,7 @@ class Post {
         const postItemHeaderReplyCountMatcher = by.id(this.testID.postHeaderReplyCount).withAncestor(postItemMatcher);
 
         return {
+            postItemHeaderCommentedOn: element(postItemHeaderCommentedOnMatcher),
             postItemHeaderDateTime: element(postItemHeaderDateTimeMatcher),
             postItemHeaderDisplayName: element(postItemHeaderDisplayNameMatcher),
             postItemHeaderGuestTag: element(postItemHeaderGuestTagMatcher),
