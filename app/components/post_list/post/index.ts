@@ -3,6 +3,7 @@
 
 import {connect} from 'react-redux';
 
+import {showPermalink} from '@actions/views/permalink';
 import {THREAD} from '@constants/screen';
 import {removePost} from '@mm-redux/actions/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
@@ -25,10 +26,12 @@ import Post from './post';
 
 type OwnProps = {
     location: string;
+    highlight?: boolean;
     postId: string;
     post?: PostType;
     previousPostId?: string;
     nextPostId?: string;
+    testID: string;
     theme: Theme;
 }
 
@@ -113,6 +116,7 @@ function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
 
 const mapDispatchToProps = {
     removePost,
+    showPermalink,
 };
 
 export default connect(mapSateToProps, mapDispatchToProps)(Post);

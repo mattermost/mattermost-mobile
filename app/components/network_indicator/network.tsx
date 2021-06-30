@@ -111,10 +111,7 @@ const NetworkIndicator = ({
     };
 
     const handleConnectionChange = ({hasInternet}: ConnectionChangedEvent) => {
-        if (firstRun.current) {
-            firstRun.current = false;
-            handleWebSocket(true);
-        } else {
+        if (!firstRun.current) {
             if (!hasInternet) {
                 setConnected(false);
             }
@@ -151,6 +148,11 @@ const NetworkIndicator = ({
     };
 
     useEffect(() => {
+        handleWebSocket(true);
+        firstRun.current = false;
+    }, []);
+
+    useEffect(() => {
         const networkListener = networkConnectionListener(handleConnectionChange);
         return () => networkListener.removeEventListener();
     }, []);
@@ -168,7 +170,6 @@ const NetworkIndicator = ({
     useEffect(() => {
         const handleAppStateChange = stateChange(async (appState: AppStateStatus) => {
             const active = appState === 'active';
-
             handleWebSocket(active);
 
             if (active) {

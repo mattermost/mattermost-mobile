@@ -93,6 +93,7 @@ const Header = ({
                         <CustomStatusEmoji
                             userID={post.user_id}
                             style={style.customStatusEmoji}
+                            testID='post_header'
                         />
                     )}
                     {!isSystemPost &&

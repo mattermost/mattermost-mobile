@@ -11,6 +11,7 @@ import Permalink from './permalink.js';
 describe('Permalink', () => {
     const actions = {
         addUserToTeam: jest.fn(),
+        closePermalink: jest.fn(),
         getPostsAround: jest.fn(),
         getPostThread: jest.fn(),
         getChannel: jest.fn(),

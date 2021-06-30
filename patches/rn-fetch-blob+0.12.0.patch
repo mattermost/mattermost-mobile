@@ -7468,7 +7468,7 @@ index 671aa69..0522ffc 100644
  
  
  __strong RCTBridge * bridgeRef;
-@@ -250,6 +251,11 @@ - (NSDictionary *)constantsToExport
+@@ -250,6 +251,11 @@ RCT_EXPORT_METHOD(exists:(NSString *)path callback:(RCTResponseSenderBlock)callb
      [RNFetchBlobFS exists:path callback:callback];
  }
  
@@ -7480,7 +7480,7 @@ index 671aa69..0522ffc 100644
  #pragma mark - fs.writeFile
  RCT_EXPORT_METHOD(writeFile:(NSString *)path encoding:(NSString *)encoding data:(NSString *)data append:(BOOL)append resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
  {
-@@ -649,7 +655,16 @@ - (UIViewController *) documentInteractionControllerViewControllerForPreview: (U
+@@ -649,7 +655,16 @@ RCT_EXPORT_METHOD(emitExpiredEvent:(RCTResponseSenderBlock)callback)
      [RNFetchBlobNetwork emitExpiredTasks];
  }
  
@@ -7522,7 +7522,7 @@ diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m b/node_modules/rn
 index 1376d69..cd0832e 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m
-@@ -26,6 +26,8 @@
+@@ -26,6 +26,8 @@ NSString *const EVENT_SERVER_PUSH = @"RNFetchBlobServerPush";
  NSString *const EVENT_PROGRESS = @"RNFetchBlobProgress";
  NSString *const EVENT_PROGRESS_UPLOAD = @"RNFetchBlobProgress-upload";
  NSString *const EVENT_EXPIRE = @"RNFetchBlobExpire";
@@ -7547,7 +7547,7 @@ diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobFS.m b/node_modules/rn-fe
 index e597ee5..fa19a7b 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobFS.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobFS.m
-@@ -689,6 +689,33 @@ + (void) exists:(NSString *) path callback:(RCTResponseSenderBlock)callback
+@@ -689,6 +689,33 @@ NSMutableDictionary *fileStreams = nil;
      }];
  }
  
@@ -7585,7 +7585,7 @@ diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobReqBuilder.m b/node_modul
 index 16963bb..db278db 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobReqBuilder.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobReqBuilder.m
-@@ -205,10 +205,8 @@ void __block (^getFieldData)(id field) = ^(id field)
+@@ -205,10 +205,8 @@
              // field is a text field
              if([field valueForKey:@"filename"] == nil || content == nil) {
                  contentType = contentType == nil ? @"text/plain" : contentType;
@@ -7598,7 +7598,7 @@ index 16963bb..db278db 100644
              }
              // field contains a file
              else {
-@@ -229,7 +227,7 @@ void __block (^getFieldData)(id field) = ^(id field)
+@@ -229,7 +227,7 @@
                                  return;
                              }
                              NSString * filename = [field valueForKey:@"filename"];
@@ -7628,10 +7628,10 @@ index b550ac2..b603f44 100644
  - (void) sendRequest:(NSDictionary  * _Nullable )options
         contentLength:(long)contentLength
 diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m b/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
-index cdbe6b1..6ad5846 100644
+index cdbe6b1..6a0dd0a 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
-@@ -51,7 +51,6 @@ @implementation RNFetchBlobRequest
+@@ -51,7 +51,6 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
  @synthesize options;
  @synthesize error;
  
@@ -7639,7 +7639,7 @@ index cdbe6b1..6ad5846 100644
  - (NSString *)md5:(NSString *)input {
      const char* str = [input UTF8String];
      unsigned char result[CC_MD5_DIGEST_LENGTH];
-@@ -81,6 +80,10 @@ - (void) sendRequest:(__weak NSDictionary  * _Nullable )options
+@@ -81,6 +80,10 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
      self.receivedBytes = 0;
      self.options = options;
  
@@ -7650,7 +7650,7 @@ index cdbe6b1..6ad5846 100644
      backgroundTask = [[options valueForKey:@"IOSBackgroundTask"] boolValue];
      // when followRedirect not set in options, defaults to TRUE
      followRedirect = [options valueForKey:@"followRedirect"] == nil ? YES : [[options valueForKey:@"followRedirect"] boolValue];
-@@ -129,6 +132,14 @@ - (void) sendRequest:(__weak NSDictionary  * _Nullable )options
+@@ -129,6 +132,14 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
      }
  
      defaultConfigObject.HTTPMaximumConnectionsPerHost = 10;
@@ -7665,7 +7665,7 @@ index cdbe6b1..6ad5846 100644
      session = [NSURLSession sessionWithConfiguration:defaultConfigObject delegate:self delegateQueue:operationQueue];
  
      if (path || [self.options valueForKey:CONFIG_USE_TEMP]) {
-@@ -189,6 +200,13 @@ - (void) URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dat
+@@ -189,6 +200,13 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
      expectedBytes = [response expectedContentLength];
  
      NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse*)response;
@@ -7679,7 +7679,7 @@ index cdbe6b1..6ad5846 100644
      NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
      NSString * respType = @"";
      respStatus = statusCode;
-@@ -381,6 +399,14 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCom
+@@ -381,6 +399,14 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
      }
  
      if (error) {
@@ -7694,7 +7694,23 @@ index cdbe6b1..6ad5846 100644
          if (error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled) {
              errMsg = @"task cancelled";
          } else {
-@@ -453,6 +479,30 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didSen
+@@ -438,7 +464,7 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
+ 
+     NSNumber * now = [NSNumber numberWithFloat:((float)totalBytesWritten/(float)totalBytesExpectedToWrite)];
+ 
+-    if ([self.uploadProgressConfig shouldReport:now]) {
++//    if ([self.uploadProgressConfig shouldReport:now]) {
+         [self.bridge.eventDispatcher
+          sendDeviceEventWithName:EVENT_PROGRESS_UPLOAD
+          body:@{
+@@ -447,12 +473,36 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
+                 @"total": [NSString stringWithFormat:@"%ld", (long) totalBytesExpectedToWrite]
+                 }
+          ];
+-    }
++//    }
+ }
+ 
  
  - (void) URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable credantial))completionHandler
  {
@@ -7725,7 +7741,7 @@ index cdbe6b1..6ad5846 100644
      if ([[options valueForKey:CONFIG_TRUSTY] boolValue]) {
          completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
      } else {
-@@ -480,5 +530,4 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPe
+@@ -480,5 +530,4 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
      }
  }
  
