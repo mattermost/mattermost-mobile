@@ -585,55 +585,57 @@ export class AppCommandParser {
     }
 
     private async addDefaultAndReadOnlyValues(parsed: ParsedCommand) {
-        await Promise.all(parsed.form?.fields.map(async (f) => {
+        await Promise.all(parsed.form?.fields?.map(async (f) => {
             if (!f.value) {
                 return;
             }
 
-            if (f.readonly || !(f.name in parsed.values)) {
-                switch (f.type) {
-                case AppFieldTypes.TEXT:
-                    parsed.values[f.name] = f.value as string;
-                    break;
-                case AppFieldTypes.BOOL:
-                    parsed.values[f.name] = 'true';
-                    break;
-                case AppFieldTypes.USER: {
-                    const userID = (f.value as AppSelectOption).value;
-                    let user = selectUser(this.store.getState(), userID);
-                    if (!user) {
-                        const dispatchResult = await this.store.dispatch(getUser(userID));
-                        if ('error' in dispatchResult) {
-                            // Silently fail on default value
-                            break;
-                        }
-                        user = dispatchResult.data;
-                    }
-                    parsed.values[f.name] = user.username;
-                    break;
-                }
-                case AppFieldTypes.CHANNEL: {
-                    const channelID = (f.value as AppSelectOption).label;
-                    let channel = selectChannel(this.store.getState(), channelID);
-                    if (!channel) {
-                        const dispatchResult = await this.store.dispatch(getChannel(channelID));
-                        if ('error' in dispatchResult) {
-                            // Silently fail on default value
-                            break;
-                        }
-                        channel = dispatchResult.data;
-                    }
-                    parsed.values[f.name] = channel.name;
-                    break;
-                }
-                case AppFieldTypes.STATIC_SELECT:
-                case AppFieldTypes.DYNAMIC_SELECT:
-                    parsed.values[f.name] = (f.value as AppSelectOption).value;
-                    break;
-                case AppFieldTypes.MARKDOWN:
+            if (!f.readonly || f.name in parsed.values) {
+                return;
+            }
 
-                    // Do nothing
+            switch (f.type) {
+            case AppFieldTypes.TEXT:
+                parsed.values[f.name] = f.value as string;
+                break;
+            case AppFieldTypes.BOOL:
+                parsed.values[f.name] = 'true';
+                break;
+            case AppFieldTypes.USER: {
+                const userID = (f.value as AppSelectOption).value;
+                let user = selectUser(this.store.getState(), userID);
+                if (!user) {
+                    const dispatchResult = await this.store.dispatch(getUser(userID));
+                    if ('error' in dispatchResult) {
+                        // Silently fail on default value
+                        break;
+                    }
+                    user = dispatchResult.data;
                 }
+                parsed.values[f.name] = user.username;
+                break;
+            }
+            case AppFieldTypes.CHANNEL: {
+                const channelID = (f.value as AppSelectOption).label;
+                let channel = selectChannel(this.store.getState(), channelID);
+                if (!channel) {
+                    const dispatchResult = await this.store.dispatch(getChannel(channelID));
+                    if ('error' in dispatchResult) {
+                        // Silently fail on default value
+                        break;
+                    }
+                    channel = dispatchResult.data;
+                }
+                parsed.values[f.name] = channel.name;
+                break;
+            }
+            case AppFieldTypes.STATIC_SELECT:
+            case AppFieldTypes.DYNAMIC_SELECT:
+                parsed.values[f.name] = (f.value as AppSelectOption).value;
+                break;
+            case AppFieldTypes.MARKDOWN:
+
+                // Do nothing
             }
         }) || []);
     }

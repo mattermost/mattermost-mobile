@@ -231,7 +231,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     style={style.markdownFieldContainer}
                 >
                     <Markdown
-                        value={field.value}
+                        value={field.description}
                         mentionKeys={[]}
                         blockStyles={getMarkdownBlockStyles(theme)}
                         textStyles={getMarkdownTextStyles(theme)}
