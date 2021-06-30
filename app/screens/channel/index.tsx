@@ -22,8 +22,9 @@ const Channel = ({launchType, channelId, channel, currentUserId, theme}: Channel
         launchType,
 
         // channelId,
-        // channel,
-        currentUserId: (currentUserId as SystemModel).name,
+        channel: channel.displayName,
+        currentUserId: (currentUserId[0] as SystemModel).name,
+        theme: JSON.parse(theme[0].value).centerChannelBg,
 
         // theme,
     }); // eslint-disable-line no-console
@@ -91,7 +92,7 @@ type ChannelProps = {
 const enhanceChannelAndUserId = withObservables(['channelId'], ({channelId = '7hob1ggoypydubgje3y9fc15sr', database}: ChannelAndUserIdObservableProps) => {
     return {
         channel: database.collections.get(CHANNEL).findAndObserve(channelId),
-        currentUserId: database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')),
+        currentUserId: database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).observe(),
     };
 });
 
