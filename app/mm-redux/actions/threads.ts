@@ -103,7 +103,7 @@ export function handleThreadArrived(dispatch: DispatchFunc, getState: GetStateFu
         },
         {
             type: PostTypes.RECEIVED_POSTS,
-            data: {posts: [{...thread.post, participants: thread.participants}]},
+            data: {posts: [thread.post]},
         },
         {
             type: ThreadTypes.RECEIVED_THREAD,

@@ -70,8 +70,8 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, message, chan
             },
         };
 
-        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(getState());
-        dispatch(receivedNewPost(post, collapsedThreadsEnabled));
+        const crtEnabled = isCollapsedThreadsEnabled(getState());
+        dispatch(receivedNewPost(post, crtEnabled));
     };
 }
 
@@ -303,8 +303,8 @@ export function handleNewPostBatch(WebSocketMessage) {
     return async (dispatch, getState) => {
         const state = getState();
         const post = JSON.parse(WebSocketMessage.data.post);
-        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-        const actions = [receivedNewPost(post, collapsedThreadsEnabled)];
+        const crtEnabled = isCollapsedThreadsEnabled(state);
+        const actions = [receivedNewPost(post, crtEnabled)];
 
         // If we don't have the thread for this post, fetch it from the server
         // and include the actions in the batch

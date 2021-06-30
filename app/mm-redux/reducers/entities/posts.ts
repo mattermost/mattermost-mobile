@@ -301,7 +301,7 @@ export function postsInChannel(state: Dictionary<Array<PostOrderBlock>> = {}, ac
     case PostTypes.RECEIVED_NEW_POST: {
         const post = action.data as Post;
 
-        if (action.features?.collapsedThreadsEnabled && post.root_id) {
+        if (action.features?.crtEnabled && post.root_id) {
             return state;
         }
 

@@ -3,9 +3,9 @@
 import keyMirror from '@mm-redux/utils/key_mirror';
 
 export default keyMirror({
-    ALL_TEAM_THREADS_READ: null,
-    FOLLOW_CHANGED_THREAD: null,
-    READ_CHANGED_THREAD: null,
     RECEIVED_THREAD: null,
     RECEIVED_THREADS: null,
+    FOLLOW_CHANGED_THREAD: null,
+    READ_CHANGED_THREAD: null,
+    ALL_TEAM_THREADS_READ: null,
 });
