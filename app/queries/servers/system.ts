@@ -10,7 +10,7 @@ const {SERVER: {SYSTEM}} = MM_TABLES;
 
 export const getCurrentUserId = async (serverDatabase: Database) => {
     const currentUserId = await serverDatabase.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch() as System[];
-    return currentUserId?.[0].value ?? '';
+    return currentUserId?.[0];
 };
 
 export const getCommonSystemValues = async (database: Database) => {

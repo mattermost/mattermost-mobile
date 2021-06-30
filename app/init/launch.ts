@@ -5,10 +5,12 @@ import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {Screens} from '@constants';
+import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
-import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
+
+import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
@@ -22,6 +24,9 @@ export const initialLaunch = async () => {
         launchAppFromNotification(notification);
         return;
     }
+
+    //fixme:  is this right ?
+    await DatabaseManager.init(['https://rc.test.mattermost.com']);
 
     launchApp({launchType: LaunchType.Normal});
 };
@@ -51,7 +56,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             break;
         }
     }
-
     serverUrl = await getActiveServerUrl();
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);

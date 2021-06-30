@@ -9,12 +9,15 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelTitle from './channel_title';
 
+import ChannelModel from '@typings/database/models/servers/channel';
+
 type ChannelNavBar = {
     onPress: () => void,
-    theme: Theme
+    theme: Theme,
+    channel: ChannelModel
 }
 
-const ChannelNavBar = ({onPress, theme}: ChannelNavBar) => {
+const ChannelNavBar = ({channel, onPress, theme}: ChannelNavBar) => {
     const insets = useSafeAreaInsets();
     const style = getStyleFromTheme(theme);
     const height = 0;
@@ -100,6 +103,7 @@ const ChannelNavBar = ({onPress, theme}: ChannelNavBar) => {
             style={[style.header, {height: height + insets.top, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}]}
         >
             <ChannelTitle
+                channel={channel}
                 onPress={onPress}
                 canHaveSubtitle={canHaveSubtitle}
             />
