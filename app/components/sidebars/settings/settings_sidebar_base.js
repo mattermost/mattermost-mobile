@@ -280,6 +280,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     textStyles={style.customStatusExpiryText}
                     withinBrackets={true}
                     showPrefix={true}
+                    testID={'custom_status.expiry'}
                 />
             </Text>
         ) : null;

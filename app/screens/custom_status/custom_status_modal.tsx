@@ -377,10 +377,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         const clearAfter = (
             <TouchableOpacity
-                testID={`custom_status.duration.${duration}`}
+                testID={'custom_status.clear_after.action'}
                 onPress={this.openClearAfterModal}
             >
-                <View style={style.inputContainer}>
+                <View
+                    testID={`custom_status.duration.${duration}`}
+                    style={style.inputContainer}
+                >
                     <Text style={style.expiryTimeLabel}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
                     {renderClearAfterTime}
                     <CompassIcon

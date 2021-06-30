@@ -100,7 +100,7 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
     return (
         <View>
             <TouchableOpacity
-                testID={`clear_after.menu.${duration}`}
+                testID={`clear_after.menu_item.${duration}`}
                 onPress={handleClick}
             >
                 <View style={style.container}>
