@@ -77,7 +77,7 @@ export function cleanUpState(payload, keepCurrent = false) {
         flagged: flaggedPosts,
     };
 
-    const crtEnabled = isCollapsedThreadsEnabled(payload);
+    const collapsedThreadsEnabled = isCollapsedThreadsEnabled(payload);
     if (payload.entities.posts?.posts) {
         const reactions = payload.entities.posts.reactions || {};
         const fileIdsByPostId = payload.entities.files?.fileIdsByPostId || {};
@@ -89,7 +89,7 @@ export function cleanUpState(payload, keepCurrent = false) {
 
             if (post) {
                 // Remove thread post if CRT is enabled
-                const crtCleanup = crtEnabled && post.root_id;
+                const crtCleanup = collapsedThreadsEnabled && post.root_id;
                 if ((retentionPeriod && post.create_at < retentionPeriod) || crtCleanup) {
                     // This post has been removed by data retention, so don't keep it
                     removeFromPostsInChannel(nextEntities.posts.postsInChannel, post.channel_id, postId);

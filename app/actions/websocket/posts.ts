@@ -74,8 +74,8 @@ export function handleNewPostEvent(msg: WebSocketMessage) {
                 }
             }
 
-            const crtEnabled = isCollapsedThreadsEnabled(state);
-            actions.push(receivedNewPost(post, crtEnabled));
+            const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+            actions.push(receivedNewPost(post, collapsedThreadsEnabled));
 
             // If we don't have the thread for this post, fetch it from the server
             // and include the actions in the batch
