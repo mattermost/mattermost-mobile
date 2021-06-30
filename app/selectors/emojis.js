@@ -3,69 +3,38 @@
 
 import {createSelector} from 'reselect';
 
-import {t} from '@utils/i18n';
 import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
-import {BuiltInEmojis, CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from '@utils/emojis';
+import {CategoryNames, CategoryTranslations, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory, CategoryMessage} from '@utils/emojis';
 
-const categoryToI18n = {
-    activity: {
-        id: t('mobile.emoji_picker.activity'),
-        defaultMessage: 'ACTIVITY',
-        icon: 'basketball',
-    },
-    custom: {
-        id: t('mobile.emoji_picker.custom'),
-        defaultMessage: 'CUSTOM',
-        icon: 'emoticon-custom-outline',
-    },
-    flags: {
-        id: t('mobile.emoji_picker.flags'),
-        defaultMessage: 'FLAGS',
-        icon: 'flag-outline',
-    },
-    foods: {
-        id: t('mobile.emoji_picker.foods'),
-        defaultMessage: 'FOODS',
-        icon: 'food-apple',
-    },
-    nature: {
-        id: t('mobile.emoji_picker.nature'),
-        defaultMessage: 'NATURE',
-        icon: 'leaf-outline',
-    },
-    objects: {
-        id: t('mobile.emoji_picker.objects'),
-        defaultMessage: 'OBJECTS',
-        icon: 'lightbulb-outline',
-    },
-    people: {
-        id: t('mobile.emoji_picker.people'),
-        defaultMessage: 'PEOPLE',
-        icon: 'emoticon-happy-outline',
-    },
-    places: {
-        id: t('mobile.emoji_picker.places'),
-        defaultMessage: 'PLACES',
-        icon: 'airplane-variant',
-    },
-    recent: {
-        id: t('mobile.emoji_picker.recent'),
-        defaultMessage: 'RECENTLY USED',
-        icon: 'clock-outline',
-    },
-    symbols: {
-        id: t('mobile.emoji_picker.symbols'),
-        defaultMessage: 'SYMBOLS',
-        icon: 'heart-outline',
-    },
+const icons = {
+    recent: 'clock-outline',
+    'smileys-emotion': 'emoticon-happy-outline',
+    'people-body': 'eye-outline',
+    'animals-nature': 'leaf-outline',
+    'food-drink': 'food-apple',
+    'travel-places': 'airplane-variant',
+    activities: 'basketball',
+    objects: 'lightbulb-outline',
+    symbols: 'heart-outline',
+    flags: 'flag-outline',
+    custom: 'emoticon-custom-outline',
 };
+
+const categoryToI18n = {};
+CategoryNames.forEach((name) => {
+    categoryToI18n[name] = {
+        id: CategoryTranslations.get(name),
+        defaultMessage: CategoryMessage.get(name),
+        icon: icons[name],
+    };
+});
 
 function fillEmoji(indice) {
     const emoji = Emojis[indice];
     return {
-        name: emoji.aliases[0],
-        aliases: emoji.aliases,
+        name: 'short_name' in emoji ? emoji.short_name : emoji.name,
+        aliases: 'short_names' in emoji ? emoji.short_names : [],
     };
 }
 
@@ -87,46 +56,32 @@ export const selectEmojisBySection = createSelector(
     selectCustomEmojisByName,
     (state) => state.views.recentEmojis,
     (customEmojis, recentEmojis) => {
-        const emoticons = CategoryNames.filter((name) => name !== 'custom' && name !== 'skintone').map((category) => {
-            const items = EmojiIndicesByCategory.get(category).map(fillEmoji);
-
-            const section = {
-                ...categoryToI18n[category],
-                key: category,
-                data: items,
-            };
-
-            return section;
-        });
-
         const customEmojiItems = [];
-        BuiltInEmojis.forEach((emoji) => {
-            customEmojiItems.push({
-                name: emoji,
-            });
-        });
-
         for (const [key] of customEmojis) {
             customEmojiItems.push({
                 name: key,
             });
         }
+        const recentItems = recentEmojis.map((emoji) => ({name: emoji}));
+        const filteredCategories = CategoryNames.filter((category) => category !== 'recent' || recentItems.length > 0);
 
-        emoticons.push({
-            ...categoryToI18n.custom,
-            key: 'custom',
-            data: customEmojiItems,
+        const emoticons = filteredCategories.map((category) => {
+            // TODO: change default into user selected category once the user is able to choose it
+            const items = EmojiIndicesByCategory.get('default').get(category).map(fillEmoji);
+            const data = items;
+            if (category === 'custom') {
+                data.push(...customEmojiItems);
+            } else if (category === 'recent') {
+                data.push(...recentItems);
+            }
+            const section = {
+                ...categoryToI18n[category],
+                key: category,
+                data,
+            };
+
+            return section;
         });
-
-        if (recentEmojis.length) {
-            const items = recentEmojis.map((emoji) => ({name: emoji}));
-
-            emoticons.unshift({
-                ...categoryToI18n.recent,
-                key: 'recent',
-                data: items,
-            });
-        }
 
         return emoticons;
     },
