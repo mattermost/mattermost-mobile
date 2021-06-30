@@ -125,7 +125,8 @@ export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
 export function selectInitialChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
-        if (isCollapsedThreadsEnabled(state) && !getViewingGlobalThreads(state)) {
+        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+        if (!collapsedThreadsEnabled || (collapsedThreadsEnabled && !getViewingGlobalThreads(state))) {
             const channelId = lastChannelIdForTeam(state, teamId);
             dispatch(handleSelectChannel(channelId));
         }
