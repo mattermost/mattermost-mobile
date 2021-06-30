@@ -3,10 +3,13 @@
 exports[`components/custom_status/custom_status_expiry should match snapshot 1`] = `
 <Text
   style={
-    Object {
-      "color": "#3d3c40",
-      "fontSize": 15,
-    }
+    Array [
+      Object {
+        "color": "#3d3c40",
+        "fontSize": 15,
+      },
+      undefined,
+    ]
   }
 >
   <Text>
