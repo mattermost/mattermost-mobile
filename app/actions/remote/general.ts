@@ -3,7 +3,7 @@
 
 import NetworkManager from '@app/init/network_manager';
 
-import type {ClientResponse} from "@mattermost/react-native-network-client";
+import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 export const doPing = async (serverUrl: string) => {
     const client = await NetworkManager.createClient(serverUrl);
@@ -25,7 +25,7 @@ export const doPing = async (serverUrl: string) => {
         if (response.code === 401) {
             // Don't invalidate the client since we want to eventually
             // import a certificate with client.importClientP12()
-            return {error: {intl: certificateError}}
+            return {error: {intl: certificateError}};
         }
 
         if (!response.ok) {
@@ -37,7 +37,7 @@ export const doPing = async (serverUrl: string) => {
         return {error};
     }
 
-    return response;
+    return {error: undefined};
 };
 
 export const fetchConfigAndLicense = async (serverUrl: string) => {

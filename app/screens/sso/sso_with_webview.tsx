@@ -61,8 +61,6 @@ interface SSOWithWebViewProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    onBearerToken: (token: string) => void;
-    onCSRFToken: (token: string) => void;
     serverUrl: string;
     ssoType: string;
     theme: Partial<Theme>

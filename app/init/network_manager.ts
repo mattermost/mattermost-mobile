@@ -4,16 +4,19 @@
 import DeviceInfo from 'react-native-device-info';
 
 import Emm from '@mattermost/react-native-emm';
-import {getOrCreateAPIClient} from '@mattermost/react-native-network-client';
+import {
+    APIClientErrorEvent,
+    APIClientErrorEventHandler,
+    getOrCreateAPIClient,
+    RetryTypes,
+} from '@mattermost/react-native-network-client';
 
 import ManagedApp from '@app/init/managed_app';
-import LocalConfig from '@assets/config';
+import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
 
 import type {ServerCredential} from '@typings/credentials';
-
-import {APIClientErrorEvent, APIClientErrorEventHandler, RetryTypes} from '@mattermost/react-native-network-client';
 
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
@@ -49,8 +52,8 @@ class NetworkManager {
         for await (const {serverUrl, token} of serverCredentials) {
             try {
                 this.createClient(serverUrl, token);
-            } catch(error) {
-                console.log(error);
+            } catch (error) {
+                console.log(error); //eslint-disable-line no-console
             }
         }
     }
@@ -87,10 +90,10 @@ class NetworkManager {
             headers[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${token}`;
         }
 
-        let config = {
+        const config = {
             ...this.DEFAULT_CONFIG,
             headers,
-        }
+        };
 
         if (ManagedApp.enabled) {
             const managedConfig = await Emm.getManagedConfig();

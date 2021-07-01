@@ -4,7 +4,6 @@
 import moment from 'moment-timezone';
 import {IntlShape} from 'react-intl';
 
-import NetworkManager from '@app/init/network_manager';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import {getCommonSystemValues} from '@app/queries/servers/system';
@@ -27,9 +26,7 @@ export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlS
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     const {currentUserId, config}: {currentUserId: string, config: Partial<Config>} = await getCommonSystemValues(database);
 
-    // TODO: get serverVersion from database
-    const serverVersion = NetworkManager.clients[serverUrl].serverVersion;
-    if (isMinimumServerVersion(serverVersion, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
+    if (isMinimumServerVersion(config.Version!, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
         PushNotifications.cancelAllLocalNotifications();
         return null;
     }

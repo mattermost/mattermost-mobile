@@ -19,6 +19,8 @@ import ClientTeams, {ClientTeamsMix} from './teams';
 import ClientTos, {ClientTosMix} from './tos';
 import ClientUsers, {ClientUsersMix} from './users';
 
+import type {APIClientInterface} from '@mattermost/react-native-network-client';
+
 interface Client extends ClientBase,
     ClientAppsMix,
     ClientBotsMix,
@@ -50,9 +52,9 @@ class Client extends mix(ClientBase).with(
     ClientTos,
     ClientUsers,
 ) {
-    // TODO: types
-    constructor(client, serverUrl) {
-        super(client, serverUrl)
+    // eslint-disable-next-line no-useless-constructor
+    constructor(client: APIClientInterface, serverUrl: string) {
+        super(client, serverUrl);
     }
 }
 
