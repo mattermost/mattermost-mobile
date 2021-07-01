@@ -16,7 +16,7 @@ import type {
     ClientHeaders,
     ClientResponse,
     RequestOptions,
-} from "@mattermost/react-native-network-client";
+} from '@mattermost/react-native-network-client';
 
 export default class ClientBase {
     analytics: Analytics|undefined;
@@ -36,7 +36,7 @@ export default class ClientBase {
     constructor(client: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
         this.client = client;
         this.analytics = create(serverUrl);
-        
+
         if (bearerToken) {
             this.setBearerToken(bearerToken);
         }
