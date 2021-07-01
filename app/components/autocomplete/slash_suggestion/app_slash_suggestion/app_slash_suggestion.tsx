@@ -190,7 +190,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 <ChannelMentionItem
                     channelId={item.item || ''}
                     onPress={this.completeChannelMention(item.Complete)}
-                    testID={`autocomplete.channel_mention.item.${item.item}`}
                 />
             );
         default:
