@@ -1,9 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@app/init/network_manager';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import {getServerCredentials} from '@init/credentials';
+import NetworkManager from '@init/network_manager';
 
 import type {ClientResponse} from '@mattermost/react-native-network-client';
+
+import type {RawSystem} from '@typings/database/database';
 
 export const doPing = async (serverUrl: string) => {
     const client = await NetworkManager.createClient(serverUrl);
@@ -25,6 +30,7 @@ export const doPing = async (serverUrl: string) => {
         if (response.code === 401) {
             // Don't invalidate the client since we want to eventually
             // import a certificate with client.importClientP12()
+            // if for some reason cert is not imported do invalidate the client then.
             return {error: {intl: certificateError}};
         }
 
@@ -49,10 +55,31 @@ export const fetchConfigAndLicense = async (serverUrl: string) => {
     }
 
     try {
-        const [config, license] = await Promise.all<any, any>([
+        const [config, license] = await Promise.all<ClientConfig, ClientLicense>([
             client.getClientConfigOld(),
             client.getClientLicenseOld(),
         ]);
+
+        // If we have credentials for this server then update the values in the database
+        const credentials = await getServerCredentials(serverUrl);
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        if (credentials && operator) {
+            const systems: RawSystem[] = [{
+                id: SYSTEM_IDENTIFIERS.CONFIG,
+                name: SYSTEM_IDENTIFIERS.CONFIG,
+                value: JSON.stringify(config),
+            }, {
+                id: SYSTEM_IDENTIFIERS.LICENSE,
+                name: SYSTEM_IDENTIFIERS.LICENSE,
+                value: JSON.stringify(license),
+            }];
+
+            operator.handleSystem({systems, prepareRecordsOnly: false}).
+                catch((error) => {
+                    // eslint-disable-next-line no-console
+                    console.log('An error ocurred while saving config & license', error);
+                });
+        }
 
         return {config, license};
     } catch (error) {

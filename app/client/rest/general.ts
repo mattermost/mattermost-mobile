@@ -10,7 +10,7 @@ export interface ClientGeneralMix {
     ping: () => Promise<any>;
     logClientError: (message: string, level?: string) => Promise<any>;
     getClientConfigOld: () => Promise<ClientConfig>;
-    getClientLicenseOld: () => Promise<any>;
+    getClientLicenseOld: () => Promise<ClientLicense>;
     getTimezones: () => Promise<string[]>;
     getDataRetentionPolicy: () => Promise<any>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;

@@ -34,7 +34,7 @@ export interface ClientUsersMix {
     getProfilePictureUrl: (userId: string, lastPictureUpdate: number) => string;
     getDefaultProfilePictureUrl: (userId: string) => string;
     autocompleteUsers: (name: string, teamId: string, channelId: string, options?: Record<string, any>) => Promise<{users: UserProfile[], out_of_channel?: UserProfile[]}>;
-    getSessions: (userId: string) => Promise<any>;
+    getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     attachDevice: (deviceId: string) => Promise<any>;
     searchUsers: (term: string, options: any) => Promise<UserProfile[]>;
@@ -149,6 +149,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
                 body,
                 headers: {'Cache-Control': 'no-store'},
             },
+            false,
         );
 
         return data;

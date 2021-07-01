@@ -47,7 +47,17 @@ export const MIGRATION_EVENTS = keyMirror({
     MIGRATION_SUCCESS: null,
 });
 
+export const SYSTEM_IDENTIFIERS = {
+    CONFIG: 'config',
+    CURRENT_CHANNEL_ID: 'currentChannelId',
+    CURRENT_TEAM_ID: 'currentTeamId',
+    CURRENT_USER_ID: 'currentUserId',
+    DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
+    LICENSE: 'license',
+};
+
 export default {
     MM_TABLES,
     MIGRATION_EVENTS,
+    SYSTEM_IDENTIFIERS,
 };
