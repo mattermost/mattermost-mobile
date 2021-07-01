@@ -14,7 +14,8 @@ import * as ClientConstants from '@client/rest/constants';
 
 import type {ServerCredential} from '@typings/credentials';
 
-// TODO: Should these constants be part of react-native-network-library?
+import {APIClientErrorEvent, APIClientErrorEventHandler, RetryTypes} from '@mattermost/react-native-network-client';
+
 const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 
@@ -35,7 +36,7 @@ class NetworkManager {
             cancelRequestsOnUnauthorized: true,
         },
         retryPolicyConfiguration: {
-            type: 'exponential', // TODO: how do I used RetryTypes.EXPONENTIAL ?
+            type: RetryTypes.EXPONENTIAL_RETRY,
             retryLimit: 2,
             exponentialBackoffBase: 2,
             exponentialBackoffScale: 0.5,
@@ -106,9 +107,7 @@ class NetworkManager {
         return config;
     }
 
-    // TODO: typescript, APIClientErrorEventHandler and APIClientErrorEvent
-    private clientErrorEventHandler = (event) => {
-        // TODO: handle other errors
+    private clientErrorEventHandler: APIClientErrorEventHandler = (event: APIClientErrorEvent) => {
         if (CLIENT_CERTIFICATE_IMPORT_ERROR_CODES.includes(event.errorCode)) {
             // Emit CLIENT_CERTIFICATE_IMPORT_ERROR event
         } else if (CLIENT_CERTIFICATE_MISSING_ERROR_CODE === event.errorCode) {

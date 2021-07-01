@@ -55,8 +55,8 @@ export const getActiveServerUrl = async () => {
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, userId: string, token: string) => {
-    if (!(serverUrl && userId && token)) {
+export const setServerCredentials = (serverUrl: string, token: string) => {
+    if (!(serverUrl && token)) {
         return;
     }
 
@@ -71,7 +71,7 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
-        KeyChain.setInternetCredentials(serverUrl, userId, token, options);
+        KeyChain.setInternetCredentials(serverUrl, token, '', options);
     } catch (e) {
         console.warn('could not set credentials', e); //eslint-disable-line no-console
     }

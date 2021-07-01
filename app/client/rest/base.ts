@@ -4,6 +4,7 @@
 import {ClientOptions} from '@typings/api/client4';
 
 import {Analytics, create} from '@init/analytics';
+import {setServerCredentials} from '@init/credentials';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -55,6 +56,7 @@ export default class ClientBase {
 
     setBearerToken(bearerToken: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
+        setServerCredentials(this.client.baseUrl, bearerToken);
     }
 
     setCSRFToken(csrfToken: string) {
@@ -143,48 +145,12 @@ export default class ClientBase {
         return `${this.getUserRoute(userId)}/preferences`;
     }
 
-    getIncomingHooksRoute() {
-        return `${this.urlVersion}/hooks/incoming`;
-    }
-
-    getIncomingHookRoute(hookId: string) {
-        return `${this.urlVersion}/hooks/incoming/${hookId}`;
-    }
-
-    getOutgoingHooksRoute() {
-        return `${this.urlVersion}/hooks/outgoing`;
-    }
-
-    getOutgoingHookRoute(hookId: string) {
-        return `${this.urlVersion}/hooks/outgoing/${hookId}`;
-    }
-
-    getOAuthRoute() {
-        return '/oauth';
-    }
-
-    getOAuthAppsRoute() {
-        return `${this.urlVersion}/oauth/apps`;
-    }
-
-    getOAuthAppRoute(appId: string) {
-        return `${this.getOAuthAppsRoute()}/${appId}`;
-    }
-
     getEmojisRoute() {
         return `${this.urlVersion}/emoji`;
     }
 
     getEmojiRoute(emojiId: string) {
         return `${this.getEmojisRoute()}/${emojiId}`;
-    }
-
-    getBrandRoute() {
-        return `${this.urlVersion}/brand`;
-    }
-
-    getBrandImageUrl(timestamp: string) {
-        return `${this.getBrandRoute()}/image?t=${timestamp}`;
     }
 
     getDataRetentionRoute() {

@@ -277,10 +277,6 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
         return null;
     }
 
-    // No longer needed as it is set by the network client lib
-    // const token = client.getToken();
-    // setServerCredentials(serverUrl, user.id, token);
-
     // Set timezone
     if (isTimezoneEnabled(config)) {
         const timezone = getDeviceTimezone();
