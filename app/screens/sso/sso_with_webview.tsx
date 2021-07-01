@@ -58,16 +58,17 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
-    doLogin: () => void;
+    doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
+    onBearerToken: (token: string) => void;
     onCSRFToken: (token: string) => void;
     serverUrl: string;
     ssoType: string;
     theme: Partial<Theme>
 }
 
-const SSOWithWebView = ({completeUrlPath, doLogin, loginError, loginUrl, onCSRFToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
+const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
     const [error, setError] = React.useState(null);
@@ -94,20 +95,15 @@ const SSOWithWebView = ({completeUrlPath, doLogin, loginError, loginUrl, onCSRFT
 
             // Rebuild the server url without query string and/or hash
             const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
-            // TODO: Is the below needed?
-            // Client4.setUrl(url);
 
             CookieManager.get(url, true).then((res: Cookies) => {
                 const mmtoken = res.MMAUTHTOKEN;
                 const csrf = res.MMCSRF;
-                const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+                const bearerToken = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
                 const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
 
-                if (csrfToken) {
-                    onCSRFToken(csrfToken);
-                }
-                if (token) {
-                    doLogin();
+                if (bearerToken) {
+                    doSSOLogin(bearerToken, csrfToken);
                     if (cookiesTimeout.current) {
                         clearTimeout(cookiesTimeout.current);
                     }

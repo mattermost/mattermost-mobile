@@ -5,7 +5,6 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import NetworkManager from '@app/init/network_manager';
 import {SSO as SSOEnum} from '@constants';
 import {scheduleExpiredNotification} from '@actions/remote/push_notification';
 import {ssoLogin} from '@actions/remote/user';
@@ -70,13 +69,8 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         setLoginError(errorMessage);
     };
 
-    const onCSRFToken = (csrfToken: string) => {
-        const client = NetworkManager.clients[serverUrl];
-        client.setCSRF(csrfToken);
-    };
-
-    const doLogin = async () => {
-        const {error = undefined} = await ssoLogin(serverUrl);
+    const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
+        const {error = undefined} = await ssoLogin(serverUrl, bearerToken, csrfToken);
         if (error) {
             onLoadEndError(error);
             setLoginError(error);
@@ -93,10 +87,9 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
 
     const props = {
+        doSSOLogin,
         loginError,
         loginUrl,
-        onCSRFToken,
-        doLogin,
         setLoginError,
         theme,
     };

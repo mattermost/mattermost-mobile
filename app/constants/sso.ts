@@ -3,6 +3,9 @@
 
 import keyMirror from '@utils/key_mirror';
 
+export const REDIRECT_URL_SCHEME = 'mmauth://';
+export const REDIRECT_URL_SCHEME_DEV = 'mmauthbeta://';
+
 export default keyMirror({
     GITLAB: null,
     GOOGLE: null,

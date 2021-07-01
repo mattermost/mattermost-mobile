@@ -136,8 +136,6 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
-        NetworkManager.createClient(serverUrl);
-
         const result = await doPing(serverUrl);
 
         if (canceled) {
@@ -145,7 +143,6 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
         }
 
         if (result.error) {
-            NetworkManager.invalidateClient[serverUrl];
             if (retryWithHttp) {
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);

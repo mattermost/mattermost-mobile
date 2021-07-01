@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
 import {ClientOptions} from '@typings/api/client4';
 
 import {Analytics, create} from '@init/analytics';
@@ -11,9 +8,16 @@ import {Analytics, create} from '@init/analytics';
 import * as ClientConstants from './constants';
 import ClientError from './error';
 
+import type {
+    APIClientInterface,
+    ClientHeaders,
+    ClientResponse,
+    RequestOptions,
+} from "@mattermost/react-native-network-client";
+
 export default class ClientBase {
     analytics: Analytics|undefined;
-    client: APIClient;
+    client: APIClientInterface;
     csrfToken = '';
     requestHeaders: {[x: string]: string} = {};
     diagnosticId = '';
@@ -26,13 +30,11 @@ export default class ClientBase {
     };
     urlVersion = '/api/v4';
 
-    constructor(client, serverUrl: string) {
+    constructor(client: APIClientInterface, serverUrl: string) {
         this.client = client;
         this.analytics = create(serverUrl);
     }
 
-    // TODO: we're now only setting the csrfToken if we have it and only
-    // for non GET requests so this can be refactored
     getRequestHeaders(requestMethod: string) {
         const headers = {...this.requestHeaders};
 
@@ -51,7 +53,11 @@ export default class ClientBase {
         this.requestHeaders[ClientConstants.HEADER_ACCEPT_LANGUAGE] = locale;
     }
 
-    setCSRF(csrfToken: string) {
+    setBearerToken(bearerToken: string) {
+        this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
+    }
+
+    setCSRFToken(csrfToken: string) {
         this.csrfToken = csrfToken;
     }
 
@@ -239,13 +245,12 @@ export default class ClientBase {
                 });
         }
 
-        let response;
+        const requestOptions: RequestOptions = {
+            body: options.body,
+            headers: this.getRequestHeaders(method),
+        };
+        let response: ClientResponse;
         try {
-            // TODO: type
-            const requestOptions: any = {
-                body: options.body,
-                headers: this.getRequestHeaders(method),
-            };
             response = await request!(url, requestOptions);
         } catch (error) {
             throw new ClientError(this.client.baseUrl, {
@@ -258,7 +263,7 @@ export default class ClientBase {
             });
         }
 
-        const headers = response.headers;
+        const headers: ClientHeaders = response.headers || {};
         const serverVersion = headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()];
         if (serverVersion && !headers['Cache-Control'] && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;

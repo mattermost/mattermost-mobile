@@ -3,36 +3,51 @@
 
 import NetworkManager from '@app/init/network_manager';
 
-export const doPing = async (serverUrl: string) => {
-    const client = NetworkManager.clients[serverUrl!];
+import type {ClientResponse} from "@mattermost/react-native-network-client";
 
-    let response;
+export const doPing = async (serverUrl: string) => {
+    const client = await NetworkManager.createClient(serverUrl);
+
+    const certificateError = {
+        id: 'mobile.server_requires_client_certificate',
+        defaultMessage: 'Server required client certificate for authentication.',
+    };
+
     const pingError = {
         id: 'mobile.server_ping_failed',
         defaultMessage: 'Cannot connect to the server. Please check your server URL and internet connection.',
     };
 
+    let response: ClientResponse;
     try {
         response = await client.ping();
-        if (response.data.status !== 'OK') {
-            // successful ping but not the right return {data}
+
+        if (response.code === 401) {
+            // Don't invalidate the client since we want to eventually
+            // import a certificate with client.importClientP12()
+            return {error: {intl: certificateError}}
+        }
+
+        if (!response.ok) {
+            NetworkManager.invalidateClient(serverUrl);
             return {error: {intl: pingError}};
         }
     } catch (error) {
-        // TODO: If client certificate is required, import client p12
-        console.log("Error", error)
-        if (error.status_code === 401) {
-            // When the server requires a client certificate to connect.
-            return {error};
-        }
-        return {error: {intl: pingError}};
+        NetworkManager.invalidateClient(serverUrl);
+        return {error};
     }
 
     return response;
 };
 
 export const fetchConfigAndLicense = async (serverUrl: string) => {
-    const client = NetworkManager.clients[serverUrl];
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
     try {
         const [config, license] = await Promise.all<any, any>([
             client.getClientConfigOld(),

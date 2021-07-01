@@ -6,9 +6,9 @@ import CookieManager, {Cookie} from '@react-native-community/cookies';
 import {FileSystem} from 'react-native-unimodules';
 import semver from 'semver';
 
-import NetworkManager from '@app/init/network_manager';
+import {fetchConfigAndLicense} from '@actions/remote/general';
 import LocalConfig from '@assets/config.json';
-import {Navigation} from '@constants';
+import {Navigation, REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
 import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -48,11 +48,13 @@ class GlobalEventHandler {
     };
 
     onDeepLink = (event: LinkingCallbackArg) => {
-        // TODO: this is called when returning from the SSO webview and
-        // causes an error.
+        if (event.url?.startsWith(REDIRECT_URL_SCHEME) || event.url?.startsWith(REDIRECT_URL_SCHEME_DEV)) {
+            return;
+        }
+
         if (event.url) {
-            // const props = getLaunchPropsFromDeepLink(event.url);
-            // relaunchApp(props);
+            const props = getLaunchPropsFromDeepLink(event.url);
+            relaunchApp(props);
         }
     };
 
@@ -171,8 +173,7 @@ class GlobalEventHandler {
                 );
             }
 
-            const client = NetworkManager.clients[serverUrl];
-            // TODO: fetch config with client then update config in database
+            fetchConfigAndLicense(serverUrl);
         }
     };
 

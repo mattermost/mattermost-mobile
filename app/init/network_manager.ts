@@ -19,7 +19,7 @@ const CLIENT_CERTIFICATE_IMPORT_ERROR_CODES = [-103, -104, -105, -108];
 const CLIENT_CERTIFICATE_MISSING_ERROR_CODE = -200;
 
 class NetworkManager {
-    public clients: Record<string, Client> = {};
+    private clients: Record<string, Client> = {};
 
     private DEFAULT_CONFIG = {
         headers: {
@@ -61,7 +61,12 @@ class NetworkManager {
     }
 
     public getClient = (serverUrl: string) => {
-        return this.clients[serverUrl] || this.createClient(serverUrl);
+        const client = this.clients[serverUrl];
+        if (!client) {
+            throw new Error(`${serverUrl} client not found`);
+        }
+
+        return client;
     }
 
     public createClient = async (serverUrl: string, token?: string) => {

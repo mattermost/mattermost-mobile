@@ -9,25 +9,25 @@ import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
-    doLogin: () => void;
+    doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    onCSRFToken: (token: string) => void;
     setLoginError: (value: string) => void;
     theme: Partial<Theme>
 }
 
-const SSOWithRedirectURL = ({doLogin, loginError, loginUrl, onCSRFToken, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    let customUrlScheme = 'mmauth://';
+    let customUrlScheme = REDIRECT_URL_SCHEME;
     if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
-        customUrlScheme = 'mmauthbeta://';
+        customUrlScheme = REDIRECT_URL_SCHEME_DEV;
     }
 
     const redirectUrl = customUrlScheme + 'callback';
@@ -67,9 +67,10 @@ const SSOWithRedirectURL = ({doLogin, loginError, loginUrl, onCSRFToken, setLogi
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
-                if (parsedUrl.query && parsedUrl.query.MMCSRF) {
-                    onCSRFToken(parsedUrl.query.MMCSRF);
-                    doLogin();
+                const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
+                const csrfToken = parsedUrl.query?.MMCSRF;
+                if (bearerToken && csrfToken) {
+                    doSSOLogin(bearerToken, csrfToken);
                 } else {
                     setError(
                         intl.formatMessage({

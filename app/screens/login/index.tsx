@@ -32,10 +32,6 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-
-// TODO: invalidate client when returning back to the select server screen
-
-
 type LoginProps = {
     componentId: string;
     config: ClientConfig;

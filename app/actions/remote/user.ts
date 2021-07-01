@@ -37,10 +37,10 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
     return async () => {
         if (!skipServerLogout) {
             try {
-                const client = NetworkManager.clients[serverUrl];
+                const client = NetworkManager.getClient(serverUrl);
                 await client.logout();
-            } catch {
-                // Do nothing
+            } catch (error) {
+                return {error};
             }
         }
 
@@ -77,9 +77,11 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         return {error: 'App database not found.'};
     }
 
-    const client = NetworkManager.clients[serverUrl];
-    if (!client) {
-        return {error: `${serverUrl} client not found`};
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
 
     try {
@@ -121,9 +123,11 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         return {error: `${serverUrl} database not found`};
     }
 
-    const client = NetworkManager.clients[serverUrl];
-    if (!client) {
-        return {error: `${serverUrl} client not found`};
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
 
     try {
@@ -259,9 +263,11 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const client = NetworkManager.clients[serverUrl];
-    if (!client) {
-        return {error: `${serverUrl} client not found`};
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
 
     const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
@@ -299,9 +305,11 @@ export const updateMe = async (serverUrl: string, user: User) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const client = NetworkManager.clients[serverUrl];
-    if (!client) {
-        return {error: `${serverUrl} client not found`};
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
 
     let data;
@@ -343,8 +351,10 @@ export const updateMe = async (serverUrl: string, user: User) => {
     return {data};
 };
 export const getSessions = async (serverUrl: string, currentUserId: string) => {
-    const client = NetworkManager.clients[serverUrl];
-    if (!client) {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch {
         return;
     }
 
@@ -362,14 +372,23 @@ type LoadedUser = {
     error?: Client4Error
 }
 
-export const ssoLogin = async (serverUrl: string) => {
+export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken: string) => {
     let deviceToken;
 
     const database = DatabaseManager.appDatabase?.database;
-
     if (!database) {
         return {error: 'App database not found'};
     }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    client.setBearerToken(bearerToken);
+    client.setCSRFToken(csrfToken);
 
     // Setting up active database for this SSO login flow
     try {
@@ -400,9 +419,11 @@ export const ssoLogin = async (serverUrl: string) => {
 };
 
 export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {
-    const client = NetworkManager.clients[serverUrl];
-    if (!client) {
-        return {error: `${serverUrl} client not found`};
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
 
     let response;

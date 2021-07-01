@@ -42,8 +42,8 @@ export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = fal
 
     try {
         const resp = await GenericClient.head(url);
-        if (resp.redirectedUrls?.length) {
-            url = resp.redirectedUrls[resp.redirectedUrls.length - 1];
+        if (resp.redirectUrls?.length) {
+            url = resp.redirectUrls[resp.redirectUrls.length - 1];
         }
     } catch (error) {
         // do nothing
