@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {General} from '@constants';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
-import EventEmitter from '@init/event_emitter';
 
 import {ClientOptions} from '@typings/api/client4';
 
@@ -242,7 +243,7 @@ export default class ClientBase {
         const serverVersion = headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()];
         if (serverVersion && !headers['Cache-Control'] && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;
-            EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
+            DeviceEventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
         }
 
         const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];

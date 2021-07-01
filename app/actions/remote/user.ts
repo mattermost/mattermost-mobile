@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import EventEmitter from '@app/init/event_emitter';
+import {DeviceEventEmitter} from 'react-native';
+
 import NetworkManager from '@app/init/network_manager';
 import {Navigation} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -46,7 +47,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
             }
         }
 
-        EventEmitter.emit(Navigation.NAVIGATION_RESET);
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_RESET);
 
         DatabaseManager.deleteServerDatabase(serverUrl);
         NetworkManager.invalidateClient(serverUrl);
@@ -263,13 +264,6 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
     }
 
     const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
