@@ -5,7 +5,7 @@ import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables, {ObservableifyProps} from '@nozbe/with-observables';
+import withObservables from '@nozbe/with-observables';
 import ChannelModel from '@typings/database/models/servers/channel';
 import PreferenceModel from '@typings/database/models/servers/preference';
 import SystemModel from '@typings/database/models/servers/system';
@@ -16,19 +16,8 @@ import ChannelNavBar from './channel_nav_bar';
 
 const {SERVER: {CHANNEL, PREFERENCE, SYSTEM}} = MM_TABLES;
 
-const Channel = ({launchType, channelId, channel, currentUserId, theme, database}: ChannelProps) => {
+const Channel = ({launchType, currentChannelIdRecord, channelRecord: channel, currentUserIdRecord, themeRecords, database}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
-    console.log('>>>>>>>>>>>>>>>>> launchType >>>>>>>> ', {
-        launchType,
-
-        // channelId,
-        channel: channel.displayName,
-        currentUserId: (currentUserId as SystemModel).value,
-        // theme: JSON.parse(theme[0].value).centerChannelBg,
-
-        // theme,
-    }); // eslint-disable-line no-console
-
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
     // if (props.launchError) {
@@ -42,21 +31,17 @@ const Channel = ({launchType, channelId, channel, currentUserId, theme, database
 
     //todo: Read Messages  - Do we need KeyboardLayout component ?
     //todo: Read Messages  - Implement goToChannelInfo
+    //todo: Create a ThemeProvider that uses Preferences/theme as starting value and default it to the appearance light/dark mode
 
-    const onPress = () => {
-        database.action(async () => {
-            const userId = await database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch();
-            userId[0].update((m) => {
-                m.value = 'p9g6rzz3kffhxqxhm1zckjpwd';
-            });
-        });
-    }
+    const currentChannelId = currentChannelIdRecord.value;
+    const currentUserId = (currentUserIdRecord as SystemModel).value;
+    const theme = themeRecords[0].value;
 
     return (
         <>
             <SafeAreaView style={styles.flex}>
                 <View>
-                    <Text onPress={onPress}>In channel screen </Text>
+                    <Text>In channel screen </Text>
                 </View>
                 {/*<ChannelNavBar*/}
                 {/*    channel={channel}*/}
@@ -74,53 +59,27 @@ const styles = StyleSheet.create({
     },
 });
 
-type ChannelAndUserIdObservableProps = {
-    currentChannelId: SystemModel;
-    database: Database;
-}
-
-type ChannelPreferenceObservableProps = {
-    currentUserId: string;
-    database: Database;
-}
-
-type ChannelProps = {
-    channel: ChannelModel;
-    channelId: string;
-    currentUserId: SystemModel;
-    database: Database;
+// TODO: Move as helper methods
+type WithDatabaseArgs = { database: Database }
+type WithChannelAndThemeArgs = WithDatabaseArgs & {currentChannelIdRecord: SystemModel, currentUserIdRecord: SystemModel}
+type ChannelProps = WithDatabaseArgs & {
+    channelRecord: ChannelModel;
+    currentChannelIdRecord: SystemModel;
+    currentUserIdRecord: SystemModel;
     launchType: LaunchType;
-    theme: PreferenceModel;
+    themeRecords: PreferenceModel[];
 };
 
-// const enhanceChannelAndUserId = withObservables(['channelId'], ({channelId = '7hob1ggoypydubgje3y9fc15sr', database}: ChannelAndUserIdObservableProps) => ({
-//     channel: database.collections.get(CHANNEL).findAndObserve(channelId),
-//     currentUserId: database.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).observe(),
-// }));
+export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentChannelIdRecord: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
+    currentUserIdRecord: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
+}));
 
-const enhanceChannel = withObservables(['currentChannelId'], ({currentChannelId, database}: ChannelAndUserIdObservableProps) => {
+const withChannelAndTheme = withObservables(['currentChannelIdRecord'], ({currentChannelIdRecord, currentUserIdRecord, database}: WithChannelAndThemeArgs) => {
     return {
-        channel: database.collections.get(CHANNEL).findAndObserve(currentChannelId.value),
+        channelRecord: database.collections.get(CHANNEL).findAndObserve(currentChannelIdRecord.value),
+        themeRecords: database.collections.get(PREFERENCE).query(Q.where('user_id', currentUserIdRecord.value), Q.where('category', 'theme')).observe(),
     };
 });
 
-// const enhanceChannelPreference = withObservables(['currentUserId'], ({currentUserId = 'p9g6rzz3kffhxqxhm1zckjpwda', database}: ChannelPreferenceObservableProps) => ({
-//     theme: database.collections.get(PREFERENCE).query(Q.where('user_id', 'p9g6rzz3kffhxqxhm1zckjpwda'), Q.where('category', 'theme')).observe(),
-// }));
-
-// TODO: Move as helper methods
-
-export const withCurrentUserId = withObservables([], ({database}) => ({
-    currentUserId: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
-}));
-
-export const withCurrentChannelId = withObservables([], ({database}) => ({
-    currentChannelId: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
-}));
-
-export const withCurrentUserIdAndChannelId = withObservables([], ({database}) => ({
-    currentChannelId: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
-    currentUserId: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
-}));
-
-export default withDatabase(withCurrentUserIdAndChannelId(enhanceChannel(Channel)));
+export default withDatabase(withSystemIds(withChannelAndTheme(Channel)));
