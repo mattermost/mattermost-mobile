@@ -31,7 +31,7 @@ function makeMapStateToProps() {
             rootId: ownProps.rootId,
             teamId: getCurrentTeamId(state),
             theme: getTheme(state),
-            thread: getThread(state, ownProps.rootId),
+            thread: getThread(state, ownProps.rootId, true),
             threadLoadingStatus: state.requests.posts.getPostThread,
             userId: getCurrentUserId(state),
         };

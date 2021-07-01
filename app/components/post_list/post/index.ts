@@ -79,23 +79,7 @@ function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
 
     let thread: UserThread | null = null;
     if (collapsedThreadsEnabled && ownProps.location !== THREAD) {
-        thread = getThread(state, post.id);
-
-        // If user is not following the thread or threads are not loaded, make thread object from the post
-        if (!thread && post.participants?.length) {
-            const {id, is_following, reply_count, last_reply_at, participants} = post;
-            thread = {
-                id,
-                is_following,
-                reply_count,
-                participants,
-                last_reply_at: last_reply_at || 0,
-                post,
-                last_viewed_at: 0,
-                unread_mentions: 0,
-                unread_replies: 0,
-            };
-        }
+        thread = getThread(state, post.id, true);
     }
 
     return {
