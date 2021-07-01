@@ -336,12 +336,12 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.13.0):
+  - ReactNativeNavigation (7.11.3):
     - React-Core
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.13.0)
-  - ReactNativeNavigation/Core (7.13.0):
+    - ReactNativeNavigation/Core (= 7.11.3)
+  - ReactNativeNavigation/Core (7.11.3):
     - React-Core
     - React-RCTImage
     - React-RCTText
@@ -430,7 +430,7 @@ PODS:
     - Sentry/Core (= 7.0.0)
   - Sentry/Core (7.0.0)
   - Swime (3.0.6)
-  - XCDYouTubeKit (2.8.3)
+  - XCDYouTubeKit (2.15.2)
   - Yoga (1.14.0)
   - YoutubePlayer-in-WKWebView (0.3.5)
 
@@ -512,7 +512,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
-  - XCDYouTubeKit (= 2.8.3)
+  - XCDYouTubeKit (from `https://github.com/hinge-agency/XCDYouTubeKit.git`, branch `fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -526,7 +526,6 @@ SPEC REPOS:
     - SDWebImageWebPCoder
     - Sentry
     - Swime
-    - XCDYouTubeKit
     - YoutubePlayer-in-WKWebView
 
 EXTERNAL SOURCES:
@@ -678,15 +677,23 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  XCDYouTubeKit:
+    :branch: fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3
+    :git: https://github.com/hinge-agency/XCDYouTubeKit.git
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
+
+CHECKOUT OPTIONS:
+  XCDYouTubeKit:
+    :commit: 38170db3934e575ad4bfb782dedc544f304b482f
+    :git: https://github.com/hinge-agency/XCDYouTubeKit.git
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: cef0cc6d50abc92e8cf52f140aa22b5371cfec0b
+  FBReactNativeSpec: 74185edd6e8e5cb35512747bd840f8f9ad2381ff
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   jail-monkey: 01cd0a75aa1034d08fd851869e6e6c3b063242d7
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
@@ -739,7 +746,7 @@ SPEC CHECKSUMS:
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 4c4ca87edc0da4ee818158a62cb6188088454e5c
+  ReactNativeNavigation: 906b631a6847c26cacf5cb3791566f1fe205c65c
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
@@ -765,10 +772,10 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   Sentry: 89d26e036063b9cb9caa59b6951dd2f8277aa13b
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  XCDYouTubeKit: 46df93c4dc4d48763ad720d997704384635c4335
+  XCDYouTubeKit: b120aced3d8638ffb570c5450cddb5a1dac448c7
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: a4402d26aaec4ef7e58bd8304848d89c876d285a
+PODFILE CHECKSUM: c3bbb0fd2d81abb15a1f699210f18b2577ec458f
 
 COCOAPODS: 1.10.1

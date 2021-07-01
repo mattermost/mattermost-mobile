@@ -1,7 +1,6 @@
 package com.mattermost.rnbeta;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -12,10 +11,12 @@ import android.view.WindowManager.LayoutParams;
 import android.util.ArraySet;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import java.util.Objects;
 import java.util.Set;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -65,6 +66,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule implemen
     }
 
     @Override
+    @NonNull
     public String getName() {
         return "MattermostManaged";
     }
@@ -92,7 +94,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule implemen
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getReactApplicationContext().startActivity(intent);
 
-        getCurrentActivity().finish();
+        Objects.requireNonNull(getCurrentActivity()).finish();
         System.exit(0);
     }
 
@@ -111,7 +113,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule implemen
 
     @ReactMethod
     public void quitApp() {
-        getCurrentActivity().finish();
+        Objects.requireNonNull(getCurrentActivity()).finish();
         System.exit(0);
     }
 
@@ -163,6 +165,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule implemen
             blurAppScreen = Boolean.parseBoolean(config.getString("blurApplicationScreen"));
         }
 
+        assert activity != null;
         if (blurAppScreen) {
             activity.getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
         } else {
@@ -194,7 +197,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule implemen
         if(one.size() != two.size())
             return false;
 
-        Set<String> setOne = new ArraySet<String>();
+        Set<String> setOne = new ArraySet<>();
         setOne.addAll(one.keySet());
         setOne.addAll(two.keySet());
         Object valueOne;

@@ -131,4 +131,24 @@ describe('Emojis and Reactions', () => {
         // # Close AddReaction Screen
         await AddReactionScreen.close();
     });
+
+    it('MM-T3316 should display empty search state for emoji picker', async () => {
+        // # Post a message
+        const testMessage = Date.now().toString();
+        await postMessage(testMessage);
+
+        // # Add a reaction
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        const searchTerm = 'blahblahblahblah';
+        await openPostOptionsFor(post.id, testMessage);
+        await AddReactionScreen.open();
+        await AddReactionScreen.searchInput.typeText(searchTerm);
+
+        // * Verify empty search state for emoji picker
+        await expect(element(by.text(`No results found for "${searchTerm}"`))).toBeVisible();
+        await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
+
+        // # Go back to channel
+        await AddReactionScreen.close();
+    });
 });

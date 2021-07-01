@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {Text, TextStyle} from 'react-native';
 import {useSelector} from 'react-redux';
 
@@ -17,7 +17,7 @@ interface ComponentProps {
 }
 
 const CustomStatusEmoji = ({emojiSize, userID, style, testID}: ComponentProps) => {
-    const getCustomStatus = makeGetCustomStatus();
+    const getCustomStatus = useMemo(makeGetCustomStatus, []);
     const customStatus = useSelector((state: GlobalState) => {
         return getCustomStatus(state, userID);
     });
