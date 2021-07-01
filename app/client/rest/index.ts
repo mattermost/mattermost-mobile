@@ -53,8 +53,8 @@ class Client extends mix(ClientBase).with(
     ClientUsers,
 ) {
     // eslint-disable-next-line no-useless-constructor
-    constructor(client: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
-        super(client, serverUrl, bearerToken, csrfToken);
+    constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
+        super(apiClient, serverUrl, bearerToken, csrfToken);
     }
 }
 

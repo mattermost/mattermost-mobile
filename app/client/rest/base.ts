@@ -21,7 +21,7 @@ import type {
 
 export default class ClientBase {
     analytics: Analytics|undefined;
-    client: APIClientInterface;
+    apiClient: APIClientInterface;
     csrfToken = '';
     requestHeaders: {[x: string]: string} = {};
     diagnosticId = '';
@@ -34,8 +34,8 @@ export default class ClientBase {
     };
     urlVersion = '/api/v4';
 
-    constructor(client: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
-        this.client = client;
+    constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
+        this.apiClient = apiClient;
         this.analytics = create(serverUrl);
 
         if (bearerToken) {
@@ -66,7 +66,7 @@ export default class ClientBase {
 
     setBearerToken(bearerToken: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
-        setServerCredentials(this.client.baseUrl, bearerToken);
+        setServerCredentials(this.apiClient.baseUrl, bearerToken);
     }
 
     setCSRFToken(csrfToken: string) {
@@ -196,22 +196,22 @@ export default class ClientBase {
         const method = options.method?.toLowerCase();
         switch (method) {
             case 'get':
-                request = this.client!.get;
+                request = this.apiClient!.get;
                 break;
             case 'put':
-                request = this.client!.put;
+                request = this.apiClient!.put;
                 break;
             case 'post':
-                request = this.client!.post;
+                request = this.apiClient!.post;
                 break;
             case 'patch':
-                request = this.client!.patch;
+                request = this.apiClient!.patch;
                 break;
             case 'delete':
-                request = this.client!.delete;
+                request = this.apiClient!.delete;
                 break;
             default:
-                throw new ClientError(this.client.baseUrl, {
+                throw new ClientError(this.apiClient.baseUrl, {
                     message: 'Invalid request method',
                     intl: {
                         id: 'mobile.request.invalid_request_method',
@@ -229,7 +229,7 @@ export default class ClientBase {
         try {
             response = await request!(url, requestOptions);
         } catch (error) {
-            throw new ClientError(this.client.baseUrl, {
+            throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
                 intl: {
                     id: 'mobile.request.invalid_response',
@@ -255,7 +255,7 @@ export default class ClientBase {
             return returnDataOnly ? response.data : response;
         }
 
-        throw new ClientError(this.client.baseUrl, {
+        throw new ClientError(this.apiClient.baseUrl, {
             message: response.data?.message || '',
             server_error_id: response.data?.id,
             status_code: response.code,
