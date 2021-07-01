@@ -52,7 +52,7 @@ class TestHelper {
             post: jest.fn(),
             put: jest.fn(),
         };
-        
+
         return new Client(mockApiClient, mockApiClient.baseUrl);
     };
 

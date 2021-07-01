@@ -98,34 +98,34 @@ jest.doMock('react-native', () => {
         },
         APIClient: {
             getConstants: () => ({
-                'EVENTS': {
-                    'UPLOAD_PROGRESS': 'APIClient-UploadProgress',
-                    'CLIENT_ERROR': 'APIClient-Error',
+                EVENTS: {
+                    UPLOAD_PROGRESS: 'APIClient-UploadProgress',
+                    CLIENT_ERROR: 'APIClient-Error',
                 },
-                'RETRY_TYPES': {
-                    'EXPONENTIAL_RETRY': 'exponential',
-                    'LINEAR_RETRY': 'linear',
+                RETRY_TYPES: {
+                    EXPONENTIAL_RETRY: 'exponential',
+                    LINEAR_RETRY: 'linear',
                 },
             }),
         },
         WebSocketClient: {
             getConstants: () => ({
-                'EVENTS': {
-                    'OPEN_EVENT': 'WebSocketClient-Open',
-                    'CLOSE_EVENT': 'WebSocketClient-Close',
-                    'ERROR_EVENT': 'WebSocketClient-Error',
-                    'MESSAGE_EVENT': 'WebSocketClient-Message',
-                    'READY_STATE_EVENT': 'WebSocketClient-ReadyState',
-                    'CLIENT_ERROR': 'WebSocketClient-Error',
+                EVENTS: {
+                    OPEN_EVENT: 'WebSocketClient-Open',
+                    CLOSE_EVENT: 'WebSocketClient-Close',
+                    ERROR_EVENT: 'WebSocketClient-Error',
+                    MESSAGE_EVENT: 'WebSocketClient-Message',
+                    READY_STATE_EVENT: 'WebSocketClient-ReadyState',
+                    CLIENT_ERROR: 'WebSocketClient-Error',
                 },
-                'READY_STATE': {
-                    'CONNECTING': 0,
-                    'OPEN': 1,
-                    'CLOSING': 2,
-                    'CLOSED': 3,
+                READY_STATE: {
+                    CONNECTING: 0,
+                    OPEN: 1,
+                    CLOSING: 2,
+                    CLOSED: 3,
                 },
             }),
-        }
+        },
     };
 
     const Linking = {
