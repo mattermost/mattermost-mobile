@@ -13,6 +13,7 @@ import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
 import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
+import NetworkManager from '@init/network_manager';
 import PushNotifications from '@init/push_notifications';
 import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
@@ -119,7 +120,8 @@ class GlobalEventHandler {
     };
 
     onLogout = async (serverUrl: string) => {
-        // TODO: Close and invalidate ApiClient & WebSocket client
+        // TODO: Also invalidate WebSocket client
+        NetworkManager.invalidateClient(serverUrl);
 
         const analyticsClient = analytics.get(serverUrl);
         if (analyticsClient) {

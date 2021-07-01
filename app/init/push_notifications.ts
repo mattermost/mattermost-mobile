@@ -29,8 +29,6 @@ const NOTIFICATION_TYPE = {
     SESSION: 'session',
 };
 
-//todo:  Do we need Ephemeral store?  Should we refactor this file ?
-
 class PushNotifications {
   configured = false;
   pushNotificationListener: EmitterSubscription | undefined;
