@@ -33,9 +33,16 @@ export default class ClientBase {
     };
     urlVersion = '/api/v4';
 
-    constructor(client: APIClientInterface, serverUrl: string) {
+    constructor(client: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
         this.client = client;
         this.analytics = create(serverUrl);
+        
+        if (bearerToken) {
+            this.setBearerToken(bearerToken);
+        }
+        if (csrfToken) {
+            this.setCSRFToken(csrfToken);
+        }
     }
 
     getRequestHeaders(requestMethod: string) {

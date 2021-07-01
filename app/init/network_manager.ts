@@ -15,6 +15,7 @@ import ManagedApp from '@app/init/managed_app';
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
+import {getCSRFFromCookie} from '@utils/security';
 
 import type {ServerCredential} from '@typings/credentials';
 
@@ -72,23 +73,22 @@ class NetworkManager {
         return client;
     }
 
-    public createClient = async (serverUrl: string, token?: string) => {
-        const config = await this.buildConfig(token);
+    public createClient = async (serverUrl: string, bearerToken?: string) => {
+        const config = await this.buildConfig();
         const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
-        this.clients[serverUrl] = new Client(client, serverUrl);
+
+        const csrfToken = await getCSRFFromCookie(serverUrl);
+        this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
 
         return this.clients[serverUrl];
     }
 
-    private buildConfig = async (token?: string) => {
+    private buildConfig = async () => {
         const userAgent = await DeviceInfo.getUserAgent();
         const headers: Record<string, any> = {
             ...this.DEFAULT_CONFIG.headers,
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
         };
-        if (token) {
-            headers[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${token}`;
-        }
 
         const config = {
             ...this.DEFAULT_CONFIG,

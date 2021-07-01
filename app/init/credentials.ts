@@ -7,8 +7,8 @@ import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
+import NetworkManager from '@init/network_manager';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {getCSRFFromCookie} from '@utils/security';
 
 import type {ServerCredential} from '@typings/credentials';
 
@@ -78,10 +78,8 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    // TODO: invalidate client and remove tokens
-
     KeyChain.resetInternetCredentials(serverUrl);
-
+    NetworkManager.invalidateClient(serverUrl);
     AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
@@ -108,12 +106,6 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
             if (token && token !== 'undefined') {
                 const analyticsClient = analytics.get(serverUrl);
                 analyticsClient?.setUserId(userId);
-
-                const csrf = await getCSRFFromCookie(serverUrl);
-                // eslint-disable-next-line no-console
-                console.log('CSRF', csrf);
-
-                // TODO: Create client and set token / CSRF
 
                 return {serverUrl, userId, token};
             }
