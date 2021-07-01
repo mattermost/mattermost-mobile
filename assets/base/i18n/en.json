@@ -1,7 +1,7 @@
 {
   "login_mfa.enterToken": "To complete the sign in process, please enter a token from your smartphone's authenticator",
-  "login_mfa.token": "",
-  "login_mfa.tokenReq": "",
+  "login_mfa.token": "MFA Token",
+  "login_mfa.tokenReq": "Please enter an MFA token",
   "login.email": "Email",
   "login.forgot": "I forgot my password",
   "login.invalidPassword": "Your password is incorrect.",
