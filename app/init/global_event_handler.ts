@@ -145,12 +145,9 @@ class GlobalEventHandler {
     onServerConfigChanged = (serverUrl: string, config: ClientConfig) => {
         this.configureAnalytics(serverUrl, config);
 
-        // TODO: Add minimum server version checked with cloud support
-        // TODO: get serverVersion from database
-        // const serverVersion = NetworkManager.clients[serverUrl].serverVersion;
-        // if (isMinimumServerVersion(serverVersion, 5, 24) && config.ExtendSessionLengthWithActivity === 'true') {
-        //     PushNotifications.cancelAllLocalNotifications();
-        // }
+        if (config.ExtendSessionLengthWithActivity === 'true') {
+            PushNotifications.cancelAllLocalNotifications();
+        }
     };
 
     onServerVersionChanged = async (serverUrl: string, serverVersion?: string) => {

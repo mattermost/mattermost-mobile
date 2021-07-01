@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import EventEmitter from '@app/init/event_emitter';
 import NetworkManager from '@app/init/network_manager';
+import {Navigation} from '@constants';
 import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import {getDeviceToken} from '@app/queries/app/global';
@@ -44,8 +46,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
             }
         }
 
-        //fixme: uncomment below EventEmitter.emit
-        // EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+        EventEmitter.emit(Navigation.NAVIGATION_RESET);
 
         DatabaseManager.deleteServerDatabase(serverUrl);
         NetworkManager.invalidateClient(serverUrl);

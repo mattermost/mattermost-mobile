@@ -12,7 +12,6 @@ import Button from 'react-native-button';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import NetworkManager from '@app/init/network_manager';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';

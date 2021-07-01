@@ -247,14 +247,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
     getProfilesInChannel = async (serverUrl: string, channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '') => {
         this.analytics.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
-        // TODO: get serverVersion from database
-         const serverVersion = NetworkManager.clients[serverUrl].serverVersion;
-        let queryStringObj;
-        if (isMinimumServerVersion(serverVersion, 4, 7)) {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
-        } else {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage};
-        }
+        const queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
             {method: 'get'},

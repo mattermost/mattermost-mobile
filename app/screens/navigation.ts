@@ -5,7 +5,8 @@ import {Appearance, Keyboard, Platform} from 'react-native';
 import {Layout, Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {Screens, Preferences} from '@constants';
+import EventEmitter from '@init/event_emitter';
+import {Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -234,7 +235,7 @@ export async function dismissAllModalsAndPopToRoot() {
     await dismissAllModals();
     await popToRoot();
 
-    // EventEmmiter.emit(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
+    EventEmitter.emit(NavigationConstants.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
 }
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {

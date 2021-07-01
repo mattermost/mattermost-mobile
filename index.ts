@@ -52,7 +52,6 @@ Navigation.events().registerAppLaunchedListener(async () => {
     registerNavigationListeners();
     registerScreens();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const serverCredentials = await getAllServerCredentials();
     const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
 
