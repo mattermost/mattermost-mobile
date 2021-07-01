@@ -48,6 +48,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
         // EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
 
         DatabaseManager.deleteServerDatabase(serverUrl);
+        NetworkManager.invalidateClient(serverUrl);
 
         return {data: true};
     };
