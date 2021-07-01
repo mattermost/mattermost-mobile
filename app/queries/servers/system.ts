@@ -3,14 +3,19 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import System from '@typings/database/models/servers/system';
 
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
+export const queryCurrentChannelId = async (serverDatabase: Database) => {
+    const currentChannelId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID) as System;
+    return currentChannelId?.value || '';
+};
+
 export const getCurrentUserId = async (serverDatabase: Database) => {
-    const currentUserId = await serverDatabase.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch() as System[];
-    return currentUserId?.[0] ?? '';
+    const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as System;
+    return currentUserId?.value || '';
 };
 
 export const getCommonSystemValues = async (database: Database) => {

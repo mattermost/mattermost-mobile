@@ -18,7 +18,7 @@ export const initialLaunch = async () => {
     }
 
     const notification = await Notifications.getInitialNotification();
-    if (notification) {
+    if (notification && notification.payload?.type === 'message') {
         launchAppFromNotification(notification);
         return;
     }

@@ -1528,7 +1528,7 @@ This product contains a modified version of 'react-native-cookies' by Joseph P. 
 Cookie manager for react native.
 
 * HOMEPAGE:
-  * https://github.com/joeferraro/react-native-cookies
+  * https://github.com/react-native-cookies/cookies
 
 * LICENSE: MIT
 

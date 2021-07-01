@@ -56,7 +56,13 @@ export const SYSTEM_IDENTIFIERS = {
     LICENSE: 'license',
 };
 
+export const GLOBAL_IDENTIFIERS = {
+    DEVICE_TOKEN: 'deviceToken',
+    MENTION_COUNT: 'mentionCount',
+};
+
 export default {
+    GLOBAL_IDENTIFIERS,
     MM_TABLES,
     MIGRATION_EVENTS,
     SYSTEM_IDENTIFIERS,

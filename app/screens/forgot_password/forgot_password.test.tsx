@@ -10,8 +10,6 @@ import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import ForgotPassword from './index';
 
-jest.mock('@mattermost/react-native-emm');
-
 describe('ForgotPassword', () => {
     const baseProps = {
         componentId: 'ForgotPassword',

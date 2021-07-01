@@ -7,7 +7,7 @@ import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions
 import {logError} from '@actions/remote/error';
 import {loadRolesIfNeeded} from '@actions/remote/role';
 import {getDataRetentionPolicy} from '@actions/remote/systems';
-import {Database, Navigation} from '@constants';
+import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
@@ -38,10 +38,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
             }
         }
 
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_RESET);
-
-        DatabaseManager.deleteServerDatabase(serverUrl);
-        NetworkManager.invalidateClient(serverUrl);
+        DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
 
         return {data: true};
     };

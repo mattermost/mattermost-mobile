@@ -22,8 +22,6 @@ jest.mock('@actions/remote/user', () => {
     };
 });
 
-jest.mock('@mattermost/react-native-emm');
-
 describe('Login', () => {
     const baseProps = {
         componentId: Screens.LOGIN,

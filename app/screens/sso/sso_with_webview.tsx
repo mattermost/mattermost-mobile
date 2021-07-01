@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager, {Cookies} from '@react-native-community/cookies';
+import CookieManager, {Cookies} from '@react-native-cookies/cookies';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
@@ -162,6 +162,10 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
             // To avoid `window.postMessage` conflicts in any of the SSO flows
             // we enable the onMessage handler only When the webView navigates to the final SSO URL.
             isMessagingEnabled = true;
+        } else {
+            // TODO Security: Clear the cookies for the visited sites
+            // eslint-disable-next-line no-console
+            console.log('URL visited', url);
         }
         setMessagingEnabled(isMessagingEnabled);
     };

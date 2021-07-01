@@ -8,8 +8,6 @@ import {renderWithIntl} from '@test/intl-test-helper';
 
 import SSOLogin from './index';
 
-jest.mock('@mattermost/react-native-emm');
-
 jest.mock('@screens/navigation', () => {
     return {
         getThemeFromState: () => 'light',

@@ -222,7 +222,7 @@ export default class ClientBase {
         const hasCacheControl = Boolean(headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()]);
         if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;
-            DeviceEventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
+            DeviceEventEmitter.emit(General.SERVER_VERSION_CHANGED, {serverUrl: this.apiClient.baseUrl, serverVersion});
         }
 
         const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];

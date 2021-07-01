@@ -7,7 +7,6 @@ import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
-import NetworkManager from '@init/network_manager';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import type {ServerCredential} from '@typings/credentials';
@@ -79,7 +78,6 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
 
 export const removeServerCredentials = async (serverUrl: string) => {
     KeyChain.resetInternetCredentials(serverUrl);
-    NetworkManager.invalidateClient(serverUrl);
     AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 

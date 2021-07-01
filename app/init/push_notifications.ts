@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Platform} from 'react-native';
+import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {
     Notification,
@@ -15,10 +15,12 @@ import {
     Registered,
 } from 'react-native-notifications';
 
-import {Device, Navigation, View} from '@constants';
+import {Device, General, Navigation} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
+import {queryMentionCount} from '@queries/app/global';
+import {queryCurrentChannelId} from '@queries/servers/system';
 import {showOverlay} from '@screens/navigation';
 
 const CATEGORY = 'CAN_REPLY';
@@ -31,7 +33,6 @@ const NOTIFICATION_TYPE = {
 
 class PushNotifications {
   configured = false;
-  pushNotificationListener: EmitterSubscription | undefined;
 
   constructor() {
       Notifications.registerRemoteNotifications();
@@ -39,18 +40,23 @@ class PushNotifications {
       Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
       Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
       Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
-      AppState.addEventListener('change', this.onAppStateChange);
   }
 
   cancelAllLocalNotifications = () => {
       Notifications.cancelAllLocalNotifications();
   };
 
-  clearNotifications = () => {
-      this.setApplicationIconBadgeNumber(0);
+  clearNotifications = (serverUrl: string) => {
+      // TODO Notifications: Only cancel the local notifications that belong to this server
 
-      // TODO: Only cancel the local notifications that belong to this server
+      // eslint-disable-next-line no-console
+      console.log('Clear notifications for server', serverUrl);
       this.cancelAllLocalNotifications();
+
+      if (Platform.OS === 'ios') {
+          // TODO Notifications: Set the badge number to the total amount of mentions on other servers
+          Notifications.ios.setBadgeCount(0);
+      }
   };
 
   clearChannelNotifications = async (channelId: string) => {
@@ -67,13 +73,21 @@ class PushNotifications {
           }
       } else {
           const ids: string[] = [];
-          const badgeCount = notifications.length;
-
-          // TODO: Set the badgeCount with default database mention count aggregate
+          let badgeCount = notifications.length;
 
           for (const notification of notifications) {
               if (notification.channel_id === channelId) {
                   ids.push(notification.identifier);
+                  badgeCount--;
+              }
+          }
+
+          // Set the badgeCount with default database mention count aggregate
+          const appDatabase = DatabaseManager.appDatabase?.database;
+          if (appDatabase) {
+              const mentions = await queryMentionCount(appDatabase);
+              if (mentions) {
+                  badgeCount = parseInt(mentions, 10);
               }
           }
 
@@ -81,16 +95,17 @@ class PushNotifications {
               NativeNotifications.removeDeliveredNotifications(ids);
           }
 
-          this.setApplicationIconBadgeNumber(badgeCount);
+          if (Platform.OS === 'ios') {
+              badgeCount = badgeCount <= 0 ? 0 : badgeCount;
+              Notifications.ios.setBadgeCount(badgeCount);
+          }
       }
   };
 
   createReplyCategory = () => {
-      const locale = DEFAULT_LOCALE; // TODO: Get the current user locale to replace the old getCurrentLocale(state);
-
-      const replyTitle = getLocalizedMessage(locale, t('mobile.push_notification_reply.title'));
-      const replyButton = getLocalizedMessage(locale, t('mobile.push_notification_reply.button'));
-      const replyPlaceholder = getLocalizedMessage(locale, t('mobile.push_notification_reply.placeholder'));
+      const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
+      const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
+      const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
       const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
       const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
       return new NotificationCategory(CATEGORY, [replyAction]);
@@ -102,13 +117,13 @@ class PushNotifications {
       if (payload) {
           switch (payload.type) {
               case NOTIFICATION_TYPE.CLEAR:
-                  // Mark the channel as read
+                  // TODO Notifications: Mark the channel as read
                   break;
               case NOTIFICATION_TYPE.MESSAGE:
-                  // fetch the posts for the channel
+                  // TODO Notifications: fetch the posts for the channel
 
                   if (foreground) {
-                      // Show the in-app notification
+                      this.handleInAppNotification(notification);
                   } else if (userInteraction && !payload.userInfo?.local) {
                       const props = getLaunchPropsFromNotification(notification);
                       relaunchApp(props);
@@ -118,8 +133,9 @@ class PushNotifications {
                   // eslint-disable-next-line no-console
                   console.log('Session expired notification');
 
-                  // Logout the user from the server that matches the notification
-
+                  if (payload.server_url) {
+                      DeviceEventEmitter.emit(General.SERVER_LOGOUT, payload.server_url);
+                  }
                   break;
           }
       }
@@ -128,39 +144,25 @@ class PushNotifications {
   handleInAppNotification = async (notification: NotificationWithData) => {
       const {payload} = notification;
 
-      // TODO: Get current channel from the database
-      const currentChannelId = '';
+      if (payload?.server_url) {
+          const database = DatabaseManager.serverDatabases[payload.server_url]?.database;
+          const currentChannelId = await queryCurrentChannelId(database);
+          const channelId = currentChannelId?.value;
 
-      if (payload?.channel_id !== currentChannelId) {
-          const screen = 'Notification';
-          const passProps = {
-              notification,
-          };
+          if (channelId && payload.channel_id !== channelId) {
+              const screen = 'Notification';
+              const passProps = {
+                  notification,
+              };
 
-          DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
-          showOverlay(screen, passProps);
+              DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
+              showOverlay(screen, passProps);
+          }
       }
   };
 
   localNotification = (notification: Notification) => {
       Notifications.postLocalNotification(notification);
-  };
-
-  onAppStateChange = (appState: AppStateStatus) => {
-      const isActive = appState === 'active';
-      const isBackground = appState === 'background';
-
-      if (isActive) {
-          if (!this.pushNotificationListener) {
-              this.pushNotificationListener = DeviceEventEmitter.addListener(
-                  View.NOTIFICATION_IN_APP,
-                  this.handleInAppNotification,
-              );
-          }
-      } else if (isBackground) {
-          this.pushNotificationListener?.remove();
-          this.pushNotificationListener = undefined;
-      }
   };
 
   onNotificationOpened = (notification: NotificationWithData, completion: () => void) => {
@@ -216,13 +218,6 @@ class PushNotifications {
       if (Platform.OS === 'ios') {
           const replyCategory = this.createReplyCategory();
           Notifications.setCategories([replyCategory]);
-      }
-  };
-
-  setApplicationIconBadgeNumber = (value: number) => {
-      if (Platform.OS === 'ios') {
-          const count = value < 0 ? 0 : value;
-          Notifications.ios.setBadgeCount(count);
       }
   };
 

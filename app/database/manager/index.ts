@@ -114,7 +114,7 @@ class DatabaseManager {
 
        if (serverUrl) {
            try {
-               const databaseName = hashCode(dbName);
+               const databaseName = hashCode(serverUrl);
                const databaseFilePath = this.getDatabaseFilePath(databaseName);
                const migrations = ServerDatabaseMigrations;
                const modelClasses = this.serverModels;
