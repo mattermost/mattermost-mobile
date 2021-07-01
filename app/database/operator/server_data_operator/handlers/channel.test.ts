@@ -50,6 +50,8 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 shared: false,
                 props: null,
                 scheme_id: null,
+                total_msg_count_root: 1,
+                policy_id: 'policy',
             },
         ];
 

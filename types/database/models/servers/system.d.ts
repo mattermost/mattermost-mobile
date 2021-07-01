@@ -12,9 +12,6 @@ export default class System extends Model {
     /** table (name) : System */
     static table: string;
 
-    /** name : The name or key value for the config */
-    name: string;
-
-    /** value : The value for that config/information */
+    /** value : The value for that config/information and whose key will be the id column  */
     value: any;
 }

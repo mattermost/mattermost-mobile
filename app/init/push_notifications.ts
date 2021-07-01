@@ -204,7 +204,7 @@ class PushNotifications {
           }
 
           operator.handleGlobal({
-              global: [{name: 'deviceToken', value: `${prefix}:${deviceToken}`}],
+              global: [{id: 'deviceToken', value: `${prefix}:${deviceToken}`}],
               prepareRecordsOnly: false,
           });
 

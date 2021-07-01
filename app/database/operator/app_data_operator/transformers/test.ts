@@ -75,7 +75,7 @@ describe('** APP DATA TRANSFORMER **', () => {
             database: database!,
             value: {
                 record: undefined,
-                raw: {name: 'g-n1', value: 'g-v1'},
+                raw: {id: 'g-n1', value: 'g-v1'},
             },
         });
 

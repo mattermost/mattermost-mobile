@@ -279,7 +279,7 @@ export type ProcessRecordResults = {
 }
 
 export type RawGlobal = {
-  name: string;
+  id: string;
   value: string;
 };
 
@@ -582,8 +582,7 @@ export type RawSlashCommand = {
 };
 
 export type RawSystem = {
-  id?: string;
-  name: string;
+  id: string;
   value: string;
 };
 

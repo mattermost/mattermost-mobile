@@ -90,7 +90,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
-        const systems = [{name: 'system-1', value: 'system-1'}];
+        const systems = [{id: 'system-1', value: 'system-1'}];
 
         await operator.handleSystem({
             systems,

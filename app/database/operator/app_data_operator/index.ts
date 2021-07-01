@@ -51,11 +51,11 @@ export default class AppDataOperator extends BaseDataOperator {
         }
 
         const records = await this.handleRecords({
-            fieldName: 'name',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
             transformer: transformGlobalRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: getUniqueRawsBy({raws: global, key: 'name'}),
+            createOrUpdateRawValues: getUniqueRawsBy({raws: global, key: 'id'}),
             tableName: GLOBAL,
         });
 

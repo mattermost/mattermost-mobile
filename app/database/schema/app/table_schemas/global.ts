@@ -10,7 +10,6 @@ const {GLOBAL} = MM_TABLES.APP;
 export default tableSchema({
     name: GLOBAL,
     columns: [
-        {name: 'name', type: 'string', isIndexed: true},
         {name: 'value', type: 'string'},
     ],
 });
