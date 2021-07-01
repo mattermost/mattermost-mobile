@@ -36,6 +36,7 @@ export default class ChannelMention extends PureComponent {
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
+        appsTakeOver: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -72,6 +73,9 @@ export default class ChannelMention extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        if (this.props.appsTakeOver) {
+            return;
+        }
         const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers} = this.props;
 
         if ((matchTerm !== prevProps.matchTerm && matchTerm === null) || (this.state.mentionComplete !== prevState.mentionComplete && this.state.mentionComplete)) {
@@ -211,6 +215,9 @@ export default class ChannelMention extends PureComponent {
     };
 
     render() {
+        if (this.props.appsTakeOver) {
+            return null;
+        }
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
         const {mentionComplete, sections} = this.state;
 

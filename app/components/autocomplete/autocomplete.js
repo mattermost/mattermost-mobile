@@ -19,6 +19,7 @@ import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
 import SlashSuggestion from './slash_suggestion';
+import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion';
 import DateSuggestion from './date_suggestion';
 
 export default class Autocomplete extends PureComponent {
@@ -77,9 +78,11 @@ export default class Autocomplete extends PureComponent {
             cursorPosition: props.cursorPosition,
             emojiCount: 0,
             commandCount: 0,
+            appCommandCount: 0,
             dateCount: 0,
             keyboardOffset: 0,
             value: props.value,
+            appsTakeOver: false,
         };
 
         this.containerRef = React.createRef();
@@ -137,6 +140,10 @@ export default class Autocomplete extends PureComponent {
         this.setState({emojiCount});
     };
 
+    handleAppCommandCountChange = (appCommandCount) => {
+        this.setState({appCommandCount});
+    }
+
     handleCommandCountChange = (commandCount) => {
         this.setState({commandCount});
     };
@@ -177,8 +184,14 @@ export default class Autocomplete extends PureComponent {
         return maxHeight;
     }
 
+    handleAppsTakeOver = (takeOver) => {
+        if (this.state.appsTakeOver !== takeOver) {
+            this.setState({appsTakeOver: takeOver});
+        }
+    }
+
     render() {
-        const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
+        const {atMentionCount, channelMentionCount, emojiCount, commandCount, appCommandCount, dateCount, cursorPosition, value} = this.state;
         const {theme, isSearch, offsetY} = this.props;
         const style = getStyleFromTheme(theme);
         const maxListHeight = this.maxListHeight();
@@ -197,7 +210,7 @@ export default class Autocomplete extends PureComponent {
         }
 
         // Hide when there are no active autocompletes
-        if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount === 0) {
+        if (atMentionCount + channelMentionCount + emojiCount + commandCount + appCommandCount + dateCount === 0) {
             wrapperStyles.push(style.hidden);
             containerStyles.push(style.hidden);
         }
@@ -212,6 +225,15 @@ export default class Autocomplete extends PureComponent {
                     ref={this.containerRef}
                     style={containerStyles}
                 >
+                    <AppSlashSuggestion
+                        {...this.props}
+                        maxListHeight={maxListHeight}
+                        onChangeText={this.onChangeText}
+                        onResultCountChange={this.handleAppCommandCountChange}
+                        takeOver={this.handleAppsTakeOver}
+                        value={value || ''}
+                        nestedScrollEnabled={this.props.nestedScrollEnabled}
+                    />
                     <AtMention
                         {...this.props}
                         cursorPosition={cursorPosition}
@@ -220,6 +242,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleAtMentionCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        appsTakeOver={this.state.appsTakeOver}
                     />
                     <ChannelMention
                         {...this.props}
@@ -229,6 +252,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleChannelMentionCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        appsTakeOver={this.state.appsTakeOver}
                     />
                     <EmojiSuggestion
                         {...this.props}
@@ -238,6 +262,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleEmojiCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        appsTakeOver={this.state.appsTakeOver}
                     />
                     <SlashSuggestion
                         {...this.props}
@@ -246,6 +271,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleCommandCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        appsTakeOver={this.state.appsTakeOver}
                     />
                     {(this.props.isSearch && this.props.enableDateSuggestion) &&
                     <DateSuggestion
@@ -254,6 +280,7 @@ export default class Autocomplete extends PureComponent {
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleIsDateFilterChange}
                         value={value || ''}
+                        appsTakeOver={this.state.appsTakeOver}
                     />
                     }
                 </View>
