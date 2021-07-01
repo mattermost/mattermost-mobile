@@ -7,17 +7,17 @@ import {General} from '@constants';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
 
-import {ClientOptions} from '@typings/api/client4';
-
-import * as ClientConstants from './constants';
-import ClientError from './error';
-
 import type {
     APIClientInterface,
     ClientHeaders,
     ClientResponse,
     RequestOptions,
 } from '@mattermost/react-native-network-client';
+
+import type {ClientOptions} from '@typings/api/client';
+
+import * as ClientConstants from './constants';
+import ClientError from './error';
 
 export default class ClientBase {
     analytics: Analytics|undefined;

@@ -9,7 +9,7 @@ import {SSO as SSOEnum} from '@constants';
 import {scheduleExpiredNotification} from '@actions/remote/push_notification';
 import {ssoLogin} from '@actions/remote/user';
 import {resetToChannel} from '@screens/navigation';
-import {ErrorApi} from '@typings/api/client4';
+import {ErrorApi} from '@typings/api/client';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
