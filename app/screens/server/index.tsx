@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useManagedConfig} from '@mattermost/react-native-emm';
+import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -25,8 +25,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
-
-import type {ManagedConfig} from '@mattermost/react-native-emm';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
@@ -153,7 +151,6 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
             return;
         }
 
-
         const data = await fetchConfigAndLicense(serverUrl);
         if (data.error) {
             setError(data.error);
@@ -168,7 +165,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
         input.current?.blur();
     }, []);
 
-    const handleTextChanged = useCallback((text) => {
+    const handleTextChanged = useCallback((text: string) => {
         setUrl(text);
     }, []);
 

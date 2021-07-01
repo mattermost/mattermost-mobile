@@ -52,7 +52,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-
     serverUrl = await getActiveServerUrl();
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);

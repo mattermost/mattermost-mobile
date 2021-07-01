@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@app/init/network_manager';
 import {General} from '@constants';
-import {buildQueryString, isMinimumServerVersion} from '@utils/helpers';
+import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -166,7 +165,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
-            {method: 'post', body: body},
+            {method: 'post', body},
         );
 
         return data;

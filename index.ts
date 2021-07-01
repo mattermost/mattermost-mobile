@@ -24,7 +24,7 @@ if (__DEV__) {
         '`-[RCTRootView cancelTouches]`',
         'scaleY',
     ]);
-    LogBox.ignoreLogs(["Require cycle: node_modules/zod/lib/src/index.js"]);
+    LogBox.ignoreLogs(['Require cycle: node_modules/zod/lib/src/index.js']);
     require('storybook/mattermost_storybook.ts');
 }
 
