@@ -6,7 +6,7 @@ import {Client4} from '@client/rest';
 import {General, Preferences, Posts} from '@mm-redux/constants';
 import {WebsocketEvents} from '@constants';
 import {THREAD} from '@constants/screen';
-import {updateThreadRead} from '@mm-redux/actions/threads';
+import {handleFollowChanged, updateThreadRead} from '@mm-redux/actions/threads';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
@@ -451,6 +451,7 @@ export function setUnreadPost(userId: string, postId: string, location: string) 
             if (isThreadUnread) {
                 const currentTeamId = getCurrentTeamId(state);
                 const threadId = post.root_id || post.id;
+                handleFollowChanged(dispatch, threadId, currentTeamId, true);
                 await dispatch(updateThreadRead(userId, currentTeamId, threadId, post.create_at));
             } else {
                 unreadChan = await Client4.markPostAsUnread(userId, postId);
