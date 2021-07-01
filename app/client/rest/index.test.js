@@ -9,8 +9,6 @@ import ClientError from '@client/rest/error';
 import TestHelper from '@test/test_helper';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-jest.mock('@mattermost/react-native-emm');
-
 describe('Client', () => {
     beforeAll(() => {
         if (!nock.isActive()) {

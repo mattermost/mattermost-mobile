@@ -4,6 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {General} from '@constants';
+import {t} from '@i18n';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
 
@@ -24,14 +25,7 @@ export default class ClientBase {
     apiClient: APIClientInterface;
     csrfToken = '';
     requestHeaders: {[x: string]: string} = {};
-    diagnosticId = '';
-    enableLogging = false;
-    logToConsole = false;
     serverVersion = '';
-    translations = {
-        connectionError: 'There appears to be a problem with your internet connection.',
-        unknownError: 'We received an unexpected status code from the server.',
-    };
     urlVersion = '/api/v4';
 
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
@@ -71,14 +65,6 @@ export default class ClientBase {
 
     setCSRFToken(csrfToken: string) {
         this.csrfToken = csrfToken;
-    }
-
-    setDiagnosticId(diagnosticId: string) {
-        this.diagnosticId = diagnosticId;
-    }
-
-    setEnableLogging(enable: boolean) {
-        this.enableLogging = enable;
     }
 
     // Routes
@@ -179,14 +165,6 @@ export default class ClientBase {
         return `${this.urlVersion}/redirect_location`;
     }
 
-    getBotsRoute() {
-        return `${this.urlVersion}/bots`;
-    }
-
-    getBotRoute(botUserId: string) {
-        return `${this.getBotsRoute()}/${botUserId}`;
-    }
-
     getAppsProxyRoute() {
         return '/plugins/com.mattermost.apps';
     }
@@ -214,8 +192,8 @@ export default class ClientBase {
                 throw new ClientError(this.apiClient.baseUrl, {
                     message: 'Invalid request method',
                     intl: {
-                        id: 'mobile.request.invalid_request_method',
-                        defaultMessage: '',
+                        id: t('mobile.request.invalid_request_method'),
+                        defaultMessage: 'Invalid request method',
                     },
                     url,
                 });
@@ -232,7 +210,7 @@ export default class ClientBase {
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
                 intl: {
-                    id: 'mobile.request.invalid_response',
+                    id: t('mobile.request.invalid_response'),
                     defaultMessage: 'Received invalid response from the server.',
                 },
                 url,
@@ -241,7 +219,8 @@ export default class ClientBase {
 
         const headers: ClientHeaders = response.headers || {};
         const serverVersion = headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()];
-        if (serverVersion && !headers['Cache-Control'] && this.serverVersion !== serverVersion) {
+        const hasCacheControl = Boolean(headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()]);
+        if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;
             DeviceEventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
         }

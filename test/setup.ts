@@ -309,6 +309,8 @@ jest.mock('@screens/navigation', () => ({
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
 
+jest.mock('@mattermost/react-native-emm');
+
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);

@@ -6,7 +6,6 @@ import mix from '@utils/mix';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
 import ClientApps, {ClientAppsMix} from './apps';
 import ClientBase from './base';
-import ClientBots, {ClientBotsMix} from './bots';
 import ClientChannels, {ClientChannelsMix} from './channels';
 import ClientEmojis, {ClientEmojisMix} from './emojis';
 import ClientFiles, {ClientFilesMix} from './files';
@@ -23,7 +22,6 @@ import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 interface Client extends ClientBase,
     ClientAppsMix,
-    ClientBotsMix,
     ClientChannelsMix,
     ClientEmojisMix,
     ClientFilesMix,
@@ -39,7 +37,6 @@ interface Client extends ClientBase,
 
 class Client extends mix(ClientBase).with(
     ClientApps,
-    ClientBots,
     ClientChannels,
     ClientEmojis,
     ClientFiles,
