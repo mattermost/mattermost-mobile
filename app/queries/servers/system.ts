@@ -9,23 +9,23 @@ import System from '@typings/database/models/servers/system';
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 export const getCurrentUserId = async (serverDatabase: Database) => {
-    const currentUserId = await serverDatabase.collections.get(SYSTEM).query(Q.where('name', 'currentUserId')).fetch() as System[];
-    return currentUserId?.[0] ?? '';
+    const currentUserId = await serverDatabase.collections.get(SYSTEM).query(Q.where('id', 'currentUserId')).fetch() as System[];
+    return currentUserId?.[0];
 };
 
 export const getCommonSystemValues = async (database: Database) => {
-    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license', 'currentUserId']))).fetch()) as System[];
+    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('id', Q.oneOf(['config', 'license', 'currentUserId']))).fetch()) as System[];
     let config = {};
     let license = {};
     let currentUserId = '';
     systemRecords.forEach((systemRecord) => {
-        if (systemRecord.name === 'config') {
+        if (systemRecord.id === 'config') {
             config = systemRecord.value;
         }
-        if (systemRecord.name === 'license') {
+        if (systemRecord.id === 'license') {
             license = systemRecord.value;
         }
-        if (systemRecord.name === 'currentUserId') {
+        if (systemRecord.id === 'currentUserId') {
             currentUserId = systemRecord.value;
         }
     });

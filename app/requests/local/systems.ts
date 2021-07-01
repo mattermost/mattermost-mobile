@@ -11,12 +11,7 @@ export const createSessions = async (serverUrl: string, sessions: any) => {
     }
 
     await operator.handleSystem({
-        systems: [{
-
-            // id: string; // todo: to confirm value for session id ?
-            name: 'sessions',
-            value: sessions,
-        }],
+        systems: [{id: 'sessions', value: sessions}],
         prepareRecordsOnly: false,
     });
 

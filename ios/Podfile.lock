@@ -716,7 +716,7 @@ SPEC CHECKSUMS:
   EXConstants: c4dd28acc12039c999612507a5f935556f2c86ce
   EXFileSystem: dcf2273f49431e5037347c733a2dc5d08e0d0a9e
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: cef0cc6d50abc92e8cf52f140aa22b5371cfec0b
+  FBReactNativeSpec: d35931295aacfe996e833c01a3701d4aa7a80cb4
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   jail-monkey: 01cd0a75aa1034d08fd851869e6e6c3b063242d7
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0

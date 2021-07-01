@@ -28,11 +28,9 @@ describe('*** Test schema for DEFAULT database ***', () => {
                 [GLOBAL]: {
                     name: GLOBAL,
                     columns: {
-                        name: {name: 'name', type: 'string', isIndexed: true},
                         value: {name: 'value', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'name', type: 'string', isIndexed: true},
                         {name: 'value', type: 'string'},
                     ],
                 },

@@ -181,19 +181,19 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const systemRecords = operator.handleSystem({
             systems: [
                 {
-                    name: 'config',
+                    id: 'config',
                     value: JSON.stringify(config),
                 },
                 {
-                    name: 'license',
+                    id: 'license',
                     value: JSON.stringify(license),
                 },
                 {
-                    name: 'currentUserId',
+                    id: 'currentUserId',
                     value: currentUser.id,
                 },
                 {
-                    name: 'url',
+                    id: 'url',
                     value: Client4.getUrl(),
                 },
             ],
@@ -271,7 +271,7 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
     // Data retention
     if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
         dataRetentionPolicy = await getDataRetentionPolicy(serverUrl);
-        await operator.handleSystem({systems: [{name: 'dataRetentionPolicy', value: dataRetentionPolicy}], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: 'dataRetentionPolicy', value: dataRetentionPolicy}], prepareRecordsOnly: false});
     }
 
     return null;
@@ -294,8 +294,8 @@ export const updateMe = async (serverUrl: string, user: User) => {
 
     const systemRecords = operator.handleSystem({
         systems: [
-            {name: 'currentUserId', value: data.id},
-            {name: 'locale', value: data?.locale},
+            {id: 'currentUserId', value: data.id},
+            {id: 'locale', value: data?.locale},
         ],
         prepareRecordsOnly: true,
     });

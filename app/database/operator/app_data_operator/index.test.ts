@@ -72,7 +72,7 @@ describe('** APP DATA OPERATOR **', () => {
         expect(appOperator).toBeTruthy();
 
         const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
-        const global: RawGlobal[] = [{name: 'global-1-name', value: 'global-1-value'}];
+        const global: RawGlobal[] = [{id: 'global-1-name', value: 'global-1-value'}];
 
         await appOperator?.handleGlobal({
             global,

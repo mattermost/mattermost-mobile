@@ -9,6 +9,6 @@ import type Global from '@typings/database/models/app/global';
 const {APP: {GLOBAL}} = MM_TABLES;
 
 export const getDeviceToken = async (appDatabase: Database) => {
-    const tokens = (await appDatabase.collections.get(GLOBAL).query(Q.where('name', 'deviceToken')).fetch()) as Global[];
+    const tokens = (await appDatabase.collections.get(GLOBAL).query(Q.where('id', 'deviceToken')).fetch()) as Global[];
     return tokens?.[0]?.value ?? '';
 };
