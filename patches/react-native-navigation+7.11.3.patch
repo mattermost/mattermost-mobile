@@ -44,6 +44,32 @@ index 2d8f1ba..708f130 100644
              }
          });
      }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
+index 6b28fc7..8bb2a76 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
+@@ -1,10 +1,12 @@
+ package com.reactnativenavigation.viewcontrollers.viewcontroller;
+ 
+ import android.app.Activity;
++import android.content.Context;
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.view.ViewManager;
+ import android.view.ViewTreeObserver;
++import android.view.inputmethod.InputMethodManager;
+ 
+ import com.reactnativenavigation.options.Options;
+ import com.reactnativenavigation.options.params.Bool;
+@@ -275,6 +277,8 @@ public abstract class ViewController<T extends ViewGroup> implements ViewTreeObs
+             ((Destroyable) view).destroy();
+         }
+         if (view != null) {
++            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
++            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+             view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+             view.setOnHierarchyChangeListener(null);
+             if (view.getParent() instanceof ViewGroup) {
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 index 815e1c6..a35a087 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
@@ -56,7 +82,7 @@ index 815e1c6..a35a087 100644
  
  @implementation RNNOverlayWindow
  
-@@ -7,7 +9,9 @@ - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+@@ -7,7 +9,9 @@
      UIView *hitTestResult = [super hitTest:point withEvent:event];
  
      if ([hitTestResult isKindOfClass:[UIWindow class]] ||
