@@ -143,7 +143,6 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
             Object {
               "position": "absolute",
               "right": 14,
-              "top": 3,
             }
           }
         >
