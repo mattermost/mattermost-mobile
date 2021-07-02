@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function emptyFunction(e?: any) {
-    // eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
+import Preferences from '@constants/preferences';
+
+export function emptyFunction(e?: any) {// eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
 }
 
 // Generates a RFC-4122 version 4 compliant globally unique identifier.
@@ -24,4 +24,17 @@ export const generateId = (): string => {
         return v.toString(16);
     });
     return id;
+};
+
+export const parseTheme = (theme: string) => {
+    let parsedTheme: Theme = Preferences.THEMES.default;
+    if (theme) {
+        try {
+            parsedTheme = JSON.parse(theme);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error(`Unable to parseTheme with input ${parsedTheme}`);
+        }
+    }
+    return parsedTheme;
 };

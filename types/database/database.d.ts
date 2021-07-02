@@ -679,6 +679,7 @@ export type RawUser = {
   terms_of_service_id?: string;
   update_at: number;
   username: string;
+  remote_id?: string;
 };
 
 export type RawValue =
