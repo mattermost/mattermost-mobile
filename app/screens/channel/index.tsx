@@ -1,18 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import ChannelModel from '@typings/database/models/servers/channel';
-import PreferenceModel from '@typings/database/models/servers/preference';
-import SystemModel from '@typings/database/models/servers/system';
-import {LaunchType} from '@typings/launch';
 import React from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+
+import {MM_TABLES} from '@constants/database';
+
 import ChannelNavBar from './channel_nav_bar';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type SystemModel from '@typings/database/models/servers/system';
+import type {LaunchType} from '@typings/launch';
+
+import {ThemeProvider} from '@screens/channel/theme_provider';
 
 const {SERVER: {CHANNEL, PREFERENCE, SYSTEM}} = MM_TABLES;
 
@@ -38,18 +42,17 @@ const Channel = ({launchType, currentChannelIdRecord, channelRecord: channel, cu
     const theme = themeRecords[0].value;
 
     return (
-        <>
+        <ThemeProvider value={theme}>
             <SafeAreaView style={styles.flex}>
                 <View>
                     <Text>In channel screen </Text>
                 </View>
-                {/*<ChannelNavBar*/}
-                {/*    channel={channel}*/}
-                {/*    onPress={() => null}*/}
-                {/*    theme={theme}*/}
-                {/*/>*/}
+                <ChannelNavBar
+                    channel={channel}
+                    onPress={() => null}
+                />
             </SafeAreaView>
-        </>
+        </ThemeProvider>
     );
 };
 

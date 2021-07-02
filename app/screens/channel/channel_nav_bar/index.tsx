@@ -1,24 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useTheme} from '@screens/channel/theme_provider';
 import React from 'react';
-import {Platform, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import ChannelTitle from './channel_title';
+// import ChannelTitle from './channel_title';
 
 import ChannelModel from '@typings/database/models/servers/channel';
 
 type ChannelNavBar = {
     onPress: () => void,
-    theme: Theme,
     channel: ChannelModel
 }
 
-const ChannelNavBar = ({channel, onPress, theme}: ChannelNavBar) => {
-    const insets = useSafeAreaInsets();
+const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
+    // const insets = useSafeAreaInsets();
+    const theme = useTheme();
+    console.log('>>>>>>>>>>>>>>> them', theme);
     const style = getStyleFromTheme(theme);
     const height = 0;
     const canHaveSubtitle = true;
@@ -97,16 +99,14 @@ const ChannelNavBar = ({channel, onPress, theme}: ChannelNavBar) => {
     //todo: Read Messages - Include MainSidebarDrawerButton, ChannelSearchButton, SettingsSidebarDrawerButton
     //todo: Read Messages - Handle orientation change and include methods such as drawerButtonVisible, handleDimensions, handlePermanentSidebar, onLayout
     return (
-        <View
+        <View >
 
-            // onLayout={onLayout}
-            style={[style.header, {height: height + insets.top, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}]}
-        >
-            <ChannelTitle
-                channel={channel}
-                onPress={onPress}
-                canHaveSubtitle={canHaveSubtitle}
-            />
+            <Text>in channel nav bar</Text>
+            {/*<ChannelTitle*/}
+            {/*    channel={channel}*/}
+            {/*    onPress={onPress}*/}
+            {/*    canHaveSubtitle={canHaveSubtitle}*/}
+            {/*/>*/}
         </View>
     );
 };
