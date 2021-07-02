@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import Emm from '@mattermost/react-native-emm';
@@ -11,10 +12,11 @@ import {
     RetryTypes,
 } from '@mattermost/react-native-network-client';
 
-import ManagedApp from '@app/init/managed_app';
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
 import * as ClientConstants from '@client/rest/constants';
+import {CERTIFICATE_ERRORS} from '@constants/network';
+import ManagedApp from '@init/managed_app';
 import {getCSRFFromCookie} from '@utils/security';
 
 import type {ServerCredential} from '@typings/credentials';
@@ -85,7 +87,7 @@ class NetworkManager {
 
     private buildConfig = async () => {
         const userAgent = await DeviceInfo.getUserAgent();
-        const headers: Record<string, any> = {
+        const headers: Record<string, string> = {
             ...this.DEFAULT_CONFIG.headers,
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
         };
@@ -111,9 +113,9 @@ class NetworkManager {
 
     private clientErrorEventHandler: APIClientErrorEventHandler = (event: APIClientErrorEvent) => {
         if (CLIENT_CERTIFICATE_IMPORT_ERROR_CODES.includes(event.errorCode)) {
-            // Emit CLIENT_CERTIFICATE_IMPORT_ERROR event
+            DeviceEventEmitter.emit(CERTIFICATE_ERRORS.CLIENT_CERTIFICATE_IMPORT_ERROR, event.serverUrl);
         } else if (CLIENT_CERTIFICATE_MISSING_ERROR_CODE === event.errorCode) {
-            // Emit CLIENT_CERTIFICATE_MISSING event
+            DeviceEventEmitter.emit(CERTIFICATE_ERRORS.CLIENT_CERTIFICATE_MISSING, event.serverUrl);
         }
     };
 }
