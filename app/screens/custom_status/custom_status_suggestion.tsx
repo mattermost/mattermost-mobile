@@ -130,6 +130,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         customStatusDuration: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 15,
         },
         customStatusText: {
             color: theme.centerChannelColor,

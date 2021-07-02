@@ -183,9 +183,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingTop: 32,
             paddingBottom: 32,
         },
-        separator: {
-            marginTop: 32,
-        },
         block: {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomWidth: 1,

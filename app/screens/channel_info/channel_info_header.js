@@ -205,14 +205,12 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                 numberOfLines={1}
                             />
                             {customStatus.duration === CustomStatusDuration.DONT_CLEAR ? null : (
-                                <Text style={style.customStatusExpiry}>
-                                    <CustomStatusExpiry
-                                        time={customStatus.expires_at}
-                                        theme={theme}
-                                        textStyles={style.customStatusExpiry}
-                                        showPrefix={true}
-                                    />
-                                </Text>
+                                <CustomStatusExpiry
+                                    time={customStatus.expires_at}
+                                    theme={theme}
+                                    textStyles={style.customStatusExpiry}
+                                    showPrefix={true}
+                                />
                             )}
                         </View>
                     </View>
@@ -314,24 +312,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         iconContainer: {
             marginRight: 8,
             color: theme.centerChannelColor,
+            bottom: 8,
         },
         customStatusContainer: {
-            position: 'relative',
             flexDirection: 'row',
             alignItems: 'center',
             paddingVertical: 10,
         },
         customStatus: {
-            width: '80%',
+            width: '90%',
         },
         customStatusExpiry: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 13,
         },
         customStatusText: {
             flex: 1,
             fontSize: 15,
             color: theme.centerChannelColor,
-            width: '80%',
+            height: '100%',
         },
         channelNameContainer: {
             flexDirection: 'row',

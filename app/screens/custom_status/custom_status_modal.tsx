@@ -415,6 +415,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     underlineColorAndroid='transparent'
                     value={text}
                 />
+                <View style={style.divider}/>
                 {customStatusEmoji}
                 {isStatusSet ? (
                     <View
@@ -451,8 +452,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     >
                         <StatusBar/>
                         <View style={style.scrollView}>
-                            {customStatusInput}
-                            {clearAfter}
+                            <View style={style.block}>
+                                {customStatusInput}
+                                {clearAfter}
+                            </View>
                             {this.renderRecentCustomStatuses(style)}
                             {this.renderCustomStatusSuggestions(style)}
                         </View>
@@ -477,14 +480,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingTop: 32,
         },
         inputContainer: {
-            position: 'relative',
-            flexDirection: 'row',
-            alignItems: 'center',
+            justifyContent: 'center',
             height: 48,
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
             backgroundColor: theme.centerChannelBg,
         },
         input: {
@@ -533,7 +530,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             height: 1,
-            marginHorizontal: 16,
+            marginRight: 16,
+            marginLeft: 52,
         },
         expiryTimeLabel: {
             fontSize: 17,

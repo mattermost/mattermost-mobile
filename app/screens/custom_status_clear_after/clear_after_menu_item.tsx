@@ -142,7 +142,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         rightPosition: {
             position: 'absolute',
-            top: 3,
             right: 14,
         },
         divider: {
