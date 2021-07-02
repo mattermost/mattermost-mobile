@@ -343,12 +343,14 @@ export type RawChannel = {
   id: string;
   last_post_at: number;
   name: string;
+  policy_id: string;
   props: Record<string, any> | null;
   purpose: string;
   scheme_id: string | null;
   shared: boolean | null;
   team_id: string;
   total_msg_count: number;
+  total_msg_count_root: number;
   type: ChannelType;
   update_at: number;
 };
