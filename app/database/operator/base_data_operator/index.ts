@@ -50,10 +50,7 @@ export default class BaseDataOperator {
     processRecords = async ({createOrUpdateRawValues, deleteRawValues = [], tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
         const getRecords = async (rawValues : RawValue[]) => {
             // We will query a table where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
-            const columnValues: string[] = getRangeOfValues({
-                fieldName,
-                raws: rawValues,
-            });
+            const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
             if (!columnValues.length && rawValues.length) {
                 throw new DataOperatorException(

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
-import {field, json} from '@nozbe/watermelondb/decorators';
+import {json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -17,9 +17,6 @@ export default class System extends Model {
     /** table (name) : System */
     static table = SYSTEM;
 
-    /** name : The name or key value for the config */
-    @field('name') name!: string;
-
-    /** value : The value for that config/information */
+    /** value : The value for that config/information and whose key will be the id column */
     @json('value', (rawJson) => rawJson) value!: any;
 }

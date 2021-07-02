@@ -10,7 +10,6 @@ const {SYSTEM} = MM_TABLES.SERVER;
 export default tableSchema({
     name: SYSTEM,
     columns: [
-        {name: 'name', type: 'string'},
         {name: 'value', type: 'string'},
     ],
 });

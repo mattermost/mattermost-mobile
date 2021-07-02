@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
-import {field, json} from '@nozbe/watermelondb/decorators';
+import {json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -18,9 +18,6 @@ export default class Global extends Model {
     /** table (name) : global */
     static table = GLOBAL;
 
-    /** name : The label/key to use to retrieve the special 'value' */
-    @field('name') name!: string;
-
-    /** value : The value part of the key-value combination */
+    /** value : The value part of the key-value combination and whose key will be the id column  */
     @json('value', (rawJson) => rawJson) value!: any;
 }

@@ -90,7 +90,7 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (system: System) => {
-        system.name = raw?.name;
+        system._raw.id = raw?.id;
         system.value = raw?.value;
     };
 

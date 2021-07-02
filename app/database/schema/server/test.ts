@@ -383,11 +383,9 @@ describe('*** Test schema for SERVER database ***', () => {
                 [SYSTEM]: {
                     name: SYSTEM,
                     columns: {
-                        name: {name: 'name', type: 'string'},
                         value: {name: 'value', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'name', type: 'string'},
                         {name: 'value', type: 'string'},
                     ],
                 },

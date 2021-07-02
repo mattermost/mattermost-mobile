@@ -48,12 +48,9 @@ export const transformInfoRecord = ({action, database, value}: TransformerArgs) 
  */
 export const transformGlobalRecord = ({action, database, value}: TransformerArgs) => {
     const raw = value.raw as RawGlobal;
-    const record = value.record as Global;
-    const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (global: Global) => {
-        global._raw.id = isCreateAction ? global.id : record.id;
-        global.name = raw?.name;
+        global._raw.id = raw?.id;
         global.value = raw?.value;
     };
 

@@ -68,11 +68,11 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         }
 
         const records = await this.handleRecords({
-            fieldName: 'name',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordSystemEqualToRaw,
             transformer: transformSystemRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'name'}),
+            createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),
             tableName: SYSTEM,
         });
 
