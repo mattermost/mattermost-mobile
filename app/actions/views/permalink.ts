@@ -7,16 +7,22 @@ import {Keyboard} from 'react-native';
 import {dismissAllModals, showModalOverCurrentContext} from '@actions/navigation';
 import {loadChannelsByTeamName} from '@actions/views/channel';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
+import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {permalinkBadTeam} from '@utils/general';
 import {changeOpacity} from '@utils/theme';
 
-import type {DispatchFunc} from '@mm-redux/types/actions';
+import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 let showingPermalink = false;
 
 export function showPermalink(intl: typeof intlShape, teamName: string, postId: string, openAsPermalink = true) {
-    return async (dispatch: DispatchFunc) => {
-        const loadTeam = await dispatch(loadChannelsByTeamName(teamName, permalinkBadTeam.bind(null, intl)));
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let name = teamName;
+        if (!name) {
+            name = getCurrentTeam(getState()).name;
+        }
+
+        const loadTeam = await dispatch(loadChannelsByTeamName(name, permalinkBadTeam.bind(null, intl)));
 
         if (!loadTeam.error) {
             Keyboard.dismiss();

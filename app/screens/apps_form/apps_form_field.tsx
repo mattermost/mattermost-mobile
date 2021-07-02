@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {View} from 'react-native';
 
 import {Theme} from '@mm-redux/types/preferences';
 import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
@@ -13,6 +14,9 @@ import {ViewTypes} from '@constants/index';
 import BoolSetting from '@components/widgets/settings/bool_setting';
 import TextSetting from '@components/widgets/settings/text_setting';
 import AutocompleteSelector from '@components/autocomplete_selector';
+import Markdown from '@components/markdown/markdown';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -31,6 +35,20 @@ export type Props = {
 type State = {
     selected: DialogOption | null;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        markdownFieldContainer: {
+            marginTop: 15,
+            marginBottom: 10,
+            marginLeft: 15,
+        },
+        markdownFieldText: {
+            fontSize: 14,
+            color: theme.centerChannelColor,
+        },
+    };
+});
 
 export default class AppsFormField extends React.PureComponent<Props, State> {
     state = {
@@ -78,7 +96,8 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
         const placeholder = field.hint || '';
         const displayName = (field.modal_label || field.label) as string;
 
-        if (field.type === 'text') {
+        switch (field.type) {
+        case AppFieldTypes.TEXT: {
             let keyboardType = 'default';
             let multiline = false;
             let secureTextEntry = false;
@@ -141,7 +160,11 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     disabled={field.readonly}
                 />
             );
-        } else if ([AppFieldTypes.USER, AppFieldTypes.CHANNEL, AppFieldTypes.STATIC_SELECT, AppFieldTypes.DYNAMIC_SELECT].includes(field.type)) {
+        }
+        case AppFieldTypes.USER:
+        case AppFieldTypes.CHANNEL:
+        case AppFieldTypes.STATIC_SELECT:
+        case AppFieldTypes.DYNAMIC_SELECT: {
             let dataSource = '';
             let options: DialogOption[] = [];
 
@@ -179,7 +202,8 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     disabled={field.readonly}
                 />
             );
-        } else if (field.type === AppFieldTypes.BOOL) {
+        }
+        case AppFieldTypes.BOOL: {
             const boolValue = value as boolean;
             return (
                 <BoolSetting
@@ -195,6 +219,28 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     disabled={field.readonly}
                 />
             );
+        }
+        case AppFieldTypes.MARKDOWN: {
+            if (!field.description) {
+                return null;
+            }
+            const style = getStyleSheet(theme);
+
+            return (
+                <View
+                    style={style.markdownFieldContainer}
+                >
+                    <Markdown
+                        value={field.description}
+                        mentionKeys={[]}
+                        blockStyles={getMarkdownBlockStyles(theme)}
+                        textStyles={getMarkdownTextStyles(theme)}
+                        baseTextStyle={style.markdownFieldText}
+                        theme={theme}
+                    />
+                </View>
+            );
+        }
         }
 
         return null;

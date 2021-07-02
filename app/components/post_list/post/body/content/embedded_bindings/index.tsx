@@ -22,7 +22,7 @@ const EmbeddedBindings = ({embeds, postId, theme}: Props) => {
         content.push(
             <EmbeddedBinding
                 embed={embed}
-                key={'att_' + i.toString()}
+                key={'binding_' + i.toString()}
                 postId={postId}
                 theme={theme}
             />,
