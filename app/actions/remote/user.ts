@@ -188,17 +188,14 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
             systems: [
                 {
                     id: Database.SYSTEM_IDENTIFIERS.CONFIG,
-                    name: Database.SYSTEM_IDENTIFIERS.CONFIG,
                     value: JSON.stringify(config),
                 },
                 {
                     id: Database.SYSTEM_IDENTIFIERS.LICENSE,
-                    name: Database.SYSTEM_IDENTIFIERS.LICENSE,
                     value: JSON.stringify(license),
                 },
                 {
                     id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    name: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
                     value: currentUser.id,
                 },
             ],

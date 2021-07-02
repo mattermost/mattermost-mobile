@@ -20,7 +20,6 @@ export const schema: AppSchema = appSchema({
         tableSchema({
             name: GLOBAL,
             columns: [
-                {name: 'name', type: 'string', isIndexed: true},
                 {name: 'value', type: 'string'},
             ],
         }),

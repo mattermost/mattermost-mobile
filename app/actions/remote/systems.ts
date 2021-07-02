@@ -31,7 +31,6 @@ export const getDataRetentionPolicy = async (serverUrl: string) => {
     if (operator) {
         const systems: RawSystem[] = [{
             id: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
-            name: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
             value: JSON.stringify(data),
         }];
 

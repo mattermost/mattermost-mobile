@@ -19,23 +19,35 @@ export const getCurrentUserId = async (serverDatabase: Database) => {
 };
 
 export const getCommonSystemValues = async (database: Database) => {
-    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('name', Q.oneOf(['config', 'license', 'currentUserId']))).fetch()) as System[];
+    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('id', Q.oneOf(['config', 'license', 'currentUserId']))).fetch()) as System[];
     let config = {};
     let license = {};
+    let currentChannelId = '';
+    let currentTeamId = '';
     let currentUserId = '';
     systemRecords.forEach((systemRecord) => {
-        if (systemRecord.name === 'config') {
-            config = systemRecord.value;
-        }
-        if (systemRecord.name === 'license') {
-            license = systemRecord.value;
-        }
-        if (systemRecord.name === 'currentUserId') {
-            currentUserId = systemRecord.value;
+        switch (systemRecord.id) {
+            case SYSTEM_IDENTIFIERS.CONFIG:
+                config = systemRecord.value;
+                break;
+            case SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID:
+                currentChannelId = systemRecord.value;
+                break;
+            case SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID:
+                currentTeamId = systemRecord.value;
+                break;
+            case SYSTEM_IDENTIFIERS.CURRENT_USER_ID:
+                currentUserId = systemRecord.value;
+                break;
+            case SYSTEM_IDENTIFIERS.LICENSE:
+                license = systemRecord.value;
+                break;
         }
     });
 
     return {
+        currentChannelId,
+        currentTeamId,
         currentUserId,
         config,
         license,

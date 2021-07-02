@@ -16,6 +16,7 @@ import {
 } from 'react-native-notifications';
 
 import {Device, General, Navigation} from '@constants';
+import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
@@ -204,7 +205,7 @@ class PushNotifications {
           }
 
           operator.handleGlobal({
-              global: [{name: 'deviceToken', value: `${prefix}:${deviceToken}`}],
+              global: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: `${prefix}:${deviceToken}`}],
               prepareRecordsOnly: false,
           });
 

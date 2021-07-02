@@ -11,7 +11,7 @@ export const isRecordInfoEqualToRaw = (record: Info, raw: RawInfo) => {
 };
 
 export const isRecordGlobalEqualToRaw = (record: Global, raw: RawGlobal) => {
-    return raw.name === record.name && raw.value === record.value;
+    return raw.id === record.id && raw.value === record.value;
 };
 
 export const isRecordServerEqualToRaw = (record: Servers, raw: RawServers) => {

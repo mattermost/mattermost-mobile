@@ -66,11 +66,9 @@ export const fetchConfigAndLicense = async (serverUrl: string) => {
         if (credentials && operator) {
             const systems: RawSystem[] = [{
                 id: SYSTEM_IDENTIFIERS.CONFIG,
-                name: SYSTEM_IDENTIFIERS.CONFIG,
                 value: JSON.stringify(config),
             }, {
                 id: SYSTEM_IDENTIFIERS.LICENSE,
-                name: SYSTEM_IDENTIFIERS.LICENSE,
                 value: JSON.stringify(license),
             }];
 
