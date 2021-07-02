@@ -40,6 +40,12 @@ export default class ClientBase {
         }
     }
 
+    invalidate() {
+        if (this.apiClient) {
+            this.apiClient.invalidate();
+        }
+    }
+
     getRequestHeaders(requestMethod: string) {
         const headers = {...this.requestHeaders};
 

@@ -62,7 +62,7 @@ class NetworkManager {
     }
 
     public invalidateClient = (serverUrl: string) => {
-        this.clients[serverUrl]?.client.invalidate();
+        this.clients[serverUrl]?.invalidate();
         delete this.clients[serverUrl];
     }
 
