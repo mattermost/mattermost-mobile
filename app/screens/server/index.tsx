@@ -9,15 +9,16 @@ import {
     Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {doPing, fetchConfigAndLicense} from '@actions/remote/general';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
-import {doPing, fetchConfigAndLicense} from '@actions/remote/general';
+import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -33,7 +34,7 @@ interface ServerProps extends LaunchProps {
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({extra, launchType, launchError, theme}: ServerProps) => {
+const Server: NavigationFunctionComponent = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
 
@@ -89,6 +90,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
 
         goToScreen(screen, title, passProps, defaultOptions);
         setConnecting(false);
+        setUrl(serverUrl);
     };
 
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
@@ -208,6 +210,19 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
             }
         }
     }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                if (url) {
+                    NetworkManager.invalidateClient(url);
+                }
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+
+        return () => unsubscribe.remove();
+    }, [componentId, url]);
 
     let buttonIcon;
     let buttonText;
