@@ -23,25 +23,37 @@ import type {License} from '@typings/database/models/servers/license';
 import type Role from '@typings/database/models/servers/role';
 import type User from '@typings/database/models/servers/user';
 
+type LoadedUser = {
+    currentUser?: RawUser,
+    error?: Client4Error
+}
+
 const HTTP_UNAUTHORIZED = 401;
 
-export const logout = async (serverUrl: string, skipServerLogout = false) => {
-    return async () => {
-        if (!skipServerLogout) {
-            try {
-                const client = NetworkManager.getClient(serverUrl);
-                await client.logout();
-            } catch (error) {
-                // We want to log the user even if logging out from the server failed
-                // eslint-disable-next-line no-console
-                console.warn('An error ocurred loging out from the server', error);
-            }
-        }
+export const completeLogin = async (serverUrl: string, user: RawUser) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
 
-        DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
+    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
 
-        return {data: true};
-    };
+    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
+        return null;
+    }
+
+    // Set timezone
+    if (isTimezoneEnabled(config)) {
+        const timezone = getDeviceTimezone();
+        await autoUpdateTimezone(serverUrl, {deviceTimezone: timezone, userId: user.id});
+    }
+
+    // Data retention
+    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+        getDataRetentionPolicy(serverUrl);
+    }
+
+    return null;
 };
 
 export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Error) => {
@@ -57,6 +69,24 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Erro
     }
 
     return {error: null};
+};
+
+export const getSessions = async (serverUrl: string, currentUserId: string) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch {
+        return undefined;
+    }
+
+    try {
+        return await client.getSessions(currentUserId);
+    } catch (e) {
+        logError(e);
+        await forceLogoutIfNecessary(serverUrl, e);
+    }
+
+    return undefined;
 };
 
 export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
@@ -104,7 +134,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         await completeLogin(serverUrl, user);
     }
 
-    return {result};
+    return {error: undefined};
 };
 
 export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs) => {
@@ -245,85 +275,24 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
     return {currentUser, error: undefined};
 };
 
-export const completeLogin = async (serverUrl: string, user: RawUser) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
+export const logout = async (serverUrl: string, skipServerLogout = false) => {
+    return async () => {
+        if (!skipServerLogout) {
+            try {
+                const client = NetworkManager.getClient(serverUrl);
+                await client.logout();
+            } catch (error) {
+                // We want to log the user even if logging out from the server failed
+                // eslint-disable-next-line no-console
+                console.warn('An error ocurred loging out from the server', error);
+            }
+        }
 
-    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
+        DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
 
-    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
-        return null;
-    }
-
-    // Set timezone
-    if (isTimezoneEnabled(config)) {
-        const timezone = getDeviceTimezone();
-        await autoUpdateTimezone(serverUrl, {deviceTimezone: timezone, userId: user.id});
-    }
-
-    // Data retention
-    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-        getDataRetentionPolicy(serverUrl);
-    }
-
-    return null;
+        return {data: true};
+    };
 };
-
-export const updateMe = async (serverUrl: string, user: User) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    let data;
-    try {
-        data = (await client.patchMe(user._raw) as unknown) as RawUser;
-    } catch (e) {
-        logError(e);
-        return {error: e};
-    }
-
-    operator.handleUsers({prepareRecordsOnly: false, users: [data]});
-
-    const updatedRoles: string[] = data.roles.split(' ');
-    if (updatedRoles.length) {
-        await loadRolesIfNeeded(serverUrl, updatedRoles);
-    }
-
-    return {data};
-};
-export const getSessions = async (serverUrl: string, currentUserId: string) => {
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        return undefined;
-    }
-
-    try {
-        return await client.getSessions(currentUserId);
-    } catch (e) {
-        logError(e);
-        await forceLogoutIfNecessary(serverUrl, e);
-    }
-
-    return undefined;
-};
-
-type LoadedUser = {
-    currentUser?: RawUser,
-    error?: Client4Error
-}
 
 export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken: string) => {
     let deviceToken;
@@ -365,7 +334,7 @@ export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken
             await completeLogin(serverUrl, result.currentUser);
         }
     } catch (e) {
-        return {error: e};
+        return {error: undefined};
     }
 
     return result;
@@ -391,4 +360,36 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
         data: response.data,
         error: undefined,
     };
+};
+
+export const updateMe = async (serverUrl: string, user: User) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    let data;
+    try {
+        data = (await client.patchMe(user._raw) as unknown) as RawUser;
+    } catch (e) {
+        logError(e);
+        return {error: e};
+    }
+
+    operator.handleUsers({prepareRecordsOnly: false, users: [data]});
+
+    const updatedRoles: string[] = data.roles.split(' ');
+    if (updatedRoles.length) {
+        await loadRolesIfNeeded(serverUrl, updatedRoles);
+    }
+
+    return {data};
 };
