@@ -82,9 +82,11 @@ class GlobalEventHandler {
     };
 
     onLogout = async (serverUrl: string) => {
+        await removeServerCredentials(serverUrl);
+
         // TODO WebSocket: invalidate WebSocket client
         NetworkManager.invalidateClient(serverUrl);
-        DatabaseManager.deleteServerDatabase(serverUrl);
+        await DatabaseManager.deleteServerDatabase(serverUrl);
 
         const analyticsClient = analytics.get(serverUrl);
         if (analyticsClient) {
@@ -92,21 +94,12 @@ class GlobalEventHandler {
             analytics.invalidate(serverUrl);
         }
 
-        removeServerCredentials(serverUrl);
         deleteFileCache(serverUrl);
         PushNotifications.clearNotifications(serverUrl);
 
-        if (Object.keys(DatabaseManager.serverDatabases).length) {
-            const serverDatabase = await DatabaseManager.getActiveServerDatabase();
-            const user = await queryCurrentUser(serverDatabase!);
-            resetMomentLocale(user?.locale);
-        } else {
-            resetMomentLocale();
-        }
-
-        await this.clearCookiesForServer(serverUrl);
-
-        relaunchApp({launchType: LaunchType.Normal});
+        this.resetLocale();
+        this.clearCookiesForServer(serverUrl);
+        relaunchApp({launchType: LaunchType.Normal}, true);
     };
 
     onServerConfigChanged = ({serverUrl, config}: {serverUrl: string, config: ClientConfig}) => {
@@ -139,6 +132,16 @@ class GlobalEventHandler {
             fetchConfigAndLicense(serverUrl);
         }
     };
+
+    resetLocale = async () => {
+        if (Object.keys(DatabaseManager.serverDatabases).length) {
+            const serverDatabase = await DatabaseManager.getActiveServerDatabase();
+            const user = await queryCurrentUser(serverDatabase!);
+            resetMomentLocale(user?.locale);
+        } else {
+            resetMomentLocale();
+        }
+    }
 
     serverUpgradeNeeded = async (serverUrl: string) => {
         const credentials = await getServerCredentials(serverUrl);

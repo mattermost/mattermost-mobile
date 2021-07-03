@@ -70,21 +70,21 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
-        KeyChain.setInternetCredentials(serverUrl, token, '', options);
+        KeyChain.setInternetCredentials(serverUrl, token, token, options);
     } catch (e) {
         console.warn('could not set credentials', e); //eslint-disable-line no-console
     }
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    KeyChain.resetInternetCredentials(serverUrl);
-    AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+    await KeyChain.resetInternetCredentials(serverUrl);
+    await AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
 export const removeActiveServerCredentials = async () => {
     const serverUrl = await getActiveServerUrl();
     if (serverUrl) {
-        removeServerCredentials(serverUrl);
+        await removeServerCredentials(serverUrl);
     }
 };
 
