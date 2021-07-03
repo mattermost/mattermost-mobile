@@ -210,6 +210,15 @@ configurations.all {
             if (details.requested.name == 'play-services-basement') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '15.0.1'
             }
+            if (details.requested.name == 'okhttp') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.9.1'
+            }
+            if (details.requested.name == 'okhttp-tls') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.9.1'
+            }
+            if (details.requested.name == 'okhttp-urlconnection') {
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.9.1'
+            }
         }
     }
 }

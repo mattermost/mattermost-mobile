@@ -42,11 +42,13 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.modules.network.OkHttpClientProvider;
 import com.facebook.soloader.SoLoader;
 
 import org.unimodules.adapters.react.ModuleRegistryAdapter;
 import org.unimodules.adapters.react.ReactModuleRegistryProvider;
 
+import com.mattermost.networkclient.RCTOkHttpClientFactory;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
@@ -151,8 +153,10 @@ public class MainApplication extends NavigationApplication implements INotificat
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
 
-    // Uncomment to listen to react markers for build that has telemetry enabled
-    // addReactMarkerListener();
+    // Tells React Native to use our RCTOkHttpClientFactory which builds an OKHttpClient
+    // with a cookie jar defined in APIClientModule and an interceptor to intercept all
+    // requests that originate from React Native's OKHttpClient
+    OkHttpClientProvider.setOkHttpClientFactory(new RCTOkHttpClientFactory());
   }
 
   @Override
