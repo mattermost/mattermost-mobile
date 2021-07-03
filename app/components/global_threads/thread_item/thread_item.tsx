@@ -3,15 +3,12 @@
 
 import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
-import {useDispatch, useSelector} from 'react-redux';
+import {intlShape} from 'react-intl';
+import {useSelector} from 'react-redux';
 
 import {goToScreen} from '@actions/navigation';
-import {DispatchFunc} from '@mm-redux/types/actions';
-import {getPost} from '@actions/views/post';
 import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
-import ThreadFooter from '@components/thread_item_footer';
 
 import {Posts, Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
@@ -24,64 +21,65 @@ import type {GlobalState} from '@mm-redux/types/store';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import ThreadFooter from '../thread_footer';
+
 type Props = {
     intl: typeof intlShape;
     postId: string;
+    testID: string;
 };
 
-const ThreadItem = ({intl, postId}: Props) => {
+function ThreadItem({intl, postId, testID}: Props) {
     const theme = useSelector((state: GlobalState) => getTheme(state));
-    let post = useSelector((state: GlobalState) => getPostSelector(state, postId));
-    const asyncDispatch: DispatchFunc = useDispatch();
-
-    if (!post) {
-        // console.log('####################### missing post ID: ', postId);
-        asyncDispatch(getPost(postId)).then((p) => {
-            post = p.data;
-        });
-    }
+    const style = getStyleSheet(theme);
 
     const thread = useSelector((state: GlobalState) => getThread(state, postId));
     if (!thread) {
         return null;
     }
 
-    const threadStarter = useSelector((state: GlobalState) => getUser(state, post?.user_id));
-    const channel = useSelector((state: GlobalState) => getChannel(state, post?.channel_id));
+    const post = useSelector((state: GlobalState) => getPostSelector(state, postId));
+
+    const threadStarter = useSelector((state: GlobalState) => getUser(state, post.user_id));
+    const channel = useSelector((state: GlobalState) => getChannel(state, post.channel_id));
     const channelName = channel?.display_name;
     const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
 
     const showThread = () => {
         const screen = 'Thread';
-        const title = '';
         const passProps = {
             channelId: post.channel_id,
             rootId: post.id,
         };
-        requestAnimationFrame(() => {
-            goToScreen(screen, title, passProps);
-        });
+        goToScreen(screen, '', passProps);
     };
 
-    const style = getStyleSheet(theme);
+    const testIDPrefix = `${testID}.${post.id}`;
 
     const needBadge = thread.unread_mentions || thread.unread_replies;
     let badgeComponent;
     if (needBadge) {
-        if (thread.unread_replies && thread.unread_replies > 0) {
-            badgeComponent = (<View style={style.unreadDot}/>);
-        }
         if (thread.unread_mentions && thread.unread_mentions > 0) {
             badgeComponent = (
-                <View style={style.mentionBadge}>
-                    <Text style={style.mentionBadgeText}>{thread.unread_mentions}</Text>
+                <View
+                    style={style.mentionBadge}
+                    testID={`${testIDPrefix}.unread_mentions`}
+                >
+                    <Text style={style.mentionBadgeText}>{thread.unread_mentions > 99 ? '99+' : thread.unread_mentions}</Text>
                 </View>
+            );
+        } else if (thread.unread_replies && thread.unread_replies > 0) {
+            badgeComponent = (
+                <View
+                    style={style.unreadDot}
+                    testID={`${testIDPrefix}.unread_dot`}
+                />
             );
         }
     }
 
     let name;
-    if (post?.state === Posts.POST_DELETED) {
+    if (post.state === Posts.POST_DELETED) {
         name = (
             <Text
                 style={[style.threadStarter, style.threadDeleted]}
@@ -101,13 +99,13 @@ const ThreadItem = ({intl, postId}: Props) => {
     }
 
     let postBody;
-    if (post?.state !== Posts.POST_DELETED) {
+    if (post.state !== Posts.POST_DELETED) {
         postBody = (
             <Text
                 style={style.message}
                 numberOfLines={2}
             >
-                <RemoveMarkdown value={post?.message || ''}/>
+                <RemoveMarkdown value={post.message || ''}/>
             </Text>
         );
     }
@@ -116,8 +114,8 @@ const ThreadItem = ({intl, postId}: Props) => {
         <TouchableHighlight
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
             onPress={showThread}
+            testID={`${testIDPrefix}.item`}
         >
-            {/* TODO Long press the Thread items list */}
             <View style={style.container}>
                 <View style={style.badgeContainer}>
                     {badgeComponent}
@@ -140,6 +138,7 @@ const ThreadItem = ({intl, postId}: Props) => {
                     </View>
                     {postBody}
                     <ThreadFooter
+                        testID={`${testIDPrefix}.footer`}
                         thread={thread}
                         threadStarter={threadStarter}
                         location='globalThreads'
@@ -148,7 +147,7 @@ const ThreadItem = ({intl, postId}: Props) => {
             </View>
         </TouchableHighlight>
     );
-};
+}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -246,4 +245,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default injectIntl(ThreadItem);
+export default ThreadItem;

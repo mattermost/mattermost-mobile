@@ -29,4 +29,15 @@ describe('ChannelsList List', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot with collapsed threads enabled', () => {
+        const wrapper = shallow(
+            <List
+                {...baseProps}
+                collapsedThreadsEnabled={true}
+            />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });

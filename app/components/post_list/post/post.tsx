@@ -6,8 +6,8 @@ import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
+import ThreadFooter from '@components/global_threads/thread_footer';
 import SystemHeader from '@components/post_list/system_header';
-import ThreadFooter from '@components/thread_item_footer';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
@@ -258,6 +258,7 @@ const Post = ({
         footer = (
             <View style={style.footerContainer}>
                 <ThreadFooter
+                    testID='channel_thread'
                     thread={thread}
                     threadStarter={threadStarter}
                     location='channel'

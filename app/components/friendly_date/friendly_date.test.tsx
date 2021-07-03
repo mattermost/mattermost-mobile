@@ -4,7 +4,7 @@
 import React from 'react';
 import {renderWithIntl} from 'test/testing_library';
 
-import FriendlyDate from './friendly_date';
+import FriendlyDate from './index';
 
 describe('Friendly Date', () => {
     it('should render correctly', () => {

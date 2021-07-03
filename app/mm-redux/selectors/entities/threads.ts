@@ -42,7 +42,8 @@ export function getThreads(state: GlobalState) {
 }
 
 export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbackFromPosts?: boolean): UserThread | null {
-    if (!threadId || !getThreadsInCurrentTeam(state)?.includes(threadId)) {
+    const thread = getThreads(state)[threadId];
+    if (!thread) {
         if (fallbackFromPosts) {
             const post = getPost(state, threadId);
             if (post && post.participants?.length) {
@@ -62,7 +63,7 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
         }
         return null;
     }
-    return getThreads(state)[threadId];
+    return thread;
 }
 
 export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(

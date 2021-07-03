@@ -7,6 +7,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
+import GlobalThreadsList from '@components/global_threads';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
@@ -15,7 +16,6 @@ import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
-import GlobalThreads from '@screens/global_threads';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelBase from './channel_base';
@@ -62,7 +62,7 @@ export default class ChannelIOS extends ChannelBase {
 
         if (viewingGlobalThreads) {
             component = (
-                <GlobalThreads/>
+                <GlobalThreadsList/>
             );
         } else {
             safeAreaEdges.push('bottom');

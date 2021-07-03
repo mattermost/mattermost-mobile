@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {useDispatch, useSelector} from 'react-redux';
 
 import Avatars from '@components/avatars';
@@ -21,12 +21,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     intl: typeof intlShape;
+    testID: string;
     threadStarter: UserProfile;
     thread: UserThread;
     location: 'globalThreads' | 'channel';
 }
 
-function ThreadFooter({intl, location, thread, threadStarter}: Props) {
+function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
     const theme = useSelector((state: GlobalState) => getTheme(state));
     const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
     const currentTeamId = useSelector((state: GlobalState) => getCurrentTeamId(state));
@@ -58,6 +59,7 @@ function ThreadFooter({intl, location, thread, threadStarter}: Props) {
                 <TouchableOpacity
                     onPress={preventDoubleTap(onUnfollow)}
                     style={style.followingButtonContainer}
+                    testID={`${testID}.following`}
                 >
                     <Text style={style.following}>
                         {intl.formatMessage({
@@ -74,6 +76,7 @@ function ThreadFooter({intl, location, thread, threadStarter}: Props) {
                     <TouchableOpacity
                         onPress={preventDoubleTap(onFollow)}
                         style={style.notFollowingButtonContainer}
+                        testID={`${testID}.follow`}
                     >
                         <Text style={style.notFollowing}>
                             {intl.formatMessage({
@@ -90,7 +93,10 @@ function ThreadFooter({intl, location, thread, threadStarter}: Props) {
     let repliesComponent;
     if (thread.unread_replies && location === 'globalThreads') {
         repliesComponent = (
-            <Text style={style.unreadReplies}>
+            <Text
+                style={style.unreadReplies}
+                testID={`${testID}.unread_replies`}
+            >
                 {intl.formatMessage({
                     id: 'threads.newReplies',
                     defaultMessage: '{count} new {count, plural, one {reply} other {replies}}',
@@ -101,7 +107,10 @@ function ThreadFooter({intl, location, thread, threadStarter}: Props) {
         );
     } else {
         repliesComponent = (
-            <Text style={style.replies}>
+            <Text
+                style={style.replies}
+                testID={`${testID}.reply_count`}
+            >
                 {intl.formatMessage({
                     id: 'threads.replies',
                     defaultMessage: '{count} {count, plural, one {reply} other {replies}}',
@@ -185,4 +194,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default injectIntl(ThreadFooter);
+export default ThreadFooter;

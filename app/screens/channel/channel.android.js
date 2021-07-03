@@ -6,12 +6,12 @@ import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
 import AnnouncementBanner from 'app/components/announcement_banner';
+import GlobalThreadsList from '@components/global_threads';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
-import GlobalThreads from '@screens/global_threads';
 import EphemeralStore from '@store/ephemeral_store';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
@@ -66,7 +66,7 @@ export default class ChannelAndroid extends ChannelBase {
 
         if (viewingGlobalThreads) {
             component = (
-                <GlobalThreads/>
+                <GlobalThreadsList/>
             );
         } else {
             component = this.renderLoadingOrFailedChannel();

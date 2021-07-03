@@ -1,0 +1,208 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Global Thread List Should render threads with functional tabs & mark all as read button 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "height": 64,
+        },
+        Object {
+          "borderBottomColor": "rgba(61,60,64,0.08)",
+          "borderBottomWidth": 1,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "flexGrow": 1,
+        }
+      }
+    >
+      <ForwardRef
+        onPress={[MockFunction]}
+        testID="thread_list.all_threads"
+      >
+        <View
+          style={
+            Array [
+              Object {
+                "marginLeft": 16,
+                "paddingHorizontal": 16,
+                "paddingVertical": 8,
+              },
+              undefined,
+            ]
+          }
+        >
+          <Text
+            style={
+              Array [
+                Object {
+                  "alignSelf": "center",
+                  "color": "rgba(61,60,64,0.56)",
+                  "fontFamily": "Open Sans",
+                  "fontSize": 16,
+                  "fontWeight": "600",
+                  "lineHeight": 24,
+                },
+                Object {},
+              ]
+            }
+          >
+            All Your Threads
+          </Text>
+        </View>
+      </ForwardRef>
+      <ForwardRef
+        onPress={[MockFunction]}
+        testID="thread_list.unread_threads"
+      >
+        <View
+          style={
+            Array [
+              Object {
+                "marginLeft": 16,
+                "paddingHorizontal": 16,
+                "paddingVertical": 8,
+              },
+              Object {
+                "backgroundColor": "rgba(22,109,224,0.08)",
+                "borderRadius": 4,
+              },
+            ]
+          }
+        >
+          <View>
+            <Text
+              style={
+                Array [
+                  Object {
+                    "alignSelf": "center",
+                    "color": "rgba(61,60,64,0.56)",
+                    "fontFamily": "Open Sans",
+                    "fontSize": 16,
+                    "fontWeight": "600",
+                    "lineHeight": 24,
+                  },
+                  Object {
+                    "color": "#166de0",
+                  },
+                ]
+              }
+            >
+              Unreads
+            </Text>
+            <View
+              style={
+                Object {
+                  "backgroundColor": "#579eff",
+                  "borderRadius": 3,
+                  "height": 6,
+                  "position": "absolute",
+                  "right": -6,
+                  "width": 6,
+                }
+              }
+              testID="thread_list.unreads_dot"
+            />
+          </View>
+        </View>
+      </ForwardRef>
+    </View>
+    <View
+      style={
+        Object {
+          "paddingHorizontal": 20,
+        }
+      }
+    >
+      <ForwardRef
+        disabled={false}
+        onPress={[MockFunction]}
+        testID="thread_list.mark_all_read"
+      >
+        <Icon
+          name="playlist-check"
+          style={
+            Object {
+              "color": "rgba(61,60,64,0.56)",
+              "fontSize": 28,
+              "lineHeight": 28,
+            }
+          }
+        />
+      </ForwardRef>
+    </View>
+  </View>
+  <FlatList
+    ListEmptyComponent={
+      <EmptyState
+        intl={
+          Object {
+            "defaultFormats": Object {},
+            "defaultLocale": "en",
+            "formatDate": [Function],
+            "formatHTMLMessage": [Function],
+            "formatMessage": [Function],
+            "formatNumber": [Function],
+            "formatPlural": [Function],
+            "formatRelative": [Function],
+            "formatTime": [Function],
+            "formats": Object {},
+            "formatters": Object {
+              "getDateTimeFormat": [Function],
+              "getMessageFormat": [Function],
+              "getNumberFormat": [Function],
+              "getPluralFormat": [Function],
+              "getRelativeFormat": [Function],
+            },
+            "locale": "en",
+            "messages": Object {},
+            "now": [Function],
+            "onError": [Function],
+            "textComponent": "span",
+            "timeZone": null,
+          }
+        }
+        isUnreads={true}
+      />
+    }
+    contentContainerStyle={
+      Object {
+        "flexGrow": 1,
+      }
+    }
+    data={
+      Array [
+        "thread1",
+      ]
+    }
+    disableVirtualization={false}
+    horizontal={false}
+    initialNumToRender={10}
+    keyExtractor={[Function]}
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onEndReachedThreshold={2}
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={50}
+    updateCellsBatchingPeriod={50}
+    windowSize={21}
+  />
+</View>
+`;

@@ -1,82 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {Alert, FlatList, Text, TouchableOpacity, View} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
-import {useSelector, useDispatch} from 'react-redux';
+import {FlatList, Text, TouchableOpacity, View} from 'react-native';
+import {intlShape} from 'react-intl';
+import {useSelector} from 'react-redux';
 
-import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
-import {markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import CompassIcon from '@components/compass_icon';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getThreadOrderInCurrentTeam, getUnreadThreadOrderInCurrentTeam} from '@mm-redux/selectors/entities/threads';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
-import CompassIcon from '@components/compass_icon';
-import ThreadItem from '@components/global_thread_item';
-import {getViewingGlobalThreadsUnread} from '@selectors/threads';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import EmptyState from './empty_state';
+import EmptyState from '../empty_state';
+import ThreadItem from '../thread_item';
 
 type Props = {
+    haveUnreads: boolean;
     intl: typeof intlShape;
+    markAllAsRead: () => void;
+    testID: string;
+    threadIds: string[];
+    viewAllThreads: () => void;
+    viewUnreadThreads: () => void;
+    viewingUnreads: boolean;
 }
 
-function GlobalThreads({intl}: Props) {
-    const teamId = useSelector((state: GlobalState) => getCurrentTeamId(state));
+function ThreadList({haveUnreads, intl, markAllAsRead, testID, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
     const theme = useSelector((state: GlobalState) => getTheme(state));
-    const threadIds = useSelector((state: GlobalState) => getThreadOrderInCurrentTeam(state));
-    const unreadThreadIds = useSelector((state: GlobalState) => getUnreadThreadOrderInCurrentTeam(state));
-    const userId = useSelector((state: GlobalState) => getCurrentUserId(state));
-    const viewingUnreads = useSelector((state: GlobalState) => getViewingGlobalThreadsUnread(state));
-    const haveUnreads = unreadThreadIds.length > 0;
-
-    let ids = threadIds;
-    if (viewingUnreads) {
-        ids = unreadThreadIds;
-    }
-
-    const dispatch = useDispatch();
-
-    const handleViewingAllThreads = () => {
-        dispatch(handleViewingGlobalThreadsAll());
-    };
-
-    const handleViewingUnreadThreads = () => {
-        dispatch(handleViewingGlobalThreadsUnreads());
-    };
-
-    const markAllAsRead = React.useCallback(() => {
-        Alert.alert(
-            intl.formatMessage({
-                id: 'global_threads.markAllRead.title',
-                defaultMessage: 'Are you sure you want to mark all threads as read?',
-            }),
-            intl.formatMessage({
-                id: 'global_threads.markAllRead.message',
-                defaultMessage: 'This will clear any unread status for all of your threads shown here',
-            }),
-            [{
-                text: intl.formatMessage({
-                    id: 'global_threads.markAllRead.cancel',
-                    defaultMessage: 'Cancel',
-                }),
-                style: 'cancel',
-            }, {
-                text: intl.formatMessage({
-                    id: 'global_threads.markAllRead.markRead',
-                    defaultMessage: 'Mark read',
-                }),
-                style: 'default',
-                onPress: () => {
-                    dispatch(markAllThreadsInTeamRead(userId, teamId));
-                },
-            }],
-        );
-    }, [dispatch, teamId, userId]);
-
     const style = getStyleSheet(theme);
 
     const keyExtractor = React.useCallback((item) => item, []);
@@ -85,6 +35,7 @@ function GlobalThreads({intl}: Props) {
         return (
             <ThreadItem
                 postId={item}
+                testID={testID}
             />
         );
     }, []);
@@ -96,7 +47,10 @@ function GlobalThreads({intl}: Props) {
         return (
             <View style={[style.headerContainer, style.borderBottom]}>
                 <View style={style.menuContainer}>
-                    <TouchableOpacity onPress={handleViewingAllThreads}>
+                    <TouchableOpacity
+                        onPress={viewAllThreads}
+                        testID={`${testID}.all_threads`}
+                    >
                         <View style={[style.menuItemContainer, viewingUnreads ? undefined : style.menuItemContainerSelected]}>
                             <Text style={[style.menuItem, viewingUnreads ? {} : style.menuItemSelected]}>
                                 {
@@ -108,7 +62,10 @@ function GlobalThreads({intl}: Props) {
                             </Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleViewingUnreadThreads}>
+                    <TouchableOpacity
+                        onPress={viewUnreadThreads}
+                        testID={`${testID}.unread_threads`}
+                    >
                         <View style={[style.menuItemContainer, viewingUnreads ? style.menuItemContainerSelected : undefined]}>
                             <View>
                                 <Text style={[style.menuItem, viewingUnreads ? style.menuItemSelected : {}]}>
@@ -119,7 +76,12 @@ function GlobalThreads({intl}: Props) {
                                         })
                                     }
                                 </Text>
-                                {haveUnreads ? <View style={style.unreadsDot}/> : null}
+                                {haveUnreads ? (
+                                    <View
+                                        style={style.unreadsDot}
+                                        testID={`${testID}.unreads_dot`}
+                                    />
+                                ) : null}
                             </View>
                         </View>
                     </TouchableOpacity>
@@ -128,6 +90,7 @@ function GlobalThreads({intl}: Props) {
                     <TouchableOpacity
                         disabled={!haveUnreads}
                         onPress={markAllAsRead}
+                        testID={`${testID}.mark_all_read`}
                     >
                         <CompassIcon
                             name='playlist-check'
@@ -143,7 +106,7 @@ function GlobalThreads({intl}: Props) {
         <View style={style.container}>
             {renderHeader()}
             <FlatList
-                data={ids}
+                data={threadIds}
                 renderItem={renderPost}
                 keyExtractor={keyExtractor}
                 contentContainerStyle={style.messagesContainer}
@@ -223,4 +186,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default injectIntl(GlobalThreads);
+export default ThreadList;
