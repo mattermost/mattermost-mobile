@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import System from '@typings/database/models/servers/system';
@@ -9,17 +9,25 @@ import System from '@typings/database/models/servers/system';
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 export const queryCurrentChannelId = async (serverDatabase: Database) => {
-    const currentChannelId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID) as System;
-    return currentChannelId?.value || '';
+    try {
+        const currentChannelId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID) as System;
+        return currentChannelId?.value || '';
+    } catch {
+        return '';
+    }
 };
 
-export const getCurrentUserId = async (serverDatabase: Database) => {
-    const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as System;
-    return currentUserId?.value || '';
+export const queryCurrentUserId = async (serverDatabase: Database) => {
+    try {
+        const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as System;
+        return currentUserId?.value || '';
+    } catch {
+        return '';
+    }
 };
 
-export const getCommonSystemValues = async (database: Database) => {
-    const systemRecords = (await database.collections.get(SYSTEM).query(Q.where('id', Q.oneOf(['config', 'license', 'currentUserId']))).fetch()) as System[];
+export const queryCommonSystemValues = async (database: Database) => {
+    const systemRecords = (await database.collections.get(SYSTEM).query().fetch()) as System[];
     let config = {};
     let license = {};
     let currentChannelId = '';

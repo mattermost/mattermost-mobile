@@ -8,12 +8,20 @@ import type Global from '@typings/database/models/app/global';
 
 const {APP: {GLOBAL}} = MM_TABLES;
 
-export const getDeviceToken = async (appDatabase: Database) => {
-    const tokens = await appDatabase.get(GLOBAL).find(GLOBAL_IDENTIFIERS.DEVICE_TOKEN) as Global;
-    return tokens?.value || '';
+export const queryDeviceToken = async (appDatabase: Database) => {
+    try {
+        const tokens = await appDatabase.get(GLOBAL).find(GLOBAL_IDENTIFIERS.DEVICE_TOKEN) as Global;
+        return tokens?.value || '';
+    } catch {
+        return '';
+    }
 };
 
 export const queryMentionCount = async (appDatabase: Database) => {
-    const mentions = await appDatabase.get(GLOBAL).find(GLOBAL_IDENTIFIERS.MENTION_COUNT) as Global;
-    return mentions?.value || '';
+    try {
+        const mentions = await appDatabase.get(GLOBAL).find(GLOBAL_IDENTIFIERS.MENTION_COUNT) as Global;
+        return mentions?.value || '';
+    } catch {
+        return '';
+    }
 };

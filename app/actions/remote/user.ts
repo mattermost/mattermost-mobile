@@ -11,8 +11,8 @@ import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {getDeviceToken} from '@queries/app/global';
-import {getCommonSystemValues, getCurrentUserId} from '@queries/servers/system';
+import {queryDeviceToken} from '@queries/app/global';
+import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
 import type {Client4Error} from '@typings/api/client';
@@ -36,7 +36,7 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await getCommonSystemValues(database);
+    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await queryCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
@@ -62,7 +62,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Erro
         return {error: `${serverUrl} database not found`};
     }
 
-    const currentUserId = await getCurrentUserId(database);
+    const currentUserId = await queryCurrentUserId(database);
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
         await logout(serverUrl);
@@ -106,7 +106,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 
     try {
-        deviceToken = await getDeviceToken(appDatabase);
+        deviceToken = await queryDeviceToken(appDatabase);
         user = (await client.login(
             loginId,
             password,
@@ -319,7 +319,7 @@ export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken
             },
         });
         await DatabaseManager.setActiveServerDatabase(serverUrl);
-        deviceToken = await getDeviceToken(database);
+        deviceToken = await queryDeviceToken(database);
     } catch (e) {
         return {error: e};
     }

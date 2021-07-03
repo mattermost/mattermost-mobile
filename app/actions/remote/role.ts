@@ -3,7 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {getRoles} from '@queries/servers/role';
+import {queryRoles} from '@queries/servers/role';
 
 export const loadRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]) => {
     let client;
@@ -15,7 +15,7 @@ export const loadRolesIfNeeded = async (serverUrl: string, updatedRoles: string[
 
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    const existingRoles = await getRoles(database);
+    const existingRoles = await queryRoles(database);
 
     const roleNames = existingRoles.map((role) => {
         return role.name;
