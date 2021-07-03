@@ -4,7 +4,7 @@
 import CookieManager, {Cookies} from '@react-native-cookies/cookies';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Alert, Platform, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
 import {
@@ -71,6 +71,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
     const intl = useIntl();
     const [error, setError] = React.useState(null);
     const [jsCode, setJSCode] = React.useState('');
+    const visitedUrls = React.useRef(new Set<string>()).current;
     const [messagingEnabled, setMessagingEnabled] = React.useState(false);
     const [shouldRenderWebView, setShouldRenderWebView] = React.useState(true);
     const cookiesTimeout = React.useRef<NodeJS.Timeout>();
@@ -83,6 +84,21 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
             }
         };
     }, []);
+
+    const removeCookiesFromVisited = () => {
+        if (Platform.OS === 'ios') {
+            visitedUrls.forEach((visited) => {
+                CookieManager.get(visited, true).then(async (cookies: Cookies) => {
+                    if (cookies) {
+                        const values = Object.values(cookies);
+                        for (const cookie of values) {
+                            CookieManager.clearByName(visited, cookie.name, true);
+                        }
+                    }
+                });
+            });
+        }
+    };
 
     const extractCookie = (parsedUrl: urlParse) => {
         try {
@@ -101,6 +117,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
                 const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
 
                 if (bearerToken) {
+                    removeCookiesFromVisited();
                     doSSOLogin(bearerToken, csrfToken);
                     if (cookiesTimeout.current) {
                         clearTimeout(cookiesTimeout.current);
@@ -156,16 +173,16 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
         const {url} = navState;
         let isMessagingEnabled = false;
         const parsed = urlParse(url);
+        if (!serverUrl.includes(parsed.host)) {
+            visitedUrls.add(parsed.origin);
+        }
+
         if (parsed.host.includes('.onelogin.com')) {
             setJSCode(oneLoginFormScalingJS);
         } else if (parsed.pathname === completeUrlPath) {
             // To avoid `window.postMessage` conflicts in any of the SSO flows
             // we enable the onMessage handler only When the webView navigates to the final SSO URL.
             isMessagingEnabled = true;
-        } else {
-            // TODO Security: Clear the cookies for the visited sites
-            // eslint-disable-next-line no-console
-            console.log('URL visited', url);
         }
         setMessagingEnabled(isMessagingEnabled);
     };
@@ -191,6 +208,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
                 <WebView
                     automaticallyAdjustContentInsets={false}
                     cacheEnabled={true}
+                    incognito={Platform.OS === 'android'}
                     injectedJavaScript={jsCode}
                     javaScriptEnabled={true}
                     onLoadEnd={onLoadEnd}
