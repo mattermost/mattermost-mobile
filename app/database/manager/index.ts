@@ -270,8 +270,8 @@ class DatabaseManager {
           const database = this.appDatabase?.database;
           const server = await getServer(database, serverUrl);
           if (server) {
-              database.action(() => {
-                  server.update((record) => {
+              database.action(async () => {
+                  await server.update((record) => {
                       record.lastActiveAt = 0;
                   });
               });
