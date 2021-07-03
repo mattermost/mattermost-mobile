@@ -180,8 +180,6 @@ const ClientUsers = (superclass: any) => class extends superclass {
             {method: 'post'},
         );
 
-        this.serverVersion = '';
-
         return response;
     };
 
