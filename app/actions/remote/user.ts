@@ -276,22 +276,20 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 };
 
 export const logout = async (serverUrl: string, skipServerLogout = false) => {
-    return async () => {
-        if (!skipServerLogout) {
-            try {
-                const client = NetworkManager.getClient(serverUrl);
-                await client.logout();
-            } catch (error) {
-                // We want to log the user even if logging out from the server failed
-                // eslint-disable-next-line no-console
-                console.warn('An error ocurred loging out from the server', error);
-            }
+    if (!skipServerLogout) {
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+            await client.logout();
+        } catch (error) {
+            // We want to log the user even if logging out from the server failed
+            // eslint-disable-next-line no-console
+            console.warn('An error ocurred loging out from the server', serverUrl, error);
         }
+    }
 
-        DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
+    DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
 
-        return {data: true};
-    };
+    return {data: true};
 };
 
 export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken: string) => {
