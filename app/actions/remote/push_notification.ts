@@ -44,9 +44,8 @@ export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlS
         }
 
         const session = sessions.sort(sortByNewest)[0];
-        const expiresAt = session?.expires_at || 0;
-        const expiresInDays = parseInt(String(Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays()))), 10);
-
+        const expiresAt = session?.expires_at ? parseInt(session.expires_at as string, 10) : 0;
+        const expiresInDays = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asDays()));
         const message = intl.formatMessage(
             {
                 id: 'mobile.session_expired',
@@ -69,7 +68,7 @@ export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlS
                 },
             });
         }
-    }, 20000);
+    }, 1000);
 
     return null;
 };
