@@ -75,6 +75,9 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         const passProps = {
             config,
+            extra,
+            launchError,
+            launchType,
             license,
             theme,
             serverUrl,
