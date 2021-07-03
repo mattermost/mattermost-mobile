@@ -35,7 +35,7 @@ const NOTIFICATION_TYPE = {
 class PushNotifications {
   configured = false;
 
-  constructor() {
+  init() {
       Notifications.registerRemoteNotifications();
       Notifications.events().registerNotificationOpened(this.onNotificationOpened);
       Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);

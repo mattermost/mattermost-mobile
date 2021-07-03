@@ -12,6 +12,7 @@ import GlobalEventHandler from './app/init/global_event_handler';
 import {initialLaunch} from './app/init/launch';
 import NetworkManager from './app/init/network_manager';
 import ManagedApp from './app/init/managed_app';
+import PushNotifications from './app/init/push_notifications';
 import {registerScreens} from './app/screens/index';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
@@ -57,6 +58,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
 
     await DatabaseManager.init(serverUrls);
     await NetworkManager.init(serverCredentials);
+    PushNotifications.init();
 
     initialLaunch();
 });
