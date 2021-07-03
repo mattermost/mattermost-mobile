@@ -5,6 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {field, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 const {ROLE} = MM_TABLES.SERVER;
 
@@ -17,6 +18,6 @@ export default class Role extends Model {
     @field('name') name!: string;
 
     /** permissions : The different permissions associated to that role */
-    @json('permissions', (rawJson) => rawJson) permissions!: string[];
+    @json('permissions', safeParseJSON) permissions!: string[];
 }
 

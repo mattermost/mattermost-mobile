@@ -5,8 +5,10 @@ import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from '@typings/database/models/servers/channel';
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
+
+import type Channel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 
@@ -29,7 +31,7 @@ export default class MyChannelSettings extends Model {
     @field('channel_id') channelId!: string;
 
     /** notify_props : Configurations with regards to this channel */
-    @json('notify_props', (rawJson) => rawJson) notifyProps!: NotifyProps;
+    @json('notify_props', safeParseJSON) notifyProps!: NotifyProps;
 
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;

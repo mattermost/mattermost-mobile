@@ -6,7 +6,9 @@ import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/models/servers/team';
+import {safeParseJSON} from '@utils/helpers';
+
+import type Team from '@typings/database/models/servers/team';
 
 const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 
@@ -29,7 +31,7 @@ export default class TeamChannelHistory extends Model {
     @field('team_id') teamId!: string;
 
     /** channel_ids : An array containing the last 5 channels visited within this team order by recency */
-    @json('channel_ids', (rawJson) => rawJson) channelIds!: string[];
+    @json('channel_ids', safeParseJSON) channelIds!: string[];
 
     /** team : The related record from the parent Team model */
     @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;

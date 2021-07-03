@@ -6,6 +6,7 @@
 // versions, and a non-equal minor version will ignore dot version.
 // currentVersion is a string, e.g '4.6.0'
 // minMajorVersion, minMinorVersion, minDotVersion are integers
+
 export const isMinimumServerVersion = (currentVersion: string, minMajorVersion = 0, minMinorVersion = 0, minDotVersion = 0): boolean => {
     if (!currentVersion || typeof currentVersion !== 'string') {
         return false;
@@ -71,4 +72,17 @@ export function isEmail(email: string): boolean {
     // - followed by at least one character that is not a space, comma, or @ symbol
     // this prevents <Outlook Style> outlook.style@domain.com addresses and multiple comma-separated addresses from being accepted
     return (/^[^ ,@]+@[^ ,@]+$/).test(email);
+}
+
+export function safeParseJSON(rawJson: string | Record<string, unknown>) {
+    let data = rawJson;
+    try {
+        if (typeof rawJson == 'string') {
+            data = JSON.parse(rawJson);
+        }
+    } catch {
+        // Do nothing
+    }
+
+    return data;
 }
