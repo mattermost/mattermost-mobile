@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ComponentType, useState} from 'react';
+import React, {ComponentType, useEffect, useState} from 'react';
 import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 
@@ -15,30 +15,36 @@ export function withServerDatabase<T>(
     Component: ComponentType<T>,
 ): ComponentType<T> {
     return function ServerDatabaseComponent(props) {
-        const [database, setDatabase] = useState<Database|unknown>();
+        const [database, setDatabase] = useState<Database|undefined>();
         const db = DatabaseManager.appDatabase?.database;
 
         const observer = async (servers: Servers[]) => {
             const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
 
-            const serverDatabase = DatabaseManager.serverDatabases[server.url].database;
-            if (serverDatabase) {
-                setDatabase(serverDatabase);
-            }
+            const serverDatabase = DatabaseManager.serverDatabases[server.url]?.database;
+            setDatabase(serverDatabase);
         };
 
-        db?.collections.
-            get(SERVERS).
-            query().
-            observeWithColumns(['last_active_at']).
-            subscribe(observer);
+        useEffect(() => {
+            const subscription = db?.collections.
+                get(SERVERS).
+                query().
+                observeWithColumns(['last_active_at']).
+                subscribe(observer);
+
+            return () => {
+                subscription?.unsubscribe();
+            };
+        }, []);
 
         if (!database) {
             return null;
         }
 
         return (
-            <DatabaseProvider database={(database as Database)}>
+            <DatabaseProvider
+                database={(database as Database)}
+            >
                 <Component {...props}/>
             </DatabaseProvider>
         );
