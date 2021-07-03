@@ -10,6 +10,7 @@ import urlParse from 'url-parse';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
+import NetworkManager from '@app/init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -17,11 +18,12 @@ interface SSOWithRedirectURLProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
+    serverUrl: string;
     setLoginError: (value: string) => void;
     theme: Partial<Theme>
 }
 
-const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -31,10 +33,12 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, setLoginError, th
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const init = (resetErrors?: boolean) => {
+    const init = (resetErrors = true) => {
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
+            NetworkManager.invalidateClient(serverUrl);
+            NetworkManager.createClient(serverUrl);
         }
         const parsedUrl = urlParse(loginUrl, true);
         parsedUrl.set('query', {
@@ -60,6 +64,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, setLoginError, th
                 message,
             );
         };
+
         tryOpenURL(url, onError);
     };
 
@@ -118,14 +123,6 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, setLoginError, th
                         defaultMessage='Please use your browser to complete the login'
                         style={style.infoText}
                     />
-                    <TouchableOpacity onPress={() => init()}>
-                        <FormattedText
-                            id='mobile.oauth.restart_login'
-                            testID='mobile.oauth.restart_login'
-                            defaultMessage='Restart login'
-                            style={style.button}
-                        />
-                    </TouchableOpacity>
                     <Loading/>
                 </View>
             )}
