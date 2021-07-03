@@ -32,17 +32,18 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type LoginProps = {
+import type {LaunchProps} from '@typings/launch';
+
+interface LoginProps extends LaunchProps {
     componentId: string;
     config: ClientConfig;
     license: ClientLicense;
-    serverUrl: string;
     theme: Theme;
-};
+}
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
-const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}: LoginProps) => {
+const Login: NavigationFunctionComponent = ({config, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
 
     const loginRef = useRef<TextInput>(null);
@@ -129,15 +130,15 @@ const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}:
     });
 
     const signIn = async () => {
-        const result = await login(serverUrl, {loginId: loginId.toLowerCase(), password, config, license});
+        const result = await login(serverUrl!, {loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             await goToChannel();
         }
     };
 
     const goToChannel = async () => {
-        await scheduleExpiredNotification(serverUrl, intl);
-        resetToChannel({serverUrl});
+        await scheduleExpiredNotification(serverUrl!, intl);
+        resetToChannel({extra, launchError, launchType, serverUrl});
     };
 
     const checkLoginResponse = (data: any) => {

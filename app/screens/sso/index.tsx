@@ -12,18 +12,19 @@ import {resetToChannel} from '@screens/navigation';
 import {ErrorApi} from '@typings/api/client';
 import {isMinimumServerVersion} from '@utils/helpers';
 
+import type {LaunchProps} from '@typings/launch';
+
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
 
-interface SSOProps {
+interface SSOProps extends LaunchProps {
   config: Partial<ClientConfig>;
   license: Partial<ClientLicense>;
-  serverUrl: string;
   ssoType: string;
   theme: Partial<Theme>;
 }
 
-const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
+const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}: SSOProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig();
 
@@ -70,7 +71,7 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     };
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const {error = undefined} = await ssoLogin(serverUrl, bearerToken, csrfToken);
+        const {error = undefined} = await ssoLogin(serverUrl!, bearerToken, csrfToken);
         if (error) {
             onLoadEndError(error);
             setLoginError(error);
@@ -80,8 +81,8 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     };
 
     const goToChannel = () => {
-        scheduleExpiredNotification(serverUrl, intl);
-        resetToChannel();
+        scheduleExpiredNotification(serverUrl!, intl);
+        resetToChannel({extra, launchError, launchType, serverUrl});
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
@@ -99,12 +100,17 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
             <SSOWithWebView
                 {...props}
                 completeUrlPath={completeUrlPath}
-                serverUrl={serverUrl}
+                serverUrl={serverUrl!}
                 ssoType={ssoType}
             />
         );
     }
-    return <SSOWithRedirectURL {...props}/>;
+    return (
+        <SSOWithRedirectURL
+            {...props}
+            serverUrl={serverUrl!}
+        />
+    );
 };
 
 export default SSO;
