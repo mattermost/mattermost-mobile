@@ -127,8 +127,8 @@ export default class ThreadBase extends PureComponent {
             this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
         }
 
-        if (this.props.thread?.id !== nextProps.thread?.id) {
-            this.markThreadRead();
+        if (this.props.postIds.length < nextProps.postIds.length) {
+            this.markThreadRead(true);
         }
 
         if (this.props.thread?.is_following !== nextProps.thread?.is_following) {
@@ -147,11 +147,12 @@ export default class ThreadBase extends PureComponent {
         this.props.actions.setThreadFollow(userId, teamId, rootId, !thread?.is_following);
     }
 
-    markThreadRead() {
+    markThreadRead(hasNewPost = false) {
         if (
             this.props.collapsedThreadsEnabled &&
             this.props.thread &&
             (
+                hasNewPost ||
                 this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
                 this.props.thread.unread_mentions ||
                 this.props.thread.unread_replies

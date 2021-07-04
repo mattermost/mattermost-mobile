@@ -8,6 +8,7 @@ import merge from 'deepmerge';
 import {shallow} from 'enzyme';
 
 import * as navigationActions from '@actions/navigation';
+import {THREAD} from '@constants/screen';
 import initialState from '@store/initial_state';
 import {intl} from 'test/intl-test-helper';
 
@@ -51,6 +52,7 @@ describe('Global Thread Item', () => {
     );
 
     jest.spyOn(redux, 'useSelector').mockImplementation((callback) => callback(baseState));
+    jest.spyOn(redux, 'useDispatch').mockImplementation(() => jest.fn());
 
     test('Should render thread item with unread messages dot', () => {
         const wrapper = shallow(
@@ -130,6 +132,6 @@ describe('Global Thread Item', () => {
         const threadItem = wrapper.find({testID: `${testIDPrefix}.item`});
         expect(threadItem.exists()).toBeTruthy();
         threadItem.simulate('press');
-        expect(goToScreen).toHaveBeenCalledWith('Thread', expect.anything(), expect.anything());
+        expect(goToScreen).toHaveBeenCalledWith(THREAD, expect.anything(), expect.anything());
     });
 });

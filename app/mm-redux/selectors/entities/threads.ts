@@ -16,7 +16,7 @@ export function getThreadsInTeam(state: GlobalState): RelationOneToMany<Team, Us
 export const getThreadsInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getCurrentTeamId,
     getThreadsInTeam,
-    (currentTeamId, threadsInTeam) => {
+    (currentTeamId: $ID<Team>, threadsInTeam: ThreadsState['threadsInTeam']) => {
         return threadsInTeam?.[currentTeamId] ?? [];
     },
 );
@@ -32,7 +32,7 @@ export function getTeamThreadCounts(state: GlobalState, teamId: $ID<Team>): Thre
 export const getThreadCountsInCurrentTeam: (state: GlobalState) => ThreadsState['counts'][$ID<Team>] = createSelector(
     getCurrentTeamId,
     getThreadCounts,
-    (currentTeamId, counts) => {
+    (currentTeamId: $ID<Team>, counts: ThreadsState['counts']) => {
         return counts?.[currentTeamId];
     },
 );
@@ -69,7 +69,7 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
 export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getThreadsInCurrentTeam,
     getThreads,
-    (threadsInTeam, threads) => {
+    (threadsInTeam: Array<$ID<UserThread>>, threads: ThreadsState['threads']) => {
         const ids = threadsInTeam.filter((id) => {
             return threads[id].is_following;
         });
@@ -80,7 +80,7 @@ export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<User
 export const getUnreadThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getThreadsInCurrentTeam,
     getThreads,
-    (threadsInTeam, threads) => {
+    (threadsInTeam: Array<$ID<UserThread>>, threads: ThreadsState['threads']) => {
         const ids = threadsInTeam.filter((id) => {
             const thread = threads[id];
             return thread.unread_mentions || thread.unread_replies;

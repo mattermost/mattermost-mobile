@@ -29,9 +29,11 @@ type Props = {
 
 function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
     const theme = useSelector((state: GlobalState) => getTheme(state));
+    const style = getStyleSheet(theme);
+
     const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
     const currentTeamId = useSelector((state: GlobalState) => getCurrentTeamId(state));
-    const style = getStyleSheet(theme);
+
     const dispatch = useDispatch();
 
     const onUnfollow = () => {

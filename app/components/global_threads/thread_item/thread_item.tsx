@@ -4,12 +4,15 @@
 import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
 import {intlShape} from 'react-intl';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {goToScreen} from '@actions/navigation';
 import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
-
+import {selectPost} from '@mm-redux/actions/posts';
+import {DispatchFunc} from '@mm-redux/types/actions';
+import {getPost, getPostThread} from '@actions/views/post';
+import {THREAD} from '@constants/screen';
 import {Posts, Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost as getPostSelector} from '@mm-redux/selectors/entities/posts';
@@ -38,23 +41,36 @@ function ThreadItem({intl, postId, testID}: Props) {
         return null;
     }
 
-    const post = useSelector((state: GlobalState) => getPostSelector(state, postId));
+    let post = useSelector((state: GlobalState) => getPostSelector(state, postId));
 
-    const threadStarter = useSelector((state: GlobalState) => getUser(state, post.user_id));
-    const channel = useSelector((state: GlobalState) => getChannel(state, post.channel_id));
+    const asyncDispatch: DispatchFunc = useDispatch();
+
+    if (!post) {
+        // Get the latest post
+        asyncDispatch(getPost(postId));
+
+        // Have the post from thread item
+        post = thread.post;
+    }
+
+    const threadStarter = useSelector((state: GlobalState) => getUser(state, post?.user_id));
+    const channel = useSelector((state: GlobalState) => getChannel(state, post?.channel_id));
     const channelName = channel?.display_name;
     const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
 
+    const dispatch = useDispatch();
+
     const showThread = () => {
-        const screen = 'Thread';
+        dispatch(getPostThread(post.id));
+        dispatch(selectPost(post.id));
         const passProps = {
             channelId: post.channel_id,
             rootId: post.id,
         };
-        goToScreen(screen, '', passProps);
+        goToScreen(THREAD, '', passProps);
     };
 
-    const testIDPrefix = `${testID}.${post.id}`;
+    const testIDPrefix = `${testID}.${post?.id}`;
 
     const needBadge = thread.unread_mentions || thread.unread_replies;
     let badgeComponent;
