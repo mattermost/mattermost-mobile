@@ -296,7 +296,6 @@
   "mobile.edit_channel": "保存する",
   "mobile.edit_post.title": "メッセージ編集中",
   "mobile.edit_profile.remove_profile_photo": "画像を削除する",
-  "mobile.emoji_picker.foods": "食べ物",
   "mobile.emoji_picker.places": "場所",
   "mobile.emoji_picker.search.not_found_description": "スペルを確認し、再度検索してください。",
   "mobile.emoji_picker.search.not_found_title": "\"{searchTerm}\" に対する結果が見つかりませんでした",
