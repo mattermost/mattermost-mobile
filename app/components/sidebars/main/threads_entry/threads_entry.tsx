@@ -19,7 +19,7 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getViewingGlobalThreads} from '@selectors/threads';
+import {getViewingGlobalThreads, getViewingGlobalThreadsUnread} from '@selectors/threads';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {makeStyleFromTheme} from '@mm-redux/utils/theme_utils';
@@ -31,6 +31,7 @@ type Props = {
 
 const ThreadsSidebarEntry = ({intl}: Props) => {
     const viewingGlobalThreads = useSelector(getViewingGlobalThreads);
+    const isUnreadSelected = useSelector(getViewingGlobalThreadsUnread);
     const theme = useSelector((state: GlobalState) => getTheme(state));
     const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
     const currentTeamId = useSelector((state: GlobalState) => getCurrentTeamId(state));
@@ -40,12 +41,12 @@ const ThreadsSidebarEntry = ({intl}: Props) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(getThreads(currentUserId, currentTeamId, '', '', 200, false));
+        dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, isUnreadSelected));
     }, []);
 
     const onPress = preventDoubleTap(() => {
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-        dispatch(getThreads(currentUserId, currentTeamId, '', '', 200, false));
+        dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, isUnreadSelected));
         dispatch(handleViewingGlobalThreadsScreen());
     });
 

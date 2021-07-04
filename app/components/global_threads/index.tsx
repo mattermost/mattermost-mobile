@@ -6,7 +6,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {useSelector, useDispatch} from 'react-redux';
 
 import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
-import {markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
+import {getThreads, markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getThreadOrderInCurrentTeam, getUnreadThreadOrderInCurrentTeam} from '@mm-redux/selectors/entities/threads';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -30,10 +30,12 @@ function GlobalThreadsList({intl}: Props) {
     const dispatch = useDispatch();
 
     const handleViewAllThreads = () => {
+        dispatch(getThreads(userId, teamId, '', '', undefined, false));
         dispatch(handleViewingGlobalThreadsAll());
     };
 
     const handleViewUnreadThreads = () => {
+        dispatch(getThreads(userId, teamId, '', '', undefined, true));
         dispatch(handleViewingGlobalThreadsUnreads());
     };
 
