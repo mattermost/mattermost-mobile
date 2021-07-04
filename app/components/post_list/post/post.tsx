@@ -8,6 +8,7 @@ import {injectIntl, intlShape} from 'react-intl';
 import {showModalOverCurrentContext} from '@actions/navigation';
 import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import SystemAvatar from '@components/post_list/system_avatar';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -160,6 +161,7 @@ const Post = ({
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [style.rightColumn, (post.root_id && isLastReply && style.rightColumnPadding)];
     const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPostPendingOrFailed(post) ? style.pendingPost : undefined;
+    const isAutoResponder = fromAutoResponder(post);
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
@@ -175,7 +177,9 @@ const Post = ({
         consecutiveStyle = style.consective;
         postAvatar = <View style={style.consecutivePostContainer}/>;
     } else {
-        postAvatar = (
+        postAvatar = isAutoResponder ? (
+            <SystemAvatar theme={theme}/>
+        ) : (
             <Avatar
                 pendingPostStyle={pendingPostStyle}
                 post={post}
@@ -183,7 +187,7 @@ const Post = ({
             />
         );
 
-        if (isSystemMessage(post)) {
+        if (isSystemMessage(post) && !isAutoResponder) {
             header = (
                 <SystemHeader
                     createAt={post.create_at}
@@ -206,7 +210,7 @@ const Post = ({
     }
 
     let body;
-    if (isSystemMessage(post) && !isPostEphemeral(post)) {
+    if (isSystemMessage(post) && !isPostEphemeral(post) && !isAutoResponder) {
         body = (
             <SystemMessage
                 post={post}
