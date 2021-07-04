@@ -2981,6 +2981,12 @@ describe('Selectors.Channels.getUnreadChannelIds', () => {
                 channelsInTeam,
                 myMembers: myChannelMembers,
             },
+            general: {
+                config: {},
+            },
+            preferences: {
+                myPreferences: {},
+            },
         },
     });
     it('get unread channel ids in current team strict equal', () => {

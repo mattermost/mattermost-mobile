@@ -140,7 +140,6 @@ export function handleNewPostEvent(msg: WebSocketMessage) {
                     } else if ((post.channel_id === currentChannelId) && !viewingGlobalThreads) {
                         // Don't mark as read if we're in global threads screen
                         // the currentChannelId still refers to previously viewed channel
-                        // changing our redux stuff to not need a valid currentChannelid is messy
                         markAsRead = true;
                         markAsReadOnServer = true;
                     }

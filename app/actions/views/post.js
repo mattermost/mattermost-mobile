@@ -445,8 +445,8 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
             if (channel.id === currentChannelId || isArchivedChannel(channel)) {
                 return;
             }
-
-            const isUnread = isUnreadChannel(channelMembersByChannel, channel);
+            const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+            const isUnread = isUnreadChannel(channelMembersByChannel, channel, collapsedThreadsEnabled);
             if (!isUnread) {
                 return;
             }
@@ -458,7 +458,6 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
                 channelId: channel.id,
                 since: false,
             };
-            const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
             if (!postIds || !postIds.length) {
                 // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
                 promise = Client4.getPosts(channel.id, undefined, undefined, true, collapsedThreadsEnabled);
