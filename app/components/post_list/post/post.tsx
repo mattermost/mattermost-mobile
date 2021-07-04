@@ -254,11 +254,11 @@ const Post = ({
     }
 
     let footer;
-    if (thread?.id && post.state !== Posts.POST_DELETED) {
+    if (collapsedThreadsEnabled && Boolean(thread) && post.state !== Posts.POST_DELETED) {
         footer = (
             <View style={style.footerContainer}>
                 <ThreadFooter
-                    testID='channel_thread'
+                    testID={`${itemTestID}.footer`}
                     thread={thread}
                     threadStarter={threadStarter}
                     location='channel'

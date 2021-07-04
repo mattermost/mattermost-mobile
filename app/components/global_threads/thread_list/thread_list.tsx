@@ -41,7 +41,7 @@ function ThreadList({haveUnreads, intl, markAllAsRead, testID, threadIds, viewAl
     }, []);
 
     const renderHeader = () => {
-        if (!threadIds.length) {
+        if (!viewingUnreads && !threadIds.length) {
             return null;
         }
         return (

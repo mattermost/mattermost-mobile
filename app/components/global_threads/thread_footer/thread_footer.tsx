@@ -47,15 +47,17 @@ function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
     let replyIcon;
     let followButton;
     if (location === 'channel') {
-        replyIcon = (
-            <View style={style.replyIconContainer}>
-                <CompassIcon
-                    name='reply-outline'
-                    size={18}
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
-                />
-            </View>
-        );
+        if (thread.reply_count) {
+            replyIcon = (
+                <View style={style.replyIconContainer}>
+                    <CompassIcon
+                        name='reply-outline'
+                        size={18}
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    />
+                </View>
+            );
+        }
         if (thread.is_following) {
             followButton = (
                 <TouchableOpacity
@@ -93,7 +95,7 @@ function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
     }
 
     let repliesComponent;
-    if (thread.unread_replies && location === 'globalThreads') {
+    if (location === 'globalThreads' && thread.unread_replies) {
         repliesComponent = (
             <Text
                 style={style.unreadReplies}
@@ -107,7 +109,7 @@ function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
                 })}
             </Text>
         );
-    } else {
+    } else if (thread.reply_count) {
         repliesComponent = (
             <Text
                 style={style.replies}
@@ -124,14 +126,20 @@ function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
     }
 
     // threadstarter should be the first one in the avatars list
-    const participants = thread.participants.flatMap((participant) => (participant.id === threadStarter?.id ? [] : participant.id));
+    const participants = thread.participants?.flatMap((participant) => (participant.id === threadStarter?.id ? [] : participant.id));
     participants?.unshift(threadStarter?.id);
-
-    return (
-        <View style={style.footerContainer}>
+    let avatars;
+    if (participants?.length) {
+        avatars = (
             <View style={style.avatarsContainer}>
                 <Avatars userIds={participants}/>
             </View>
+        );
+    }
+
+    return (
+        <View style={style.footerContainer}>
+            {avatars}
             {replyIcon}
             {repliesComponent}
             {followButton}
@@ -143,7 +151,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const followingButtonContainerBase = {
         justifyContent: 'center',
         height: 32,
-        marginLeft: 12,
         paddingHorizontal: 12,
     };
 
@@ -163,10 +170,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 12,
+            marginRight: 12,
         },
         unreadReplies: {
             alignSelf: 'center',
             color: theme.sidebarTextActiveBorder,
+            fontSize: 12,
+            marginRight: 12,
         },
         notFollowingButtonContainer: {
             ...followingButtonContainerBase,

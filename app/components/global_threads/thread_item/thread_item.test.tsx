@@ -64,6 +64,8 @@ describe('Global Thread Item', () => {
 
         expect(wrapper.find({testID: `${testIDPrefix}.unread_dot`}).exists()).toBeTruthy();
         expect(wrapper.find({testID: `${testIDPrefix}.unread_mentions`}).exists()).toBeFalsy();
+
+        expect(wrapper.find({testID: `${testIDPrefix}.footer`}).exists()).toBeTruthy();
     });
 
     test('Should show unread mentions count', () => {
