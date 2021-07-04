@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {General, Permissions} from '@mm-redux/constants';
-import {getCurrentChannel, getChannel, isCurrentChannelReadOnly} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannel, getChannel, isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -14,7 +14,7 @@ import {getChannelMembersForDm} from '@selectors/channel';
 import PostDraft from './post_draft';
 
 export function mapStateToProps(state, ownProps) {
-    const channel = ownProps.rootId ? getChannel(state) : getCurrentChannel(state);
+    const channel = ownProps.rootId ? getChannel(state, ownProps.channelId) : getCurrentChannel(state);
     const currentUserId = getCurrentUserId(state);
     const channelId = ownProps.channelId || (channel ? channel.id : '');
     let canPost = true;
@@ -41,7 +41,7 @@ export function mapStateToProps(state, ownProps) {
 
     let channelIsReadOnly = false;
     if (currentUserId && channelId) {
-        channelIsReadOnly = isCurrentChannelReadOnly(state) || false;
+        channelIsReadOnly = isChannelReadOnlyById(state, channelId) || false;
     }
 
     return {

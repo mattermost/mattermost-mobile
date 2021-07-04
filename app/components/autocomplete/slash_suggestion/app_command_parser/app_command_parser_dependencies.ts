@@ -43,12 +43,12 @@ export {
 
 export {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 export {getPost} from '@mm-redux/selectors/entities/posts';
-export {getChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
+export {getChannel as selectChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
 export {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-export {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/entities/users';
+export {getUserByUsername as selectUserByUsername, getUser as selectUser} from '@mm-redux/selectors/entities/users';
 
-export {getUserByUsername} from '@mm-redux/actions/users';
-export {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
+export {getUserByUsername, getUser} from '@mm-redux/actions/users';
+export {getChannelByNameAndTeamName, getChannel} from '@mm-redux/actions/channels';
 
 export {doAppCall} from '@actions/apps';
 export {createCallRequest} from '@utils/apps';
