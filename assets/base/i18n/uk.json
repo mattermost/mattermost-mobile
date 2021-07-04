@@ -223,8 +223,6 @@
   "mobile.edit_channel": "Зберегти",
   "mobile.edit_post.title": "Редагування повідомлення",
   "mobile.edit_profile.remove_profile_photo": "Видалити фото",
-  "mobile.emoji_picker.foods": "ЇЖА",
-  "mobile.emoji_picker.places": "МІСЦЯ",
   "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search.",
   "mobile.emoji_picker.search.not_found_title": "Не знайдено результатів для \"{searchTerm}\"",
   "mobile.error_handler.button": "Перезапустити",

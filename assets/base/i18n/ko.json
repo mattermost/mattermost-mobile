@@ -229,8 +229,6 @@
   "mobile.edit_channel": "저장",
   "mobile.edit_post.title": "Editing Message",
   "mobile.edit_profile.remove_profile_photo": "사진 삭제",
-  "mobile.emoji_picker.foods": "FOODS",
-  "mobile.emoji_picker.places": "PLACES",
   "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search.",
   "mobile.emoji_picker.search.not_found_title": "\"{searchTerm}\"에 대한 결과가 없습니다",
   "mobile.error_handler.button": "Relaunch",

@@ -296,7 +296,6 @@
   "mobile.edit_channel": "Kaydet",
   "mobile.edit_post.title": "İleti düzenleniyor",
   "mobile.edit_profile.remove_profile_photo": "Fotoğrafı kaldır",
-  "mobile.emoji_picker.places": "YERLER",
   "mobile.emoji_picker.search.not_found_description": "Yazımı denetleyin ya da başka bir arama yapmayı deneyin.",
   "mobile.emoji_picker.search.not_found_title": "\"{searchTerm}\" ile eşleşen bir sonuç bulunamadı",
   "mobile.error_handler.button": "Yeniden başlat",

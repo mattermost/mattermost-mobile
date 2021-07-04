@@ -264,8 +264,6 @@
   "mobile.edit_channel": "Сохранить",
   "mobile.edit_post.title": "Редактирование сообщения",
   "mobile.edit_profile.remove_profile_photo": "Удалить фото",
-  "mobile.emoji_picker.foods": "ЕДА",
-  "mobile.emoji_picker.places": "МЕСТА",
   "mobile.emoji_picker.search.not_found_description": "Проверьте орфографию или попробуйте другой поиск.",
   "mobile.emoji_picker.search.not_found_title": "Ничего не найдено по запросу \"{searchTerm}\"",
   "mobile.error_handler.button": "Перезапустить",

@@ -296,7 +296,6 @@
   "mobile.edit_channel": "保存",
   "mobile.edit_post.title": "编辑消息",
   "mobile.edit_profile.remove_profile_photo": "移除照片",
-  "mobile.emoji_picker.places": "地点",
   "mobile.emoji_picker.search.not_found_description": "检查拼写后再尝试。",
   "mobile.emoji_picker.search.not_found_title": "未找到“{searchTerm}”的结果",
   "mobile.error_handler.button": "重加载",

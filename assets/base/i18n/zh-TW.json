@@ -219,8 +219,6 @@
   "mobile.edit_channel": "儲存",
   "mobile.edit_post.title": "編輯訊息",
   "mobile.edit_profile.remove_profile_photo": "移除相片",
-  "mobile.emoji_picker.foods": "食物",
-  "mobile.emoji_picker.places": "地方",
   "mobile.emoji_picker.search.not_found_description": "檢查拼字或嘗試其他搜尋。",
   "mobile.emoji_picker.search.not_found_title": "\"{searchTerm}\" 找不到任何結果",
   "mobile.error_handler.button": "重新啟動",

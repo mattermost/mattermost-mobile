@@ -264,8 +264,6 @@
   "mobile.edit_channel": "Salvează",
   "mobile.edit_post.title": "Editare mesaj",
   "mobile.edit_profile.remove_profile_photo": "Eliminați fotografia",
-  "mobile.emoji_picker.foods": "Alimente",
-  "mobile.emoji_picker.places": "LOCURI",
   "mobile.emoji_picker.search.not_found_description": "Verificați ortografia sau încercați o altă căutare.",
   "mobile.emoji_picker.search.not_found_title": "Nu există rezultate pentru \"{searchTerm}\"",
   "mobile.error_handler.button": "Repornește",
