@@ -301,7 +301,6 @@ describe('@actions/navigation', () => {
     test('showModalOverCurrentContext should call Navigation.showModal', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
-        const animationsEnabled = (Platform.OS === 'android').toString();
         const showModalOverCurrentContextTitle = '';
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
@@ -315,21 +314,14 @@ describe('@actions/navigation', () => {
             },
             animations: {
                 showModal: {
-                    waitForRender: true,
-                    enabled: animationsEnabled,
-                    alpha: {
-                        from: 0,
-                        to: 1,
-                        duration: 250,
-                    },
+                    enabled: false,
+                    enter: {},
+                    exit: {},
                 },
                 dismissModal: {
-                    enabled: animationsEnabled,
-                    alpha: {
-                        from: 1,
-                        to: 0,
-                        duration: 250,
-                    },
+                    enabled: false,
+                    enter: {},
+                    exit: {},
                 },
             },
         };
