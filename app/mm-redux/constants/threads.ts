@@ -2,5 +2,5 @@
 // See LICENSE.txt for license information.
 
 export default {
-    THREADS_CHUNK_SIZE: 20,
+    THREADS_CHUNK_SIZE: 60,
 };

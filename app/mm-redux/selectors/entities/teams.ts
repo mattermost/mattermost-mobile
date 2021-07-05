@@ -249,13 +249,13 @@ export const getChannelDrawerBadgeCount = reselect.createSelector(
     getCurrentTeamId,
     getTeamMemberships,
     isCollapsedThreadsEnabled,
-    (currentTeamId, teamMembers, collapsed) => {
+    (currentTeamId, teamMembers, collapsedThreadsEnabled) => {
         let mentionCount = 0;
         let messageCount = 0;
         Object.values(teamMembers).forEach((m: TeamMembership) => {
             if (m.team_id !== currentTeamId) {
-                mentionCount += collapsed ? (m.mention_count_root || 0) : (m.mention_count || 0);
-                messageCount += collapsed ? (m.msg_count_root || 0) : (m.msg_count || 0);
+                mentionCount += collapsedThreadsEnabled ? (m.mention_count_root || 0) : (m.mention_count || 0);
+                messageCount += collapsedThreadsEnabled ? (m.msg_count_root || 0) : (m.msg_count || 0);
             }
         });
 

@@ -9,7 +9,7 @@ import {getLastPostPerChannel, getAllPosts} from '@mm-redux/selectors/entities/p
 import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {isCurrentUserSystemAdmin, getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency} from '@mm-redux/utils/channel_utils';
+import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency, getMsgCountInChannel} from '@mm-redux/utils/channel_utils';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembership};
@@ -180,12 +180,21 @@ export function isChannelReadOnly(state: GlobalState, channel: Channel): boolean
 export function shouldHideDefaultChannel(state: GlobalState, channel: Channel): boolean {
     return channel && channel.name === General.DEFAULT_CHANNEL && !isCurrentUserSystemAdmin(state) && getConfig(state).ExperimentalHideTownSquareinLHS === 'true';
 }
-export const countCurrentChannelUnreadMessages: (a: GlobalState) => number = createSelector(getCurrentChannel, getMyCurrentChannelMembership, (channel: Channel, membership?: ChannelMembership | null): number => {
-    if (!membership) {
-        return 0;
-    }
-    return channel.total_msg_count - membership.msg_count;
-});
+export const countCurrentChannelUnreadMessages: (a: GlobalState) => number = createSelector(
+    getCurrentChannel,
+    getMyCurrentChannelMembership,
+    isCollapsedThreadsEnabled,
+    (
+        channel: Channel,
+        membership?: ChannelMembership | null,
+        collapsedThreadsEnabled?: boolean,
+    ): number => {
+        if (!membership) {
+            return 0;
+        }
+        return collapsedThreadsEnabled ? channel.total_msg_count_root - membership.msg_count_root : channel.total_msg_count - membership.msg_count;
+    },
+);
 
 export function getChannelByName(state: GlobalState, channelName: string): Channel | undefined | null {
     return getChannelByNameHelper(getAllChannels(state), channelName);
@@ -296,6 +305,7 @@ export const getChannelsWithUnreadSection: (a: GlobalState) => {
     getTeammateNameDisplaySetting,
     (state: GlobalState): UsersState => state.entities.users,
     getLastPostPerChannel,
+    isCollapsedThreadsEnabled,
     (
         currentChannelId: string,
         channels: Array<Channel>,
@@ -307,6 +317,7 @@ export const getChannelsWithUnreadSection: (a: GlobalState) => {
         teammateNameDisplay: string,
         usersState: UsersState,
         lastPosts: RelationOneToOne<Channel, Post>,
+        collapsedThreadsEnabled: boolean,
     ) => {
         const allChannels = channels.map((c) => {
             const channel = {...c,
@@ -314,7 +325,7 @@ export const getChannelsWithUnreadSection: (a: GlobalState) => {
             channel.isCurrent = c.id === currentChannelId;
             return channel;
         });
-        return buildDisplayableChannelListWithUnreadSection(usersState, allChannels, myMembers, config, myPreferences, teammateNameDisplay, lastPosts);
+        return buildDisplayableChannelListWithUnreadSection(usersState, allChannels, myMembers, config, myPreferences, teammateNameDisplay, lastPosts, collapsedThreadsEnabled);
     },
 );
 
@@ -409,6 +420,7 @@ export const getUnreads: (a: GlobalState) => {
         if (collapsed) {
             Object.values(threadCounts).forEach((c) => {
                 result.mentionCount += c.total_unread_mentions;
+                result.messageCount += c.total_unread_threads;
             });
         }
 
@@ -525,29 +537,42 @@ export const getChannelIdsInCurrentTeam: (a: GlobalState) => Array<string> = cre
 export const getChannelIdsForCurrentTeam: (a: GlobalState) => Array<string> = createIdsSelector(getChannelIdsInCurrentTeam, getAllDirectChannelIds, (channels, direct) => {
     return [...channels, ...direct];
 });
-export const getUnreadChannelIds: (b: GlobalState, a?: Channel | null) => Array<string> = createIdsSelector(getAllChannels, getMyChannelMemberships, getChannelIdsForCurrentTeam, (state: GlobalState, lastUnreadChannel: Channel | undefined | null = null): Channel | undefined | null => lastUnreadChannel, (channels: IDMappedObjects<Channel>, members: RelationOneToOne<Channel, ChannelMembership>, teamChannelIds: Array<string>, lastUnreadChannel?: Channel | null): Array<string> => {
-    const unreadIds = teamChannelIds.filter((id) => {
-        const c = channels[id];
-        const m = members[id];
+export const getUnreadChannelIds: (b: GlobalState, a?: Channel | null) => Array<string> = createIdsSelector(
+    isCollapsedThreadsEnabled,
+    getAllChannels,
+    getMyChannelMemberships,
+    getChannelIdsForCurrentTeam,
+    (state: GlobalState, lastUnreadChannel: Channel | undefined | null = null): Channel | undefined | null => lastUnreadChannel,
+    (
+        collapsedThreadsEnabled: boolean,
+        channels: IDMappedObjects<Channel>,
+        members: RelationOneToOne<Channel, ChannelMembership>,
+        teamChannelIds: Array<string>,
+        lastUnreadChannel?: Channel | null,
+    ): Array<string> => {
+        const unreadIds = teamChannelIds.filter((id) => {
+            const c = channels[id];
+            const m = members[id];
 
-        if (c && m) {
-            const chHasUnread = c.total_msg_count - m.msg_count > 0;
-            const chHasMention = m.mention_count > 0;
+            if (c && m) {
+                const chHasUnread = getMsgCountInChannel(collapsedThreadsEnabled, c, m) > 0;
+                const chHasMention = (collapsedThreadsEnabled ? m.mention_count_root : m.mention_count) > 0;
 
-            if ((m.notify_props && m.notify_props.mark_unread !== 'mention' && chHasUnread) || chHasMention) {
-                return true;
+                if ((m.notify_props && m.notify_props.mark_unread !== 'mention' && chHasUnread) || chHasMention) {
+                    return true;
+                }
             }
+
+            return false;
+        });
+
+        if (lastUnreadChannel && !unreadIds.includes(lastUnreadChannel.id)) {
+            unreadIds.push(lastUnreadChannel.id);
         }
 
-        return false;
-    });
-
-    if (lastUnreadChannel && !unreadIds.includes(lastUnreadChannel.id)) {
-        unreadIds.push(lastUnreadChannel.id);
-    }
-
-    return unreadIds;
-});
+        return unreadIds;
+    },
+);
 export const getUnreadChannels: (b: GlobalState, a?: Channel | null) => Array<Channel> = createIdsSelector(getCurrentUser, getUsers, getUserIdsInChannels, getAllChannels, getUnreadChannelIds, getTeammateNameDisplaySetting, (currentUser, profiles, userIdsInChannels: any, channels, unreadIds, settings) => {
     // If we receive an unread for a channel and then a mention the channel
     // won't be sorted correctly until we receive a message in another channel
@@ -745,7 +770,7 @@ export const getDirectChannelIds: (e: GlobalState, d: Channel, c: boolean, b: bo
 export const getSortedDirectChannelIds: (e: GlobalState, d: Channel | null, c: boolean, b: boolean, a: SortingType) => Array<string> = createIdsSelector(getUnreadChannelIds, getFavoritesPreferences, (state: GlobalState, lastUnreadChannel: Channel, unreadsAtTop: boolean, favoritesAtTop: boolean, sorting: SortingType = 'alpha') => getDirectChannelIds(state, lastUnreadChannel, unreadsAtTop, favoritesAtTop, sorting), (state, lastUnreadChannel, unreadsAtTop = true) => unreadsAtTop, (state, lastUnreadChannel, unreadsAtTop, favoritesAtTop = true) => favoritesAtTop, filterChannels);
 
 export function getGroupOrDirectChannelVisibility(state: GlobalState, channelId: string): boolean {
-    return isGroupOrDirectChannelVisible(getChannel(state, channelId), getMyChannelMemberships(state), getConfig(state), getMyPreferences(state), getCurrentUser(state).id, getUsers(state), getLastPostPerChannel(state));
+    return isGroupOrDirectChannelVisible(getChannel(state, channelId), getMyChannelMemberships(state), getConfig(state), getMyPreferences(state), getCurrentUser(state).id, getUsers(state), getLastPostPerChannel(state), isCollapsedThreadsEnabled(state));
 }
 
 // Filters post IDs by the given condition.
