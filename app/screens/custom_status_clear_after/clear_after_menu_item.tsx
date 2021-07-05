@@ -37,10 +37,9 @@ const {
     DATE_AND_TIME,
 } = CustomStatusDuration;
 
-const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime}: Props) => {
+const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime = false}: Props) => {
     const style = getStyleSheet(theme);
 
-    const divider = separator ? <View style={style.divider}/> : null;
     const [showDateAndTimePicker, setShowDateAndTimePicker] = useState<boolean>(false);
     const [expiry, setExpiry] = useState<string>('');
 
@@ -69,34 +68,6 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
         handleItemClick(duration, expiresAt.toISOString());
     };
 
-    const renderDateTimePicker = showDateAndTimePicker && (
-        <DateTimePicker
-            theme={theme}
-            handleChange={handleCustomExpiresAtChange}
-        />
-    );
-
-    const renderCheckIcon = isSelected && (
-        <View style={style.rightPosition}>
-            <CompassIcon
-                name={'check'}
-                size={24}
-                style={style.button}
-            />
-        </View>
-    );
-
-    const renderExpiryTime = showExpiryTime && expiry !== '' && (
-        <View style={style.rightPosition}>
-            <CustomStatusExpiry
-                theme={theme}
-                time={moment(expiry).toDate()}
-                textStyles={style.customStatusExpiry}
-                showTimeCompulsory={true}
-            />
-        </View>
-    );
-
     return (
         <View>
             <TouchableOpacity
@@ -110,13 +81,35 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
                             theme={theme}
                             textStyle={{color: theme.centerChannelColor}}
                         />
-                        {renderCheckIcon}
-                        {renderExpiryTime}
+                        {isSelected && (
+                            <View style={style.rightPosition}>
+                                <CompassIcon
+                                    name={'check'}
+                                    size={24}
+                                    style={style.button}
+                                />
+                            </View>
+                        )}
+                        {showExpiryTime && expiry !== '' && (
+                            <View style={style.rightPosition}>
+                                <CustomStatusExpiry
+                                    theme={theme}
+                                    time={moment(expiry).toDate()}
+                                    textStyles={style.customStatusExpiry}
+                                    showTimeCompulsory={true}
+                                />
+                            </View>
+                        )}
                     </View>
                 </View>
-                {divider}
+                {separator && <View style={style.divider}/>}
             </TouchableOpacity>
-            {renderDateTimePicker}
+            {showDateAndTimePicker && (
+                <DateTimePicker
+                    theme={theme}
+                    handleChange={handleCustomExpiresAtChange}
+                />
+            )}
         </View>
     );
 };

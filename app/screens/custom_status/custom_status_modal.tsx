@@ -165,8 +165,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const currentTime = getCurrentMomentForTimezone(userTimezone);
         const {expires_at} = this.state;
         switch (duration) {
-        case CustomStatusDuration.DONT_CLEAR:
-            return '';
         case CustomStatusDuration.THIRTY_MINUTES:
             return currentTime.add(30, 'minutes').seconds(0).milliseconds(0).toISOString();
         case CustomStatusDuration.ONE_HOUR:
@@ -179,6 +177,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             return currentTime.endOf('week').toISOString();
         case CustomStatusDuration.DATE_AND_TIME:
             return expires_at.toISOString();
+        case CustomStatusDuration.DONT_CLEAR:
         default:
             return '';
         }
@@ -307,10 +306,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) => {
         dismissModal();
-        this.setState({duration});
-        if (duration === CustomStatusDuration.DATE_AND_TIME) {
-            this.setState({expires_at: moment(expires_at)});
-        }
+        this.setState({
+            duration,
+            expires_at: duration === CustomStatusDuration.DATE_AND_TIME ? moment(expires_at) : this.state.expires_at,
+        });
     };
 
     openClearAfterModal = async () => {

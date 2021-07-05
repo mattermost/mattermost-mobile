@@ -113,19 +113,20 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
         const clearAfterMenu = Object.values(CustomStatusDuration).map(
             (item, index, arr) => {
-                if (index !== arr.length - 1) {
-                    return (
-                        <ClearAfterMenuItem
-                            key={item}
-                            handleItemClick={this.handleItemClick}
-                            duration={item}
-                            theme={theme}
-                            separator={index !== arr.length - 2}
-                            isSelected={duration === item}
-                        />
-                    );
+                if (index === arr.length - 1) {
+                    return null;
                 }
-                return null;
+
+                return (
+                    <ClearAfterMenuItem
+                        key={item}
+                        handleItemClick={this.handleItemClick}
+                        duration={item}
+                        theme={theme}
+                        separator={index !== arr.length - 2}
+                        isSelected={duration === item}
+                    />
+                );
             },
         );
 

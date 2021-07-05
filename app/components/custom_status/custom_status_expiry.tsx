@@ -28,7 +28,7 @@ type Props = {
     showTimeCompulsory?: boolean;
 }
 
-const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets, testID, showTimeCompulsory}: Props) => {
+const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBrackets, testID = '', showTimeCompulsory}: Props) => {
     const timezone = useSelector(getCurrentUserTimezone);
     const styles = createStyleSheet(theme);
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
@@ -41,7 +41,6 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
     const todayEndTime = currentMomentTime.clone().endOf('day');
     const isCurrentYear = currentMomentTime.get('y') === expiryMomentTime.get('y');
 
-    let useTime = true;
     let format = '';
     let renderDayOrDate;
 
@@ -102,26 +101,24 @@ const CustomStatusExpiry = ({time, theme, textStyles, showPrefix, withinBrackets
         ) : renderDayOrDate;
     }
 
-    if (expiryMomentTime.isSame(todayEndTime) || (expiryMomentTime.isAfter(tomorrowEndTime) && !showTimeCompulsory)) {
-        useTime = false;
-    }
+    const useTime = showTimeCompulsory || !(expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowEndTime));
 
-    const renderTime = useTime ? (
+    const renderTime = useTime && (
         <FormattedTime
             isMilitaryTime={militaryTime}
             timezone={timezone || ''}
             value={expiryMomentTime.toDate()}
         />
-    ) : undefined;
+    );
 
-    const prefix = showPrefix ? (
+    const prefix = showPrefix && (
         <Text>
             <FormattedText
                 id='custom_status.expiry.until'
                 defaultMessage='Until'
             />{' '}
         </Text>
-    ) : undefined;
+    );
 
     return (
         <Text

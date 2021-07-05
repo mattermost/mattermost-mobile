@@ -162,6 +162,8 @@ export default class ChannelInfoHeader extends React.PureComponent {
             android: style.detail,
         });
 
+        const showCustomStatus = isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji && !isCustomStatusExpired;
+
         return (
             <View style={style.container}>
                 <View style={[style.channelNameContainer, style.row]}>
@@ -185,7 +187,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         {displayName}
                     </Text>
                 </View>
-                {isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji && !isCustomStatusExpired &&
+                {showCustomStatus && (
                     <View
                         style={[style.row, style.customStatusContainer]}
                         testID={`${testID}.custom_status`}
@@ -204,7 +206,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             />
-                            {customStatus.duration === CustomStatusDuration.DONT_CLEAR ? null : (
+                            {customStatus.duration !== CustomStatusDuration.DONT_CLEAR && (
                                 <CustomStatusExpiry
                                     time={customStatus.expires_at}
                                     theme={theme}
@@ -214,7 +216,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                             )}
                         </View>
                     </View>
-                }
+                )}
                 {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
                     <View style={style.section}>

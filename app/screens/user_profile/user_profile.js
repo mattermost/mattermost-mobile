@@ -238,24 +238,13 @@ export default class UserProfile extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {customStatus, theme, isMyUser, isCustomStatusExpired} = this.props;
         const style = createStyleSheet(theme);
-        const isStatusSet = !isCustomStatusExpired && customStatus?.emoji;
+        const isStatusSet = Boolean(!isCustomStatusExpired && customStatus?.emoji);
 
         if (!isStatusSet) {
             return null;
         }
 
         const label = formatMessage({id: 'user.settings.general.status', defaultMessage: 'Status'});
-
-        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ?
-            (
-                <CustomStatusExpiry
-                    time={customStatus?.expires_at}
-                    theme={theme}
-                    textStyles={style.customStatusExpiry}
-                    showPrefix={true}
-                    withinBrackets={true}
-                />
-            ) : null;
 
         return (
             <View
@@ -264,7 +253,15 @@ export default class UserProfile extends PureComponent {
                 <Text style={style.header}>
                     {label}
                     {' '}
-                    {customStatusExpiryTime}
+                    {isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR && (
+                        <CustomStatusExpiry
+                            time={customStatus?.expires_at}
+                            theme={theme}
+                            textStyles={style.customStatusExpiry}
+                            showPrefix={true}
+                            withinBrackets={true}
+                        />
+                    )}
                 </Text>
                 <View style={style.customStatus}>
                     <Text

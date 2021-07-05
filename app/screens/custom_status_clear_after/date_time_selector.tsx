@@ -45,27 +45,9 @@ const DateTimeSelector = (props: Props) => {
         setMode(currentMode);
     };
 
-    const showDatepicker = () => {
-        showMode('date');
-    };
+    const showDatepicker = () => showMode('date');
 
-    const showTimepicker = () => {
-        showMode('time');
-    };
-
-    const renderDateTimePicker = show && (
-        <DateTimePicker
-            testID='dateTimePicker'
-            value={date.toDate()}
-            mode={mode}
-            is24Hour={militaryTime}
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onChange}
-            textColor={theme.centerChannelColor}
-            timeZoneOffsetInMinutes={timezoneOffSetInMinutes}
-            minimumDate={currentTime.toDate()}
-        />
-    );
+    const showTimepicker = () => showMode('time');
 
     return (
         <View style={styles.container}>
@@ -83,7 +65,19 @@ const DateTimeSelector = (props: Props) => {
                     color={theme.buttonBg}
                 />
             </View>
-            {renderDateTimePicker}
+            {show && (
+                <DateTimePicker
+                    testID='dateTimePicker'
+                    value={date.toDate()}
+                    mode={mode}
+                    is24Hour={militaryTime}
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onChange}
+                    textColor={theme.centerChannelColor}
+                    timeZoneOffsetInMinutes={timezoneOffSetInMinutes}
+                    minimumDate={currentTime.toDate()}
+                />
+            )}
         </View>
     );
 };
