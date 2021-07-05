@@ -279,13 +279,13 @@ export function makeGetBadgeCountForTeamId() {
         getTeamMemberships,
         (state: GlobalState, id: string) => id,
         isCollapsedThreadsEnabled,
-        (members, teamId, collapsed) => {
+        (members, teamId, collapsedThreadsEnabled) => {
             const member = members[teamId];
             let badgeCount = 0;
 
             if (member) {
-                const mentionCount = collapsed ? member.mention_count_root : member.mention_count;
-                const msgCount = collapsed ? member.msg_count_root : member.msg_count;
+                const mentionCount = collapsedThreadsEnabled ? member.mention_count_root : member.mention_count;
+                const msgCount = collapsedThreadsEnabled ? member.msg_count_root : member.msg_count;
                 if (mentionCount) {
                     badgeCount = mentionCount;
                 } else if (msgCount) {

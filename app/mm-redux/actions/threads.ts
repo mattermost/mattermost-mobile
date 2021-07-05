@@ -14,12 +14,12 @@ import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
 import {getMissingProfilesByIds} from './users';
 
-export function getThreads(userId: string, teamId: string, before = '', after = '', perPage = ThreadConstants.THREADS_CHUNK_SIZE, unread = true, since = 0) {
+export function getThreads(userId: string, teamId: string, before = '', after = '', perPage = ThreadConstants.THREADS_CHUNK_SIZE, deleted = false, unread = true, since = 0) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let userThreadList: UserThreadList;
 
         try {
-            userThreadList = await Client4.getUserThreads(userId, teamId, before, after, perPage, true, false, unread, since);
+            userThreadList = await Client4.getUserThreads(userId, teamId, before, after, perPage, true, deleted, unread, since);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -34,7 +34,9 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                         ...userThreadList,
                         threads: userThreadList?.threads?.map((thread) => ({...thread, is_following: true})) ?? [],
                         team_id: teamId,
-                        removeOldThreads: !before && !after,
+
+                        // Clear threads only when threads are loaded on launch
+                        removeOldThreads: !before && !after && !unread,
                     },
                 },
             ];
