@@ -8,9 +8,10 @@ exports[`components/custom_status/custom_status_expiry should match snapshot 1`]
         "color": "#3d3c40",
         "fontSize": 15,
       },
-      undefined,
+      Object {},
     ]
   }
+  testID=""
 >
   <Text>
     Apr 13, 2200
