@@ -23,6 +23,7 @@ describe('Global Thread List', () => {
     const baseProps = {
         haveUnreads: true,
         intl,
+        loadMoreThreads: jest.fn(),
         markAllAsRead,
         testID,
         threadIds: ['thread1'],

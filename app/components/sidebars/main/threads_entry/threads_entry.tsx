@@ -3,7 +3,7 @@
 
 import React, {useEffect} from 'react';
 import {TouchableHighlight, Text, View} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
+import {intlShape} from 'react-intl';
 import {useDispatch, useSelector} from 'react-redux';
 
 import {handleViewingGlobalThreadsScreen} from '@actions/views/threads';
@@ -41,12 +41,11 @@ const ThreadsSidebarEntry = ({intl}: Props) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, isUnreadSelected));
+        dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, false, isUnreadSelected));
     }, []);
 
     const onPress = preventDoubleTap(() => {
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-        dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, isUnreadSelected));
         dispatch(handleViewingGlobalThreadsScreen());
     });
 
@@ -139,4 +138,4 @@ const getExtraStyleSheet = makeStyleFromTheme((theme: Theme) => {
     };
 });
 
-export default injectIntl(ThreadsSidebarEntry);
+export default ThreadsSidebarEntry;

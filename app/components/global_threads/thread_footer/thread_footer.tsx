@@ -200,7 +200,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         followSeparator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
             height: 16,
-            marginLeft: 12,
+            marginRight: 12,
             width: 1,
         },
     };

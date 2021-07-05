@@ -197,6 +197,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     keyExtractor={[Function]}
     maxToRenderPerBatch={10}
     numColumns={1}
+    onEndReached={[Function]}
     onEndReachedThreshold={2}
     removeClippedSubviews={false}
     renderItem={[Function]}

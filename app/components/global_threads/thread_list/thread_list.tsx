@@ -17,6 +17,7 @@ import ThreadItem from '../thread_item';
 type Props = {
     haveUnreads: boolean;
     intl: typeof intlShape;
+    loadMoreThreads: () => Promise<void>;
     markAllAsRead: () => void;
     testID: string;
     threadIds: string[];
@@ -25,9 +26,13 @@ type Props = {
     viewingUnreads: boolean;
 }
 
-function ThreadList({haveUnreads, intl, markAllAsRead, testID, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
+function ThreadList({haveUnreads, intl, loadMoreThreads, markAllAsRead, testID, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
     const theme = useSelector((state: GlobalState) => getTheme(state));
     const style = getStyleSheet(theme);
+
+    const handleEndReached = React.useCallback(() => {
+        loadMoreThreads();
+    }, [viewingUnreads]);
 
     const keyExtractor = React.useCallback((item) => item, []);
 
@@ -106,16 +111,17 @@ function ThreadList({haveUnreads, intl, markAllAsRead, testID, threadIds, viewAl
         <View style={style.container}>
             {renderHeader()}
             <FlatList
-                data={threadIds}
-                renderItem={renderPost}
-                keyExtractor={keyExtractor}
                 contentContainerStyle={style.messagesContainer}
+                data={threadIds}
+                keyExtractor={keyExtractor}
                 ListEmptyComponent={
                     <EmptyState
                         intl={intl}
                         isUnreads={viewingUnreads}
                     />
                 }
+                onEndReached={handleEndReached}
+                renderItem={renderPost}
             />
         </View>
     );
