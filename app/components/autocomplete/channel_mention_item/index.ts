@@ -11,15 +11,19 @@ import {getChannelNameForSearchAutocomplete} from '@selectors/channel';
 import {isGuest as isGuestUser} from '@utils/users';
 
 import ChannelMentionItem from './channel_mention_item';
+import {GlobalState} from '@mm-redux/types/store';
 
-function mapStateToProps(state, ownProps) {
+type OwnProps = {
+    channelId: string;
+}
+function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     const channel = getChannel(state, ownProps.channelId);
     let displayName = getChannelNameForSearchAutocomplete(state, ownProps.channelId);
 
     let isBot = false;
     let isGuest = false;
     if (channel?.type === General.DM_CHANNEL) {
-        const teammate = getUser(state, channel.teammate_id);
+        const teammate = channel.teammate_id ? getUser(state, channel.teammate_id) : undefined;
         if (teammate) {
             displayName = teammate.username;
             isBot = teammate.is_bot || false;

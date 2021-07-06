@@ -3,8 +3,6 @@
 
 /* eslint-disable max-lines */
 
-import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from '../mentions';
-
 import {
     AppCallRequest,
     AppBinding,
@@ -47,6 +45,9 @@ import {
     autocompleteUsersInChannel,
     autocompleteChannels,
     ExtendedAutocompleteSuggestion,
+    getChannelSuggestions,
+    getUserSuggestions,
+    inTextMentionSuggestions,
 } from './app_command_parser_dependencies';
 
 export interface Store {

@@ -19,15 +19,18 @@ import {
 
 import ChannelMention from './channel_mention';
 
+const appsTakeOverProps = {
+    currentTeamId: '',
+    requestStatus: '',
+    theme: {},
+};
+
 function mapStateToProps(state, ownProps) {
     if (ownProps.appsTakeOver) {
         // Return empty values for the requiredfields.
-        return {
-            currentTeamId: '',
-            requestStatus: '',
-            theme: {},
-        };
+        return appsTakeOverProps;
     }
+
     const {cursorPosition, isSearch} = ownProps;
 
     const value = ownProps.value.substring(0, cursorPosition);

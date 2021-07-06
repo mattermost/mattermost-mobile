@@ -82,7 +82,6 @@ export default class Autocomplete extends PureComponent {
             dateCount: 0,
             keyboardOffset: 0,
             value: props.value,
-            appsTakeOver: false,
         };
 
         this.containerRef = React.createRef();
@@ -184,12 +183,6 @@ export default class Autocomplete extends PureComponent {
         return maxHeight;
     }
 
-    handleAppsTakeOver = (takeOver) => {
-        if (this.state.appsTakeOver !== takeOver) {
-            this.setState({appsTakeOver: takeOver});
-        }
-    }
-
     render() {
         const {atMentionCount, channelMentionCount, emojiCount, commandCount, appCommandCount, dateCount, cursorPosition, value} = this.state;
         const {theme, isSearch, offsetY} = this.props;
@@ -215,6 +208,7 @@ export default class Autocomplete extends PureComponent {
             containerStyles.push(style.hidden);
         }
 
+        const appsTakeOver = this.state.appCommandCount > 0;
         return (
             <View
                 style={wrapperStyles}
@@ -230,7 +224,6 @@ export default class Autocomplete extends PureComponent {
                         maxListHeight={maxListHeight}
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleAppCommandCountChange}
-                        takeOver={this.handleAppsTakeOver}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
@@ -242,7 +235,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleAtMentionCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={this.state.appsTakeOver}
+                        appsTakeOver={appsTakeOver}
                     />
                     <ChannelMention
                         {...this.props}
@@ -252,7 +245,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleChannelMentionCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={this.state.appsTakeOver}
+                        appsTakeOver={appsTakeOver}
                     />
                     <EmojiSuggestion
                         {...this.props}
@@ -262,7 +255,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleEmojiCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={this.state.appsTakeOver}
+                        appsTakeOver={appsTakeOver}
                     />
                     <SlashSuggestion
                         {...this.props}
@@ -271,7 +264,7 @@ export default class Autocomplete extends PureComponent {
                         onResultCountChange={this.handleCommandCountChange}
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={this.state.appsTakeOver}
+                        appsTakeOver={appsTakeOver}
                     />
                     {(this.props.isSearch && this.props.enableDateSuggestion) &&
                     <DateSuggestion
@@ -280,7 +273,7 @@ export default class Autocomplete extends PureComponent {
                         onChangeText={this.onChangeText}
                         onResultCountChange={this.handleIsDateFilterChange}
                         value={value || ''}
-                        appsTakeOver={this.state.appsTakeOver}
+                        appsTakeOver={appsTakeOver}
                     />
                     }
                 </View>

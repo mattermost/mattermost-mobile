@@ -24,15 +24,17 @@ import {Permissions} from '@mm-redux/constants';
 
 import AtMention from './at_mention';
 
+const appsTakeOverProps = {
+    currentTeamId: '',
+    requestStatus: '',
+    theme: {},
+    useChannelMentions: false,
+};
+
 function mapStateToProps(state, ownProps) {
     if (ownProps.appsTakeOver) {
         // Return empty values for the requiredfields.
-        return {
-            currentTeamId: '',
-            requestStatus: '',
-            theme: {},
-            useChannelMentions: false,
-        };
+        return appsTakeOverProps;
     }
     const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);

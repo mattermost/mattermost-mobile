@@ -10,16 +10,18 @@ import {getCurrentLocale} from '@selectors/i18n';
 
 import DateSuggestion from './date_suggestion';
 
+const appsTakeOverProps = {
+    locale: '',
+    theme: {},
+};
+
 function makeMapStateToProps() {
     const getMatchTermForDateMention = makeGetMatchTermForDateMention();
 
     return (state, ownProps) => {
         if (ownProps.appsTakeOver) {
             // Return empty values for the requiredfields.
-            return {
-                locale: '',
-                theme: {},
-            };
+            return appsTakeOverProps;
         }
 
         const {cursorPosition, value} = ownProps;

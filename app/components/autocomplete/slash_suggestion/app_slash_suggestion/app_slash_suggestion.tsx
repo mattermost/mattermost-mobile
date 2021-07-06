@@ -28,7 +28,6 @@ export type Props = {
     theme: Theme;
     onChangeText: (text: string) => void;
     onResultCountChange: (count: number) => void;
-    takeOver: (takeOver: boolean) => void;
     value: string;
     nestedScrollEnabled?: boolean;
     rootId?: string;
@@ -70,7 +69,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
     componentDidUpdate(prevProps: Props) {
         if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24) || !this.props.appsEnabled) {
             this.setActive(false);
-            this.props.takeOver(false);
             this.props.onResultCountChange(0);
             return;
         }
@@ -79,7 +77,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             (this.props.value === prevProps.value) ||
             this.props.isSearch || this.props.value.startsWith('//') || !this.props.channelId
         ) {
-            this.props.takeOver(false);
+            this.props.onResultCountChange(0);
             return;
         }
 
@@ -89,21 +87,18 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
 
         if (nextValue[0] !== '/') {
             this.setActive(false);
-            this.props.takeOver(false);
             this.props.onResultCountChange(0);
             return;
         }
 
         if (nextValue.indexOf(' ') === -1) { // delegate base command to command parser
             this.setActive(false);
-            this.props.takeOver(false);
             this.props.onResultCountChange(0);
             return;
         }
 
         if (!this.isAppCommand(nextValue, this.props.channelId, this.props.rootId)) {
             this.setActive(false);
-            this.props.takeOver(false);
             this.props.onResultCountChange(0);
             return;
         }
@@ -128,9 +123,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             dataSource: matches,
         });
         this.props.onResultCountChange(matches.length);
-        if (matches.length) {
-            this.props.takeOver(true);
-        }
     }
 
     completeSuggestion = (command: string) => {

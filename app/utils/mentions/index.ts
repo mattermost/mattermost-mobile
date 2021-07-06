@@ -12,7 +12,7 @@ import {
     GlobalState,
     UserAutocomplete,
     UserProfile,
-} from '../app_command_parser/app_command_parser_dependencies';
+} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser_dependencies';
 
 interface Store {
     dispatch: DispatchFunc;

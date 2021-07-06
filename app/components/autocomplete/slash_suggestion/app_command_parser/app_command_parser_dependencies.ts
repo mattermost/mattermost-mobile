@@ -125,3 +125,9 @@ export const errorMessage = (intl: typeof intlShape, error: string, _command: st
         error,
     });
 };
+
+export {
+    getChannelSuggestions,
+    getUserSuggestions,
+    inTextMentionSuggestions,
+} from '@utils/mentions';
