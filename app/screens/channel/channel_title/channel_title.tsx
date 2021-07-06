@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useState} from 'react';
@@ -28,7 +27,6 @@ import type MyChannelSettingsModel from '@typings/database/models/servers/my_cha
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM}} = MM_TABLES;
 const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings, user, onPress, canHaveSubtitle}: ChannelTitleProps) => {
     const theme = useTheme();
 
@@ -64,9 +62,9 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
     const style = getStyleSheet(theme);
 
     const channelType = channel.type;
-    const isChannelMuted = myChannelSettings.notifyProps?.mark_unread === 'mention';
+    const isChannelMuted = myChannelSettings?.[0].notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; //fixme:  we'll need to add this column
-    const hasGuests = channelInfo.guestCount > 0;
+    const hasGuests = channelInfo?.[0].guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
 
     const archiveIcon = () => {
