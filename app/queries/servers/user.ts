@@ -4,9 +4,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/models/servers/user';
 
-export const getUserById = async ({userId, database}: { userId: string, database: Database}) => {
-    const userRecords = (await database.collections.get(MM_TABLES.SERVER.USER).query(Q.where('id', userId)).fetch()) as User[];
-    return userRecords?.[0];
+export const queryUserById = ({userId, database}: { userId: string, database: Database}) => {
+    return database.collections.get(MM_TABLES.SERVER.USER).query(Q.where('id', userId));
 };

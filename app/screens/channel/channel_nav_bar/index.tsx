@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {DeviceEventEmitter, LayoutChangeEvent, Platform, Text, View} from 'react-native';
+import {DeviceEventEmitter, LayoutChangeEvent, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewTypes from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {useTheme} from '../theme_provider';
 
-// import ChannelTitle from './channel_title';
+import ChannelTitle from './channel_title';
 
 import ChannelModel from '@typings/database/models/servers/channel';
 
@@ -23,7 +23,6 @@ const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     let height = 0;
-    const canHaveSubtitle = true;
 
     //todo: Read Messages - Include MainSidebarDrawerButton, ChannelSearchButton, SettingsSidebarDrawerButton
 
@@ -41,13 +40,11 @@ const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
             onLayout={onLayout}
             style={[style.header, {height: height + insets.top, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}]}
         >
-
-            <Text>in channel nav bar</Text>
-            {/*<ChannelTitle*/}
-            {/*    channel={channel}*/}
-            {/*    onPress={onPress}*/}
-            {/*    canHaveSubtitle={canHaveSubtitle}*/}
-            {/*/>*/}
+            <ChannelTitle
+                channel={channel}
+                onPress={onPress}
+                canHaveSubtitle={true}
+            />
         </View>
     );
 };

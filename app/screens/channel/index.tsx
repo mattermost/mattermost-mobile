@@ -74,10 +74,11 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
         <ThemeProvider value={theme}>
             <SafeAreaView style={styles.flex}>
                 <StatusBar theme={theme}/>
-                {/*<ChannelNavBar*/}
-                {/*    channel={channel}*/}
-                {/*    onPress={() => null}*/}
-                {/*/>*/}
+                <ChannelNavBar
+                    config={config}
+                    channel={channel}
+                    onPress={() => null}
+                />
             </SafeAreaView>
         </ThemeProvider>
     );
