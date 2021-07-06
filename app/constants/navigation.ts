@@ -4,7 +4,6 @@
 import keyMirror from '@utils/key_mirror';
 
 const Navigation = keyMirror({
-    NAVIGATION_RESET: null,
     NAVIGATION_CLOSE_MODAL: null,
     NAVIGATION_NO_TEAMS: null,
     NAVIGATION_ERROR_TEAMS: null,

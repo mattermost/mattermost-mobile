@@ -6,13 +6,15 @@ import {children, field, immutableRelation, json, lazy} from '@nozbe/watermelond
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
-import Draft from '@typings/database/models/servers/draft';
-import File from '@typings/database/models/servers/file';
-import PostInThread from '@typings/database/models/servers/posts_in_thread';
-import PostMetadata from '@typings/database/models/servers/post_metadata';
-import Reaction from '@typings/database/models/servers/reaction';
-import User from '@typings/database/models/servers/user';
+import {safeParseJSON} from '@utils/helpers';
+
+import type Channel from '@typings/database/models/servers/channel';
+import type Draft from '@typings/database/models/servers/draft';
+import type File from '@typings/database/models/servers/file';
+import type PostInThread from '@typings/database/models/servers/posts_in_thread';
+import type PostMetadata from '@typings/database/models/servers/post_metadata';
+import type Reaction from '@typings/database/models/servers/reaction';
+import type User from '@typings/database/models/servers/user';
 
 const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USER} = MM_TABLES.SERVER;
 
@@ -88,7 +90,7 @@ export default class Post extends Model {
     @field('user_id') userId!: string;
 
     /** props : Additional attributes for this props */
-    @json('props', (rawJson) => rawJson) props!: object;
+    @json('props', safeParseJSON) props!: object;
 
     // A draft can be associated with this post for as long as this post is a parent post
     @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<Draft>;

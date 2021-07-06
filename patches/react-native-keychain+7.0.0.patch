@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-index 38ccdf3..bdc4713 100644
+index 38ccdf3..3c80299 100644
 --- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
 +++ b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-@@ -272,6 +272,34 @@ - (OSStatus)deleteCredentialsForServer:(NSString *)server
+@@ -272,6 +272,37 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
    return SecItemDelete((__bridge CFDictionaryRef) query);
  }
  
@@ -25,8 +25,11 @@ index 38ccdf3..bdc4713 100644
 +    result = (__bridge NSArray*)(resultRef);
 +    if (result != NULL) {
 +      for (id entry in result) {
-+        NSString *server = [entry objectForKey:(__bridge NSString *)kSecAttrServer];
-+        [servers addObject:server];
++        NSMutableData *serverData = [entry objectForKey:(__bridge NSString *)kSecAttrServer];
++        if (serverData != NULL) {
++          NSString *server = [[NSString alloc] initWithData:serverData encoding:NSUTF8StringEncoding];
++          [servers addObject:server];
++        }
 +      }
 +    }
 +  }
@@ -37,7 +40,7 @@ index 38ccdf3..bdc4713 100644
  -(NSArray<NSString*>*)getAllServicesForSecurityClasses:(NSArray *)secItemClasses
  {
    NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-@@ -592,4 +620,14 @@ - (OSStatus)deleteCredentialsForServer:(NSString *)server
+@@ -592,4 +623,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
    }
  }
  
@@ -53,7 +56,7 @@ index 38ccdf3..bdc4713 100644
 +
  @end
 diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
-index 3da433f..112cc74 100644
+index 3da433f..731b991 100644
 --- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 +++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 @@ -1,6 +1,7 @@
@@ -110,6 +113,14 @@ index 3da433f..112cc74 100644
 +      cachedCredentialsMap.put(alias, Arguments.toBundle(credentials));
  
        promise.resolve(credentials);
+     } catch (KeyStoreAccessException e) {
+@@ -372,6 +381,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+       }
+       // And then we remove the entry in the shared preferences
+       prefsStorage.removeEntry(alias);
++      cachedCredentialsMap.remove(alias);
+ 
+       promise.resolve(true);
      } catch (KeyStoreAccessException e) {
 diff --git a/node_modules/react-native-keychain/index.js b/node_modules/react-native-keychain/index.js
 index b73cfb2..a754505 100644

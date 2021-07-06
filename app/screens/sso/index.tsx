@@ -5,26 +5,26 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import {Client4} from '@client/rest';
 import {SSO as SSOEnum} from '@constants';
-import {scheduleExpiredNotification} from '@requests/remote/push_notification';
-import {ssoLogin} from '@requests/remote/user';
+import {scheduleExpiredNotification} from '@actions/remote/push_notification';
+import {ssoLogin} from '@actions/remote/user';
 import {resetToChannel} from '@screens/navigation';
-import {ErrorApi} from '@typings/api/client4';
+import {ErrorApi} from '@typings/api/client';
 import {isMinimumServerVersion} from '@utils/helpers';
+
+import type {LaunchProps} from '@typings/launch';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
 
-interface SSOProps {
+interface SSOProps extends LaunchProps {
   config: Partial<ClientConfig>;
   license: Partial<ClientLicense>;
-  serverUrl: string;
   ssoType: string;
   theme: Partial<Theme>;
 }
 
-const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
+const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}: SSOProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig();
 
@@ -70,10 +70,8 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
         setLoginError(errorMessage);
     };
 
-    const onMMToken = async (token: string) => {
-        Client4.setToken(token);
-
-        const {error = undefined} = await ssoLogin(serverUrl);
+    const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
+        const {error = undefined} = await ssoLogin(serverUrl!, bearerToken, csrfToken);
         if (error) {
             onLoadEndError(error);
             setLoginError(error);
@@ -83,19 +81,16 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
     };
 
     const goToChannel = () => {
-        scheduleExpiredNotification(serverUrl, intl);
-        resetToChannel();
+        scheduleExpiredNotification(serverUrl!, intl);
+        resetToChannel({extra, launchError, launchType, serverUrl});
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
 
     const props = {
+        doSSOLogin,
         loginError,
         loginUrl,
-        onCSRFToken: (csrfToken: string) => {
-            Client4.setCSRF(csrfToken);
-        },
-        onMMToken,
         setLoginError,
         theme,
     };
@@ -105,12 +100,17 @@ const SSO = ({config, serverUrl, ssoType, theme}: SSOProps) => {
             <SSOWithWebView
                 {...props}
                 completeUrlPath={completeUrlPath}
-                serverUrl={serverUrl}
+                serverUrl={serverUrl!}
                 ssoType={ssoType}
             />
         );
     }
-    return <SSOWithRedirectURL {...props}/>;
+    return (
+        <SSOWithRedirectURL
+            {...props}
+            serverUrl={serverUrl!}
+        />
+    );
 };
 
 export default SSO;

@@ -84,7 +84,7 @@ const ClientEmojis = (superclass: any) => class extends superclass {
     searchCustomEmoji = async (term: string, options = {}) => {
         return this.doFetch(
             `${this.getEmojisRoute()}/search`,
-            {method: 'post', body: JSON.stringify({term, ...options})},
+            {method: 'post', body: {term, ...options}},
         );
     };
 

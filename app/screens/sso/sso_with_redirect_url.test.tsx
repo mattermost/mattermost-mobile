@@ -17,11 +17,11 @@ jest.mock('@utils/url', () => {
 describe('SSO with redirect url', () => {
     const baseProps = {
         customUrlScheme: 'mmauth://',
+        doSSOLogin: jest.fn(),
         intl: {},
         loginError: '',
         loginUrl: '',
-        onCSRFToken: jest.fn(),
-        onMMToken: jest.fn(),
+        serverUrl: 'http://localhost:8065',
         setLoginError: jest.fn(),
         theme: Preferences.THEMES.default,
     };

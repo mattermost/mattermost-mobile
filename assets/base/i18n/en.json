@@ -1,7 +1,7 @@
 {
   "login_mfa.enterToken": "To complete the sign in process, please enter a token from your smartphone's authenticator",
-  "login_mfa.token": "",
-  "login_mfa.tokenReq": "",
+  "login_mfa.token": "MFA Token",
+  "login_mfa.tokenReq": "Please enter an MFA token",
   "login.email": "Email",
   "login.forgot": "I forgot my password",
   "login.invalidPassword": "Your password is incorrect.",
@@ -50,6 +50,7 @@
   "mobile.push_notification_reply.button": "Send",
   "mobile.push_notification_reply.placeholder": "Write a reply...",
   "mobile.push_notification_reply.title": "Reply",
+  "mobile.request.invalid_request_method": "Invalid request method",
   "mobile.request.invalid_response": "Received invalid response from the server.",
   "mobile.routes.login": "Login",
   "mobile.routes.loginOptions": "Login Chooser",

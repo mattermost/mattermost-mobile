@@ -5,6 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 const {GLOBAL} = MM_TABLES.APP;
 
@@ -19,5 +20,5 @@ export default class Global extends Model {
     static table = GLOBAL;
 
     /** value : The value part of the key-value combination and whose key will be the id column  */
-    @json('value', (rawJson) => rawJson) value!: any;
+    @json('value', safeParseJSON) value!: any;
 }

@@ -32,7 +32,7 @@ const ClientTeams = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getTeamsRoute()}`,
-            {method: 'post', body: JSON.stringify(team)},
+            {method: 'post', body: team},
         );
     };
 
@@ -50,7 +50,7 @@ const ClientTeams = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getTeamRoute(team.id)}`,
-            {method: 'put', body: JSON.stringify(team)},
+            {method: 'put', body: team},
         );
     };
 
@@ -59,7 +59,7 @@ const ClientTeams = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getTeamRoute(team.id)}/patch`,
-            {method: 'put', body: JSON.stringify(team)},
+            {method: 'put', body: team},
         );
     };
 
@@ -134,7 +134,7 @@ const ClientTeams = (superclass: any) => class extends superclass {
         const member = {user_id: userId, team_id: teamId};
         return this.doFetch(
             `${this.getTeamMembersRoute(teamId)}`,
-            {method: 'post', body: JSON.stringify(member)},
+            {method: 'post', body: member},
         );
     };
 

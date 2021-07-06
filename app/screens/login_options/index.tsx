@@ -13,6 +13,8 @@ import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
+import type {LaunchProps} from '@typings/launch';
+
 import EmailOption from './email';
 import GitLabOption from './gitlab';
 import GoogleOption from './google';
@@ -21,7 +23,7 @@ import Office365Option from './office365';
 import OpenIdOption from './open_id';
 import SamlOption from './saml';
 
-type LoginOptionsProps = {
+interface LoginOptionsProps extends LaunchProps {
     componentId: string;
     serverUrl: string;
     config: ClientConfig;
@@ -57,7 +59,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginOptions: NavigationFunctionComponent = ({config, license, serverUrl, theme}: LoginOptionsProps) => {
+const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, launchError, license, serverUrl, theme}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyles(theme);
 
@@ -65,13 +67,13 @@ const LoginOptions: NavigationFunctionComponent = ({config, license, serverUrl, 
         const screen = LOGIN;
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        goToScreen(screen, title, {config, license, serverUrl, theme});
+        goToScreen(screen, title, {config, extra, launchError, launchType, license, serverUrl, theme});
     });
 
     const displaySSO = preventDoubleTap((ssoType: string) => {
         const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
-        goToScreen(screen, title, {config, license, theme, ssoType, serverUrl});
+        goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverUrl});
     });
 
     return (

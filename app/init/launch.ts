@@ -18,7 +18,7 @@ export const initialLaunch = async () => {
     }
 
     const notification = await Notifications.getInitialNotification();
-    if (notification) {
+    if (notification && notification.payload?.type === 'message') {
         launchAppFromNotification(notification);
         return;
     }
@@ -56,7 +56,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
 
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
-
         if (credentials) {
             launchToChannel({...props, serverUrl}, resetNavigation);
             return;
@@ -95,8 +94,8 @@ const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
     goToScreen(Screens.SERVER, title, {...props});
 };
 
-export const relaunchApp = (props: LaunchProps) => {
-    launchApp(props, false);
+export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
+    launchApp(props, resetNavigation);
 };
 
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {

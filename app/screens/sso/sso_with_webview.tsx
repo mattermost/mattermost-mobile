@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager, {Cookies} from '@react-native-community/cookies';
+import CookieManager, {Cookies} from '@react-native-cookies/cookies';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Alert, Platform, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
 import {
@@ -15,7 +15,6 @@ import {
 } from 'react-native-webview/lib/WebViewTypes';
 import urlParse from 'url-parse';
 
-import {Client4} from '@client/rest';
 import Loading from '@components/loading';
 import {SSO} from '@constants';
 import {popTopScreen} from '@screens/navigation';
@@ -59,20 +58,20 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
+    doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    onCSRFToken: (token: string) => void;
-    onMMToken: (token: string) => void;
     serverUrl: string;
     ssoType: string;
     theme: Partial<Theme>
 }
 
-const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
+const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
     const [error, setError] = React.useState(null);
     const [jsCode, setJSCode] = React.useState('');
+    const visitedUrls = React.useRef(new Set<string>()).current;
     const [messagingEnabled, setMessagingEnabled] = React.useState(false);
     const [shouldRenderWebView, setShouldRenderWebView] = React.useState(true);
     const cookiesTimeout = React.useRef<NodeJS.Timeout>();
@@ -86,6 +85,21 @@ const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
         };
     }, []);
 
+    const removeCookiesFromVisited = () => {
+        if (Platform.OS === 'ios') {
+            visitedUrls.forEach((visited) => {
+                CookieManager.get(visited, true).then(async (cookies: Cookies) => {
+                    if (cookies) {
+                        const values = Object.values(cookies);
+                        for (const cookie of values) {
+                            CookieManager.clearByName(visited, cookie.name, true);
+                        }
+                    }
+                });
+            });
+        }
+    };
+
     const extractCookie = (parsedUrl: urlParse) => {
         try {
             const original = urlParse(serverUrl);
@@ -95,19 +109,16 @@ const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
 
             // Rebuild the server url without query string and/or hash
             const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
-            Client4.setUrl(url);
 
             CookieManager.get(url, true).then((res: Cookies) => {
                 const mmtoken = res.MMAUTHTOKEN;
                 const csrf = res.MMCSRF;
-                const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+                const bearerToken = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
                 const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
 
-                if (csrfToken) {
-                    onCSRFToken(csrfToken);
-                }
-                if (token) {
-                    onMMToken(token);
+                if (bearerToken) {
+                    removeCookiesFromVisited();
+                    doSSOLogin(bearerToken, csrfToken);
                     if (cookiesTimeout.current) {
                         clearTimeout(cookiesTimeout.current);
                     }
@@ -162,6 +173,10 @@ const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
         const {url} = navState;
         let isMessagingEnabled = false;
         const parsed = urlParse(url);
+        if (!serverUrl.includes(parsed.host)) {
+            visitedUrls.add(parsed.origin);
+        }
+
         if (parsed.host.includes('.onelogin.com')) {
             setJSCode(oneLoginFormScalingJS);
         } else if (parsed.pathname === completeUrlPath) {
@@ -193,6 +208,7 @@ const SSOWithWebView = ({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
                 <WebView
                     automaticallyAdjustContentInsets={false}
                     cacheEnabled={true}
+                    incognito={Platform.OS === 'android'}
                     injectedJavaScript={jsCode}
                     javaScriptEnabled={true}
                     onLoadEnd={onLoadEnd}

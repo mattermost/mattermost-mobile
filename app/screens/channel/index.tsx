@@ -13,9 +13,11 @@ import {
 
 import type {LaunchProps} from '@typings/launch';
 
+import {logout} from '@actions/remote/user';
+
 declare const global: {HermesInternal: null | {}};
 
-type ChannelProps = LaunchProps
+type ChannelProps = LaunchProps;
 
 const Channel = (props: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
@@ -31,6 +33,10 @@ const Channel = (props: ChannelProps) => {
     //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
     //     }
     // }
+
+    const doLogout = () => {
+        logout(props.serverUrl!);
+    };
 
     return (
         <>
@@ -48,7 +54,10 @@ const Channel = (props: ChannelProps) => {
                     )}
                     <View style={styles.body}>
                         <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Step One'}</Text>
+                            <Text
+                                onPress={doLogout}
+                                style={styles.sectionTitle}
+                            >{'Step One'}</Text>
                             <Text style={styles.sectionDescription}>
                                 {'Edit '}<Text style={styles.highlight}>{'screens/channel/index.tsx'}</Text>{' to change this'}
                                 {'screen and then come back to see your edits.'}

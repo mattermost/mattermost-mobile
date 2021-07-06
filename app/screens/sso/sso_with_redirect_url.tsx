@@ -9,32 +9,36 @@ import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
+import NetworkManager from '@app/init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
+    doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    onCSRFToken: (token: string) => void;
-    onMMToken: (token: string) => void;
+    serverUrl: string;
     setLoginError: (value: string) => void;
     theme: Partial<Theme>
 }
 
-const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    let customUrlScheme = 'mmauth://';
+    let customUrlScheme = REDIRECT_URL_SCHEME;
     if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
-        customUrlScheme = 'mmauthbeta://';
+        customUrlScheme = REDIRECT_URL_SCHEME_DEV;
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const init = (resetErrors?: boolean) => {
+    const init = (resetErrors = true) => {
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
+            NetworkManager.invalidateClient(serverUrl);
+            NetworkManager.createClient(serverUrl);
         }
         const parsedUrl = urlParse(loginUrl, true);
         parsedUrl.set('query', {
@@ -60,6 +64,7 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
                 message,
             );
         };
+
         tryOpenURL(url, onError);
     };
 
@@ -67,9 +72,10 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
-                if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
-                    onCSRFToken(parsedUrl.query.MMCSRF);
-                    onMMToken(parsedUrl.query.MMAUTHTOKEN);
+                const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
+                const csrfToken = parsedUrl.query?.MMCSRF;
+                if (bearerToken && csrfToken) {
+                    doSSOLogin(bearerToken, csrfToken);
                 } else {
                     setError(
                         intl.formatMessage({
@@ -117,14 +123,6 @@ const SSOWithRedirectURL = ({loginError, loginUrl, onCSRFToken, onMMToken, setLo
                         defaultMessage='Please use your browser to complete the login'
                         style={style.infoText}
                     />
-                    <TouchableOpacity onPress={() => init()}>
-                        <FormattedText
-                            id='mobile.oauth.restart_login'
-                            testID='mobile.oauth.restart_login'
-                            defaultMessage='Restart login'
-                            style={style.button}
-                        />
-                    </TouchableOpacity>
                     <Loading/>
                 </View>
             )}

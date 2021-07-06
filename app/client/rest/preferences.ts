@@ -11,7 +11,7 @@ const ClientPreferences = (superclass: any) => class extends superclass {
     savePreferences = async (userId: string, preferences: PreferenceType[]) => {
         return this.doFetch(
             `${this.getPreferencesRoute(userId)}`,
-            {method: 'put', body: JSON.stringify(preferences)},
+            {method: 'put', body: preferences},
         );
     };
 
@@ -25,7 +25,7 @@ const ClientPreferences = (superclass: any) => class extends superclass {
     deletePreferences = async (userId: string, preferences: PreferenceType[]) => {
         return this.doFetch(
             `${this.getPreferencesRoute(userId)}/delete`,
-            {method: 'post', body: JSON.stringify(preferences)},
+            {method: 'post', body: preferences},
         );
     };
 };

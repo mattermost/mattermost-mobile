@@ -7,7 +7,7 @@ import android.net.Uri;
 import com.nozbe.watermelondb.Database;
 
 public class DatabaseHelper {
-    private static final String DEFAULT_DATABASE_NAME = "default.db";
+    private static final String DEFAULT_DATABASE_NAME = "app.db";
     private static Database defaultDatabase;
 
     private static void setDefaultDatabase(Context context) {
@@ -21,7 +21,7 @@ public class DatabaseHelper {
         }
 
         String emptyArray[] = {};
-        String query = "SELECT url FROM servers";
+        String query = "SELECT url FROM Servers";
         Cursor cursor = defaultDatabase.rawQuery(query, emptyArray);
 
         if (cursor.getCount() == 1) {

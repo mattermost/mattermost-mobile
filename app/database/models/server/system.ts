@@ -5,6 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 const {SYSTEM} = MM_TABLES.SERVER;
 
@@ -18,5 +19,5 @@ export default class System extends Model {
     static table = SYSTEM;
 
     /** value : The value for that config/information and whose key will be the id column */
-    @json('value', (rawJson) => rawJson) value!: any;
+    @json('value', safeParseJSON) value!: any;
 }

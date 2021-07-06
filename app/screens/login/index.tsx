@@ -25,24 +25,25 @@ import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import FormattedText from '@components/formatted_text';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {scheduleExpiredNotification} from '@requests/remote/push_notification';
-import {login} from '@requests/remote/user';
+import {scheduleExpiredNotification} from '@actions/remote/push_notification';
+import {login} from '@actions/remote/user';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type LoginProps = {
+import type {LaunchProps} from '@typings/launch';
+
+interface LoginProps extends LaunchProps {
     componentId: string;
     config: ClientConfig;
     license: ClientLicense;
-    serverUrl: string;
     theme: Theme;
-};
+}
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
-const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}: LoginProps) => {
+const Login: NavigationFunctionComponent = ({config, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
 
     const loginRef = useRef<TextInput>(null);
@@ -129,15 +130,15 @@ const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}:
     });
 
     const signIn = async () => {
-        const result = await login(serverUrl, {loginId: loginId.toLowerCase(), password, config, license});
+        const result = await login(serverUrl!, {loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             await goToChannel();
         }
     };
 
     const goToChannel = async () => {
-        await scheduleExpiredNotification(serverUrl, intl);
-        resetToChannel({serverUrl});
+        await scheduleExpiredNotification(serverUrl!, intl);
+        resetToChannel({extra, launchError, launchType, serverUrl});
     };
 
     const checkLoginResponse = (data: any) => {
@@ -203,8 +204,12 @@ const Login: NavigationFunctionComponent = ({config, license, serverUrl, theme}:
     const onPressForgotPassword = () => {
         const screen = FORGOT_PASSWORD;
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
+        const passProps = {
+            theme,
+            serverUrl,
+        };
 
-        goToScreen(screen, title, {theme});
+        goToScreen(screen, title, passProps);
     };
 
     const createLoginPlaceholder = () => {

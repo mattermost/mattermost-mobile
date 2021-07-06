@@ -21,7 +21,7 @@ const ClientApps = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getAppsProxyRoute()}/api/v1/call`,
-            {method: 'post', body: JSON.stringify(callCopy)},
+            {method: 'post', body: callCopy},
         );
     }
 

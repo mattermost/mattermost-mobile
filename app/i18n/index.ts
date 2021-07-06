@@ -205,8 +205,8 @@ export function getLocaleFromLanguage(lang: string) {
     return locale;
 }
 
-export function resetMomentLocale() {
-    moment.locale(DEFAULT_LOCALE);
+export function resetMomentLocale(locale?: string) {
+    moment.locale(locale || DEFAULT_LOCALE);
 }
 
 export function getTranslations(locale?: string) {

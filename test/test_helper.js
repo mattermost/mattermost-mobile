@@ -43,11 +43,17 @@ class TestHelper {
     };
 
     createClient = () => {
-        const client = new Client();
+        const mockApiClient = {
+            baseUrl: 'https://community.mattermost.com',
+            delete: jest.fn(),
+            head: jest.fn(),
+            get: jest.fn(),
+            patch: jest.fn(),
+            post: jest.fn(),
+            put: jest.fn(),
+        };
 
-        client.setUrl(Config.DefaultServerUrl || Config.TestServerUrl);
-
-        return client;
+        return new Client(mockApiClient, mockApiClient.baseUrl);
     };
 
     fakeChannel = (teamId) => {

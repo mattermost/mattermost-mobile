@@ -4,18 +4,13 @@
 import moment from 'moment-timezone';
 import {IntlShape} from 'react-intl';
 
-import {Client4} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
-import {getCommonSystemValues} from '@app/queries/servers/system';
-import {getSessions} from '@requests/remote/user';
+import {queryCommonSystemValues} from '@app/queries/servers/system';
+import {getSessions} from '@actions/remote/user';
 import {Config} from '@typings/database/models/servers/config';
-import {isMinimumServerVersion} from '@utils/helpers';
 
-const MAJOR_VERSION = 5;
-const MINOR_VERSION = 24;
-
-const sortByNewest = (a: any, b: any) => {
+const sortByNewest = (a: Session, b: Session) => {
     if (a.create_at > b.create_at) {
         return -1;
     }
@@ -25,32 +20,32 @@ const sortByNewest = (a: any, b: any) => {
 
 export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlShape) => {
     const database = DatabaseManager.serverDatabases[serverUrl].database;
-    const {currentUserId, config}: {currentUserId: string, config: Partial<Config>} = await getCommonSystemValues(database);
+    const {currentUserId, config}: {currentUserId: string, config: Partial<Config>} = await queryCommonSystemValues(database);
 
-    if (isMinimumServerVersion(Client4.serverVersion, MAJOR_VERSION, MINOR_VERSION) && config.ExtendSessionLengthWithActivity === 'true') {
+    if (config.ExtendSessionLengthWithActivity === 'true') {
         PushNotifications.cancelAllLocalNotifications();
         return null;
     }
 
     const timeOut = setTimeout(async () => {
         clearTimeout(timeOut);
-        let sessions: any;
+        let sessions: Session[]|undefined;
 
         try {
             sessions = await getSessions(serverUrl, currentUserId);
         } catch (e) {
-            // console.warn('Failed to get current session', e);
+            // eslint-disable-next-line no-console
+            console.warn('Failed to get user sessions', e);
             return;
         }
 
-        if (!Array.isArray(sessions?.data)) {
+        if (!Array.isArray(sessions)) {
             return;
         }
 
-        const session = sessions.data.sort(sortByNewest)[0];
-        const expiresAt = session?.expires_at || 0; //eslint-disable-line camelcase
-        const expiresInDays = parseInt(String(Math.ceil(Math.abs(moment.duration(moment().diff(expiresAt)).asDays()))), 10);
-
+        const session = sessions.sort(sortByNewest)[0];
+        const expiresAt = session?.expires_at ? parseInt(session.expires_at as string, 10) : 0;
+        const expiresInDays = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asDays()));
         const message = intl.formatMessage(
             {
                 id: 'mobile.session_expired',
@@ -62,17 +57,18 @@ export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlS
         );
 
         if (expiresAt) {
+            //@ts-expect-error: Does not need to set all Notification properties
             PushNotifications.scheduleNotification({
                 fireDate: expiresAt,
                 body: message,
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                userInfo: {
-                    local: true,
+                payload: {
+                    userInfo: {
+                        local: true,
+                    },
                 },
             });
         }
-    }, 20000);
+    }, 1000);
 
     return null;
 };

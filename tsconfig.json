@@ -33,6 +33,7 @@
         "resolveJsonModule": true,
         "baseUrl": ".",
         "paths": {
+            "@actions/*": ["app/actions/*"],
             "@app/*": ["app/*"],
             "@assets/*": ["dist/assets/*"],
             "@client/*": ["app/client/*"],
@@ -44,7 +45,6 @@
             "@init/*": ["app/init/*"],
             "@notifications": ["app/notifications/index"],
             "@queries/*": ["app/queries/*"],
-            "@requests/*": ["app/requests/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
             "@share/*": ["share_extension/*"],

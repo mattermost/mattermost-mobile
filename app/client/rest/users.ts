@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {General} from '@constants';
-import {buildQueryString, isMinimumServerVersion} from '@utils/helpers';
+import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -34,7 +34,7 @@ export interface ClientUsersMix {
     getProfilePictureUrl: (userId: string, lastPictureUpdate: number) => string;
     getDefaultProfilePictureUrl: (userId: string) => string;
     autocompleteUsers: (name: string, teamId: string, channelId: string, options?: Record<string, any>) => Promise<{users: UserProfile[], out_of_channel?: UserProfile[]}>;
-    getSessions: (userId: string) => Promise<any>;
+    getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     attachDevice: (deviceId: string) => Promise<any>;
     searchUsers: (term: string, options: any) => Promise<UserProfile[]>;
@@ -59,14 +59,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryParams)}`,
-            {method: 'post', body: JSON.stringify(user)},
+            {method: 'post', body: user},
         );
     }
 
     patchMe = async (userPatch: Partial<UserProfile>) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/patch`,
-            {method: 'put', body: JSON.stringify(userPatch)},
+            {method: 'put', body: userPatch},
         );
     }
 
@@ -75,7 +75,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUserRoute(userPatch.id)}/patch`,
-            {method: 'put', body: JSON.stringify(userPatch)},
+            {method: 'put', body: userPatch},
         );
     }
 
@@ -84,7 +84,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUserRoute(user.id)}`,
-            {method: 'put', body: JSON.stringify(user)},
+            {method: 'put', body: user},
         );
     }
 
@@ -111,7 +111,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/password/reset/send`,
-            {method: 'post', body: JSON.stringify({email})},
+            {method: 'post', body: {email}},
         );
     }
 
@@ -142,13 +142,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
             body.ldap_only = 'true';
         }
 
-        const {data} = await this.doFetchWithResponse(
+        const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
             {
                 method: 'post',
-                body: JSON.stringify(body),
+                body,
                 headers: {'Cache-Control': 'no-store'},
             },
+            false,
         );
 
         return data;
@@ -163,9 +164,9 @@ const ClientUsers = (superclass: any) => class extends superclass {
             token,
         };
 
-        const {data} = await this.doFetchWithResponse(
+        const {data} = await this.doFetch(
             `${this.getUsersRoute()}/login`,
-            {method: 'post', body: JSON.stringify(body)},
+            {method: 'post', body},
         );
 
         return data;
@@ -174,16 +175,10 @@ const ClientUsers = (superclass: any) => class extends superclass {
     logout = async () => {
         this.analytics.trackAPI('api_users_logout');
 
-        const {response} = await this.doFetchWithResponse(
+        const response = await this.doFetch(
             `${this.getUsersRoute()}/logout`,
             {method: 'post'},
         );
-
-        if (response.ok) {
-            this.token = '';
-        }
-
-        this.serverVersion = '';
 
         return response;
     };
@@ -202,7 +197,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/ids${buildQueryString(options)}`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -211,7 +206,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/usernames`,
-            {method: 'post', body: JSON.stringify(usernames)},
+            {method: 'post', body: usernames},
         );
     };
 
@@ -250,13 +245,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
     getProfilesInChannel = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '') => {
         this.analytics.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
-        const serverVersion = this.getServerVersion();
-        let queryStringObj;
-        if (isMinimumServerVersion(serverVersion, 4, 7)) {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
-        } else {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage};
-        }
+        const queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
             {method: 'get'},
@@ -268,7 +257,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/group_channels`,
-            {method: 'post', body: JSON.stringify(channelsIds)},
+            {method: 'post', body: channelsIds},
         );
     };
 
@@ -351,14 +340,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
     checkUserMfa = async (loginId: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/mfa`,
-            {method: 'post', body: JSON.stringify({login_id: loginId})},
+            {method: 'post', body: {login_id: loginId}},
         );
     };
 
     attachDevice = async (deviceId: string) => {
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
-            {method: 'put', body: JSON.stringify({device_id: deviceId})},
+            {method: 'put', body: {device_id: deviceId}},
         );
     };
 
@@ -367,14 +356,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUsersRoute()}/search`,
-            {method: 'post', body: JSON.stringify({term, ...options})},
+            {method: 'post', body: {term, ...options}},
         );
     };
 
     getStatusesByIds = async (userIds: string[]) => {
         return this.doFetch(
             `${this.getUsersRoute()}/status/ids`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -388,7 +377,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
     updateStatus = async (status: UserStatus) => {
         return this.doFetch(
             `${this.getUserRoute(status.user_id)}/status`,
-            {method: 'put', body: JSON.stringify(status)},
+            {method: 'put', body: status},
         );
     };
 };

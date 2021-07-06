@@ -1,4 +1,5 @@
 PODS:
+  - Alamofire (5.4.3)
   - boost-for-react-native (1.63.0)
   - BVLinearGradient (2.5.6):
     - React
@@ -231,7 +232,7 @@ PODS:
   - React-jsinspector (0.64.2)
   - react-native-cameraroll (4.0.4):
     - React-Core
-  - react-native-cookies (5.0.1):
+  - react-native-cookies (6.0.8):
     - React-Core
   - react-native-document-picker (5.2.0):
     - React-Core
@@ -241,6 +242,11 @@ PODS:
     - React
   - react-native-netinfo (6.0.0):
     - React-Core
+  - react-native-network-client (0.1.0):
+    - Alamofire (~> 5.4)
+    - React-Core
+    - Starscream (~> 4.0.4)
+    - SwiftyJSON (~> 5.0)
   - react-native-notifications (3.5.0):
     - React-Core
   - react-native-paste-input (0.1.3):
@@ -403,7 +409,7 @@ PODS:
     - React
   - RNVectorIcons (8.1.0):
     - React-Core
-  - Rudder (1.0.18)
+  - Rudder (1.0.14)
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -413,6 +419,8 @@ PODS:
   - Sentry (7.0.0):
     - Sentry/Core (= 7.0.0)
   - Sentry/Core (7.0.0)
+  - Starscream (4.0.4)
+  - SwiftyJSON (5.0.1)
   - Swime (3.0.6)
   - UMAppLoader (2.1.0)
   - UMBarCodeScannerInterface (6.1.0):
@@ -421,7 +429,7 @@ PODS:
     - UMCore
   - UMConstantsInterface (6.1.0):
     - UMCore
-  - UMCore (7.1.0)
+  - UMCore (7.1.1)
   - UMFaceDetectorInterface (6.1.0)
   - UMFileSystemInterface (6.1.0)
   - UMFontInterface (6.1.0)
@@ -469,11 +477,12 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - "react-native-cameraroll (from `../node_modules/@react-native-community/cameraroll`)"
-  - "react-native-cookies (from `../node_modules/@react-native-community/cookies`)"
+  - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-emm (from `../node_modules/@mattermost/react-native-emm`)"
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - "react-native-network-client (from `../node_modules/@mattermost/react-native-network-client`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - "react-native-paste-input (from `../node_modules/@mattermost/react-native-paste-input`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -513,6 +522,7 @@ DEPENDENCIES:
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `1b4b93708fb63d2665625a11e57461772a65364a`)
   - Swime (= 3.0.6)
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - UMBarCodeScannerInterface (from `../node_modules/unimodules-barcode-scanner-interface/ios`)
@@ -533,12 +543,14 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - Alamofire
     - boost-for-react-native
     - libwebp
     - Rudder
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
+    - SwiftyJSON
     - Swime
     - XCDYouTubeKit
     - YoutubePlayer-in-WKWebView
@@ -591,7 +603,7 @@ EXTERNAL SOURCES:
   react-native-cameraroll:
     :path: "../node_modules/@react-native-community/cameraroll"
   react-native-cookies:
-    :path: "../node_modules/@react-native-community/cookies"
+    :path: "../node_modules/@react-native-cookies/cookies"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
   react-native-emm:
@@ -600,6 +612,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-network-client:
+    :path: "../node_modules/@mattermost/react-native-network-client"
   react-native-notifications:
     :path: "../node_modules/react-native-notifications"
   react-native-paste-input:
@@ -678,6 +692,9 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  Starscream:
+    :commit: 1b4b93708fb63d2665625a11e57461772a65364a
+    :git: https://github.com/mattermost/Starscream.git
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
   UMBarCodeScannerInterface:
@@ -709,14 +726,20 @@ EXTERNAL SOURCES:
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
+CHECKOUT OPTIONS:
+  Starscream:
+    :commit: 1b4b93708fb63d2665625a11e57461772a65364a
+    :git: https://github.com/mattermost/Starscream.git
+
 SPEC CHECKSUMS:
+  Alamofire: e447a2774a40c996748296fa2c55112fdbbc42f9
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   EXConstants: c4dd28acc12039c999612507a5f935556f2c86ce
   EXFileSystem: dcf2273f49431e5037347c733a2dc5d08e0d0a9e
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: d35931295aacfe996e833c01a3701d4aa7a80cb4
+  FBReactNativeSpec: cef0cc6d50abc92e8cf52f140aa22b5371cfec0b
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   jail-monkey: 01cd0a75aa1034d08fd851869e6e6c3b063242d7
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
@@ -735,11 +758,12 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 80c46bd381fd06e418e0d4f53672dc1d1945c4c3
   React-jsinspector: cc614ec18a9ca96fd275100c16d74d62ee11f0ae
   react-native-cameraroll: 88f4e62d9ecd0e1f253abe4f685474f2ea14bfa2
-  react-native-cookies: ce50e42ace7cf0dd47769260ca5bbe8eee607e4e
+  react-native-cookies: 2cb6ef472da68610dfcf0eaee68464c244943abd
   react-native-document-picker: f1b5398801b332c77bc62ae0eae2116f49bdff26
   react-native-emm: 1652c0f3ebc39ca0cb57a43f60b96f932b7b7f19
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-netinfo: e849fc21ca2f4128a5726c801a82fc6f4a6db50d
+  react-native-network-client: 30ab97e7e6c8d6f2d2b10cc1ebad0cbf9c894c6e
   react-native-notifications: 89a73cd2cd2648e1734fa10e3507681c9e4f14de
   react-native-paste-input: dbf0099efd191ddf53e55a4a454bea0783ce4e1d
   react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
@@ -779,16 +803,18 @@ SPEC CHECKSUMS:
   RNShare: 5ac8f6532ca4cd80fc71caef1cfbba1854a6a045
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
-  Rudder: 2a70cad66a3f5f3f6be056bf1ce0ce8d10b5ca67
+  Rudder: 40f3a255fab3f8bbe120e496f90019de68c1aca1
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   Sentry: 89d26e036063b9cb9caa59b6951dd2f8277aa13b
+  Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
+  SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   UMAppLoader: fe2708bb0ac5cd70052bc207d06aa3b7e72b9e97
   UMBarCodeScannerInterface: 79f92bea5f7af39b381a4c82298105ceb537408a
   UMCameraInterface: 81ff46700da88435f17afedfc88915eaede7e6a6
   UMConstantsInterface: bb94dd46039dcde276ed50225b29e22785e604bf
-  UMCore: 60b35f4d217461f7b54934b0c5be67442871f01f
+  UMCore: 2f671796d7439604a1cf8ac7bbe5809cd5c50437
   UMFaceDetectorInterface: 791eec55ffca1171992976b7eceb73e69e391c58
   UMFileSystemInterface: f72245e90ce78fa6427180ff0b0904ead13d8161
   UMFontInterface: 5843cff7db85a42ba629aaac53d33091c35524d3
@@ -802,6 +828,6 @@ SPEC CHECKSUMS:
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: 34335a8d329b001fdfa695c4fb3c8928db80f375
+PODFILE CHECKSUM: 7741358261bad1ae9b7877b2299303396085e050
 
 COCOAPODS: 1.10.1
