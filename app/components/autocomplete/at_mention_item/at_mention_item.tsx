@@ -68,24 +68,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AtMentionItem = (props: AtMentionItemProps) => {
+const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared, lastName = '', nickname = '',
+    onPress, showFullName, testID, theme, userId, username, isCustomStatusEnabled}: AtMentionItemProps) => {
     const insets = useSafeAreaInsets();
-    const {
-        firstName,
-        isBot,
-        isCurrentUser,
-        isGuest,
-        isShared,
-        lastName,
-        nickname,
-        onPress,
-        showFullName,
-        testID,
-        theme,
-        userId,
-        username,
-        isCustomStatusEnabled,
-    } = props;
 
     const completeMention = () => {
         onPress(username);
@@ -99,7 +84,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
             name += `${firstName} ${lastName} `;
         }
 
-        if (hasNickname) {
+        if (hasNickname && !isCurrentUser) {
             name += name.length > 0 ? `(${nickname})` : nickname;
         }
 
@@ -182,12 +167,6 @@ const AtMentionItem = (props: AtMentionItemProps) => {
             </View>
         </TouchableWithFeedback>
     );
-};
-
-AtMentionItem.defaultProps = {
-    firstName: '',
-    lastName: '',
-    nickname: '',
 };
 
 export default AtMentionItem;
