@@ -10,7 +10,7 @@ import {debounce} from '@mm-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
-import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
+import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
