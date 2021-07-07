@@ -38,7 +38,7 @@ export const apiAdminLogin = () => {
  */
 export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
     try {
-        const newUser = user || generateRandomUser(prefix);
+        const newUser = user || generateRandomUser({prefix});
 
         const response = await client.post(
             '/api/v4/users',
