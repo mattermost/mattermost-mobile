@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getNotificationProps} from 'app/utils/notify_props';
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
 import NotificationSettings from './notification_settings.js';
+
+import {getNotificationProps} from 'app/utils/notify_props';
 
 describe('NotificationSettings', () => {
     const currentUser = {id: 'current_user_id'};

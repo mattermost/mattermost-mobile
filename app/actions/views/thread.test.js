@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import configureStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+
 import {
     handleCommentDraftChanged,
     handleCommentDraftSelectionChanged,
 } from 'app/actions/views/thread';
 import {ViewTypes} from 'app/constants';
-import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
 
 const mockStore = configureStore([thunk]);
 

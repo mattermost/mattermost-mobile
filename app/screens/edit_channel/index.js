@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setChannelDisplayName} from 'app/actions/views/channel';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -11,6 +10,8 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
 
 import EditChannel from './edit_channel';
+
+import {setChannelDisplayName} from 'app/actions/views/channel';
 
 function mapStateToProps(state) {
     const {updateChannel: updateChannelRequest} = state.requests.channels;

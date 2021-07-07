@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -31,6 +30,8 @@ import {selectEmojisCountFromReactions} from '@selectors/emojis';
 import {canDeletePost} from '@selectors/permissions';
 
 import PostOptions from './post_options';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 export function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();

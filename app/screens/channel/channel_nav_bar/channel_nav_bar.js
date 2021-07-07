@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 import {Dimensions, Platform, View} from 'react-native';
@@ -16,6 +15,8 @@ import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
 import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 import SettingsSidebarDrawerButton from './settings_sidebar_drawer_button';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 const {
     ANDROID_TOP_LANDSCAPE,

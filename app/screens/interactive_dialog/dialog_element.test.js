@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AutocompleteSelector from 'app/components/autocomplete_selector';
-import BoolSetting from 'app/components/widgets/settings/bool_setting';
-import RadioSetting from 'app/components/widgets/settings/radio_setting';
 import {shallow} from 'enzyme';
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
 import DialogElement from './dialog_element.js';
+
+import AutocompleteSelector from 'app/components/autocomplete_selector';
+import BoolSetting from 'app/components/widgets/settings/bool_setting';
+import RadioSetting from 'app/components/widgets/settings/radio_setting';
 
 describe('DialogElement', () => {
     const baseDialogProps = {

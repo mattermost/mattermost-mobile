@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as NavigationActions from 'app/actions/navigation';
 import {shallow} from 'enzyme';
 import React from 'react';
 
 import Hashtag from './index';
+
+import * as NavigationActions from 'app/actions/navigation';
 
 describe('Hashtag', () => {
     const baseProps = {

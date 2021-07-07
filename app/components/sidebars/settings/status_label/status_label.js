@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@mm-redux/constants';
+
+import {t} from 'app/utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class UserInfo extends PureComponent {
     static propTypes = {

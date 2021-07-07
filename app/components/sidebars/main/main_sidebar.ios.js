@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Dimensions, Keyboard} from 'react-native';
@@ -12,6 +11,8 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import MainSidebarBase from './main_sidebar_base';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class MainSidebarIOS extends MainSidebarBase {
     static contextTypes = {

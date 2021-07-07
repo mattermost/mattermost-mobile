@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {dismissModal} from 'app/actions/navigation';
-import ErrorText from 'app/components/error_text';
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {ScrollView} from 'react-native';
@@ -16,6 +12,11 @@ import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/
 
 import DialogElement from './dialog_element.js';
 import DialogIntroductionText from './dialog_introduction_text.js';
+
+import {dismissModal} from 'app/actions/navigation';
+import ErrorText from 'app/components/error_text';
+import StatusBar from 'app/components/status_bar';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {

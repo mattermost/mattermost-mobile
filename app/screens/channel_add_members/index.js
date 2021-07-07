@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -13,6 +12,8 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesNotInCurrentChannel} from '@mm-redux/selectors/entities/users';
 
 import ChannelAddMembers from './channel_add_members';
+
+import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 
 function mapStateToProps(state) {
     const currentChannel = getCurrentChannel(state);

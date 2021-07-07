@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ViewTypes} from 'app/constants';
 import {combineReducers} from 'redux';
 
 import {ChannelTypes, TeamTypes} from '@mm-redux/action_types';
+
+import {ViewTypes} from 'app/constants';
 
 function lastTeamId(state = '', action) {
     switch (action.type) {

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isGuest} from 'app/utils/users';
 import {connect} from 'react-redux';
 
 import {General} from '@mm-redux/constants';
@@ -12,6 +11,8 @@ import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_
 import {isCustomStatusEnabled} from '@selectors/custom_status';
 
 import ChannelTitle from './channel_title';
+
+import {isGuest} from 'app/utils/users';
 
 function mapStateToProps(state) {
     const currentChannel = getCurrentChannel(state);

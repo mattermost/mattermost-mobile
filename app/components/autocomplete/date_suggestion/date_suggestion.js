@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -10,6 +9,8 @@ import {CalendarList, LocaleConfig} from 'react-native-calendars';
 
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+
+import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {

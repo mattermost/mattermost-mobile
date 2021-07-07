@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as NavigationActions from 'app/actions/navigation';
-import {mfaExpectedErrors} from 'app/screens/login/login';
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import FormattedText from '@components/formatted_text';
 
 import Login from './login';
+
+import * as NavigationActions from 'app/actions/navigation';
+import {mfaExpectedErrors} from 'app/screens/login/login';
 
 describe('Login', () => {
     const baseProps = {

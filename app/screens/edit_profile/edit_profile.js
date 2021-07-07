@@ -1,18 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
-import ErrorText from 'app/components/error_text';
-import Loading from 'app/components/loading';
-import ProfilePicture from 'app/components/profile_picture';
-import ProfilePictureButton from 'app/components/profile_picture_button';
-import StatusBar from 'app/components/status_bar/index';
-import TextSetting from 'app/components/widgets/settings/text_setting';
-import mattermostBucket from 'app/mattermost_bucket';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import {t} from 'app/utils/i18n';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -25,6 +13,19 @@ import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from '@client/rest';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
+
+import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
+import ErrorText from 'app/components/error_text';
+import Loading from 'app/components/loading';
+import ProfilePicture from 'app/components/profile_picture';
+import ProfilePictureButton from 'app/components/profile_picture_button';
+import StatusBar from 'app/components/status_bar/index';
+import TextSetting from 'app/components/widgets/settings/text_setting';
+import mattermostBucket from 'app/mattermost_bucket';
+import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
+import {t} from 'app/utils/i18n';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_SIZE = 20 * 1024 * 1024;
 export const VALID_MIME_TYPES = [

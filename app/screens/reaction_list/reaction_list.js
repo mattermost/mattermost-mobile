@@ -1,6 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
+import {View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
+
+import ReactionHeader from './reaction_header';
+import ReactionRow from './reaction_row';
+
 import {dismissModal} from 'app/actions/navigation';
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {ALL_EMOJIS} from 'app/constants/emoji';
@@ -13,14 +22,6 @@ import {
     sortReactions,
 } from 'app/utils/reaction';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import PropTypes from 'prop-types';
-import React, {PureComponent} from 'react';
-import {intlShape} from 'react-intl';
-import {View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
-
-import ReactionHeader from './reaction_header';
-import ReactionRow from './reaction_row';
 
 export default class ReactionList extends PureComponent {
     static propTypes = {

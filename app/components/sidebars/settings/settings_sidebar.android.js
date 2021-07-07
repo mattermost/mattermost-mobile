@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {closeSettingsSideMenu} from 'app/actions/navigation';
-import {getTranslations} from 'app/i18n';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {View} from 'react-native';
 
 import SettingsSidebarBase from './settings_sidebar_base';
+
+import {closeSettingsSideMenu} from 'app/actions/navigation';
+import {getTranslations} from 'app/i18n';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SettingsDrawerAndroid extends SettingsSidebarBase {
     confirmReset = (status) => {

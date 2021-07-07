@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RadioButtonGroup from 'app/components/radio_button';
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
@@ -15,6 +12,10 @@ import {
 import FormattedText from '@components/formatted_text';
 
 import ClockDisplayBase from './clock_display_base';
+
+import RadioButtonGroup from 'app/components/radio_button';
+import StatusBar from 'app/components/status_bar';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ClockDisplay extends ClockDisplayBase {
     static propTypes = {

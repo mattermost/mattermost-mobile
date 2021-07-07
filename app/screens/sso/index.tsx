@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {resetToChannel} from 'app/actions/navigation';
-import {ViewTypes} from 'app/constants';
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {shallowEqual, useDispatch, useSelector} from 'react-redux';
@@ -20,6 +18,9 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
+
+import {resetToChannel} from 'app/actions/navigation';
+import {ViewTypes} from 'app/constants';
 
 interface SSOProps {
     intl: typeof intlShape;

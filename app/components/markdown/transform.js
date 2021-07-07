@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {escapeRegex} from 'app/utils/markdown';
 import {Node} from 'commonmark';
+
+import {escapeRegex} from 'app/utils/markdown';
 
 /* eslint-disable no-underscore-dangle */
 

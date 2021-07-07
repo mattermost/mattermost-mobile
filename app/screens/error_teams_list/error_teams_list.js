@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {resetToChannel} from 'app/actions/navigation';
-import FailedNetworkAction from 'app/components/failed_network_action';
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {InteractionManager, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+
+import {resetToChannel} from 'app/actions/navigation';
+import FailedNetworkAction from 'app/components/failed_network_action';
+import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
 
 export default class ErrorTeamsList extends PureComponent {
     static propTypes = {

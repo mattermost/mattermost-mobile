@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AnnouncementBanner from 'app/components/announcement_banner';
 import React from 'react';
 import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
@@ -17,6 +16,8 @@ import EphemeralStore from '@store/ephemeral_store';
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
+
+import AnnouncementBanner from 'app/components/announcement_banner';
 
 let backPressedCount = 0;
 

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isLandscape} from 'app/selectors/device';
-import {getUniqueUserIds} from 'app/utils/reaction';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -12,6 +10,9 @@ import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entit
 import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
 
 import ReactionList from './reaction_list';
+
+import {isLandscape} from 'app/selectors/device';
+import {getUniqueUserIds} from 'app/utils/reaction';
 
 function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();

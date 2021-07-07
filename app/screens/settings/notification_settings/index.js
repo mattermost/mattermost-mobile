@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isLandscape} from 'app/selectors/device';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -12,6 +11,8 @@ import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/u
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import NotificationSettings from './notification_settings';
+
+import {isLandscape} from 'app/selectors/device';
 
 function mapStateToProps(state) {
     const config = getConfig(state);

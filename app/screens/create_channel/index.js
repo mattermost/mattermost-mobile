@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleCreateChannel} from 'app/actions/views/create_channel';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import CreateChannel from './create_channel';
+
+import {handleCreateChannel} from 'app/actions/views/create_channel';
 
 function mapStateToProps(state) {
     const {createChannel: createChannelRequest} = state.requests.channels;

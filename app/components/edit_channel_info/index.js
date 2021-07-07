@@ -1,18 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {popTopScreen, dismissModal} from 'app/actions/navigation';
-import Autocomplete from 'app/components/autocomplete';
-import ErrorText from 'app/components/error_text';
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {t} from 'app/utils/i18n';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
@@ -26,6 +14,19 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import DEVICE from '@constants/device';
 import {General} from '@mm-redux/constants';
+
+import {popTopScreen, dismissModal} from 'app/actions/navigation';
+import Autocomplete from 'app/components/autocomplete';
+import ErrorText from 'app/components/error_text';
+import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
+import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {t} from 'app/utils/i18n';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {

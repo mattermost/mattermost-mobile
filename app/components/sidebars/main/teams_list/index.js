@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleTeamChange} from 'app/actions/views/select_team';
-import {getCurrentLocale} from 'app/selectors/i18n';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -10,6 +8,9 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from '@mm-redux/selectors/entities/teams';
 
 import TeamsList from './teams_list';
+
+import {handleTeamChange} from 'app/actions/views/select_team';
+import {getCurrentLocale} from 'app/selectors/i18n';
 
 function mapStateToProps(state) {
     const locale = getCurrentLocale(state);

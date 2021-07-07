@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ViewTypes} from 'app/constants';
 import emojiRegex from 'emoji-regex';
 import {batchActions} from 'redux-batched-actions';
 
@@ -10,6 +9,8 @@ import {EmojiTypes} from '@mm-redux/action_types';
 import {addReaction as serviceAddReaction, getNeededCustomEmojis} from '@mm-redux/actions/posts';
 import {getPostIdsInCurrentChannel, makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {EmojiIndicesByAlias, EmojiIndicesByUnicode, Emojis} from '@utils/emojis';
+
+import {ViewTypes} from 'app/constants';
 
 const getPostIdsForThread = makeGetPostIdsForThread();
 

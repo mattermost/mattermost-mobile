@@ -1,14 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {goToScreen} from 'app/actions/navigation';
-import StatusBar from 'app/components/status_bar';
-import NotificationPreferences from 'app/notification_preferences';
-import SettingsItem from 'app/screens/settings/settings_item';
-import {t} from 'app/utils/i18n';
-import {getNotificationProps} from 'app/utils/notify_props';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import deepEqual from 'deep-equal';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -22,6 +14,15 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {General, RequestStatus} from '@mm-redux/constants';
+
+import {goToScreen} from 'app/actions/navigation';
+import StatusBar from 'app/components/status_bar';
+import NotificationPreferences from 'app/notification_preferences';
+import SettingsItem from 'app/screens/settings/settings_item';
+import {t} from 'app/utils/i18n';
+import {getNotificationProps} from 'app/utils/notify_props';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class NotificationSettings extends PureComponent {
     static propTypes = {

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
@@ -25,6 +24,8 @@ import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {

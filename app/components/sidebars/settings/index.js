@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {logout} from 'app/actions/views/user';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -12,6 +11,8 @@ import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/u
 import {isCustomStatusEnabled, makeGetCustomStatus} from '@selectors/custom_status';
 
 import SettingsSidebar from './settings_sidebar';
+
+import {logout} from 'app/actions/views/user';
 
 function makeMapStateToProps() {
     const getCustomStatus = makeGetCustomStatus();

@@ -1,11 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import StatusBar from 'app/components/status_bar';
-import {DeviceTypes} from 'app/constants';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -18,6 +13,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import AsyncStorage from '@react-native-community/async-storage';
+
+import StatusBar from 'app/components/status_bar';
+import {DeviceTypes} from 'app/constants';
+import Section from 'app/screens/settings/section';
+import SectionItem from 'app/screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SidebarSettings extends PureComponent {
     static propTypes = {

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
@@ -12,6 +11,8 @@ import CompassIcon from '@components/compass_icon';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import Clipboard from '@react-native-community/clipboard';
 import BottomSheet from '@utils/bottom_sheet';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {

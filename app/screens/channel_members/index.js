@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -11,6 +10,8 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 
 import ChannelMembers from './channel_members';
+
+import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
 
 function makeMapStateToProps() {
     const getChannelMembers = makeGetProfilesInChannel();

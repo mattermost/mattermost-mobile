@@ -1,10 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import StatusBar from 'app/components/status_bar';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {
     View,
@@ -14,6 +9,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 
 import ClockDisplayBase from './clock_display_base';
+
+import StatusBar from 'app/components/status_bar';
+import Section from 'app/screens/settings/section';
+import SectionItem from 'app/screens/settings/section_item';
+import {t} from 'app/utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ClockDisplay extends ClockDisplayBase {
     render() {

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostBucket from 'app/mattermost_bucket';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
@@ -19,6 +18,8 @@ import {changeOpacity} from '@utils/theme';
 
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
+
+import mattermostBucket from 'app/mattermost_bucket';
 
 export default class UploadItem extends PureComponent {
     static propTypes = {

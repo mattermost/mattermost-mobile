@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import {UserTypes} from '@mm-redux/action_types';
 import {General} from '@mm-redux/constants';
+
+import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 
 const mockStore = configureStore([thunk]);
 

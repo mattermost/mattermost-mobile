@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getCurrentLocale} from 'app/selectors/i18n';
 import {batchActions} from 'redux-batched-actions';
 
 import {lastChannelIdForTeam} from '@actions/helpers/channels';
@@ -13,6 +12,8 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {selectFirstAvailableTeam} from '@utils/teams';
+
+import {getCurrentLocale} from 'app/selectors/i18n';
 
 export function handleTeamChange(teamId) {
     return async (dispatch, getState) => {

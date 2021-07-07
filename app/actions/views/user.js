@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NavigationTypes} from 'app/constants';
-import {setAppCredentials} from 'app/init/credentials';
 import {batchActions} from 'redux-batched-actions';
 
 import {Client4} from '@client/rest';
@@ -18,6 +16,9 @@ import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {setCSRFFromCookie} from '@utils/security';
 import {getDeviceTimezone} from '@utils/timezone';
+
+import {NavigationTypes} from 'app/constants';
+import {setAppCredentials} from 'app/init/credentials';
 
 const HTTP_UNAUTHORIZED = 401;
 

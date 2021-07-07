@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from '@client/rest';
 import NetInfo from '@react-native-community/netinfo';
+
+import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 
 let certificate = '';
 let previousState;

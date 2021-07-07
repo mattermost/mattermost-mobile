@@ -1,15 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {resetToChannel, dismissModal} from 'app/actions/navigation';
-import CustomList from 'app/components/custom_list';
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import TeamIcon from 'app/components/team_icon';
-import {NavigationTypes} from 'app/constants';
-import {t} from 'app/utils/i18n';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -26,6 +17,16 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import {RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+
+import {resetToChannel, dismissModal} from 'app/actions/navigation';
+import CustomList from 'app/components/custom_list';
+import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
+import TeamIcon from 'app/components/team_icon';
+import {NavigationTypes} from 'app/constants';
+import {t} from 'app/utils/i18n';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const TEAMS_PER_PAGE = 50;
 

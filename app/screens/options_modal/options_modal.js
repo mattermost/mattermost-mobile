@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {dismissModal} from 'app/actions/navigation';
-import {NavigationTypes} from 'app/constants';
-import {emptyFunction} from 'app/utils/general';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
@@ -17,6 +14,10 @@ import {
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import OptionsModalList from './options_modal_list';
+
+import {dismissModal} from 'app/actions/navigation';
+import {NavigationTypes} from 'app/constants';
+import {emptyFunction} from 'app/utils/general';
 
 const {View: AnimatedView} = Animated;
 const DURATION = 200;

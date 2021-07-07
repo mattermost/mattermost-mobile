@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setAutocompleteSelector} from 'app/actions/views/post';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import AutocompleteSelector from './autocomplete_selector';
+
+import {setAutocompleteSelector} from 'app/actions/views/post';
 
 function mapStateToProps(state) {
     return {

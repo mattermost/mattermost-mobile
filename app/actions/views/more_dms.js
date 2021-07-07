@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleSelectChannel, toggleDMChannel, toggleGMChannel} from 'app/actions/views/channel';
-
 import {createDirectChannel, createGroupChannel} from '@mm-redux/actions/channels';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {getDirectChannelName} from '@mm-redux/utils/channel_utils';
+
+import {handleSelectChannel, toggleDMChannel, toggleGMChannel} from 'app/actions/views/channel';
 
 export function makeDirectChannel(otherUserId, switchToChannel = true) {
     return async (dispatch, getState) => {

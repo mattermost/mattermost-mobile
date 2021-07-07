@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
@@ -12,6 +11,8 @@ import {
 import {NativeViewGestureHandler} from 'react-native-gesture-handler';
 
 import ReactionHeaderItem from './reaction_header_item';
+
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ReactionHeader extends PureComponent {
     static propTypes = {

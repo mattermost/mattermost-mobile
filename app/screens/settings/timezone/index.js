@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updateUser} from 'app/actions/views/edit_profile';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -12,6 +11,8 @@ import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import Timezone from './timezone';
+
+import {updateUser} from 'app/actions/views/edit_profile';
 
 function mapStateToProps(state) {
     const timezones = getTimezones(state);

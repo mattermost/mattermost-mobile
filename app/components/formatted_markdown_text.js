@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AtMention from 'app/components/at_mention';
-import MarkdownLink from 'app/components/markdown/markdown_link';
-import {getMarkdownTextStyles} from 'app/utils/markdown';
-import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {Text} from 'react-native';
+
+import AtMention from 'app/components/at_mention';
+import MarkdownLink from 'app/components/markdown/markdown_link';
+import {getMarkdownTextStyles} from 'app/utils/markdown';
+import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const TARGET_BLANK_URL_PREFIX = '!';
 

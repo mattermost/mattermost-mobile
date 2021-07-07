@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GlobalStyles} from 'app/styles';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
@@ -23,6 +22,8 @@ import StatusBar from '@components/status_bar';
 import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
+
+import {GlobalStyles} from 'app/styles';
 
 export default class Mfa extends PureComponent {
     static propTypes = {

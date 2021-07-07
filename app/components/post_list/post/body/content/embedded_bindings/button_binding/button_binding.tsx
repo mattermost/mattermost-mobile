@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import React, {useCallback, useRef} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import Button from 'react-native-button';
@@ -16,6 +14,9 @@ import {createCallContext, createCallRequest} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
 
 import ButtonBindingText from './button_binding_text';
+
+import {preventDoubleTap} from 'app/utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 type Props = {
     binding: AppBinding;

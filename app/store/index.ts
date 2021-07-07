@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import appReducer from 'app/reducers';
 import DeviceInfo from 'react-native-device-info';
 import * as redux from 'redux';
 import {createPersistoid, createTransform, persistReducer, persistStore, Persistor, PersistConfig} from 'redux-persist';
@@ -18,6 +17,8 @@ import {createReducer, getStoredState} from './helpers';
 import {createMiddlewares} from './middlewares';
 import Store from './store';
 import {transformSet, serialize} from './utils';
+
+import appReducer from 'app/reducers';
 
 /**
  * Configures and constructs the redux store. Accepts the following parameters:

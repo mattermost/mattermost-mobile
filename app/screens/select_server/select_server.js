@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostBucket from 'app/mattermost_bucket';
-import {GlobalStyles} from 'app/styles';
 import merge from 'deepmerge';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -41,6 +39,9 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {isValidUrl, stripTrailingSlashes} from '@utils/url';
+
+import mattermostBucket from 'app/mattermost_bucket';
+import {GlobalStyles} from 'app/styles';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {

@@ -1,11 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {popTopScreen, setButtons} from 'app/actions/navigation';
-import EditChannelInfo from 'app/components/edit_channel_info';
-import {NavigationTypes, ViewTypes} from 'app/constants';
-import {t} from 'app/utils/i18n';
-import {cleanUpUrlable} from 'app/utils/url';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -17,6 +12,12 @@ import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+
+import {popTopScreen, setButtons} from 'app/actions/navigation';
+import EditChannelInfo from 'app/components/edit_channel_info';
+import {NavigationTypes, ViewTypes} from 'app/constants';
+import {t} from 'app/utils/i18n';
+import {cleanUpUrlable} from 'app/utils/url';
 
 const messages = {
     display_name_required: {

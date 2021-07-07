@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {markChannelViewedAndReadOnReconnect} from 'app/actions/views/channel';
-import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 import {connect} from 'react-redux';
 
 import {init as initWebSocket, close as closeWebSocket} from '@actions/websocket';
@@ -11,6 +9,9 @@ import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import type {GlobalState} from '@mm-redux/types/store';
 
 import NetworkIndicator from './network';
+
+import {markChannelViewedAndReadOnReconnect} from 'app/actions/views/channel';
+import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 
 function mapStateToProps(state: GlobalState) {
     const {websocket} = state.requests.general;

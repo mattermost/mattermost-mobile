@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import {ViewTypes} from 'app/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
@@ -17,6 +13,11 @@ import {popTopScreen} from '@actions/navigation';
 import {Client4} from '@client/rest';
 import type {Theme} from '@mm-redux/types/preferences';
 import CookieManager, {Cookies} from '@react-native-cookies/cookies';
+
+import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
+import {ViewTypes} from 'app/constants';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 import {AppState, Dimensions, Linking, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
@@ -38,6 +36,9 @@ import {getDeviceTimezone} from '@utils/timezone';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
+
+import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 

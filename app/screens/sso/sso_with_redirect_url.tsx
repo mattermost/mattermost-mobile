@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
@@ -14,6 +13,8 @@ import Loading from '@components/loading';
 import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
 import {tryOpenURL} from '@utils/url';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 interface SSOWithRedirectURLProps {
     intl: typeof intlShape;

@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RadioButtonGroup from 'app/components/radio_button';
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {
     ScrollView,
@@ -13,6 +10,10 @@ import {
 import FormattedText from '@components/formatted_text';
 
 import ChannelNotificationPreferenceBase from './channel_notification_preference_base';
+
+import RadioButtonGroup from 'app/components/radio_button';
+import StatusBar from 'app/components/status_bar';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelNotificationPreferenceAndroid extends ChannelNotificationPreferenceBase {
     getRadioItems = () => {

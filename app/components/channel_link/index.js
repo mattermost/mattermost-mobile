@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleSelectChannel} from 'app/actions/views/channel';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {createSelector} from 'reselect';
@@ -12,6 +11,8 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import ChannelLink from './channel_link';
+
+import {handleSelectChannel} from 'app/actions/views/channel';
 
 function makeGetChannelNamesMap() {
     return createSelector(

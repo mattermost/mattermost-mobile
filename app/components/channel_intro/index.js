@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getChannelMembersForDm} from 'app/selectors/channel';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
@@ -11,6 +10,8 @@ import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entit
 import {getCurrentUserId, getUser, makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 
 import ChannelIntro from './channel_intro';
+
+import {getChannelMembersForDm} from 'app/selectors/channel';
 
 function makeMapStateToProps() {
     const getChannel = makeGetChannel();

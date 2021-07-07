@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ViewTypes} from 'app/constants';
 import {batchActions} from 'redux-batched-actions';
 
 import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
@@ -38,6 +37,8 @@ import telemetry, {PERF_MARKERS} from '@telemetry';
 import {appsEnabled} from '@utils/apps';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
+
+import {ViewTypes} from 'app/constants';
 
 const MAX_RETRIES = 3;
 

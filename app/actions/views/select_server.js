@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ViewTypes} from 'app/constants';
 import {batchActions} from 'redux-batched-actions';
 
 import {GeneralTypes} from '@mm-redux/action_types';
+
+import {ViewTypes} from 'app/constants';
 
 export function handleServerUrlChanged(serverUrl) {
     return batchActions([

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
 import React, {Children, PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -17,6 +16,8 @@ import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {

@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toTitleCase} from 'app/utils/general';
-import {t} from 'app/utils/i18n';
 import {
     Alert,
 } from 'react-native';
+
+import {toTitleCase} from 'app/utils/general';
+import {t} from 'app/utils/i18n';
 
 export function confirmOutOfOfficeDisabled(intl, status, updateStatus) {
     const userStatusId = 'modal.manual_status.auto_responder.message_' + status;

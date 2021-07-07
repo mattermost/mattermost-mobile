@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getNotificationProps} from 'app/utils/notify_props';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -16,6 +15,8 @@ import {
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import NotificationSettingsEmail from './notification_settings_email';
+
+import {getNotificationProps} from 'app/utils/notify_props';
 
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state) || {};

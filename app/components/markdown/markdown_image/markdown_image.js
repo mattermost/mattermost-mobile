@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
@@ -26,6 +25,8 @@ import {generateId} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 const ANDROID_MAX_HEIGHT = 4096;
 const ANDROID_MAX_WIDTH = 4096;

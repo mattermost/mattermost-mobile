@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {View} from 'react-native';
 
@@ -12,6 +11,8 @@ import {copyAndFillBindings} from '@utils/apps';
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
 import EmbedSubBindings from './embedded_sub_bindings';
+
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 type Props = {
     embed: AppBinding;

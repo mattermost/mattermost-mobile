@@ -59,6 +59,11 @@
             "pattern": "@{**,*/**}",
             "group": "external",
             "position": "after"
+          },
+          {
+            "pattern": "app/**",
+            "group": "internal",
+            "position": "before"
           }
         ],
         "alphabetize": {

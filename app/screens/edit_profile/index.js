@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
-import {isLandscape} from 'app/selectors/device';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -11,6 +9,9 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import EditProfile from './edit_profile';
+
+import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
+import {isLandscape} from 'app/selectors/device';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);

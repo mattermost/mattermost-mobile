@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isLandscape, isTablet} from 'app/selectors/device';
-import {getAllowedThemes, getCustomTheme} from 'app/selectors/theme';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -12,6 +10,9 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import Theme from './theme';
+
+import {isLandscape, isTablet} from 'app/selectors/device';
+import {getAllowedThemes, getCustomTheme} from 'app/selectors/theme';
 
 const mapStateToProps = (state) => ({
     allowedThemes: getAllowedThemes(state),

@@ -3,11 +3,12 @@
 
 /* eslint-disable no-import-assign */
 
+import RNFetchBlob from 'rn-fetch-blob';
+
 import mattermostBucket from 'app/mattermost_bucket';
 import * as fileUtils from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager, {getCacheFile} from 'app/utils/image_cache_manager';
-import RNFetchBlob from 'rn-fetch-blob';
 
 fileUtils.getExtensionFromMime = jest.fn();
 

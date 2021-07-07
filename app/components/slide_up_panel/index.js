@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getDimensions} from 'app/selectors/device';
 import {connect} from 'react-redux';
 
 import SlideUpPanel from './slide_up_panel';
+
+import {getDimensions} from 'app/selectors/device';
 
 function mapStateToProps(state, ownProps) {
     const dimensions = getDimensions(state);

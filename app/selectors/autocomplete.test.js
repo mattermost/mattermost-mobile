@@ -3,14 +3,14 @@
 
 import assert from 'assert';
 
+import {General} from '@mm-redux/constants';
+
 import {
     getMatchTermForAtMention,
     filterMembersNotInChannel,
     filterMembersInChannel,
     filterDirectAndGroupMessages,
 } from 'app/selectors/autocomplete';
-
-import {General} from '@mm-redux/constants';
 
 /* eslint-disable max-nested-callbacks */
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostBucket from 'app/mattermost_bucket';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import semver from 'semver/preload';
@@ -13,6 +12,8 @@ import intitialState from '@store/initial_state';
 import Store from '@store/store';
 
 import GlobalEventHandler from './global_event_handler';
+
+import mattermostBucket from 'app/mattermost_bucket';
 
 jest.mock('app/init/credentials', () => ({
     getCurrentServerUrl: jest.fn().mockResolvedValue(''),

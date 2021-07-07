@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {loadConfigAndLicense} from 'app/actions/views/root';
-import {setAppCredentials} from 'app/init/credentials';
-import {setCSRFFromCookie} from 'app/utils/security';
-import {getDeviceTimezone} from 'app/utils/timezone';
 import moment from 'moment-timezone';
 
 import {Client4} from '@client/rest';
@@ -16,6 +12,11 @@ import {getSessions} from '@mm-redux/actions/users';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+
+import {loadConfigAndLicense} from 'app/actions/views/root';
+import {setAppCredentials} from 'app/init/credentials';
+import {setCSRFFromCookie} from 'app/utils/security';
+import {getDeviceTimezone} from 'app/utils/timezone';
 
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -13,6 +11,9 @@ import {getCurrentTeamId, getMyTeamsCount} from '@mm-redux/selectors/entities/te
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import MainSidebar from './main_sidebar';
+
+import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
+import {makeDirectChannel} from 'app/actions/views/more_dms';
 
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);

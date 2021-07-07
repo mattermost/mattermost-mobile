@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getNotificationProps} from 'app/utils/notify_props';
 import PropTypes from 'prop-types';
 import {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
+
+import {getNotificationProps} from 'app/utils/notify_props';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {

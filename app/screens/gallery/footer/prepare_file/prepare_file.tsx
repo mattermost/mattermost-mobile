@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import mattermostBucket from 'app/mattermost_bucket';
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, BackHandler, Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
@@ -17,6 +16,8 @@ import ProgressBar from '@components/progress_bar';
 import type {FileInfo} from '@mm-redux/types/files';
 import {Theme} from '@mm-redux/types/preferences';
 import {getLocalPath} from '@utils/file';
+
+import mattermostBucket from 'app/mattermost_bucket';
 
 type PrepareFileProps = {
     intl: typeof intlShape;
