@@ -13,10 +13,12 @@ import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getViewingGlobalThreads} from '@selectors/threads';
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
 
 import {markAsViewedAndReadBatch} from './channel';
+import {handleNotViewingGlobalThreadsScreen} from './threads';
 
 export function startDataCleanup() {
     return async (dispatch, getState) => {
@@ -112,6 +114,10 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
         const channel = channels[channelId];
         const member = myMembers[channelId];
         const actions = markAsViewedAndReadBatch(state, channelId);
+
+        if (getViewingGlobalThreads(state)) {
+            actions.push(handleNotViewingGlobalThreadsScreen());
+        }
 
         // when the notification is from a team other than the current team
         if (teamId !== currentTeamId) {
