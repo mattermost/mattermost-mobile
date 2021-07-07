@@ -127,7 +127,6 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
             "color": "#3d3c40",
             "fontSize": 15,
             "lineHeight": 20,
-            "marginBottom": 0,
           }
         }
       >
@@ -291,7 +290,6 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
             "color": "#3d3c40",
             "fontSize": 15,
             "lineHeight": 20,
-            "marginBottom": 0,
           }
         }
       >
