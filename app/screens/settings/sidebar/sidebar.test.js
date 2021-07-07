@@ -2,15 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
+import MainSidebar from '@components/sidebars/main/main_sidebar.ios';
+import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
-import {DeviceTypes} from 'app/constants';
-import MainSidebar from 'app/components/sidebars/main/main_sidebar.ios';
 import SidebarSettings from './index';
 
-jest.mock('react-intl');
 jest.mock('app/mattermost_managed', () => ({
     isRunningInSplitView: jest.fn().mockResolvedValue(false),
     addEventListener: jest.fn(),
@@ -22,7 +21,7 @@ describe('SidebarSettings', () => {
     };
 
     test('should match, full snapshot', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <SidebarSettings {...baseProps}/>,
         );
 
@@ -33,7 +32,7 @@ describe('SidebarSettings', () => {
     });
 
     test('should set the Permanent Sidebar value to false', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <SidebarSettings {...baseProps}/>,
         );
 
@@ -44,7 +43,7 @@ describe('SidebarSettings', () => {
     test('should set the Permanent Sidebar value to true and update the sidebar', async () => {
         DeviceTypes.IS_TABLET = true;
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <SidebarSettings {...baseProps}/>,
         );
 
@@ -65,7 +64,7 @@ describe('SidebarSettings', () => {
             theme: Preferences.THEMES.default,
         };
 
-        const mainSidebar = shallow(
+        const mainSidebar = shallowWithIntl(
             <MainSidebar {...mainProps}/>,
         );
 

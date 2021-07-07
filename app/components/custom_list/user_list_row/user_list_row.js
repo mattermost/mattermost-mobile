@@ -9,7 +9,9 @@ import {
     View,
 } from 'react-native';
 
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import ChannelIcon from '@components/channel_icon';
+import {General} from '@mm-redux/constants';
+import {displayUsername, isShared} from '@mm-redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';
@@ -36,6 +38,27 @@ export default class UserListRow extends React.PureComponent {
         if (this.props.onPress) {
             this.props.onPress(this.props.id, this.props.item);
         }
+    };
+
+    renderIcon = (style) => {
+        const {theme, user} = this.props;
+        if (!isShared(user)) {
+            return null;
+        }
+        return (
+            <ChannelIcon
+                isActive={false}
+                isArchived={false}
+                isBot={false}
+                isUnread={true}
+                isInfo={true}
+                size={18}
+                shared={true}
+                style={style.sharedUserIcon}
+                theme={theme}
+                type={General.DM_CHANNEL}
+            />
+        );
     };
 
     render() {
@@ -131,6 +154,7 @@ export default class UserListRow extends React.PureComponent {
                         </View>
                         }
                     </View>
+                    {this.renderIcon(style)}
                 </CustomListRow>
             </View>
         );
@@ -171,6 +195,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginTop: 2,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        sharedUserIcon: {
+            alignSelf: 'center',
+            opacity: 0.75,
         },
     };
 });

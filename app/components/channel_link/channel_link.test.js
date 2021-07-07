@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 import {Text} from 'react-native';
 
 import {alertErrorWithFallback} from '@utils/general';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelLink from './channel_link';
-
-jest.mock('react-intl');
 
 jest.mock('@utils/general', () => {
     const general = jest.requireActual('../../utils/general');
@@ -20,7 +18,6 @@ jest.mock('@utils/general', () => {
 });
 
 describe('ChannelLink', () => {
-    const formatMessage = jest.fn();
     const channelsByName = {
         firstChannel: {id: 'channel_id_1', name: 'firstChannel', display_name: 'First Channel', team_id: 'current_team_id'},
         secondChannel: {id: 'channel_id_2', name: 'secondChannel', display_name: 'Second Channel', team_id: 'current_team_id'},
@@ -40,9 +37,8 @@ describe('ChannelLink', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelLink {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -74,9 +70,8 @@ describe('ChannelLink', () => {
     });
 
     test('should call props.actions and onChannelLinkPress on handlePress', async () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelLink {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
         );
 
         const channel = channelsByName.firstChannel;
@@ -106,15 +101,16 @@ describe('ChannelLink', () => {
             channelName: newChannelName,
             actions: {...baseProps.actions, joinChannel},
         };
-        const intl = {formatMessage};
+
         const joinFailedMessage = {
             id: 'mobile.join_channel.error',
             defaultMessage: 'We couldn\'t join the channel {displayName}. Please check your connection and try again.',
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ChannelLink {...newProps}/>,
-            {context: {intl}},
         );
+
+        const {intl} = wrapper.context();
 
         await wrapper.instance().handlePress();
         expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(1);

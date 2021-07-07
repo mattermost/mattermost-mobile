@@ -155,14 +155,14 @@ export const apiLogin = async (user) => {
 /**
  * Logout from the Mattermost server.
  * See https://api.mattermost.com/#operation/Logout
- * @return {Object} returns data on success
+ * @return {Object} returns {status} on success
  */
 export const apiLogout = async () => {
     const response = await client.post('/api/v4/users/logout');
 
     client.defaults.headers.Cookie = '';
 
-    return response.data;
+    return {status: response.status};
 };
 
 /**
@@ -194,19 +194,19 @@ export const apiPatchUser = async (userId, userData) => {
     }
 };
 
-function generateRandomUser(prefix) {
-    const randomId = getRandomId();
+export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) => {
+    const randomId = getRandomId(randomIdLength);
 
     return {
         email: `${prefix}${randomId}@sample.mattermost.com`,
         username: `${prefix}${randomId}`,
         password: 'passwd',
-        first_name: `First${randomId}`,
-        last_name: `Last${randomId}`,
-        nickname: `Nickname${randomId}`,
-        position: `Position${randomId}`,
+        first_name: `F${randomId}`,
+        last_name: `L${randomId}`,
+        nickname: `N${randomId}`,
+        position: `P${randomId}`,
     };
-}
+};
 
 export const User = {
     apiAdminLogin,
@@ -220,6 +220,7 @@ export const User = {
     apiLogout,
     apiPatchMe,
     apiPatchUser,
+    generateRandomUser,
 };
 
 export default User;

@@ -40,7 +40,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Take Photo or Video"
           id="mobile.file_upload.camera"
           style={
@@ -85,7 +85,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Photo Library"
           id="mobile.file_upload.library"
           style={
@@ -122,7 +122,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
         }
       }
     >
-      <FormattedText
+      <InjectIntl(FormattedText)
         defaultMessage="Cancel"
         id="channel_modal.cancel"
         style={
@@ -222,7 +222,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             }
           }
         >
-          <FormattedText
+          <InjectIntl(FormattedText)
             defaultMessage="Take Photo or Video"
             id="mobile.file_upload.camera"
             style={
@@ -268,7 +268,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             }
           }
         >
-          <FormattedText
+          <InjectIntl(FormattedText)
             defaultMessage="Photo Library"
             id="mobile.file_upload.library"
             style={
@@ -319,7 +319,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           }
         }
       >
-        <FormattedText
+        <InjectIntl(FormattedText)
           defaultMessage="Cancel"
           id="channel_modal.cancel"
           style={

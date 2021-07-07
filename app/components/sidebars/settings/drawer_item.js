@@ -87,11 +87,11 @@ export default class DrawerItem extends PureComponent {
                 onPress={onPress}
             >
                 <View style={style.container}>
-                    {icon &&
-                    <View style={style.iconContainer}>
-                        {icon}
-                    </View>
-                    }
+                    {icon && (
+                        <View style={style.iconContainer}>
+                            {icon}
+                        </View>
+                    )}
                     <View style={style.wrapper}>
                         <View style={style.labelContainer}>
                             {label}
@@ -107,10 +107,9 @@ export default class DrawerItem extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            height: 50,
+            minHeight: 50,
         },
         iconContainer: {
             width: 45,
@@ -127,9 +126,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         labelContainer: {
-            alignItems: 'center',
             flex: 1,
-            flexDirection: 'row',
+            justifyContent: 'center',
+            paddingTop: 14,
+            paddingBottom: 14,
         },
         centerLabel: {
             textAlign: 'center',
@@ -137,7 +137,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            flex: 1,
             fontSize: 17,
             textAlignVertical: 'center',
             includeFontPadding: false,

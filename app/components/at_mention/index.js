@@ -3,13 +3,10 @@
 
 import {connect} from 'react-redux';
 
-import {getUsersByUsername} from '@mm-redux/selectors/entities/users';
-
-import {getAllUserMentionKeys} from '@mm-redux/selectors/entities/search';
-
-import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-
 import {getAllGroupsForReferenceByName} from '@mm-redux/selectors/entities/groups';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getAllUserMentionKeys} from '@mm-redux/selectors/entities/search';
+import {getUsersByUsername} from '@mm-redux/selectors/entities/users';
 
 import AtMention from './at_mention';
 

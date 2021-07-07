@@ -1,17 +1,18 @@
 package com.mattermost.rnbeta;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.RemoteInput;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -20,20 +21,22 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.internal.annotations.EverythingIsNonNull;
 
 import org.json.JSONObject;
 import org.json.JSONException;
 
-import com.mattermost.react_native_interface.ResolvePromise;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
 
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
+import com.wix.reactnativenotifications.core.ProxyService;
+import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
 public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     private Context mContext;
     private Bundle bundle;
-    private NotificationManager notificationManager;
+    private NotificationManagerCompat notificationManager;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -45,28 +48,13 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
             mContext = context;
             bundle = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
-            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager = NotificationManagerCompat.from(context);
 
             final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
-            final int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
+            final int notificationId = intent.getIntExtra(CustomPushNotificationHelper.NOTIFICATION_ID, -1);
 
-
-            MattermostCredentialsHelper.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
-                @Override
-                public void resolve(@Nullable Object value) {
-                    if (value instanceof Boolean && !(Boolean)value) {
-                        return;
-                    }
-
-                    WritableMap map = (WritableMap) value;
-                    if (map != null) {
-                        String token = map.getString("password");
-                        String serverUrl = map.getString("service");
-
-                        replyToMessage(serverUrl, token, notificationId, message);
-                    }
-                }
-            });
+            ReadableMap results = MattermostCredentialsHelper.getCredentialsSync(reactApplicationContext);
+            replyToMessage(results.getString("serverUrl"), results.getString("token"), notificationId, message);
         }
     }
 
@@ -79,7 +67,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         }
 
         if (token == null || serverUrl == null) {
-            onReplyFailed(notificationManager, notificationId, channelId);
+            onReplyFailed(notificationId);
             return;
         }
 
@@ -100,19 +88,22 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
+            @EverythingIsNonNull
             public void onFailure(Call call, IOException e) {
                 Log.i("ReactNative", String.format("Reply FAILED exception %s", e.getMessage()));
-                onReplyFailed(notificationManager, notificationId, channelId);
+                onReplyFailed(notificationId);
             }
 
             @Override
+            @EverythingIsNonNull
             public void onResponse(Call call, final Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    onReplySuccess(notificationManager, notificationId, channelId);
+                    onReplySuccess(notificationId, message);
                     Log.i("ReactNative", "Reply SUCCESS");
                 } else {
+                    assert response.body() != null;
                     Log.i("ReactNative", String.format("Reply FAILED status %s BODY %s", response.code(), response.body().string()));
-                    onReplyFailed(notificationManager, notificationId, channelId);
+                    onReplyFailed(notificationId);
                 }
             }
         });
@@ -130,37 +121,31 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    protected void onReplyFailed(NotificationManager notificationManager, int notificationId, String channelId) {
-        String CHANNEL_ID = "Reply job";
-        Resources res = mContext.getResources();
-        String packageName = mContext.getPackageName();
-        int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
-
-        Bundle userInfoBundle = new Bundle();
-        userInfoBundle.putString("channel_id", channelId);
-
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_LOW);
-        notificationManager.createNotificationChannel(channel);
-        Notification notification =
-                new Notification.Builder(mContext, CHANNEL_ID)
-                        .setContentTitle("Message failed to send.")
-                        .setSmallIcon(smallIconResId)
-                        .addExtras(userInfoBundle)
-                        .build();
-
-        CustomPushNotification.clearNotification(mContext, notificationId, channelId);
-        notificationManager.notify(notificationId, notification);
+    protected void onReplyFailed(int notificationId) {
+        recreateNotification(notificationId, "Message failed to send.");
     }
 
-    protected void onReplySuccess(NotificationManager notificationManager, int notificationId, String channelId) {
-        notificationManager.cancel(notificationId);
-        CustomPushNotification.clearNotification(mContext, notificationId, channelId);
+    protected void onReplySuccess(int notificationId, final CharSequence message) {
+        recreateNotification(notificationId, message);
+    }
+
+    private void recreateNotification(int notificationId, final CharSequence message) {
+        final Intent cta = new Intent(mContext, ProxyService.class);
+        final PushNotificationProps notificationProps = new PushNotificationProps(bundle);
+        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, cta, notificationProps);
+        NotificationCompat.Builder builder = CustomPushNotificationHelper.createNotificationBuilder(mContext, pendingIntent, bundle);
+        Notification notification =  builder.build();
+        NotificationCompat.MessagingStyle messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification);
+        assert messagingStyle != null;
+        messagingStyle.addMessage(message, System.currentTimeMillis(), (Person)null);
+        notification = builder.setStyle(messagingStyle).build();
+        notificationManager.notify(notificationId, notification);
     }
 
     private CharSequence getReplyMessage(Intent intent) {
         Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
         if (remoteInput != null) {
-            return remoteInput.getCharSequence(CustomPushNotification.KEY_TEXT_REPLY);
+            return remoteInput.getCharSequence(CustomPushNotificationHelper.KEY_TEXT_REPLY);
         }
         return null;
     }

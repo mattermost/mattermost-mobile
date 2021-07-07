@@ -30,7 +30,10 @@ export default class MarkdownBlockQuote extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                style={style.container}
+                testID='markdown_block_quote'
+            >
                 <View style={style.icon}>
                     {icon}
                 </View>

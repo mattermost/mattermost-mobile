@@ -7,17 +7,15 @@ import {connect} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {selectPost} from '@mm-redux/actions/posts';
-import {makeGetChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
+import {getChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 
 import Thread from './thread';
 
 function makeMapStateToProps() {
     const getPostIdsForThread = makeGetPostIdsForThread();
-    const getChannel = makeGetChannel();
-
     return function mapStateToProps(state, ownProps) {
-        const channel = getChannel(state, {id: ownProps.channelId});
+        const channel = getChannel(state, ownProps.channelId);
 
         return {
             channelId: ownProps.channelId,

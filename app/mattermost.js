@@ -11,6 +11,7 @@ import {resetToChannel, resetToSelectServer} from '@actions/navigation';
 import {setDeepLinkURL} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import {NavigationTypes} from '@constants';
+import {CHANNEL, THREAD} from '@constants/screen';
 import {getAppCredentials} from '@init/credentials';
 import emmProvider from '@init/emm_provider';
 import {setupPermanentSidebar} from '@init/device';
@@ -115,15 +116,40 @@ export function componentDidAppearListener({componentId}) {
     case 'SettingsSidebar':
         EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         break;
+    case THREAD:
+        if (EphemeralStore.hasModalsOpened()) {
+            for (const modal of EphemeralStore.navigationModalStack) {
+                const disableSwipe = {
+                    modal: {
+                        swipeToDismiss: false,
+                    },
+                };
+                Navigation.mergeOptions(modal, disableSwipe);
+            }
+        }
+        break;
     }
 }
 
 export function componentDidDisappearListener({componentId}) {
-    if (componentId !== NavigationTypes.CHANNEL_SCREEN) {
+    if (componentId !== CHANNEL) {
         EphemeralStore.removeNavigationComponentId(componentId);
     }
 
     if (componentId === 'MainSidebar') {
         EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
+    }
+
+    if (componentId === THREAD) {
+        if (EphemeralStore.hasModalsOpened()) {
+            for (const modal of EphemeralStore.navigationModalStack) {
+                const enableSwipe = {
+                    modal: {
+                        swipeToDismiss: true,
+                    },
+                };
+                Navigation.mergeOptions(modal, enableSwipe);
+            }
+        }
     }
 }
