@@ -6,9 +6,9 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {Preferences} from '@mm-redux/constants';
 
-import ChannelAddMembers from './channel_add_members';
-
 import * as NavigationActions from 'app/actions/navigation';
+
+import ChannelAddMembers from './channel_add_members';
 
 describe('ChannelAddMembers', () => {
     const baseProps = {

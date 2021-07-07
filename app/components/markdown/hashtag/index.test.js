@@ -4,9 +4,9 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 
-import Hashtag from './index';
-
 import * as NavigationActions from 'app/actions/navigation';
+
+import Hashtag from './index';
 
 describe('Hashtag', () => {
     const baseProps = {

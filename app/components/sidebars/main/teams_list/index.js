@@ -7,10 +7,10 @@ import {bindActionCreators} from 'redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from '@mm-redux/selectors/entities/teams';
 
-import TeamsList from './teams_list';
-
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {getCurrentLocale} from 'app/selectors/i18n';
+
+import TeamsList from './teams_list';
 
 function mapStateToProps(state) {
     const locale = getCurrentLocale(state);

@@ -13,12 +13,12 @@ import {
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@mm-redux/constants';
 
-import NotificationSettingsEmailBase from './notification_settings_email_base';
-
 import RadioButtonGroup from 'app/components/radio_button';
 import SectionItem from 'app/screens/settings/section_item';
 import {t} from 'app/utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import NotificationSettingsEmailBase from './notification_settings_email_base';
 
 class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
     static contextTypes = {

@@ -5,9 +5,9 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import ChannelNavBar from './channel_nav_bar';
-
 import {isLandscape} from 'app/selectors/device';
+
+import ChannelNavBar from './channel_nav_bar';
 
 function mapStateToProps(state) {
     return {

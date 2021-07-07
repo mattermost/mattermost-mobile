@@ -6,9 +6,9 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import NotificationSettings from './notification_settings.js';
-
 import {getNotificationProps} from 'app/utils/notify_props';
+
+import NotificationSettings from './notification_settings.js';
 
 describe('NotificationSettings', () => {
     const currentUser = {id: 'current_user_id'};

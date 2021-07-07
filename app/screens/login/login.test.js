@@ -6,10 +6,10 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import FormattedText from '@components/formatted_text';
 
-import Login from './login';
-
 import * as NavigationActions from 'app/actions/navigation';
 import {mfaExpectedErrors} from 'app/screens/login/login';
+
+import Login from './login';
 
 describe('Login', () => {
     const baseProps = {

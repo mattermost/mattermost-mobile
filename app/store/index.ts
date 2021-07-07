@@ -13,12 +13,12 @@ import {GlobalState} from '@mm-redux/types/store';
 import AsyncStorage from '@react-native-community/async-storage';
 import initialState from '@store/initial_state';
 
+import appReducer from 'app/reducers';
+
 import {createReducer, getStoredState} from './helpers';
 import {createMiddlewares} from './middlewares';
 import Store from './store';
 import {transformSet, serialize} from './utils';
-
-import appReducer from 'app/reducers';
 
 /**
  * Configures and constructs the redux store. Accepts the following parameters:

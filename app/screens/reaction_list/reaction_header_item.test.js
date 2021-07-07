@@ -6,9 +6,9 @@ import {TouchableOpacity} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import ReactionHeaderItem from './reaction_header_item';
-
 import {ALL_EMOJIS} from 'app/constants/emoji';
+
+import ReactionHeaderItem from './reaction_header_item';
 
 describe('ReactionHeaderItem', () => {
     const baseProps = {

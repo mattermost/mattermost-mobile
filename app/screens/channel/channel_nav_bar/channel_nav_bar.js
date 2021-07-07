@@ -11,12 +11,12 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import AsyncStorage from '@react-native-community/async-storage';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import mattermostManaged from 'app/mattermost_managed';
+
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
 import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 import SettingsSidebarDrawerButton from './settings_sidebar_drawer_button';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 const {
     ANDROID_TOP_LANDSCAPE,

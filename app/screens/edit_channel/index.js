@@ -9,9 +9,9 @@ import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
 
-import EditChannel from './edit_channel';
-
 import {setChannelDisplayName} from 'app/actions/views/channel';
+
+import EditChannel from './edit_channel';
 
 function mapStateToProps(state) {
     const {updateChannel: updateChannelRequest} = state.requests.channels;

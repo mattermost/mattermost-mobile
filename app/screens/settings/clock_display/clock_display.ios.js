@@ -8,13 +8,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 
-import ClockDisplayBase from './clock_display_base';
-
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {t} from 'app/utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import ClockDisplayBase from './clock_display_base';
 
 export default class ClockDisplay extends ClockDisplayBase {
     render() {

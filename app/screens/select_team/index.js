@@ -10,11 +10,11 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getSortedJoinableTeams} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import SelectTeam from './select_team.js';
-
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {logout} from 'app/actions/views/user';
 import {isGuest} from 'app/utils/users';
+
+import SelectTeam from './select_team.js';
 
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);

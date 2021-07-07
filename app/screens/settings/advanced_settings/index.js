@@ -6,9 +6,9 @@ import {bindActionCreators} from 'redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import AdvancedSettings from './advanced_settings';
-
 import {purgeOfflineStore} from 'app/actions/views/root';
+
+import AdvancedSettings from './advanced_settings';
 
 function mapStateToProps(state) {
     return {

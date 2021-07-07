@@ -6,9 +6,9 @@ import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import EditChannelInfo from './index';
-
 import Autocomplete from 'app/components/autocomplete';
+
+import EditChannelInfo from './index';
 
 describe('EditChannelInfo', () => {
     const baseProps = {

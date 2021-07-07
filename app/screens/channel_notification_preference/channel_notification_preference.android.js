@@ -9,11 +9,11 @@ import {
 
 import FormattedText from '@components/formatted_text';
 
-import ChannelNotificationPreferenceBase from './channel_notification_preference_base';
-
 import RadioButtonGroup from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import ChannelNotificationPreferenceBase from './channel_notification_preference_base';
 
 export default class ChannelNotificationPreferenceAndroid extends ChannelNotificationPreferenceBase {
     getRadioItems = () => {

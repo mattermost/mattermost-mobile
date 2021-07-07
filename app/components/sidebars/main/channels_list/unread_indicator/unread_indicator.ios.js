@@ -3,9 +3,9 @@
 
 import React from 'react';
 
-import UnreadIndicatorBase, {getStyleSheet} from './unread_indicator.base';
-
 import Fade from 'app/components/fade';
+
+import UnreadIndicatorBase, {getStyleSheet} from './unread_indicator.base';
 
 export default class UnreadIndicatorIOS extends UnreadIndicatorBase {
     render() {

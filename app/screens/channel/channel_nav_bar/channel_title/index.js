@@ -10,9 +10,9 @@ import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {isCustomStatusEnabled} from '@selectors/custom_status';
 
-import ChannelTitle from './channel_title';
-
 import {isGuest} from 'app/utils/users';
+
+import ChannelTitle from './channel_title';
 
 function mapStateToProps(state) {
     const currentChannel = getCurrentChannel(state);

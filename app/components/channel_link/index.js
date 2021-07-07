@@ -10,9 +10,9 @@ import {getChannelsNameMapInCurrentTeam} from '@mm-redux/selectors/entities/chan
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
-import ChannelLink from './channel_link';
-
 import {handleSelectChannel} from 'app/actions/views/channel';
+
+import ChannelLink from './channel_link';
 
 function makeGetChannelNamesMap() {
     return createSelector(

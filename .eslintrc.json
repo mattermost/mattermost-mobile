@@ -62,7 +62,7 @@
           },
           {
             "pattern": "app/**",
-            "group": "internal",
+            "group": "parent",
             "position": "before"
           }
         ],

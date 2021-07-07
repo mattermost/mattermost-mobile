@@ -6,10 +6,10 @@ import {connect} from 'react-redux';
 import {getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import Root from './root';
-
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {removeProtocol} from 'app/utils/url';
+
+import Root from './root';
 
 function mapStateToProps(state) {
     const locale = getCurrentLocale(state);

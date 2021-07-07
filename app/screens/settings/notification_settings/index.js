@@ -10,9 +10,9 @@ import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferenc
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import NotificationSettings from './notification_settings';
-
 import {isLandscape} from 'app/selectors/device';
+
+import NotificationSettings from './notification_settings';
 
 function mapStateToProps(state) {
     const config = getConfig(state);

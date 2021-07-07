@@ -8,10 +8,10 @@ import {stopPeriodicStatusUpdates, startPeriodicStatusUpdates} from '@mm-redux/a
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import type {GlobalState} from '@mm-redux/types/store';
 
-import NetworkIndicator from './network';
-
 import {markChannelViewedAndReadOnReconnect} from 'app/actions/views/channel';
 import {setCurrentUserStatusOffline} from 'app/actions/views/user';
+
+import NetworkIndicator from './network';
 
 function mapStateToProps(state: GlobalState) {
     const {websocket} = state.requests.general;

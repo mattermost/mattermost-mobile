@@ -9,9 +9,9 @@ import {getCurrentChannel, canManageChannelMembers} from '@mm-redux/selectors/en
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 
-import ChannelMembers from './channel_members';
-
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
+
+import ChannelMembers from './channel_members';
 
 function makeMapStateToProps() {
     const getChannelMembers = makeGetProfilesInChannel();

@@ -7,11 +7,11 @@ import {Dimensions, Keyboard} from 'react-native';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import MainSidebarBase from './main_sidebar_base';
-
 import {closeMainSideMenu, enableMainSideMenu} from 'app/actions/navigation';
 import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
+
+import MainSidebarBase from './main_sidebar_base';
 
 export default class MainSidebarAndroid extends MainSidebarBase {
     constructor(props) {

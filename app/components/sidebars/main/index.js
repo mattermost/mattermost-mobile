@@ -10,10 +10,10 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMyTeamsCount} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import MainSidebar from './main_sidebar';
-
 import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
+
+import MainSidebar from './main_sidebar';
 
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);

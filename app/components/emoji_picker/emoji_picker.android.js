@@ -4,10 +4,10 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import EmojiPickerBase, {getStyleSheetFromTheme} from './emoji_picker_base';
-
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from 'app/utils/theme';
+
+import EmojiPickerBase, {getStyleSheetFromTheme} from './emoji_picker_base';
 
 export default class EmojiPicker extends EmojiPickerBase {
     render() {

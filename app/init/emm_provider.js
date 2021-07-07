@@ -10,10 +10,10 @@ import {getCurrentLocale} from '@selectors/i18n';
 import Store from '@store/store';
 import {t} from '@utils/i18n';
 
-import {getAppCredentials} from './credentials';
-
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
+
+import {getAppCredentials} from './credentials';
 
 class EMMProvider {
     constructor() {

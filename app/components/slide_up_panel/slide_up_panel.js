@@ -11,12 +11,12 @@ import {
     TapGestureHandler,
 } from 'react-native-gesture-handler';
 
-import SlideUpPanelIndicator from './slide_up_panel_indicator';
-
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {hapticFeedback} from 'app/utils/general';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import SlideUpPanelIndicator from './slide_up_panel_indicator';
 
 export const BOTTOM_MARGIN = mattermostManaged.hasSafeAreaInsets ? 24 : 0;
 const TOP_IOS_MARGIN = DeviceTypes.IS_IPHONE_WITH_INSETS ? 84 : 64;

@@ -6,9 +6,9 @@ import {bindActionCreators} from 'redux';
 
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import AutocompleteSelector from './autocomplete_selector';
-
 import {setAutocompleteSelector} from 'app/actions/views/post';
+
+import AutocompleteSelector from './autocomplete_selector';
 
 function mapStateToProps(state) {
     return {

@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import UploadItem from './upload_item';
-
 import {handleRemoveFile, retryFileUpload, uploadComplete, uploadFailed} from 'app/actions/views/file_upload';
+
+import UploadItem from './upload_item';
 
 const mapDispatchToProps = {
     handleRemoveFile,

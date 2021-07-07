@@ -24,9 +24,9 @@ import SectionItem from '@screens/settings/section_item';
 import {getNotificationProps} from '@utils/notify_props';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import NotificationSettingsMobileBase from './notification_settings_mobile_base';
-
 import NotificationPreferences from 'app/notification_preferences';
+
+import NotificationSettingsMobileBase from './notification_settings_mobile_base';
 
 class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     static propTypes = {

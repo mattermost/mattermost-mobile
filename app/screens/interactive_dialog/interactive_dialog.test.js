@@ -6,10 +6,10 @@ import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import InteractiveDialog from './interactive_dialog';
-
 import ErrorText from 'app/components/error_text';
 import DialogElement from 'app/screens/interactive_dialog/dialog_element';
+
+import InteractiveDialog from './interactive_dialog';
 
 describe('InteractiveDialog', () => {
     const baseProps = {

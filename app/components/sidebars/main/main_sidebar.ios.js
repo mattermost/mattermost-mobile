@@ -10,9 +10,9 @@ import {DeviceTypes, NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import MainSidebarBase from './main_sidebar_base';
-
 import mattermostManaged from 'app/mattermost_managed';
+
+import MainSidebarBase from './main_sidebar_base';
 
 export default class MainSidebarIOS extends MainSidebarBase {
     static contextTypes = {

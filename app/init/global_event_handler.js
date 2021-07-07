@@ -34,11 +34,11 @@ import Store from '@store/store';
 import {deleteFileCache} from '@utils/file';
 import {getDeviceTimezone} from '@utils/timezone';
 
-import {getAppCredentials, removeAppCredentials} from './credentials';
-import emmProvider from './emm_provider';
-
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
+
+import {getAppCredentials, removeAppCredentials} from './credentials';
+import emmProvider from './emm_provider';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 

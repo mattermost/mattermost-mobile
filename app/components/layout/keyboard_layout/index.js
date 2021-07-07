@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import KeyboardLayout from './keyboard_layout';
-
 import {isLandscape} from 'app/selectors/device';
+
+import KeyboardLayout from './keyboard_layout';
 
 function mapStateToProps(state) {
     return {

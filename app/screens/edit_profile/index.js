@@ -8,10 +8,10 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import EditProfile from './edit_profile';
-
 import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
 import {isLandscape} from 'app/selectors/device';
+
+import EditProfile from './edit_profile';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);

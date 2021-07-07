@@ -16,11 +16,11 @@ import {ErrorApi} from '@mm-redux/types/client4';
 import type {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import SSOWithRedirectURL from './sso_with_redirect_url';
-import SSOWithWebView from './sso_with_webview';
-
 import {resetToChannel} from 'app/actions/navigation';
 import {ViewTypes} from 'app/constants';
+
+import SSOWithRedirectURL from './sso_with_redirect_url';
+import SSOWithWebView from './sso_with_webview';
 
 interface SSOProps {
     intl: typeof intlShape;

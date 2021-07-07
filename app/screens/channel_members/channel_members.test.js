@@ -5,9 +5,9 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import ChannelMembers from './channel_members';
-
 import CustomList from 'app/components/custom_list';
+
+import ChannelMembers from './channel_members';
 
 describe('ChannelMembers', () => {
     const baseProps = {

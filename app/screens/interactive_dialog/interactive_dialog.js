@@ -10,13 +10,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 
-import DialogElement from './dialog_element.js';
-import DialogIntroductionText from './dialog_introduction_text.js';
-
 import {dismissModal} from 'app/actions/navigation';
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import DialogElement from './dialog_element.js';
+import DialogIntroductionText from './dialog_introduction_text.js';
 
 export default class InteractiveDialog extends PureComponent {
     static propTypes = {

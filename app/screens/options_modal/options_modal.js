@@ -13,11 +13,11 @@ import {
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import OptionsModalList from './options_modal_list';
-
 import {dismissModal} from 'app/actions/navigation';
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
+
+import OptionsModalList from './options_modal_list';
 
 const {View: AnimatedView} = Animated;
 const DURATION = 200;

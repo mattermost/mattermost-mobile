@@ -9,10 +9,10 @@ import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
 
-import ReactionList from './reaction_list';
-
 import {isLandscape} from 'app/selectors/device';
 import {getUniqueUserIds} from 'app/utils/reaction';
+
+import ReactionList from './reaction_list';
 
 function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();

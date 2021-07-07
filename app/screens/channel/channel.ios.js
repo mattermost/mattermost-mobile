@@ -16,11 +16,11 @@ import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import AnnouncementBanner from 'app/components/announcement_banner';
+
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
-
-import AnnouncementBanner from 'app/components/announcement_banner';
 
 export default class ChannelIOS extends ChannelBase {
     handleAutoComplete = (value) => {

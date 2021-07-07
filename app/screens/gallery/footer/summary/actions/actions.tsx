@@ -7,9 +7,9 @@ import type {ActionsProps, ManagedConfig} from 'types/screens/gallery';
 
 import CompassIcon from '@components/compass_icon';
 
-import Action from './action';
-
 import mattermostManaged from 'app/mattermost_managed';
+
+import Action from './action';
 
 const styles = StyleSheet.create({
     contaier: {

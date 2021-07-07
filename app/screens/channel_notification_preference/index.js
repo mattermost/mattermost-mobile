@@ -8,9 +8,9 @@ import {updateChannelNotifyProps} from '@mm-redux/actions/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import ChannelNotificationPreference from './channel_notification_preference';
-
 import {isLandscape} from 'app/selectors/device';
+
+import ChannelNotificationPreference from './channel_notification_preference';
 
 function mapStateToProps(state) {
     return {

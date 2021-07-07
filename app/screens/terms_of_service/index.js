@@ -8,9 +8,9 @@ import {getTermsOfService, updateMyTermsOfServiceStatus} from '@mm-redux/actions
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import TermsOfService from './terms_of_service.js';
-
 import {logout} from 'app/actions/views/user';
+
+import TermsOfService from './terms_of_service.js';
 
 function mapStateToProps(state) {
     const config = getConfig(state);

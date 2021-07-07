@@ -13,8 +13,6 @@ import {
 
 import FormattedText from '@components/formatted_text';
 
-import NotificationSettingsMentionsBase from './notification_settings_mention_base';
-
 import RadioButtonGroup from 'app/components/radio_button';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -25,6 +23,8 @@ import {
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
+
+import NotificationSettingsMentionsBase from './notification_settings_mention_base';
 
 class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBase {
     cancelMentionKeys = () => {

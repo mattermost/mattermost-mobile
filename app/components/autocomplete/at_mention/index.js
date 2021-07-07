@@ -14,14 +14,14 @@ import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import AtMention from './at_mention';
-
 import {
     filterMembersInChannel,
     filterMembersNotInChannel,
     filterMembersInCurrentTeam,
     getMatchTermForAtMention,
 } from 'app/selectors/autocomplete';
+
+import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;

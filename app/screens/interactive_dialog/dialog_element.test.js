@@ -6,11 +6,11 @@ import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import DialogElement from './dialog_element.js';
-
 import AutocompleteSelector from 'app/components/autocomplete_selector';
 import BoolSetting from 'app/components/widgets/settings/bool_setting';
 import RadioSetting from 'app/components/widgets/settings/radio_setting';
+
+import DialogElement from './dialog_element.js';
 
 describe('DialogElement', () => {
     const baseDialogProps = {

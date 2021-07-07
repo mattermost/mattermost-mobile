@@ -9,10 +9,10 @@ import {getCurrentUrl, getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getJoinableTeams} from '@mm-redux/selectors/entities/teams';
 
-import Settings from './settings';
-
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {removeProtocol} from 'app/utils/url';
+
+import Settings from './settings';
 
 function mapStateToProps(state) {
     const config = getConfig(state);

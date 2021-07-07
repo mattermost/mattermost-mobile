@@ -8,10 +8,10 @@ import {getStatusesByIdsBatchedDebounced} from '@mm-redux/actions/users';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId, getUser} from '@mm-redux/selectors/entities/users';
 
-import ProfilePicture from './profile_picture';
-
 import {setProfileImageUri} from 'app/actions/views/edit_profile';
 import {getProfileImageUri} from 'app/selectors/views';
+
+import ProfilePicture from './profile_picture';
 
 function mapStateToProps(state, ownProps) {
     let status = ownProps.status;

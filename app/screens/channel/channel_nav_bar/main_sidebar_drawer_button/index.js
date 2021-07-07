@@ -5,9 +5,9 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import MainSidebarDrawerButton from './main_sidebar_drawer_button';
-
 import {getBadgeCount} from 'app/selectors/views';
+
+import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 
 function mapStateToProps(state) {
     return {

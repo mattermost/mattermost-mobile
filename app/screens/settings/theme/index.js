@@ -9,10 +9,10 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
-import Theme from './theme';
-
 import {isLandscape, isTablet} from 'app/selectors/device';
 import {getAllowedThemes, getCustomTheme} from 'app/selectors/theme';
+
+import Theme from './theme';
 
 const mapStateToProps = (state) => ({
     allowedThemes: getAllowedThemes(state),

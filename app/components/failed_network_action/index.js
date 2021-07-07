@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import FailedNetworkAction from './failed_network_action';
-
 import {isLandscape} from 'app/selectors/device';
+
+import FailedNetworkAction from './failed_network_action';
 
 function mapStateToProps(state) {
     return {

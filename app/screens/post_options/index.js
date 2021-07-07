@@ -29,9 +29,9 @@ import {getDimensions} from '@selectors/device';
 import {selectEmojisCountFromReactions} from '@selectors/emojis';
 import {canDeletePost} from '@selectors/permissions';
 
-import PostOptions from './post_options';
-
 import mattermostManaged from 'app/mattermost_managed';
+
+import PostOptions from './post_options';
 
 export function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();

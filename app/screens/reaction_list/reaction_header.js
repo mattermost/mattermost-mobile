@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import {NativeViewGestureHandler} from 'react-native-gesture-handler';
 
-import ReactionHeaderItem from './reaction_header_item';
-
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import ReactionHeaderItem from './reaction_header_item';
 
 export default class ReactionHeader extends PureComponent {
     static propTypes = {

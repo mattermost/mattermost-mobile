@@ -10,9 +10,9 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import Timezone from './timezone';
-
 import {updateUser} from 'app/actions/views/edit_profile';
+
+import Timezone from './timezone';
 
 function mapStateToProps(state) {
     const timezones = getTimezones(state);

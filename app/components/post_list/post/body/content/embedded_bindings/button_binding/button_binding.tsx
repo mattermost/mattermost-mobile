@@ -13,10 +13,10 @@ import {Theme} from '@mm-redux/types/preferences';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
 
-import ButtonBindingText from './button_binding_text';
-
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+
+import ButtonBindingText from './button_binding_text';
 
 type Props = {
     binding: AppBinding;

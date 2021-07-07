@@ -11,9 +11,9 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import intitialState from '@store/initial_state';
 import Store from '@store/store';
 
-import GlobalEventHandler from './global_event_handler';
-
 import mattermostBucket from 'app/mattermost_bucket';
+
+import GlobalEventHandler from './global_event_handler';
 
 jest.mock('app/init/credentials', () => ({
     getCurrentServerUrl: jest.fn().mockResolvedValue(''),

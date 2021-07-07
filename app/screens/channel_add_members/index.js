@@ -11,9 +11,9 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesNotInCurrentChannel} from '@mm-redux/selectors/entities/users';
 
-import ChannelAddMembers from './channel_add_members';
-
 import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
+
+import ChannelAddMembers from './channel_add_members';
 
 function mapStateToProps(state) {
     const currentChannel = getCurrentChannel(state);

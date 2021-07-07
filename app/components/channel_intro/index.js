@@ -9,9 +9,9 @@ import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser, makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 
-import ChannelIntro from './channel_intro';
-
 import {getChannelMembersForDm} from 'app/selectors/channel';
+
+import ChannelIntro from './channel_intro';
 
 function makeMapStateToProps() {
     const getChannel = makeGetChannel();

@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import RefreshList from './refresh_list';
-
 import {getConnection} from 'app/selectors/device';
+
+import RefreshList from './refresh_list';
 
 function mapStateToProps(state) {
     const networkOnline = getConnection(state);

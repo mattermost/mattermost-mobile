@@ -16,10 +16,10 @@ import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
 import {changeOpacity} from '@utils/theme';
 
+import mattermostBucket from 'app/mattermost_bucket';
+
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
-
-import mattermostBucket from 'app/mattermost_bucket';
 
 export default class UploadItem extends PureComponent {
     static propTypes = {

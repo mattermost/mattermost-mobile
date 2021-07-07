@@ -13,11 +13,11 @@ import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 
+import AnnouncementBanner from 'app/components/announcement_banner';
+
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
-
-import AnnouncementBanner from 'app/components/announcement_banner';
 
 let backPressedCount = 0;
 

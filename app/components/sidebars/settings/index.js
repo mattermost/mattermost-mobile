@@ -10,9 +10,9 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {isCustomStatusEnabled, makeGetCustomStatus} from '@selectors/custom_status';
 
-import SettingsSidebar from './settings_sidebar';
-
 import {logout} from 'app/actions/views/user';
+
+import SettingsSidebar from './settings_sidebar';
 
 function makeMapStateToProps() {
     const getCustomStatus = makeGetCustomStatus();

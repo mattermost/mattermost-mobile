@@ -6,9 +6,9 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
-
 import RadioButtonGroup from 'app/components/radio_button';
+
+import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
 describe('NotificationSettingsEmailAndroid', () => {
     const baseProps = {

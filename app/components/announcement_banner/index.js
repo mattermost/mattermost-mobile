@@ -5,9 +5,9 @@ import {connect} from 'react-redux';
 
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 
-import AnnouncementBanner from './announcement_banner';
-
 import {isLandscape} from 'app/selectors/device';
+
+import AnnouncementBanner from './announcement_banner';
 
 function mapStateToProps(state) {
     const config = getConfig(state);
