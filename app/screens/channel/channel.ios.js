@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import AnnouncementBanner from '@components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
@@ -15,8 +16,6 @@ import StatusBar from '@components/status_bar';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import AnnouncementBanner from 'app/components/announcement_banner';
 
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';

@@ -7,12 +7,11 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
-
-import StatusBar from 'app/components/status_bar';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import StatusBar from '@components/status_bar';
+import Section from '@screens/settings/section';
+import SectionItem from '@screens/settings/section_item';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ClockDisplayBase from './clock_display_base';
 

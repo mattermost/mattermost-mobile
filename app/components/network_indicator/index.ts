@@ -3,13 +3,12 @@
 
 import {connect} from 'react-redux';
 
+import {markChannelViewedAndReadOnReconnect} from '@actions/views/channel';
+import {setCurrentUserStatusOffline} from '@actions/views/user';
 import {init as initWebSocket, close as closeWebSocket} from '@actions/websocket';
 import {stopPeriodicStatusUpdates, startPeriodicStatusUpdates} from '@mm-redux/actions/users';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import type {GlobalState} from '@mm-redux/types/store';
-
-import {markChannelViewedAndReadOnReconnect} from 'app/actions/views/channel';
-import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 
 import NetworkIndicator from './network';
 

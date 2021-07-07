@@ -7,6 +7,7 @@ import {bindActionCreators} from 'redux';
 import {addReaction} from '@actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {THREAD} from '@constants/screen';
+import mattermostManaged from '@mattermost-managed';
 import {
     deletePost,
     flagPost,
@@ -28,8 +29,6 @@ import {canEditPost, isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_
 import {getDimensions} from '@selectors/device';
 import {selectEmojisCountFromReactions} from '@selectors/emojis';
 import {canDeletePost} from '@selectors/permissions';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 import PostOptions from './post_options';
 

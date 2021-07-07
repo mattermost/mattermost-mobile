@@ -11,15 +11,14 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {goToScreen} from '@actions/navigation';
 import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
 import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
-
-import {goToScreen} from 'app/actions/navigation';
-import StatusBar from 'app/components/status_bar';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getDeviceTimezone} from 'app/utils/timezone';
+import Section from '@screens/settings/section';
+import SectionItem from '@screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getDeviceTimezone} from '@utils/timezone';
 
 export default class Timezone extends PureComponent {
     static propTypes = {

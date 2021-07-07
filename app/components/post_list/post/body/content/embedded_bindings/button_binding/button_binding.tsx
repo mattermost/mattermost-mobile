@@ -12,9 +12,8 @@ import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
-
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import ButtonBindingText from './button_binding_text';
 

@@ -7,8 +7,7 @@ import {bindActionCreators} from 'redux';
 import {updateChannelNotifyProps} from '@mm-redux/actions/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-
-import {isLandscape} from 'app/selectors/device';
+import {isLandscape} from '@selectors/device';
 
 import ChannelNotificationPreference from './channel_notification_preference';
 

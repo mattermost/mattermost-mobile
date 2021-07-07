@@ -3,6 +3,7 @@
 
 import {createSelector} from 'reselect';
 
+import * as Autocomplete from '@constants/autocomplete';
 import {General} from '@mm-redux/constants';
 import {getMyChannels, getOtherChannels} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
@@ -12,9 +13,7 @@ import {
 } from '@mm-redux/selectors/entities/users';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {sortByUsername} from '@mm-redux/utils/user_utils';
-
-import * as Autocomplete from 'app/constants/autocomplete';
-import {getCurrentLocale} from 'app/selectors/i18n';
+import {getCurrentLocale} from '@selectors/i18n';
 
 export const getMatchTermForAtMention = (() => {
     let lastMatchTerm = null;

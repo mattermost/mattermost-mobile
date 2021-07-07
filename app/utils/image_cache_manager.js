@@ -8,14 +8,14 @@ import RNFetchBlob from 'rn-fetch-blob';
 import Url from 'url-parse';
 
 import {Client4} from '@client/rest';
-
-import {DeviceTypes} from 'app/constants';
-import mattermostBucket from 'app/mattermost_bucket';
+import {DeviceTypes} from '@constants';
 import {
     getExtensionFromMime,
     getExtensionFromContentDisposition,
     hashCode,
-} from 'app/utils/file';
+} from '@utils/file';
+
+import mattermostBucket from 'app/mattermost_bucket';
 
 const {IMAGES_PATH} = DeviceTypes;
 const DEFAULT_MIME_TYPE = 'image/png';

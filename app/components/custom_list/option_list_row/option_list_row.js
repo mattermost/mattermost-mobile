@@ -9,8 +9,8 @@ import {
     View,
 } from 'react-native';
 
-import CustomListRow from 'app/components/custom_list/custom_list_row';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import CustomListRow from '@components/custom_list/custom_list_row';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class OptionListRow extends React.PureComponent {
     static propTypes = {

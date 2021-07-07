@@ -8,8 +8,7 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 function section(props) {
     const {

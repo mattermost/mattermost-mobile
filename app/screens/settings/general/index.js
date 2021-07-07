@@ -4,13 +4,12 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {purgeOfflineStore} from '@actions/views/root';
 import {clearErrors} from '@mm-redux/actions/errors';
 import {getCurrentUrl, getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getJoinableTeams} from '@mm-redux/selectors/entities/teams';
-
-import {purgeOfflineStore} from 'app/actions/views/root';
-import {removeProtocol} from 'app/utils/url';
+import {removeProtocol} from '@utils/url';
 
 import Settings from './settings';
 

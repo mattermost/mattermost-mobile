@@ -7,9 +7,9 @@ import {intlShape} from 'react-intl';
 import {View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {dismissModal} from 'app/actions/navigation';
-import SlideUpPanel from 'app/components/slide_up_panel';
-import {ALL_EMOJIS} from 'app/constants/emoji';
+import {dismissModal} from '@actions/navigation';
+import SlideUpPanel from '@components/slide_up_panel';
+import {ALL_EMOJIS} from '@constants/emoji';
 import {
     generateUserProfilesById,
     getMissingUserIds,
@@ -17,8 +17,8 @@ import {
     getSortedReactionsForHeader,
     getUniqueUserIds,
     sortReactions,
-} from 'app/utils/reaction';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+} from '@utils/reaction';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ReactionHeader from './reaction_header';
 import ReactionRow from './reaction_row';

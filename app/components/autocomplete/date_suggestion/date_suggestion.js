@@ -7,10 +7,9 @@ import {intlShape} from 'react-intl';
 import {Dimensions, Platform, View} from 'react-native';
 import {CalendarList, LocaleConfig} from 'react-native-calendars';
 
+import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from '@constants/autocomplete';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-
-import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {

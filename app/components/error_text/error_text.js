@@ -6,9 +6,9 @@ import React, {PureComponent} from 'react';
 import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {GlobalStyles} from 'app/styles';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ErrorText extends PureComponent {
     static propTypes = {

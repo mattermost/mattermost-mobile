@@ -11,9 +11,8 @@ import {Preferences, RequestStatus} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getCurrentLocale} from '@selectors/i18n';
 import {selectFirstAvailableTeam} from '@utils/teams';
-
-import {getCurrentLocale} from 'app/selectors/i18n';
 
 export function handleTeamChange(teamId) {
     return async (dispatch, getState) => {

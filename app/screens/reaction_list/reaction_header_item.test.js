@@ -4,9 +4,8 @@ import {shallow} from 'enzyme';
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
 
+import {ALL_EMOJIS} from '@constants/emoji';
 import Preferences from '@mm-redux/constants/preferences';
-
-import {ALL_EMOJIS} from 'app/constants/emoji';
 
 import ReactionHeaderItem from './reaction_header_item';
 

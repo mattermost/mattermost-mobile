@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {dismissModal, setButtons} from 'app/actions/navigation';
-import EmojiPicker from 'app/components/emoji_picker';
-import {emptyFunction} from 'app/utils/general';
+import {dismissModal, setButtons} from '@actions/navigation';
+import EmojiPicker from '@components/emoji_picker';
+import {emptyFunction} from '@utils/general';
 
 const leftButton = {
     id: 'close-add-reaction',

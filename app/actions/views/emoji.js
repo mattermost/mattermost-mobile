@@ -5,12 +5,11 @@ import emojiRegex from 'emoji-regex';
 import {batchActions} from 'redux-batched-actions';
 
 import {Client4} from '@client/rest';
+import {ViewTypes} from '@constants';
 import {EmojiTypes} from '@mm-redux/action_types';
 import {addReaction as serviceAddReaction, getNeededCustomEmojis} from '@mm-redux/actions/posts';
 import {getPostIdsInCurrentChannel, makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {EmojiIndicesByAlias, EmojiIndicesByUnicode, Emojis} from '@utils/emojis';
-
-import {ViewTypes} from 'app/constants';
 
 const getPostIdsForThread = makeGetPostIdsForThread();
 

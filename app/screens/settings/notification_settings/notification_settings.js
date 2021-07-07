@@ -13,16 +13,16 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {goToScreen} from '@actions/navigation';
+import StatusBar from '@components/status_bar';
 import {General, RequestStatus} from '@mm-redux/constants';
+import SettingsItem from '@screens/settings/settings_item';
+import {t} from '@utils/i18n';
+import {getNotificationProps} from '@utils/notify_props';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {goToScreen} from 'app/actions/navigation';
-import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';
-import SettingsItem from 'app/screens/settings/settings_item';
-import {t} from 'app/utils/i18n';
-import {getNotificationProps} from 'app/utils/notify_props';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class NotificationSettings extends PureComponent {
     static propTypes = {

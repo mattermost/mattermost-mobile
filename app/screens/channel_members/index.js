@@ -4,12 +4,11 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {handleRemoveChannelMembers} from '@actions/views/channel_members';
 import {getProfilesInChannel, searchProfiles} from '@mm-redux/actions/users';
 import {getCurrentChannel, canManageChannelMembers} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
-
-import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
 
 import ChannelMembers from './channel_members';
 

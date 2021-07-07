@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ALL_EMOJIS} from 'app/constants/emoji';
+import {ALL_EMOJIS} from '@constants/emoji';
 import {
     getMissingUserIds,
     getReactionsByName,
     getSortedReactionsForHeader,
     getUniqueUserIds,
-} from 'app/utils/reaction';
+} from '@utils/reaction';
 
 describe('getMissingUserIds', () => {
     const testCases = [{

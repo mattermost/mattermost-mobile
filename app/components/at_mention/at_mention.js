@@ -10,10 +10,9 @@ import {StyleSheet, Text} from 'react-native';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import mattermostManaged from '@mattermost-managed';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import BottomSheet from '@utils/bottom_sheet';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {

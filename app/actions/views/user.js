@@ -4,7 +4,9 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {Client4} from '@client/rest';
+import {NavigationTypes} from '@constants';
 import {analytics} from '@init/analytics.ts';
+import {setAppCredentials} from '@init/credentials';
 import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
@@ -16,9 +18,6 @@ import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {setCSRFFromCookie} from '@utils/security';
 import {getDeviceTimezone} from '@utils/timezone';
-
-import {NavigationTypes} from 'app/constants';
-import {setAppCredentials} from 'app/init/credentials';
 
 const HTTP_UNAUTHORIZED = 401;
 

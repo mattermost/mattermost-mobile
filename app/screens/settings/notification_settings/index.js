@@ -9,8 +9,7 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-
-import {isLandscape} from 'app/selectors/device';
+import {isLandscape} from '@selectors/device';
 
 import NotificationSettings from './notification_settings';
 

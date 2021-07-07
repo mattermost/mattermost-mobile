@@ -10,12 +10,11 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
+import {popTopScreen, dismissModal, setButtons} from '@actions/navigation';
+import EditChannelInfo from '@components/edit_channel_info';
+import {NavigationTypes} from '@constants';
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
-import EditChannelInfo from 'app/components/edit_channel_info';
-import {NavigationTypes} from 'app/constants';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {

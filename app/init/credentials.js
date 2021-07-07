@@ -7,10 +7,9 @@ import * as KeyChain from 'react-native-keychain';
 
 import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics.ts';
-
-import mattermostManaged from 'app/mattermost_managed';
-import EphemeralStore from 'app/store/ephemeral_store';
-import {setCSRFFromCookie} from 'app/utils/security';
+import mattermostManaged from '@mattermost-managed';
+import EphemeralStore from '@store/ephemeral_store';
+import {setCSRFFromCookie} from '@utils/security';
 
 const CURRENT_SERVER = '@currentServerUrl';
 

@@ -9,10 +9,9 @@ import {Dimensions, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {DeviceTypes, ViewTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';

@@ -4,11 +4,10 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {handleTeamChange} from '@actions/views/select_team';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from '@mm-redux/selectors/entities/teams';
-
-import {handleTeamChange} from 'app/actions/views/select_team';
-import {getCurrentLocale} from 'app/selectors/i18n';
+import {getCurrentLocale} from '@selectors/i18n';
 
 import TeamsList from './teams_list';
 

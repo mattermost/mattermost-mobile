@@ -8,10 +8,10 @@ import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {Text} from 'react-native';
 
-import AtMention from 'app/components/at_mention';
-import MarkdownLink from 'app/components/markdown/markdown_link';
-import {getMarkdownTextStyles} from 'app/utils/markdown';
-import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import AtMention from '@components/at_mention';
+import MarkdownLink from '@components/markdown/markdown_link';
+import {getMarkdownTextStyles} from '@utils/markdown';
+import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const TARGET_BLANK_URL_PREFIX = '!';
 

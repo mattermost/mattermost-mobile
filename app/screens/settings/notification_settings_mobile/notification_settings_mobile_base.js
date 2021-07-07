@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {getNotificationProps} from 'app/utils/notify_props';
+import {getNotificationProps} from '@utils/notify_props';
 
 export default class NotificationSettingsMobileBase extends PureComponent {
     static propTypes = {

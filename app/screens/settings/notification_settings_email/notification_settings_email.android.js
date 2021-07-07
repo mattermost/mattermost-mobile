@@ -11,12 +11,11 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import RadioButtonGroup from '@components/radio_button';
 import {Preferences} from '@mm-redux/constants';
-
-import RadioButtonGroup from 'app/components/radio_button';
-import SectionItem from 'app/screens/settings/section_item';
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import SectionItem from '@screens/settings/section_item';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import NotificationSettingsEmailBase from './notification_settings_email_base';
 

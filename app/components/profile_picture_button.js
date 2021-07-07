@@ -5,9 +5,8 @@ import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 
 import {Client4} from '@client/rest';
-
-import AttachmentButton from 'app/components/attachment_button';
-import {t} from 'app/utils/i18n';
+import AttachmentButton from '@components/attachment_button';
+import {t} from '@utils/i18n';
 
 export default class ProfilePictureButton extends PureComponent {
     static propTypes = {

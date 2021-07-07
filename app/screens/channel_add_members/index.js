@@ -4,14 +4,13 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {handleAddChannelMembers} from '@actions/views/channel_add_members';
 import {getTeamStats} from '@mm-redux/actions/teams';
 import {getProfilesNotInChannel, searchProfiles} from '@mm-redux/actions/users';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesNotInCurrentChannel} from '@mm-redux/selectors/entities/users';
-
-import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
 
 import ChannelAddMembers from './channel_add_members';
 

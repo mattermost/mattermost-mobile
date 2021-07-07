@@ -13,13 +13,12 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import {DeviceTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import StatusBar from 'app/components/status_bar';
-import {DeviceTypes} from 'app/constants';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import Section from '@screens/settings/section';
+import SectionItem from '@screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class SidebarSettings extends PureComponent {
     static propTypes = {

@@ -10,10 +10,9 @@ import {
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
+import TeamIcon from '@components/team_icon';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import TeamIcon from 'app/components/team_icon';
 
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {

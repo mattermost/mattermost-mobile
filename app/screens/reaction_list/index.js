@@ -8,9 +8,8 @@ import {getMissingProfilesByIds} from '@mm-redux/actions/users';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
-
-import {isLandscape} from 'app/selectors/device';
-import {getUniqueUserIds} from 'app/utils/reaction';
+import {isLandscape} from '@selectors/device';
+import {getUniqueUserIds} from '@utils/reaction';
 
 import ReactionList from './reaction_list';
 

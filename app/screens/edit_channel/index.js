@@ -4,12 +4,11 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {setChannelDisplayName} from '@actions/views/channel';
 import {patchChannel, getChannel} from '@mm-redux/actions/channels';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
-
-import {setChannelDisplayName} from 'app/actions/views/channel';
 
 import EditChannel from './edit_channel';
 

@@ -12,9 +12,8 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 interface SSOWithRedirectURLProps {
     intl: typeof intlShape;

@@ -11,21 +11,21 @@ import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
 
+import {popTopScreen, dismissModal, setButtons} from '@actions/navigation';
 import {Client4} from '@client/rest';
+import ErrorText from '@components/error_text';
+import Loading from '@components/loading';
+import ProfilePicture from '@components/profile_picture';
+import ProfilePictureButton from '@components/profile_picture_button';
+import StatusBar from '@components/status_bar/index';
+import TextSetting from '@components/widgets/settings/text_setting';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
+import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
-import ErrorText from 'app/components/error_text';
-import Loading from 'app/components/loading';
-import ProfilePicture from 'app/components/profile_picture';
-import ProfilePictureButton from 'app/components/profile_picture_button';
-import StatusBar from 'app/components/status_bar/index';
-import TextSetting from 'app/components/widgets/settings/text_setting';
 import mattermostBucket from 'app/mattermost_bucket';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import {t} from 'app/utils/i18n';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const MAX_SIZE = 20 * 1024 * 1024;
 export const VALID_MIME_TYPES = [

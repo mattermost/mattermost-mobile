@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import IntlWrapper from 'app/components/root';
+import IntlWrapper from '@components/root';
 
 export function wrapWithContextProvider(Comp, excludeEvents = true) {
     return (props) => { //eslint-disable-line react/display-name

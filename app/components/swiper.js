@@ -12,8 +12,8 @@ import {
     View,
 } from 'react-native';
 
-import {DeviceTypes, ViewTypes} from 'app/constants';
-import mattermostManaged from 'app/mattermost_managed';
+import {DeviceTypes, ViewTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
 
 export default class Swiper extends PureComponent {
     static propTypes = {

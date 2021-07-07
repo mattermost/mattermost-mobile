@@ -6,6 +6,7 @@ import {batchActions} from 'redux-batched-actions';
 import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@actions/views/post';
 import {Client4} from '@client/rest';
+import {ViewTypes} from '@constants';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
@@ -37,8 +38,6 @@ import telemetry, {PERF_MARKERS} from '@telemetry';
 import {appsEnabled} from '@utils/apps';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
-
-import {ViewTypes} from 'app/constants';
 
 const MAX_RETRIES = 3;
 

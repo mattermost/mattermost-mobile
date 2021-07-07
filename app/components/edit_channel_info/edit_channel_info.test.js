@@ -4,9 +4,8 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 
+import Autocomplete from '@components/autocomplete';
 import Preferences from '@mm-redux/constants/preferences';
-
-import Autocomplete from 'app/components/autocomplete';
 
 import EditChannelInfo from './index';
 

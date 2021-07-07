@@ -4,9 +4,8 @@
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
+import * as NavigationActions from '@actions/navigation';
 import {Preferences} from '@mm-redux/constants';
-
-import * as NavigationActions from 'app/actions/navigation';
 
 import ChannelAddMembers from './channel_add_members';
 

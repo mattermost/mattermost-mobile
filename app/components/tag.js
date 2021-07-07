@@ -6,9 +6,8 @@ import React, {PureComponent} from 'react';
 import {View, ViewPropTypes} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export function BotTag(props) {
     const id = t('post_info.bot');

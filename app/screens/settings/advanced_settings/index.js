@@ -4,9 +4,8 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {purgeOfflineStore} from '@actions/views/root';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import {purgeOfflineStore} from 'app/actions/views/root';
 
 import AdvancedSettings from './advanced_settings';
 

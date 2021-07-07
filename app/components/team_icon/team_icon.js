@@ -7,8 +7,7 @@ import {Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {Client4} from '@client/rest';
-
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {

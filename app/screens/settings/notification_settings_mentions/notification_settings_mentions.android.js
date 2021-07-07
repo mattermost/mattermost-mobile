@@ -12,17 +12,16 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-
-import RadioButtonGroup from 'app/components/radio_button';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import SectionItem from 'app/screens/settings/section_item';
-import {t} from 'app/utils/i18n';
+import RadioButtonGroup from '@components/radio_button';
+import StatusBar from '@components/status_bar';
+import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
+import SectionItem from '@screens/settings/section_item';
+import {t} from '@utils/i18n';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
+} from '@utils/theme';
 
 import NotificationSettingsMentionsBase from './notification_settings_mention_base';
 

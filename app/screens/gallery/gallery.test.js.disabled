@@ -6,7 +6,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import * as NavigationActions from 'app/actions/navigation';
+import * as NavigationActions from '@actions/navigation';
 
 import Gallery from './gallery';
 

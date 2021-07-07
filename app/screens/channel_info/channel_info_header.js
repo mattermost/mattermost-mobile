@@ -20,13 +20,12 @@ import Emoji from '@components/emoji';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
+import mattermostManaged from '@mattermost-managed';
 import {General} from '@mm-redux/constants';
 import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {

@@ -5,9 +5,11 @@ import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {shallowEqual, useDispatch, useSelector} from 'react-redux';
 
+import {resetToChannel} from '@actions/navigation';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {ssoLogin} from '@actions/views/user';
 import {Client4} from '@client/rest';
+import {ViewTypes} from '@constants';
 import emmProvider from '@init/emm_provider';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -15,9 +17,6 @@ import {DispatchFunc} from '@mm-redux/types/actions';
 import {ErrorApi} from '@mm-redux/types/client4';
 import type {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-
-import {resetToChannel} from 'app/actions/navigation';
-import {ViewTypes} from 'app/constants';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';

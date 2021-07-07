@@ -20,6 +20,7 @@ import {resetMomentLocale} from '@i18n';
 import {analytics} from '@init/analytics.ts';
 import {setupPermanentSidebar} from '@init/device';
 import PushNotifications from '@init/push_notifications';
+import mattermostManaged from '@mattermost-managed';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {General} from '@mm-redux/constants';
@@ -36,7 +37,6 @@ import {deleteFileCache} from '@utils/file';
 import {getDeviceTimezone} from '@utils/timezone';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';

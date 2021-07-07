@@ -20,14 +20,13 @@ import FormattedText from '@components/formatted_text';
 import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import mattermostManaged from '@mattermost-managed';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 const ANDROID_MAX_HEIGHT = 4096;
 const ANDROID_MAX_WIDTH = 4096;

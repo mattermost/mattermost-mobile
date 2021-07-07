@@ -4,8 +4,8 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 
-import Swiper from 'app/components/swiper';
-import {changeOpacity} from 'app/utils/theme';
+import Swiper from '@components/swiper';
+import {changeOpacity} from '@utils/theme';
 
 export default class DrawerSwiper extends Component {
     static propTypes = {

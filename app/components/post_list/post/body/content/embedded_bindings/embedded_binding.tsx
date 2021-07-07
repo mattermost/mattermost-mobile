@@ -7,8 +7,7 @@ import {View} from 'react-native';
 import type {AppBinding} from '@mm-redux/types/apps';
 import type {Theme} from '@mm-redux/types/preferences';
 import {copyAndFillBindings} from '@utils/apps';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';

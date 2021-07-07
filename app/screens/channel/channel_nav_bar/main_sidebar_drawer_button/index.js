@@ -4,8 +4,7 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import {getBadgeCount} from 'app/selectors/views';
+import {getBadgeCount} from '@selectors/views';
 
 import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 

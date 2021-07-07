@@ -5,9 +5,9 @@ import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import ProfilePicture from 'app/components/profile_picture';
-import {emptyFunction} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import ProfilePicture from '@components/profile_picture';
+import {emptyFunction} from '@utils/general';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class UserInfo extends PureComponent {
     static propTypes = {

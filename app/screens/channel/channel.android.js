@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
+import AnnouncementBanner from '@components/announcement_banner';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import NetworkIndicator from '@components/network_indicator';
@@ -12,8 +13,6 @@ import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
-
-import AnnouncementBanner from 'app/components/announcement_banner';
 
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';

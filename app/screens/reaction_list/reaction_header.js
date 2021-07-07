@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {NativeViewGestureHandler} from 'react-native-gesture-handler';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ReactionHeaderItem from './reaction_header_item';
 

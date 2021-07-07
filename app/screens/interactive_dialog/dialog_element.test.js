@@ -4,11 +4,10 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 
+import AutocompleteSelector from '@components/autocomplete_selector';
+import BoolSetting from '@components/widgets/settings/bool_setting';
+import RadioSetting from '@components/widgets/settings/radio_setting';
 import Preferences from '@mm-redux/constants/preferences';
-
-import AutocompleteSelector from 'app/components/autocomplete_selector';
-import BoolSetting from 'app/components/widgets/settings/bool_setting';
-import RadioSetting from 'app/components/widgets/settings/radio_setting';
 
 import DialogElement from './dialog_element.js';
 

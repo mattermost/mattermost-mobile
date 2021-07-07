@@ -3,9 +3,8 @@
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
+import CustomList from '@components/custom_list';
 import Preferences from '@mm-redux/constants/preferences';
-
-import CustomList from 'app/components/custom_list';
 
 import ChannelMembers from './channel_members';
 

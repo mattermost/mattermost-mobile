@@ -3,9 +3,8 @@
 
 import {combineReducers} from 'redux';
 
+import {ViewTypes} from '@constants';
 import {FileTypes, PostTypes} from '@mm-redux/action_types';
-
-import {ViewTypes} from 'app/constants';
 
 function handleCommentDraftChanged(state, action) {
     if (!action.rootId) {

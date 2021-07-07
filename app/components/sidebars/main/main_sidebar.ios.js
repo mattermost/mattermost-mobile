@@ -9,9 +9,8 @@ import {Dimensions, Keyboard} from 'react-native';
 
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from '@components/sidebars/drawer_layout/index.tsx';
 import {DeviceTypes, NavigationTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 import MainSidebarBase from './main_sidebar_base';
 

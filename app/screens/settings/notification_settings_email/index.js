@@ -13,8 +13,7 @@ import {
     getTheme,
 } from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-
-import {getNotificationProps} from 'app/utils/notify_props';
+import {getNotificationProps} from '@utils/notify_props';
 
 import NotificationSettingsEmail from './notification_settings_email';
 

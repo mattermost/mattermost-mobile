@@ -11,10 +11,10 @@ import {
     TapGestureHandler,
 } from 'react-native-gesture-handler';
 
-import {DeviceTypes} from 'app/constants';
-import mattermostManaged from 'app/mattermost_managed';
-import {hapticFeedback} from 'app/utils/general';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {DeviceTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
+import {hapticFeedback} from '@utils/general';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SlideUpPanelIndicator from './slide_up_panel_indicator';
 

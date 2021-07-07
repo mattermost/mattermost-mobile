@@ -3,9 +3,8 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {ViewTypes} from '@constants';
 import {GeneralTypes} from '@mm-redux/action_types';
-
-import {ViewTypes} from 'app/constants';
 
 export function handleServerUrlChanged(serverUrl) {
     return batchActions([

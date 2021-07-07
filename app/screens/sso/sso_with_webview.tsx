@@ -11,13 +11,12 @@ import urlParse from 'url-parse';
 
 import {popTopScreen} from '@actions/navigation';
 import {Client4} from '@client/rest';
+import Loading from '@components/loading';
+import StatusBar from '@components/status_bar';
+import {ViewTypes} from '@constants';
 import type {Theme} from '@mm-redux/types/preferences';
 import CookieManager, {Cookies} from '@react-native-cookies/cookies';
-
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import {ViewTypes} from 'app/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',

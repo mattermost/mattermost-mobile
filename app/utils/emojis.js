@@ -2,7 +2,7 @@
 
 /* eslint-disable */
 
-import {t} from 'app/utils/i18n';
+import {t} from '@utils/i18n';
 
 import emojis from '@utils/emoji.json';
 

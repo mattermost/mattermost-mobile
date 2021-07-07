@@ -10,10 +10,9 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {t} from 'app/utils/i18n';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {t} from '@utils/i18n';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class LoadMorePosts extends PureComponent {
     static propTypes = {

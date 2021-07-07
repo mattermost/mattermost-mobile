@@ -3,9 +3,8 @@
 
 import {combineReducers} from 'redux';
 
+import {ViewTypes} from '@constants';
 import {ChannelTypes, TeamTypes} from '@mm-redux/action_types';
-
-import {ViewTypes} from 'app/constants';
 
 function lastTeamId(state = '', action) {
     switch (action.type) {

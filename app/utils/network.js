@@ -7,9 +7,9 @@ import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from '@client/rest';
+import mattermostManaged from '@mattermost-managed';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 
 let certificate = '';
 let previousState;

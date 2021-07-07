@@ -3,7 +3,7 @@
 
 import AsyncStorage from '@react-native-community/async-storage';
 
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes} from '@constants';
 
 export async function setupPermanentSidebar() {
     if (DeviceTypes.IS_TABLET) {

@@ -13,13 +13,12 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-
 import {
     filterMembersInChannel,
     filterMembersNotInChannel,
     filterMembersInCurrentTeam,
     getMatchTermForAtMention,
-} from 'app/selectors/autocomplete';
+} from '@selectors/autocomplete';
 
 import AtMention from './at_mention';
 

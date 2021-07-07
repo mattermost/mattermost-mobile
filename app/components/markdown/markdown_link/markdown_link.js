@@ -13,12 +13,11 @@ import {dismissAllModals, popToRoot} from '@actions/navigation';
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
+import mattermostManaged from '@mattermost-managed';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {

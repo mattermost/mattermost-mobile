@@ -8,8 +8,7 @@ import {General} from '@mm-redux/constants';
 import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser, makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
-
-import {getChannelMembersForDm} from 'app/selectors/channel';
+import {getChannelMembersForDm} from '@selectors/channel';
 
 import ChannelIntro from './channel_intro';
 

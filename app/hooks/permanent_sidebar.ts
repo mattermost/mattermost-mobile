@@ -7,9 +7,8 @@ import {useEffect, useState} from 'react';
 import {useWindowDimensions} from 'react-native';
 
 import {DeviceTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 export function usePermanentSidebar() {
     const [permanentSidebar, setPermanentSidebar] = useState(DeviceTypes.IS_TABLET);

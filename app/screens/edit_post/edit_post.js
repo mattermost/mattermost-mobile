@@ -12,21 +12,20 @@ import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {dismissModal, setButtons} from '@actions/navigation';
+import Autocomplete from '@components/autocomplete';
+import ErrorText from '@components/error_text';
+import Loading from '@components/loading';
+import StatusBar from '@components/status_bar';
+import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
 import DEVICE from '@constants/device';
-
-import {dismissModal, setButtons} from 'app/actions/navigation';
-import Autocomplete from 'app/components/autocomplete';
-import ErrorText from 'app/components/error_text';
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {t} from 'app/utils/i18n';
-import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
+import {t} from '@utils/i18n';
+import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
+} from '@utils/theme';
 
 export default class EditPost extends PureComponent {
     static propTypes = {

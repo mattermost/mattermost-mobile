@@ -6,7 +6,7 @@ import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {TextInput} from 'react-native';
 
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 export default class TextInputWithLocalizedPlaceholder extends PureComponent {
     static propTypes = {

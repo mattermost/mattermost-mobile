@@ -4,9 +4,8 @@
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
+import RadioButtonGroup from '@components/radio_button';
 import Preferences from '@mm-redux/constants/preferences';
-
-import RadioButtonGroup from 'app/components/radio_button';
 
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
