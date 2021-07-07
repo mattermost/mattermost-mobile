@@ -118,7 +118,7 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             postEphemeralCallResponseForPost(callResp, errorMessage, post);
         }
         }
-    }), []);
+    }), [theme]);
 
     return (
         <Button
