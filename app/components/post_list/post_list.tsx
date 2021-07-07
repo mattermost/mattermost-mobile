@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef} from 'react';
+import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
 
@@ -34,6 +34,7 @@ type PostListProps = {
     currentTeamName: string;
     deepLinkURL?: string;
     extraData: never;
+    getPostThread: (rootId: string) => Promise<ActionResult>;
     handleSelectChannelByName: (channelName: string, teamName: string, errorHandler: (intl: typeof intlShape) => void, intl: typeof intlShape) => Promise<ActionResult>;
     highlightPinnedOrFlagged?: boolean;
     highlightPostId?: string;
@@ -43,7 +44,9 @@ type PostListProps = {
     location: string;
     onLoadMoreUp: () => void;
     postIds: string[];
+    refreshChannelWithRetry: (channelId: string) => Promise<ActionResult>;
     renderFooter: () => ReactElement | null;
+    rootId?: string;
     scrollViewNativeID?: string;
     serverURL: string;
     shouldRenderReplyButton?: boolean;
@@ -81,8 +84,9 @@ const styles = StyleSheet.create({
 const buildExtraData = makeExtraData();
 
 const PostList = ({
-    channelId, currentTeamName = '', closePermalink, deepLinkURL, extraData, handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl,
-    loadMorePostsVisible, location, onLoadMoreUp = emptyFunction, postIds = [], renderFooter = (() => null),
+    channelId, currentTeamName = '', closePermalink, deepLinkURL, extraData, getPostThread,
+    handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl, loadMorePostsVisible,
+    location, onLoadMoreUp = emptyFunction, postIds = [], refreshChannelWithRetry, renderFooter = (() => null), rootId,
     serverURL = '', setDeepLinkURL, showMoreMessagesButton, showPermalink, siteURL = '', scrollViewNativeID, shouldRenderReplyButton, testID, theme,
 }: PostListProps) => {
     const prevChannelId = useRef(channelId);
@@ -90,6 +94,7 @@ const PostList = ({
     const flatListRef = useRef<FlatList<never>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
+    const [refreshing, setRefreshing] = useState(false);
 
     const registerViewableItemsListener = useCallback((listener) => {
         onViewableItemsChangedListener.current = listener;
@@ -116,6 +121,18 @@ const PostList = ({
 
     const onPermalinkPress = (postId: string, teamName: string) => {
         showPermalink(intl, teamName, postId);
+    };
+
+    const onRefresh = async () => {
+        if (location === Screens.CHANNEL && channelId) {
+            setRefreshing(true);
+            await refreshChannelWithRetry(channelId);
+            setRefreshing(false);
+        } else if (location === Screens.THREAD && rootId) {
+            setRefreshing(true);
+            await getPostThread(rootId);
+            setRefreshing(false);
+        }
     };
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
@@ -283,17 +300,14 @@ const PostList = ({
         }
     }, [initialIndex, highlightPostId]);
 
-    let refreshControl;
-    if (location === Screens.PERMALINK) {
-        // Hack so that the scrolling the permalink does not dismisses the modal screens
-        refreshControl = (
-            <RefreshControl
-                refreshing={false}
-                enabled={Platform.OS === 'ios'}
-                colors={[theme.centerChannelColor]}
-                tintColor={theme.centerChannelColor}
-            />);
-    }
+    const refreshControl = useMemo(() => (
+        <RefreshControl
+            refreshing={refreshing}
+            colors={[theme.onlineIndicator, theme.awayIndicator, theme.dndIndicator]}
+            tintColor={theme.centerChannelColor}
+            onRefresh={onRefresh}
+        />
+    ), [refreshing, theme]);
 
     return (
         <>
