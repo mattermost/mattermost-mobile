@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {Alert} from 'react-native';
+import {Alert, FlatList} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 import {useSelector, useDispatch} from 'react-redux';
 
@@ -34,24 +34,38 @@ function GlobalThreadsList({intl}: Props) {
     const threadCount = useSelector((state:GlobalState) => getTeamThreadCounts(state, teamId));
     const haveUnreads = threadCount?.total_unread_threads > 0;
 
+    const listRef = React.useRef<FlatList>(null);
+
+    const [isLoading, setIsLoading] = React.useState<boolean>(true);
+
     const loadThreads = React.useCallback(async (before = '', after = '', unread = false) => {
+        setIsLoading(true);
         await dispatch(getThreads(userId, teamId, before, after, undefined, false, unread));
-    }, []);
+        setIsLoading(false);
+    }, [teamId]);
 
     React.useEffect(() => {
+        // Loads on mount, Loads on team change
         loadThreads('', ids[0]);
-    }, []);
+    }, [loadThreads, teamId]);
 
-    // Prevent from being called when an active request is pending
+    // Prevent from being called when an active request is pending.
     const isLoadingMoreThreads = React.useRef<boolean>(false);
     const loadMoreThreads = React.useCallback(async () => {
         if (
             !isLoadingMoreThreads.current &&
             ids.length &&
-
-            // No more threads to load condition
-            threadCount.total && threadCount.total !== allThreadIds.length
+            threadCount.total
         ) {
+            // Check if we have more threads to load.
+            if (viewingUnreads) {
+                if (threadCount.total_unread_threads === unreadThreadIds.length) {
+                    return;
+                }
+            } else if (threadCount.total === allThreadIds.length) {
+                return;
+            }
+
             // Get the last thread, send request for threads after this thread.
             const lastThreadId = ids[ids.length - 1];
             isLoadingMoreThreads.current = true;
@@ -61,16 +75,18 @@ function GlobalThreadsList({intl}: Props) {
                 isLoadingMoreThreads.current = false;
             }
         }
-    }, [allThreadIds, ids, viewingUnreads]);
+    }, [allThreadIds, ids, loadThreads, unreadThreadIds, viewingUnreads]);
 
     const handleViewAllThreads = React.useCallback(() => {
         isLoadingMoreThreads.current = false;
+        listRef.current?.scrollToOffset({offset: 0});
         loadThreads('', allThreadIds[0], false);
         dispatch(handleViewingGlobalThreadsAll());
     }, [loadThreads, allThreadIds]);
 
     const handleViewUnreadThreads = React.useCallback(() => {
         isLoadingMoreThreads.current = false;
+        listRef.current?.scrollToOffset({offset: 0});
         loadThreads('', unreadThreadIds[0], true);
         dispatch(handleViewingGlobalThreadsUnreads());
     }, [loadThreads, unreadThreadIds]);
@@ -107,6 +123,8 @@ function GlobalThreadsList({intl}: Props) {
     return (
         <ThreadList
             haveUnreads={haveUnreads}
+            isLoading={isLoading}
+            listRef={listRef}
             loadMoreThreads={loadMoreThreads}
             markAllAsRead={markAllAsRead}
             testID={'global_threads'}

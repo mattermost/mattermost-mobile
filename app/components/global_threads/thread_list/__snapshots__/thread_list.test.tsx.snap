@@ -14,7 +14,6 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
         Object {
           "alignItems": "center",
           "flexDirection": "row",
-          "height": 64,
         },
         Object {
           "borderBottomColor": "rgba(61,60,64,0.08)",
@@ -29,6 +28,8 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
           "alignItems": "center",
           "flexDirection": "row",
           "flexGrow": 1,
+          "marginVertical": 12,
+          "paddingLeft": 12,
         }
       }
     >
@@ -40,7 +41,6 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
           style={
             Array [
               Object {
-                "marginLeft": 16,
                 "paddingHorizontal": 16,
                 "paddingVertical": 8,
               },
@@ -75,7 +75,6 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
           style={
             Array [
               Object {
-                "marginLeft": 16,
                 "paddingHorizontal": 16,
                 "paddingVertical": 8,
               },
@@ -114,6 +113,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
                   "height": 6,
                   "position": "absolute",
                   "right": -6,
+                  "top": 4,
                   "width": 6,
                 }
               }
@@ -138,11 +138,14 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
         <Icon
           name="playlist-check"
           style={
-            Object {
-              "color": "rgba(61,60,64,0.56)",
-              "fontSize": 28,
-              "lineHeight": 28,
-            }
+            Array [
+              Object {
+                "color": "rgba(61,60,64,0.56)",
+                "fontSize": 28,
+                "lineHeight": 28,
+              },
+              undefined,
+            ]
           }
         />
       </ForwardRef>
@@ -181,6 +184,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
         isUnreads={true}
       />
     }
+    ListFooterComponent={null}
     contentContainerStyle={
       Object {
         "flexGrow": 1,
@@ -199,9 +203,14 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     numColumns={1}
     onEndReached={[Function]}
     onEndReachedThreshold={2}
-    removeClippedSubviews={false}
+    removeClippedSubviews={true}
     renderItem={[Function]}
     scrollEventThrottle={50}
+    scrollIndicatorInsets={
+      Object {
+        "right": 1,
+      }
+    }
     updateCellsBatchingPeriod={50}
     windowSize={21}
   />

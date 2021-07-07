@@ -169,7 +169,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             paddingTop: 16,
-            paddingBottom: 16,
             paddingRight: 16,
             flex: 1,
             flexDirection: 'row',
@@ -217,7 +216,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 10,
             fontWeight: '600',
             lineHeight: 16,
-            letterSpacing: 1.01,
+            letterSpacing: 0.1,
             textTransform: 'uppercase',
             marginLeft: 6,
             marginRight: 6,
@@ -233,7 +232,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
             lineHeight: 20,
-            marginBottom: 9,
         },
         unreadDot: {
             width: 8,

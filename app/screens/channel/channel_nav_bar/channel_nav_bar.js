@@ -52,10 +52,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'flex-start',
             width: '90%',
         },
-        text: {
+        threadsTitle: {
             color: theme.sidebarHeaderTextColor,
             fontSize: 18,
-            fontWeight: '800',
+            fontWeight: '600',
             textAlign: 'center',
         },
     };
@@ -147,7 +147,7 @@ const ChannelNavBar = (props) => {
             <Text
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={style.text}
+                style={style.threadsTitle}
             >
                 <FormattedText
                     numberOfLines={1}

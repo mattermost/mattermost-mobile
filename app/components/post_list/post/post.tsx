@@ -70,14 +70,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
         },
         highlightPinnedOrFlagged: {backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2)},
-        footerContainer: {
-            marginTop: 6,
-            marginBottom: 9,
-        },
         badgeContainer: {
             position: 'absolute',
             left: 28,
-            bottom: 14,
+            bottom: 9,
         },
         unreadDot: {
             width: 8,
@@ -256,14 +252,12 @@ const Post = ({
     let footer;
     if (collapsedThreadsEnabled && Boolean(thread) && post.state !== Posts.POST_DELETED) {
         footer = (
-            <View style={style.footerContainer}>
-                <ThreadFooter
-                    testID={`${itemTestID}.footer`}
-                    thread={thread}
-                    threadStarter={threadStarter}
-                    location='channel'
-                />
-            </View>
+            <ThreadFooter
+                testID={`${itemTestID}.footer`}
+                thread={thread}
+                threadStarter={threadStarter}
+                location='channel'
+            />
         );
     }
 

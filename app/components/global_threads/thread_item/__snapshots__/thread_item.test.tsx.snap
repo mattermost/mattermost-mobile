@@ -13,7 +13,6 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         "borderBottomWidth": 1,
         "flex": 1,
         "flexDirection": "row",
-        "paddingBottom": 16,
         "paddingRight": 16,
         "paddingTop": 16,
       }
@@ -99,7 +98,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
                   "color": "#3d3c40",
                   "fontSize": 10,
                   "fontWeight": "600",
-                  "letterSpacing": 1.01,
+                  "letterSpacing": 0.1,
                   "lineHeight": 16,
                   "marginBottom": 2,
                   "marginLeft": 6,
@@ -128,7 +127,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
             "color": "#3d3c40",
             "fontSize": 15,
             "lineHeight": 20,
-            "marginBottom": 9,
+            "marginBottom": 0,
           }
         }
       >
@@ -164,7 +163,6 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         "borderBottomWidth": 1,
         "flex": 1,
         "flexDirection": "row",
-        "paddingBottom": 16,
         "paddingRight": 16,
         "paddingTop": 16,
       }
@@ -264,7 +262,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
                   "color": "#3d3c40",
                   "fontSize": 10,
                   "fontWeight": "600",
-                  "letterSpacing": 1.01,
+                  "letterSpacing": 0.1,
                   "lineHeight": 16,
                   "marginBottom": 2,
                   "marginLeft": 6,
@@ -293,7 +291,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
             "color": "#3d3c40",
             "fontSize": 15,
             "lineHeight": 20,
-            "marginBottom": 9,
+            "marginBottom": 0,
           }
         }
       >

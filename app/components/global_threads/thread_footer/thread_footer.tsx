@@ -19,6 +19,8 @@ import {UserProfile} from '@mm-redux/types/users';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+const NO_PARTICIPANTS: object[] = [];
+
 type Props = {
     intl: typeof intlShape;
     testID: string;
@@ -126,19 +128,25 @@ function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
     }
 
     // threadstarter should be the first one in the avatars list
-    const participants = thread.participants?.flatMap((participant) => (participant.id === threadStarter?.id ? [] : participant.id));
+    const participants = thread.participants?.flatMap((participant) => (participant.id === threadStarter?.id ? [] : participant.id)) || NO_PARTICIPANTS;
     participants?.unshift(threadStarter?.id);
     let avatars;
-    if (participants?.length) {
+    if (participants.length) {
         avatars = (
-            <View style={style.avatarsContainer}>
-                <Avatars userIds={participants}/>
-            </View>
+            <Avatars
+                style={style.avatarsContainer}
+                userIds={participants}
+            />
         );
     }
 
+    // Hide footer, when user follows and then unfollows a thread without any replies
+    if (location === 'channel' && !participants.length && thread.reply_count && !thread.is_following) {
+        return null;
+    }
+
     return (
-        <View style={style.footerContainer}>
+        <View style={style.container}>
             {avatars}
             {replyIcon}
             {repliesComponent}
@@ -155,12 +163,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 
     return {
-        footerContainer: {
+        container: {
             flexDirection: 'row',
             alignItems: 'center',
+            minHeight: 40,
         },
         avatarsContainer: {
             marginRight: 12,
+            paddingVertical: 8,
         },
         replyIconContainer: {
             top: -1,
@@ -170,12 +180,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 12,
+            fontWeight: '600',
             marginRight: 12,
         },
         unreadReplies: {
             alignSelf: 'center',
             color: theme.sidebarTextActiveBorder,
             fontSize: 12,
+            fontWeight: '600',
             marginRight: 12,
         },
         notFollowingButtonContainer: {
@@ -189,11 +201,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         followingButtonContainer: {
             ...followingButtonContainerBase,
-            backgroundColor: changeOpacity(theme.sidebarTextActiveBorder, 0.08),
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
             borderRadius: 4,
         },
         following: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
+            color: theme.buttonBg,
             fontWeight: '600',
             fontSize: 12,
         },

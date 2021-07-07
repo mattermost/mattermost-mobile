@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {FlatList} from 'react-native';
 import * as redux from 'react-redux';
 import {shallow} from 'enzyme';
 
@@ -12,6 +13,9 @@ import ThreadList from './thread_list';
 
 jest.mock('app/components/compass_icon', () => 'Icon');
 jest.spyOn(redux, 'useSelector').mockImplementation((callback) => callback(initialState));
+jest.spyOn(React, 'useRef').mockReturnValue({
+    current: {},
+});
 
 describe('Global Thread List', () => {
     const testID = 'thread_list';
@@ -23,6 +27,8 @@ describe('Global Thread List', () => {
     const baseProps = {
         haveUnreads: true,
         intl,
+        isLoading: false,
+        listRef: React.useRef<FlatList>(null),
         loadMoreThreads: jest.fn(),
         markAllAsRead,
         testID,
