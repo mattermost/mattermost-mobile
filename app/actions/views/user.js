@@ -4,6 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {NavigationTypes} from 'app/constants';
+import {handleCRTPreferenceChange} from '@actions/websocket/preferences';
 import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
@@ -151,6 +152,7 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             if (!skipDispatch) {
                 dispatch(batchActions(actions, 'BATCH_LOAD_ME'));
             }
+            dispatch(handleCRTPreferenceChange(state));
         } catch (error) {
             console.log('login error', error.stack); // eslint-disable-line no-console
             return {error};
