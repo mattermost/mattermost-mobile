@@ -61,9 +61,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 4,
         },
         rowUsername: {
-            color: theme.centerChannelColor,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
             fontSize: 15,
-            opacity: 0.56,
         },
     };
 });
@@ -123,27 +122,29 @@ const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared,
                         show={isGuest}
                         theme={theme}
                     />
-                    {Boolean(name.length) && (
-                        <Text
-                            style={style.rowFullname}
-                            numberOfLines={1}
-                            testID='at_mention_item.name'
-                        >
-                            {name}
-                        </Text>
-                    )}
                     <Text
-                        style={style.rowUsername}
                         numberOfLines={1}
-                        testID='at_mention_item.username'
                     >
-                        {isCurrentUser && (
-                            <FormattedText
-                                id='suggestion.mention.you'
-                                defaultMessage='(you)'
-                            />
+                        {Boolean(name.length) && (
+                            <Text
+                                style={style.rowFullname}
+                                testID='at_mention_item.name'
+                            >
+                                {name}
+                            </Text>
                         )}
-                        {` @${username}`}
+                        <Text
+                            style={style.rowUsername}
+                            testID='at_mention_item.username'
+                        >
+                            {isCurrentUser && (
+                                <FormattedText
+                                    id='suggestion.mention.you'
+                                    defaultMessage='(you)'
+                                />
+                            )}
+                            {` @${username}`}
+                        </Text>
                     </Text>
                 </View>
                 {isCustomStatusEnabled && !isBot && (
