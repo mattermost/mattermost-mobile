@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Keyboard} from 'react-native';
+
 import {getAddedDmUsersIfNecessary} from '@actions/helpers/channels';
-import {dismissAllModals} from '@actions/navigation';
+import {dismissAllModals, popToRoot} from '@actions/navigation';
 import {purgeOfflineStore} from '@actions/views/root';
 import {getPost} from '@actions/views/post';
+import {NavigationTypes} from '@constants';
 import {PreferenceTypes} from '@mm-redux/action_types';
 import {Preferences} from '@mm-redux/constants';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
@@ -13,6 +16,8 @@ import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} f
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
 
 export function handlePreferenceChangedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
@@ -73,8 +78,17 @@ export function handleCRTPreferenceChange(oldState: GlobalState) {
         // Check for the changes in CRT preferences.
         if (isCollapsedThreadsEnabled(oldState) !== isCollapsedThreadsEnabled(newState)) {
             // Clear the data and restart the app.
-            await dismissAllModals();
-            dispatch(purgeOfflineStore());
+            Keyboard.dismiss();
+            requestAnimationFrame(async () => {
+                const componentId = EphemeralStore.getNavigationTopComponentId();
+                if (componentId) {
+                    EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+                    EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+                    await dismissAllModals();
+                    await popToRoot();
+                }
+                dispatch(purgeOfflineStore());
+            });
         }
         return {data: true};
     };

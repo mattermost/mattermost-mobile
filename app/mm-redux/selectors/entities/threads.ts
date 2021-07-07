@@ -70,7 +70,7 @@ export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<User
     getThreads,
     (threadsInTeam, threads) => {
         const ids = threadsInTeam.filter((id) => {
-            return threads[id].is_following;
+            return threads[id]?.is_following;
         });
         return sortByLastReply(ids, threads);
     },
@@ -82,7 +82,7 @@ export const getUnreadThreadOrderInCurrentTeam: (state: GlobalState) => Array<$I
     (threadsInTeam, threads) => {
         const ids = threadsInTeam.filter((id) => {
             const thread = threads[id];
-            return thread.unread_mentions || thread.unread_replies;
+            return thread?.unread_mentions || thread?.unread_replies;
         });
 
         return sortByLastReply(ids, threads);
