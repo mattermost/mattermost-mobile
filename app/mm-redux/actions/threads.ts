@@ -36,7 +36,7 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                         team_id: teamId,
 
                         // Clear threads only when threads are loaded on launch
-                        removeOldThreads: !before && !after && !unread,
+                        removeOldThreads: !before && !after && !unread && since === 0,
                     },
                 },
             ];
