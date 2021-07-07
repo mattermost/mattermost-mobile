@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {IntlShape} from 'react-intl';
 
 import {Theme} from '@mm-redux/types/preferences';
@@ -57,6 +57,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 4.5,
             paddingHorizontal: 10,
             opacity: 0.72,
+            marginLeft: 12,
+            ...Platform.select({
+                android: {
+                    marginRight: 12,
+                },
+                ios: {
+                    right: -8,
+                },
+            }),
         },
         containerActive: {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.24),

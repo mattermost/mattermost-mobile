@@ -521,6 +521,8 @@
   "mobile.routes.sso": "Single Sign-On",
   "mobile.routes.table": "Table",
   "mobile.routes.thread": "{channelName} Thread",
+  "mobile.routes.thread_crt": "Thread",
+  "mobile.routes.thread_crt.in": "in {channelName}",
   "mobile.routes.thread_dm": "Direct Message Thread",
   "mobile.routes.user_profile": "Profile",
   "mobile.routes.user_profile.edit": "Edit",

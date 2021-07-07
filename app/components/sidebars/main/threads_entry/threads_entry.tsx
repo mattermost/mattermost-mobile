@@ -97,7 +97,7 @@ const ThreadsSidebarEntry = ({intl}: Props) => {
             underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
             onPress={onPress}
         >
-            <View style={style.container} >
+            <View style={[style.container, extraStyle.container]}>
                 {border}
                 <View style={itemStyle} >
                     <View style={extraStyle.iconContainer}>
@@ -125,6 +125,9 @@ const ThreadsSidebarEntry = ({intl}: Props) => {
 
 const getExtraStyleSheet = makeStyleFromTheme((theme: Theme) => {
     return {
+        container: {
+            marginTop: 16,
+        },
         iconContainer: {
             alignItems: 'center',
         },

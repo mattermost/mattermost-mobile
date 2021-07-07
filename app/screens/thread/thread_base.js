@@ -56,23 +56,18 @@ export default class ThreadBase extends PureComponent {
 
         const options = {};
 
-        if (channelType === General.DM_CHANNEL) {
+        if (props.collapsedThreadsEnabled) {
+            let titleText;
+            if (channelType === General.DM_CHANNEL) {
+                titleText = formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
+            } else {
+                titleText = formatMessage({id: 'mobile.routes.thread_crt', defaultMessage: 'Thread'});
+            }
             options.topBar = {
                 title: {
-                    text: formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'}),
-                },
-            };
-        } else if (props.collapsedThreadsEnabled) {
-            options.topBar = {
-                title: {
-                    text: 'Thread',
+                    text: titleText,
                     fontSize: 18,
                     fontWeight: '600',
-                    color: theme.sidebarHeaderTextColor,
-                },
-                subtitle: {
-                    text: 'in UX Design',
-                    fontSize: 13,
                     color: theme.sidebarHeaderTextColor,
                 },
                 rightButtons: [
@@ -91,6 +86,13 @@ export default class ThreadBase extends PureComponent {
                     },
                 ],
             };
+            if (channelType !== General.DM_CHANNEL) {
+                options.topBar.subtitle = {
+                    text: formatMessage({id: 'mobile.routes.thread_crt.in', defaultMessage: 'in {channelName}'}, {channelName: displayName}),
+                    fontSize: 13,
+                    color: theme.sidebarHeaderTextColor,
+                };
+            }
         } else {
             options.topBar = {
                 title: {
