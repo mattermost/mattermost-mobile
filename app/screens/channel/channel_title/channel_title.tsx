@@ -42,7 +42,6 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
     }, [config]);
 
     useEffect(() => {
-        //fixme:  rename method name
         const setup = async () => {
             if (channel.type === General.DM_CHANNEL) {
                 const teammate_id = getUserIdFromChannelName(user.id, channel.name);
@@ -99,10 +98,7 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
         } else if (channelType === General.GM_CHANNEL) {
             messageId = t('channel.hasGuests');
             defaultMessage = 'This group message has guests';
-        } else if (
-            channelType === General.OPEN_CHANNEL ||
-            channelType === General.PRIVATE_CHANNEL
-        ) {
+        } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
             messageId = t('channel.channelHasGuests');
             defaultMessage = 'This channel has guests';
         } else {
@@ -186,10 +182,8 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
         channelIcon = (
             <ChannelIcon
                 isActive={true}
-                isArchived={false}
-                isBot={false}
-                size={18}
                 shared={isChannelShared}
+                size={18}
                 style={style.channelIconContainer}
                 theme={theme}
                 type={channelType}

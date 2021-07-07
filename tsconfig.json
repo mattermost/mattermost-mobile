@@ -42,6 +42,7 @@
             "@database/*": ["app/database/*"],
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
+            "@hooks/*": ["app/hooks/*"],
             "@notifications": ["app/notifications/index"],
             "@queries/*": ["app/queries/*"],
             "@requests/*": ["app/requests/*"],

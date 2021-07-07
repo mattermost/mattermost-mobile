@@ -41,3 +41,7 @@ export const getCommonSystemValues = async (database: Database) => {
 export const queryCommonSystemValues = (database: Database) => {
     return database.collections.get(SYSTEM).query(Q.where('id', Q.oneOf(['config', 'license', 'currentUserId'])));
 };
+
+export const queryCurrentUserId = (database: Database) => {
+    return database.collections.get(SYSTEM).findAndObserve('currentUserId');
+};

@@ -27,6 +27,7 @@ module.exports = {
                 '@database': './app/database',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
+                '@hooks': './app/hooks',
                 '@notifications': './app/notifications',
                 '@queries': './app/queries',
                 '@requests': './app/requests',
