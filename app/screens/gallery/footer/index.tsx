@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Clipboard from '@react-native-community/clipboard';
+
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
 import {injectIntl} from 'react-intl';
 import {Animated, Easing, StyleSheet} from 'react-native';
@@ -9,7 +11,6 @@ import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, Foot
 import {Client4} from '@client/rest';
 import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import Clipboard from '@react-native-community/clipboard';
 
 import PrepareFile from './prepare_file';
 import Summary from './summary';

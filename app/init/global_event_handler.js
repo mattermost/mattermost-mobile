@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import {AppState, Dimensions, Linking, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
@@ -27,7 +29,6 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from '@react-native-cookies/cookies';
 import initialState from '@store/initial_state';
 import Store from '@store/store';

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 import {Dimensions, Platform, View} from 'react-native';
@@ -8,7 +10,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {DeviceTypes, ViewTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import AsyncStorage from '@react-native-community/async-storage';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import mattermostManaged from 'app/mattermost_managed';

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Clipboard from '@react-native-community/clipboard';
+
 import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
@@ -18,7 +20,6 @@ import FormattedText from '@components/formatted_text';
 import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import Clipboard from '@react-native-community/clipboard';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';

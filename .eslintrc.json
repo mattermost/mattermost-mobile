@@ -56,6 +56,11 @@
         "newlines-between": "always",
         "pathGroups": [
           {
+            "pattern": "{@react-native-community/**, @react-native-cookies/**, @react-navigation/**, @rudderstack/**, @sentry/**}",
+            "group": "external",
+            "position": "before"
+          },
+          {
             "pattern": "@{**,*/**}",
             "group": "external",
             "position": "after"

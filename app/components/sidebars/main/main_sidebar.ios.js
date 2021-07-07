@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Dimensions, Keyboard} from 'react-native';
@@ -8,7 +10,6 @@ import {Dimensions, Keyboard} from 'react-native';
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from '@components/sidebars/drawer_layout/index.tsx';
 import {DeviceTypes, NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import AsyncStorage from '@react-native-community/async-storage';
 
 import mattermostManaged from 'app/mattermost_managed';
 

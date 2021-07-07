@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -12,7 +14,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import AsyncStorage from '@react-native-community/async-storage';
 
 import StatusBar from 'app/components/status_bar';
 import {DeviceTypes} from 'app/constants';

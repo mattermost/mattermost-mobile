@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Clipboard from '@react-native-community/clipboard';
+
 import PropTypes from 'prop-types';
 import React, {Children, PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -11,7 +13,6 @@ import {dismissAllModals, popToRoot} from '@actions/navigation';
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
-import Clipboard from '@react-native-community/clipboard';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';

@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import {PureComponent} from 'react';
 import {Dimensions} from 'react-native';
 
 import {DeviceTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import AsyncStorage from '@react-native-community/async-storage';
 
 import mattermostManaged from 'app/mattermost_managed';
 
