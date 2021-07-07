@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import shallowEqual from 'shallow-equals';
+
 import Preferences from '@constants/preferences';
 
 export function emptyFunction(e?: any) {// eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
@@ -38,3 +40,22 @@ export const parseTheme = (theme: string) => {
     }
     return parsedTheme;
 };
+
+export function memoizeResult<F extends Function>(func: F): any {
+    let lastArgs: IArguments | null = null;
+    let lastResult: any = null;
+
+    // we reference arguments instead of spreading them for performance reasons
+    return function shallowCompare() {
+        if (!shallowEqual(lastArgs, arguments)) {//eslint-disable-line prefer-rest-params
+            // apply arguments instead of spreading for performance.
+            const result = Reflect.apply(func, null, arguments); //eslint-disable-line prefer-rest-params
+            if (!shallowEqual(lastResult, result)) {
+                lastResult = result;
+            }
+        }
+
+        lastArgs = arguments; //eslint-disable-line prefer-rest-params
+        return lastResult;
+    };
+}

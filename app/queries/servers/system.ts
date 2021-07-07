@@ -36,3 +36,8 @@ export const getCommonSystemValues = async (database: Database) => {
         license,
     };
 };
+
+//fixme:  you can merge this one with queryCommonSystemValues
+export const queryCommonSystemValues = (database: Database) => {
+    return database.collections.get(SYSTEM).query(Q.where('id', Q.oneOf(['config', 'license', 'currentUserId'])));
+};
