@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {mergeNavigationOptions} from 'app/actions/navigation';
 import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import * as ThemeUtils from '@mm-redux/utils/theme_utils';
-
-import {mergeNavigationOptions} from 'app/actions/navigation';
 
 const MODAL_SCREENS_WITHOUT_BACK = [
     'AddReaction',

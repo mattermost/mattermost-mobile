@@ -4,15 +4,14 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {injectIntl} from 'react-intl';
 import {Alert, Platform, View} from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 import {TapGestureHandler, State, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
 import Video, {OnLoadData, OnProgressData} from 'react-native-video';
-
-import {DeviceTypes} from '@constants';
-import {Client4} from '@client/rest';
-import {getLocalPath} from '@utils/file';
-
+import RNFetchBlob from 'rn-fetch-blob';
 import {GalleryItemProps} from 'types/screens/gallery';
+
+import {Client4} from '@client/rest';
+import {DeviceTypes} from '@constants';
+import {getLocalPath} from '@utils/file';
 
 import VideoControls, {VideoControlsRef} from './video_controls';
 

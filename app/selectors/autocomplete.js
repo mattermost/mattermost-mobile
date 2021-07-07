@@ -1,20 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as Autocomplete from 'app/constants/autocomplete';
+import {getCurrentLocale} from 'app/selectors/i18n';
 import {createSelector} from 'reselect';
 
 import {General} from '@mm-redux/constants';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyChannels, getOtherChannels} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {
     getCurrentUser, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
 } from '@mm-redux/selectors/entities/users';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {sortByUsername} from '@mm-redux/utils/user_utils';
-
-import * as Autocomplete from 'app/constants/autocomplete';
-import {getCurrentLocale} from 'app/selectors/i18n';
 
 export const getMatchTermForAtMention = (() => {
     let lastMatchTerm = null;

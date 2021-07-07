@@ -8,13 +8,12 @@ import parseUrl from 'url-parse';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import EphemeralStore from '@store/ephemeral_store';
-import {calculateDimensions, isGifTooLarge} from '@utils/images';
-import {openGalleryAtIndex} from '@utils/gallery';
-import {generateId} from '@utils/file';
-
-import type {PostImage} from '@mm-redux/types/posts';
 import {FileInfo} from '@mm-redux/types/files';
+import type {PostImage} from '@mm-redux/types/posts';
+import EphemeralStore from '@store/ephemeral_store';
+import {generateId} from '@utils/file';
+import {openGalleryAtIndex} from '@utils/gallery';
+import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
 type MarkdownTableImageProps = {
     disable: boolean;

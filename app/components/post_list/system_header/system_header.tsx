@@ -4,18 +4,17 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import FormattedTime from '@components/formatted_time';
 import FormattedText from '@components/formatted_text';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
+import FormattedTime from '@components/formatted_time';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {UserTimezone} from '@mm-redux/types/users';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     createAt: number | string | Date;
     isMilitaryTime: boolean;
     theme: Theme;
-    userTimezone: UserTimezone | string | null | undefined
+    userTimezone: UserTimezone | string | null | undefined;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

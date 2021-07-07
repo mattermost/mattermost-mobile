@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
@@ -9,6 +8,7 @@ import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@mm-redux/constants';
 import type {Channel} from '@mm-redux/types/channels';
+import {useNavigation} from '@react-navigation/native';
 import {changeOpacity} from '@utils/theme';
 
 interface ChannelButtonProps {

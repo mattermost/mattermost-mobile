@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import FormattedText from '@components/formatted_text';
-
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import LoginOptions from './login_options';
 

@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import AttachmentButton from 'app/components/attachment_button';
+import {t} from 'app/utils/i18n';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 
 import {Client4} from '@client/rest';
-
-import {t} from 'app/utils/i18n';
-
-import AttachmentButton from 'app/components/attachment_button';
 
 export default class ProfilePictureButton extends PureComponent {
     static propTypes = {

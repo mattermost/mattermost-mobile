@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isLandscape} from 'app/selectors/device';
 import {connect} from 'react-redux';
 
-import {isLandscape} from 'app/selectors/device';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import ChannelNavBar from './channel_nav_bar';

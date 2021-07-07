@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getBadgeCount} from 'app/selectors/views';
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {getBadgeCount} from 'app/selectors/views';
 import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 
 function mapStateToProps(state) {

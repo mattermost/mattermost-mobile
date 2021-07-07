@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {TouchableHighlight} from 'react-native';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelItem from './channel_item';
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useNetInfo} from '@react-native-community/netinfo';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, AppState, AppStateStatus, Platform, StyleSheet, View} from 'react-native';
 import Animated, {Easing, interpolateColor, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -14,6 +13,7 @@ import PushNotifications from '@init/push_notifications';
 import {debounce} from '@mm-redux/actions/helpers';
 import {RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {useNetInfo} from '@react-native-community/netinfo';
 import {t} from '@utils/i18n';
 import networkConnectionListener, {checkConnection} from '@utils/network';
 
@@ -33,7 +33,7 @@ type AppStateCallBack = (appState: AppStateStatus) => Promise<void>;
 
 type ConnectionChangedEvent = {
     hasInternet: boolean;
-    serverReachable: boolean
+    serverReachable: boolean;
 };
 
 const MAX_WEBSOCKET_RETRIES = 3;

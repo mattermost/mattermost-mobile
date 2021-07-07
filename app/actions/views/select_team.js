@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getCurrentLocale} from 'app/selectors/i18n';
 import {batchActions} from 'redux-batched-actions';
 
 import {lastChannelIdForTeam} from '@actions/helpers/channels';
@@ -10,7 +11,6 @@ import {getMyTeams} from '@mm-redux/actions/teams';
 import {Preferences, RequestStatus} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentLocale} from 'app/selectors/i18n';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {selectFirstAvailableTeam} from '@utils/teams';
 

@@ -8,14 +8,13 @@ import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {usePermanentSidebar, useSplitView} from '@hooks/permanent_sidebar';
+import type {PostImage} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 import {generateId} from '@utils/file';
-import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/images';
 import {openGallerWithMockFile} from '@utils/gallery';
+import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {isValidUrl} from '@utils/url';
-
-import type {Theme} from '@mm-redux/types/preferences';
-import type {PostImage} from '@mm-redux/types/posts';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

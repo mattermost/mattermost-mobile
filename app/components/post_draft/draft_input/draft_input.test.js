@@ -6,6 +6,7 @@ import {Alert} from 'react-native';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+
 import DraftInput from './draft_input';
 
 jest.useFakeTimers();

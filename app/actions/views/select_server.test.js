@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleServerUrlChanged} from 'app/actions/views/select_server';
+import {ViewTypes} from 'app/constants';
 import {batchActions} from 'redux-batched-actions';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import {GeneralTypes} from '@mm-redux/action_types';
-
-import {ViewTypes} from 'app/constants';
-
-import {handleServerUrlChanged} from 'app/actions/views/select_server';
 
 const mockStore = configureStore([thunk]);
 

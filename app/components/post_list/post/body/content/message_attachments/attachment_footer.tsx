@@ -5,9 +5,8 @@ import React from 'react';
 import {Text, View, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     icon?: string;

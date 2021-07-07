@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import CustomList from 'app/components/custom_list';
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import {shallowWithIntl} from 'test/intl-test-helper';
-
-import CustomList from 'app/components/custom_list';
 import ChannelMembers from './channel_members';
 
 describe('ChannelMembers', () => {

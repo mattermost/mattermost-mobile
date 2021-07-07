@@ -8,13 +8,12 @@ import Animated from 'react-native-reanimated';
 import Markdown from '@components/markdown';
 import {SEARCH} from '@constants/screen';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
-import {isEdited, isPostPendingOrFailed} from '@mm-redux/utils/post_utils';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {UserMentionKey} from '@mm-redux/selectors/entities/users';
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
+import {isEdited, isPostPendingOrFailed} from '@mm-redux/utils/post_utils';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ShowMoreButton from './show_more_button';
 

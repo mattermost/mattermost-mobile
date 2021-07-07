@@ -3,11 +3,10 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
-import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
-
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import type {GlobalState} from '@mm-redux/types/store';
+import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 
 import DateSeparator from './date_separator';
 

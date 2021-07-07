@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import TestHelper from 'test/test_helper';
-import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 
 import {getCustomEmojiIdsSortedByName} from '@mm-redux/selectors/entities/emojis';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 
 describe('Selectors.Integrations', () => {
     TestHelper.initBasic();

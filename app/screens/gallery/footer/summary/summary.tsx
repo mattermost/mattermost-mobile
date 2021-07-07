@@ -4,7 +4,6 @@
 import React from 'react';
 import {Platform, StyleSheet, View, ViewStyle} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
 import type {SummaryProps} from 'types/screens/gallery';
 
 import Actions from './actions';

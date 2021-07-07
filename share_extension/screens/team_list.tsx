@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RouteProp, useFocusEffect, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useLayoutEffect} from 'react';
 import {BackHandler, FlatList, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
@@ -11,17 +10,17 @@ import {Preferences} from '@mm-redux/constants';
 import {getMyTeams} from '@mm-redux/selectors/entities/teams';
 import type {Team} from '@mm-redux/types/teams';
 import {sortTeamsWithLocale} from '@mm-redux/utils/team_utils';
+import {RouteProp, useFocusEffect, useNavigation, useRoute} from '@react-navigation/native';
 import {getCurrentLocale} from '@selectors/i18n';
-import {changeOpacity} from '@utils/theme';
-
 import TeamItem from '@share/components/team_item';
+import {changeOpacity} from '@utils/theme';
 
 type TeamListParams = {
     Teams: {
         currentTeamId?: string;
         onSelectTeam: (team: Team) => void;
         title: string;
-    }
+    };
 }
 
 type TeamListRoute = RouteProp<TeamListParams, 'Teams'>;

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 import {Alert, Platform} from 'react-native';
 
 import {setServerUrl} from '@actions/views/select_server';
@@ -9,9 +11,6 @@ import {getTranslations} from '@i18n';
 import {getCurrentLocale} from '@selectors/i18n';
 import Store from '@store/store';
 import {t} from '@utils/i18n';
-
-import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 
 import {getAppCredentials} from './credentials';
 

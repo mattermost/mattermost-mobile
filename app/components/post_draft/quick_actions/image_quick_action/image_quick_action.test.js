@@ -4,11 +4,11 @@
 import React from 'react';
 import {Alert, Platform, StatusBar} from 'react-native';
 import Permissions from 'react-native-permissions';
-import {fireEvent} from '@testing-library/react-native';
+import {renderWithIntl} from 'test/testing_library';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {fireEvent} from '@testing-library/react-native';
 import * as PermissionUtils from '@utils/permission';
-import {renderWithIntl} from 'test/testing_library';
 
 import ImageQuickAction from './index';
 

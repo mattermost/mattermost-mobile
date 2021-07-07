@@ -11,9 +11,8 @@ import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@mm-redux/constants';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 interface AtMentionItemProps {
     firstName: string;

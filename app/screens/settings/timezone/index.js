@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {updateUser} from 'app/actions/views/edit_profile';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
@@ -9,7 +10,6 @@ import {getSupportedTimezones as getTimezones} from '@mm-redux/selectors/entitie
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-import {updateUser} from 'app/actions/views/edit_profile';
 
 import Timezone from './timezone';
 

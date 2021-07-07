@@ -1,19 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
+import appReducer from 'app/reducers';
+import DeviceInfo from 'react-native-device-info';
 import * as redux from 'redux';
 import {createPersistoid, createTransform, persistReducer, persistStore, Persistor, PersistConfig} from 'redux-persist';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import DeviceInfo from 'react-native-device-info';
 
 import {General} from '@mm-redux/constants';
 import serviceReducer from '@mm-redux/reducers';
 import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
-
+import AsyncStorage from '@react-native-community/async-storage';
 import initialState from '@store/initial_state';
-import appReducer from 'app/reducers';
 
 import {createReducer, getStoredState} from './helpers';
 import {createMiddlewares} from './middlewares';

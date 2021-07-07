@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
+import EditChannelInfo from 'app/components/edit_channel_info';
+import {NavigationTypes} from 'app/constants';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     Keyboard,
@@ -12,10 +15,6 @@ import {Navigation} from 'react-native-navigation';
 
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
-import EditChannelInfo from 'app/components/edit_channel_info';
-import {NavigationTypes} from 'app/constants';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {

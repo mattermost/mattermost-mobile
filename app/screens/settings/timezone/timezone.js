@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
-import {
-    View,
-    Text,
-    Platform,
-} from 'react-native';
-import {intlShape} from 'react-intl';
-import {SafeAreaView} from 'react-native-safe-area-context';
-
-import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
-
-import FormattedText from '@components/formatted_text';
+import {goToScreen} from 'app/actions/navigation';
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getDeviceTimezone} from 'app/utils/timezone';
-import {goToScreen} from 'app/actions/navigation';
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
+import {
+    View,
+    Text,
+    Platform,
+} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
+import FormattedText from '@components/formatted_text';
+import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 
 export default class Timezone extends PureComponent {
     static propTypes = {

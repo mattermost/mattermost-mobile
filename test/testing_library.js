@@ -6,9 +6,9 @@ import {IntlProvider} from 'react-intl';
 import {Provider} from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import {render} from '@testing-library/react-native';
 
 import intitialState from '@store/initial_state';
+import {render} from '@testing-library/react-native';
 
 const mockStore = configureMockStore([thunk]);
 const defaultStore = mockStore(intitialState);

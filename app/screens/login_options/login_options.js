@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {GlobalStyles} from 'app/styles';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     Dimensions,
@@ -24,8 +25,6 @@ import {ViewTypes} from '@constants';
 import globalEventHandler from '@init/global_event_handler';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
-
-import {GlobalStyles} from 'app/styles';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {

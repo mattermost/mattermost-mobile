@@ -4,9 +4,9 @@
 /* eslint-disable max-nested-callbacks */
 
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import DateSeparator from './date_separator';
 

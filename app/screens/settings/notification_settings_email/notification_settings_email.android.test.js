@@ -1,13 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RadioButtonGroup from 'app/components/radio_button';
 import React from 'react';
-
-import Preferences from '@mm-redux/constants/preferences';
-
 import {shallowWithIntl} from 'test/intl-test-helper';
 
-import RadioButtonGroup from 'app/components/radio_button';
+import Preferences from '@mm-redux/constants/preferences';
 
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 

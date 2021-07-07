@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleSuccessfulLogin} from 'app/actions/views/login';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import {Client4} from '@client/rest';
-
-import {handleSuccessfulLogin} from 'app/actions/views/login';
 
 jest.mock('app/init/credentials', () => ({
     setAppCredentials: () => jest.fn(),

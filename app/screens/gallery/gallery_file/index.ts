@@ -4,7 +4,6 @@
 import {connect} from 'react-redux';
 
 import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
-
 import type {GlobalState} from '@mm-redux/types/store';
 
 import GalleryFile from './gallery_file';

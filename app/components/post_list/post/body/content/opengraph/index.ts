@@ -7,10 +7,9 @@ import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getOpenGraphMetadataForUrl as selectOpenGraphMetadataForUrl} from '@mm-redux/selectors/entities/posts';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
-
 import type {Post, PostMetadata} from '@mm-redux/types/posts';
-import type {GlobalState} from '@mm-redux/types/store';
 import type {Theme} from '@mm-redux/types/preferences';
+import type {GlobalState} from '@mm-redux/types/store';
 
 import Opengraph from './opengraph';
 

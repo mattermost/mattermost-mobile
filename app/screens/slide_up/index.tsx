@@ -4,12 +4,11 @@
 import React, {ReactElement, useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import {NavigationTypes} from '@constants';
-import SlideUpPanel from '@components/slide_up_panel';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import type {Theme} from '@mm-redux/types/preferences';
 import {dismissModal} from '@actions/navigation';
+import SlideUpPanel from '@components/slide_up_panel';
+import {NavigationTypes} from '@constants';
+import type {Theme} from '@mm-redux/types/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 type Props = {
     allowStayMiddle?: boolean;

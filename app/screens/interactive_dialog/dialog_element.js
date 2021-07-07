@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
-
-import BoolSetting from 'app/components/widgets/settings/bool_setting';
-import TextSetting from 'app/components/widgets/settings/text_setting';
 import AutocompleteSelector from 'app/components/autocomplete_selector';
+import BoolSetting from 'app/components/widgets/settings/bool_setting';
 import RadioSetting from 'app/components/widgets/settings/radio_setting';
+import TextSetting from 'app/components/widgets/settings/text_setting';
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;

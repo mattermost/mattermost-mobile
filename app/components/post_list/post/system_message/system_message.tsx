@@ -7,12 +7,11 @@ import {StyleProp, Text, ViewStyle} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {Posts} from '@mm-redux/constants';
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 import {t} from '@utils/i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 
 type SystemMessageProps = {
     intl: typeof intlShape;

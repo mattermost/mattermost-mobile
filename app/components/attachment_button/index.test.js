@@ -4,10 +4,10 @@
 import React from 'react';
 import {Alert, StatusBar} from 'react-native';
 import Permissions from 'react-native-permissions';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/edit_profile';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import AttachmentButton from './index';
 

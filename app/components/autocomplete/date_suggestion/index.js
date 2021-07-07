@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {makeGetMatchTermForDateMention} from 'app/selectors/autocomplete';
+import {getCurrentLocale} from 'app/selectors/i18n';
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import {makeGetMatchTermForDateMention} from 'app/selectors/autocomplete';
-import {getCurrentLocale} from 'app/selectors/i18n';
 
 import DateSuggestion from './date_suggestion';
 

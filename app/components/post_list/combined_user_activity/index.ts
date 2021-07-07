@@ -5,14 +5,13 @@ import {connect} from 'react-redux';
 
 import {Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUser, getUsernamesByUserId} from '@mm-redux/selectors/entities/users';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {makeGenerateCombinedPost} from '@mm-redux/utils/post_list';
-import {canDeletePost} from '@selectors/permissions';
-
+import {getCurrentUser, getUsernamesByUserId} from '@mm-redux/selectors/entities/users';
 import type {GlobalState} from '@mm-redux/types/store';
 import type {UserProfile} from '@mm-redux/types/users';
+import {makeGenerateCombinedPost} from '@mm-redux/utils/post_list';
+import {canDeletePost} from '@selectors/permissions';
 
 import CombinedUserActivity from './combined_user_activity';
 

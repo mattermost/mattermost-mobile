@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelNavBar from './channel_nav_bar';
 

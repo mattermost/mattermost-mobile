@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {DeviceTypes, ViewTypes} from 'app/constants';
+import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Dimensions,
     InteractionManager,
@@ -11,9 +13,6 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-
-import {DeviceTypes, ViewTypes} from 'app/constants';
-import mattermostManaged from 'app/mattermost_managed';
 
 export default class Swiper extends PureComponent {
     static propTypes = {

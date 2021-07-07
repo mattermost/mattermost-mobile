@@ -23,6 +23,7 @@ import {NavigationTypes, ViewTypes} from '@constants';
 import {getLocalizedMessage} from '@i18n';
 import {setDeviceToken} from '@mm-redux/actions/general';
 import {General} from '@mm-redux/constants';
+import type {DispatchFunc} from '@mm-redux/types/actions';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getCurrentLocale} from '@selectors/i18n';
 import {getBadgeCount} from '@selectors/views';
@@ -30,8 +31,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import {t} from '@utils/i18n';
-
-import type {DispatchFunc} from '@mm-redux/types/actions';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';

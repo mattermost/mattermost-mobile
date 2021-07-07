@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Dimensions, Keyboard} from 'react-native';
-import {IntlProvider} from 'react-intl';
-
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
 import {closeMainSideMenu, enableMainSideMenu} from 'app/actions/navigation';
 import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
+import React from 'react';
+import {IntlProvider} from 'react-intl';
+import {Dimensions, Keyboard} from 'react-native';
+
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import MainSidebarBase from './main_sidebar_base';
 

@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {GlobalStyles} from 'app/styles';
 import PropTypes from 'prop-types';
-import Button from 'react-native-button';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
-
 import {
     Image,
     StyleSheet,
@@ -14,6 +13,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import Button from 'react-native-button';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
@@ -21,8 +21,6 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {isEmail} from '@mm-redux/utils/helpers';
 import {changeOpacity} from '@utils/theme';
-
-import {GlobalStyles} from 'app/styles';
 
 export default class ForgotPassword extends PureComponent {
     static propTypes = {

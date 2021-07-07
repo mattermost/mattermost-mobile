@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {PureComponent} from 'react';
 import {Platform, Text, View} from 'react-native';
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ProfilePicture from '@components/profile_picture';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
-
 import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

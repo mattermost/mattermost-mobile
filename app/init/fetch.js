@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import mattermostBucket from 'app/mattermost_bucket';
+import mattermostManaged from 'app/mattermost_managed';
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -10,12 +12,9 @@ import LocalConfig from '@assets/config';
 import {Client4} from '@client/rest';
 import {HEADER_TOKEN, HEADER_X_CLUSTER_ID, HEADER_X_VERSION_ID} from '@client/rest/constants';
 import ClientError from '@client/rest/error';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
-
-import mattermostBucket from 'app/mattermost_bucket';
-import mattermostManaged from 'app/mattermost_managed';
 
 /* eslint-disable no-throw-literal */
 

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
+import {isLandscape} from 'app/selectors/device';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {isLandscape} from 'app/selectors/device';
-import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
 
 import EditProfile from './edit_profile';
 

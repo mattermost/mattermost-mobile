@@ -6,10 +6,9 @@ import {createSelector} from 'reselect';
 import {Permissions} from '@mm-redux/constants';
 import {getCurrentUser} from '@mm-redux/selectors/entities/common';
 import {getMyChannelRoles, getMySystemPermissions, getMyTeamRoles, getRoles} from '@mm-redux/selectors/entities/roles';
-import {isPostOwner} from '@mm-redux/utils/post_utils';
-
 import type {Post} from '@mm-redux/types/posts';
 import type {GlobalState} from '@mm-redux/types/store';
+import {isPostOwner} from '@mm-redux/utils/post_utils';
 
 export const getMyTeamPermissions = createSelector(
     getMyTeamRoles,

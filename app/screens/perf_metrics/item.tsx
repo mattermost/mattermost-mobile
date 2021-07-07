@@ -4,14 +4,13 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
 import type {PerfMetric} from '@telemetry';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type PerfItemProps = {
     metric: PerfMetric;
-    theme: Theme
+    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

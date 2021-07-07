@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
-import {storiesOf} from '@storybook/react-native';
-import {withKnobs, number, select} from '@storybook/addon-knobs';
 
 import {Preferences} from '@mm-redux/constants';
-import {UserProfile} from '@mm-redux/types/users';
 import {getProfiles} from '@mm-redux/selectors/entities/users';
+import {UserProfile} from '@mm-redux/types/users';
 import Store from '@store/store';
+import {withKnobs, number, select} from '@storybook/addon-knobs';
+import {storiesOf} from '@storybook/react-native';
 
 import Avatars from './avatars';
 

@@ -2,15 +2,17 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
-import nock from 'nock';
 
-import * as Actions from '@mm-redux/actions/channels';
-import {getProfilesByIds, login} from '@mm-redux/actions/users';
-import {Client4} from '@client/rest';
-import {General, RequestStatus, Preferences} from '../constants';
-import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import nock from 'nock';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
+
+import {Client4} from '@client/rest';
+import * as Actions from '@mm-redux/actions/channels';
+import {getProfilesByIds, login} from '@mm-redux/actions/users';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+
+import {General, RequestStatus, Preferences} from '../constants';
 
 const OK_RESPONSE = {status: 'OK'};
 

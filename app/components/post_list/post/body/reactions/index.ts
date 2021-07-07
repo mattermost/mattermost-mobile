@@ -6,16 +6,15 @@ import {connect} from 'react-redux';
 import {addReaction} from '@actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {removeReaction} from '@mm-redux/actions/posts';
+import Permissions from '@mm-redux/constants/permissions';
+import {getChannel, isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
-import Permissions from '@mm-redux/constants/permissions';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getChannel, isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
-import {selectEmojisCountFromReactions} from '@selectors/emojis';
-
-import type{GlobalState} from '@mm-redux/types/store';
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
+import type{GlobalState} from '@mm-redux/types/store';
+import {selectEmojisCountFromReactions} from '@selectors/emojis';
 
 import Reactions from './reactions';
 

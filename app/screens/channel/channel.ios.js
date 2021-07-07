@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AnnouncementBanner from 'app/components/announcement_banner';
 import React from 'react';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import AnnouncementBanner from 'app/components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';

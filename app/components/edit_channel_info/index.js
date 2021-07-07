@@ -1,8 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {popTopScreen, dismissModal} from 'app/actions/navigation';
+import Autocomplete from 'app/components/autocomplete';
+import ErrorText from 'app/components/error_text';
+import Loading from 'app/components/loading';
+import StatusBar from 'app/components/status_bar';
+import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {t} from 'app/utils/i18n';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Platform,
     TouchableWithoutFeedback,
@@ -11,24 +23,9 @@ import {
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {General} from '@mm-redux/constants';
-
-import Autocomplete from 'app/components/autocomplete';
-import ErrorText from 'app/components/error_text';
 import FormattedText from '@components/formatted_text';
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import DEVICE from '@constants/device';
-
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-
-import {t} from 'app/utils/i18n';
-import {popTopScreen, dismissModal} from 'app/actions/navigation';
+import {General} from '@mm-redux/constants';
 
 export default class EditChannelInfo extends PureComponent {
     static propTypes = {

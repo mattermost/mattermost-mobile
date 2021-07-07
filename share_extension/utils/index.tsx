@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import mattermostManaged from 'app/mattermost_managed';
 import React, {ReactNode} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, NativeModules, PermissionsAndroid} from 'react-native';
@@ -13,10 +14,8 @@ import {getAppCredentials} from '@init/credentials';
 import type {FileInfo} from '@mm-redux/types/files';
 import type {Team} from '@mm-redux/types/teams';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
-import {getExtensionFromMime} from '@utils/file';
-import mattermostManaged from 'app/mattermost_managed';
-
 import ShareError from '@share/components/error';
+import {getExtensionFromMime} from '@utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
 

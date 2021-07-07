@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {buildQueryString} from '@mm-redux/utils/helpers';
-
 import type {Bot} from '@mm-redux/types/bots';
+import {buildQueryString} from '@mm-redux/utils/helpers';
 
 export interface ClientBotsMix {
     getBot: (botUserId: string) => Promise<Bot>;

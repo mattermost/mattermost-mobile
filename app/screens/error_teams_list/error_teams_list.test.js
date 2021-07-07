@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper.js';
 
 import FailedNetworkAction from '@components/failed_network_action';
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper.js';
 
 import ErrorTeamsList from './error_teams_list';
 

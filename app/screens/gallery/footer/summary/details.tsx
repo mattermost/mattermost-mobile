@@ -3,10 +3,9 @@
 
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import type {DetailsProps} from 'types/screens/gallery';
 
 import FormattedText from '@components/formatted_text';
-
-import type {DetailsProps} from 'types/screens/gallery';
 
 const styles = StyleSheet.create({
     container: {

@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 
-import type {GlobalState} from '@mm-redux/types/store';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import type {Post} from '@mm-redux/types/posts';
+import type {GlobalState} from '@mm-redux/types/store';
 
 import YouTube from './youtube';
 

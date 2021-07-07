@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import TestHelper from 'test/test_helper';
+
 import * as Selectors from '@mm-redux/selectors/entities/i18n';
 
 describe('Selectors.I18n', () => {

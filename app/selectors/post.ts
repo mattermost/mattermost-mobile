@@ -5,7 +5,6 @@ import {createSelector} from 'reselect';
 
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-
 import type {Post} from '@mm-redux/types/posts';
 import type {GlobalState} from '@mm-redux/types/store';
 

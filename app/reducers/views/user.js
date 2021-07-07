@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {combineReducers} from 'redux';
-
 import {ViewTypes} from 'app/constants';
+import {combineReducers} from 'redux';
 
 function profileImageUri(state = '', action) {
     switch (action.type) {

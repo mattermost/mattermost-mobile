@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import {dismissModal, setButtons} from 'app/actions/navigation';
+import EmojiPicker from 'app/components/emoji_picker';
+import {emptyFunction} from 'app/utils/general';
 import PropTypes from 'prop-types';
+import React, {useEffect} from 'react';
 import {
     Keyboard,
     StyleSheet,
@@ -10,10 +13,6 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
-
-import EmojiPicker from 'app/components/emoji_picker';
-import {emptyFunction} from 'app/utils/general';
-import {dismissModal, setButtons} from 'app/actions/navigation';
 
 const leftButton = {
     id: 'close-add-reaction',

@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import {dismissModal} from 'app/actions/navigation';
+import {NavigationTypes} from 'app/constants';
+import {emptyFunction} from 'app/utils/general';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Animated,
     Platform,
@@ -12,10 +15,6 @@ import {
 } from 'react-native';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {NavigationTypes} from 'app/constants';
-import {emptyFunction} from 'app/utils/general';
-import {dismissModal} from 'app/actions/navigation';
 
 import OptionsModalList from './options_modal_list';
 

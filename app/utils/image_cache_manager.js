@@ -3,20 +3,18 @@
 
 // Based on the work done by https://github.com/wcandillon/react-native-expo-image-cache/
 
-import {Platform} from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-
-import Url from 'url-parse';
-
-import {Client4} from '@client/rest';
-
 import {DeviceTypes} from 'app/constants';
+import mattermostBucket from 'app/mattermost_bucket';
 import {
     getExtensionFromMime,
     getExtensionFromContentDisposition,
     hashCode,
 } from 'app/utils/file';
-import mattermostBucket from 'app/mattermost_bucket';
+import {Platform} from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob';
+import Url from 'url-parse';
+
+import {Client4} from '@client/rest';
 
 const {IMAGES_PATH} = DeviceTypes;
 const DEFAULT_MIME_TYPE = 'image/png';

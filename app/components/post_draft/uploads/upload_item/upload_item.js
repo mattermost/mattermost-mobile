@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import mattermostBucket from 'app/mattermost_bucket';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from '@client/rest';
-
-import mattermostBucket from 'app/mattermost_bucket';
-import ImageFile from '@components/post_list/post/body/files/image_file';
 import FileIcon from '@components//post_list/post/body/files/file_icon';
+import ImageFile from '@components/post_list/post/body/files/image_file';
 import ProgressBar from '@components/progress_bar';
+import {analytics} from '@init/analytics.ts';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8, isImage} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
@@ -19,7 +19,6 @@ import {changeOpacity} from '@utils/theme';
 
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
-import {analytics} from '@init/analytics.ts';
 
 export default class UploadItem extends PureComponent {
     static propTypes = {

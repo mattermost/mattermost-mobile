@@ -1,23 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {View} from 'react-native';
 
-import {copyAndFillBindings} from '@utils/apps';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import type {AppBinding} from '@mm-redux/types/apps';
 import type {Theme} from '@mm-redux/types/preferences';
+import {copyAndFillBindings} from '@utils/apps';
 
-import EmbedSubBindings from './embedded_sub_bindings';
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
+import EmbedSubBindings from './embedded_sub_bindings';
 
 type Props = {
-    embed: AppBinding,
-    postId: string,
-    theme: Theme,
+    embed: AppBinding;
+    postId: string;
+    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {

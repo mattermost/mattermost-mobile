@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import nock from 'nock';
-
-import * as BotActions from '@mm-redux/actions/bots';
-import {Client4} from '@client/rest';
-
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
+
+import {Client4} from '@client/rest';
+import * as BotActions from '@mm-redux/actions/bots';
 
 describe('Actions.Bots', () => {
     let store;

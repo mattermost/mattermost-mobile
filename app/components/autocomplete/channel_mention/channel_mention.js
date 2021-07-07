@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
-import {Platform, SectionList} from 'react-native';
-
-import {RequestStatus} from '@mm-redux/constants';
-import {debounce} from '@mm-redux/actions/helpers';
-
-import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import ChannelMentionItem from 'app/components/autocomplete/channel_mention_item';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import {t} from 'app/utils/i18n';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {Platform, SectionList} from 'react-native';
+
+import {debounce} from '@mm-redux/actions/helpers';
+import {RequestStatus} from '@mm-redux/constants';
 
 export default class ChannelMention extends PureComponent {
     static propTypes = {

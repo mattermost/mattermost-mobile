@@ -1,27 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {DoAppCallResult} from 'types/actions/apps';
 
+import {dismissModal} from '@actions/navigation';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+import StatusBar from '@components/status_bar';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import StatusBar from '@components/status_bar';
-import FormattedText from '@components/formatted_text';
-import Markdown from '@components/markdown';
-
-import {dismissModal} from '@actions/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {DoAppCallResult} from 'types/actions/apps';
 
 import AppsFormField from './apps_form_field';
 import DialogIntroductionText from './dialog_introduction_text';

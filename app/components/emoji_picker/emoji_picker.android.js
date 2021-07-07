@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View} from 'react-native';
-
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from 'app/utils/theme';
+import React from 'react';
+import {View} from 'react-native';
 
 import EmojiPickerBase, {getStyleSheetFromTheme} from './emoji_picker_base';
 

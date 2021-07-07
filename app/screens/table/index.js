@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Platform, ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class Table extends React.PureComponent {
     static propTypes = {

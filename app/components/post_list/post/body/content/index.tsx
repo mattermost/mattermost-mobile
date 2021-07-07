@@ -3,10 +3,9 @@
 
 import React from 'react';
 
-import {isYoutubeLink} from '@utils/url';
-
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
+import {isYoutubeLink} from '@utils/url';
 
 import EmbeddedBindings from './embedded_bindings';
 import ImagePreview from './image_preview';

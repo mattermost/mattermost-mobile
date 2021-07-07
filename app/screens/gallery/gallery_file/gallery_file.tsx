@@ -4,9 +4,10 @@
 import React, {useCallback, useState} from 'react';
 import {injectIntl} from 'react-intl';
 import {Alert, Appearance, Platform, Text, StatusBar, StatusBarStyle, View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
 import FileViewer from 'react-native-file-viewer';
+import {TapGestureHandler} from 'react-native-gesture-handler';
 import tinyColor from 'tinycolor2';
+import type {GalleryItemProps} from 'types/screens/gallery';
 
 import FileIcon from '@components//post_list/post/body/files/file_icon';
 import Touchable from '@components/touchable_with_feedback';
@@ -15,8 +16,6 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isDocument} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import type {GalleryItemProps} from 'types/screens/gallery';
 
 interface GalleryFileProps extends GalleryItemProps {
     canDownloadFiles: boolean;

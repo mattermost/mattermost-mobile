@@ -8,10 +8,9 @@ import {dismissAllModals, showModalOverCurrentContext} from '@actions/navigation
 import {loadChannelsByTeamName} from '@actions/views/channel';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {permalinkBadTeam} from '@utils/general';
 import {changeOpacity} from '@utils/theme';
-
-import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 let showingPermalink = false;
 

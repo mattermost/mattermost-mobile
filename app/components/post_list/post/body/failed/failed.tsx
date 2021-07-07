@@ -8,11 +8,10 @@ import {showModalOverCurrentContext} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import NavigationTypes from '@constants/navigation';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {t} from '@utils/i18n';
-
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {t} from '@utils/i18n';
 
 type FailedProps = {
     createPost: (post: Post) => void;

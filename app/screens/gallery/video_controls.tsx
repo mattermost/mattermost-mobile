@@ -5,10 +5,10 @@ import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} fro
 import {Animated, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Slider from 'react-native-slider';
+import {CallbackFunctionWithoutArguments} from 'types/screens/gallery';
 
 import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {CallbackFunctionWithoutArguments} from 'types/screens/gallery';
 
 interface VideoControlsProps {
     isLandscape: boolean;

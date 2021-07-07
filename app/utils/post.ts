@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Posts} from '@mm-redux/constants';
-import {isFromWebhook, isSystemMessage} from '@mm-redux/utils/post_utils';
-import {displayUsername} from '@mm-redux/utils/user_utils';
-
 import type {Post} from '@mm-redux/types/posts';
 import type {UserProfile} from '@mm-redux/types/users';
+import {isFromWebhook, isSystemMessage} from '@mm-redux/utils/post_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 export function areConsecutivePosts(post: Post, previousPost: Post) {
     let consecutive = false;

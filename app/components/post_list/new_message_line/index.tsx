@@ -5,9 +5,8 @@ import React from 'react';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type NewMessagesLineProps = {
     moreMessages: boolean;

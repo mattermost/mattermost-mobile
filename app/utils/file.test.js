@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceTypes} from 'app/constants';
 import {
     generateId,
     getLocalPath,
@@ -8,8 +9,6 @@ import {
     getExtensionFromContentDisposition,
     hashCode,
 } from 'app/utils/file';
-
-import {DeviceTypes} from 'app/constants';
 
 describe('getExtensionFromContentDisposition', () => {
     it('should return the extracted the extension', () => {

@@ -1,23 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Children, PureComponent} from 'react';
+import mattermostManaged from 'app/mattermost_managed';
 import PropTypes from 'prop-types';
-import {Alert, Text} from 'react-native';
-import Clipboard from '@react-native-community/clipboard';
+import React, {Children, PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Alert, Text} from 'react-native';
 import urlParse from 'url-parse';
 
 import {dismissAllModals, popToRoot} from '@actions/navigation';
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
+import Clipboard from '@react-native-community/clipboard';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {

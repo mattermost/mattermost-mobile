@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isLandscape} from 'app/selectors/device';
 import {connect} from 'react-redux';
 
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-
-import {isLandscape} from 'app/selectors/device';
 
 import AnnouncementBanner from './announcement_banner';
 

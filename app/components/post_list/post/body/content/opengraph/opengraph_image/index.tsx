@@ -8,15 +8,14 @@ import FastImage, {Source} from 'react-native-fast-image';
 import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {DeviceTypes} from '@constants';
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 import {generateId} from '@utils/file';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {calculateDimensions} from '@utils/images';
 import {getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {isValidUrl} from '@utils/url';
-
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 
 type BestImage = {
     secure_url?: string;

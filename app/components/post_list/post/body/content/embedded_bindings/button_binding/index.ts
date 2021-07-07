@@ -4,13 +4,12 @@
 import {connect} from 'react-redux';
 
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
-import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-
 import type {AppBinding} from '@mm-redux/types/apps';
-import type {GlobalState} from '@mm-redux/types/store';
 import type {Theme} from '@mm-redux/types/preferences';
+import type {GlobalState} from '@mm-redux/types/store';
 
 import ButtonBinding from './button_binding';
 

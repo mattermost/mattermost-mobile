@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getChannelMembersForDm} from 'app/selectors/channel';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
 import {General} from '@mm-redux/constants';
 import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser, makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
-
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getChannelMembersForDm} from 'app/selectors/channel';
+import {getCurrentUserId, getUser, makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 
 import ChannelIntro from './channel_intro';
 

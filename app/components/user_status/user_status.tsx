@@ -5,9 +5,8 @@ import React from 'react';
 
 import CompassIcon from '@components/compass_icon';
 import {General} from '@mm-redux/constants';
-import {changeOpacity} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity} from '@utils/theme';
 
 type UserStatusProps = {
     size: number;

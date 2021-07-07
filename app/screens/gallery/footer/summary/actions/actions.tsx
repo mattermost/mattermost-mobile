@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import mattermostManaged from 'app/mattermost_managed';
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-
-import CompassIcon from '@components/compass_icon';
 import type {ActionsProps, ManagedConfig} from 'types/screens/gallery';
 
-import mattermostManaged from 'app/mattermost_managed';
+import CompassIcon from '@components/compass_icon';
 
 import Action from './action';
 

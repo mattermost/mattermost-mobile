@@ -5,9 +5,8 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 
 import Tag, {BotTag, GuestTag} from '@components/tag';
-import {t} from '@utils/i18n';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {t} from '@utils/i18n';
 
 type HeaderTagProps = {
     isAutomation?: boolean;

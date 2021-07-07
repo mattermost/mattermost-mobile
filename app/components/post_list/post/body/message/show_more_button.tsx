@@ -7,9 +7,8 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type ShowMoreButtonProps = {
     highlight: boolean;

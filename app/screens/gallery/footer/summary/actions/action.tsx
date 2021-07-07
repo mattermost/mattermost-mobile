@@ -3,7 +3,6 @@
 
 import React, {useCallback, useState} from 'react';
 import {Platform, Pressable, PressableStateCallbackType} from 'react-native';
-
 import type {ActionProps} from 'types/screens/gallery';
 
 const pressedStyle = ({pressed}: PressableStateCallbackType) => {

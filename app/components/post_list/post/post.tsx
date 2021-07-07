@@ -2,21 +2,20 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode, useRef} from 'react';
-import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {preventDoubleTap} from '@utils/tap';
-
 import type {Post as PostType} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
 import Body from './body';
@@ -45,7 +44,7 @@ type PostProps = {
     skipPinnedHeader?: boolean;
     teammateNameDisplay: string;
     testID?: string;
-    theme: Theme
+    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

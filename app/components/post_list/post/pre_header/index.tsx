@@ -6,10 +6,9 @@ import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import type {Theme} from '@mm-redux/types/preferences';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import type {Theme} from '@mm-redux/types/preferences';
 
 type PreHeaderProps = {
     isConsecutivePost?: boolean;

@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import StatusBar from 'app/components/status_bar';
+import SectionItem from 'app/screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {
     ScrollView,
@@ -9,9 +12,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import SectionItem from 'app/screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
 import ChannelNotificationPreferenceBase from './channel_notification_preference_base';
 
 export default class ChannelNotificationPreferenceIos extends ChannelNotificationPreferenceBase {

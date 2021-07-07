@@ -11,12 +11,11 @@ import tinyColor from 'tinycolor2';
 import ProgressBar from '@components/progress_bar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {DeviceTypes} from '@constants';
+import type {FileInfo} from '@mm-redux/types/files';
+import type {Theme} from '@mm-redux/types/preferences';
 import {getFileUrl} from '@mm-redux/utils/file_utils';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {getLocalFilePathFromFile} from '@utils/file';
-
-import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
 
 import FileIcon from './file_icon';
 

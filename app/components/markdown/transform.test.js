@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
-import {Node, Parser} from 'commonmark';
 
 import {
     addListItemIndices,
@@ -12,6 +11,7 @@ import {
     highlightTextNode,
     pullOutImages,
 } from 'app/components/markdown/transform';
+import {Node, Parser} from 'commonmark';
 
 /* eslint-disable no-console, no-underscore-dangle */
 

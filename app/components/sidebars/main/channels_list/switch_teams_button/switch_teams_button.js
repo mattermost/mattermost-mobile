@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import TeamIcon from 'app/components/team_icon';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
@@ -10,7 +11,6 @@ import {
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import TeamIcon from 'app/components/team_icon';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

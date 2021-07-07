@@ -1,20 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {preventDoubleTap} from 'app/utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import React, {useCallback, useRef} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import Button from 'react-native-button';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {getStatusColors} from '@utils/message_attachment_colors';
-import ButtonBindingText from './button_binding_text';
-import {Theme} from '@mm-redux/types/preferences';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {Theme} from '@mm-redux/types/preferences';
 import {createCallContext, createCallRequest} from '@utils/apps';
+import {getStatusColors} from '@utils/message_attachment_colors';
+
+import ButtonBindingText from './button_binding_text';
 
 type Props = {
     binding: AppBinding;

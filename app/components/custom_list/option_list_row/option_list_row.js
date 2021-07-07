@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import CustomListRow from 'app/components/custom_list/custom_list_row';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Text,
     View,
 } from 'react-native';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import CustomListRow from 'app/components/custom_list/custom_list_row';
 
 export default class OptionListRow extends React.PureComponent {
     static propTypes = {

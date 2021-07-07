@@ -11,13 +11,12 @@ import {getPost, isRootPost} from '@mm-redux/selectors/entities/posts';
 import {getMyPreferences, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getUser} from '@mm-redux/selectors/entities/users';
-import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
-import {canDeletePost} from '@selectors/permissions';
-import {areConsecutivePosts, postUserDisplayName} from '@utils/post';
-
 import type {Post as PostType} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
+import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
+import {canDeletePost} from '@selectors/permissions';
+import {areConsecutivePosts, postUserDisplayName} from '@utils/post';
 
 import Post from './post';
 

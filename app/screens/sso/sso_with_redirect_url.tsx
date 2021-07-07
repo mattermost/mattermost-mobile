@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {setDeepLinkURL} from '@actions/views/root';
 import FormattedText from '@components/formatted_text';
@@ -23,7 +22,7 @@ interface SSOWithRedirectURLProps {
     onCSRFToken: (token: string) => void;
     onMMToken: (token: string) => void;
     setLoginError: (value: string) => void;
-    theme: Theme
+    theme: Theme;
 }
 
 function SSOWithRedirectURL({

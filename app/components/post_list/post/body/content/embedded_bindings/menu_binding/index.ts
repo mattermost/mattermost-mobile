@@ -7,7 +7,6 @@ import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-
 import type {AppBinding} from '@mm-redux/types/apps';
 import type {GlobalState} from '@mm-redux/types/store';
 

@@ -3,11 +3,11 @@
 
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
-import ChannelSearchButton from './channel_search_button';
 
-import {shallowWithIntl} from 'test/intl-test-helper';
+import ChannelSearchButton from './channel_search_button';
 
 describe('ChannelSearchButton', () => {
     const baseProps = {

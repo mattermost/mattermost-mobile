@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
 import SettingsItem from '@screens/settings/settings_item';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import DisplaySettings from './display_settings';
 

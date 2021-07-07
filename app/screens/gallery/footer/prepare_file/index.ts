@@ -4,9 +4,8 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from '@selectors/device';
-
 import type {GlobalState} from '@mm-redux/types/store';
+import {isLandscape} from '@selectors/device';
 
 import PrepareFile from './prepare_file';
 

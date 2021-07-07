@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updateMe, setDefaultProfileImage} from '@mm-redux/actions/users';
-
 import {ViewTypes} from 'app/constants';
+
+import {updateMe, setDefaultProfileImage} from '@mm-redux/actions/users';
 
 export function updateUser(user, success, error) {
     return async (dispatch, getState) => {

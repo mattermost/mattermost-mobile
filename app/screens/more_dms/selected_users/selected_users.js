@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import SelectedUser from 'app/screens/more_dms/selected_users/selected_user';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import SelectedUser from 'app/screens/more_dms/selected_users/selected_user';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class SelectedUsers extends React.PureComponent {
     static propTypes = {

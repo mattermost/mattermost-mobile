@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import InteractiveDialogController from './interactive_dialog_controller';

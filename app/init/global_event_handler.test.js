@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import mattermostBucket from 'app/mattermost_bucket';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import semver from 'semver/preload';
@@ -8,10 +9,8 @@ import semver from 'semver/preload';
 import * as I18n from '@i18n';
 import PushNotification from '@init/push_notifications';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import Store from '@store/store';
 import intitialState from '@store/initial_state';
-
-import mattermostBucket from 'app/mattermost_bucket';
+import Store from '@store/store';
 
 import GlobalEventHandler from './global_event_handler';
 

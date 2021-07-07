@@ -8,11 +8,10 @@ import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import {CHANNEL, THREAD} from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
-import {fromAutoResponder, isFromWebhook, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
+import {fromAutoResponder, isFromWebhook, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';

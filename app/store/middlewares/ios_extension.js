@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import mattermostBucket from 'app/mattermost_bucket';
+
 import {throttle} from '@utils/general';
 
 const SAVE_STATE_ACTIONS = [

@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {selectEmojisByName} from '@selectors/emojis';
 import initialState from '@store/initial_state';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import EmojiSuggestion from './emoji_suggestion';
 

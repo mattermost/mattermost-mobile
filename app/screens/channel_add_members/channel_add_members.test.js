@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as NavigationActions from 'app/actions/navigation';
 import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {Preferences} from '@mm-redux/constants';
-
-import * as NavigationActions from 'app/actions/navigation';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelAddMembers from './channel_add_members';
 

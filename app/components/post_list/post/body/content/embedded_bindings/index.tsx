@@ -10,9 +10,9 @@ import type {Theme} from '@mm-redux/types/preferences';
 import EmbeddedBinding from './embedded_binding';
 
 type Props = {
-    embeds: AppBinding[],
-    postId: string,
-    theme: Theme,
+    embeds: AppBinding[];
+    postId: string;
+    theme: Theme;
 }
 
 const EmbeddedBindings = ({embeds, postId, theme}: Props) => {

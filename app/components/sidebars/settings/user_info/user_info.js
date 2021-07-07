@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
-import {Text, TouchableOpacity, View} from 'react-native';
-
+import ProfilePicture from 'app/components/profile_picture';
 import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import ProfilePicture from 'app/components/profile_picture';
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 export default class UserInfo extends PureComponent {
     static propTypes = {

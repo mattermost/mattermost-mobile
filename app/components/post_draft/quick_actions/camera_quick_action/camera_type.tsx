@@ -8,9 +8,8 @@ import {CameraOptions} from 'react-native-image-picker';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
 import type {Theme} from '@mm-redux/types/preferences';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     onPress: (options: CameraOptions) => void;

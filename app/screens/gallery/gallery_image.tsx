@@ -4,11 +4,10 @@
 import React from 'react';
 import FastImage from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
+import {GalleryItemProps} from 'types/screens/gallery';
 
 import {DeviceTypes} from '@constants';
 import {calculateDimensions} from '@utils/images';
-
-import {GalleryItemProps} from 'types/screens/gallery';
 
 // @ts-expect-error: Ignore the typescript error for createAnimatedComponent
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);

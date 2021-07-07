@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ViewTypes} from 'app/constants';
 import {combineReducers} from 'redux';
 
 import {General} from '@mm-redux/constants';
-
-import {ViewTypes} from 'app/constants';
 
 function deepLinkURL(state = '', action) {
     switch (action.type) {

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isGuest} from 'app/utils/users';
 import {connect} from 'react-redux';
 
 import {General} from '@mm-redux/constants';
@@ -9,8 +10,6 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {isCustomStatusEnabled} from '@selectors/custom_status';
-
-import {isGuest} from 'app/utils/users';
 
 import ChannelTitle from './channel_title';
 

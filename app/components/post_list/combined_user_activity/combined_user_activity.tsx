@@ -11,12 +11,11 @@ import SystemAvatar from '@components/post_list/system_avatar';
 import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Posts} from '@mm-redux/constants';
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 
 import LastUsers from './last_users';
 import {postTypeMessages} from './messages';

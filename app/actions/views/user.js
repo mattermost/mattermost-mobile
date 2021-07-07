@@ -1,24 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {NavigationTypes} from 'app/constants';
+import {setAppCredentials} from 'app/init/credentials';
 import {batchActions} from 'redux-batched-actions';
 
-import {NavigationTypes} from 'app/constants';
+import {Client4} from '@client/rest';
+import {analytics} from '@init/analytics.ts';
 import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
-import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-
-import {setAppCredentials} from 'app/init/credentials';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {setCSRFFromCookie} from '@utils/security';
 import {getDeviceTimezone} from '@utils/timezone';
-import {analytics} from '@init/analytics.ts';
 
 const HTTP_UNAUTHORIZED = 401;
 

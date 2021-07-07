@@ -2,20 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
+import type {FooterProps} from 'types/screens/gallery';
 
 import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getPost} from '@mm-redux/selectors/entities/posts';
-import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import type {GlobalState} from '@mm-redux/types/store';
 import {isFromWebhook} from '@mm-redux/utils/post_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {isLandscape} from '@selectors/device';
-
-import type {GlobalState} from '@mm-redux/types/store';
-import type {FooterProps} from 'types/screens/gallery';
 
 import Summary from './summary';
 

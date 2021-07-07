@@ -1,6 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {popTopScreen} from 'app/actions/navigation';
+import {getCodeFont} from 'app/utils/markdown';
+import {
+    changeOpacity,
+    makeStyleSheetFromTheme,
+    getKeyboardAppearanceFromTheme,
+} from 'app/utils/theme';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
@@ -13,14 +20,6 @@ import {
     View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
-import {getCodeFont} from 'app/utils/markdown';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {popTopScreen} from 'app/actions/navigation';
 
 export default class Code extends React.PureComponent {
     static propTypes = {

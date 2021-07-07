@@ -1,22 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {loadConfigAndLicense} from 'app/actions/views/root';
+import {setAppCredentials} from 'app/init/credentials';
+import {setCSRFFromCookie} from 'app/utils/security';
+import {getDeviceTimezone} from 'app/utils/timezone';
 import moment from 'moment-timezone';
 
-import {getDataRetentionPolicy} from '@mm-redux/actions/general';
-import {GeneralTypes} from '@mm-redux/action_types';
-import {getSessions} from '@mm-redux/actions/users';
-import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {Client4} from '@client/rest';
+import PushNotifications from '@init/push_notifications';
+import {GeneralTypes} from '@mm-redux/action_types';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
+import {getSessions} from '@mm-redux/actions/users';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-
-import {setAppCredentials} from 'app/init/credentials';
-import PushNotifications from '@init/push_notifications';
-import {getDeviceTimezone} from 'app/utils/timezone';
-import {setCSRFFromCookie} from 'app/utils/security';
-import {loadConfigAndLicense} from 'app/actions/views/root';
 
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {

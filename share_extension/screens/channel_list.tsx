@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RouteProp, useFocusEffect, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {BackHandler, SectionList, SectionListData, SectionListRenderItemInfo, StyleSheet, View} from 'react-native';
@@ -12,12 +11,12 @@ import Loading from '@components/loading';
 import SearchBar from '@components/search_bar';
 import {Preferences} from '@mm-redux/constants';
 import type {Channel} from '@mm-redux/types/channels';
-import {throttle} from '@utils/general';
-import {changeOpacity} from '@utils/theme';
-
+import {GlobalState} from '@mm-redux/types/store';
+import {RouteProp, useFocusEffect, useNavigation, useRoute} from '@react-navigation/native';
 import ChannelItem from '@share/components/channel_item';
 import {getExtensionSortedDirectChannels, getExtensionSortedPrivateChannels, getExtensionSortedPublicChannels} from '@share/selectors';
-import {GlobalState} from '@mm-redux/types/store';
+import {throttle} from '@utils/general';
+import {changeOpacity} from '@utils/theme';
 
 interface ChannnelListProps {
     intl: typeof intlShape;
@@ -35,7 +34,7 @@ type ChannnelListParams = {
         onSelectChannel: (channel: Channel) => void;
         teamId: string;
         title: string;
-    }
+    };
 }
 
 type SectionDataHeader = (info: {section: SectionListData<Channel>}) => React.ReactElement | null;
