@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fireEvent} from '@testing-library/react-native';
+
 import React from 'react';
 import {Alert, Platform, StatusBar} from 'react-native';
 import Permissions from 'react-native-permissions';
 import {renderWithIntl} from 'test/testing_library';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {fireEvent} from '@testing-library/react-native';
 import * as PermissionUtils from '@utils/permission';
 
 import ImageQuickAction from './index';

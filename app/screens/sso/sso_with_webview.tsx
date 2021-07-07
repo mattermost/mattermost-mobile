@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CookieManager, {Cookies} from '@react-native-cookies/cookies';
+
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
@@ -15,7 +17,6 @@ import Loading from '@components/loading';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
 import type {Theme} from '@mm-redux/types/preferences';
-import CookieManager, {Cookies} from '@react-native-cookies/cookies';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const HEADERS = {

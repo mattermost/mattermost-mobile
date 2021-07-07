@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+
 import React, {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {Alert, BackHandler, NativeModules, StyleSheet, View} from 'react-native';
@@ -16,7 +18,6 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {Channel} from '@mm-redux/types/channels';
 import type {Team} from '@mm-redux/types/teams';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Body from '@share/components/body';
 import ChannelButton from '@share/components/channel_button';
 import CloseHeaderButton from '@share/components/close_header_button';

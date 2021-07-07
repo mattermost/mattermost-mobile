@@ -56,7 +56,7 @@
         "newlines-between": "always",
         "pathGroups": [
           {
-            "pattern": "{@react-native-community/**, @react-native-cookies/**, @react-navigation/**, @rudderstack/**, @sentry/**}",
+            "pattern": "@(@react-native-community|@react-native-cookies|@react-navigation|@rudderstack|@sentry|@testing-library|@storybook)/**",
             "group": "external",
             "position": "before"
           },

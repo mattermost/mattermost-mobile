@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from '@react-navigation/native';
+
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
@@ -12,7 +14,6 @@ import {Preferences} from '@mm-redux/constants';
 import {DispatchFunc} from '@mm-redux/types/actions';
 import type {Channel} from '@mm-redux/types/channels';
 import type {Team} from '@mm-redux/types/teams';
-import {useNavigation} from '@react-navigation/native';
 import {loadTeamChannels, getTeamDefaultChannel} from '@share/actions';
 import {changeOpacity} from '@utils/theme';
 

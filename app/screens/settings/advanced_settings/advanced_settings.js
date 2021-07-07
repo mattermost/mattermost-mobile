@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as Sentry from '@sentry/react-native';
+
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
@@ -19,7 +21,6 @@ import Config from '@assets/config';
 import StatusBar from '@components/status_bar';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import SettingsItem from '@screens/settings/settings_item';
-import * as Sentry from '@sentry/react-native';
 import {deleteFileCache, getFileCacheSize} from '@utils/file';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
