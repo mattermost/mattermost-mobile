@@ -23,7 +23,12 @@ export const getMatchTermForAtMention = (() => {
     return (value, isSearch) => {
         if (value !== lastValue || isSearch !== lastIsSearch) {
             const regex = isSearch ? Autocomplete.AT_MENTION_SEARCH_REGEX : Autocomplete.AT_MENTION_REGEX;
-            const match = value.match(regex);
+            let term = value;
+            if (term.startsWith('from: @') || term.startsWith('from:@')) {
+                term = term.replace('@', '');
+            }
+
+            const match = term.match(regex);
             lastValue = value;
             lastIsSearch = isSearch;
             if (match) {

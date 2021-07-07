@@ -79,7 +79,7 @@ class PushNotifications {
             const notifications = await AndroidNotificationPreferences.getDeliveredNotifications();
             const notificationForChannel = notifications.find((n: NotificationWithChannel) => n.channel_id === channelId);
             if (notificationForChannel) {
-                AndroidNotificationPreferences.removeDeliveredNotifications(notificationForChannel.identifier, channelId);
+                AndroidNotificationPreferences.removeDeliveredNotifications(channelId);
             }
         } else {
             const ids: string[] = [];

@@ -120,7 +120,8 @@ export function addRecentUsedEmojisInMessage(message) {
                 const unicode = emojiUnicode(emoji);
                 const index = EmojiIndicesByUnicode.get(unicode || '');
                 if (index) {
-                    emojisAvailableWithMattermost.push(Emojis[index].aliases[0]);
+                    const name = 'short_name' in Emojis[index] ? Emojis[index].short_name : Emojis[index].name;
+                    emojisAvailableWithMattermost.push(name);
                 }
             }
         }
@@ -128,7 +129,8 @@ export function addRecentUsedEmojisInMessage(message) {
             for (const emoji of namedEmojis) {
                 const index = EmojiIndicesByAlias.get(emoji.slice(1, -1));
                 if (index) {
-                    emojisAvailableWithMattermost.push(Emojis[index].aliases[0]);
+                    const name = 'short_name' in Emojis[index] ? Emojis[index].short_name : Emojis[index].name;
+                    emojisAvailableWithMattermost.push(name);
                 }
             }
         }
