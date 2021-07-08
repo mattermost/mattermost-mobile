@@ -10,12 +10,12 @@ import General from '@constants/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type ChannelIconProps = {
-    hasDraft: boolean;
-    isActive: boolean;
-    isArchived: boolean;
-    isInfo: boolean;
-    isUnread: boolean;
-    membersCount: number;
+    hasDraft?: boolean;
+    isActive?: boolean;
+    isArchived?: boolean;
+    isInfo?: boolean;
+    isUnread?: boolean;
+    membersCount?: number;
     shared: boolean;
     size: number;
     statusStyle?: StyleProp<ViewStyle>;
@@ -76,23 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-//todo: include test
-const ChannelIcon = ({
-    hasDraft = false,
-    isActive = false,
-    isArchived = false,
-    isInfo = false,
-    isUnread = false,
-    membersCount = 0,
-    shared,
-    size = 12,
-    statusStyle,
-    style,
-    testID,
-    theme,
-    type,
-    userId,
-}: ChannelIconProps) => {
+const ChannelIcon = ({hasDraft = false, isActive = false, isArchived = false, isInfo = false, isUnread = false, membersCount = 0, shared, size = 12, statusStyle, style, testID, theme, type, userId}: ChannelIconProps) => {
     const styles = getStyleSheet(theme);
 
     let activeIcon;
