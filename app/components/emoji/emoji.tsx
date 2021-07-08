@@ -8,6 +8,7 @@ import {
     StyleSheet,
     Text,
     TextStyle,
+    Image,
 } from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
 
@@ -22,6 +23,11 @@ type Props = {
      * Image URL for the emoji.
      */
     imageUrl: string;
+
+    /*
+     * asset name in case it is bundled with the app
+     */
+    assetImage: string;
 
     /*
      * Set if this is a custom emoji.
@@ -45,6 +51,7 @@ const Emoji: React.FC<Props> = (props: Props) => {
         customEmojiStyle,
         displayTextOnly,
         imageUrl,
+        assetImage,
         literal,
         unicode,
         testID,
@@ -85,6 +92,19 @@ const Emoji: React.FC<Props> = (props: Props) => {
             >
                 {code}
             </Text>
+        );
+    }
+
+    if (assetImage) {
+        const key = Platform.OS === 'android' ? (`${assetImage}-${height}-${width}`) : null;
+
+        //import mattermost from '@assets/images/mattermost.png';
+        return (
+            <Image
+                key={key}
+                source={require('@assets/images/mattermost.png')}
+                testID={testID}
+            />
         );
     }
 
