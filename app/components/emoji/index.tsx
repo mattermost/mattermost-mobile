@@ -65,7 +65,7 @@ const Emoji = ({
         displayTextOnly =
             (
 
-            // fixme: need to read this value from somewhere
+            // fixme: A new table will be created to handle nonExistentEmoji
             // state.entities.emojis.nonExistentEmoji.has(emojiName) ||
                 config?.EnableCustomEmoji !== 'true' ||
                 config?.ExperimentalEnablePostMetadata === 'true' ||

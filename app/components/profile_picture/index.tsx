@@ -26,22 +26,6 @@ const STATUS_BUFFER = Platform.select({
     android: 2,
 });
 
-type ProfilePictureProps = {
-    currentUserIdRecord: SystemModel;
-    edit: boolean;
-    iconSize?: number;
-    imageUri?: string;
-    profileImageRemove?: boolean;
-    profileImageUri?: string;
-    showStatus: boolean;
-    size: number;
-    statusSize: number;
-    statusStyle?: StyleProp<ViewProps> | any;
-    testID?: string;
-    userId: string;
-    user : UserModel;
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
@@ -69,20 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ProfilePicture = ({
-    currentUserIdRecord,
-    edit = false,
-    iconSize,
-    imageUri,
-    profileImageRemove,
-    profileImageUri,
-    showStatus = true,
-    size = 128,
-    statusSize = 14,
-    statusStyle,
-    testID,
-    user,
-}: ProfilePictureProps) => {
+const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, imageUri, profileImageRemove, profileImageUri, showStatus = true, size = 128, statusSize = 14, statusStyle, testID, user}: ProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string | undefined>();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -233,7 +204,29 @@ const ProfilePicture = ({
     );
 };
 
-export default withDatabase(withObservables(['userId'], ({userId, database}: {userId: string, database: Database}) => ({
+type ProfilePictureProps = ProfilePictureInputProps & {
+    currentUserIdRecord: SystemModel;
+    edit: boolean;
+    iconSize?: number;
+    imageUri?: string;
+    profileImageUri?: string;
+    user : UserModel;
+    database: Database;
+};
+
+type ProfilePictureInputProps = {
+    profileImageRemove?: boolean; // fixme: is that one really needed ?
+    showStatus?: boolean;
+    size: number;
+    statusSize: number;
+    statusStyle?: StyleProp<ViewProps> | any;
+    testID?: string;
+    userId?: string;
+}
+
+const ProfilePicture: React.FunctionComponent<ProfilePictureInputProps> = withDatabase(withObservables(['userId'], ({userId, database}: {userId: string, database: Database}) => ({
     currentUserIdRecord: queryCurrentUserId(database),
-    user: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(userId),
-}))(ProfilePicture));
+    ...(userId && {user: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(userId)}),
+}))(ConnectedProfilePicture));
+
+export default ProfilePicture;
