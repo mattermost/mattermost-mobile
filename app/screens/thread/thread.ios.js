@@ -55,6 +55,7 @@ export default class ThreadIOS extends ThreadBase {
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}
                             location={THREAD}
+                            rootId={rootId}
                             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                         />
                     </Animated.View>

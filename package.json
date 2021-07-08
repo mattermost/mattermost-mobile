@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.44.1",
+  "version": "1.45.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -19,8 +19,8 @@
     "@rudderstack/rudder-sdk-react-native": "1.0.10",
     "@sentry/react-native": "2.5.2",
     "analytics-react-native": "1.2.0",
-    "commonmark": "github:mattermost/commonmark.js#d716e1c89e0a6721051df7bc74ad7683e1ae438f",
-    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#81af294317ebe19b5cc195d7fbc4f4a58177854c",
+    "commonmark": "0.30.0",
+    "commonmark-react-renderer": "4.3.5",
     "deep-equal": "2.0.5",
     "deepmerge": "4.2.2",
     "emoji-regex": "9.2.2",

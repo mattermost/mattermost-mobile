@@ -23,6 +23,7 @@ import {setupPermanentSidebar} from '@init/device';
 import PushNotifications from '@init/push_notifications';
 import mattermostManaged from '@mattermost-managed';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
@@ -214,6 +215,7 @@ class GlobalEventHandler {
 
         await dispatch(loadConfigAndLicense());
         await dispatch(loadMe(user));
+        dispatch(getTeams());
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
