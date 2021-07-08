@@ -44,6 +44,7 @@ type PostProps = {
     showPermalink: (intl: typeof intlShape, teamName: string, postId: string) => null;
     skipFlaggedHeader?: boolean;
     skipPinnedHeader?: boolean;
+    style?: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
     testID?: string;
     theme: Theme
@@ -92,10 +93,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
     location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink,
-    teammateNameDisplay, testID, theme,
+    teammateNameDisplay, testID, theme, style,
 }: PostProps) => {
     const pressDetected = useRef(false);
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     const handlePress = preventDoubleTap(() => {
         pressDetected.current = true;
@@ -159,23 +160,23 @@ const Post = ({
     const highlightFlagged = isFlagged && !skipFlaggedHeader;
     const hightlightPinned = post.is_pinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
-    const rightColumnStyle = [style.rightColumn, (post.root_id && isLastReply && style.rightColumnPadding)];
-    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPostPendingOrFailed(post) ? style.pendingPost : undefined;
+    const rightColumnStyle = [styles.rightColumn, (post.root_id && isLastReply && styles.rightColumnPadding)];
+    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPostPendingOrFailed(post) ? styles.pendingPost : undefined;
     const isAutoResponder = fromAutoResponder(post);
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
-        highlightedStyle = style.highlight;
+        highlightedStyle = styles.highlight;
     } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrFlagged) {
-        highlightedStyle = style.highlightPinnedOrFlagged;
+        highlightedStyle = styles.highlightPinnedOrFlagged;
     }
 
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
     if (isConsecutivePost) {
-        consecutiveStyle = style.consective;
-        postAvatar = <View style={style.consecutivePostContainer}/>;
+        consecutiveStyle = styles.consective;
+        postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
         postAvatar = isAutoResponder ? (
             <SystemAvatar theme={theme}/>
@@ -235,7 +236,7 @@ const Post = ({
     return (
         <View
             testID={testID}
-            style={[style.postStyle, highlightedStyle]}
+            style={[styles.postStyle, style, highlightedStyle]}
         >
             <TouchableWithFeedback
                 testID={itemTestID}
@@ -254,7 +255,7 @@ const Post = ({
                         skipPinnedHeader={skipPinnedHeader}
                         theme={theme}
                     />
-                    <View style={[style.container, consecutiveStyle]}>
+                    <View style={[styles.container, consecutiveStyle]}>
                         {postAvatar}
                         <View style={rightColumnStyle}>
                             {header}
