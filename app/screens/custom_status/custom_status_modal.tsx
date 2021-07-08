@@ -317,7 +317,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const screen = 'ClearAfter';
         const title = intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'});
         const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration, intl, theme};
-        const backButton = await CompassIcon.getImageSource('chevron-left', 24, theme.sidebarHeaderTextColor);
+        const backButton = await CompassIcon.getImageSource('chevron-left', 26, theme.sidebarHeaderTextColor);
 
         const options = {
             topBar: {
@@ -334,7 +334,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const {emoji, text, duration, expires_at} = this.state;
         const {theme, isLandscape, intl} = this.props;
 
-        const isStatusSet = emoji || text;
+        const isStatusSet = Boolean(emoji || text);
         const style = getStyleSheet(theme);
         const customStatusEmoji = (
             <TouchableOpacity
@@ -358,13 +358,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 )}
             </TouchableOpacity>
         );
-        const renderClearAfterTime = duration !== null && duration !== undefined && duration !== CustomStatusDuration.DATE_AND_TIME ? (
-            <FormattedText
-                id={durationValues[duration].id}
-                defaultMessage={durationValues[duration].defaultMessage}
-                style={style.expiryTime}
-            />
-        ) : (
+
+        const clearAfterTime = duration && duration === CustomStatusDuration.DATE_AND_TIME ? (
             <View style={style.expiryTime}>
                 <CustomStatusExpiry
                     time={expires_at.toDate()}
@@ -372,6 +367,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     textStyles={style.customStatusExpiry}
                 />
             </View>
+        ) : (
+            <FormattedText
+                id={durationValues[duration].id}
+                defaultMessage={durationValues[duration].defaultMessage}
+                style={style.expiryTime}
+            />
         );
 
         const clearAfter = (
@@ -384,7 +385,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     style={style.inputContainer}
                 >
                     <Text style={style.expiryTimeLabel}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
-                    {renderClearAfterTime}
+                    {clearAfterTime}
                     <CompassIcon
                         name='chevron-right'
                         size={24}
@@ -414,7 +415,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     underlineColorAndroid='transparent'
                     value={text}
                 />
-                <View style={style.divider}/>
+                {isStatusSet && (
+                    <View style={style.divider}/>
+                )}
                 {customStatusEmoji}
                 {isStatusSet ? (
                     <View
@@ -453,7 +456,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                         <View style={style.scrollView}>
                             <View style={style.block}>
                                 {customStatusInput}
-                                {clearAfter}
+                                {isStatusSet && clearAfter}
                             </View>
                             {this.renderRecentCustomStatuses(style)}
                             {this.renderCustomStatusSuggestions(style)}
@@ -540,12 +543,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         expiryTime: {
             position: 'absolute',
-            right: 30,
+            right: 42,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         rightIcon: {
             position: 'absolute',
-            right: 6,
+            right: 18,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };

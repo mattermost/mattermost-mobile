@@ -103,32 +103,27 @@ const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBra
 
     const useTime = showTimeCompulsory || !(expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowEndTime));
 
-    const renderTime = useTime && (
-        <FormattedTime
-            isMilitaryTime={militaryTime}
-            timezone={timezone || ''}
-            value={expiryMomentTime.toDate()}
-        />
-    );
-
-    const prefix = showPrefix && (
-        <Text>
-            <FormattedText
-                id='custom_status.expiry.until'
-                defaultMessage='Until'
-            />{' '}
-        </Text>
-    );
-
     return (
         <Text
             testID={testID}
             style={[styles.text, textStyles]}
         >
             {withinBrackets && '('}
-            {prefix}
+            {showPrefix && (
+                <FormattedText
+                    id='custom_status.expiry.until'
+                    defaultMessage='Until'
+                />
+            )}
+            {showPrefix && ' '}
             {renderDayOrDate}
-            {renderTime}
+            {useTime && (
+                <FormattedTime
+                    isMilitaryTime={militaryTime}
+                    timezone={timezone || ''}
+                    value={expiryMomentTime.toDate()}
+                />
+            )}
             {withinBrackets && ')'}
         </Text>
     );

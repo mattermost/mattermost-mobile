@@ -22,6 +22,18 @@ type Props = {
 
 type AndroidMode = 'date' | 'time';
 
+const CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES = 30;
+function getRoundedTime(value: Moment) {
+    const roundedTo = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES;
+    const start = moment(value);
+    const diff = start.minute() % roundedTo;
+    if (diff === 0) {
+        return value;
+    }
+    const remainder = roundedTo - diff;
+    return start.add(remainder, 'm').seconds(0).milliseconds(0);
+}
+
 const DateTimeSelector = (props: Props) => {
     const {theme} = props;
     const styles = getStyleSheet(theme);
@@ -29,11 +41,14 @@ const DateTimeSelector = (props: Props) => {
     const timezone = useSelector(getCurrentUserTimezone);
     const currentTime = getCurrentMomentForTimezone(timezone);
     const timezoneOffSetInMinutes = timezone ? getUtcOffsetForTimeZone(timezone) : undefined;
-    const [date, setDate] = useState<Moment>(currentTime);
+
+    const minimumDate = getRoundedTime(currentTime);
+
+    const [date, setDate] = useState<Moment>(minimumDate);
     const [mode, setMode] = useState<AndroidMode>('date');
     const [show, setShow] = useState<boolean>(false);
 
-    const onChange = (event: React.ChangeEvent<HTMLInputElement>, selectedDate: Date) => {
+    const onChange = (_: React.ChangeEvent<HTMLInputElement>, selectedDate: Date) => {
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
         setDate(moment(currentDate));
@@ -74,8 +89,9 @@ const DateTimeSelector = (props: Props) => {
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={onChange}
                     textColor={theme.centerChannelColor}
+                    minimumDate={minimumDate.toDate()}
+                    minuteInterval={CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES}
                     timeZoneOffsetInMinutes={timezoneOffSetInMinutes}
-                    minimumDate={currentTime.toDate()}
                 />
             )}
         </View>

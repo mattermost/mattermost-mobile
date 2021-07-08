@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SafeAreaView, View, StatusBar, Keyboard} from 'react-native';
+import {SafeAreaView, View, StatusBar} from 'react-native';
 import React from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
@@ -88,22 +88,20 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     }
 
     onDone = () => {
-        Keyboard.dismiss();
         this.props.handleClearAfterClick(this.state.duration, this.state.expiresAt);
         dismissModal();
     };
 
     onCancel = async () => {
-        Keyboard.dismiss();
         dismissModal();
     }
 
     handleItemClick = (duration: CustomStatusDuration, expiresAt: string) => {
-        if (duration === CustomStatusDuration.DATE_AND_TIME && expiresAt !== '') {
-            this.setState({duration, expiresAt, showExpiryTime: true});
-        } else {
-            this.setState({duration, expiresAt, showExpiryTime: false});
-        }
+        this.setState({
+            duration,
+            expiresAt,
+            showExpiryTime: duration === CustomStatusDuration.DATE_AND_TIME && expiresAt !== '',
+        });
     };
 
     renderClearAfterMenu = () => {
@@ -130,15 +128,11 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
             },
         );
 
-        if (clearAfterMenu.length <= 0) {
-            return null;
-        }
-
-        return (
+        return clearAfterMenu.length > 0 ? (
             <View testID='clear_after.menu'>
                 <View style={style.block}>{clearAfterMenu}</View>
             </View>
-        );
+        ) : null;
     };
 
     render() {
