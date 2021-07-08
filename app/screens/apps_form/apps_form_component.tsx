@@ -3,9 +3,10 @@
 
 import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, Text, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import Button from 'react-native-button';
 
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
@@ -22,6 +23,7 @@ import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {DoAppCallResult} from 'types/actions/apps';
+import {GlobalStyles} from 'app/styles';
 
 import AppsFormField from './apps_form_field';
 import DialogIntroductionText from './dialog_introduction_text';
@@ -107,11 +109,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             return;
         case 'close-dialog':
             this.handleHide();
-            return;
-        }
-
-        if (buttonId.startsWith('submit-form_')) {
-            this.handleSubmit(buttonId.substr('submit-form_'.length));
         }
     }
 
@@ -333,6 +330,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const {formError, fieldErrors, values} = this.state;
         const style = getStyleFromTheme(theme);
 
+        const submitButtons = fields && fields.find((f) => f.name === form.submit_buttons);
+
         return (
             <SafeAreaView
                 testID='interactive_dialog.screen'
@@ -373,6 +372,19 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                             />
                         );
                     })}
+                    <View
+                        style={{marginHorizontal: 5}}
+                    >
+                        {submitButtons?.options?.map((o) => (
+                            <Button
+                                key={o.value}
+                                onPress={() => this.handleSubmit(o.value)}
+                                containerStyle={GlobalStyles.signupButton}
+                            >
+                                <Text style={GlobalStyles.signupButtonText}>{o.label}</Text>
+                            </Button>
+                        ))}
+                    </View>
                 </ScrollView>
             </SafeAreaView>
         );
@@ -402,6 +414,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         scrollView: {
             marginBottom: 20,
             marginTop: 10,
+        },
+        button: {
+            alignSelf: 'stretch',
+            backgroundColor: theme.sidebarHeaderBg,
+            borderRadius: 3,
+            padding: 15,
         },
         errorLabel: {
             fontSize: 12,
