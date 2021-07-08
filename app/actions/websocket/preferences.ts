@@ -18,6 +18,7 @@ import {GlobalState} from '@mm-redux/types/store';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 
 export function handlePreferenceChangedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
@@ -76,7 +77,11 @@ export function handleCRTPreferenceChange(oldState: GlobalState) {
         const newState = getState();
 
         // Check for the changes in CRT preferences.
-        if (isCollapsedThreadsEnabled(oldState) !== isCollapsedThreadsEnabled(newState)) {
+        if (
+            // Skip for newly logged in user
+            getConfig(oldState).CollapsedThreads !== undefined &&
+            isCollapsedThreadsEnabled(oldState) !== isCollapsedThreadsEnabled(newState)
+        ) {
             // Clear the data and restart the app.
             Keyboard.dismiss();
             requestAnimationFrame(async () => {
