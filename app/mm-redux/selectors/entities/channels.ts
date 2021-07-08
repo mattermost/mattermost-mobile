@@ -400,7 +400,7 @@ export const getUnreads: (a: GlobalState) => {
         const otherTeamsUnreadCountForChannels = myTeams.reduce((acc, team) => {
             if (currentTeamId !== team.id) {
                 const member = myTeamMemberships[team.id];
-                acc.messageCount += member.msg_count;
+                acc.messageCount += (collapsedThreadsEnabled ? member.msg_count_root : member.msg_count);
                 acc.mentionCount += (collapsedThreadsEnabled ? member.mention_count_root : member.mention_count);
             }
 
