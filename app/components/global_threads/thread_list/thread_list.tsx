@@ -3,35 +3,41 @@
 import React from 'react';
 import {FlatList, Platform, Text, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
-import {useSelector} from 'react-redux';
 
 import CompassIcon from '@components/compass_icon';
+import Loading from '@components/loading';
 import {INITIAL_BATCH_TO_RENDER} from '@components/post_list/post_list_config';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import ThreadConstants from '@mm-redux/constants/threads';
 import type {Theme} from '@mm-redux/types/preferences';
-import type {GlobalState} from '@mm-redux/types/store';
+import {UserThread} from '@mm-redux/types/threads';
+import {$ID} from '@mm-redux/types/utilities';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from '../empty_state';
 import ThreadItem from '../thread_item';
-import Loading from '@components/loading';
 
-type Props = {
+export type OwnProps = {
     haveUnreads: boolean;
-    intl: typeof intlShape;
     isLoading: boolean;
     loadMoreThreads: () => Promise<void>;
     listRef: React.RefObject<FlatList>;
     markAllAsRead: () => void;
     testID: string;
-    threadIds: string[];
+    threadIds: $ID<UserThread>[];
     viewAllThreads: () => void;
     viewUnreadThreads: () => void;
     viewingUnreads: boolean;
 }
 
-function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, markAllAsRead, testID, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
-    const theme = useSelector((state: GlobalState) => getTheme(state));
+export type StateProps = {
+    theme: Theme;
+};
+
+export type Props = OwnProps & StateProps & {
+    intl: typeof intlShape;
+};
+
+function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, markAllAsRead, testID, theme, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
     const style = getStyleSheet(theme);
 
     const handleEndReached = React.useCallback(() => {
@@ -43,8 +49,9 @@ function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, mar
     const renderPost = React.useCallback(({item}) => {
         return (
             <ThreadItem
-                postId={item}
                 testID={testID}
+                theme={theme}
+                threadId={item}
             />
         );
     }, []);
@@ -126,7 +133,7 @@ function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, mar
     };
 
     const renderFooter = () => {
-        if (isLoading && threadIds.length) {
+        if (isLoading && threadIds?.length >= ThreadConstants.THREADS_CHUNK_SIZE) {
             return (
                 <View style={style.loadingMoreContainer}>
                     <Loading size='small'/>

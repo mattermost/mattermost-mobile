@@ -2,14 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import * as redux from 'react-redux';
 import {Text} from 'react-native';
-import merge from 'deepmerge';
 import {shallow} from 'enzyme';
 
 import * as navigationActions from '@actions/navigation';
 import {THREAD} from '@constants/screen';
-import initialState from '@store/initial_state';
+import {Preferences} from '@mm-redux/constants';
+import {Channel} from '@mm-redux/types/channels';
+import {Post} from '@mm-redux/types/posts';
+import {UserThread} from '@mm-redux/types/threads';
+import {UserProfile} from '@mm-redux/types/users';
 import {intl} from 'test/intl-test-helper';
 
 import ThreadItem from './thread_item';
@@ -18,41 +20,31 @@ describe('Global Thread Item', () => {
     const testID = 'thread_item';
 
     const baseProps = {
+        actions: {
+            getPost: jest.fn(),
+            getPostThread: jest.fn(),
+            selectPost: jest.fn(),
+        },
+        channel: {
+            display_name: 'CHANNEL 1',
+        } as Channel,
         intl,
-        postId: 'post1',
+        post: {
+            id: 'post1',
+        } as Post,
+        threadId: 'post1',
         testID,
+        theme: Preferences.THEMES.default,
+        thread: {
+            id: 'post1',
+            unread_replies: 5,
+        } as UserThread,
+        threadStarter: {
+            id: 'user1',
+        } as UserProfile,
     };
 
     const testIDPrefix = `${testID}.post1`;
-
-    const baseState = merge(
-        initialState,
-        {
-            entities: {
-                posts: {
-                    posts: {
-                        post1: {
-                            id: 'post1',
-                        },
-                    },
-                },
-                teams: {
-                    currentTeamId: 'team1',
-                },
-                threads: {
-                    threads: {
-                        post1: {
-                            id: 'post1',
-                            unread_replies: 5,
-                        },
-                    },
-                },
-            },
-        },
-    );
-
-    jest.spyOn(redux, 'useSelector').mockImplementation((callback) => callback(baseState));
-    jest.spyOn(redux, 'useDispatch').mockImplementation(() => jest.fn());
 
     test('Should render thread item with unread messages dot', () => {
         const wrapper = shallow(
@@ -69,25 +61,16 @@ describe('Global Thread Item', () => {
     });
 
     test('Should show unread mentions count', () => {
-        jest.spyOn(redux, 'useSelector').mockImplementation((callback) => callback(
-            merge(
-                baseState,
-                {
-                    entities: {
-                        threads: {
-                            threads: {
-                                post1: {
-                                    unread_mentions: 5,
-                                },
-                            },
-                        },
-                    },
-                },
-            ),
-        ));
+        const props = {
+            ...baseProps,
+            thread: {
+                ...baseProps.thread,
+                unread_mentions: 5,
+            },
+        };
         const wrapper = shallow(
             <ThreadItem
-                {...baseProps}
+                {...props}
             />,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -99,25 +82,16 @@ describe('Global Thread Item', () => {
     });
 
     test('Should show unread mentions as 99+ when over 99', () => {
-        jest.spyOn(redux, 'useSelector').mockImplementation((callback) => callback(
-            merge(
-                baseState,
-                {
-                    entities: {
-                        threads: {
-                            threads: {
-                                post1: {
-                                    unread_mentions: 511,
-                                },
-                            },
-                        },
-                    },
-                },
-            ),
-        ));
+        const props = {
+            ...baseProps,
+            thread: {
+                ...baseProps.thread,
+                unread_mentions: 511,
+            },
+        };
         const wrapper = shallow(
             <ThreadItem
-                {...baseProps}
+                {...props}
             />,
         );
         const mentionBadge = wrapper.find({testID: `${testIDPrefix}.unread_mentions`}).at(0);

@@ -4,46 +4,51 @@
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import {intlShape} from 'react-intl';
-import {useDispatch, useSelector} from 'react-redux';
 
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
-import {setThreadFollow} from '@mm-redux/actions/threads';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import type {Theme} from '@mm-redux/types/preferences';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import type {GlobalState} from '@mm-redux/types/store';
+import {Team} from '@mm-redux/types/teams';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
+import {$ID} from '@mm-redux/types/utilities';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const NO_PARTICIPANTS: object[] = [];
 
-type Props = {
-    intl: typeof intlShape;
-    testID: string;
-    threadStarter: UserProfile;
-    thread: UserThread;
+export type DispatchProps = {
+    actions: {
+        setThreadFollow: (currentUserId: $ID<UserProfile>, currentTeamId: $ID<Team>, threadId: $ID<UserThread>, newState: boolean) => void;
+    };
+};
+
+export type OwnProps = {
     location: 'globalThreads' | 'channel';
+    testID: string;
+    thread: UserThread;
+    threadStarter: UserProfile;
+    theme: Theme;
 }
 
-function ThreadFooter({intl, location, testID, thread, threadStarter}: Props) {
-    const theme = useSelector((state: GlobalState) => getTheme(state));
+export type StateProps = {
+    currentTeamId: $ID<Team>;
+    currentUserId: $ID<UserProfile>;
+};
+
+export type Props = DispatchProps & OwnProps & StateProps & {
+    intl: typeof intlShape;
+};
+
+function ThreadFooter({actions, currentTeamId, currentUserId, intl, location, testID, theme, thread, threadStarter}: Props) {
     const style = getStyleSheet(theme);
 
-    const currentUserId = useSelector((state: GlobalState) => getCurrentUserId(state));
-    const currentTeamId = useSelector((state: GlobalState) => getCurrentTeamId(state));
-
-    const dispatch = useDispatch();
-
     const onUnfollow = () => {
-        dispatch(setThreadFollow(currentUserId, currentTeamId, thread.id, false));
+        actions.setThreadFollow(currentUserId, currentTeamId, thread.id, false);
     };
 
     const onFollow = () => {
-        dispatch(setThreadFollow(currentUserId, currentTeamId, thread.id, true));
+        actions.setThreadFollow(currentUserId, currentTeamId, thread.id, true);
     };
 
     let replyIcon;

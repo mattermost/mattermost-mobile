@@ -79,9 +79,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
                 "paddingRight": 8,
               }
             }
-          >
-            Someone
-          </Text>
+          />
           <View
             style={
               Object {
@@ -107,7 +105,9 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
                   "textTransform": "uppercase",
                 }
               }
-            />
+            >
+              CHANNEL 1
+            </Text>
           </View>
         </View>
         <InjectIntl(FriendlyDate)
@@ -134,13 +134,47 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
           value=""
         />
       </Text>
-      <InjectIntl(ThreadFooter)
+      <Connect(InjectIntl(ThreadFooter))
         location="globalThreads"
         testID="thread_item.post1.footer"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
         thread={
           Object {
             "id": "post1",
             "unread_replies": 5,
+          }
+        }
+        threadStarter={
+          Object {
+            "id": "user1",
           }
         }
       />
@@ -242,9 +276,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
                 "paddingRight": 8,
               }
             }
-          >
-            Someone
-          </Text>
+          />
           <View
             style={
               Object {
@@ -270,7 +302,9 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
                   "textTransform": "uppercase",
                 }
               }
-            />
+            >
+              CHANNEL 1
+            </Text>
           </View>
         </View>
         <InjectIntl(FriendlyDate)
@@ -297,14 +331,48 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
           value=""
         />
       </Text>
-      <InjectIntl(ThreadFooter)
+      <Connect(InjectIntl(ThreadFooter))
         location="globalThreads"
         testID="thread_item.post1.footer"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
         thread={
           Object {
             "id": "post1",
             "unread_mentions": 5,
             "unread_replies": 5,
+          }
+        }
+        threadStarter={
+          Object {
+            "id": "user1",
           }
         }
       />

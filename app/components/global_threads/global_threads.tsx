@@ -2,36 +2,34 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {Alert, FlatList} from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
-import {useSelector, useDispatch} from 'react-redux';
+import {intlShape} from 'react-intl';
 
-import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
-import {DispatchFunc} from '@mm-redux/types/actions';
-import {getThreads, markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
-import {getTeamThreadCounts, getThreadOrderInCurrentTeam, getUnreadThreadOrderInCurrentTeam} from '@mm-redux/selectors/entities/threads';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import type {GlobalState} from '@mm-redux/types/store';
-import {getViewingGlobalThreadsUnread} from '@selectors/threads';
+import {ActionResult} from '@mm-redux/types/actions';
+import {Team} from '@mm-redux/types/teams';
+import {UserProfile} from '@mm-redux/types/users';
+import {$ID} from '@mm-redux/types/utilities';
+import {ThreadsState, UserThread} from '@mm-redux/types/threads';
 
 import ThreadList from './thread_list';
 
 type Props = {
+    actions: {
+        getThreads: (userId: $ID<UserProfile>, teamId: $ID<Team>, before?: $ID<UserThread>[], after?: $ID<UserThread>[], perPage?: number, deleted?: boolean, unread?: boolean) => Promise<ActionResult>;
+        handleViewingGlobalThreadsAll: () => void;
+        handleViewingGlobalThreadsUnreads: () => void;
+        markAllThreadsInTeamRead: (userId: $ID<UserProfile>, teamId: $ID<Team>) => void;
+    },
+    allThreadIds: $ID<UserThread>[];
     intl: typeof intlShape;
+    teamId: $ID<Team>;
+    threadCount: ThreadsState['counts'][$ID<Team>];
+    unreadThreadIds: $ID<UserThread>[];
+    userId: $ID<UserProfile>;
+    viewingUnreads: boolean;
 }
 
-function GlobalThreadsList({intl}: Props) {
-    const dispatch: DispatchFunc = useDispatch();
-
-    const teamId = useSelector((state: GlobalState) => getCurrentTeamId(state));
-    const userId = useSelector((state: GlobalState) => getCurrentUserId(state));
-    const viewingUnreads = useSelector((state: GlobalState) => getViewingGlobalThreadsUnread(state));
-
-    const allThreadIds = useSelector((state: GlobalState) => getThreadOrderInCurrentTeam(state));
-    const unreadThreadIds = useSelector((state: GlobalState) => getUnreadThreadOrderInCurrentTeam(state));
+function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, unreadThreadIds, userId, viewingUnreads}: Props) {
     const ids = viewingUnreads ? unreadThreadIds : allThreadIds;
-
-    const threadCount = useSelector((state:GlobalState) => getTeamThreadCounts(state, teamId));
     const haveUnreads = threadCount?.total_unread_threads > 0;
 
     const listRef = React.useRef<FlatList>(null);
@@ -40,7 +38,7 @@ function GlobalThreadsList({intl}: Props) {
 
     const loadThreads = React.useCallback(async (before = '', after = '', unread = false) => {
         setIsLoading(true);
-        await dispatch(getThreads(userId, teamId, before, after, undefined, false, unread));
+        await actions.getThreads(userId, teamId, before, after, undefined, false, unread);
         setIsLoading(false);
     }, [teamId]);
 
@@ -81,14 +79,14 @@ function GlobalThreadsList({intl}: Props) {
         isLoadingMoreThreads.current = false;
         listRef.current?.scrollToOffset({offset: 0});
         loadThreads('', allThreadIds[0], false);
-        dispatch(handleViewingGlobalThreadsAll());
+        actions.handleViewingGlobalThreadsAll();
     }, [loadThreads, allThreadIds]);
 
     const handleViewUnreadThreads = React.useCallback(() => {
         isLoadingMoreThreads.current = false;
         listRef.current?.scrollToOffset({offset: 0});
         loadThreads('', unreadThreadIds[0], true);
-        dispatch(handleViewingGlobalThreadsUnreads());
+        actions.handleViewingGlobalThreadsUnreads();
     }, [loadThreads, unreadThreadIds]);
 
     const markAllAsRead = React.useCallback(() => {
@@ -114,11 +112,11 @@ function GlobalThreadsList({intl}: Props) {
                 }),
                 style: 'default',
                 onPress: () => {
-                    dispatch(markAllThreadsInTeamRead(userId, teamId));
+                    actions.markAllThreadsInTeamRead(userId, teamId);
                 },
             }],
         );
-    }, [dispatch, teamId, userId]);
+    }, [teamId, userId]);
 
     return (
         <ThreadList
@@ -136,4 +134,4 @@ function GlobalThreadsList({intl}: Props) {
     );
 }
 
-export default injectIntl(GlobalThreadsList);
+export default GlobalThreadsList;

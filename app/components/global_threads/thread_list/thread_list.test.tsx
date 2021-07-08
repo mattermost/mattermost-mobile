@@ -3,16 +3,14 @@
 
 import React from 'react';
 import {FlatList} from 'react-native';
-import * as redux from 'react-redux';
 import {shallow} from 'enzyme';
 
-import initialState from '@store/initial_state';
+import {Preferences} from '@mm-redux/constants';
 import {intl} from 'test/intl-test-helper';
 
 import ThreadList from './thread_list';
 
 jest.mock('app/components/compass_icon', () => 'Icon');
-jest.spyOn(redux, 'useSelector').mockImplementation((callback) => callback(initialState));
 jest.spyOn(React, 'useRef').mockReturnValue({
     current: {},
 });
@@ -32,6 +30,7 @@ describe('Global Thread List', () => {
         loadMoreThreads: jest.fn(),
         markAllAsRead,
         testID,
+        theme: Preferences.THEMES.default,
         threadIds: ['thread1'],
         viewingUnreads: true,
         viewAllThreads,

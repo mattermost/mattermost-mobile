@@ -4,73 +4,83 @@
 import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
 import {intlShape} from 'react-intl';
-import {useDispatch, useSelector} from 'react-redux';
 
 import {goToScreen} from '@actions/navigation';
 import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
-import {selectPost} from '@mm-redux/actions/posts';
-import {DispatchFunc} from '@mm-redux/types/actions';
-import {getPost, getPostThread} from '@actions/views/post';
 import {THREAD} from '@constants/screen';
 import {Posts, Preferences} from '@mm-redux/constants';
-import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getPost as getPostSelector} from '@mm-redux/selectors/entities/posts';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getThread} from '@mm-redux/selectors/entities/threads';
-import {getUser} from '@mm-redux/selectors/entities/users';
+
+import {Channel} from '@mm-redux/types/channels';
+import {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
-import type {GlobalState} from '@mm-redux/types/store';
+import {UserThread} from '@mm-redux/types/threads';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {UserProfile} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadFooter from '../thread_footer';
 
-type Props = {
-    intl: typeof intlShape;
-    postId: string;
+export type DispatchProps = {
+    actions: {
+        getPost: (postId: string) => void;
+        getPostThread: (postId: string) => void;
+        selectPost: (postId: string) => void;
+    };
+}
+
+export type OwnProps = {
     testID: string;
+    theme: Theme;
+    threadId: string;
 };
 
-function ThreadItem({intl, postId, testID}: Props) {
-    const theme = useSelector((state: GlobalState) => getTheme(state));
+export type StateProps = {
+    channel: Channel;
+    post: Post;
+    thread: UserThread | null;
+    threadStarter: UserProfile;
+}
+
+type Props = DispatchProps & OwnProps & StateProps & {
+    intl: typeof intlShape;
+};
+
+function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thread, threadStarter}: Props) {
     const style = getStyleSheet(theme);
 
-    const thread = useSelector((state: GlobalState) => getThread(state, postId));
     if (!thread) {
         return null;
     }
 
-    let post = useSelector((state: GlobalState) => getPostSelector(state, postId));
+    let postItem = post;
 
-    const asyncDispatch: DispatchFunc = useDispatch();
+    React.useEffect(() => {
+        if (!postItem) {
+            // Get the latest post
+            actions.getPost(threadId);
+        }
+    }, []);
 
-    if (!post) {
-        // Get the latest post
-        asyncDispatch(getPost(postId));
-
+    if (!postItem) {
         // Have the post from thread item
-        post = thread.post;
+        postItem = thread.post;
     }
 
-    const threadStarter = useSelector((state: GlobalState) => getUser(state, post?.user_id));
-    const channel = useSelector((state: GlobalState) => getChannel(state, post?.channel_id));
     const channelName = channel?.display_name;
     const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
 
-    const dispatch = useDispatch();
-
     const showThread = () => {
-        dispatch(getPostThread(post.id));
-        dispatch(selectPost(post.id));
+        actions.getPostThread(postItem.id);
+        actions.selectPost(postItem.id);
         const passProps = {
-            channelId: post.channel_id,
-            rootId: post.id,
+            channelId: postItem.channel_id,
+            rootId: postItem.id,
         };
         goToScreen(THREAD, '', passProps);
     };
 
-    const testIDPrefix = `${testID}.${post?.id}`;
+    const testIDPrefix = `${testID}.${postItem?.id}`;
 
     const needBadge = thread.unread_mentions || thread.unread_replies;
     let badgeComponent;
@@ -95,7 +105,7 @@ function ThreadItem({intl, postId, testID}: Props) {
     }
 
     let name;
-    if (post.state === Posts.POST_DELETED) {
+    if (postItem.state === Posts.POST_DELETED) {
         name = (
             <Text
                 style={[style.threadStarter, style.threadDeleted]}
@@ -115,13 +125,13 @@ function ThreadItem({intl, postId, testID}: Props) {
     }
 
     let postBody;
-    if (post.state !== Posts.POST_DELETED) {
+    if (postItem.state !== Posts.POST_DELETED) {
         postBody = (
             <Text
                 style={style.message}
                 numberOfLines={2}
             >
-                <RemoveMarkdown value={post.message || ''}/>
+                <RemoveMarkdown value={postItem.message || ''}/>
             </Text>
         );
     }
@@ -156,6 +166,7 @@ function ThreadItem({intl, postId, testID}: Props) {
                     <ThreadFooter
                         testID={`${testIDPrefix}.footer`}
                         thread={thread}
+                        theme={theme}
                         threadStarter={threadStarter}
                         location='globalThreads'
                     />

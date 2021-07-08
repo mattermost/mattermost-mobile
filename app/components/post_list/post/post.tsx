@@ -254,6 +254,7 @@ const Post = ({
         footer = (
             <ThreadFooter
                 testID={`${itemTestID}.footer`}
+                theme={theme}
                 thread={thread}
                 threadStarter={threadStarter}
                 location='channel'
