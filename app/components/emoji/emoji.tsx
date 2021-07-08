@@ -8,9 +8,10 @@ import {
     StyleSheet,
     Text,
     TextStyle,
-    Image,
 } from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
+
+const assetImages = new Map([['mattermost.png', require('@assets/images/mattermost.png')]]);
 
 type Props = {
 
@@ -98,11 +99,16 @@ const Emoji: React.FC<Props> = (props: Props) => {
     if (assetImage) {
         const key = Platform.OS === 'android' ? (`${assetImage}-${height}-${width}`) : null;
 
-        //import mattermost from '@assets/images/mattermost.png';
+        const image = assetImages.get(assetImage);
+        if (!image) {
+            return null;
+        }
         return (
-            <Image
+            <FastImage
                 key={key}
-                source={require('@assets/images/mattermost.png')}
+                source={image}
+                style={[customEmojiStyle, {width, height}]}
+                resizeMode={FastImage.resizeMode.contain}
                 testID={testID}
             />
         );

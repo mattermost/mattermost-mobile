@@ -32,7 +32,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)!];
         if (emoji.category === 'custom') {
-            assetImage = emoji.filename;
+            assetImage = emoji.fileName;
             isCustomEmoji = true;
         } else {
             unicode = emoji.image;
