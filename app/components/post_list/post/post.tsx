@@ -3,10 +3,12 @@
 
 import React, {ReactNode, useRef} from 'react';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import SystemAvatar from '@components/post_list/system_avatar';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -28,6 +30,7 @@ type PostProps = {
     enablePostUsernameOverride: boolean;
     highlight?: boolean;
     highlightPinnedOrFlagged?: boolean;
+    intl: typeof intlShape;
     isConsecutivePost?: boolean;
     isFirstReply?: boolean;
     isFlagged?: boolean;
@@ -38,6 +41,7 @@ type PostProps = {
     rootPostAuthor?: string;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
+    showPermalink: (intl: typeof intlShape, teamName: string, postId: string) => null;
     skipFlaggedHeader?: boolean;
     skipPinnedHeader?: boolean;
     teammateNameDisplay: string;
@@ -86,8 +90,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
-    location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true,
+    canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
+    location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink,
     teammateNameDisplay, testID, theme,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -99,11 +103,14 @@ const Post = ({
         if (post) {
             if (location === Screens.THREAD) {
                 Keyboard.dismiss();
+            } else if (location === Screens.SEARCH) {
+                showPermalink(intl, '', post.id);
+                return;
             }
 
             const isValidSystemMessage = fromAutoResponder(post) || !isSystemMessage(post);
             if (post.state !== Posts.POST_DELETED && isValidSystemMessage && !isPostPendingOrFailed(post)) {
-                if ([Screens.CHANNEL, Screens.PERMALINK, Screens.SEARCH].includes(location)) {
+                if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                     EventEmitter.emit('goToThread', post);
                 }
             } else if ((isPostEphemeral(post) || post.state === Posts.POST_DELETED)) {
@@ -154,6 +161,7 @@ const Post = ({
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [style.rightColumn, (post.root_id && isLastReply && style.rightColumnPadding)];
     const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPostPendingOrFailed(post) ? style.pendingPost : undefined;
+    const isAutoResponder = fromAutoResponder(post);
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
@@ -169,7 +177,9 @@ const Post = ({
         consecutiveStyle = style.consective;
         postAvatar = <View style={style.consecutivePostContainer}/>;
     } else {
-        postAvatar = (
+        postAvatar = isAutoResponder ? (
+            <SystemAvatar theme={theme}/>
+        ) : (
             <Avatar
                 pendingPostStyle={pendingPostStyle}
                 post={post}
@@ -177,7 +187,7 @@ const Post = ({
             />
         );
 
-        if (isSystemMessage(post)) {
+        if (isSystemMessage(post) && !isAutoResponder) {
             header = (
                 <SystemHeader
                     createAt={post.create_at}
@@ -200,7 +210,7 @@ const Post = ({
     }
 
     let body;
-    if (isSystemMessage(post) && !isPostEphemeral(post)) {
+    if (isSystemMessage(post) && !isPostEphemeral(post) && !isAutoResponder) {
         body = (
             <SystemMessage
                 post={post}
@@ -257,4 +267,4 @@ const Post = ({
     );
 };
 
-export default Post;
+export default injectIntl(Post);

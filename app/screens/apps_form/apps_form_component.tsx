@@ -8,24 +8,25 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Button from 'react-native-button';
 
-import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import ErrorText from 'app/components/error_text';
-import StatusBar from 'app/components/status_bar';
-import FormattedText from '@components/formatted_text';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {dismissModal} from 'app/actions/navigation';
-
-import DialogIntroductionText from './dialog_introduction_text';
-import {Theme} from '@mm-redux/types/preferences';
+import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
-import {AppCallResponseTypes} from '@mm-redux/constants/apps';
-import AppsFormField from './apps_form_field';
+import {Theme} from '@mm-redux/types/preferences';
+import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
+
+import StatusBar from '@components/status_bar';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+
+import {dismissModal} from '@actions/navigation';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {DoAppCallResult} from 'types/actions/apps';
 import {GlobalStyles} from 'app/styles';
+
+import AppsFormField from './apps_form_field';
+import DialogIntroductionText from './dialog_introduction_text';
 
 export type Props = {
     call: AppCallRequest;
@@ -342,11 +343,14 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 >
                     <StatusBar/>
                     {formError && (
-                        <ErrorText
-                            testID='interactive_dialog.error.text'
-                            textStyle={style.errorContainer}
-                            error={formError}
-                        />
+                        <View style={style.errorContainer} >
+                            <Markdown
+                                baseTextStyle={style.errorLabel}
+                                textStyles={getMarkdownTextStyles(theme)}
+                                blockStyles={getMarkdownBlockStyles(theme)}
+                                value={formError}
+                            />
+                        </View>
                     )}
                     {header &&
                         <DialogIntroductionText
@@ -416,6 +420,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.sidebarHeaderBg,
             borderRadius: 3,
             padding: 15,
+        },
+        errorLabel: {
+            fontSize: 12,
+            textAlign: 'left',
+            color: (theme.errorTextColor || '#DA4A4A'),
         },
     };
 });

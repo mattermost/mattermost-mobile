@@ -23,6 +23,7 @@ describe('user_profile', () => {
         makeDirectChannel: jest.fn(),
         loadBot: jest.fn(),
         getRemoteClusterInfo: jest.fn(),
+        unsetCustomStatus: jest.fn(),
     };
     const baseProps = {
         actions,
@@ -48,12 +49,47 @@ describe('user_profile', () => {
         is_bot: false,
     };
 
+    const customStatus = {
+        emoji: 'calendar',
+        text: 'In a meeting',
+    };
+
+    const customStatusProps = {
+        ...baseProps,
+        customStatus,
+        config: {
+            EnableCustomUserStatuses: 'true',
+        },
+        user,
+    };
+
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <UserProfile
                 {...baseProps}
                 user={user}
             />,
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status', () => {
+        const wrapper = shallowWithIntl(
+            <UserProfile
+                {...customStatusProps}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with custom status and isMyUser true', () => {
+        const wrapper = shallowWithIntl(
+            <UserProfile
+                {...customStatusProps}
+                isMyUser={true}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });

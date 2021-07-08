@@ -19,10 +19,12 @@ export const PERF_MARKERS = {
 class Telemetry {
     metrics: PerfMetric[];
     currentMetrics: Record<string, PerfMetric>;
+    started: boolean;
 
     constructor() {
         this.metrics = [];
         this.currentMetrics = {};
+        this.started = false;
     }
 
     getMetrics = () => {
@@ -62,14 +64,17 @@ class Telemetry {
     }
 
     startSinceLaunch(extra = '') {
-        getTimeSinceStartup().then((endTime) => {
-            this.metrics.push({
-                extra,
-                name: PERF_MARKERS.START_SINCE_LAUNCH,
-                startTime: 0,
-                endTime,
+        if (!this.started) {
+            this.started = true;
+            getTimeSinceStartup().then((endTime) => {
+                this.metrics.push({
+                    extra,
+                    name: PERF_MARKERS.START_SINCE_LAUNCH,
+                    startTime: 0,
+                    endTime,
+                });
             });
-        });
+        }
     }
 
     remove(names = []) {

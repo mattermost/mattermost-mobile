@@ -23,7 +23,6 @@ export default class ChannelPostList extends PureComponent {
             getPostThread: PropTypes.func.isRequired,
             increasePostVisibility: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
-            refreshChannelWithRetry: PropTypes.func.isRequired,
             setChannelRefreshing: PropTypes.func,
         }).isRequired,
         channelId: PropTypes.string.isRequired,
@@ -34,7 +33,6 @@ export default class ChannelPostList extends PureComponent {
         postIds: PropTypes.array,
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
-        updateNativeScrollView: PropTypes.func,
         registerTypingAnimation: PropTypes.func.isRequired,
     };
 
@@ -61,11 +59,6 @@ export default class ChannelPostList extends PureComponent {
     componentDidUpdate(prevProps) {
         if (this.props.channelId !== prevProps.channelId) {
             this.isLoadingMoreTop = false;
-        }
-
-        if (!prevProps.postIds?.length && this.props.postIds?.length > 0 && this.props.updateNativeScrollView) {
-            // This is needed to re-bind the scrollview natively when getting the first posts
-            this.props.updateNativeScrollView();
         }
     }
 

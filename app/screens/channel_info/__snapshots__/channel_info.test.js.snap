@@ -33,6 +33,7 @@ exports[`channelInfo should match snapshot 1`] = `
       hasGuests={false}
       header=""
       isArchived={false}
+      isCustomStatusEnabled={false}
       isGroupConstrained={false}
       isTeammateGuest={false}
       memberCount={2}

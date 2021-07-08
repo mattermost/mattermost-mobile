@@ -48,6 +48,8 @@ export default class ChannelInfo extends PureComponent {
         isDirectMessage: PropTypes.bool.isRequired,
         teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        customStatus: PropTypes.object,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -168,6 +170,8 @@ export default class ChannelInfo extends PureComponent {
             teammateId,
             theme,
             isTeammateGuest,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -201,6 +205,8 @@ export default class ChannelInfo extends PureComponent {
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                         testID='channel_info.header'
+                        customStatus={customStatus}
+                        isCustomStatusEnabled={isCustomStatusEnabled}
                     />
                     }
                     <View style={style.rowsContainer}>
