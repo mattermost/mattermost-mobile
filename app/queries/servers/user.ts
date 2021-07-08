@@ -9,7 +9,7 @@ import type User from '@typings/database/models/servers/user';
 
 import {queryCurrentUserId} from './system';
 
-export const queryUserById = async ({userId, database}: { userId: string, database: Database}) => {
+export const queryUserById = async ({userId, database}: { userId: string; database: Database}) => {
     try {
         const userRecord = (await database.collections.get(MM_TABLES.SERVER.USER).find(userId)) as User;
         return userRecord;

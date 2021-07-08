@@ -26,7 +26,6 @@ if (__DEV__) {
         'scaleY',
     ]);
     LogBox.ignoreLogs(['Require cycle: node_modules/zod/lib/src/index.js']);
-    require('storybook/mattermost_storybook.ts');
 }
 
 setFontFamily();

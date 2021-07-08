@@ -24,8 +24,8 @@ import type Role from '@typings/database/models/servers/role';
 import type User from '@typings/database/models/servers/user';
 
 type LoadedUser = {
-    currentUser?: RawUser,
-    error?: Client4Error
+    currentUser?: RawUser;
+    error?: Client4Error;
 }
 
 const HTTP_UNAUTHORIZED = 401;
@@ -36,7 +36,7 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const {config, license}: { config: Partial<Config>; license: Partial<License>; } = await queryCommonSystemValues(database);
+    const {config, license}: { config: Partial<Config>; license: Partial<License> } = await queryCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;

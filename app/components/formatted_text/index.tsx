@@ -10,7 +10,7 @@ type FormattedTextProps = {
     defaultMessage: string;
     values?: Record<string, any>;
     testID?: string;
-    style?: StyleProp<ViewStyle> | StyleProp<TextStyle>
+    style?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
 }
 
 const FormattedText = (props: FormattedTextProps) => {

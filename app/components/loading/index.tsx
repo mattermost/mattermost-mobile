@@ -5,9 +5,9 @@ import React from 'react';
 import {ActivityIndicator, StyleSheet, View, ViewStyle} from 'react-native';
 
 type LoadingProps = {
-    color?: string,
-    size?: 'small' | 'large',
-    style?: ViewStyle,
+    color?: string;
+    size?: 'small' | 'large';
+    style?: ViewStyle;
 }
 
 const Loading = ({size = 'large', color = 'grey', style}: LoadingProps) => {

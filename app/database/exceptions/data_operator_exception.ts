@@ -5,7 +5,7 @@
  * DataOperatorException: This exception can be used whenever an issue arises at the operator level.  For example, if a required field is missing.
  */
 class DataOperatorException extends Error {
-    error : Error | undefined;
+    error: Error | undefined;
     constructor(message: string, error?: Error) {
         super(message);
         this.name = 'DatabaseOperatorException';

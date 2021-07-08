@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 4e4f498..b7ddd86 100644
+index 3b4e398..8e91f6b 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 @@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
@@ -29,7 +29,7 @@ index 4e4f498..b7ddd86 100644
              }
          });
      }
-@@ -201,8 +205,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -210,8 +214,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -44,6 +44,32 @@ index 4e4f498..b7ddd86 100644
              }
          });
      }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
+index 1e5751e..f921605 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
+@@ -1,10 +1,12 @@
+ package com.reactnativenavigation.viewcontrollers.viewcontroller;
+ 
+ import android.app.Activity;
++import android.content.Context;
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.view.ViewManager;
+ import android.view.ViewTreeObserver;
++import android.view.inputmethod.InputMethodManager;
+ 
+ import androidx.annotation.CallSuper;
+ import androidx.annotation.CheckResult;
+@@ -276,6 +278,8 @@ public abstract class ViewController<T extends ViewGroup> implements ViewTreeObs
+             ((Destroyable) view).destroy();
+         }
+         if (view != null) {
++            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
++            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+             view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+             view.setOnHierarchyChangeListener(null);
+             if (view.getParent() instanceof ViewGroup) {
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 index 815e1c6..a35a087 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
@@ -68,19 +94,17 @@ index 815e1c6..a35a087 100644
      }
  
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-index 6b9981d..f725701 100644
+index 2e60123..56830c8 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
-@@ -31,11 +31,7 @@
+@@ -21,8 +21,8 @@
+     self.toBounds = [self convertViewBounds:toElement];
+     self.fromCenter = [self convertViewCenter:fromElement];
+     self.toCenter = [self convertViewCenter:toElement];
+-    self.fromPath = [self resolveViewPath:fromElement withSuperView:fromElement.superview];
+-    self.toPath = [self resolveViewPath:toElement withSuperView:toElement.superview];
++    self.fromPath = fromElement.bounds;
++    self.toPath = toElement.bounds;
  
- - (CATransform3D)getTransform:(UIView *)view {
-     if (view) {
--        if (!CATransform3DEqualToTransform(view.layer.transform, CATransform3DIdentity)) {
--            return view.layer.transform;
--        } else {
--            return [self getTransform:view.superview];
--        }
-+        return view.layer.transform;
-     }
- 
-     return CATransform3DIdentity;
+     return self;
+ }
