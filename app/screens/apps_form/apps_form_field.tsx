@@ -24,7 +24,7 @@ const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 export type Props = {
     field: AppField;
     name: string;
-    errorText?: React.ReactNode;
+    errorText?: string;
     theme: Theme;
 
     value: AppFormValue;

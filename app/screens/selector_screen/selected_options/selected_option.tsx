@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
     Text,
     TouchableOpacity,
@@ -25,6 +25,10 @@ type Props = {
 export default function SelectedOption(props: Props) {
     const {theme, option, onRemove, dataSource} = props;
     const style = getStyleFromTheme(theme);
+    const onPress = useCallback(
+        () => onRemove(option),
+        [option],
+    );
 
     let text;
     switch (dataSource) {
@@ -48,7 +52,7 @@ export default function SelectedOption(props: Props) {
             </Text>
             <TouchableOpacity
                 style={style.remove}
-                onPress={() => onRemove(option)}
+                onPress={onPress}
             >
                 <CompassIcon
                     name='close'

@@ -26,29 +26,29 @@ type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel
 
 type Props = {
     actions: {
-        setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>,
+        setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>;
     },
-    getDynamicOptions?: (term: string) => Promise<ActionResult>,
-    label?: string,
-    placeholder?: string,
-    dataSource?: string,
-    options?: DialogOption[],
-    selected?: DialogOption | DialogOption[],
-    optional?: boolean,
-    showRequiredAsterisk?: boolean,
-    teammateNameDisplay?: string,
-    theme: Theme,
-    onSelected?: ((item: DialogOption) => void) | ((item: DialogOption[]) => void),
-    helpText?: React.ReactNode,
-    errorText?: React.ReactNode,
-    roundedBorders?: boolean,
-    disabled?: boolean,
+    getDynamicOptions?: (term: string) => Promise<ActionResult>;
+    label?: string;
+    placeholder?: string;
+    dataSource?: string;
+    options?: DialogOption[];
+    selected?: DialogOption | DialogOption[];
+    optional?: boolean;
+    showRequiredAsterisk?: boolean;
+    teammateNameDisplay?: string;
+    theme: Theme;
+    onSelected?: ((item: DialogOption) => void) | ((item: DialogOption[]) => void);
+    helpText?: string;
+    errorText?: string;
+    roundedBorders?: boolean;
+    disabled?: boolean;
     isMultiselect?: boolean;
 }
 
 type State = {
     selectedText: string;
-    selected?: DialogOption | DialogOption[]
+    selected?: DialogOption | DialogOption[];
 }
 
 export default class AutocompleteSelector extends PureComponent<Props, State> {

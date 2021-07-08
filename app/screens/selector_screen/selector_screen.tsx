@@ -40,29 +40,30 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+
 type Props = {
     actions: {
-        getProfiles: (page?: number, perPage?: number, options?: any) => Promise<ActionResult>,
-        getChannels: (teamId: string, page?: number, perPage?: number) => Promise<ActionResult>,
-        searchProfiles: (term: string, options?: any) => Promise<ActionResult>,
-        searchChannels: (teamId: string, term: string, archived?: boolean | undefined) => Promise<ActionResult>,
-    },
-    getDynamicOptions?: (term: string) => Promise<ActionResult>,
-    currentTeamId: string,
-    data?: DataType,
-    dataSource: string,
-    onSelect: (opt: Selection) => void,
-    isMultiselect?: boolean,
-    selected?: DialogOption[],
-    theme: Theme,
+        getProfiles: (page?: number, perPage?: number, options?: any) => Promise<ActionResult>;
+        getChannels: (teamId: string, page?: number, perPage?: number) => Promise<ActionResult>;
+        searchProfiles: (term: string, options?: any) => Promise<ActionResult>;
+        searchChannels: (teamId: string, term: string, archived?: boolean | undefined) => Promise<ActionResult>;
+    };
+    getDynamicOptions?: (term: string) => Promise<ActionResult>;
+    currentTeamId: string;
+    data?: DataType;
+    dataSource: string;
+    onSelect: (opt: Selection) => void;
+    isMultiselect?: boolean;
+    selected?: DialogOption[];
+    theme: Theme;
 }
 
 type State = {
-    data: DataType | {id: string; data: DataType}[],
+    data: DataType | {id: string; data: DataType}[];
     loading: boolean;
-    searchResults: DialogOption[],
+    searchResults: DialogOption[];
     term: string;
-    multiselectSelected: DataType,
+    multiselectSelected: DataType;
 }
 
 export default class SelectorScreen extends PureComponent<Props, State> {

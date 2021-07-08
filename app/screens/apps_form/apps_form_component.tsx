@@ -15,7 +15,6 @@ import {Theme} from '@mm-redux/types/preferences';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 
 import StatusBar from '@components/status_bar';
-import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 
 import {dismissModal} from '@actions/navigation';
@@ -47,7 +46,7 @@ export type Props = {
 type State = {
     values: {[name: string]: string};
     formError: string | null;
-    fieldErrors: {[name: string]: React.ReactNode};
+    fieldErrors: {[name: string]: string};
     form: AppForm;
 }
 
@@ -119,7 +118,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
         const {fields} = this.props.form;
         const values = this.state.values;
-        const fieldErrors: {[name: string]: React.ReactNode} = {};
+        const fieldErrors: {[name: string]: string} = {};
 
         const elements = fieldsAsElements(fields);
         elements?.forEach((element) => {
@@ -128,13 +127,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 values[element.name],
             );
             if (error) {
-                fieldErrors[element.name] = (
-                    <FormattedText
-                        id={error.id}
-                        defaultMessage={error.defaultMessage}
-                        values={error.values}
-                    />
-                );
+                fieldErrors[element.name] = this.context.intl.formatMessage(error.id, error.defaultMessage, error.values);
             }
         });
 

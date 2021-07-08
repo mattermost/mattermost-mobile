@@ -4,9 +4,9 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {GlobalState} from '@mm-redux/types/store';
 
 import SelectedOptions from './selected_options';
-import {GlobalState} from '@mm-redux/types/store';
 
 function mapStateToProps(state: GlobalState) {
     return {
