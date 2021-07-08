@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
 
-const assetImages = new Map([['mattermost.png', require('@assets/images/mattermost.png')]]);
+const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/mattermost.png')]]);
 
 type Props = {
 
