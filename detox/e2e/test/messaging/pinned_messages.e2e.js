@@ -29,7 +29,11 @@ describe('Pinned Messages', () => {
         openReplyThreadFor,
         postMessage,
     } = ChannelScreen;
-    const {pinAction} = PostOptions;
+    const {
+        pinAction,
+        saveAction,
+        unpinAction,
+    } = PostOptions;
     let townSquareChannel;
 
     beforeAll(async () => {
@@ -44,6 +48,81 @@ describe('Pinned Messages', () => {
 
     afterAll(async () => {
         await ChannelScreen.logout();
+    });
+
+    it('MM-T139 should be able to open pinned messages', async () => {
+        // # Post a message
+        const testMessage = Date.now().toString();
+        await postMessage(testMessage);
+
+        // # Pin message from channel post list
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        await openPostOptionsFor(post.id, testMessage);
+        await pinAction.tap();
+
+        // * Verify message appears in pinned messages
+        const {postListPostItemPreHeaderText: pinnedPostItemPreHeaderText} = await getPostListPostItem(post.id, testMessage);
+        await expect(pinnedPostItemPreHeaderText).toHaveText('Pinned');
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+        const {searchResultPostItem} = await PinnedMessagesScreen.getSearchResultPostItem(post.id, testMessage);
+        await expect(searchResultPostItem).toBeVisible();
+
+        // # Unpin message
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await openPostOptionsFor(post.id, testMessage);
+        await unpinAction.tap();
+
+        // * Verify message is removed from pinned messages
+        const {postListPostItemPreHeaderText: unpinnedPostItemPreHeaderText} = await getPostListPostItem(post.id, testMessage);
+        await expect(unpinnedPostItemPreHeaderText).not.toExist();
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+        await expect(element(by.text('No Pinned messages yet'))).toBeVisible();
+
+        // # Go back to channel
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+    });
+
+    it('MM-T138 should be able to pin a reply post', async () => {
+        // # Post a parent message
+        const parentMessage = Date.now().toString();
+        await postMessage(parentMessage);
+
+        // # Post a reply message
+        const {post: parentPost} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        await openReplyThreadFor(parentPost.id, parentMessage);
+        const replyMessage = Date.now().toString();
+        await ThreadScreen.postMessage(replyMessage);
+
+        // # Go back to main thread and pin reply post
+        await ThreadScreen.back();
+        const {post: replyPost} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        await openPostOptionsFor(replyPost.id, replyMessage);
+        await pinAction.tap();
+
+        // * Verify reply post from main thread is pinned
+        const {postListPostItemPreHeaderText} = await getPostListPostItem(replyPost.id, replyMessage);
+        await expect(postListPostItemPreHeaderText).toHaveText('Pinned');
+    });
+
+    it('MM-T140 should be able to pin and save the same post', async () => {
+        // # Post a message
+        const testMessage = Date.now().toString();
+        await postMessage(testMessage);
+
+        // # Pin and save message from channel post list
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        await openPostOptionsFor(post.id, testMessage);
+        await pinAction.tap();
+        await openPostOptionsFor(post.id, testMessage);
+        await saveAction.tap();
+
+        // * Verify message is pinned and saved
+        const {postListPostItemPreHeaderText} = await getPostListPostItem(post.id, testMessage);
+        await expect(postListPostItemPreHeaderText).toHaveText('Pinned and Saved');
     });
 
     it('MM-T851_1 should be able pin a message from channel post list', async () => {
@@ -92,7 +171,7 @@ describe('Pinned Messages', () => {
         await expect(channelPostItem).toBeVisible();
     });
 
-    it('MM-T851_3 should be able to open reply thread for pinned message', async () => {
+    it('MM-T851_3 should be able to open reply thread for pinned message by tapping on search result item reply arrow', async () => {
         // # Post a message
         const testMessage = Date.now().toString();
         await postMessage(testMessage);
@@ -102,15 +181,21 @@ describe('Pinned Messages', () => {
         await openPostOptionsFor(post.id, testMessage);
         await pinAction.tap();
 
-        // # Open reply thread for pinned message
-        await openReplyThreadFor(post.id, testMessage);
+        // # Tap on search result item reply arrow to open reply thread for pinned message
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+        const {searchResultPostItemHeaderReply} = await PinnedMessagesScreen.getSearchResultPostItem(post.id, testMessage);
+        await searchResultPostItemHeaderReply.tap();
 
-        // * Verify reply thread for pinned message is displayed
-        const {postListPostItem} = await ThreadScreen.getPostListPostItem(post.id, testMessage);
-        await expect(postListPostItem).toBeVisible();
+        // * Verify message opens in a thread
+        await expect(element(by.text(`${townSquareChannel.display_name} Thread`))).toBeVisible();
+        const {postListPostItem: threadPostItem} = await ThreadScreen.getPostListPostItem(post.id, testMessage);
+        await expect(threadPostItem).toBeVisible();
 
         // # Go back to channel
         await ThreadScreen.back();
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
     });
 
     it('MM-T851_4 should be able to edit pinned message', async () => {

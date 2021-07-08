@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 
 import {handleSelectChannelByName, refreshChannelWithRetry} from '@actions/views/channel';
 import {closePermalink, showPermalink} from '@actions/views/permalink';
+import {getPostThread} from '@actions/views/post';
 import {setDeepLinkURL} from '@actions/views/root';
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -37,7 +38,7 @@ function mapStateToProps() {
         return {
             deepLinkURL: state.views.root.deepLinkURL,
             postIds: ids,
-            initialIndex,
+            initialIndex: Math.max(initialIndex, 0),
             serverURL: getCurrentUrl(state),
             siteURL: getConfig(state)?.SiteURL,
             theme: getTheme(state),
@@ -48,6 +49,7 @@ function mapStateToProps() {
 
 const mapDispatchToProps = {
     closePermalink,
+    getPostThread,
     handleSelectChannelByName,
     refreshChannelWithRetry,
     setDeepLinkURL,

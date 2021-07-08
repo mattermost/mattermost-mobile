@@ -50,6 +50,7 @@
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
             "@telemetry": ["app/telemetry/index"],
+            "@typings/*": ["types/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"],

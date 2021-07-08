@@ -4,9 +4,11 @@
 import React from 'react';
 import {Alert, Platform, StatusBar} from 'react-native';
 import Permissions from 'react-native-permissions';
+import {fireEvent} from '@testing-library/react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import * as PermissionUtils from '@utils/permission';
+import {renderWithIntl} from 'test/testing_library';
 
 import ImageQuickAction from './index';
 
@@ -16,48 +18,46 @@ jest.mock('react-native-image-picker', () => ({
 
 describe('ImageQuickAction', () => {
     const baseProps = {
+        disabled: false,
         testID: 'post_draft.quick_actions.image_action',
         fileCount: 0,
         maxFileCount: 5,
-        onShowFileMaxWarning: jest.fn(),
         theme: Preferences.THEMES.default,
         onUploadFiles: jest.fn(),
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallowWithIntl(<ImageQuickAction {...baseProps}/>);
+        const wrapper = renderWithIntl(<ImageQuickAction {...baseProps}/>);
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
     test('should return permission false if permission is denied in iOS', async () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.UNAVAILABLE);
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
-        const wrapper = shallowWithIntl(
+        const wrapper = renderWithIntl(
             <ImageQuickAction {...baseProps}/>,
         );
 
-        const hasPermission = await wrapper.instance().hasPhotoPermission();
-        expect(Permissions.check).toHaveBeenCalled();
-        expect(Permissions.request).toHaveBeenCalled();
+        fireEvent.press(wrapper.getByTestId(baseProps.testID));
+        await expect(Permissions.check).toHaveBeenCalled();
+        await expect(Permissions.request).toHaveBeenCalled();
         expect(Alert.alert).not.toHaveBeenCalled();
-        expect(hasPermission).toBe(false);
     });
 
     test('should show permission denied alert and return permission false if permission is blocked in iOS', async () => {
         jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.BLOCKED);
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
-        const wrapper = shallowWithIntl(
+        const wrapper = renderWithIntl(
             <ImageQuickAction {...baseProps}/>,
         );
 
-        const hasPermission = await wrapper.instance().hasPhotoPermission();
-        expect(Permissions.check).toHaveBeenCalled();
-        expect(Permissions.request).not.toHaveBeenCalled();
+        fireEvent.press(wrapper.getByTestId(baseProps.testID));
+        await expect(Permissions.check).toHaveBeenCalled();
+        await expect(Permissions.request).not.toHaveBeenCalled();
         expect(Alert.alert).toHaveBeenCalled();
-        expect(hasPermission).toBe(false);
     });
 
     test('hasPhotoPermission returns true when permission has been granted', async () => {
@@ -77,35 +77,34 @@ describe('ImageQuickAction', () => {
             const request = jest.spyOn(Permissions, 'request');
             request.mockReturnValue(Permissions.RESULTS.GRANTED);
 
-            const wrapper = shallowWithIntl(
+            const wrapper = renderWithIntl(
                 <ImageQuickAction {...baseProps}/>,
             );
-            const instance = wrapper.instance();
 
             check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
-            let hasPermission = await instance.hasPhotoPermission(); // eslint-disable-line no-await-in-loop
-            expect(check).toHaveBeenCalledWith(permission);
-            expect(request).toHaveBeenCalled();
-            expect(hasPermission).toBe(true);
+            fireEvent.press(wrapper.getByTestId(baseProps.testID));
+            await expect(check).toHaveBeenCalledWith(permission); // eslint-disable-line no-await-in-loop
+            await expect(request).toHaveBeenCalled(); // eslint-disable-line no-await-in-loop
 
             check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
-            hasPermission = await instance.hasPhotoPermission(); // eslint-disable-line no-await-in-loop
-            expect(check).toHaveBeenCalledWith(permission);
-            expect(request).toHaveBeenCalled();
-            expect(hasPermission).toBe(true);
+            fireEvent.press(wrapper.getByTestId(baseProps.testID));
+            await expect(check).toHaveBeenCalledWith(permission); // eslint-disable-line no-await-in-loop
+            await expect(request).toHaveBeenCalled(); // eslint-disable-line no-await-in-loop
         }
     });
 
     test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
-        const wrapper = shallowWithIntl(
+        const wrapper = renderWithIntl(
             <ImageQuickAction {...baseProps}/>,
         );
 
-        const instance = wrapper.instance();
-        jest.spyOn(instance, 'hasPhotoPermission').mockReturnValue(true);
-        jest.spyOn(StatusBar, 'setHidden');
+        fireEvent.press(wrapper.getByTestId(baseProps.testID));
+        const check = jest.spyOn(Permissions, 'check');
+        jest.spyOn(PermissionUtils, 'hasPhotoPermission').mockReturnValue(true);
+        const setHidden = jest.spyOn(StatusBar, 'setHidden');
 
-        await instance.attachFileFromLibrary();
-        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
+        fireEvent.press(wrapper.getByTestId(baseProps.testID));
+        await expect(check).toHaveBeenCalled();
+        await expect(setHidden).toHaveBeenCalledWith(false);
     });
 });
