@@ -44,6 +44,12 @@ export default class ChannelListRow extends React.PureComponent {
         const testID = this.props.testID;
         const itemTestID = `${testID}.${this.props.id}`;
         const channelDisplayNameTestID = `${testID}.display_name`;
+        let icon = 'globe';
+        if (this.props.isArchived) {
+            icon = 'archive-outline';
+        } else if (this.props.channel?.shared) {
+            icon = 'circle-multiple-outline';
+        }
 
         return (
             <CustomListRow
@@ -60,7 +66,7 @@ export default class ChannelListRow extends React.PureComponent {
                 >
                     <View style={style.titleContainer}>
                         <CompassIcon
-                            name={this.props.isArchived ? 'archive-outline' : 'globe'}
+                            name={icon}
                             style={style.icon}
                         />
                         <Text

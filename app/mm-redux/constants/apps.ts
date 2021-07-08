@@ -43,4 +43,5 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     BOOL: 'bool',
     USER: 'user',
     CHANNEL: 'channel',
+    MARKDOWN: 'markdown',
 };

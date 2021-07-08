@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/custom_status/custom_status_emoji should match snapshot 1`] = `
+<Text
+  testID="custom_status_emoji.calendar"
+>
+  <Text
+    style={
+      Array [
+        undefined,
+        Object {
+          "fontSize": 16,
+        },
+      ]
+    }
+  >
+    📆
+  </Text>
+</Text>
+`;
+
+exports[`components/custom_status/custom_status_emoji should match snapshot with props 1`] = `
+<Text
+  testID="custom_status_emoji.calendar"
+>
+  <Text
+    style={
+      Array [
+        undefined,
+        Object {
+          "fontSize": 34,
+        },
+      ]
+    }
+  >
+    📆
+  </Text>
+</Text>
+`;

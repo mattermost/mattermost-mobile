@@ -17,8 +17,8 @@ export function getFullName(user: UserProfile): string {
 }
 
 export function displayUsername(
-    user: UserProfile,
-    teammateNameDisplay: string,
+    user?: UserProfile,
+    teammateNameDisplay?: string,
     useFallbackUsername = true,
 ): string {
     let name = useFallbackUsername ? localizeMessage('channel_loader.someone', 'Someone') : '';
@@ -62,6 +62,10 @@ export function isSystemAdmin(roles: string): boolean {
 
 export function isChannelAdmin(roles: string): boolean {
     return rolesIncludePermission(roles, General.CHANNEL_ADMIN_ROLE);
+}
+
+export function isShared(user: UserProfile): boolean {
+    return Boolean(user.remote_id);
 }
 
 export function hasUserAccessTokenRole(roles: string): boolean {

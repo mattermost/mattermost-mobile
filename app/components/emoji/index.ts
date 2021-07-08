@@ -10,7 +10,7 @@ import {Client4} from '@client/rest';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {GlobalState} from '@mm-redux/types/store';
 
-import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from '@utils/emojis';
+import {EmojiIndicesByAlias, Emojis} from '@utils/emojis';
 
 import Emoji from './emoji';
 
@@ -28,16 +28,9 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     let unicode;
     let isCustomEmoji = false;
     let displayTextOnly = false;
-    if (EmojiIndicesByAlias.has(emojiName) || BuiltInEmojis.includes(emojiName)) {
+    if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)!];
-        unicode = emoji.filename;
-        if (BuiltInEmojis.includes(emojiName)) {
-            if (serverUrl) {
-                imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
-            } else {
-                displayTextOnly = true;
-            }
-        }
+        unicode = emoji.image;
     } else if (customEmojis.has(emojiName) && serverUrl) {
         const emoji = customEmojis.get(emojiName);
         imageUrl = Client4.getCustomEmojiImageUrl(emoji!.id);

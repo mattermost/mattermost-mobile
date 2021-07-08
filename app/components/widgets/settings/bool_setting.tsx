@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -20,8 +22,8 @@ type Props = {
     label?: string | {id: string, defaultMessage: string};
     value: boolean;
     placeholder?: string;
-    helpText?: React.ReactNode;
-    errorText?: React.ReactNode;
+    helpText?: string;
+    errorText?: string;
     optional?: boolean;
     disabled?: boolean;
     theme: Theme;
@@ -42,6 +44,8 @@ export default function BoolSetting(props: Props) {
         onChange,
     } = props;
     const style = getStyleSheet(theme);
+    const textStyles = getMarkdownTextStyles(theme);
+    const blockStyles = getMarkdownBlockStyles(theme);
 
     let optionalContent;
     let asterisk;
@@ -74,18 +78,28 @@ export default function BoolSetting(props: Props) {
     let helpTextContent;
     if (helpText) {
         helpTextContent = (
-            <Text style={style.helpText}>
-                {helpText}
-            </Text>
+            <View style={style.helpTextContainer} >
+                <Markdown
+                    baseTextStyle={style.helpText}
+                    textStyles={textStyles}
+                    blockStyles={blockStyles}
+                    value={helpText}
+                />
+            </View>
         );
     }
 
     let errorTextContent;
     if (errorText) {
         errorTextContent = (
-            <Text style={style.errorText}>
-                {errorText}
-            </Text>
+            <View style={style.errorTextContainer} >
+                <Markdown
+                    baseTextStyle={style.errorText}
+                    textStyles={textStyles}
+                    blockStyles={blockStyles}
+                    value={errorText}
+                />
+            </View>
         );
     }
 
@@ -157,17 +171,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 14,
             marginLeft: 5,
         },
+        helpTextContainer: {
+            marginHorizontal: 15,
+            marginTop: 10,
+        },
         helpText: {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        errorTextContainer: {
             marginHorizontal: 15,
-            marginTop: 10,
+            marginVertical: 10,
         },
         errorText: {
             fontSize: 12,
             color: theme.errorTextColor,
-            marginHorizontal: 15,
-            marginVertical: 10,
         },
         asterisk: {
             color: theme.errorTextColor,

@@ -10,6 +10,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
 
 import {DeviceTypes, NavigationTypes} from '@constants';
+import {CHANNEL} from '@constants/screen';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
@@ -33,8 +34,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: NavigationTypes.CHANNEL_SCREEN,
-                name: NavigationTypes.CHANNEL_SCREEN,
+                id: CHANNEL,
+                name: CHANNEL,
                 passProps,
                 options: {
                     layout: {
@@ -292,7 +293,44 @@ export function showModal(name, title, passProps = {}, options = {}) {
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
     const title = '';
-    const animationsEnabled = (Platform.OS === 'android').toString();
+
+    let animations;
+    switch (Platform.OS) {
+    case 'android':
+        animations = {
+            showModal: {
+                waitForRender: true,
+                alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 250,
+                },
+            },
+            dismissModal: {
+                alpha: {
+                    from: 1,
+                    to: 0,
+                    duration: 250,
+                },
+            },
+        };
+        break;
+    default:
+        animations = {
+            showModal: {
+                enabled: false,
+                enter: {},
+                exit: {},
+            },
+            dismissModal: {
+                enabled: false,
+                enter: {},
+                exit: {},
+            },
+        };
+        break;
+    }
+
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
@@ -303,25 +341,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
             visible: false,
             height: 0,
         },
-        animations: {
-            showModal: {
-                waitForRender: true,
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 250,
-                },
-            },
-            dismissModal: {
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 1,
-                    to: 0,
-                    duration: 250,
-                },
-            },
-        },
+        animations,
     };
     const mergeOptions = merge(defaultOptions, options);
 
@@ -363,17 +383,20 @@ export async function dismissModal(options = {}) {
     }
 }
 
-export async function dismissAllModals(options = {}) {
+export async function dismissAllModals(options) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    try {
+    if (Platform.OS === 'ios') {
+        const modals = [...EphemeralStore.navigationModalStack];
+        for await (const modal of modals) {
+            await Navigation.dismissModal(modal, options);
+            EphemeralStore.removeNavigationModal(modal);
+        }
+    } else {
         await Navigation.dismissAllModals(options);
         EphemeralStore.clearNavigationModals();
-    } catch (error) {
-        // RNN returns a promise rejection if there are no modals to
-        // dismiss. We'll do nothing in this case.
     }
 }
 
@@ -441,7 +464,7 @@ export function closeMainSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             left: {visible: false},
         },
@@ -453,7 +476,7 @@ export function enableMainSideMenu(enabled, visible = true) {
         return;
     }
 
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             left: {enabled, visible},
         },
@@ -466,7 +489,7 @@ export function openSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             right: {visible: true},
         },
@@ -479,7 +502,7 @@ export function closeSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
+    Navigation.mergeOptions(CHANNEL, {
         sideMenu: {
             right: {visible: false},
         },

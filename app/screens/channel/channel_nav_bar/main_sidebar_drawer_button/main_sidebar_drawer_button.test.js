@@ -5,7 +5,6 @@ import React from 'react';
 
 import Badge from '@components/badge';
 import Preferences from '@mm-redux/constants/preferences';
-import PushNotification from '@init/push_notifications';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import MainSidebarDrawerButton from './main_sidebar_drawer_button';
@@ -17,8 +16,6 @@ describe('MainSidebarDrawerButton', () => {
         theme: Preferences.THEMES.default,
         visible: false,
     };
-
-    afterEach(() => PushNotification.setApplicationIconBadgeNumber(0));
 
     test('should match, full snapshot', () => {
         const wrapper = shallowWithIntl(
@@ -33,65 +30,6 @@ describe('MainSidebarDrawerButton', () => {
         wrapper.setProps({badgeCount: 1, visible: true});
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find(Badge).length).toEqual(1);
-    });
-
-    test('should not set app icon badge on mount', () => {
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
-        const props = {
-            ...baseProps,
-            badgeCount: 0,
-        };
-
-        shallowWithIntl(
-            <MainSidebarDrawerButton {...props}/>,
-        );
-        expect(setApplicationIconBadgeNumber).not.toBeCalled();
-    });
-
-    test('should set app icon badge on mount', () => {
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
-        const props = {
-            ...baseProps,
-            badgeCount: 1,
-        };
-
-        shallowWithIntl(
-            <MainSidebarDrawerButton {...props}/>,
-        );
-        expect(setApplicationIconBadgeNumber).toHaveBeenCalledTimes(1);
-    });
-
-    test('should set app icon badge update', () => {
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
-        const props = {
-            ...baseProps,
-            badgeCount: 0,
-        };
-
-        const wrapper = shallowWithIntl(
-            <MainSidebarDrawerButton {...props}/>,
-        );
-
-        wrapper.setProps({badgeCount: 2});
-        expect(setApplicationIconBadgeNumber).toHaveBeenCalledTimes(1);
-        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(2);
-    });
-
-    test('should set remove icon badge on update', () => {
-        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
-        const props = {
-            ...baseProps,
-            badgeCount: 0,
-        };
-
-        const wrapper = shallowWithIntl(
-            <MainSidebarDrawerButton {...props}/>,
-        );
-        wrapper.setProps({badgeCount: 2});
-        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(2);
-
-        wrapper.setProps({badgeCount: -1});
-        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(-1);
     });
 
     test('Should be accessible', () => {

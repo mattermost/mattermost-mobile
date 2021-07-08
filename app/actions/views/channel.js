@@ -247,7 +247,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler, i
         // Fallback to API response error, if any.
         if (teamError) {
             if (errorHandler) {
-                errorHandler();
+                errorHandler(intl);
             }
             return {error: teamError};
         }
@@ -503,16 +503,7 @@ export function closeGMChannel(channel) {
 
 export function refreshChannelWithRetry(channelId) {
     return async (dispatch) => {
-        dispatch(setChannelRefreshing(true));
-        const posts = await dispatch(fetchPostActionWithRetry(getPosts(channelId)));
-        const actions = [setChannelRefreshing(false)];
-
-        if (posts) {
-            actions.push(setChannelRetryFailed(false));
-        }
-
-        dispatch(batchActions(actions, 'BATCH_REEFRESH_CHANNEL'));
-        return posts;
+        return dispatch(fetchPostActionWithRetry(getPosts(channelId)));
     };
 }
 

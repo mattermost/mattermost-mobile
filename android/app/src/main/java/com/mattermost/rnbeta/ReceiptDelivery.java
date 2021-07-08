@@ -1,12 +1,10 @@
 package com.mattermost.rnbeta;
 
 import android.content.Context;
-import androidx.annotation.Nullable;
 import android.os.Bundle;
 import android.util.Log;
 import java.lang.System;
 
-import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,43 +16,21 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
 
 import com.mattermost.react_native_interface.ResolvePromise;
 
 public class ReceiptDelivery {
-    static final String CURRENT_SERVER_URL = "@currentServerUrl";
-
-    private static final int[] FIBONACCI_BACKOFFS = new int[] { 0, 1, 2, 3, 5, 8 };
+    private static final int[] FIBONACCI_BACKOFF = new int[] { 0, 1, 2, 3, 5, 8 };
 
     public static void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
+        final ReadableMap credentials = MattermostCredentialsHelper.getCredentialsSync(reactApplicationContext);
+        final String serverUrl = credentials.getString("serverUrl");
+        final String token = credentials.getString("token");
 
-        MattermostCredentialsHelper.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
-            @Override
-            public void resolve(@Nullable Object value) {
-                if (value instanceof Boolean && !(Boolean)value) {
-                    return;
-                }
-
-                WritableMap map = (WritableMap) value;
-                if (map != null) {
-                    String token = map.getString("password");
-                    String serverUrl = map.getString("service");
-                    if (serverUrl.isEmpty()) {
-                        String[] credentials = token.split(",[ ]*");
-                        if (credentials.length == 2) {
-                            token = credentials[0];
-                            serverUrl = credentials[1];
-                        }
-                    }
-
-                    Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
-                    execute(serverUrl, postId, token, ackId, type, isIdLoaded, promise);
-                }
-            }
-        });
+        Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
+        execute(serverUrl, postId, token, ackId, type, isIdLoaded, promise);
     }
 
     protected static void execute(String serverUrl, String postId, String token, String ackId, String type, boolean isIdLoaded, ResolvePromise promise) {
@@ -84,6 +60,7 @@ public class ReceiptDelivery {
             return;
         }
 
+        assert serverUrl != null;
         final HttpUrl url = HttpUrl.parse(
             String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", "")));
         if (url != null) {
@@ -104,6 +81,7 @@ public class ReceiptDelivery {
     private static void makeServerRequest(OkHttpClient client, Request request, Boolean isIdLoaded, int reRequestCount, ResolvePromise promise) {
         try {
             Response response = client.newCall(request).execute();
+            assert response.body() != null;
             String responseBody = response.body().string();
             if (response.code() != 200) {
                 switch (response.code()) {
@@ -129,9 +107,8 @@ public class ReceiptDelivery {
 
             JSONObject jsonResponse = new JSONObject(responseBody);
             Bundle bundle = new Bundle();
-            String keys[] = new String[]{"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
-            for (int i = 0; i < keys.length; i++) {
-                String key = keys[i];
+            String[] keys = new String[]{"post_id", "root_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
+            for (String key : keys) {
                 if (jsonResponse.has(key)) {
                     bundle.putString(key, jsonResponse.getString(key));
                 }
@@ -142,12 +119,14 @@ public class ReceiptDelivery {
             if (isIdLoaded) {
                 try {
                     reRequestCount++;
-                    if (reRequestCount < FIBONACCI_BACKOFFS.length) {
-                        Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
-                        Thread.sleep(FIBONACCI_BACKOFFS[reRequestCount] * 1000);
-                        makeServerRequest(client, request, isIdLoaded, reRequestCount, promise);
+                    if (reRequestCount < FIBONACCI_BACKOFF.length) {
+                        Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFF[reRequestCount] + " seconds");
+                        Thread.sleep(FIBONACCI_BACKOFF[reRequestCount] * 1000);
+                        makeServerRequest(client, request, true, reRequestCount, promise);
                     }
-                } catch(InterruptedException ie) {}    
+                } catch(InterruptedException ie) {
+                    // nothing to do
+                }
             }
 
             promise.reject("Receipt delivery failure", e.toString());

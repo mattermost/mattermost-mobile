@@ -1,0 +1,32 @@
+diff --git a/node_modules/react-native-mmkv-storage/ios/MMKVNative.mm b/node_modules/react-native-mmkv-storage/ios/MMKVNative.mm
+index 807b9e7..1549f04 100644
+--- a/node_modules/react-native-mmkv-storage/ios/MMKVNative.mm
++++ b/node_modules/react-native-mmkv-storage/ios/MMKVNative.mm
+@@ -62,13 +62,12 @@ BOOL functionDiedBeforeCompletion = YES;
+     
+     mmkvInstances = [NSMutableDictionary dictionary];
+     
+-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
+-                                                         NSUserDomainMask, YES);
+-    NSString *libraryPath = (NSString *)[paths firstObject];
+-    NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
+-    rPath = rootDir;
++    NSBundle *bundle = [NSBundle mainBundle];
++    NSString *APP_GROUP_ID = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
++    NSString *groupDir = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:APP_GROUP_ID].path;
++    rPath = groupDir;
+     _secureStorage = [[SecureStorage alloc] init];
+-    [MMKV initializeMMKV:rootDir];
++    [MMKV initializeMMKV:nil groupDir:groupDir logLevel:MMKVLogInfo];
+     install(*(jsi::Runtime *)cxxBridge.runtime);
+     [self migrate];
+ }
+@@ -171,7 +170,7 @@ static void install(jsi::Runtime &jsiRuntime) {
+                                                            jsiRuntime, PropNameID::forAscii(jsiRuntime, "initializeMMKV"), 0,
+                                                            [](Runtime &runtime, const Value &thisValue, const Value *arguments,
+                                                               size_t count) -> Value {
+-        [MMKV initializeMMKV:rPath];
++        [MMKV initializeMMKV:nil groupDir:rPath logLevel:MMKVLogInfo];
+         return Value::undefined();
+     });
+     
