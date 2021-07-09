@@ -6,6 +6,7 @@ import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelIcon from '@components/channel_icon';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
@@ -29,6 +30,7 @@ interface AtMentionItemProps {
     theme: Theme;
     userId: string;
     username: string;
+    isCustomStatusEnabled: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,7 +52,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         rowInfo: {
             flexDirection: 'row',
-            flex: 1,
+            overflow: 'hidden',
+            maxWidth: '80%',
         },
         rowFullname: {
             fontSize: 15,
@@ -58,31 +61,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 4,
         },
         rowUsername: {
-            color: theme.centerChannelColor,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
             fontSize: 15,
-            opacity: 0.56,
-            flex: 1,
         },
     };
 });
 
-const AtMentionItem = (props: AtMentionItemProps) => {
+const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared, lastName = '', nickname = '',
+    onPress, showFullName, testID, theme, userId, username, isCustomStatusEnabled}: AtMentionItemProps) => {
     const insets = useSafeAreaInsets();
-    const {
-        firstName,
-        isBot,
-        isCurrentUser,
-        isGuest,
-        isShared,
-        lastName,
-        nickname,
-        onPress,
-        showFullName,
-        testID,
-        theme,
-        userId,
-        username,
-    } = props;
 
     const completeMention = () => {
         onPress(username);
@@ -96,7 +83,7 @@ const AtMentionItem = (props: AtMentionItemProps) => {
             name += `${firstName} ${lastName} `;
         }
 
-        if (hasNickname) {
+        if (hasNickname && !isCurrentUser) {
             name += name.length > 0 ? `(${nickname})` : nickname;
         }
 
@@ -135,28 +122,37 @@ const AtMentionItem = (props: AtMentionItemProps) => {
                         show={isGuest}
                         theme={theme}
                     />
-                    {Boolean(name.length) &&
                     <Text
-                        style={style.rowFullname}
                         numberOfLines={1}
-                        testID='at_mention_item.name'
                     >
-                        {name}
-                    </Text>
-                    }
-                    <Text
-                        style={style.rowUsername}
-                        numberOfLines={1}
-                        testID='at_mention_item.username'
-                    >
-                        {isCurrentUser &&
-                        <FormattedText
-                            id='suggestion.mention.you'
-                            defaultMessage='(you)'
-                        />}
-                        {` @${username}`}
+                        {Boolean(name.length) && (
+                            <Text
+                                style={style.rowFullname}
+                                testID='at_mention_item.name'
+                            >
+                                {name}
+                            </Text>
+                        )}
+                        <Text
+                            style={style.rowUsername}
+                            testID='at_mention_item.username'
+                        >
+                            {isCurrentUser && (
+                                <FormattedText
+                                    id='suggestion.mention.you'
+                                    defaultMessage='(you)'
+                                />
+                            )}
+                            {` @${username}`}
+                        </Text>
                     </Text>
                 </View>
+                {isCustomStatusEnabled && !isBot && (
+                    <CustomStatusEmoji
+                        userID={userId}
+                        style={{marginLeft: 4}}
+                    />
+                )}
                 {isShared && (
                     <ChannelIcon
                         isActive={false}
@@ -172,12 +168,6 @@ const AtMentionItem = (props: AtMentionItemProps) => {
             </View>
         </TouchableWithFeedback>
     );
-};
-
-AtMentionItem.defaultProps = {
-    firstName: '',
-    lastName: '',
-    nickname: '',
 };
 
 export default AtMentionItem;
