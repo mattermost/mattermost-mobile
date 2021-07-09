@@ -53,7 +53,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         rowInfo: {
             flexDirection: 'row',
             overflow: 'hidden',
-            maxWidth: '80%',
         },
         rowFullname: {
             fontSize: 15,
@@ -63,6 +62,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         rowUsername: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             fontSize: 15,
+        },
+        icon: {
+            marginLeft: 4,
         },
     };
 });
@@ -113,7 +115,9 @@ const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared,
                         testID='at_mention_item.profile_picture'
                     />
                 </View>
-                <View style={style.rowInfo}>
+                <View
+                    style={[style.rowInfo, {maxWidth: isShared ? '75%' : '80%'}]}
+                >
                     <BotTag
                         show={isBot}
                         theme={theme}
@@ -150,7 +154,7 @@ const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared,
                 {isCustomStatusEnabled && !isBot && (
                     <CustomStatusEmoji
                         userID={userId}
-                        style={{marginLeft: 4}}
+                        style={style.icon}
                     />
                 )}
                 {isShared && (
@@ -163,6 +167,7 @@ const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared,
                         shared={true}
                         theme={theme}
                         type={General.DM_CHANNEL}
+                        style={style.icon}
                     />
                 )}
             </View>
