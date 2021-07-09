@@ -21,7 +21,7 @@ type UserStatusInputProps = {
 };
 
 type UserStatusProps = UserStatusInputProps & {
-    user: UserModel;
+    user?: UserModel;
     database: Database;
 };
 
@@ -30,7 +30,7 @@ const ConnectedUserStatus = ({size = 6, status = General.OFFLINE, user}: UserSta
     let iconColor;
     const theme = useTheme();
 
-    switch (user.status) {
+    switch (user?.status) {
         case General.AWAY:
             iconName = 'clock';
             iconColor = theme.awayIndicator;

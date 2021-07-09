@@ -18,27 +18,21 @@ import type {Config} from '@typings/database/models/servers/config';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type SystemModel from '@typings/database/models/servers/system';
 
-type EmojiProps = {
+type EmojiInputProps = {
     customEmojiStyle?: StyleProp<ImageStyle>;
     emojiName: string;
-    emojiRecords: CustomEmojiModel[];
     literal?: string;
     size?: number;
-    systemValues: SystemModel[];
     testID?: string;
     textStyle?: StyleProp<TextStyle>;
 };
 
-const Emoji = ({
-    customEmojiStyle = false,
-    emojiName,
-    emojiRecords,
-    literal = '',
-    size,
-    systemValues,
-    testID,
-    textStyle,
-}: EmojiProps) => {
+type EmojiProps = EmojiInputProps & {
+    emojiRecords: CustomEmojiModel[];
+    systemValues: SystemModel[];
+}
+
+const ConnectedEmoji = ({customEmojiStyle = false, emojiName, emojiRecords, literal = '', size, systemValues, testID, textStyle}: EmojiProps) => {
     const config = systemValues.find((system: SystemModel) => system.id === 'config') as Config | undefined;
     const currentUserId = systemValues.find((system: SystemModel) => system.id === 'currentUserId') as string | undefined;
     const customEmojis = emojiRecords?.[0];
@@ -63,15 +57,13 @@ const Emoji = ({
         imageUrl = Client4.getCustomEmojiImageUrl(customEmojis!.id);
     } else {
         displayTextOnly =
-            (
 
             // fixme: A new table will be created to handle nonExistentEmoji
             // state.entities.emojis.nonExistentEmoji.has(emojiName) ||
-                config?.EnableCustomEmoji !== 'true' ||
-                config?.ExperimentalEnablePostMetadata === 'true' ||
-                !currentUserId ||
-                isMinimumServerVersion(Client4.getServerVersion(), 5, 12)
-            );
+            config?.EnableCustomEmoji !== 'true' ||
+            config?.ExperimentalEnablePostMetadata === 'true' ||
+            !currentUserId ||
+            isMinimumServerVersion(Client4.getServerVersion(), 5, 12);
     }
 
     let emojiSize = size;
@@ -131,7 +123,9 @@ const Emoji = ({
     );
 };
 
-export default withDatabase(withObservables(['emojiName'], ({emojiName, database}: { emojiName: string; database: Database; }) => ({
+const Emoji: React.FunctionComponent<EmojiInputProps> = withDatabase(withObservables(['emojiName'], ({emojiName, database}: { emojiName: string; database: Database; }) => ({
     systemValues: queryCommonSystemValues(database).observe(),
     emojiRecords: database.collections.get(MM_TABLES.SERVER.CUSTOM_EMOJI).query(Q.where('id', emojiName), Q.or(Q.where('name', emojiName))).observe(),
-}))(Emoji));
+}))(ConnectedEmoji));
+
+export default Emoji;

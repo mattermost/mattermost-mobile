@@ -21,6 +21,26 @@ import type {Database} from '@nozbe/watermelondb';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
+type ProfilePictureInputProps = {
+    profileImageRemove?: boolean; // fixme: is that one really needed ?
+    showStatus?: boolean;
+    size: number;
+    statusSize: number;
+    statusStyle?: StyleProp<ViewProps> | any;
+    testID?: string;
+    userId?: string;
+}
+
+type ProfilePictureProps = ProfilePictureInputProps & {
+    currentUserIdRecord: SystemModel;
+    edit: boolean;
+    iconSize?: number;
+    imageUri?: string;
+    profileImageUri?: string;
+    user? : UserModel;
+    database: Database;
+};
+
 const STATUS_BUFFER = Platform.select({
     ios: 3,
     android: 2,
@@ -59,7 +79,7 @@ const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, i
     const style = getStyleSheet(theme);
     const buffer = STATUS_BUFFER || 0;
     const isCurrentUser = user?.id === currentUserIdRecord.value;
-    const status = user.status;
+    const status = user?.status;
     const clearProfileImageUri = () => {
         if (isCurrentUser && profileImageUri !== '') {
             //fixme:  what do we do here ?
@@ -203,26 +223,6 @@ const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, i
         </View>
     );
 };
-
-type ProfilePictureProps = ProfilePictureInputProps & {
-    currentUserIdRecord: SystemModel;
-    edit: boolean;
-    iconSize?: number;
-    imageUri?: string;
-    profileImageUri?: string;
-    user : UserModel;
-    database: Database;
-};
-
-type ProfilePictureInputProps = {
-    profileImageRemove?: boolean; // fixme: is that one really needed ?
-    showStatus?: boolean;
-    size: number;
-    statusSize: number;
-    statusStyle?: StyleProp<ViewProps> | any;
-    testID?: string;
-    userId?: string;
-}
 
 const ProfilePicture: React.FunctionComponent<ProfilePictureInputProps> = withDatabase(withObservables(['userId'], ({userId, database}: {userId: string, database: Database}) => ({
     currentUserIdRecord: queryCurrentUserId(database),
