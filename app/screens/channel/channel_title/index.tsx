@@ -27,11 +27,21 @@ import type MyChannelSettingsModel from '@typings/database/models/servers/my_cha
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings, user, onPress, canHaveSubtitle}: ChannelTitleProps) => {
+const ChannelTitle = ({
+    config,
+    channel,
+    channelInfo,
+    database,
+    myChannelSettings,
+    user,
+    onPress,
+    canHaveSubtitle,
+}: ChannelTitleProps) => {
     const theme = useTheme();
 
     //fixme: rename customStatusEnabled
-    const [customStatusEnabled, setCustomStatusEnabled] = useState<boolean>(false);
+    const [customStatusEnabled, setCustomStatusEnabled] =
+        useState<boolean>(false);
     const [isGuest, setIsGuest] = useState<boolean>(false);
     const [isSelfDMChannel, setIsSelfDMChannel] = useState<boolean>(false);
     const [teammateId, setTeammateId] = useState<string>('');
@@ -44,10 +54,16 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
     useEffect(() => {
         const setup = async () => {
             if (channel.type === General.DM_CHANNEL) {
-                const teammate_id = getUserIdFromChannelName(user.id, channel.name);
+                const teammate_id = getUserIdFromChannelName(
+                    user.id,
+                    channel.name,
+                );
                 setTeammateId(teammate_id);
 
-                const userRecords = await queryUserById({database, userId: teammateId}).fetch() as UserModel[];
+                const userRecords = (await queryUserById({
+                    database,
+                    userId: teammateId,
+                }).fetch()) as UserModel[];
                 if (userRecords?.length) {
                     const teammate = userRecords[0];
                     setIsGuest(teammate.isGuest);
@@ -61,7 +77,8 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
     const style = getStyleSheet(theme);
 
     const channelType = channel.type;
-    const isChannelMuted = myChannelSettings?.[0].notifyProps?.mark_unread === 'mention';
+    const isChannelMuted =
+        myChannelSettings?.[0].notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; //fixme:  we'll need to add this column
     const hasGuests = channelInfo?.[0].guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
@@ -98,7 +115,10 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
         } else if (channelType === General.GM_CHANNEL) {
             messageId = t('channel.hasGuests');
             defaultMessage = 'This group message has guests';
-        } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
+        } else if (
+            channelType === General.OPEN_CHANNEL ||
+            channelType === General.PRIVATE_CHANNEL
+        ) {
             messageId = t('channel.channelHasGuests');
             defaultMessage = 'This channel has guests';
         } else {
@@ -147,8 +167,7 @@ const ChannelTitle = ({config, channel, channelInfo, database, myChannelSettings
                 style={style.icon}
                 size={24}
                 name='chevron-down'
-            />
-        );
+            />);
     }
 
     let mutedIcon;
@@ -275,8 +294,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type WithChannelArgs = {
-    channel : ChannelModel
-}
+    channel: ChannelModel;
+};
 
 type ChannelTitleProps = WithChannelArgs & {
     canHaveSubtitle: boolean;
@@ -288,9 +307,7 @@ type ChannelTitleProps = WithChannelArgs & {
     user: UserModel;
 };
 
-const enhanceWithChannelInfo = withObservables(['channel'], ({channel}: WithChannelArgs) => ({
+export default withDatabase(withObservables(['channel'], ({channel}: WithChannelArgs) => ({
     channelInfo: channel.info,
     myChannelSettings: channel.settings,
-}));
-
-export default withDatabase(enhanceWithChannelInfo(ChannelTitle));
+}))(ChannelTitle));
