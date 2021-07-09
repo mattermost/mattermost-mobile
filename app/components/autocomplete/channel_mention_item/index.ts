@@ -7,15 +7,16 @@ import {General} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getUser} from '@mm-redux/selectors/entities/users';
+import {GlobalState} from '@mm-redux/types/store';
 import {getChannelNameForSearchAutocomplete} from '@selectors/channel';
 import {isGuest as isGuestUser} from '@utils/users';
 
 import ChannelMentionItem from './channel_mention_item';
-import {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     channelId: string;
 }
+
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     const channel = getChannel(state, ownProps.channelId);
     let displayName = getChannelNameForSearchAutocomplete(state, ownProps.channelId);

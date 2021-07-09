@@ -38,7 +38,7 @@ export type Props = {
     rootId?: string;
     channelId: string;
     appsEnabled: boolean;
-    appsTakeOver: boolean;
+    appsTakeOver?: boolean;
 };
 
 type State = {

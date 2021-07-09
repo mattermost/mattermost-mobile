@@ -40,7 +40,7 @@ type State = {
     dataSource: AutocompleteSuggestion[];
 }
 
-export default class SlashSuggestion extends PureComponent<Props, State> {
+export default class AppSlashSuggestion extends PureComponent<Props, State> {
     static defaultProps = {
         defaultChannel: {},
         value: '',
@@ -97,7 +97,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             return;
         }
 
-        if (!this.isAppCommand(nextValue, this.props.channelId, this.props.rootId)) {
+        if (!this.isAppCommand(nextValue, this.props.channelId, this.props.currentTeamId, this.props.rootId)) {
             this.setActive(false);
             this.props.onResultCountChange(0);
             return;

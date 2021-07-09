@@ -38,7 +38,7 @@ const appsTakeOverProps = {
 
 function mapStateToProps(state: GlobalState, ownProps: {appsTakeOver: boolean}) {
     if (ownProps.appsTakeOver) {
-        // Return empty values for the requiredfields.
+        // Return empty values for the required fields.
         return appsTakeOverProps;
     }
 
