@@ -4,7 +4,6 @@
 import withObservables from '@nozbe/with-observables';
 import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import System from '@typings/database/models/servers/system';
 import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
@@ -12,19 +11,8 @@ import Emoji from '@components/emoji';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {queryUserById} from '@queries/servers/user';
 
+import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-
-type CustomStatusEmojiInputProps = {
-    emojiSize?: number;
-    style?: TextStyle;
-    testID?: string;
-    userId?: string;
-};
-
-type CustomStatusEmojiProps = CustomStatusEmojiInputProps & {
-    currentUserId: string;
-    userRecords: UserModel[];
-};
 
 const ConnectedCustomStatusEmoji = ({emojiSize = 16, style, testID, userRecords}: CustomStatusEmojiProps) => {
     //todo: ensure that we are storing the custom status in there
@@ -47,18 +35,25 @@ const ConnectedCustomStatusEmoji = ({emojiSize = 16, style, testID, userRecords}
     );
 };
 
-type ObservableUserId = {
-    currentUserIdRecord: System;
-    database: Database;
+type CustomStatusEmojiInputProps = {
+    emojiSize?: number;
+    style?: TextStyle;
+    testID?: string;
     userId?: string;
 };
 
-const enhanceCurrentUserId = withObservables([], ({database}: ObservableUserId) => ({
+type CustomStatusEmojiProps = CustomStatusEmojiInputProps & {
+    currentUserIdRecord: SystemModel;
+    database: Database;
+    userRecords: UserModel[];
+};
+
+const enhanceCurrentUserId = withObservables([], ({database}: { database: Database}) => ({
     currentUserIdRecord: queryCurrentUserId(database),
 }),
 );
 
-const enhanceUserId = withObservables(['userId'], ({userId, currentUserIdRecord, database}: ObservableUserId) => ({
+const enhanceUserId = withObservables(['userId'], ({userId, currentUserIdRecord, database}: {userId: string, currentUserIdRecord: SystemModel, database: Database}) => ({
     userRecords: queryUserById({database, userId: userId ?? currentUserIdRecord?.value}).observe(),
 }));
 

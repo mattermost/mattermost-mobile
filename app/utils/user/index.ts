@@ -25,3 +25,20 @@ export function getUserIdFromChannelName(userId: string, channelName: string): s
 
     return otherUserId;
 }
+
+export function isInRole(roles: string, inRole: string) {
+    if (roles) {
+        const parts = roles.split(' ');
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i] === inRole) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+export function isGuest(roles: string) {
+    return isInRole(roles, 'system_guest');
+}

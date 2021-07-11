@@ -1,89 +1,55 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MM_TABLES} from '@constants/database';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useEffect, useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Config} from '@typings/database/models/servers/config';
+import {isCustomStatusEnabled} from '@utils/general';
+import React, {useState} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
-
 import FormattedText from '@components/formatted_text';
-import General from '@constants/general';
-import {isCustomStatusEnabled} from '@queries/helpers';
-import {queryUserById} from '@queries/servers/user';
+import {General} from '@constants';
+import {isGuest as isTeamMateGuest} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
-import {getUserIdFromChannelName} from '@utils/user';
+import {useTheme} from '@screens/channel/theme_provider';
 
-import {useTheme} from '../../channel/theme_provider';
-
-import type {Database} from '@nozbe/watermelondb';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
+import type {Database} from '@nozbe/watermelondb';
 
-const ChannelTitle = ({
-    config,
-    channel,
-    channelInfo,
-    database,
-    myChannelSettings,
-    user,
-    onPress,
-    canHaveSubtitle,
-}: ChannelTitleProps) => {
+const ConnectedChannelTitle = ({channel, config, onPress, canHaveSubtitle, currentUserId, channelInfo, channelSettings, teammateId, teammate}: ChannelTitleProps) => {
     const theme = useTheme();
+    const [wrapperWidth, setWrapperWidth] = useState<number>(90);
 
-    //fixme: rename customStatusEnabled
-    const [customStatusEnabled, setCustomStatusEnabled] =
-        useState<boolean>(false);
-    const [isGuest, setIsGuest] = useState<boolean>(false);
-    const [isSelfDMChannel, setIsSelfDMChannel] = useState<boolean>(false);
-    const [teammateId, setTeammateId] = useState<string>('');
-
-    useEffect(() => {
-        const flag = isCustomStatusEnabled(config.value);
-        setCustomStatusEnabled(flag);
-    }, [config]);
-
-    useEffect(() => {
-        const setup = async () => {
-            if (channel.type === General.DM_CHANNEL) {
-                const teammate_id = getUserIdFromChannelName(
-                    user.id,
-                    channel.name,
-                );
-                setTeammateId(teammate_id);
-
-                const userRecords = (await queryUserById({
-                    database,
-                    userId: teammateId,
-                }).fetch()) as UserModel[];
-                if (userRecords?.length) {
-                    const teammate = userRecords[0];
-                    setIsGuest(teammate.isGuest);
-                    setIsSelfDMChannel(user.id === teammate_id);
-                }
-            }
-        };
-        setup();
-    }, [channel, database, teammateId, user.id]);
-
-    const style = getStyleSheet(theme);
-
+    const style = getStyle(theme);
     const channelType = channel.type;
-    const isChannelMuted =
-        myChannelSettings?.[0].notifyProps?.mark_unread === 'mention';
-    const isChannelShared = false; //fixme:  we'll need to add this column
-    const hasGuests = channelInfo?.[0].guestCount > 0;
+    const currentChannelName = channel ? channel.displayName : '';
+    const displayName = channel.displayName;
+    const hasGuests = channelInfo[0]?.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
+    const isChannelMuted = channelSettings[0]?.notifyProps?.mark_unread === 'mention';
 
-    const archiveIcon = () => {
+    const isChannelShared = false; // fixme you need to track down this value =>  currentChannel?.shared,
+
+    let isGuest = false;
+    let isSelfDMChannel = false;
+
+    if (channel.type === General.DM_CHANNEL) {
+        isGuest = isTeamMateGuest(teammate.roles);
+
+        // fixme: channel.teammate_id  where do we get it ?
+        isSelfDMChannel = currentUserId === teammateId;
+    }
+
+    const renderArchiveIcon = () => {
         let content = null;
         if (isArchived) {
             content = (
@@ -137,8 +103,27 @@ const ChannelTitle = ({
         );
     };
 
+    const renderChannelIcon = () => {
+        if (isChannelShared) {
+            return (
+                <ChannelIcon
+                    isActive={true}
+                    isArchived={false}
+
+                    // isBot={false}
+                    size={18}
+                    shared={isChannelShared}
+                    style={style.channelIconContainer}
+                    theme={theme}
+                    type={channelType}
+                />
+            );
+        }
+        return null;
+    };
+
     const renderChannelDisplayName = () => {
-        const channelDisplayName = channel.displayName;
+        const channelDisplayName = displayName || currentChannelName;
 
         if (isSelfDMChannel) {
             const messageId = t('channel_header.directchannel.you');
@@ -157,58 +142,49 @@ const ChannelTitle = ({
         return channelDisplayName;
     };
 
-    const hasGuestsText = renderHasGuestsText(); // ??????
-    const channelDisplayName = renderChannelDisplayName();
+    const renderMutedIcon = () => {
+        if (isChannelMuted) {
+            setWrapperWidth(wrapperWidth - 10);
+            return (
+                <CompassIcon
+                    style={[style.icon, style.muted]}
+                    size={24}
+                    name='bell-off-outline'
+                />
+            );
+        }
+        return null;
+    };
 
-    let icon;
-    if (channelDisplayName) {
-        icon = (
+    const renderCustomStatus = () => {
+        if (channelType === General.DM_CHANNEL && isCustomStatusEnabled(config)) {
+            setWrapperWidth(wrapperWidth - 10);
+
+            return (
+                <CustomStatusEmoji
+                    userId={teammateId}
+                    emojiSize={16}
+                    style={StyleSheet.flatten([...style.icon, ...style.emoji])}
+                />
+            );
+        }
+        return null;
+    };
+
+    const renderIcon = () => {
+        //fixme: is this correct ?
+        // if (channelDisplayName) {
+        return (
             <CompassIcon
                 style={style.icon}
                 size={24}
                 name='chevron-down'
-            />);
-    }
-
-    let mutedIcon;
-    let wrapperWidth = 90;
-    if (isChannelMuted) {
-        mutedIcon = (
-            <CompassIcon
-                style={[style.icon, style.muted]}
-                size={24}
-                name='bell-off-outline'
             />
         );
-        wrapperWidth -= 10;
-    }
 
-    const customStatus =
-        channelType === General.DM_CHANNEL && customStatusEnabled ? (
-            <CustomStatusEmoji
-                userID={teammateId}
-                emojiSize={16}
-                style={[style.icon, style.emoji]}
-            />
-        ) : null;
-
-    if (customStatus) {
-        wrapperWidth -= 10;
-    }
-
-    let channelIcon;
-    if (isChannelShared) {
-        channelIcon = (
-            <ChannelIcon
-                isActive={true}
-                shared={isChannelShared}
-                size={18}
-                style={style.channelIconContainer}
-                theme={theme}
-                type={channelType}
-            />
-        );
-    }
+        // }
+        // return null;
+    };
 
     return (
         <TouchableOpacity
@@ -217,26 +193,26 @@ const ChannelTitle = ({
             onPress={onPress}
         >
             <View style={[style.wrapper, {width: `${wrapperWidth}%`}]}>
-                {archiveIcon()}
+                {renderArchiveIcon()}
                 <Text
                     ellipsizeMode='tail'
                     numberOfLines={1}
                     style={style.text}
                     testID='channel.nav_bar.title'
                 >
-                    {channelDisplayName}
+                    {renderChannelDisplayName()}
                 </Text>
-                {channelIcon}
-                {icon}
-                {customStatus}
-                {mutedIcon}
+                {renderChannelIcon()}
+                {renderIcon()}
+                {renderCustomStatus()}
+                {renderMutedIcon()}
             </View>
-            {hasGuestsText}
+            {renderHasGuestsText()}
         </TouchableOpacity>
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyle = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
@@ -293,21 +269,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-type WithChannelArgs = {
-    channel: ChannelModel;
-};
-
-type ChannelTitleProps = WithChannelArgs & {
+type ChannelTitleInputProps = {
     canHaveSubtitle: boolean;
-    channelInfo: ChannelInfoModel[];
-    config: SystemModel;
-    database: Database;
-    myChannelSettings: MyChannelSettingsModel[];
+    channel: ChannelModel;
+    config: Config;
+    currentUserId: string;
+    teammateId: string;
     onPress: () => void;
-    user: UserModel;
 };
 
-export default withDatabase(withObservables(['channel'], ({channel}: WithChannelArgs) => ({
-    channelInfo: channel.info,
-    myChannelSettings: channel.settings,
-}))(ChannelTitle));
+type ChannelTitleProps = ChannelTitleInputProps & {
+    channelInfo: ChannelInfoModel[];
+    channelSettings: MyChannelSettingsModel[];
+    database: Database;
+    teammate: UserModel;
+    teammateId: string;
+};
+
+const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> =
+    withDatabase(
+        withObservables(['channel', 'teammateId', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database; }) => {
+            return {
+                channelInfo: channel.info.observe(),
+                channelSettings: channel.settings.observe(),
+                teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId),
+            };
+        },
+        )(ConnectedChannelTitle),
+    );
+
+export default ChannelTitle;

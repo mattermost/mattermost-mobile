@@ -3,7 +3,6 @@
 
 import {Client4} from '@client/rest';
 import StatusBar from '@components/status_bar/status_bar';
-import Preferences from '@constants/preferences';
 import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
@@ -31,7 +30,7 @@ import {ThemeProvider} from '@screens/channel/theme_provider';
 
 const {SERVER: {CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
-const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: user, configRecord: config}: ChannelProps) => {
+const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: user, configRecord: config, currentUserIdRecord}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
@@ -75,16 +74,17 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
             <SafeAreaView style={styles.flex}>
                 <StatusBar theme={theme}/>
                 <ChannelNavBar
-                    config={config}
+                    currentUserId={currentUserIdRecord.value}
                     channel={channel}
                     onPress={() => null}
+                    config={config.value}
                 />
             </SafeAreaView>
         </ThemeProvider>
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
         backgroundColor: 'green',
@@ -103,6 +103,7 @@ type ChannelProps = WithDatabaseArgs & {
     launchType: LaunchType;
     themeRecords: PreferenceModel[];
     userRecord: UserModel;
+    currentUserIdRecord: SystemModel;
 };
 
 export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
