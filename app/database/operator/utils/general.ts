@@ -88,7 +88,7 @@ export const getRawRecordPairs = (raws: any[]): RecordPair[] => {
  * @param {RawValue[]} raws
  * @param {string} key
  */
-export const getUniqueRawsBy = ({raws, key}:{ raws: RawValue[], key: string}) => {
+export const getUniqueRawsBy = ({raws, key}: { raws: RawValue[]; key: string}) => {
     return [...new Map(raws.map((item) => {
         const curItemKey = item[key as keyof typeof item];
         return [curItemKey, item];

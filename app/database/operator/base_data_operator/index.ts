@@ -48,7 +48,7 @@ export default class BaseDataOperator {
      * @returns {Promise<{ProcessRecordResults}>}
      */
     processRecords = async ({createOrUpdateRawValues, deleteRawValues = [], tableName, findMatchingRecordBy, fieldName}: ProcessRecordsArgs): Promise<ProcessRecordResults> => {
-        const getRecords = async (rawValues : RawValue[]) => {
+        const getRecords = async (rawValues: RawValue[]) => {
             // We will query a table where one of its fields can match a range of values.  Hence, here we are extracting all those potential values.
             const columnValues: string[] = getRangeOfValues({fieldName, raws: rawValues});
 
@@ -81,7 +81,7 @@ export default class BaseDataOperator {
         const createOrUpdateRaws = await getRecords(createOrUpdateRawValues);
         if (createOrUpdateRawValues.length > 0) {
             createOrUpdateRawValues.forEach((newElement: RawValue) => {
-                const findIndex = createOrUpdateRaws.findIndex((existing) => {
+                const findIndex = createOrUpdateRaws.findIndex((existing: Model) => {
                     return findMatchingRecordBy(existing, newElement);
                 });
 
@@ -128,7 +128,7 @@ export default class BaseDataOperator {
             throw new DataOperatorException('Database not defined');
         }
 
-        let preparedRecords: Promise<Model>[] = [];
+        let preparedRecords: Array<Promise<Model>> = [];
 
         // create operation
         if (createRaws?.length) {

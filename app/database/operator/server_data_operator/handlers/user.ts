@@ -39,10 +39,10 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface UserHandlerMix {
-    handleChannelMembership : ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembership[]>;
-    handlePreferences : ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Promise<Preference[]>;
-    handleReactions : ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<(Reaction | CustomEmoji)[]>;
-    handleUsers : ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<User[]>;
+    handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembership[]>;
+    handlePreferences: ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Promise<Preference[]>;
+    handleReactions: ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<Array<Reaction | CustomEmoji>>;
+    handleUsers: ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<User[]>;
 }
 
 const UserHandler = (superclass: any) => class extends superclass {
@@ -117,7 +117,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<(Reaction| CustomEmoji)[]>}
      */
     handleReactions = async ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => {
-        let batchRecords: (Reaction| CustomEmoji)[] = [];
+        let batchRecords: Array<Reaction| CustomEmoji> = [];
 
         if (!reactions.length) {
             throw new DataOperatorException(

@@ -102,7 +102,7 @@ class GlobalEventHandler {
         relaunchApp({launchType: LaunchType.Normal}, true);
     };
 
-    onServerConfigChanged = ({serverUrl, config}: {serverUrl: string, config: ClientConfig}) => {
+    onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
         this.configureAnalytics(serverUrl, config);
 
         if (config.ExtendSessionLengthWithActivity === 'true') {
@@ -110,7 +110,7 @@ class GlobalEventHandler {
         }
     };
 
-    onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string, serverVersion?: string}) => {
+    onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {
         const match = serverVersion?.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
         const version = match && match[0];
         const locale = DEFAULT_LOCALE;

@@ -16,7 +16,7 @@ export interface ClientChannelsMix {
     convertChannelToPrivate: (channelId: string) => Promise<Channel>;
     updateChannelPrivacy: (channelId: string, privacy: any) => Promise<Channel>;
     patchChannel: (channelId: string, channelPatch: Partial<Channel>) => Promise<Channel>;
-    updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string, user_id: string}) => Promise<any>;
+    updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => Promise<any>;
     getChannel: (channelId: string) => Promise<Channel>;
     getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
@@ -136,7 +136,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
         );
     };
 
-    updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string, user_id: string}) => {
+    updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => {
         this.analytics.trackAPI('api_users_update_channel_notifications', {channel_id: props.channel_id});
 
         return this.doFetch(

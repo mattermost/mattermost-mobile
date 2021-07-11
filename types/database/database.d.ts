@@ -59,7 +59,7 @@ export type OperationArgs = {
   transformer: (TransformerArgs) => Promise<Model>;
 };
 
-export type Models = Class<Model>[];
+export type Models = Array<Class<Model>>;
 
 // The elements needed to create a new database
 export type CreateServerDatabaseArgs = {
@@ -78,8 +78,8 @@ export type HandleFilesArgs = {
 };
 
 export type HandlePostMetadataArgs = {
-  embeds?: { embed: RawEmbed[]; postId: string }[];
-  images?: { images: Dictionary<PostImage>; postId: string }[];
+  embeds?: Array<{ embed: RawEmbed[]; postId: string }>;
+  images?: Array<{ images: Dictionary<PostImage>; postId: string }>;
   prepareRecordsOnly: boolean;
 };
 
@@ -151,29 +151,29 @@ type PrepareOnly = {
 }
 
 export type HandleInfoArgs = PrepareOnly & {
-    info: RawInfo[]
+    info: RawInfo[];
 }
 export type HandleServersArgs = PrepareOnly & {
-    servers: RawServers[]
+    servers: RawServers[];
 }
 export type HandleGlobalArgs = PrepareOnly & {
-    global: RawGlobal[]
+    global: RawGlobal[];
 }
 
 export type HandleRoleArgs = PrepareOnly & {
-    roles: RawRole[]
+    roles: RawRole[];
 }
 
 export type HandleCustomEmojiArgs = PrepareOnly & {
-    emojis: RawCustomEmoji[]
+    emojis: RawCustomEmoji[];
 }
 
 export type HandleSystemArgs = PrepareOnly & {
-    systems: RawSystem[]
+    systems: RawSystem[];
 }
 
 export type HandleTOSArgs = PrepareOnly & {
-    termOfService: RawTermsOfService[]
+    termOfService: RawTermsOfService[];
 }
 
 export type HandleMyChannelArgs = PrepareOnly & {
@@ -309,7 +309,7 @@ export type RawChannelInfo = {
 };
 
 export type RawChannelMembership = {
-  id? : string;
+  id?: string;
   channel_id: string;
   user_id: string;
   roles: string;
@@ -543,7 +543,7 @@ export type RawPreference = {
 };
 
 export type RawReaction = {
-  id? : string;
+  id?: string;
   create_at: number;
   delete_at: number;
   emoji_name: string;
@@ -592,7 +592,7 @@ export type RawTeamChannelHistory = {
 };
 
 export type RawTeamMembership = {
-  id? : string;
+  id?: string;
   delete_at: number;
   explicit_roles: string;
   roles: string;

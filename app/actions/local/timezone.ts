@@ -17,7 +17,7 @@ export function getDeviceTimezone() {
     return getTimeZone();
 }
 
-export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string, userId: string}) => {
+export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string; userId: string}) => {
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     if (!database) {
         return {error: `No database present for ${serverUrl}`};

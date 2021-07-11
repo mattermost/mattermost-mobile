@@ -284,7 +284,48 @@ export function showModal(name: string, title: string, passProps = {}, options =
 
 export function showModalOverCurrentContext(name: string, passProps = {}, options = {}) {
     const title = '';
-    const animationsEnabled = (Platform.OS === 'android').toString();
+    let animations;
+    switch (Platform.OS) {
+        case 'android':
+            animations = {
+                showModal: {
+                    waitForRender: true,
+                    alpha: {
+                        from: 0,
+                        to: 1,
+                        duration: 250,
+                    },
+                },
+                dismissModal: {
+                    alpha: {
+                        from: 1,
+                        to: 0,
+                        duration: 250,
+                    },
+                },
+            };
+            break;
+        default:
+            animations = {
+                showModal: {
+                    enter: {
+                        enabled: false,
+                    },
+                    exit: {
+                        enabled: false,
+                    },
+                },
+                dismissModal: {
+                    enter: {
+                        enabled: false,
+                    },
+                    exit: {
+                        enabled: false,
+                    },
+                },
+            };
+            break;
+    }
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
@@ -295,28 +336,9 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
             visible: false,
             height: 0,
         },
-        animations: {
-            showModal: {
-                waitForRender: true,
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 250,
-                },
-            },
-            dismissModal: {
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 1,
-                    to: 0,
-                    duration: 250,
-                },
-            },
-        },
+        animations,
     };
     const mergeOptions = merge(defaultOptions, options);
-
     showModal(name, title, passProps, mergeOptions);
 }
 

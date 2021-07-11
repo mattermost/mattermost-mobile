@@ -20,7 +20,7 @@ const sortByNewest = (a: Session, b: Session) => {
 
 export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlShape) => {
     const database = DatabaseManager.serverDatabases[serverUrl].database;
-    const {currentUserId, config}: {currentUserId: string, config: Partial<Config>} = await queryCommonSystemValues(database);
+    const {currentUserId, config}: {currentUserId: string; config: Partial<Config>} = await queryCommonSystemValues(database);
 
     if (config.ExtendSessionLengthWithActivity === 'true') {
         PushNotifications.cancelAllLocalNotifications();

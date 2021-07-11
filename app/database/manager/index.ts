@@ -5,6 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter, {MigrationEvents} from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {FileSystem} from 'react-native-unimodules';
 import urlParse from 'url-parse';
 
@@ -64,6 +65,14 @@ class DatabaseManager {
       for await (const serverUrl of serverUrls) {
           await this.initServerDatabase(serverUrl);
       }
+      this.appDatabase?.operator.handleInfo({
+          info: [{
+              build_number: DeviceInfo.getBuildNumber(),
+              created_at: Date.now(),
+              version_number: DeviceInfo.getVersion(),
+          }],
+          prepareRecordsOnly: false,
+      });
   };
 
   /**

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 interface Session {
-    id: string,
+    id: string;
     create_at: string|number;
     device_id?: string;
     expires_at: string|number;

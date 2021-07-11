@@ -5,7 +5,7 @@ import {cleanUrlForLogging} from '@utils/logging';
 
 export class ClientError extends Error {
     details: Error;
-    intl?: {defaultMessage?: string; id: string;} | { defaultMessage?: string; id: string } | { id: string; defaultMessage?: string; values: any } | { id: string; defaultMessage?: string };
+    intl?: {defaultMessage?: string; id: string} | { defaultMessage?: string; id: string } | { id: string; defaultMessage?: string; values: any } | { id: string; defaultMessage?: string };
     url: string;
     server_error_id?: string | number;
     status_code?: number;

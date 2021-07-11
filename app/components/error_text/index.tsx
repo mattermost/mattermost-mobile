@@ -13,7 +13,7 @@ export type ClientErrorWithIntl = ClientError & {intl: {values?: Record<string, 
 type ErrorProps = {
     error: ClientErrorWithIntl | string;
     testID?: string;
-    textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>
+    textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
     theme: Theme;
 }
 

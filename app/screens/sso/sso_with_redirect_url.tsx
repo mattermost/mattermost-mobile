@@ -20,7 +20,7 @@ interface SSOWithRedirectURLProps {
     loginUrl: string;
     serverUrl: string;
     setLoginError: (value: string) => void;
-    theme: Partial<Theme>
+    theme: Partial<Theme>;
 }
 
 const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {

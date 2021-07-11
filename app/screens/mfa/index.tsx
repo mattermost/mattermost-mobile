@@ -26,11 +26,11 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
-    config: Partial<Config>,
-    goToChannel: () => void,
-    license: Partial<License>,
-    loginId : string,
-    password: string,
+    config: Partial<Config>;
+    goToChannel: () => void;
+    license: Partial<License>;
+    loginId: string;
+    password: string;
     serverUrl: string;
     theme: Theme;
 }
