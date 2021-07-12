@@ -1,22 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@client/rest';
-import StatusBar from '@components/status_bar/status_bar';
 import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {parseTheme} from '@utils/general';
-import {isMinimumServerVersion} from '@utils/helpers';
-import {unsupportedServer} from '@utils/supported_server/supported_server';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {SafeAreaView} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {MM_TABLES} from '@constants/database';
+import StatusBar from '@components/status_bar/status_bar';
 import ViewTypes from '@constants/view';
+import {Client4} from '@client/rest';
+import {MM_TABLES} from '@constants/database';
+import {ThemeProvider} from '@contexts/theme_provider';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@utils/user';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {parseTheme} from '@utils/general';
+import {unsupportedServer} from '@utils/supported_server/supported_server';
 
 import ChannelNavBar from './channel_nav_bar';
 
@@ -25,8 +26,6 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {LaunchType} from '@typings/launch';
-
-import {ThemeProvider} from '@screens/channel/theme_provider';
 
 const {SERVER: {CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
@@ -70,8 +69,12 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
     }, [config.value?.Version, intl.formatMessage, user.roles]);
 
     return (
-        <ThemeProvider value={theme}>
-            <SafeAreaView style={styles.flex}>
+        <SafeAreaView
+            style={styles.flex}
+            mode='margin'
+            edges={['left', 'right', 'bottom']}
+        >
+            <ThemeProvider value={theme}>
                 <StatusBar theme={theme}/>
                 <ChannelNavBar
                     currentUserId={currentUserIdRecord.value}
@@ -79,14 +82,15 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
                     onPress={() => null}
                     config={config.value}
                 />
-            </SafeAreaView>
-        </ThemeProvider>
+            </ThemeProvider>
+        </SafeAreaView>
     );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
+
     },
 }));
 

@@ -13,7 +13,7 @@ import {getUserIdFromChannelName} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelTitle from '../channel_title';
-import {useTheme} from '../theme_provider';
+import {useTheme} from '@contexts/theme_provider';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -21,7 +21,7 @@ type ChannelNavBar = {
     channel: ChannelModel;
     currentUserId: string;
     onPress: () => void;
-    config: Config;
+    config: Config ;
 }
 
 //todo: Read Messages - Include MainSidebarDrawerButton, ChannelSearchButton, SettingsSidebarDrawerButton
@@ -44,12 +44,12 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
     }, []);
 
     const onLayout = ({nativeEvent}: LayoutChangeEvent) => {
-        const {height: layouHeight} = nativeEvent.layout;
-        if (height !== layouHeight && Platform.OS === 'ios') {
-            height = layouHeight;
+        const {height: layoutHeight} = nativeEvent.layout;
+        if (height !== layoutHeight && Platform.OS === 'ios') {
+            height = layoutHeight;
         }
 
-        DeviceEventEmitter.emit(VIEWS.CHANNEL_NAV_BAR_CHANGED, layouHeight);
+        DeviceEventEmitter.emit(VIEWS.CHANNEL_NAV_BAR_CHANGED, layoutHeight);
     };
 
     switch (Platform.OS) {

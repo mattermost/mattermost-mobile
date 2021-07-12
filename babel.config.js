@@ -22,6 +22,7 @@ module.exports = {
                 '@app': './app/',
                 '@assets': './dist/assets',
                 '@client': './app/client',
+                '@contexts': './app/contexts',
                 '@components': './app/components',
                 '@constants': './app/constants',
                 '@database': './app/database',

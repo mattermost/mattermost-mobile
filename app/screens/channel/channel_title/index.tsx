@@ -4,20 +4,20 @@
 import {MM_TABLES} from '@constants/database';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {Config} from '@typings/database/models/servers/config';
-import {isCustomStatusEnabled} from '@utils/general';
-import React, {useState} from 'react';
+import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
+import {useTheme} from '@contexts/theme_provider';
+import {General} from '@constants';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
-import {General} from '@constants';
+import {Config} from '@typings/database/models/servers/config';
+import {isCustomStatusEnabled} from '@utils/general';
 import {isGuest as isTeamMateGuest} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
-import {useTheme} from '@screens/channel/theme_provider';
 
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -27,7 +27,6 @@ import type {Database} from '@nozbe/watermelondb';
 
 const ConnectedChannelTitle = ({channel, config, onPress, canHaveSubtitle, currentUserId, channelInfo, channelSettings, teammateId, teammate}: ChannelTitleProps) => {
     const theme = useTheme();
-    const [wrapperWidth, setWrapperWidth] = useState<number>(90);
 
     const style = getStyle(theme);
     const channelType = channel.type;
@@ -36,11 +35,11 @@ const ConnectedChannelTitle = ({channel, config, onPress, canHaveSubtitle, curre
     const hasGuests = channelInfo[0]?.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings[0]?.notifyProps?.mark_unread === 'mention';
-
     const isChannelShared = false; // fixme you need to track down this value =>  currentChannel?.shared,
 
     let isGuest = false;
     let isSelfDMChannel = false;
+    let wrapperWidth = 90;
 
     if (channel.type === General.DM_CHANNEL && teammate) {
         isGuest = isTeamMateGuest(teammate.roles);
@@ -144,7 +143,7 @@ const ConnectedChannelTitle = ({channel, config, onPress, canHaveSubtitle, curre
 
     const renderMutedIcon = () => {
         if (isChannelMuted) {
-            setWrapperWidth(wrapperWidth - 10);
+            wrapperWidth -= 10;
             return (
                 <CompassIcon
                     style={[style.icon, style.muted]}
@@ -158,7 +157,7 @@ const ConnectedChannelTitle = ({channel, config, onPress, canHaveSubtitle, curre
 
     const renderCustomStatus = () => {
         if (channelType === General.DM_CHANNEL && isCustomStatusEnabled(config)) {
-            setWrapperWidth(wrapperWidth - 10);
+            wrapperWidth -= 10;
 
             return (
                 <CustomStatusEmoji

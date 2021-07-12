@@ -96,7 +96,7 @@ export const setupMockData = async () => {
                     mention_keys: '',
                     push: 'mention',
                     channel: true,
-                    mark_unread: 'true',
+                    mark_unread: 'mention',
                 },
             },
         ],

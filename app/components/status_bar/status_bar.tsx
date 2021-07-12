@@ -12,7 +12,6 @@ type StatusBarProps = {
 
 const StatusBar = ({theme, headerColor}: StatusBarProps) => {
     const headerBarStyle = tinyColor(headerColor ?? theme.sidebarHeaderBg);
-
     let barStyle: StatusBarStyle = 'light-content';
     if (headerBarStyle.isLight() && Platform.OS === 'ios') {
         barStyle = 'dark-content';

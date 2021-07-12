@@ -13,7 +13,7 @@ import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
 import {MM_TABLES} from '@constants/database';
 import useDidUpdate from '@hooks/did_update';
-import {useTheme} from '@screens/channel/theme_provider';
+import {useTheme} from '@contexts/theme_provider';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {queryCurrentUserId} from '@queries/servers/system';
 
