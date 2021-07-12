@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
+import {DeviceEventEmitter, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleSheet, ViewToken} from 'react-native';
 
 import {DeepLinkTypes, NavigationTypes} from '@constants';
 import * as Screens from '@constants/screen';
@@ -27,6 +27,7 @@ import DateSeparator from './date_separator';
 import MoreMessagesButton from './more_messages_button';
 import NewMessagesLine from './new_message_line';
 import Post from './post';
+import PostListRefreshControl from './post_list_refresh_control';
 
 type PostListProps = {
     channelId?: string;
@@ -79,6 +80,13 @@ const styles = StyleSheet.create({
     postListContent: {
         paddingTop: 5,
     },
+    scale: {
+        ...Platform.select({
+            android: {
+                scaleY: -1,
+            },
+        }),
+    },
 });
 
 const buildExtraData = makeExtraData();
@@ -95,6 +103,7 @@ const PostList = ({
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const [refreshing, setRefreshing] = useState(false);
+    const [offsetY, setOffsetY] = useState(0);
 
     const registerViewableItemsListener = useCallback((listener) => {
         onViewableItemsChangedListener.current = listener;
@@ -181,6 +190,7 @@ const PostList = ({
                     theme={theme}
                     moreMessages={moreNewMessages && checkForPostId}
                     testID={`${testID}.new_messages_line`}
+                    style={styles.scale}
                 />
             );
         } else if (isDateLine(item)) {
@@ -188,6 +198,7 @@ const PostList = ({
                 <DateSeparator
                     date={getDateForDateLine(item)}
                     theme={theme}
+                    style={styles.scale}
                 />
             );
         }
@@ -195,6 +206,7 @@ const PostList = ({
         if (isCombinedUserActivityPost(item)) {
             const postProps = {
                 postId: item,
+                style: styles.scale,
                 testID: `${testID}.combined_user_activity`,
                 theme,
             };
@@ -232,6 +244,7 @@ const PostList = ({
             <Post
                 highlight={highlightPostId === item}
                 postId={item}
+                style={styles.scale}
                 testID={`${testID}.post`}
                 {...postProps}
             />
@@ -246,6 +259,17 @@ const PostList = ({
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
+
+    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (Platform.OS === 'android') {
+            const {y} = event.nativeEvent.contentOffset;
+            if (y === 0) {
+                setOffsetY(y);
+            } else if (offsetY === 0 && y !== 0) {
+                setOffsetY(y);
+            }
+        }
+    }, [offsetY]);
 
     useResetNativeScrollView(scrollViewNativeID, postIds);
 
@@ -300,46 +324,47 @@ const PostList = ({
         }
     }, [initialIndex, highlightPostId]);
 
-    const refreshControl = useMemo(() => (
-        <RefreshControl
-            refreshing={refreshing}
-            colors={[theme.onlineIndicator, theme.awayIndicator, theme.dndIndicator]}
-            tintColor={theme.centerChannelColor}
-            onRefresh={onRefresh}
+    const list = (
+        <FlatList
+            contentContainerStyle={styles.postListContent}
+            data={postIds}
+            extraData={buildExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
+            initialNumToRender={INITIAL_BATCH_TO_RENDER}
+            key={`recyclerFor-${channelId}-${hasPostsKey}`}
+            keyboardDismissMode={'interactive'}
+            keyboardShouldPersistTaps={'handled'}
+            keyExtractor={keyExtractor}
+            ListFooterComponent={renderFooter}
+            listKey={`recyclerFor-${channelId}`}
+            maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+            maxToRenderPerBatch={Platform.select({android: 5})}
+            nativeID={scrollViewNativeID}
+            onEndReached={onLoadMoreUp}
+            onEndReachedThreshold={2}
+            onScroll={onScroll}
+            onScrollToIndexFailed={onScrollToIndexFailed}
+            onViewableItemsChanged={onViewableItemsChanged}
+            ref={flatListRef}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            scrollEventThrottle={60}
+            style={styles.flex}
+            windowSize={Posts.POST_CHUNK_SIZE / 2}
+            viewabilityConfig={VIEWABILITY_CONFIG}
+            testID={testID}
         />
-    ), [refreshing, theme]);
+    );
 
     return (
         <>
-            <FlatList
-                contentContainerStyle={styles.postListContent}
-                data={postIds}
-                extraData={buildExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                inverted={true}
-                key={`recyclerFor-${channelId}-${hasPostsKey}`}
-                keyboardDismissMode={'interactive'}
-                keyboardShouldPersistTaps={'handled'}
-                keyExtractor={keyExtractor}
-                ListFooterComponent={renderFooter}
-                listKey={`recyclerFor-${channelId}`}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={Platform.select({android: 5})}
-                nativeID={scrollViewNativeID}
-                onScrollToIndexFailed={onScrollToIndexFailed}
-                ref={flatListRef}
-                onEndReached={onLoadMoreUp}
-                onEndReachedThreshold={2}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                scrollEventThrottle={60}
-                style={styles.flex}
-                windowSize={Posts.POST_CHUNK_SIZE / 2}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                onViewableItemsChanged={onViewableItemsChanged}
-                refreshControl={refreshControl}
-                testID={testID}
-            />
+            <PostListRefreshControl
+                enabled={offsetY === 0}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                theme={theme}
+            >
+                {list}
+            </PostListRefreshControl>
             {showMoreMessagesButton &&
                 <MoreMessagesButton
                     channelId={channelId}
