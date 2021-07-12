@@ -2044,11 +2044,15 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       size={20}
       testID="custom_status.emoji.calendar"
       textStyle={
-        Object {
-          "bottom": 8,
-          "color": "#3d3c40",
-          "marginRight": 8,
-        }
+        Array [
+          Object {
+            "color": "#3d3c40",
+            "marginRight": 8,
+          },
+          Object {
+            "bottom": 0,
+          },
+        ]
       }
     />
     <View
@@ -2428,11 +2432,15 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       size={20}
       testID="custom_status.emoji.calendar"
       textStyle={
-        Object {
-          "bottom": 8,
-          "color": "#3d3c40",
-          "marginRight": 8,
-        }
+        Array [
+          Object {
+            "color": "#3d3c40",
+            "marginRight": 8,
+          },
+          Object {
+            "bottom": 8,
+          },
+        ]
       }
     />
     <View

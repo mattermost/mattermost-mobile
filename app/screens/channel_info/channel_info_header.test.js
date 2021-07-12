@@ -46,6 +46,7 @@ describe('channel_info_header', () => {
         testID: 'channel_info.header',
         isCustomStatusEnabled: false,
         isCustomStatusExpired: false,
+        isCustomStatusExpirySupported: false,
     };
 
     test('should match snapshot', async () => {
@@ -149,6 +150,7 @@ describe('channel_info_header', () => {
             <ChannelInfoHeader
                 {...baseProps}
                 isCustomStatusEnabled={true}
+                isCustomStatusExpirySupported={true}
                 type={General.DM_CHANNEL}
                 customStatus={customStatus}
             />,
