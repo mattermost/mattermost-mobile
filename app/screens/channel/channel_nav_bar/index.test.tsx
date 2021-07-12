@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderWithIntl} from '@test/intl-test-helper';
 import React, {ReactNode} from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import Preferences from '@constants/preferences';
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import ChannelNavBar from './index';
 

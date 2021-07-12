@@ -1,19 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Config} from '@typings/database/models/servers/config';
-import {getUserIdFromChannelName} from '@utils/user';
 import React from 'react';
 import {DeviceEventEmitter, LayoutChangeEvent, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewTypes from '@constants/view';
+import {Config} from '@typings/database/models/servers/config';
+import {General} from '@constants';
+import {getUserIdFromChannelName} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {useTheme} from '../theme_provider';
 
 import ChannelTitle from '../channel_title';
+import {useTheme} from '../theme_provider';
 
-import ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 type ChannelNavBar = {
     channel: ChannelModel;
@@ -39,8 +40,10 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
         DeviceEventEmitter.emit(ViewTypes.CHANNEL_NAV_BAR_CHANGED, layouHeight);
     };
 
-    const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
-
+    let teammateId: string | undefined;
+    if (channel?.type === General.DM_CHANNEL) {
+        teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+    }
     return (
         <View
             onLayout={onLayout}

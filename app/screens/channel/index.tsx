@@ -87,7 +87,6 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
 const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
-        backgroundColor: 'green',
     },
 }));
 
@@ -112,12 +111,10 @@ export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) 
     configRecord: database.collections.get(SYSTEM).findAndObserve('config'),
 }));
 
-const withChannelAndTheme = withObservables(['currentChannelIdRecord'], ({currentChannelIdRecord, currentUserIdRecord, database}: WithChannelAndThemeArgs) => {
-    return {
-        channelRecord: database.collections.get(CHANNEL).findAndObserve(currentChannelIdRecord.value),
-        themeRecords: database.collections.get(PREFERENCE).query(Q.where('user_id', currentUserIdRecord.value), Q.where('category', 'theme')).observe(),
-        userRecord: database.collections.get(USER).findAndObserve(currentUserIdRecord.value),
-    };
-});
+const withChannelAndTheme = withObservables(['currentChannelIdRecord'], ({currentChannelIdRecord, currentUserIdRecord, database}: WithChannelAndThemeArgs) => ({
+    channelRecord: database.collections.get(CHANNEL).findAndObserve(currentChannelIdRecord.value),
+    themeRecords: database.collections.get(PREFERENCE).query(Q.where('user_id', currentUserIdRecord.value), Q.where('category', 'theme')).observe(),
+    userRecord: database.collections.get(USER).findAndObserve(currentUserIdRecord.value),
+}));
 
 export default withDatabase(withSystemIds(withChannelAndTheme(Channel)));

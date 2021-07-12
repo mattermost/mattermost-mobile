@@ -42,7 +42,7 @@ const ConnectedChannelTitle = ({channel, config, onPress, canHaveSubtitle, curre
     let isGuest = false;
     let isSelfDMChannel = false;
 
-    if (channel.type === General.DM_CHANNEL) {
+    if (channel.type === General.DM_CHANNEL && teammate) {
         isGuest = isTeamMateGuest(teammate.roles);
 
         // fixme: channel.teammate_id  where do we get it ?
@@ -274,7 +274,7 @@ type ChannelTitleInputProps = {
     channel: ChannelModel;
     config: Config;
     currentUserId: string;
-    teammateId: string;
+    teammateId?: string;
     onPress: () => void;
 };
 
@@ -282,7 +282,7 @@ type ChannelTitleProps = ChannelTitleInputProps & {
     channelInfo: ChannelInfoModel[];
     channelSettings: MyChannelSettingsModel[];
     database: Database;
-    teammate: UserModel;
+    teammate?: UserModel;
     teammateId: string;
 };
 
@@ -292,7 +292,7 @@ const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> =
             return {
                 channelInfo: channel.info.observe(),
                 channelSettings: channel.settings.observe(),
-                teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId),
+                ...(teammateId && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
             };
         },
         )(ConnectedChannelTitle),

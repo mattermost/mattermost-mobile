@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setupMockData} from '@screens/channel/mock';
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
@@ -27,7 +28,7 @@ export const initialLaunch = async () => {
 
     //fixme:  is this right ?
     await DatabaseManager.init(['https://rc.test.mattermost.com']);
-
+    await setupMockData();
     launchApp({launchType: LaunchType.Normal});
 };
 

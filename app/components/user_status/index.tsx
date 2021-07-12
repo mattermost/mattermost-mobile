@@ -29,7 +29,6 @@ const ConnectedUserStatus = ({size = 6, status = General.OFFLINE, user}: UserSta
     let iconName;
     let iconColor;
     const theme = useTheme();
-
     switch (user?.status) {
         case General.AWAY:
             iconName = 'clock';
