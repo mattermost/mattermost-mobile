@@ -51,6 +51,7 @@ export default class ChannelInfo extends PureComponent {
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         isCustomStatusExpired: PropTypes.bool.isRequired,
+        isCustomStatusExpirySupported: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -174,6 +175,7 @@ export default class ChannelInfo extends PureComponent {
             customStatus,
             isCustomStatusEnabled,
             isCustomStatusExpired,
+            isCustomStatusExpirySupported,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -210,6 +212,7 @@ export default class ChannelInfo extends PureComponent {
                         customStatus={customStatus}
                         isCustomStatusEnabled={isCustomStatusEnabled}
                         isCustomStatusExpired={isCustomStatusExpired}
+                        isCustomStatusExpirySupported={isCustomStatusExpirySupported}
                     />
                     }
                     <View style={style.rowsContainer}>

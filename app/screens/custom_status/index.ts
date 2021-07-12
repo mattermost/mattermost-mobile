@@ -11,7 +11,7 @@ import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
 import {UserCustomStatus} from '@mm-redux/types/users';
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
-import {getRecentCustomStatuses, isCustomStatusExpired, makeGetCustomStatus} from '@selectors/custom_status';
+import {getRecentCustomStatuses, isCustomStatusExpired, isCustomStatusExpirySupported, makeGetCustomStatus} from '@selectors/custom_status';
 import {isLandscape} from '@selectors/device';
 
 function makeMapStateToProps() {
@@ -21,6 +21,7 @@ function makeMapStateToProps() {
         const recentCustomStatuses = getRecentCustomStatuses(state);
         const theme = getTheme(state);
         const userTimezone = getCurrentUserTimezone(state);
+        const isExpirySupported = isCustomStatusExpirySupported(state);
         const customStatusExpired = isCustomStatusExpired(state, customStatus);
 
         return {
@@ -30,6 +31,7 @@ function makeMapStateToProps() {
             recentCustomStatuses,
             theme,
             isLandscape: isLandscape(state),
+            isExpirySupported,
             isCustomStatusExpired: customStatusExpired,
         };
     };

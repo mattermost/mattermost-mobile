@@ -51,6 +51,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         customStatus: PropTypes.object,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         isCustomStatusExpired: PropTypes.bool.isRequired,
+        isCustomStatusExpirySupported: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -152,6 +153,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             customStatus,
             isCustomStatusEnabled,
             isCustomStatusExpired,
+            isCustomStatusExpirySupported,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -163,6 +165,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         });
 
         const showCustomStatus = isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji && !isCustomStatusExpired;
+        const showCustomStatusExpiry = customStatus.duration !== undefined && customStatus.duration !== CustomStatusDuration.DONT_CLEAR && isCustomStatusExpirySupported;
 
         return (
             <View style={style.container}>
@@ -195,7 +198,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         <Emoji
                             emojiName={customStatus.emoji}
                             size={20}
-                            textStyle={style.iconContainer}
+                            textStyle={[style.iconContainer, {bottom: showCustomStatusExpiry ? 8 : 0}]}
                             testID={`custom_status.emoji.${customStatus.emoji}`}
                         />
                         <View style={style.customStatus}>
@@ -206,7 +209,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             />
-                            {customStatus.duration !== CustomStatusDuration.DONT_CLEAR && (
+                            {showCustomStatusExpiry && (
                                 <CustomStatusExpiry
                                     time={customStatus.expires_at}
                                     theme={theme}
@@ -314,7 +317,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         iconContainer: {
             marginRight: 8,
             color: theme.centerChannelColor,
-            bottom: 8,
         },
         customStatusContainer: {
             flexDirection: 'row',

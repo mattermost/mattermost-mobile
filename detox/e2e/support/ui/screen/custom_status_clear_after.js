@@ -38,7 +38,7 @@ class ClearAfterScreen {
     }
 
     tapSuggestion = async (duration) => {
-        await this.getClearAfterSuggestion(duration).tap();
+        await this.getClearAfterMenuItem(duration).tap();
     }
 
     openDatePicker = async () => {

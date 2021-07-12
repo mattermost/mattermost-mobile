@@ -34,7 +34,7 @@ export function isCustomStatusExpired(state: GlobalState, customStatus?: UserCus
         return true;
     }
 
-    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR) {
+    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.hasOwnProperty('duration')) {
         return false;
     }
 
@@ -59,4 +59,9 @@ export function isCustomStatusEnabled(state: GlobalState) {
     const config = getConfig(state);
     const serverVersion = state.entities.general.serverVersion;
     return config && config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(serverVersion, 5, 36);
+}
+
+export function isCustomStatusExpirySupported(state: GlobalState) {
+    const serverVersion = state.entities.general.serverVersion;
+    return isMinimumServerVersion(serverVersion, 5, 37);
 }

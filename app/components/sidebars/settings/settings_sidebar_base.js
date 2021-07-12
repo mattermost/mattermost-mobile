@@ -40,6 +40,7 @@ export default class SettingsSidebarBase extends PureComponent {
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         customStatus: PropTypes.object,
         isCustomStatusExpired: PropTypes.bool.isRequired,
+        isCustomStatusExpirySupported: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -243,7 +244,7 @@ export default class SettingsSidebarBase extends PureComponent {
     }
 
     renderCustomStatus = () => {
-        const {isCustomStatusEnabled, customStatus, theme, isCustomStatusExpired} = this.props;
+        const {isCustomStatusEnabled, customStatus, theme, isCustomStatusExpired, isCustomStatusExpirySupported} = this.props;
         const {showStatus, showRetryMessage} = this.state;
 
         if (!isCustomStatusEnabled) {
@@ -272,7 +273,7 @@ export default class SettingsSidebarBase extends PureComponent {
             </View>
         );
 
-        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR ? (
+        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== undefined && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR && isCustomStatusExpirySupported ? (
             <Text style={style.customStatusExpiryContainer}>
                 <CustomStatusExpiry
                     time={customStatus?.expires_at}

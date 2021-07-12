@@ -97,6 +97,7 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
                                     time={moment(expiry).toDate()}
                                     textStyles={style.customStatusExpiry}
                                     showTimeCompulsory={true}
+                                    showToday={true}
                                 />
                             </View>
                         )}

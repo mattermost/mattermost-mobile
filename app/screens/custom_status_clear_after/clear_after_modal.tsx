@@ -7,6 +7,7 @@ import {intlShape, injectIntl} from 'react-intl';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {
     Navigation,
+    NavigationButtonPressedEvent,
     NavigationComponent,
     NavigationComponentProps,
     Options,
@@ -17,7 +18,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import {dismissModal, mergeNavigationOptions} from 'app/actions/navigation';
+import {mergeNavigationOptions, popTopScreen} from 'app/actions/navigation';
 import ClearAfterMenuItem from './clear_after_menu_item';
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;
@@ -77,24 +78,18 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         Navigation.events().bindComponent(this);
     }
 
-    navigationButtonPressed = (button: {
-        buttonId: string,
-    }) => {
-        if (button.buttonId === 'update-custom-status-clear-after') {
+    navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
+        switch (buttonId) {
+        case 'update-custom-status-clear-after':
             this.onDone();
-        } else if (button.buttonId === 'close-clear-after') {
-            this.onCancel();
+            break;
         }
     }
 
     onDone = () => {
         this.props.handleClearAfterClick(this.state.duration, this.state.expiresAt);
-        dismissModal();
+        popTopScreen();
     };
-
-    onCancel = async () => {
-        dismissModal();
-    }
 
     handleItemClick = (duration: CustomStatusDuration, expiresAt: string) => {
         this.setState({

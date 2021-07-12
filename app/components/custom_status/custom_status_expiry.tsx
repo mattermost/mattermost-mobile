@@ -25,10 +25,11 @@ type Props = {
     testID?: string;
     showPrefix?: boolean;
     withinBrackets?: boolean;
+    showToday?: boolean;
     showTimeCompulsory?: boolean;
 }
 
-const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBrackets, testID = '', showTimeCompulsory}: Props) => {
+const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBrackets, testID = '', showTimeCompulsory, showToday}: Props) => {
     const timezone = useSelector(getCurrentUserTimezone);
     const styles = createStyleSheet(theme);
     const militaryTime = useSelector((state: GlobalState) => getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'));
@@ -44,7 +45,22 @@ const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBra
     let format = '';
     let renderDayOrDate;
 
-    if (expiryMomentTime.isSame(todayEndTime)) {
+    if (showToday && expiryMomentTime.isSameOrBefore(todayEndTime)) {
+        renderDayOrDate = (
+            <Text>
+                <FormattedText
+                    id='custom_status.expiry_time.today'
+                    defaultMessage='Today'
+                />
+                {' '}
+                <FormattedText
+                    id='custom_status.expiry.at'
+                    defaultMessage='at'
+                />
+                {' '}
+            </Text>
+        );
+    } else if (expiryMomentTime.isSame(todayEndTime)) {
         renderDayOrDate = (
             <FormattedText
                 id='custom_status.expiry_time.today'

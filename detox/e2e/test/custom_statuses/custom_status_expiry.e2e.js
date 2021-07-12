@@ -28,7 +28,6 @@ describe('Custom status expiry', () => {
         tapSuggestion,
     } = CustomStatusScreen;
     const defaultCustomStatuses = ['In a meeting', 'Out for lunch', 'Out sick', 'Working from home', 'On a vacation'];
-    const defaultClearAfterDurations = ['', 'thirty_minutes', 'one_hour', 'four_hours', 'today', 'this_week', 'date_and_time'];
     const defaultStatus = {
         emoji: 'hamburger',
         text: 'Out for lunch',
@@ -52,7 +51,7 @@ describe('Custom status expiry', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T4090 RN apps: Custom Status Expiry (mobile)', async () => {
+    xit('MM-T4090 RN apps: Custom Status Expiry (mobile)', async () => {// enable only when running locally
         const expiryText = '(Until ' + ClearAfterScreen.getExpiryText(30) + ')';
 
         // # Open custom status screen
@@ -68,6 +67,7 @@ describe('Custom status expiry', () => {
 
         // * Tap a suggestion and check if it is selected
         await tapSuggestion(defaultStatus);
+        await expect(element(by.id(`custom_status.duration.${defaultStatus.duration}`))).toBeVisible();
 
         // # Tap on Done button and check if the modal closes
         await CustomStatusScreen.close();
@@ -78,16 +78,8 @@ describe('Custom status expiry', () => {
         await expect(element(by.id(`custom_status.emoji.${defaultStatus.emoji}`))).toBeVisible();
         await expect(element(by.text(expiryText))).toBeVisible();
 
-        // # Click on the Set a custom status option and check if the modal opens
-        await CustomStatusScreen.open();
-        await CustomStatusScreen.close();
-
-        // # Close settings sidebar
-        await closeSettingsSidebar();
-
         // # Wait for status to get cleared
         await wait(timeouts.ONE_MIN * 31);
-        await openSettingsSidebar();
         await expect(element(by.text(expiryText))).toBeNotVisible();
         await closeSettingsSidebar();
     }, timeouts.ONE_MIN * 35);
@@ -109,6 +101,7 @@ describe('Custom status expiry', () => {
 
         // * Tap a suggestion and check if it is selected
         await tapSuggestion(defaultStatus);
+        await expect(element(by.id(`custom_status.duration.${defaultStatus.duration}`))).toBeVisible();
 
         // # Tap on Done button and check if the modal closes
         await CustomStatusScreen.close();
@@ -170,33 +163,13 @@ describe('Custom status expiry', () => {
 
         // * Tap a suggestion and check if it is selected
         await tapSuggestion(defaultStatus);
-
-        // # Tap on Done button and check if the modal closes
-        await CustomStatusScreen.close();
-
-        const expiryText = '(Until ' + ClearAfterScreen.getExpiryText(30) + ')';
-
-        // * Check if the selected emoji and text are visible in the sidebar
-        await openSettingsSidebar();
-        await expect(element(by.text(defaultStatus.text))).toBeVisible();
-        await expect(element(by.id(`custom_status.emoji.${defaultStatus.emoji}`))).toBeVisible();
-        await expect(element(by.text(expiryText))).toBeVisible();
-
-        // # Click on the Set a custom status option and check if the modal opens
-        await CustomStatusScreen.open();
+        await expect(element(by.id(`custom_status.duration.${defaultStatus.duration}`))).toBeVisible();
 
         // # Click on the Clear After option and check if the modal opens
         await ClearAfterScreen.open();
 
-        // * Check if all the default menu items are visible
-        const isClearAfterSuggestionPresentPromiseArray = [];
-        defaultClearAfterDurations.map(async (duration) => {
-            isClearAfterSuggestionPresentPromiseArray.push(expect(ClearAfterScreen.getClearAfterMenuItem(duration)).toBeVisible());
-        });
-        await Promise.all(isClearAfterSuggestionPresentPromiseArray);
-
         // # Select a different expiry time and check if it is shown in Clear After
-        await element(by.id('clear_after.menu_item.four_hours')).tap();
+        await ClearAfterScreen.tapSuggestion('four_hours');
         await ClearAfterScreen.close();
 
         // Check if selected duration is shown in clear after
@@ -216,7 +189,7 @@ describe('Custom status expiry', () => {
 
         // * Select some time in future in date time picker
         await ClearAfterScreen.openTimePicker();
-        await DateTimePicker.changeTime('11', '59');
+        await DateTimePicker.changeTime('11', '30');
         await DateTimePicker.tapOkButtonAndroid();
 
         await ClearAfterScreen.close();
@@ -229,7 +202,7 @@ describe('Custom status expiry', () => {
         await openSettingsSidebar();
         await expect(element(by.text(defaultStatus.text))).toBeVisible();
         await expect(element(by.id(`custom_status.emoji.${defaultStatus.emoji}`))).toBeVisible();
-        await expect(element(by.text('(Until 11:59 ' + am_pm + ')'))).toBeVisible();
+        await expect(element(by.text('(Until 11:30 ' + am_pm + ')'))).toBeVisible();
 
         // # Close settings sidebar
         await closeSettingsSidebar();
