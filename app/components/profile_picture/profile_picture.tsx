@@ -118,13 +118,13 @@ const ProfilePicture = (props: ProfilePictureProps) => {
     }, [props.profileImageUri]);
 
     useDidUpdate(() => {
-        const {user} = props;
+        const {edit, user} = props;
 
         const url = user ? Client4.getProfilePictureUrl(user.id, user.last_picture_update) : undefined;
-        if (url !== pictureUrl) {
+        if (url !== pictureUrl && !edit) {
             setPictureUrl(url);
         }
-    }, [props.user]);
+    }, [props.user, props.edit]);
 
     let statusIcon;
     let statusStyle = props.statusStyle;
