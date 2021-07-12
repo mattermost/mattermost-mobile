@@ -157,7 +157,13 @@ public class CustomPushNotification extends PushNotification {
 
         Bundle data = mNotificationProps.asBundle();
         final String channelId = data.getString("channel_id");
-        final Integer notificationId = data.getString("post_id").hashCode();
+        final String postId = data.getString("post_id");
+        Integer notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
+
+        if (postId != null) {
+            notificationId = postId.hashCode();
+        }
+
         if (channelId != null) {
             Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
             List<Integer> notifications = notificationsInChannel.get(channelId);
