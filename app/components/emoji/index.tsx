@@ -43,6 +43,8 @@ const ConnectedEmoji = ({customEmojiStyle = false, emojiName, emojiRecords, lite
     let imageUrl = '';
     let unicode;
     let displayTextOnly = false;
+
+    //todo: BuiltInEmojis has been removed from master branch
     if (EmojiIndicesByAlias.has(emojiName) || BuiltInEmojis.includes(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)!];
         unicode = emoji.filename;
@@ -62,8 +64,7 @@ const ConnectedEmoji = ({customEmojiStyle = false, emojiName, emojiRecords, lite
             // state.entities.emojis.nonExistentEmoji.has(emojiName) ||
             config?.EnableCustomEmoji !== 'true' ||
             config?.ExperimentalEnablePostMetadata === 'true' ||
-            !currentUserId ||
-            isMinimumServerVersion(Client4.getServerVersion(), 5, 12);
+            !currentUserId;
     }
 
     let emojiSize = size;
