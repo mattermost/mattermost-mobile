@@ -22,14 +22,18 @@ const style = StyleSheet.create({
 });
 
 const PostListRefreshControl = ({children, enabled, onRefresh, refreshing, theme}: Props) => {
+    const props = {
+        colors: [theme.onlineIndicator, theme.awayIndicator, theme.dndIndicator],
+        onRefresh,
+        refreshing,
+        tintColor: theme.centerChannelColor,
+    };
+
     if (Platform.OS === 'android') {
         return (
             <RefreshControl
+                {...props}
                 enabled={enabled}
-                refreshing={refreshing}
-                colors={[theme.onlineIndicator, theme.awayIndicator, theme.dndIndicator]}
-                tintColor={theme.centerChannelColor}
-                onRefresh={onRefresh}
                 style={style.container}
             >
                 {children}
@@ -37,14 +41,7 @@ const PostListRefreshControl = ({children, enabled, onRefresh, refreshing, theme
         );
     }
 
-    const refreshControl = (
-        <RefreshControl
-            refreshing={refreshing}
-            colors={[theme.onlineIndicator, theme.awayIndicator, theme.dndIndicator]}
-            tintColor={theme.centerChannelColor}
-            onRefresh={onRefresh}
-        />
-    );
+    const refreshControl = <RefreshControl {...props}/>;
 
     return React.cloneElement(
         children,
