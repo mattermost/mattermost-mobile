@@ -18,7 +18,14 @@ public class NotificationDismissService extends IntentService {
         final Context context = getApplicationContext();
         final Bundle bundle = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
         final String channelId = bundle.getString("channel_id");
-        final Integer notificationId = bundle.getString("post_id").hashCode();
+        final String postId = bundle.getString("post_id");
+        int notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
+        if (postId != null) {
+            notificationId = postId.hashCode();
+        } else if (channelId != null) {
+            notificationId = channelId.hashCode();
+        }
+
         CustomPushNotification.cancelNotification(context, channelId, notificationId);
         Log.i("ReactNative", "Dismiss notification");
     }
