@@ -3,9 +3,8 @@
 
 import assert from 'assert';
 
-import TestHelper from 'test/test_helper';
-
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import TestHelper from '@test/test_helper';
 
 import {getAllCommands, getAutocompleteCommandsList, getOutgoingHooksInCurrentTeam} from './integrations';
 

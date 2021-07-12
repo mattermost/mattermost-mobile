@@ -5,9 +5,9 @@ import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} fro
 import {Animated, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Slider from 'react-native-slider';
-import {CallbackFunctionWithoutArguments} from 'types/screens/gallery';
 
 import CompassIcon from '@components/compass_icon';
+import {CallbackFunctionWithoutArguments} from '@mm-types/screens/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 interface VideoControlsProps {

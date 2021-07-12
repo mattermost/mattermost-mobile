@@ -3,8 +3,6 @@
 
 import React from 'react';
 
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import {isYoutubeLink} from '@utils/url';
 
 import EmbeddedBindings from './embedded_bindings';
@@ -12,6 +10,9 @@ import ImagePreview from './image_preview';
 import MessageAttachments from './message_attachments';
 import Opengraph from './opengraph';
 import YouTube from './youtube';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type ContentProps = {
     isReplyPost: boolean;

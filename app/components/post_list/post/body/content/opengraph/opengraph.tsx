@@ -6,12 +6,13 @@ import {intlShape, injectIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import OpengraphImage from './opengraph_image';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type OpengraphProps = {
     intl: typeof intlShape;

@@ -3,7 +3,6 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
@@ -15,6 +14,7 @@ import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {Post} from '@mm-redux/types/posts';
 import {GlobalState} from '@mm-redux/types/store';
+import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';

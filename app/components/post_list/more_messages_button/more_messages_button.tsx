@@ -8,11 +8,12 @@ import {ActivityIndicator, Animated, AppState, AppStateStatus, Text, View, ViewT
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ViewTypes, {INDICATOR_BAR_HEIGHT} from '@constants/view';
-import type {Theme} from '@mm-redux/types/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {messageCount} from '@mm-redux/utils/post_list';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 const HIDDEN_TOP = -400;
 const SHOWN_TOP = 0;

@@ -4,13 +4,13 @@
 import React from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import {DoAppCall, PostEphemeralCallResponseForChannel} from 'types/actions/apps';
 
 import {dismissModal} from '@actions/navigation';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Channel} from '@mm-redux/types/channels';
 import {Theme} from '@mm-redux/types/preferences';
+import {DoAppCall, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
 import Separator from '@screens/channel_info/separator';
 import {createCallContext, createCallRequest} from '@utils/apps';
 

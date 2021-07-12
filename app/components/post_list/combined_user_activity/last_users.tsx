@@ -8,11 +8,12 @@ import {Text} from 'react-native';
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
-import type {Theme} from '@mm-redux/types/preferences';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {postTypeMessages, systemMessages} from './messages';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 type LastUsersProps = {
     actor: string;

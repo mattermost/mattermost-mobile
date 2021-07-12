@@ -11,8 +11,6 @@ import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
-import type {Post as PostType} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {preventDoubleTap} from '@utils/tap';
@@ -23,6 +21,9 @@ import Body from './body';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
+
+import type {Post as PostType} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type PostProps = {
     canDelete: boolean;

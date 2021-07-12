@@ -3,9 +3,9 @@
 
 import {shallow} from 'enzyme';
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {Preferences} from '@mm-redux/constants';
+import {shallowWithIntl} from '@test/intl-test-helper';
 import ImageCacheManager from '@utils/image_cache_manager';
 
 import UploadItem from './upload_item';

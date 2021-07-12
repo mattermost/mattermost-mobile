@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import RadioButtonGroup from '@components/radio_button';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 

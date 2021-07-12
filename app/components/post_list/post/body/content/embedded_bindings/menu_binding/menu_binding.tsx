@@ -3,14 +3,15 @@
 
 import React, {useCallback, useState} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
-import type {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {createCallContext, createCallRequest} from '@utils/apps';
+
 import type {AppBinding} from '@mm-redux/types/apps';
 import type {PostActionOption} from '@mm-redux/types/integration_actions';
 import type {Post} from '@mm-redux/types/posts';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import type {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 
 type Props = {
     binding: AppBinding;

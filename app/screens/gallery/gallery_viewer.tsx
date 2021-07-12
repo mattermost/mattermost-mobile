@@ -6,7 +6,6 @@ import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
 import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, EasingNode, ceil} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
-import type {GalleryProps} from 'types/screens/gallery';
 
 import {isImage, isVideo} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
@@ -16,6 +15,8 @@ import {usePinch} from './animation_helper';
 import GalleryFile from './gallery_file';
 import GalleryImage from './gallery_image';
 import GalleryVideo from './gallery_video';
+
+import type {GalleryProps} from '@mm-types/screens/gallery';
 
 const itemTopStyle = (props: GalleryProps): number => {
     if (Platform.OS === 'android') {

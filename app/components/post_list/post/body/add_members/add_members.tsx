@@ -8,12 +8,13 @@ import {Text} from 'react-native';
 import AtMention from '@components/at_mention';
 import FormattedText from '@components/formatted_text';
 import {General} from '@mm-redux/constants';
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
-import type {UserProfile} from '@mm-redux/types/users';
 import {t} from '@utils/i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
+import type {UserProfile} from '@mm-redux/types/users';
 
 type AddMembersProps = {
     addChannelMember: (channelId: string, userId: string, postRootId?: string) => void;

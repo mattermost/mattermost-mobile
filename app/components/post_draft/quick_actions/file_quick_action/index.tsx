@@ -11,9 +11,10 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
 import {ICON_SIZE, MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
 import {hasStoragePermission} from '@utils/permission';
 import {changeOpacity} from '@utils/theme';
+
+import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
 
 const ShareExtension = NativeModules.MattermostShare;
 

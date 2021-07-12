@@ -16,7 +16,6 @@ import {getConfig, canUploadFilesOnMobile} from '@mm-redux/selectors/entities/ge
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {Channel} from '@mm-redux/types/channels';
-import type {Team} from '@mm-redux/types/teams';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import Body from '@share/components/body';
 import ChannelButton from '@share/components/channel_button';
@@ -26,6 +25,8 @@ import TeamButton from '@share/components/team_button';
 import {isAuthorized, getErrorElement, getSharedItems, permissionEnabled} from '@share/utils';
 import {getAllowedServerMaxFileSize} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
+
+import type {Team} from '@mm-redux/types/teams';
 
 interface ShareProps {
     intl: typeof intlShape;

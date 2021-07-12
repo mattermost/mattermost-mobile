@@ -5,10 +5,11 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import type {FileInfo as FileInfoType} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {FileInfo as FileInfoType} from '@mm-redux/types/files';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type FileInfoProps = {
     file: FileInfoType;

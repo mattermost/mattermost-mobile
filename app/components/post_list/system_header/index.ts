@@ -7,11 +7,12 @@ import {Preferences} from '@mm-redux/constants';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-import type {GlobalState} from '@mm-redux/types/store';
-import type {UserProfile} from '@mm-redux/types/users';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 
 import SystemHeader from './system_header';
+
+import type {GlobalState} from '@mm-redux/types/store';
+import type {UserProfile} from '@mm-redux/types/users';
 
 export function mapStateToProps(state: GlobalState) {
     const currentUser: UserProfile | undefined = getCurrentUser(state);

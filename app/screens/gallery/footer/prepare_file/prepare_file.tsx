@@ -7,17 +7,18 @@ import {Alert, BackHandler, Platform, StyleSheet, Text, View, ViewStyle} from 'r
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 import RNFetchBlob, {FetchBlobResponse, RNFetchBlobConfig, StatefulPromise} from 'rn-fetch-blob';
-import type {PrepareFileRef} from 'types/screens/gallery';
 
 import {Client4} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressBar from '@components/progress_bar';
-import type {FileInfo} from '@mm-redux/types/files';
 import {Theme} from '@mm-redux/types/preferences';
 import {getLocalPath} from '@utils/file';
 
 import mattermostBucket from 'app/mattermost_bucket';
+
+import type {FileInfo} from '@mm-redux/types/files';
+import type {PrepareFileRef} from '@mm-types/screens/gallery';
 
 type PrepareFileProps = {
     intl: typeof intlShape;

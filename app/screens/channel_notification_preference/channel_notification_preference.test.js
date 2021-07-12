@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntlMessages} from 'test/intl-test-helper';
 
 import {ViewTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
 import SectionItem from '@screens/settings/section_item';
+import {shallowWithIntlMessages} from '@test/intl-test-helper';
 
 import ChannelNotificationPreference from './channel_notification_preference';
 

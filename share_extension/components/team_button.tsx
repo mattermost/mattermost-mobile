@@ -12,10 +12,11 @@ import FormattedText from '@components/formatted_text';
 import {getMyTeams} from '@mm-redux/actions/teams';
 import {Preferences} from '@mm-redux/constants';
 import {DispatchFunc} from '@mm-redux/types/actions';
-import type {Channel} from '@mm-redux/types/channels';
-import type {Team} from '@mm-redux/types/teams';
 import {loadTeamChannels, getTeamDefaultChannel} from '@share/actions';
 import {changeOpacity} from '@utils/theme';
+
+import type {Channel} from '@mm-redux/types/channels';
+import type {Team} from '@mm-redux/types/teams';
 
 interface TeamButtonProps {
     intl: typeof intlShape;

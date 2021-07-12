@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import PostList from '@components/post_list';
 import {TYPING_VISIBLE} from '@constants/post_draft';
 import {General, RequestStatus} from '@mm-redux/constants';
 import Preferences from '@mm-redux/constants/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ThreadIOS from './thread.ios';
 

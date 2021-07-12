@@ -7,8 +7,9 @@ import {StyleProp, Text, View, ViewStyle} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {General} from '@mm-redux/constants';
-import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 type Props = {
     hasDraft: boolean;

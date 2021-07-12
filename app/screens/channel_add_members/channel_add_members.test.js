@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import * as NavigationActions from '@actions/navigation';
 import {Preferences} from '@mm-redux/constants';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ChannelAddMembers from './channel_add_members';
 

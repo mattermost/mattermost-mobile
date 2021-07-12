@@ -5,12 +5,12 @@ import assert from 'assert';
 import fs from 'fs';
 
 import nock from 'nock';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import {Client4} from '@client/rest';
 import {GeneralTypes} from '@mm-redux/action_types';
 import * as Actions from '@mm-redux/actions/emojis';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 const OK_RESPONSE = {status: 'OK'};
 

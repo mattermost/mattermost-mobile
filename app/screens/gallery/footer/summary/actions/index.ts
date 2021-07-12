@@ -4,9 +4,10 @@
 import {connect} from 'react-redux';
 
 import {canDownloadFilesOnMobile, getConfig} from '@mm-redux/selectors/entities/general';
-import type {GlobalState} from '@mm-redux/types/store';
 
 import Actions from './actions';
+
+import type {GlobalState} from '@mm-redux/types/store';
 
 function mapStateToProps(state: GlobalState) {
     const config = getConfig(state);

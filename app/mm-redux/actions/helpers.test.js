@@ -3,11 +3,10 @@
 
 import assert from 'assert';
 
-import configureStore, {mockDispatch} from 'test/test_store';
-
 import {Client4} from '@client/rest';
 import ClientError from '@client/rest/error';
 import {forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
+import configureStore, {mockDispatch} from '@test/test_store';
 
 describe('Actions.Helpers', () => {
     describe('forceLogoutIfNecessary', () => {

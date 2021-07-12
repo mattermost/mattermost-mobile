@@ -3,7 +3,6 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
-import {DoAppCall, PostEphemeralCallResponseForChannel} from 'types/actions/apps';
 
 import {doAppCall, postEphemeralCallResponseForChannel} from '@actions/apps';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
@@ -12,6 +11,7 @@ import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
+import {DoAppCall, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
 import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';

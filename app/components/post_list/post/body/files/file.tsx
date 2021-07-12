@@ -5,8 +5,6 @@ import React, {useRef} from 'react';
 import {View} from 'react-native';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import type {FileInfo as FileInfoType} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
 import {isDocument, isImage} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -15,6 +13,9 @@ import FileIcon from './file_icon';
 import FileInfo from './file_info';
 import ImageFile from './image_file';
 import ImageFileOverlay from './image_file_overlay';
+
+import type {FileInfo as FileInfoType} from '@mm-redux/types/files';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type FileProps = {
     canDownloadFiles: boolean;

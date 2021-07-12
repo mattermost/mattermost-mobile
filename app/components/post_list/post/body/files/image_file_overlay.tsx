@@ -4,8 +4,9 @@
 import React from 'react';
 import {PixelRatio, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 
-import type {Theme} from '@mm-redux/types/preferences';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 type ImageFileOverlayProps = {
     theme: Theme;

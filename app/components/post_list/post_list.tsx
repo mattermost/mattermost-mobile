@@ -9,8 +9,6 @@ import {DeepLinkTypes, NavigationTypes} from '@constants';
 import * as Screens from '@constants/screen';
 import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
-import type {ActionResult} from '@mm-redux/types/actions';
-import type {Theme} from '@mm-redux/types/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import telemetry, {PERF_MARKERS} from '@telemetry';
@@ -25,6 +23,9 @@ import MoreMessagesButton from './more_messages_button';
 import NewMessagesLine from './new_message_line';
 import Post from './post';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './post_list_config';
+
+import type {ActionResult} from '@mm-redux/types/actions';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type PostListProps = {
     channelId?: string;

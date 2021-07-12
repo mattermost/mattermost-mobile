@@ -8,8 +8,6 @@ import FormattedText from '@components/formatted_text';
 import MarkdownEmoji from '@components/markdown/markdown_emoji';
 import {THREAD} from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import {isEdited, isPostEphemeral} from '@mm-redux/utils/post_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -19,6 +17,9 @@ import Failed from './failed';
 import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type BodyProps = {
     appsEnabled: boolean;

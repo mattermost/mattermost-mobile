@@ -5,10 +5,11 @@ import {connect} from 'react-redux';
 
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-import type {GlobalState} from '@mm-redux/types/store';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 
 import DateSeparator from './date_separator';
+
+import type {GlobalState} from '@mm-redux/types/store';
 
 function mapStateToProps(state: GlobalState) {
     const enableTimezone = isTimezoneEnabled(state);

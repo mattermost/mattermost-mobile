@@ -6,9 +6,9 @@ import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
-import {renderWithIntl} from 'test/testing_library';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {renderWithIntl} from '@test/testing_library';
 
 import FileQuickAction from './index';
 

@@ -11,12 +11,13 @@ import {getChannel, isChannelReadOnlyById} from '@mm-redux/selectors/entities/ch
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
-import type{GlobalState} from '@mm-redux/types/store';
 import {selectEmojisCountFromReactions} from '@selectors/emojis';
 
 import Reactions from './reactions';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
+import type{GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     post: Post;

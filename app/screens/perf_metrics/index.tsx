@@ -6,11 +6,12 @@ import {FlatList, View} from 'react-native';
 import {useSelector} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleFromTheme} from '@mm-redux/utils/theme_utils';
 import telemetry, {PerfMetric} from '@telemetry';
 
 import PerfItem from './item';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 const getStyleSheet = makeStyleFromTheme((theme: Theme) => {
     return {

@@ -8,11 +8,12 @@ import {addChannelMember} from '@mm-redux/actions/channels';
 import {removePost} from '@mm-redux/actions/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+
+import AddMembers from './add_members';
+
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
-
-import AddMembers from './add_members';
 
 type OwnProps = {
     post: Post;

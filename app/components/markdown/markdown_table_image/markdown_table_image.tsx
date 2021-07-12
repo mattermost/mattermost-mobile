@@ -9,11 +9,12 @@ import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {FileInfo} from '@mm-redux/types/files';
-import type {PostImage} from '@mm-redux/types/posts';
 import EphemeralStore from '@store/ephemeral_store';
 import {generateId} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
+
+import type {PostImage} from '@mm-redux/types/posts';
 
 type MarkdownTableImageProps = {
     disable: boolean;

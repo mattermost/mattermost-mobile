@@ -6,12 +6,13 @@ import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react
 
 import {Client4} from '@client/rest';
 import ProgressiveImage from '@components/progressive_image';
-import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
+
+import type {FileInfo} from '@mm-redux/types/files';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type ImageFileProps = {
     backgroundColor?: string;

@@ -3,11 +3,11 @@
 
 import Fuse from 'fuse.js';
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {selectEmojisByName, selectEmojisBySection} from '@selectors/emojis';
 import initialState from '@store/initial_state';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import EmojiPicker from './emoji_picker.ios';
 import {filterEmojiSearchInput} from './emoji_picker_base';

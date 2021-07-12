@@ -9,8 +9,6 @@ import {Server, WebSocket as MockWebSocket} from 'mock-socket';
 import nock from 'nock';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import * as Actions from '@actions/websocket';
 import {Client4} from '@client/rest';
@@ -20,6 +18,8 @@ import * as ChannelActions from '@mm-redux/actions/channels';
 import * as TeamActions from '@mm-redux/actions/teams';
 import {General} from '@mm-redux/constants';
 import globalInitialState from '@store/initial_state';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 global.WebSocket = MockWebSocket;
 

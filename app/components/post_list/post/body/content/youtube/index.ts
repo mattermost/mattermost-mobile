@@ -4,10 +4,11 @@
 import {connect} from 'react-redux';
 
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import type {Post} from '@mm-redux/types/posts';
-import type {GlobalState} from '@mm-redux/types/store';
 
 import YouTube from './youtube';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     googleDeveloperKey?: string;

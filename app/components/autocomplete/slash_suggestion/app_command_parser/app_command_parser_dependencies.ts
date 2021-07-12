@@ -4,11 +4,11 @@
 import {intlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
 import keyMirror from '@mm-redux/utils/key_mirror';
 import Store from '@store/store';
 
 import type {ParsedCommand} from './app_command_parser';
+import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
 
 export type {
     AppCallRequest,

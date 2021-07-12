@@ -7,8 +7,6 @@ import assert from 'assert';
 
 import {Server, WebSocket as MockWebSocket} from 'mock-socket';
 import nock from 'nock';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import * as Actions from '@actions/websocket';
 import {Client4} from '@client/rest';
@@ -18,6 +16,8 @@ import * as PostActions from '@mm-redux/actions/posts';
 import {General, Posts} from '@mm-redux/constants';
 import * as PostSelectors from '@mm-redux/selectors/entities/posts';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 global.WebSocket = MockWebSocket;
 

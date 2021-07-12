@@ -8,7 +8,6 @@ import React, {ReactNode, useRef} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import type {ImageSource} from 'react-native-vector-icons/Icon';
 
 import {showModal} from '@actions/navigation';
 import {Client4} from '@client/rest';
@@ -17,10 +16,12 @@ import SystemAvatar from '@components/post_list/system_avatar';
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import {fromAutoResponder, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {preventDoubleTap} from '@utils/tap';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
+import type {ImageSource} from 'react-native-vector-icons/Icon';
 
 type AvatarProps = {
     enablePostIconOverride?: boolean;

@@ -10,11 +10,12 @@ import {useSelector} from 'react-redux';
 import Loading from '@components/loading';
 import {Preferences} from '@mm-redux/constants';
 import {getMyTeams} from '@mm-redux/selectors/entities/teams';
-import type {Team} from '@mm-redux/types/teams';
 import {sortTeamsWithLocale} from '@mm-redux/utils/team_utils';
 import {getCurrentLocale} from '@selectors/i18n';
 import TeamItem from '@share/components/team_item';
 import {changeOpacity} from '@utils/theme';
+
+import type {Team} from '@mm-redux/types/teams';
 
 type TeamListParams = {
     Teams: {

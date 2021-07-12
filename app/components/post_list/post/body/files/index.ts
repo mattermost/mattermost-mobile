@@ -5,10 +5,11 @@ import {connect} from 'react-redux';
 
 import {makeGetFilesForPost} from '@mm-redux/selectors/entities/files';
 import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
-import type {Theme} from '@mm-redux/types/preferences';
-import type {GlobalState} from '@mm-redux/types/store';
 
 import Files from './files';
+
+import type {Theme} from '@mm-redux/types/preferences';
+import type {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     fileIds: string[];

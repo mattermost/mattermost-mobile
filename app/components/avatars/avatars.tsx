@@ -7,8 +7,9 @@ import {Platform, Text, View} from 'react-native';
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
-import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const size = ViewTypes.AVATAR_LIST_PICTURE_SIZE;

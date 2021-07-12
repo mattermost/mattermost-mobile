@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import MainSidebar from '@components/sidebars/main/main_sidebar.ios';
 import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import SidebarSettings from './index';
 

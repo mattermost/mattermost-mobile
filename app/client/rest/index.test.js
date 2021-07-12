@@ -4,11 +4,11 @@
 import assert from 'assert';
 
 import nock from 'nock';
-import TestHelper from 'test/test_helper';
 
 import {HEADER_X_VERSION_ID} from '@client/rest/constants';
 import ClientError from '@client/rest/error';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import TestHelper from '@test/test_helper';
 
 describe('Client4', () => {
     beforeAll(() => {

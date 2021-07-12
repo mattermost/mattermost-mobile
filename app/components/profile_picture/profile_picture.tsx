@@ -9,9 +9,10 @@ import {Client4} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
 import {useDidUpdate} from '@hooks';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
 import type {Theme} from '@mm-redux/types/preferences';
 import type {UserProfile} from '@mm-redux/types/users';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,

@@ -15,11 +15,12 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {DispatchFunc} from '@mm-redux/types/actions';
 import {ErrorApi} from '@mm-redux/types/client4';
-import type {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
+
+import type {GlobalState} from '@mm-redux/types/store';
 
 interface SSOProps {
     intl: typeof intlShape;

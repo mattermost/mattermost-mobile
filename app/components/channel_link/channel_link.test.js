@@ -3,8 +3,8 @@
 
 import React from 'react';
 import {Text} from 'react-native';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
+import {shallowWithIntl} from '@test/intl-test-helper';
 import {alertErrorWithFallback} from '@utils/general';
 
 import ChannelLink from './channel_link';

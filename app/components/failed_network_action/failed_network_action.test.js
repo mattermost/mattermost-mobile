@@ -4,9 +4,9 @@
 import {waitFor} from '@testing-library/react-native';
 
 import React from 'react';
-import {renderWithReduxIntl} from 'test/testing_library';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {renderWithReduxIntl} from '@test/testing_library';
 
 import FailedNetworkAction from './failed_network_action';
 

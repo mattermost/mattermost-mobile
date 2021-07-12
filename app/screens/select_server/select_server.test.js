@@ -3,7 +3,8 @@
 import {fireEvent, waitFor} from '@testing-library/react-native';
 
 import React from 'react';
-import {renderWithReduxIntl} from 'test/testing_library';
+
+import {renderWithReduxIntl} from '@test/testing_library';
 
 import SelectServer from './select_server.js';
 

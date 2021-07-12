@@ -3,12 +3,11 @@
 
 import assert from 'assert';
 
-import TestHelper from 'test/test_helper';
-
 import {General, Preferences} from '@mm-redux/constants';
 import * as Selectors from '@mm-redux/selectors/entities/teams';
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import TestHelper from '@test/test_helper';
 
 describe('Selectors.Teams', () => {
     TestHelper.initMockEntities();

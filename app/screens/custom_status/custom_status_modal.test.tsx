@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 describe('screens/custom_status_modal', () => {
     const customStatus = {

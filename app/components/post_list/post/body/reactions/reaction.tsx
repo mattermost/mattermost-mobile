@@ -6,8 +6,9 @@ import {Platform, Text} from 'react-native';
 
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 type ReactionProps = {
     count: number;

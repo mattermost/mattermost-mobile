@@ -4,9 +4,6 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import type {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
-import type {PostMetadata} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {getStatusColors} from '@utils/message_attachment_colors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -21,6 +18,10 @@ import AttachmentPreText from './attachment_pretext';
 import AttachmentText from './attachment_text';
 import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
+
+import type {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
+import type {PostMetadata} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type Props = {
     attachment: MessageAttachmentType;

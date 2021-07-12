@@ -9,9 +9,10 @@ import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtu
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {usePermanentSidebar, useSplitView} from '@hooks/permanent_sidebar';
-import type {Post} from '@mm-redux/types/posts';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
+
+import type {Post} from '@mm-redux/types/posts';
 
 type YouTubeProps = {
     googleDeveloperKey?: string;

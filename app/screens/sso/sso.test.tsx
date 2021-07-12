@@ -3,8 +3,9 @@
 
 import React from 'react';
 import {Linking} from 'react-native';
-import configureStore from 'test/test_store';
-import {renderWithReduxIntl} from 'test/testing_library';
+
+import configureStore from '@test/test_store';
+import {renderWithReduxIntl} from '@test/testing_library';
 
 import SSOComponent from './index';
 

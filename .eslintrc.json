@@ -53,6 +53,7 @@
     "import/order": [
       2,
       {
+        "groups": ["builtin", "external", "parent", "sibling", "index", "type"],
         "newlines-between": "always",
         "pathGroups": [
           {
@@ -75,7 +76,7 @@
           "order": "asc",
           "caseInsensitive": true
         },
-        "pathGroupsExcludedImportTypes": []
+        "pathGroupsExcludedImportTypes": ["type"]
       }
     ]
   },

@@ -3,12 +3,13 @@
 
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import type {ActionsProps, ManagedConfig} from 'types/screens/gallery';
 
 import CompassIcon from '@components/compass_icon';
 import mattermostManaged from '@mattermost-managed';
 
 import Action from './action';
+
+import type {ActionsProps, ManagedConfig} from '@mm-types/screens/gallery';
 
 const styles = StyleSheet.create({
     contaier: {

@@ -6,13 +6,13 @@ import assert from 'assert';
 import {Server, WebSocket as MockWebSocket} from 'mock-socket';
 import nock from 'nock';
 import {batchActions} from 'redux-batched-actions';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import * as Actions from '@actions/websocket';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {TeamTypes, UserTypes} from '@mm-redux/action_types';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 global.WebSocket = MockWebSocket;
 

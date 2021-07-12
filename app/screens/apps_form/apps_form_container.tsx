@@ -3,11 +3,11 @@
 
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
-import {DoAppCall, DoAppCallResult, PostEphemeralCallResponseForContext} from 'types/actions/apps';
 
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData, AppLookupResponse} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
+import {DoAppCall, DoAppCallResult, PostEphemeralCallResponseForContext} from '@mm-types/actions/apps';
 import {makeCallErrorResponse} from '@utils/apps';
 
 import AppsFormComponent from './apps_form_component';

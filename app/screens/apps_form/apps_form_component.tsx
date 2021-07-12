@@ -7,18 +7,16 @@ import {ScrollView, Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {DoAppCallResult} from 'types/actions/apps';
 
+import {dismissModal} from '@actions/navigation';
+import Markdown from '@components/markdown';
+import StatusBar from '@components/status_bar';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import StatusBar from '@components/status_bar';
-import Markdown from '@components/markdown';
-
-import {dismissModal} from '@actions/navigation';
+import {DoAppCallResult} from '@mm-types/actions/apps';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

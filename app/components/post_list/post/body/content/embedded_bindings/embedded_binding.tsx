@@ -4,14 +4,15 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import type {AppBinding} from '@mm-redux/types/apps';
-import type {Theme} from '@mm-redux/types/preferences';
 import {copyAndFillBindings} from '@utils/apps';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
 import EmbedSubBindings from './embedded_sub_bindings';
+
+import type {AppBinding} from '@mm-redux/types/apps';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type Props = {
     embed: AppBinding;

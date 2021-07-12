@@ -8,14 +8,15 @@ import {makeGetCommentCountForPost} from '@mm-redux/selectors/entities/posts';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getUser, getCurrentUser} from '@mm-redux/selectors/entities/users';
-import type {Post} from '@mm-redux/types/posts';
-import type {GlobalState} from '@mm-redux/types/store';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {isCustomStatusEnabled} from '@selectors/custom_status';
 import {postUserDisplayName} from '@utils/post';
 import {isGuest} from '@utils/users';
 
 import Header from './header';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {
     enablePostUsernameOverride: boolean;

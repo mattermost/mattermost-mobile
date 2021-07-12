@@ -7,10 +7,10 @@ import {Alert, Platform, View} from 'react-native';
 import {TapGestureHandler, State, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
 import Video, {OnLoadData, OnProgressData} from 'react-native-video';
 import RNFetchBlob from 'rn-fetch-blob';
-import {GalleryItemProps} from 'types/screens/gallery';
 
 import {Client4} from '@client/rest';
 import {DeviceTypes} from '@constants';
+import {GalleryItemProps} from '@mm-types/screens/gallery';
 import {getLocalPath} from '@utils/file';
 
 import VideoControls, {VideoControlsRef} from './video_controls';

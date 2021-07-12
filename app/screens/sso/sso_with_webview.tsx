@@ -16,8 +16,9 @@ import {Client4} from '@client/rest';
 import Loading from '@components/loading';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
-import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',

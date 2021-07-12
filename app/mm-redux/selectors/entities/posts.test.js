@@ -3,11 +3,10 @@
 
 import assert from 'assert';
 
-import TestHelper from 'test/test_helper';
-
 import * as Selectors from '@mm-redux/selectors/entities/posts';
 import {makeGetProfilesForReactions} from '@mm-redux/selectors/entities/users';
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import TestHelper from '@test/test_helper';
 
 import {Posts, Preferences} from '../../constants';
 

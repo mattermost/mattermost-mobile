@@ -3,11 +3,11 @@
 
 import {shallow} from 'enzyme';
 import React from 'react';
-import {intl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {Command, AutocompleteSuggestion} from '@mm-redux/types/integrations';
 import Store from '@store/store';
+import {intl} from '@test/intl-test-helper';
 
 import {
     reduxTestState,

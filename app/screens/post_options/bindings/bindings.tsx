@@ -4,7 +4,6 @@
 import React from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
@@ -12,6 +11,7 @@ import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 import {UserProfile} from '@mm-redux/types/users';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
+import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 
 import PostOption from '../post_option';

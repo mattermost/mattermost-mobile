@@ -5,9 +5,10 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {getFileType} from '@mm-redux/utils/file_utils';
+
 import type {FileInfo} from '@mm-redux/types/files';
 import type {Theme} from '@mm-redux/types/preferences';
-import {getFileType} from '@mm-redux/utils/file_utils';
 
 type FileIconProps = {
     backgroundColor?: string;

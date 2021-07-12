@@ -8,9 +8,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/widgets/settings/bool_setting';
 import RadioSetting from '@components/widgets/settings/radio_setting';
 import Preferences from '@mm-redux/constants/preferences';
-import RadioSetting from '@components/widgets/settings/radio_setting';
-import BoolSetting from '@components/widgets/settings/bool_setting';
-import AutocompleteSelector from '@components/autocomplete_selector';
+
 import DialogElement from './dialog_element.js';
 
 describe('DialogElement', () => {

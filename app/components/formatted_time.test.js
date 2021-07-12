@@ -3,7 +3,8 @@
 
 import moment from 'moment-timezone';
 import React from 'react';
-import {renderWithIntl} from 'test/testing_library';
+
+import {renderWithIntl} from '@test/testing_library';
 
 import FormattedTime from './formatted_time';
 

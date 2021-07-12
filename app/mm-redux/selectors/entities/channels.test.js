@@ -3,11 +3,10 @@
 
 import assert from 'assert';
 
-import TestHelper from 'test/test_helper';
-
 import * as Selectors from '@mm-redux/selectors/entities/channels';
 import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import TestHelper from '@test/test_helper';
 
 import {General, Preferences} from '../../constants';
 
