@@ -75,8 +75,11 @@ describe('PushNotification', () => {
         const deliveredNotifications = [{identifier: 1}, {identifier: 2}];
         Notifications.setDeliveredNotifications(deliveredNotifications);
 
-        await PushNotification.clearChannelNotifications();
+        await PushNotification.clearChannelNotifications('some other channel');
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(deliveredNotifications.length);
+
+        await PushNotification.clearChannelNotifications();
+        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(0);
     });
 
     it('clearChannelNotifications should set app badge number from redux store when set', async () => {
@@ -90,7 +93,7 @@ describe('PushNotification', () => {
         const stateBadgeCount = 2 * deliveredNotifications.length;
         ViewSelectors.getBadgeCount = jest.fn().mockReturnValue(stateBadgeCount);
 
-        await PushNotification.clearChannelNotifications();
+        await PushNotification.clearChannelNotifications('some other channel');
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(stateBadgeCount);
     });
 
@@ -103,7 +106,7 @@ describe('PushNotification', () => {
 
         deliveredNotifications = [];
         Notifications.setDeliveredNotifications(deliveredNotifications);
-        await PushNotification.clearChannelNotifications();
+        await PushNotification.clearChannelNotifications('some other channel');
         expect(setBadgeCount).toHaveBeenCalledWith(0);
     });
 });

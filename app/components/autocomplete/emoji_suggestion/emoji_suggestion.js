@@ -13,7 +13,6 @@ import Fuse from 'fuse.js';
 
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {BuiltInEmojis} from '@utils/emojis';
 import {getEmojiByName, compareEmojis} from '@utils/emoji_utils';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
@@ -110,8 +109,8 @@ export default class EmojiSuggestion extends PureComponent {
             }
 
             const emojiData = getEmojiByName(emoji);
-            if (emojiData?.filename && !BuiltInEmojis.includes(emojiData.filename)) {
-                const codeArray = emojiData.filename.split('-');
+            if (emojiData?.image && emojiData.category !== 'custom') {
+                const codeArray = emojiData.image.split('-');
                 const code = codeArray.reduce((acc, c) => {
                     return acc + String.fromCodePoint(parseInt(c, 16));
                 }, '');
@@ -126,7 +125,7 @@ export default class EmojiSuggestion extends PureComponent {
 
             onChangeText(completedDraft);
 
-            if (Platform.OS === 'ios' && (!emojiData?.filename || BuiltInEmojis.includes(emojiData?.filename))) {
+            if (Platform.OS === 'ios' && (!emojiData?.filename || emojiData.category !== 'custom')) {
                 // This is the second part of the hack were we replace the double : with just one
                 // after the auto correct vanished
                 setTimeout(() => {
