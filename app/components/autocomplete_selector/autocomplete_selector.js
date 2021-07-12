@@ -197,16 +197,17 @@ export default class AutocompleteSelector extends PureComponent {
             );
         }
 
+        const noediting = disabled ? style.disabled : null;
+
         return (
             <View style={style.container}>
                 {labelContent}
                 <TouchableWithFeedback
-                    style={disabled ? style.disabled : null}
                     onPress={this.goToSelectorScreen}
                     type={'opacity'}
                     disabled={disabled}
                 >
-                    <View style={inputStyle}>
+                    <View style={[inputStyle, noediting]}>
                         <Text
                             style={selectedStyle}
                             numberOfLines={1}
@@ -301,7 +302,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 14,
         },
         disabled: {
-            opacity: 0.5,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
     };
 });
