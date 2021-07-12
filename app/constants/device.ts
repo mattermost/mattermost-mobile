@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FileSystem} from 'react-native-unimodules';
+import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {FileSystem} from 'react-native-unimodules';
+
 import keyMirror from '@utils/key_mirror';
 
 const device = keyMirror({
@@ -23,4 +25,7 @@ export default {
     PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
     TABLET_WIDTH: 250,
     VIDEOS_PATH: `${FileSystem.cacheDirectory}/Videos`,
+    IS_LANDSCAPE: DeviceInfo.isLandscape(),
+    IS_IPHONE_WITH_INSETS: Platform.OS === 'ios' && DeviceInfo.hasNotch(),
+
 };

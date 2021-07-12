@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, LayoutChangeEvent, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ViewTypes from '@constants/view';
+import VIEWS from '@constants/view';
+import DEVICE from '@constants/device';
 import {Config} from '@typings/database/models/servers/config';
 import {General} from '@constants';
 import {getUserIdFromChannelName} from '@utils/user';
@@ -23,13 +24,24 @@ type ChannelNavBar = {
     config: Config;
 }
 
+//todo: Read Messages - Include MainSidebarDrawerButton, ChannelSearchButton, SettingsSidebarDrawerButton
+
 const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     let height = 0;
+    let canHaveSubtitle = true;
 
-    //todo: Read Messages - Include MainSidebarDrawerButton, ChannelSearchButton, SettingsSidebarDrawerButton
+    const [isLandscape, setIsLandscape] = useState<boolean>(false);
+
+    useEffect(() => {
+        const checkOrientation = async () => {
+            const isInLandscape = await DEVICE.IS_LANDSCAPE;
+            setIsLandscape(isInLandscape);
+        };
+        checkOrientation();
+    }, []);
 
     const onLayout = ({nativeEvent}: LayoutChangeEvent) => {
         const {height: layouHeight} = nativeEvent.layout;
@@ -37,13 +49,36 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
             height = layouHeight;
         }
 
-        DeviceEventEmitter.emit(ViewTypes.CHANNEL_NAV_BAR_CHANGED, layouHeight);
+        DeviceEventEmitter.emit(VIEWS.CHANNEL_NAV_BAR_CHANGED, layouHeight);
     };
+
+    switch (Platform.OS) {
+        case 'android':
+            height = VIEWS.ANDROID_TOP_PORTRAIT;
+            if (DEVICE.IS_TABLET) {
+                height = VIEWS.ANDROID_TOP_LANDSCAPE;
+            }
+            break;
+        case 'ios':
+            height = VIEWS.IOS_TOP_PORTRAIT - VIEWS.STATUS_BAR_HEIGHT;
+            if (DEVICE.IS_TABLET && isLandscape) {
+                height -= 1;
+            } else if (isLandscape) {
+                height = VIEWS.IOS_TOP_LANDSCAPE;
+                canHaveSubtitle = false;
+            }
+
+            if (DEVICE.IS_IPHONE_WITH_INSETS && isLandscape) {
+                canHaveSubtitle = false;
+            }
+            break;
+    }
 
     let teammateId: string | undefined;
     if (channel?.type === General.DM_CHANNEL) {
         teammateId = getUserIdFromChannelName(currentUserId, channel.name);
     }
+
     return (
         <View
             onLayout={onLayout}
@@ -53,7 +88,7 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
                 currentUserId={currentUserId}
                 channel={channel}
                 onPress={onPress}
-                canHaveSubtitle={true}
+                canHaveSubtitle={canHaveSubtitle}
                 config={config}
                 teammateId={teammateId}
             />
