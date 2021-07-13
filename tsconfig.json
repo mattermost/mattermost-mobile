@@ -40,6 +40,7 @@
             "@components/*": ["app/components/*"],
             "@constants": ["app/constants/index"],
             "@constants/*": ["app/constants/*"],
+            "@context/*": ["app/context/*"],
             "@database/*": ["app/database/*"],
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
