@@ -45,7 +45,7 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
     if (!threadId || !getThreadsInCurrentTeam(state)?.includes(threadId)) {
         if (fallbackFromPosts) {
             const post = getPost(state, threadId);
-            if (post && post.participants?.length) {
+            if (post?.participants?.length) {
                 const {id, is_following, reply_count, last_reply_at, participants} = post;
                 return {
                     id,
@@ -92,4 +92,3 @@ export const getUnreadThreadOrderInCurrentTeam: (state: GlobalState) => Array<$I
 function sortByLastReply(ids: Array<$ID<UserThread>>, threads: ReturnType<typeof getThreads>) {
     return ids.sort((a, b) => threads[b].last_reply_at - threads[a].last_reply_at);
 }
-
