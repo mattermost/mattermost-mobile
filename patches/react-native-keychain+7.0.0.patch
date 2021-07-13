@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-index 38ccdf3..3c80299 100644
+index 38ccdf3..bf0dae3 100644
 --- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
 +++ b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-@@ -272,6 +272,37 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
+@@ -272,6 +272,36 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
    return SecItemDelete((__bridge CFDictionaryRef) query);
  }
  
@@ -25,10 +25,9 @@ index 38ccdf3..3c80299 100644
 +    result = (__bridge NSArray*)(resultRef);
 +    if (result != NULL) {
 +      for (id entry in result) {
-+        NSMutableData *serverData = [entry objectForKey:(__bridge NSString *)kSecAttrServer];
++        NSString *serverData = [entry objectForKey:(__bridge NSString *)kSecAttrServer];
 +        if (serverData != NULL) {
-+          NSString *server = [[NSString alloc] initWithData:serverData encoding:NSUTF8StringEncoding];
-+          [servers addObject:server];
++          [servers addObject:serverData];
 +        }
 +      }
 +    }
@@ -40,7 +39,7 @@ index 38ccdf3..3c80299 100644
  -(NSArray<NSString*>*)getAllServicesForSecurityClasses:(NSArray *)secItemClasses
  {
    NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-@@ -592,4 +623,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
+@@ -592,4 +622,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
    }
  }
  
