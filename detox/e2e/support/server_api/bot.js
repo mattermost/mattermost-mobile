@@ -22,8 +22,8 @@ import {getResponseFromError} from './common';
  * Create a bot.
  * See https://api.mattermost.com/#operation/CreateBot
  * @param {string} option.prefix - prefix to username and display name
- * @param {Object} option.user - user object to be created
- * @return {Object} returns {user} on success or {error, status} on error
+ * @param {Object} option.bot - bot object to be created
+ * @return {Object} returns {bot} on success or {error, status} on error
  */
 export const apiCreateBot = async ({prefix = 'bot', bot = null} = {}) => {
     try {
