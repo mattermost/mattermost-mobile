@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setupMockData} from '@screens/channel/mock';
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {Screens} from '@constants';
-import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
 import {parseDeepLink} from '@utils/url';
@@ -26,9 +24,6 @@ export const initialLaunch = async () => {
         return;
     }
 
-    //fixme:  is this right ?
-    await DatabaseManager.init(['https://rc.test.mattermost.com']);
-    await setupMockData();
     launchApp({launchType: LaunchType.Normal});
 };
 

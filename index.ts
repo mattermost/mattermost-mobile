@@ -10,9 +10,10 @@ import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
 import GlobalEventHandler from './app/init/global_event_handler';
 import {initialLaunch} from './app/init/launch';
-import NetworkManager from './app/init/network_manager';
 import ManagedApp from './app/init/managed_app';
+import NetworkManager from './app/init/network_manager';
 import PushNotifications from './app/init/push_notifications';
+import {setupMockData} from './app/screens/channel/mock';
 import {registerScreens} from './app/screens/index';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
@@ -57,6 +58,10 @@ Navigation.events().registerAppLaunchedListener(async () => {
 
     await DatabaseManager.init(serverUrls);
     await NetworkManager.init(serverCredentials);
+
+    //fixme:  Remove setupMockData when not testing ?
+    // await setupMockData();
+
     PushNotifications.init();
 
     initialLaunch();
