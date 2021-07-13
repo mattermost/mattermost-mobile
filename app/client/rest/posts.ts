@@ -41,7 +41,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getPostsRoute()}`,
-            {method: 'post', body: JSON.stringify(post)},
+            {method: 'post', body: post},
         );
     };
 
@@ -50,7 +50,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getPostRoute(post.id)}`,
-            {method: 'put', body: JSON.stringify(post)},
+            {method: 'put', body: post},
         );
     };
 
@@ -66,7 +66,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getPostRoute(postPatch.id)}/patch`,
-            {method: 'put', body: JSON.stringify(postPatch)},
+            {method: 'put', body: postPatch},
         );
     };
 
@@ -174,7 +174,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getReactionsRoute()}`,
-            {method: 'post', body: JSON.stringify({user_id: userId, post_id: postId, emoji_name: emojiName})},
+            {method: 'post', body: {user_id: userId, post_id: postId, emoji_name: emojiName}},
         );
     };
 
@@ -199,7 +199,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/posts/search`,
-            {method: 'post', body: JSON.stringify(params)},
+            {method: 'post', body: params},
         );
     };
 
@@ -226,7 +226,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
         }
         return this.doFetch(
             `${this.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
-            {method: 'post', body: JSON.stringify(msg)},
+            {method: 'post', body: msg},
         );
     };
 };

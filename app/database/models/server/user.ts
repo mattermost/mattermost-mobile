@@ -5,13 +5,15 @@ import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
-import ChannelMembership from '@typings/database/models/servers/channel_membership';
-import GroupMembership from '@typings/database/models/servers/group_membership';
-import Post from '@typings/database/models/servers/post';
-import Preference from '@typings/database/models/servers/preference';
-import Reaction from '@typings/database/models/servers/reaction';
-import TeamMembership from '@typings/database/models/servers/team_membership';
+import {safeParseJSON} from '@utils/helpers';
+
+import type Channel from '@typings/database/models/servers/channel';
+import type ChannelMembership from '@typings/database/models/servers/channel_membership';
+import type GroupMembership from '@typings/database/models/servers/group_membership';
+import type Post from '@typings/database/models/servers/post';
+import type Preference from '@typings/database/models/servers/preference';
+import type Reaction from '@typings/database/models/servers/reaction';
+import type TeamMembership from '@typings/database/models/servers/team_membership';
 
 const {
     CHANNEL,
@@ -103,15 +105,15 @@ export default class User extends Model {
     @field('username') username!: string;
 
     /** notify_props : Notification preferences/configurations */
-    @json('notify_props', (rawJson) => rawJson) notifyProps!: NotifyProps;
+    @json('notify_props', safeParseJSON) notifyProps!: NotifyProps;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
      *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
      */
-    @json('props', (rawJson) => rawJson) props!: UserProps;
+    @json('props', safeParseJSON) props!: UserProps;
 
     /** timezone : The timezone for this user */
-    @json('timezone', (rawJson) => rawJson) timezone!: Timezone;
+    @json('timezone', safeParseJSON) timezone!: Timezone;
 
     /** channelsCreated : All the channels that this user created */
     @children(CHANNEL) channelsCreated!: Channel[];

@@ -67,7 +67,7 @@ type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
-    options: Array<DialogOption>;
+    options: DialogOption[];
 };
 
 type InteractiveDialogConfig = {

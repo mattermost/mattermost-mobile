@@ -5,6 +5,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 const {CHANNEL, DRAFT, POST} = MM_TABLES.SERVER;
 
@@ -35,5 +36,5 @@ export default class Draft extends Model {
     @field('root_id') rootId!: string;
 
     /** files : The files field will hold an array of file objects that have not yet been uploaded and persisted within the FILE table */
-    @json('files', (rawJson) => rawJson) files!: FileInfo[];
+    @json('files', safeParseJSON) files!: FileInfo[];
 }

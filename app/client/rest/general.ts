@@ -10,7 +10,7 @@ export interface ClientGeneralMix {
     ping: () => Promise<any>;
     logClientError: (message: string, level?: string) => Promise<any>;
     getClientConfigOld: () => Promise<ClientConfig>;
-    getClientLicenseOld: () => Promise<any>;
+    getClientLicenseOld: () => Promise<ClientLicense>;
     getTimezones: () => Promise<string[]>;
     getDataRetentionPolicy: () => Promise<any>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
@@ -20,23 +20,24 @@ export interface ClientGeneralMix {
 const ClientGeneral = (superclass: any) => class extends superclass {
     getOpenGraphMetadata = async (url: string) => {
         return this.doFetch(
-            `${this.getBaseRoute()}/opengraph`,
-            {method: 'post', body: JSON.stringify({url})},
+            `${this.urlVersion}/opengraph`,
+            {method: 'post', body: {url}},
         );
     };
 
     ping = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/system/ping?time=${Date.now()}`,
+            `${this.urlVersion}/system/ping?time=${Date.now()}`,
             {method: 'get'},
+            false,
         );
     };
 
     logClientError = async (message: string, level = 'ERROR') => {
-        const url = `${this.getBaseRoute()}/logs`;
+        const url = `${this.urlVersion}/logs`;
 
         if (!this.enableLogging) {
-            throw new ClientError(this.getUrl(), {
+            throw new ClientError(this.client.baseUrl, {
                 message: 'Logging disabled.',
                 url,
             });
@@ -44,20 +45,20 @@ const ClientGeneral = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             url,
-            {method: 'post', body: JSON.stringify({message, level})},
+            {method: 'post', body: {message, level}},
         );
     };
 
     getClientConfigOld = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/config/client?format=old`,
+            `${this.urlVersion}/config/client?format=old`,
             {method: 'get'},
         );
     };
 
     getClientLicenseOld = async () => {
         return this.doFetch(
-            `${this.getBaseRoute()}/license/client?format=old`,
+            `${this.urlVersion}/license/client?format=old`,
             {method: 'get'},
         );
     };
@@ -79,7 +80,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
     getRolesByNames = async (rolesNames: string[]) => {
         return this.doFetch(
             `${this.getRolesRoute()}/names`,
-            {method: 'post', body: JSON.stringify(rolesNames)},
+            {method: 'post', body: rolesNames},
         );
     };
 

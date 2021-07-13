@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ManagedConfig, useManagedConfig} from '@mattermost/react-native-emm';
+import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -9,15 +9,16 @@ import {
     Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {doPing, fetchConfigAndLicense} from '@actions/remote/general';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
-import {doPing, fetchConfigAndLicense} from '@requests/remote/general';
+import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -33,7 +34,7 @@ interface ServerProps extends LaunchProps {
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({extra, launchType, launchError, theme}: ServerProps) => {
+const Server: NavigationFunctionComponent = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
 
@@ -51,7 +52,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
-    const displayLogin = (config: ClientConfig, license: ClientLicense) => {
+    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
@@ -74,9 +75,12 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
 
         const passProps = {
             config,
+            extra,
+            launchError,
+            launchType,
             license,
             theme,
-            serverUrl: url,
+            serverUrl,
         };
 
         const defaultOptions = {
@@ -89,6 +93,7 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
 
         goToScreen(screen, title, passProps, defaultOptions);
         setConnecting(false);
+        setUrl(serverUrl);
     };
 
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
@@ -133,38 +138,39 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
-
         const result = await doPing(serverUrl);
 
         if (canceled) {
             return;
         }
 
-        if (result.error && retryWithHttp) {
-            const nurl = serverUrl.replace('https:', 'http:');
-            pingServer(nurl, false);
-            return;
-        } else if (result.error) {
-            setError(result.error);
-            setConnecting(false);
+        if (result.error) {
+            if (retryWithHttp) {
+                const nurl = serverUrl.replace('https:', 'http:');
+                pingServer(nurl, false);
+            } else {
+                setError(result.error);
+                setConnecting(false);
+            }
+
             return;
         }
 
-        const data = await fetchConfigAndLicense();
+        const data = await fetchConfigAndLicense(serverUrl);
         if (data.error) {
             setError(data.error);
             setConnecting(false);
             return;
         }
 
-        displayLogin(data.config!, data.license!);
+        displayLogin(serverUrl, data.config!, data.license!);
     };
 
     const blur = useCallback(() => {
         input.current?.blur();
     }, []);
 
-    const handleTextChanged = useCallback((text) => {
+    const handleTextChanged = useCallback((text: string) => {
         setUrl(text);
     }, []);
 
@@ -207,6 +213,19 @@ const Server: NavigationFunctionComponent = ({extra, launchType, launchError, th
             }
         }
     }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                if (url) {
+                    NetworkManager.invalidateClient(url);
+                }
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+
+        return () => unsubscribe.remove();
+    }, [componentId, url]);
 
     let buttonIcon;
     let buttonText;

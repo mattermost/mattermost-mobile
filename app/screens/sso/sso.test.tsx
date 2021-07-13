@@ -5,6 +5,7 @@ import React from 'react';
 
 import {Preferences} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
+import {LaunchType} from '@typings/launch';
 
 import SSOLogin from './index';
 
@@ -28,6 +29,7 @@ describe('SSO', () => {
         ssoType: 'GITLAB',
         theme: Preferences.THEMES.default,
         serverUrl: 'https://locahost:8065',
+        launchType: LaunchType.Normal,
     };
 
     test('implement with webview when version is less than 5.32 version', async () => {

@@ -47,8 +47,8 @@ type GroupChannel = {
     update_at: number;
 };
 type GroupSyncables = {
-    teams: Array<GroupTeam>;
-    channels: Array<GroupChannel>;
+    teams: GroupTeam[];
+    channels: GroupChannel[];
 };
 type GroupsState = {
     syncables: {

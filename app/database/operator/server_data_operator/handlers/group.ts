@@ -35,10 +35,10 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface GroupHandlerMix {
-    handleGroupMembership : ({groupMemberships, prepareRecordsOnly}: HandleGroupMembershipArgs) => GroupMembership[] | boolean,
-    handleGroup : ({groups, prepareRecordsOnly}: HandleGroupArgs) => Group[] | boolean,
-    handleGroupsInTeam : ({groupsInTeams, prepareRecordsOnly} : HandleGroupsInTeamArgs) => GroupsInTeam[] | boolean,
-    handleGroupsInChannel : ({groupsInChannels, prepareRecordsOnly}: HandleGroupsInChannelArgs) => GroupsInChannel[] | boolean
+    handleGroupMembership: ({groupMemberships, prepareRecordsOnly}: HandleGroupMembershipArgs) => GroupMembership[] | boolean;
+    handleGroup: ({groups, prepareRecordsOnly}: HandleGroupArgs) => Group[] | boolean;
+    handleGroupsInTeam: ({groupsInTeams, prepareRecordsOnly}: HandleGroupsInTeamArgs) => GroupsInTeam[] | boolean;
+    handleGroupsInChannel: ({groupsInChannels, prepareRecordsOnly}: HandleGroupsInChannelArgs) => GroupsInChannel[] | boolean;
 }
 
 const GroupHandler = (superclass: any) => class extends superclass {
@@ -112,7 +112,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {GroupsInTeam[]}
      */
-    handleGroupsInTeam = async ({groupsInTeams, prepareRecordsOnly = true} : HandleGroupsInTeamArgs) => {
+    handleGroupsInTeam = async ({groupsInTeams, prepareRecordsOnly = true}: HandleGroupsInTeamArgs) => {
         let records: GroupsInTeam[] = [];
 
         if (!groupsInTeams.length) {

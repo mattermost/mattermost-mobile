@@ -9,7 +9,7 @@ import ClientError from '@client/rest/error';
 import TestHelper from '@test/test_helper';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-describe('Client4', () => {
+describe('Client', () => {
     beforeAll(() => {
         if (!nock.isActive()) {
             nock.activate();
@@ -20,25 +20,18 @@ describe('Client4', () => {
         nock.restore();
     });
 
-    it('should remove trailing slash while trying to setUrl', () => {
-        const client = TestHelper.createClient();
-
-        client.setUrl('http://localhost:8065/');
-        expect(client.url).toBe('http://localhost:8065');
-
-        client.setUrl('http://localhost:8065/company/mattermost/');
-        expect(client.url).toBe('http://localhost:8065/company/mattermost');
-    });
-
-    describe('doFetchWithResponse', () => {
+    describe('doFetch', () => {
         it('serverVersion should be set from response header', async () => {
             const client = TestHelper.createClient();
 
             assert.equal(client.serverVersion, '');
 
-            nock(client.getBaseRoute()).
-                get('/users/me').
-                reply(200, '{}', {[HEADER_X_VERSION_ID]: '5.0.0.5.0.0.abc123'});
+            client.apiClient.get.mockReturnValueOnce({
+                code: 200,
+                data: {},
+                headers: {[HEADER_X_VERSION_ID]: '5.0.0.5.0.0.abc123'},
+                ok: true,
+            });
 
             await client.getMe();
 
@@ -46,9 +39,12 @@ describe('Client4', () => {
             assert.equal(isMinimumServerVersion(client.serverVersion, 5, 0, 0), true);
             assert.equal(isMinimumServerVersion(client.serverVersion, 5, 1, 0), false);
 
-            nock(client.getBaseRoute()).
-                get('/users/me').
-                reply(200, '{}', {[HEADER_X_VERSION_ID]: '5.3.0.5.3.0.abc123'});
+            client.apiClient.get.mockReturnValueOnce({
+                code: 200,
+                data: {},
+                headers: {[HEADER_X_VERSION_ID]: '5.3.0.5.3.0.abc123'},
+                ok: true,
+            });
 
             await client.getMe();
 

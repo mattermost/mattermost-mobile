@@ -30,7 +30,7 @@ extension DatabaseError: LocalizedError {
 }
 
 public class DatabaseHelper: NSObject {
-    internal let DEFAULT_DB_NAME = "default.db"
+    internal let DEFAULT_DB_NAME = "app.db"
     internal var DEFAULT_DB_PATH: String
     internal var defaultDB: OpaquePointer? = nil
     
@@ -64,7 +64,7 @@ public class DatabaseHelper: NSObject {
         }
                 
         var queryStatement: OpaquePointer?
-        let queryString = "SELECT url FROM servers;"
+        let queryString = "SELECT url FROM Servers;"
         if sqlite3_prepare_v2(defaultDB, queryString, -1, &queryStatement, nil) == SQLITE_OK {
             if sqlite3_step(queryStatement) == SQLITE_ROW,
                let result = sqlite3_column_text(queryStatement, 0) {

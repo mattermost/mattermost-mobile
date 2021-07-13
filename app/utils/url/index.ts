@@ -4,6 +4,8 @@
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
+import GenericClient from '@mattermost/react-native-network-client';
+
 import {Files} from '@constants';
 import {DeepLinkType, DeepLinkWithData} from '@typings/launch';
 import {emptyFunction} from '@utils/general';
@@ -39,12 +41,12 @@ export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = fal
     let url = sanitizeUrl(serverUrl, useHttp);
 
     try {
-        const resp = await fetch(url, {method: 'HEAD'});
-        if (resp.redirected) {
-            url = resp.url;
+        const resp = await GenericClient.head(url);
+        if (resp.redirectUrls?.length) {
+            url = resp.redirectUrls[resp.redirectUrls.length - 1];
         }
-    } catch {
-    // do nothing
+    } catch (error) {
+        // do nothing
     }
 
     return sanitizeUrl(url, useHttp);

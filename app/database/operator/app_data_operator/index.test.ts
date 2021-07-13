@@ -81,7 +81,7 @@ describe('** APP DATA OPERATOR **', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordGlobalEqualToRaw,
-            fieldName: 'name',
+            fieldName: 'id',
             transformer: transformGlobalRecord,
             createOrUpdateRawValues: global,
             tableName: 'Global',

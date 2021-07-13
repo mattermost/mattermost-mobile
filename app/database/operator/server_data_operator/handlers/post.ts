@@ -49,7 +49,7 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface PostHandlerMix {
-    handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Draft[] | boolean
+    handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Draft[] | boolean;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<File[] | any[]>;
     handlePostMetadata: ({embeds, images, prepareRecordsOnly}: HandlePostMetadataArgs) => Promise<any[] | PostMetadata[]>;
     handlePosts: ({orders, values, previousPostId}: HandlePostsArgs) => Promise<void>;
@@ -132,8 +132,8 @@ const PostHandler = (superclass: any) => class extends superclass {
             const postsInThread = [];
             let reactions: RawReaction[] = [];
             let emojis: RawCustomEmoji[] = [];
-            const images: { images: Dictionary<PostImage>; postId: string }[] = [];
-            const embeds: { embed: RawEmbed[]; postId: string }[] = [];
+            const images: Array<{ images: Dictionary<PostImage>; postId: string }> = [];
+            const embeds: Array<{ embed: RawEmbed[]; postId: string }> = [];
 
             // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
             const linkedRawPosts: RecordPair[] = createPostsChain({

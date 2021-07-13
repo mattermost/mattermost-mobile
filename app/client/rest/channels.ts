@@ -16,7 +16,7 @@ export interface ClientChannelsMix {
     convertChannelToPrivate: (channelId: string) => Promise<Channel>;
     updateChannelPrivacy: (channelId: string, privacy: any) => Promise<Channel>;
     patchChannel: (channelId: string, channelPatch: Partial<Channel>) => Promise<Channel>;
-    updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string, user_id: string}) => Promise<any>;
+    updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => Promise<any>;
     getChannel: (channelId: string) => Promise<Channel>;
     getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
@@ -60,7 +60,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getChannelsRoute()}`,
-            {method: 'post', body: JSON.stringify(channel)},
+            {method: 'post', body: channel},
         );
     };
 
@@ -69,7 +69,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getChannelsRoute()}/direct`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -78,7 +78,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getChannelsRoute()}/group`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -105,7 +105,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getChannelRoute(channel.id)}`,
-            {method: 'put', body: JSON.stringify(channel)},
+            {method: 'put', body: channel},
         );
     };
 
@@ -123,7 +123,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/privacy`,
-            {method: 'put', body: JSON.stringify({privacy})},
+            {method: 'put', body: {privacy}},
         );
     };
 
@@ -132,16 +132,16 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/patch`,
-            {method: 'put', body: JSON.stringify(channelPatch)},
+            {method: 'put', body: channelPatch},
         );
     };
 
-    updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string, user_id: string}) => {
+    updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => {
         this.analytics.trackAPI('api_users_update_channel_notifications', {channel_id: props.channel_id});
 
         return this.doFetch(
             `${this.getChannelMemberRoute(props.channel_id, props.user_id)}/notify_props`,
-            {method: 'put', body: JSON.stringify(props)},
+            {method: 'put', body: props},
         );
     };
 
@@ -232,7 +232,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     getChannelMembersByIds = async (channelId: string, userIds: string[]) => {
         return this.doFetch(
             `${this.getChannelMembersRoute(channelId)}/ids`,
-            {method: 'post', body: JSON.stringify(userIds)},
+            {method: 'post', body: userIds},
         );
     };
 
@@ -242,7 +242,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
         const member = {user_id: userId, channel_id: channelId, post_root_id: postRootId};
         return this.doFetch(
             `${this.getChannelMembersRoute(channelId)}`,
-            {method: 'post', body: JSON.stringify(member)},
+            {method: 'post', body: member},
         );
     };
 
@@ -273,7 +273,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
         const data = {channel_id: channelId, prev_channel_id: prevChannelId};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
-            {method: 'post', body: JSON.stringify(data)},
+            {method: 'post', body: data},
         );
     };
 
@@ -294,14 +294,14 @@ const ClientChannels = (superclass: any) => class extends superclass {
     searchChannels = async (teamId: string, term: string) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/search`,
-            {method: 'post', body: JSON.stringify({term})},
+            {method: 'post', body: {term}},
         );
     };
 
     searchArchivedChannels = async (teamId: string, term: string) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/search_archived`,
-            {method: 'post', body: JSON.stringify({term})},
+            {method: 'post', body: {term}},
         );
     };
 };

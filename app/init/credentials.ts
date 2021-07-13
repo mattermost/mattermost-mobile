@@ -8,7 +8,6 @@ import * as KeyChain from 'react-native-keychain';
 import DatabaseManager from '@database/manager';
 import * as analytics from '@init/analytics';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {getCSRFFromCookie} from '@utils/security';
 
 import type {ServerCredential} from '@typings/credentials';
 
@@ -55,8 +54,8 @@ export const getActiveServerUrl = async () => {
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, userId: string, token: string) => {
-    if (!(serverUrl && userId && token)) {
+export const setServerCredentials = (serverUrl: string, token: string) => {
+    if (!(serverUrl && token)) {
         return;
     }
 
@@ -71,24 +70,21 @@ export const setServerCredentials = (serverUrl: string, userId: string, token: s
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
-        KeyChain.setInternetCredentials(serverUrl, userId, token, options);
+        KeyChain.setInternetCredentials(serverUrl, token, token, options);
     } catch (e) {
         console.warn('could not set credentials', e); //eslint-disable-line no-console
     }
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    // TODO: invalidate client and remove tokens
-
-    KeyChain.resetInternetCredentials(serverUrl);
-
-    AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
+    await KeyChain.resetInternetCredentials(serverUrl);
+    await AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
 export const removeActiveServerCredentials = async () => {
     const serverUrl = await getActiveServerUrl();
     if (serverUrl) {
-        removeServerCredentials(serverUrl);
+        await removeServerCredentials(serverUrl);
     }
 };
 
@@ -108,12 +104,6 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
             if (token && token !== 'undefined') {
                 const analyticsClient = analytics.get(serverUrl);
                 analyticsClient?.setUserId(userId);
-
-                const csrf = await getCSRFFromCookie(serverUrl);
-                // eslint-disable-next-line no-console
-                console.log('CSRF', csrf);
-
-                // TODO: Create client and set token / CSRF
 
                 return {serverUrl, userId, token};
             }

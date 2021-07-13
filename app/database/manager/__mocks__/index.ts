@@ -22,7 +22,7 @@ import {Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
     TermsOfService, User,
 } from '@database/models/server';
 import {serverSchema} from '@database/schema/server';
-import {getActiveServer, getServer} from '@queries/app/servers';
+import {queryActiveServer, queryServer} from '@queries/app/servers';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
@@ -184,7 +184,7 @@ class DatabaseManager {
 
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
         if (this.appDatabase?.database) {
-            const server = await getServer(this.appDatabase.database, serverUrl);
+            const server = await queryServer(this.appDatabase.database, serverUrl);
             return Boolean(server);
         }
 
@@ -194,7 +194,7 @@ class DatabaseManager {
     public getActiveServerUrl = async (): Promise<string|null|undefined> => {
         const database = this.appDatabase?.database;
         if (database) {
-            const server = await getActiveServer(database);
+            const server = await queryActiveServer(database);
             return server?.url;
         }
 
@@ -204,7 +204,7 @@ class DatabaseManager {
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const database = this.appDatabase?.database;
         if (database) {
-            const server = await getActiveServer(database);
+            const server = await queryActiveServer(database);
             if (server?.url) {
                 return this.serverDatabases[server.url].database;
             }
@@ -230,10 +230,10 @@ class DatabaseManager {
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         if (this.appDatabase?.database) {
             const database = this.appDatabase?.database;
-            const server = await getServer(database, serverUrl);
+            const server = await queryServer(database, serverUrl);
             if (server) {
-                database.action(() => {
-                    server.update((record) => {
+                database.action(async () => {
+                    await server.update((record) => {
                         record.lastActiveAt = 0;
                     });
                 });
@@ -247,7 +247,7 @@ class DatabaseManager {
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
         if (this.appDatabase?.database) {
             const database = this.appDatabase?.database;
-            const server = await getServer(database, serverUrl);
+            const server = await queryServer(database, serverUrl);
             if (server) {
                 database.action(async () => {
                     await server.destroyPermanently();

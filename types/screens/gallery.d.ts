@@ -55,7 +55,7 @@ export interface FooterRef {
 }
 
 export interface GalleryProps {
-    files: Array<FileInfo>;
+    files: FileInfo[];
     footerVisible: boolean;
     height: number;
     initialIndex: number;
@@ -104,11 +104,11 @@ export interface ToastProps {
 }
 
 export interface ToastRef {
-    show: ShowToast
+    show: ShowToast;
 }
 
 export interface ToastState {
-    animation?: Animated.CompositeAnimation,
+    animation?: Animated.CompositeAnimation;
     duration?: number;
     callback?: () => void;
 }

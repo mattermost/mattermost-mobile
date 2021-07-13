@@ -9,7 +9,7 @@ import {waitFor, renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import Login from './index';
 
-jest.mock('@requests/remote/user', () => {
+jest.mock('@actions/remote/user', () => {
     return {
         login: () => {
             return {
@@ -132,10 +132,14 @@ describe('Login', () => {
 
         fireEvent.press(forgot);
 
-        expect(goToScreen).toHaveBeenCalledWith(
-            'ForgotPassword',
-            'Password Reset',
-            {theme: baseProps.theme},
-        );
+        expect(goToScreen).
+            toHaveBeenCalledWith(
+                'ForgotPassword',
+                'Password Reset',
+                {
+                    serverUrl: baseProps.serverUrl,
+                    theme: baseProps.theme,
+                },
+            );
     });
 });

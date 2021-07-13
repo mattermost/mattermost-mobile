@@ -9,15 +9,16 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import {sendPasswordResetEmail} from '@requests/remote/user';
+import {sendPasswordResetEmail} from '@actions/remote/user';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
+    serverUrl: string;
     theme: Theme;
 }
 
-const ForgotPassword = ({theme}: Props) => {
+const ForgotPassword = ({serverUrl, theme}: Props) => {
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
@@ -40,7 +41,7 @@ const ForgotPassword = ({theme}: Props) => {
             return;
         }
 
-        const {data, error: apiError = undefined} = await sendPasswordResetEmail(email);
+        const {data, error: apiError = undefined} = await sendPasswordResetEmail(serverUrl, email);
 
         if (data) {
             setIsPasswordLinkSent(true);

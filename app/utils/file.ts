@@ -4,10 +4,11 @@
 import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
-const vectorIconsDir = 'vectorIcons';
+import {hashCode} from './security';
 
-export async function deleteFileCache() {
-    const cacheDir = FileSystem.cacheDirectory;
+export async function deleteFileCache(serverUrl: string) {
+    const serverDir = hashCode(serverUrl);
+    const cacheDir = `${FileSystem.cacheDirectory}${serverDir}`;
     if (cacheDir) {
         const cacheDirInfo = await FileSystem.getInfoAsync(cacheDir);
         if (cacheDirInfo.exists) {
@@ -17,9 +18,7 @@ export async function deleteFileCache() {
             } else {
                 const lstat = await FileSystem.readDirectoryAsync(cacheDir);
                 lstat.forEach((stat: string) => {
-                    if (!stat.includes(vectorIconsDir)) {
-                        FileSystem.deleteAsync(stat, {idempotent: true});
-                    }
+                    FileSystem.deleteAsync(stat, {idempotent: true});
                 });
             }
         }

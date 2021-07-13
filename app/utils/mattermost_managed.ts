@@ -5,8 +5,8 @@ import {NativeModules} from 'react-native';
 
 const {MattermostManaged} = NativeModules;
 
-type IOSDeleteDatabase = { databaseName?: string, shouldRemoveDirectory?: boolean }
-type IOSAppGroupDetails = { appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string }
+type IOSDeleteDatabase = { databaseName?: string; shouldRemoveDirectory?: boolean }
+type IOSAppGroupDetails = { appGroupIdentifier: string; appGroupSharedDirectory: string; appGroupDatabase: string }
 
 /**
  * Retrieves information relative to the iOS AppGroup identifier and folders

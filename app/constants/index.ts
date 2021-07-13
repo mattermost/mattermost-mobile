@@ -2,29 +2,33 @@
 // See LICENSE.txt for license information.
 
 import Attachment from './attachment';
-import SSO from './sso';
 import Database from './database';
 import Device from './device';
 import Files from './files';
 import General from './general';
 import List from './list';
 import Navigation from './navigation';
+import Network from './network';
 import Preferences from './preferences';
 import Screens from './screens';
+import SSO, {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from './sso';
 import View, {Upgrade} from './view';
 import WebsocketEvents from './websocket';
 
 export {
     Attachment,
-    SSO,
     Database,
     Device,
     Files,
     General,
     List,
     Navigation,
+    Network,
     Preferences,
+    REDIRECT_URL_SCHEME,
+    REDIRECT_URL_SCHEME_DEV,
     Screens,
+    SSO,
     Upgrade,
     View,
     WebsocketEvents,

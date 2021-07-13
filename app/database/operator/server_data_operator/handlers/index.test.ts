@@ -99,7 +99,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             findMatchingRecordBy: isRecordSystemEqualToRaw,
-            fieldName: 'name',
+            fieldName: 'id',
             transformer: transformSystemRecord,
             createOrUpdateRawValues: systems,
             tableName: 'System',

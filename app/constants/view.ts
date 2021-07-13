@@ -55,8 +55,6 @@ const ViewTypes = keyMirror({
     POST_DRAFT_SELECTION_CHANGED: null,
     COMMENT_DRAFT_SELECTION_CHANGED: null,
 
-    NOTIFICATION_IN_APP: null,
-
     SET_POST_DRAFT: null,
     SET_COMMENT_DRAFT: null,
 

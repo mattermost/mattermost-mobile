@@ -10,7 +10,7 @@ interface NativeNotificationPreferences {
     selectedUri?: string;
     shouldBlink: boolean;
     shouldVibrate: boolean;
-    sounds: Array<NativeNotificationSound>;
+    sounds: NativeNotificationSound[];
 }
 
 interface NativeNotification {
