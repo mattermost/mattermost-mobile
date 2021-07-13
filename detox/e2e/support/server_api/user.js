@@ -200,7 +200,7 @@ export const apiPatchUser = async (userId, userData) => {
  * See https://api.mattermost.com/#operation/UpdateUserActive
  * @param {string} userId - the user ID
  * @param {boolean} active - use true to set the user active, false for inactive
- * @returns
+ * @return {Object} returns {status} on success or {error, status} on error
  */
 export const apiUpdateUserActiveStatus = async (userId, active) => {
     try {
@@ -209,7 +209,7 @@ export const apiUpdateUserActiveStatus = async (userId, active) => {
             {active},
         );
 
-        return {user: response.data};
+        return {status: response.status};
     } catch (err) {
         return getResponseFromError(err);
     }
