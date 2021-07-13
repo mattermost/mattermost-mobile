@@ -11,13 +11,12 @@ class UserProfileScreen {
         userProfilePicturePrefix: 'user_profile.profile_picture.',
         userProfileScreen: 'user_profile.screen',
         customStatus: 'user_profile.custom_status',
-        profilePicture: 'user_profile.profile_picture',
         userProfileScrollView: 'user_profile.scroll_view',
         closeSettingsButton: 'close.settings.button',
         editButton: 'user_profile.edit.button',
         userProfileBotTag: 'user_profile.bot_tag',
         userProfileDisplayName: 'user_profile.display_name',
-        userProfileGuestTag: 'user_profile.bot_tag',
+        userProfileGuestTag: 'user_profile.guest_tag',
         userProfileUsername: 'user_profile.username',
         emailLabel: 'user_profile.display_block.email.label',
         emailValue: 'user_profile.display_block.email.value',
@@ -38,7 +37,6 @@ class UserProfileScreen {
     userProfileScreen = element(by.id(this.testID.userProfileScreen));
     userProfileScrollView = element(by.id(this.testID.userProfileScrollView));
     customStatus = element(by.id(this.testID.customStatus));
-    profilePicture = element(by.id(this.testID.profilePicture))
     closeSettingsButton = element(by.id(this.testID.closeSettingsButton));
     editButton = element(by.id(this.testID.editButton));
     userProfileBotTag = element(by.id(this.testID.userProfileBotTag));
