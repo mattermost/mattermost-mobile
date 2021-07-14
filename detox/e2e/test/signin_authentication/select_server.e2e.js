@@ -7,6 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {Alert} from '@support/ui/component';
 import {
     LoginScreen,
     SelectServerScreen,
@@ -85,5 +86,31 @@ describe('Select Server', () => {
 
         // * Verify that it goes into Login screen
         await LoginScreen.toBeVisible();
+    });
+
+    it('MM-T2348 should show untrusted certificate prompt when connecting to a server with invalid SSL or invalid host', async () => {
+        await SelectServerScreen.toBeVisible();
+
+        // # Attempt to connect to invalid SSL
+        const invalidSsl = 'expired.badssl.com';
+        await serverUrlInput.clearText();
+        await serverUrlInput.typeText(invalidSsl);
+        await connectButton.tap();
+
+        // * Verify untrusted certificate alert is displayed with invalid SSL
+        await expect(Alert.untrustedCertificateTitle).toBeVisible();
+        await expect(element(by.text(`The certificate from ${invalidSsl} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.`))).toBeVisible();
+        await Alert.okButton.tap();
+
+        // # Attempt to connect to invalid host
+        const invalidHost = 'wrong.host.badssl.com';
+        await serverUrlInput.clearText();
+        await serverUrlInput.typeText(invalidHost);
+        await connectButton.tap();
+
+        // * Verify untrusted certificate alert is displayed with invalid host
+        await expect(Alert.untrustedCertificateTitle).toBeVisible();
+        await expect(element(by.text(`The certificate from ${invalidHost} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.`))).toBeVisible();
+        await Alert.okButton.tap();
     });
 });
