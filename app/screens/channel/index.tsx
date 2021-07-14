@@ -25,6 +25,9 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {LaunchType} from '@typings/launch';
+import {logout} from '@actions/remote/user';
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 
 const {SERVER: {CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
@@ -41,6 +44,7 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
     //     }
     // }
 
+
     //todo: Read Messages  - Do we need KeyboardLayout component ?
     //todo: Read Messages  - Implement goToChannelInfo
     //todo: Read Messages  - handleLeaveTeam, runTypingAnimations, handleRemovedFromChannel, clearChannelNotifications, registerTypingAnimation, runTypingAnimations, loadChannels??, showTermsOfServiceModal,
@@ -48,7 +52,8 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
     //todo: Read Messages - renderLoadingOrFailedChannel, MainSideBar, SettingsSideBar
 
     const intl = useIntl();
-    const theme = parseTheme(themeRecords[0].value);
+    const serverUrl = useServerUrl();
+    const theme = useTheme(); 
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
