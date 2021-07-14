@@ -12,7 +12,7 @@ PODS:
     - React-jsi (= 0.64.2)
     - ReactCommon/turbomodule/core (= 0.64.2)
   - glog (0.3.5)
-  - jail-monkey (2.4.0):
+  - jail-monkey (2.5.0):
     - React-Core
   - libwebp (1.2.0):
     - libwebp/demux (= 1.2.0)
@@ -26,17 +26,17 @@ PODS:
   - MMKV (1.2.7):
     - MMKVCore (~> 1.2.7)
   - MMKVCore (1.2.9)
-  - Permission-Camera (3.0.4):
+  - Permission-Camera (3.0.5):
     - RNPermissions
-  - Permission-MediaLibrary (3.0.4):
+  - Permission-MediaLibrary (3.0.5):
     - RNPermissions
-  - Permission-Microphone (3.0.4):
+  - Permission-Microphone (3.0.5):
     - RNPermissions
-  - Permission-Notifications (3.0.4):
+  - Permission-Notifications (3.0.5):
     - RNPermissions
-  - Permission-PhotoLibrary (3.0.4):
+  - Permission-PhotoLibrary (3.0.5):
     - RNPermissions
-  - Permission-PhotoLibraryAddOnly (3.0.4):
+  - Permission-PhotoLibraryAddOnly (3.0.5):
     - RNPermissions
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
@@ -53,7 +53,7 @@ PODS:
     - RCT-Folly (= 2020.01.13.00)
     - RCTRequired (= 0.64.2)
     - React-Core (= 0.64.2)
-  - RCTYouTube (2.0.1):
+  - RCTYouTube (2.0.2):
     - React
     - YoutubePlayer-in-WKWebView (~> 0.3.1)
   - React (0.64.2):
@@ -266,7 +266,7 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webview (11.6.4):
+  - react-native-webview (11.6.5):
     - React-Core
   - React-perflogger (0.64.2)
   - React-RCTActionSheet (0.64.2):
@@ -336,12 +336,12 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.11.3):
+  - ReactNativeNavigation (7.17.1):
     - React-Core
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.11.3)
-  - ReactNativeNavigation/Core (7.11.3):
+    - ReactNativeNavigation/Core (= 7.17.1)
+  - ReactNativeNavigation/Core (7.17.1):
     - React-Core
     - React-RCTImage
     - React-RCTText
@@ -359,7 +359,7 @@ PODS:
     - React-Core
     - React-Core/DevSupport
     - React-RCTNetwork
-  - RNFastImage (8.3.4):
+  - RNFastImage (8.3.5):
     - React-Core
     - SDWebImage (~> 5.8)
     - SDWebImageWebPCoder (~> 0.6.1)
@@ -371,7 +371,7 @@ PODS:
     - React-Core
   - RNLocalize (2.1.1):
     - React-Core
-  - RNPermissions (3.0.4):
+  - RNPermissions (3.0.5):
     - React-Core
   - RNReactNativeHapticFeedback (1.11.0):
     - React-Core
@@ -406,20 +406,20 @@ PODS:
     - Yoga
   - RNRudderSdk (1.0.0):
     - React
-    - Rudder
+    - Rudder (>= 1.0.20)
   - RNScreens (3.4.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (2.5.2):
+  - RNSentry (2.6.0):
     - React-Core
     - Sentry (= 7.0.0)
-  - RNShare (6.2.1):
+  - RNShare (6.2.2):
     - React-Core
   - RNSVG (12.1.1):
     - React
   - RNVectorIcons (8.1.0):
     - React-Core
-  - Rudder (1.0.18)
+  - Rudder (1.0.20)
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -693,22 +693,22 @@ SPEC CHECKSUMS:
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: 74185edd6e8e5cb35512747bd840f8f9ad2381ff
+  FBReactNativeSpec: cef0cc6d50abc92e8cf52f140aa22b5371cfec0b
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
-  jail-monkey: 01cd0a75aa1034d08fd851869e6e6c3b063242d7
+  jail-monkey: feb2bdedc4d67312cd41a455c22661d804bba985
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
   MMKV: 22e5136f7d00197bc0fc9694b7f71519f0d1ca12
   MMKVCore: 27bf04f4376305c9c0187136a7b58a236ee83f9e
-  Permission-Camera: 74dc395c37a06ebe915069c5dca954c7a2a5a2e3
-  Permission-MediaLibrary: f57d9a116468c560c2a4a2a479fc211b770f7a92
-  Permission-Microphone: 450ff628a7146c415cfb98025e518810d9fa76ad
-  Permission-Notifications: 5b4a12a9b52866667423c93d3af8e43b81872cf4
-  Permission-PhotoLibrary: 440f206f0d36e5951c4c9b28567f60471fdddfb5
-  Permission-PhotoLibraryAddOnly: 0ac89da5e01e80479947b517091a67c9e462c99a
+  Permission-Camera: ac603073e4128e51e6ca3c39129778f05b4082fa
+  Permission-MediaLibrary: ca07553882f0533f67739cdea7486c369b6556f0
+  Permission-Microphone: f795f37089f6de4c71ae147b32770a5ebfdee08c
+  Permission-Notifications: 16ccd862111103378a7bab9fb1c5c71addffc348
+  Permission-PhotoLibrary: 0748c1a490fad126dfe36dbea8234dedfe59cc27
+  Permission-PhotoLibraryAddOnly: 224d33cea3c2f1f8982a2a4e343c0726fba3acf9
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: 6d3e854f0e7260a648badd0d44fc364bc9da9728
   RCTTypeSafety: c1f31d19349c6b53085766359caac425926fafaa
-  RCTYouTube: 4509d59a7de050dd0c7c6cb1f427d37678d63b5c
+  RCTYouTube: a8bb45705622a6fc9decf64be04128d3658ed411
   React: bda6b6d7ae912de97d7a61aa5c160db24aa2ad69
   React-callinvoker: 9840ea7e8e88ed73d438edb725574820b29b5baa
   React-Core: b5e385da7ce5f16a220fc60fd0749eae2c6120f0
@@ -731,7 +731,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
   react-native-startup-time: 1a068b744ce5097a85ebe0fbff691b05961c324d
   react-native-video: 0bb76b6d6b77da3009611586c7dbf817b947f30e
-  react-native-webview: 1a19adb5578cdf7f005b7961dcc50c1c6b70f41b
+  react-native-webview: 2e8fe70dc32b50d3231c23043f8e8b5a5525d346
   React-perflogger: 25373e382fed75ce768a443822f07098a15ab737
   React-RCTActionSheet: af7796ba49ffe4ca92e7277a5d992d37203f7da5
   React-RCTAnimation: 6a2e76ab50c6f25b428d81b76a5a45351c4d77aa
@@ -746,28 +746,28 @@ SPEC CHECKSUMS:
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 906b631a6847c26cacf5cb3791566f1fe205c65c
+  ReactNativeNavigation: 8ccac6aadb88ce59ff1594bfbe1f579b9bb5e81a
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNDeviceInfo: 8d3a29207835f972bce883723882980143270d55
   RNDevMenu: fd325b5554b61fe7f48d9205a3877cf5ee88cd7c
-  RNFastImage: d4870d58f5936111c56218dbd7fcfc18e65b58ff
+  RNFastImage: 811ade1ec186fa437ff92bd189dd6721c0ed11d9
   RNFileViewer: 83cc066ad795b1f986791d03b56fe0ee14b6a69f
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNKeychain: f75b8c8b2f17d3b2aa1f25b4a0ac5b83d947ff8f
   RNLocalize: 82a569022724d35461e2dc5b5d015a13c3ca995b
-  RNPermissions: c46788f4cd402287425983e04a4c9bb4356036eb
+  RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: 9c13c86454bfd54dab7505c1a054470bfecd2563
-  RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
+  RNRudderSdk: 9aa881c2bf754dc3b05e392340a5e3663a970f0a
   RNScreens: 21b73c94c9117e1110a79ee0ee80c93ccefed8ce
-  RNSentry: bfa1e2776c7413570e790cbbf79d2060dd0a565b
-  RNShare: 5ac8f6532ca4cd80fc71caef1cfbba1854a6a045
+  RNSentry: a2b02b326ae4fce91ce7c57d3f7dcf8df4f72269
+  RNShare: 1a049e096cc7239fb790892cd0bee1d31498269d
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
-  Rudder: 2a70cad66a3f5f3f6be056bf1ce0ce8d10b5ca67
+  Rudder: 3eae52018e1a401d3610b3f16f6210026eb327c8
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   Sentry: 89d26e036063b9cb9caa59b6951dd2f8277aa13b
