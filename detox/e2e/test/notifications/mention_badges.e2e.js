@@ -71,6 +71,14 @@ describe('Mention Badges', () => {
         await ChannelScreen.logout();
     });
 
+    it('MM-T520_1 should display mention badges for public channel', async () => {
+        await expectMentionBadges(testPublicChannel);
+    });
+
+    it('MM-T520_2 should display mention badges for private channel', async () => {
+        await expectMentionBadges(testPrivateChannel);
+    });
+
     const expectMentionBadges = async (messagePostedChannel) => {
         // * Verify team 1 main sidebar drawer button badge does not exist
         await expect(mainSidebarDrawerButtonBadgeUnreadCount).not.toExist();
@@ -110,12 +118,4 @@ describe('Mention Badges', () => {
         await openTeamSidebar();
         await getTeamByDisplayName(testTeam1.display_name).tap();
     };
-
-    it('MM-T520_1 should display mention badges for public channel', async () => {
-        await expectMentionBadges(testPublicChannel);
-    });
-
-    it('MM-T520_2 should display mention badges for private channel', async () => {
-        await expectMentionBadges(testPrivateChannel);
-    });
 });
