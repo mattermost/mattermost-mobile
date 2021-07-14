@@ -7,12 +7,12 @@ import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
-import {useTheme} from '@contexts/theme_provider';
-import {General} from '@constants';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
+import {General} from '@constants';
+import {useTheme} from '@context/theme';
 import {Config} from '@typings/database/models/servers/config';
 import {isCustomStatusEnabled} from '@utils/general';
 import {isGuest as isTeamMateGuest} from '@utils/user';

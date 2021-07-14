@@ -8,7 +8,7 @@ import React from 'react';
 import CompassIcon from '@components/compass_icon';
 import {MM_TABLES} from '@constants/database';
 import General from '@constants/general';
-import {useTheme} from '@contexts/theme_provider';
+import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 
 import type {Database} from '@nozbe/watermelondb';

@@ -6,6 +6,7 @@ import {DeviceEventEmitter, LayoutChangeEvent, Platform, View} from 'react-nativ
 import DeviceInfo from 'react-native-device-info';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {useTheme} from '@context/theme';
 import VIEWS from '@constants/view';
 import DEVICE from '@constants/device';
 import {Config} from '@typings/database/models/servers/config';
@@ -14,7 +15,6 @@ import {getUserIdFromChannelName} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelTitle from '../channel_title';
-import {useTheme} from '@contexts/theme_provider';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 

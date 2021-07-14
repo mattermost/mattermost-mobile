@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useEffect} from 'react';
@@ -11,27 +11,23 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import StatusBar from '@components/status_bar/status_bar';
 import ViewTypes from '@constants/view';
 import {MM_TABLES} from '@constants/database';
-import {ThemeProvider} from '@contexts/theme_provider';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {parseTheme} from '@utils/general';
 import {unsupportedServer} from '@utils/supported_server/supported_server';
 
 import ChannelNavBar from './channel_nav_bar';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {LaunchType} from '@typings/launch';
-import {logout} from '@actions/remote/user';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 
-const {SERVER: {CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
 
-const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: user, configRecord: config, currentUserIdRecord}: ChannelProps) => {
+const Channel = ({launchType, channelRecord: channel, userRecord: user, configRecord: config, currentUserIdRecord}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
@@ -44,7 +40,6 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
     //     }
     // }
 
-
     //todo: Read Messages  - Do we need KeyboardLayout component ?
     //todo: Read Messages  - Implement goToChannelInfo
     //todo: Read Messages  - handleLeaveTeam, runTypingAnimations, handleRemovedFromChannel, clearChannelNotifications, registerTypingAnimation, runTypingAnimations, loadChannels??, showTermsOfServiceModal,
@@ -53,7 +48,7 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
 
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const theme = useTheme(); 
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
@@ -77,15 +72,13 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
             mode='margin'
             edges={['left', 'right', 'bottom']}
         >
-            <ThemeProvider value={theme}>
-                <StatusBar theme={theme}/>
-                <ChannelNavBar
-                    currentUserId={currentUserIdRecord.value}
-                    channel={channel}
-                    onPress={() => null}
-                    config={config.value}
-                />
-            </ThemeProvider>
+            <StatusBar theme={theme}/>
+            <ChannelNavBar
+                currentUserId={currentUserIdRecord.value}
+                channel={channel}
+                onPress={() => null}
+                config={config.value}
+            />
         </SafeAreaView>
     );
 };
@@ -107,7 +100,6 @@ type ChannelProps = WithDatabaseArgs & {
     channelRecord: ChannelModel;
     configRecord: SystemModel;
     launchType: LaunchType;
-    themeRecords: PreferenceModel[];
     userRecord: UserModel;
     currentUserIdRecord: SystemModel;
 };
@@ -120,7 +112,6 @@ export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) 
 
 const withChannelAndTheme = withObservables(['currentChannelIdRecord'], ({currentChannelIdRecord, currentUserIdRecord, database}: WithChannelAndThemeArgs) => ({
     channelRecord: database.collections.get(CHANNEL).findAndObserve(currentChannelIdRecord.value),
-    themeRecords: database.collections.get(PREFERENCE).query(Q.where('user_id', currentUserIdRecord.value), Q.where('category', 'theme')).observe(),
     userRecord: database.collections.get(USER).findAndObserve(currentUserIdRecord.value),
 }));
 
