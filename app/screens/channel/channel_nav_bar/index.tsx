@@ -3,6 +3,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, LayoutChangeEvent, Platform, View} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import VIEWS from '@constants/view';
@@ -37,7 +38,7 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
 
     useEffect(() => {
         const checkOrientation = async () => {
-            const isInLandscape = await DEVICE.IS_LANDSCAPE;
+            const isInLandscape = await DeviceInfo.isLandscape();
             setIsLandscape(isInLandscape);
         };
         checkOrientation();

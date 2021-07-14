@@ -6,7 +6,7 @@ import {Alert} from 'react-native';
 import {unsupportedServer} from './supported_server';
 
 describe('Unsupported Server Alert', () => {
-    const formatMessage = ({defaultMessage} : {defaultMessage: FormatMessageType}) => jest.fn().mockReturnValue(defaultMessage);
+    const formatMessage = ({defaultMessage}: {defaultMessage: FormatMessageType}) => jest.fn().mockReturnValue(defaultMessage);
 
     it('should show the alert for sysadmin', () => {
         const alert = jest.spyOn(Alert, 'alert');

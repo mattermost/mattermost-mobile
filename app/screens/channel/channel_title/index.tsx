@@ -287,7 +287,7 @@ type ChannelTitleProps = ChannelTitleInputProps & {
 
 const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> =
     withDatabase(
-        withObservables(['channel', 'teammateId', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database; }) => {
+        withObservables(['channel', 'teammateId', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
             return {
                 channelInfo: channel.info.observe(),
                 channelSettings: channel.settings.observe(),

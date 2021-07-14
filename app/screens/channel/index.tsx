@@ -10,7 +10,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import StatusBar from '@components/status_bar/status_bar';
 import ViewTypes from '@constants/view';
-import {Client4} from '@client/rest';
 import {MM_TABLES} from '@constants/database';
 import {ThemeProvider} from '@contexts/theme_provider';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -53,8 +52,7 @@ const Channel = ({launchType, channelRecord: channel, themeRecords, userRecord: 
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
-        //fixme: this should be this server.networkClient
-        const serverVersion = (Client4.getServerVersion() || config.value?.Version) || '';
+        const serverVersion = (config.value?.Version) || '';
         const isSystemAdmin = checkIsSystemAdmin(user.roles);
 
         if (serverVersion) {
@@ -97,8 +95,8 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
 // TODO: Move as helper methods
 type WithDatabaseArgs = { database: Database }
 type WithChannelAndThemeArgs = WithDatabaseArgs & {
-    currentChannelIdRecord: SystemModel,
-    currentUserIdRecord: SystemModel,
+    currentChannelIdRecord: SystemModel;
+    currentUserIdRecord: SystemModel;
 }
 type ChannelProps = WithDatabaseArgs & {
     channelRecord: ChannelModel;

@@ -25,7 +25,6 @@ export default {
     PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
     TABLET_WIDTH: 250,
     VIDEOS_PATH: `${FileSystem.cacheDirectory}/Videos`,
-    IS_LANDSCAPE: DeviceInfo.isLandscape(),
     IS_IPHONE_WITH_INSETS: Platform.OS === 'ios' && DeviceInfo.hasNotch(),
 
 };

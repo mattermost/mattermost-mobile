@@ -11,9 +11,7 @@ import Servers from '@app/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 
-export function withServerDatabase<T>(
-    Component: ComponentType<T>,
-): ComponentType<T> {
+export function withServerDatabase<T>(Component: ComponentType<T>): ComponentType<T> {
     return function ServerDatabaseComponent(props) {
         const [database, setDatabase] = useState<Database|undefined>();
         const db = DatabaseManager.appDatabase?.database;

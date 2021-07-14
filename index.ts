@@ -13,10 +13,10 @@ import {initialLaunch} from './app/init/launch';
 import ManagedApp from './app/init/managed_app';
 import NetworkManager from './app/init/network_manager';
 import PushNotifications from './app/init/push_notifications';
-import {setupMockData} from './app/screens/channel/mock';
-import {registerScreens} from './app/screens/index';
+import {registerScreens} from './app/screens';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
+import {setupChannelMockData} from './test/mock_database_data';
 
 declare const global: { HermesInternal: null | {} };
 
@@ -60,7 +60,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
     await NetworkManager.init(serverCredentials);
 
     //fixme:  Remove setupMockData when not testing ?
-    // await setupMockData();
+    await setupChannelMockData();
 
     PushNotifications.init();
 

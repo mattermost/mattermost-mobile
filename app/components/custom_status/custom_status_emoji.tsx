@@ -53,7 +53,7 @@ const enhanceCurrentUserId = withObservables([], ({database}: { database: Databa
 }),
 );
 
-const enhanceUserId = withObservables(['userId'], ({userId, currentUserIdRecord, database}: {userId: string, currentUserIdRecord: SystemModel, database: Database}) => ({
+const enhanceUserId = withObservables(['userId'], ({userId, currentUserIdRecord, database}: {userId: string; currentUserIdRecord: SystemModel; database: Database}) => ({
     userRecords: queryUserById({database, userId: userId ?? currentUserIdRecord?.value}).observe(),
 }));
 

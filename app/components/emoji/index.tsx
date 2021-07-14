@@ -8,11 +8,9 @@ import React from 'react';
 import {Platform, StyleProp, StyleSheet, Text, TextStyle} from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
 
-import {Client4} from '@client/rest';
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import NetworkManager from '@init/network_manager';
 import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from '@utils/emojis';
-import {isMinimumServerVersion} from '@utils/helpers';
-import {queryCommonSystemValues} from '@queries/servers/system';
 
 import type {Config} from '@typings/database/models/servers/config';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -29,16 +27,23 @@ type EmojiInputProps = {
 
 type EmojiProps = EmojiInputProps & {
     emojiRecords: CustomEmojiModel[];
-    systemValues: SystemModel[];
-}
+    configRecord: SystemModel;
+    currentUserIdRecord: SystemModel;
+};
 
-const ConnectedEmoji = ({customEmojiStyle = false, emojiName, emojiRecords, literal = '', size, systemValues, testID, textStyle}: EmojiProps) => {
-    const config = systemValues.find((system: SystemModel) => system.id === 'config') as Config | undefined;
-    const currentUserId = systemValues.find((system: SystemModel) => system.id === 'currentUserId') as string | undefined;
+const {SERVER: {SYSTEM, CUSTOM_EMOJI}} = MM_TABLES;
+
+const ConnectedEmoji = ({customEmojiStyle = undefined, emojiName, emojiRecords, literal = '', size, configRecord, currentUserIdRecord, testID, textStyle}: EmojiProps) => {
+    console.log('>>>>>>>>>>>>>>> ', {
+        configRecord, currentUserIdRecord,
+    });
+
+    const config = configRecord.value as Config | undefined;
+    const currentUserId = currentUserIdRecord.value as string | undefined;
     const customEmojis = emojiRecords?.[0];
 
-    //fixme: wrong way of retrieving the server url
-    const serverUrl = Client4.getUrl();
+    // const serverUrl = useServerUrl();
+    const client = NetworkManager.getClient(serverUrl);
 
     let imageUrl = '';
     let unicode;
@@ -50,13 +55,13 @@ const ConnectedEmoji = ({customEmojiStyle = false, emojiName, emojiRecords, lite
         unicode = emoji.filename;
         if (BuiltInEmojis.includes(emojiName)) {
             if (serverUrl) {
-                imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
+                imageUrl = client.getSystemEmojiImageUrl(emoji.filename);
             } else {
                 displayTextOnly = true;
             }
         }
     } else if (customEmojis && serverUrl) {
-        imageUrl = Client4.getCustomEmojiImageUrl(customEmojis!.id);
+        imageUrl = client.getCustomEmojiImageUrl(customEmojis!.id);
     } else {
         displayTextOnly =
 
@@ -124,9 +129,10 @@ const ConnectedEmoji = ({customEmojiStyle = false, emojiName, emojiRecords, lite
     );
 };
 
-const Emoji: React.FunctionComponent<EmojiInputProps> = withDatabase(withObservables(['emojiName'], ({emojiName, database}: { emojiName: string; database: Database; }) => ({
-    systemValues: queryCommonSystemValues(database).observe(),
-    emojiRecords: database.collections.get(MM_TABLES.SERVER.CUSTOM_EMOJI).query(Q.where('id', emojiName), Q.or(Q.where('name', emojiName))).observe(),
+const Emoji: React.FunctionComponent<EmojiInputProps> = withDatabase(withObservables(['emojiName'], ({emojiName, database}: { emojiName: string; database: Database }) => ({
+    config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+    currentUserId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+    emojiRecords: database.collections.get(CUSTOM_EMOJI).query(Q.where('id', emojiName), Q.or(Q.where('name', emojiName))).observe(),
 }))(ConnectedEmoji));
 
 export default Emoji;

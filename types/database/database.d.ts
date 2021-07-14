@@ -343,7 +343,7 @@ export type RawChannel = {
   id: string;
   last_post_at: number;
   name: string;
-  policy_id: string;
+  policy_id: string | null;
   props: Record<string, any> | null;
   purpose: string;
   scheme_id: string | null;
@@ -353,8 +353,6 @@ export type RawChannel = {
   total_msg_count_root: number;
   type: ChannelType;
   update_at: number;
-  total_msg_count_root: number;
-  policy_id: string | null;
 };
 
 export type RawCustomEmoji = {
