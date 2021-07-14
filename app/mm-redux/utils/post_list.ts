@@ -23,98 +23,91 @@ function shouldShowJoinLeaveMessages(state: GlobalState) {
     return getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true);
 }
 
-interface PostFilterOptions {
-    postIds: string[];
-    lastViewedAt: number;
-    indicateNewMessages: boolean;
-}
-
 export function makePreparePostIdsForPostList() {
     const filterPostsAndAddSeparators = makeFilterPostsAndAddSeparators();
     const combineUserActivityPosts = makeCombineUserActivityPosts();
-    return (state: GlobalState, options: PostFilterOptions) => {
-        let postIds = filterPostsAndAddSeparators(state, options);
-        postIds = combineUserActivityPosts(state, postIds);
-        return postIds;
+    return (state: GlobalState, postIds: string[], lastViewedAt: number, indicateNewMessages: boolean) => {
+        let ids = filterPostsAndAddSeparators(state, postIds, lastViewedAt, indicateNewMessages);
+        ids = combineUserActivityPosts(state, ids);
+        return ids;
     };
 }
 
-// Returns a selector that, given the state and an object containing an array of postIds and an optional
-// timestamp of when the channel was last read, returns a memoized array of postIds interspersed with
-// day indicators and an optional new message indicator.
 export function makeFilterPostsAndAddSeparators() {
     const getPostsForIds = makeGetPostsForIds();
 
     return createIdsSelector(
-        (state: GlobalState, {postIds}: PostFilterOptions) => getPostsForIds(state, postIds),
-        (state: GlobalState, {lastViewedAt}: PostFilterOptions) => lastViewedAt,
-        (state: GlobalState, {indicateNewMessages}: PostFilterOptions) => indicateNewMessages,
-        (state) => state.entities.posts.selectedPostId,
+        (state: GlobalState, postIds: string[]) => getPostsForIds(state, postIds),
+        (state: GlobalState, postIds: string[], lastViewedAt: number) => lastViewedAt,
+        (state: GlobalState, postIds: string[], lastViewedAt: number, indicateNewMessages: boolean) => indicateNewMessages,
+        (state: GlobalState) => state.entities.posts.selectedPostId,
         getCurrentUser,
         shouldShowJoinLeaveMessages,
         isTimezoneEnabled,
-        (posts, lastViewedAt, indicateNewMessages, selectedPostId, currentUser, showJoinLeave, timeZoneEnabled) => {
-            if (posts.length === 0 || !currentUser) {
-                return [];
-            }
-
-            const out: string[] = [];
-            let lastDate;
-            let addedNewMessagesIndicator = false;
-
-            // Iterating through the posts from oldest to newest
-            for (let i = posts.length - 1; i >= 0; i--) {
-                const post = posts[i];
-
-                if (
-                    !post ||
-                    (post.type === Posts.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !selectedPostId)
-                ) {
-                    continue;
-                }
-
-                // Filter out join/leave messages if necessary
-                if (shouldFilterJoinLeavePost(post, showJoinLeave, currentUser.username)) {
-                    continue;
-                }
-
-                // Push on a date header if the last post was on a different day than the current one
-                const postDate = new Date(post.create_at);
-                if (timeZoneEnabled) {
-                    const currentOffset = postDate.getTimezoneOffset() * 60 * 1000;
-                    const timezone = getUserCurrentTimezone(currentUser.timezone);
-                    if (timezone) {
-                        const zone = moment.tz.zone(timezone);
-                        if (zone) {
-                            const timezoneOffset = zone.utcOffset(post.create_at) * 60 * 1000;
-                            postDate.setTime(post.create_at + (currentOffset - timezoneOffset));
-                        }
-                    }
-                }
-
-                if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-                    out.push(DATE_LINE + postDate.getTime());
-
-                    lastDate = postDate;
-                }
-
-                if (
-                    lastViewedAt &&
-                    post.create_at > lastViewedAt &&
-                    !addedNewMessagesIndicator &&
-                    indicateNewMessages
-                ) {
-                    out.push(START_OF_NEW_MESSAGES);
-                    addedNewMessagesIndicator = true;
-                }
-
-                out.push(post.id);
-            }
-
-            // Flip it back to newest to oldest
-            return out.reverse();
-        },
+        selectOrderedPostIds,
     );
+}
+
+function selectOrderedPostIds(posts: types.posts.Post[], lastViewedAt: number, indicateNewMessages: boolean, selectedPostId: string, currentUser: types.users.UserProfile, showJoinLeave: boolean, timezoneEnabled: boolean) {
+    if (posts.length === 0 || !currentUser) {
+        return [];
+    }
+
+    const out: string[] = [];
+    let lastDate;
+    let addedNewMessagesIndicator = false;
+
+    // Iterating through the posts from oldest to newest
+    for (let i = posts.length - 1; i >= 0; i--) {
+        const post = posts[i];
+
+        if (
+            !post ||
+            (post.type === Posts.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL && !selectedPostId)
+        ) {
+            continue;
+        }
+
+        // Filter out join/leave messages if necessary
+        if (shouldFilterJoinLeavePost(post, showJoinLeave, currentUser.username)) {
+            continue;
+        }
+
+        // Push on a date header if the last post was on a different day than the current one
+        const postDate = new Date(post.create_at);
+        if (timezoneEnabled) {
+            const currentOffset = postDate.getTimezoneOffset() * 60 * 1000;
+            const timezone = getUserCurrentTimezone(currentUser.timezone);
+            if (timezone) {
+                const zone = moment.tz.zone(timezone);
+                if (zone) {
+                    const timezoneOffset = zone.utcOffset(post.create_at) * 60 * 1000;
+                    postDate.setTime(post.create_at + (currentOffset - timezoneOffset));
+                }
+            }
+        }
+
+        if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
+            out.push(DATE_LINE + postDate.getTime());
+
+            lastDate = postDate;
+        }
+
+        if (
+            lastViewedAt &&
+            post.create_at > lastViewedAt &&
+            !addedNewMessagesIndicator &&
+            indicateNewMessages
+        ) {
+            out.push(START_OF_NEW_MESSAGES);
+            addedNewMessagesIndicator = true;
+        }
+
+        out.push(post.id);
+    }
+
+    // Flip it back to newest to oldest
+    return out.reverse();
 }
 
 export function makeCombineUserActivityPosts() {
@@ -270,6 +263,7 @@ export function makeGenerateCombinedPost() {
             const createAt = posts[posts.length - 1].create_at;
 
             const messages = posts.map((post) => post.message);
+            const message = messages.join('\n');
 
             return {
                 id: combinedId,
@@ -277,7 +271,7 @@ export function makeGenerateCombinedPost() {
                 channel_id: channelId,
                 create_at: createAt,
                 delete_at: 0,
-                message: messages.join('\n'),
+                message,
                 props: {
                     messages,
                     user_activity: combineUserActivitySystemPost(posts),

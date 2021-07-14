@@ -88,24 +88,17 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
 const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
-    let submitButtons = [{
-        id: 'submit-form',
-        showAsAction: 'always',
-        text: 'Submit',
-    }];
-    if (form.submit_buttons) {
-        const options = form.fields.find((f) => f.name === form.submit_buttons)?.options;
-        const newButtons = options?.map((o) => {
-            return {
-                id: 'submit-form_' + o.value,
-                showAsAction: 'always',
-                text: o.label,
-            };
-        });
-        if (newButtons && newButtons.length > 0) {
-            submitButtons = newButtons;
-        }
+    let submitButtons;
+    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
+
+    if (!customSubmitButtons?.length) {
+        submitButtons = [{
+            id: 'submit-form',
+            showAsAction: 'always',
+            text: 'Submit',
+        }];
     }
+
     const options = {
         topBar: {
             leftButtons: [{

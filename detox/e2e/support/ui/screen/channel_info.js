@@ -14,6 +14,7 @@ class ChannelInfoScreen {
         channelDisplayName: 'channel_info.header.display_name',
         channelHeader: 'channel_info.header.header',
         channelPurpose: 'channel_info.header.purpose',
+        headerCustomStatus: 'channel_info.header.custom_status',
         favoritePreferenceAction: 'channel_info.favorite.action',
         favoriteSwitchFalse: 'channel_info.favorite.action.switch.false',
         favoriteSwitchTrue: 'channel_info.favorite.action.switch.true',
@@ -107,6 +108,12 @@ class ChannelInfoScreen {
             await wait(timeouts.ONE_SEC);
             await expect(this.channelInfoScreen).toBeVisible();
         }
+    }
+
+    closeDirectOrGroupMessage = async () => {
+        await this.channelInfoScrollView.scrollTo('bottom');
+        await this.leaveAction.tap();
+        await expect(this.channelInfoScreen).not.toBeVisible();
     }
 
     leaveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {

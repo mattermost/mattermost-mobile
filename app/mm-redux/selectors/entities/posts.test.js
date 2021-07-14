@@ -1899,7 +1899,7 @@ describe('Selectors.Posts', () => {
         const isPostCommentMention = Selectors.makeIsPostCommentMention();
 
         it('Should return true as root post is by the current user', () => {
-            assert.equal(isPostCommentMention(modifiedState, 'e'), true);
+            assert.equal(isPostCommentMention(modifiedState, 'e', 'a'), true);
         });
 
         it('Should return false as post is not from currentUser', () => {
@@ -1927,7 +1927,7 @@ describe('Selectors.Posts', () => {
                 },
             };
 
-            assert.equal(isPostCommentMention(modifiedWbhookPostState, 'e'), true);
+            assert.equal(isPostCommentMention(modifiedWbhookPostState, 'e', 'a'), true);
         });
 
         it('Should return true as user commented in the thread', () => {
@@ -1952,7 +1952,7 @@ describe('Selectors.Posts', () => {
                 },
             };
 
-            assert.equal(isPostCommentMention(modifiedThreadState, 'e'), true);
+            assert.equal(isPostCommentMention(modifiedThreadState, 'e', 'a'), true);
         });
 
         it('Should return false as user commented in the thread but notify_props is for root only', () => {
@@ -2016,7 +2016,7 @@ describe('Selectors.Posts', () => {
                 },
             };
 
-            assert.equal(isPostCommentMention(modifiedStateForRoot, 'e'), true);
+            assert.equal(isPostCommentMention(modifiedStateForRoot, 'e'), false);
         });
     });
 });

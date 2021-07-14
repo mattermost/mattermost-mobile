@@ -12,24 +12,29 @@ import {
 
 import {General} from '@mm-redux/constants';
 
+import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
+        canHaveSubtitle: PropTypes.bool.isRequired,
+        channelType: PropTypes.string,
         currentChannelName: PropTypes.string,
         displayName: PropTypes.string,
-        channelType: PropTypes.string,
+        hasGuests: PropTypes.bool.isRequired,
+        isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
+        isChannelShared: PropTypes.bool,
+        isGuest: PropTypes.bool.isRequired,
+        isSelfDMChannel: PropTypes.bool.isRequired,
         onPress: PropTypes.func,
         theme: PropTypes.object,
-        isArchived: PropTypes.bool,
-        isGuest: PropTypes.bool.isRequired,
-        hasGuests: PropTypes.bool.isRequired,
-        canHaveSubtitle: PropTypes.bool.isRequired,
-        isSelfDMChannel: PropTypes.bool.isRequired,
+        teammateId: PropTypes.string,
+        customStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -119,7 +124,9 @@ export default class ChannelTitle extends PureComponent {
 
     render() {
         const {
+            channelType,
             isChannelMuted,
+            isChannelShared,
             onPress,
             theme,
         } = this.props;
@@ -140,12 +147,43 @@ export default class ChannelTitle extends PureComponent {
         }
 
         let mutedIcon;
+        let wrapperWidth = 90;
         if (isChannelMuted) {
             mutedIcon = (
                 <CompassIcon
                     style={[style.icon, style.muted]}
                     size={24}
                     name='bell-off-outline'
+                />
+            );
+            wrapperWidth -= 10;
+        }
+
+        const customStatus = this.props.channelType === General.DM_CHANNEL && this.props.customStatusEnabled ?
+            (
+                <CustomStatusEmoji
+                    userID={this.props.teammateId}
+                    emojiSize={16}
+                    style={[style.icon, style.emoji]}
+                />
+            ) : null;
+
+        if (customStatus) {
+            wrapperWidth -= 10;
+        }
+
+        let channelIcon;
+        if (isChannelShared) {
+            channelIcon = (
+                <ChannelIcon
+                    isActive={true}
+                    isArchived={false}
+                    isBot={false}
+                    size={18}
+                    shared={isChannelShared}
+                    style={style.channelIconContainer}
+                    theme={theme}
+                    type={channelType}
                 />
             );
         }
@@ -156,7 +194,7 @@ export default class ChannelTitle extends PureComponent {
                 style={style.container}
                 onPress={onPress}
             >
-                <View style={style.wrapper}>
+                <View style={[style.wrapper, {width: `${wrapperWidth}%`}]}>
                     {this.archiveIcon(style)}
                     <Text
                         ellipsizeMode='tail'
@@ -166,7 +204,9 @@ export default class ChannelTitle extends PureComponent {
                     >
                         {channelDisplayName}
                     </Text>
+                    {channelIcon}
                     {icon}
+                    {customStatus}
                     {mutedIcon}
                 </View>
                 {hasGuestsText}
@@ -187,17 +227,25 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            width: '90%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
             marginHorizontal: 1,
+        },
+        emoji: {
+            marginHorizontal: 5,
         },
         text: {
             color: theme.sidebarHeaderTextColor,
             fontSize: 18,
             fontWeight: 'bold',
             textAlign: 'center',
+            flex: 0,
+            flexShrink: 1,
+        },
+        channelIconContainer: {
+            marginLeft: 3,
+            marginRight: 0,
         },
         muted: {
             marginTop: 1,

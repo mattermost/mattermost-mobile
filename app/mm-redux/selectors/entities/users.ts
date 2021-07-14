@@ -446,12 +446,12 @@ export function makeGetProfilesNotInChannel(): (a: GlobalState, b: $ID<Channel>,
     );
 }
 
-export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: {allUserIds: Array<$ID<UserProfile>>; allUsernames: Array<$Username<UserProfile>>}) => Array<UserProfile> {
+export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: Array<$ID<UserProfile>>, c: Array<$Username<UserProfile>>|undefined) => Array<UserProfile> {
     return createSelector(
         getUsers,
         getUsersByUsername,
-        (state: GlobalState, props: {allUserIds: Array<$ID<UserProfile>>; allUsernames: Array<$Username<UserProfile>>}) => props.allUserIds,
-        (state, props) => props.allUsernames,
+        (state: GlobalState, allUserIds: Array<$ID<UserProfile>>) => allUserIds,
+        (state, _, allUsernames: Array<$Username<UserProfile>>) => allUsernames,
         (allProfilesById: Dictionary<UserProfile>, allProfilesByUsername: Dictionary<UserProfile>, allUserIds: Array<string>, allUsernames: Array<string>) => {
             const userProfiles: UserProfile[] = [];
 
@@ -465,7 +465,7 @@ export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: {allUser
                 }
             }
 
-            if (allUsernames && allUsernames.length > 0) {
+            if (allUsernames?.length > 0) {
                 const profilesByUsername = allUsernames.
                     filter((username) => allProfilesByUsername[username]).
                     map((username) => allProfilesByUsername[username]);
@@ -479,6 +479,35 @@ export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: {allUser
         },
     );
 }
+
+export const getUsernamesByUserId = createSelector(
+    getUsers,
+    getUsersByUsername,
+    (state: GlobalState, allUserIds: Array<$ID<UserProfile>>) => allUserIds,
+    (state, _, allUsernames: Array<$Username<UserProfile>>) => allUsernames,
+    (allProfilesById: Dictionary<UserProfile>, allProfilesByUsername: Dictionary<UserProfile>, allUserIds: Array<string>, allUsernames: Array<string>) => {
+        const usernamesByUserId: Record<string, string> = {};
+        if (allUserIds && allUserIds.length > 0) {
+            allUserIds.forEach((userId) => {
+                const profile = allProfilesById[userId];
+                if (profile) {
+                    usernamesByUserId[userId] = profile.username;
+                }
+            });
+
+            if (allUsernames?.length > 0) {
+                allUsernames.forEach((username) => {
+                    const profile = allProfilesByUsername[username];
+                    if (profile) {
+                        usernamesByUserId[profile.id] = username;
+                    }
+                });
+            }
+        }
+
+        return usernamesByUserId;
+    },
+);
 
 export function makeGetDisplayName(): (a: GlobalState, b: $ID<UserProfile>, c: boolean) => string {
     return createSelector(

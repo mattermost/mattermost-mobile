@@ -41,9 +41,8 @@ export default class ThreadAndroid extends ThreadBase {
                             postIds={postIds}
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}
-                            lastPostIndex={-1}
-                            onPostPress={this.hideKeyboard}
                             location={THREAD}
+                            rootId={rootId}
                         />
                     </Animated.View>
                     <PostDraft
