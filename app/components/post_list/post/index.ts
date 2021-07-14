@@ -20,6 +20,7 @@ import Post from './post';
 import type {Post as PostType} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type OwnProps = {
     highlight?: boolean;
@@ -27,6 +28,7 @@ type OwnProps = {
     post?: PostType;
     previousPostId?: string;
     nextPostId?: string;
+    style?: StyleProp<ViewStyle>;
     testID: string;
     theme: Theme;
 }

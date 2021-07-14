@@ -313,14 +313,20 @@ describe('@actions/navigation', () => {
             },
             animations: {
                 showModal: {
-                    enabled: false,
-                    enter: {},
-                    exit: {},
+                    enter: {
+                        enabled: false,
+                    },
+                    exit: {
+                        enabled: false,
+                    },
                 },
                 dismissModal: {
-                    enabled: false,
-                    enter: {},
-                    exit: {},
+                    enter: {
+                        enabled: false,
+                    },
+                    exit: {
+                        enabled: false,
+                    },
                 },
             },
         };

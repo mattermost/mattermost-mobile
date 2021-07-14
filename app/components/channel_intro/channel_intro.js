@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {
+    Platform,
     Text,
     View,
 } from 'react-native';
@@ -385,6 +386,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 12,
             marginBottom: 12,
             overflow: 'hidden',
+            ...Platform.select({
+                android: {
+                    scaleY: -1,
+                },
+            }),
         },
         displayName: {
             color: theme.centerChannelColor,

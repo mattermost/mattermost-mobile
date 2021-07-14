@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {updateMe} from '@mm-redux/actions/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import NotificationSettingsMobile from './notification_settings_mobile';
@@ -19,6 +19,7 @@ function mapStateToProps(state) {
 
     return {
         config,
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
         theme,
         updateMeRequest,
         currentUser,
