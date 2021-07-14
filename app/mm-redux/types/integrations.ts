@@ -131,5 +131,4 @@ export type CommandArgs = {
     channel_id: string;
     team_id: string;
     root_id?: string;
-    parent_id?: string;
 }
