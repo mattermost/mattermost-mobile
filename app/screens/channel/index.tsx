@@ -8,7 +8,7 @@ import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import StatusBar from '@components/status_bar/status_bar';
+import StatusBar from '@components/status_bar';
 import ViewTypes from '@constants/view';
 import {MM_TABLES} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -22,7 +22,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {LaunchType} from '@typings/launch';
-import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 
 const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
@@ -47,7 +46,6 @@ const Channel = ({launchType, channelRecord: channel, userRecord: user, configRe
     //todo: Read Messages - renderLoadingOrFailedChannel, MainSideBar, SettingsSideBar
 
     const intl = useIntl();
-    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
