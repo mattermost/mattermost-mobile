@@ -36,6 +36,10 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
 
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
+    const scrollToTop = React.useCallback(() => {
+        listRef.current?.scrollToOffset({offset: 0});
+    }, []);
+
     const loadThreads = React.useCallback(async (before = '', after = '', unread = false) => {
         setIsLoading(true);
         await actions.getThreads(userId, teamId, before, after, undefined, false, unread);
@@ -44,6 +48,7 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
 
     React.useEffect(() => {
         // Loads on mount, Loads on team change
+        scrollToTop();
         loadThreads('', ids[0]);
     }, [loadThreads, teamId]);
 
@@ -76,15 +81,15 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
     }, [allThreadIds, ids, loadThreads, unreadThreadIds, viewingUnreads]);
 
     const handleViewAllThreads = React.useCallback(() => {
+        scrollToTop();
         isLoadingMoreThreads.current = false;
-        listRef.current?.scrollToOffset({offset: 0});
         loadThreads('', allThreadIds[0], false);
         actions.handleViewingGlobalThreadsAll();
     }, [loadThreads, allThreadIds]);
 
     const handleViewUnreadThreads = React.useCallback(() => {
+        scrollToTop();
         isLoadingMoreThreads.current = false;
-        listRef.current?.scrollToOffset({offset: 0});
         loadThreads('', unreadThreadIds[0], true);
         actions.handleViewingGlobalThreadsUnreads();
     }, [loadThreads, unreadThreadIds]);

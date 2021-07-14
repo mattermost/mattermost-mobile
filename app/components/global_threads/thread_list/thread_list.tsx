@@ -7,10 +7,10 @@ import {intlShape} from 'react-intl';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {INITIAL_BATCH_TO_RENDER} from '@components/post_list/post_list_config';
-import ThreadConstants from '@mm-redux/constants/threads';
+import {ViewTypes} from '@constants';
 import type {Theme} from '@mm-redux/types/preferences';
-import {UserThread} from '@mm-redux/types/threads';
-import {$ID} from '@mm-redux/types/utilities';
+import type {UserThread} from '@mm-redux/types/threads';
+import type {$ID} from '@mm-redux/types/utilities';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from '../empty_state';
@@ -133,7 +133,7 @@ function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, mar
     };
 
     const renderFooter = () => {
-        if (isLoading && threadIds?.length >= ThreadConstants.THREADS_CHUNK_SIZE) {
+        if (isLoading && threadIds?.length >= ViewTypes.CRT_CHUNK_SIZE) {
             return (
                 <View style={style.loadingMoreContainer}>
                     <Loading size='small'/>
