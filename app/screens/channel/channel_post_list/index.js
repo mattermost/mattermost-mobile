@@ -4,11 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {
-    loadPostsIfNecessaryWithRetry,
-    increasePostVisibility,
-    refreshChannelWithRetry,
-} from '@actions/views/channel';
+import {loadPostsIfNecessaryWithRetry, increasePostVisibility} from '@actions/views/channel';
 import {getPostThread} from '@actions/views/post';
 import {Types} from '@constants';
 import {selectPost} from '@mm-redux/actions/posts';
@@ -45,7 +41,6 @@ function mapDispatchToProps(dispatch) {
             getPostThread,
             increasePostVisibility,
             selectPost,
-            refreshChannelWithRetry,
         }, dispatch),
     };
 }

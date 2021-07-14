@@ -95,7 +95,7 @@ const Header = ({
                             testID='post_header'
                         />
                     )}
-                    {!isSystemPost &&
+                    {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
                         isAutomation={isWebHook || isBot}

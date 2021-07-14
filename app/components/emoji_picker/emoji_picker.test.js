@@ -72,7 +72,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
 
     test('searchEmojis should return the right values on fuse', async () => {
         const input = '1';
-        const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'rage1', 'u7121', 'u7981'];
+        const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'u7121', 'u7981'];
 
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const result = wrapper.instance().searchEmojis(input);

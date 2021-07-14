@@ -88,23 +88,24 @@ class PushNotifications {
             //set the badge count to the total amount of notifications present in the not-center
             let badgeCount = notifications.length;
 
+            for (let i = 0; i < notifications.length; i++) {
+                const notification = notifications[i] as NotificationWithChannel;
+                if (notification.channel_id === channelId) {
+                    ids.push(notification.identifier);
+                    badgeCount--;
+                }
+            }
+
+            if (ids.length) {
+                Notifications.ios.removeDeliveredNotifications(ids);
+            }
+
             if (Store.redux) {
                 const totalMentions = getBadgeCount(Store.redux.getState());
                 if (totalMentions > -1) {
                     // replaces the badge count based on the redux store.
                     badgeCount = totalMentions;
                 }
-            }
-
-            for (let i = 0; i < notifications.length; i++) {
-                const notification = notifications[i] as NotificationWithChannel;
-                if (notification.channel_id === channelId) {
-                    ids.push(notification.identifier);
-                }
-            }
-
-            if (ids.length) {
-                Notifications.ios.removeDeliveredNotifications(ids);
             }
 
             if (Platform.OS === 'ios') {

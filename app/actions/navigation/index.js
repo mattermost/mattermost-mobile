@@ -294,7 +294,50 @@ export function showModal(name, title, passProps = {}, options = {}) {
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
     const title = '';
-    const animationsEnabled = (Platform.OS === 'android').toString();
+
+    let animations;
+    switch (Platform.OS) {
+    case 'android':
+        animations = {
+            showModal: {
+                waitForRender: true,
+                alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 250,
+                },
+            },
+            dismissModal: {
+                alpha: {
+                    from: 1,
+                    to: 0,
+                    duration: 250,
+                },
+            },
+        };
+        break;
+    default:
+        animations = {
+            showModal: {
+                enter: {
+                    enabled: false,
+                },
+                exit: {
+                    enabled: false,
+                },
+            },
+            dismissModal: {
+                enter: {
+                    enabled: false,
+                },
+                exit: {
+                    enabled: false,
+                },
+            },
+        };
+        break;
+    }
+
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
@@ -305,25 +348,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
             visible: false,
             height: 0,
         },
-        animations: {
-            showModal: {
-                waitForRender: true,
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 250,
-                },
-            },
-            dismissModal: {
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 1,
-                    to: 0,
-                    duration: 250,
-                },
-            },
-        },
+        animations,
     };
     const mergeOptions = merge(defaultOptions, options);
 
@@ -352,24 +377,17 @@ export function showSearchModal(initialValue = '') {
 export const showAppForm = async (form, call, theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
-    let submitButtons = [{
-        id: 'submit-form',
-        showAsAction: 'always',
-        text: 'Submit',
-    }];
-    if (form.submit_buttons) {
-        const options = form.fields.find((f) => f.name === form.submit_buttons)?.options;
-        const newButtons = options?.map((o) => {
-            return {
-                id: 'submit-form_' + o.value,
-                showAsAction: 'always',
-                text: o.label,
-            };
-        });
-        if (newButtons && newButtons.length > 0) {
-            submitButtons = newButtons;
-        }
+    let submitButtons;
+    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
+
+    if (!customSubmitButtons?.length) {
+        submitButtons = [{
+            id: 'submit-form',
+            showAsAction: 'always',
+            text: 'Submit',
+        }];
     }
+
     const options = {
         topBar: {
             leftButtons: [{
@@ -381,7 +399,6 @@ export const showAppForm = async (form, call, theme) => {
     };
 
     const passProps = {form, call};
-
     showModal('AppForm', form.title, passProps, options);
 };
 
