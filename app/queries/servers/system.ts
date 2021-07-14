@@ -61,3 +61,4 @@ export const queryCommonSystemValues = async (database: Database) => {
         license,
     };
 };
+

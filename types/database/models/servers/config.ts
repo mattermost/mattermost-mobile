@@ -50,6 +50,7 @@ export type Config = {
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
     EnableCustomTermsOfService: string;
+    EnableCustomUserStatuses: string;
     EnableDeveloper: string;
     EnableDiagnostics: string;
     EnableEmailBatching: string;
@@ -75,6 +76,7 @@ export type Config = {
     EnablePreviewFeatures: string;
     EnablePreviewModeBanner: string;
     EnablePublicLink: string;
+    EnableSVGs: string;
     EnableSaml: string;
     EnableSignInWithEmail: string;
     EnableSignInWithUsername: string;
@@ -83,7 +85,6 @@ export type Config = {
     EnableSignUpWithGoogle: string;
     EnableSignUpWithOffice365: string;
     EnableSignUpWithOpenId: string;
-    EnableSVGs: string;
     EnableTesting: string;
     EnableThemeSelection: string;
     EnableTutorial: string;
@@ -108,6 +109,7 @@ export type Config = {
     ExperimentalTimezone: string;
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
+    ExtendSessionLengthWithActivity: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;
@@ -143,6 +145,7 @@ export type Config = {
     RequireEmailVerification: string;
     RestrictDirectMessage: string;
     RunJobs: string;
+    SQLDriverName: string;
     SamlFirstNameAttributeSet: string;
     SamlLastNameAttributeSet: string;
     SamlLoginButtonBorderColor: string;
@@ -157,7 +160,6 @@ export type Config = {
     ShowFullName: string;
     SiteName: string;
     SiteURL: string;
-    SQLDriverName: string;
     SupportEmail: string;
     TeammateNameDisplay: string;
     TermsOfServiceLink: string;
@@ -166,5 +168,4 @@ export type Config = {
     WebsocketPort: string;
     WebsocketSecurePort: string;
     WebsocketURL: string;
-    ExtendSessionLengthWithActivity: string;
 };

@@ -343,7 +343,7 @@ export type RawChannel = {
   id: string;
   last_post_at: number;
   name: string;
-  policy_id: string;
+  policy_id: string | null;
   props: Record<string, any> | null;
   purpose: string;
   scheme_id: string | null;
@@ -679,6 +679,7 @@ export type RawUser = {
   terms_of_service_id?: string;
   update_at: number;
   username: string;
+  remote_id?: string;
 };
 
 export type RawValue =

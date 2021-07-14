@@ -7,6 +7,7 @@ interface NotifyProps {
     desktop_sound: boolean;
     email: boolean;
     first_name: boolean;
+    mark_unread?: string;
     mention_keys: string;
     push: string;
 }
