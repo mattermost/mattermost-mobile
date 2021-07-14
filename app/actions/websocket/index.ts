@@ -182,7 +182,7 @@ export function doReconnect(now: number) {
                         });
 
                         if (isCollapsedThreadsEnabled(state)) {
-                            dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, false, false, state.websocket?.lastDisconnectAt));
+                            dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, false, false, (state.websocket?.lastDisconnectAt || Date.now())));
                         }
 
                         const stillMemberOfCurrentChannel = myData.channelMembers.find((cm: ChannelMembership) => cm.channel_id === currentChannelId);

@@ -13,14 +13,11 @@ import {IDMappedObjects} from '@mm-redux/types/utilities';
 export const threadsReducer = (state: ThreadsState['threads'] = {}, action: GenericAction) => {
     switch (action.type) {
     case ThreadTypes.RECEIVED_THREADS: {
-        const {threads, removeOldThreads} = action.data;
+        const {threads} = action.data;
         const newThreads = threads.reduce((results: IDMappedObjects<UserThread>, thread: UserThread) => {
             results[thread.id] = thread;
             return results;
         }, {});
-        if (removeOldThreads) {
-            return newThreads;
-        }
         return {
             ...state,
             ...newThreads,
@@ -84,7 +81,7 @@ export const threadsReducer = (state: ThreadsState['threads'] = {}, action: Gene
     case PostTypes.RECEIVED_NEW_POST: {
         const post: Post = action.data;
         const thread: UserThread | undefined = state[post.root_id];
-        if (post.root_id && thread) {
+        if (thread) {
             const participants = thread.participants || [];
             const nextThread = {...thread};
             if (!participants.find((user: UserProfile | {id: string}) => user.id === post.user_id)) {
@@ -109,7 +106,7 @@ export const threadsReducer = (state: ThreadsState['threads'] = {}, action: Gene
 export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, action: GenericAction) => {
     switch (action.type) {
     case ThreadTypes.RECEIVED_THREADS: {
-        const nextSet = new Set(action.data.removeOldThreads ? [] : state[action.data.team_id]);
+        const nextSet = new Set(state[action.data.team_id]);
 
         action.data.threads.forEach((thread: UserThread) => {
             nextSet.add(thread.id);
