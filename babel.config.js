@@ -25,6 +25,7 @@ module.exports = {
                 '@client': './app/client',
                 '@components': './app/components',
                 '@constants': './app/constants',
+                '@context': './app/context',
                 '@database': './app/database',
                 '@i18n': './app/i18n',
                 '@init': './app/init',

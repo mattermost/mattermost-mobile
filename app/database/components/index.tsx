@@ -6,8 +6,15 @@ import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 
 import {MM_TABLES} from '@constants/database';
+import ServerUrlProvider from '@context/server_url';
+import ThemeProvider from '@context/theme';
 import DatabaseManager from '@database/manager';
-import Servers from '@app/database/models/app/servers';
+import Servers from '@database/models/app/servers';
+
+type State = {
+    database: Database;
+    serverUrl: string;
+}
 
 const {SERVERS} = MM_TABLES.APP;
 
@@ -15,14 +22,18 @@ export function withServerDatabase<T>(
     Component: ComponentType<T>,
 ): ComponentType<T> {
     return function ServerDatabaseComponent(props) {
-        const [database, setDatabase] = useState<Database|undefined>();
+        const [state, setState] = useState<State|undefined>();
         const db = DatabaseManager.appDatabase?.database;
 
         const observer = async (servers: Servers[]) => {
             const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
 
-            const serverDatabase = DatabaseManager.serverDatabases[server.url]?.database;
-            setDatabase(serverDatabase);
+            const serverDatabase = DatabaseManager.serverDatabases[server?.url]?.database;
+
+            setState({
+                database: serverDatabase,
+                serverUrl: server?.url,
+            });
         };
 
         useEffect(() => {
@@ -37,15 +48,19 @@ export function withServerDatabase<T>(
             };
         }, []);
 
-        if (!database) {
+        if (!state?.database) {
             return null;
         }
 
         return (
             <DatabaseProvider
-                database={(database as Database)}
+                database={(state.database)}
             >
-                <Component {...props}/>
+                <ServerUrlProvider url={state.serverUrl}>
+                    <ThemeProvider database={state.database}>
+                        <Component {...props}/>
+                    </ThemeProvider>
+                </ServerUrlProvider>
             </DatabaseProvider>
         );
     };

@@ -14,8 +14,8 @@ import {
 import type {LaunchProps} from '@typings/launch';
 
 import {logout} from '@actions/remote/user';
-
-declare const global: {HermesInternal: null | {}};
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 
 type ChannelProps = LaunchProps;
 
@@ -33,9 +33,11 @@ const Channel = (props: ChannelProps) => {
     //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
     //     }
     // }
+    const serverUrl = useServerUrl();
+    const theme = useTheme();
 
     const doLogout = () => {
-        logout(props.serverUrl!);
+        logout(serverUrl!);
     };
 
     return (
@@ -47,20 +49,15 @@ const Channel = (props: ChannelProps) => {
                     style={styles.scrollView}
                 >
                     <Header/>
-                    {global.HermesInternal == null ? null : (
-                        <View style={styles.engine}>
-                            <Text style={styles.footer}>{'Engine: Hermes'}</Text>
-                        </View>
-                    )}
                     <View style={styles.body}>
                         <View style={styles.sectionContainer}>
                             <Text
                                 onPress={doLogout}
                                 style={styles.sectionTitle}
-                            >{'Step One'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                {'Edit '}<Text style={styles.highlight}>{'screens/channel/index.tsx'}</Text>{' to change this'}
-                                {'screen and then come back to see your edits.'}
+                            >{`Logout from ${serverUrl}`}</Text>
+                            <Text style={[styles.sectionDescription, {color: theme.centerChannelColor}]}>
+                                {'Edit '}<Text style={[styles.highlight, {color: theme.centerChannelColor}]}>{'screens/channel/index.tsx'}</Text>{' to change this'}
+                                {' screen and then come back to see your edits.'}
                             </Text>
                         </View>
                         <View style={styles.sectionContainer}>
