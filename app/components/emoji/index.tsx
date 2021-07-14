@@ -34,10 +34,6 @@ type EmojiProps = EmojiInputProps & {
 const {SERVER: {SYSTEM, CUSTOM_EMOJI}} = MM_TABLES;
 
 const ConnectedEmoji = ({customEmojiStyle = undefined, emojiName, emojiRecords, literal = '', size, configRecord, currentUserIdRecord, testID, textStyle}: EmojiProps) => {
-    console.log('>>>>>>>>>>>>>>> ', {
-        configRecord, currentUserIdRecord,
-    });
-
     const config = configRecord.value as Config | undefined;
     const currentUserId = currentUserIdRecord.value as string | undefined;
     const customEmojis = emojiRecords?.[0];
@@ -130,8 +126,8 @@ const ConnectedEmoji = ({customEmojiStyle = undefined, emojiName, emojiRecords, 
 };
 
 const Emoji: React.FunctionComponent<EmojiInputProps> = withDatabase(withObservables(['emojiName'], ({emojiName, database}: { emojiName: string; database: Database }) => ({
-    config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-    currentUserId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+    configRecord: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+    currentUserIdRecord: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
     emojiRecords: database.collections.get(CUSTOM_EMOJI).query(Q.where('id', emojiName), Q.or(Q.where('name', emojiName))).observe(),
 }))(ConnectedEmoji));
 

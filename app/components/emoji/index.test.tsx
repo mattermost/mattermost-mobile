@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetworkManager from '@init/network_manager';
 import {Database} from '@nozbe/watermelondb';
 import React from 'react';
 
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithDatabase} from '@test/intl-test-helper';
 import {MOCKED_DATA} from '@test/mock_database_data';
@@ -18,9 +19,12 @@ describe('Emoji Component Test', () => {
     let operator: ServerDataOperator;
 
     beforeAll(async () => {
-        await DatabaseManager.init(['baseHandler.test.com']);
-        database = DatabaseManager.serverDatabases['baseHandler.test.com'].database;
-        operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
+        const serverUrl = 'baseHandler.test.com';
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.serverDatabases[serverUrl].database;
+        operator = DatabaseManager.serverDatabases[serverUrl].operator;
+
+        await NetworkManager.init([{serverUrl, userId: '1234567', token: '432424788^^83434'}]);
 
         await operator.handleSystem({
             systems: [
