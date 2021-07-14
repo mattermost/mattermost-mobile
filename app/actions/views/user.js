@@ -101,19 +101,23 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             analytics.setUserId(data.user.id);
             analytics.setUserRoles(data.user.roles);
 
+            const preferences = await Client4.getMyPreferences();
+            const crtPreferenceChanged = dispatch(handleCRTPreferenceChange(preferences));
+            if (crtPreferenceChanged.data) {
+                return {data};
+            }
+
             // Execute all other requests in parallel
             const teamsRequest = Client4.getMyTeams();
             const teamMembersRequest = Client4.getMyTeamMembers();
             const teamUnreadRequest = Client4.getMyTeamUnreads();
-            const preferencesRequest = Client4.getMyPreferences();
             const configRequest = Client4.getClientConfigOld();
             const actions = [];
 
-            const [teams, teamMembers, teamUnreads, preferences, config] = await Promise.all([
+            const [teams, teamMembers, teamUnreads, config] = await Promise.all([
                 teamsRequest,
                 teamMembersRequest,
                 teamUnreadRequest,
-                preferencesRequest,
                 configRequest,
             ]);
 
@@ -152,7 +156,6 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             if (!skipDispatch) {
                 dispatch(batchActions(actions, 'BATCH_LOAD_ME'));
             }
-            dispatch(handleCRTPreferenceChange(state));
         } catch (error) {
             console.log('login error', error.stack); // eslint-disable-line no-console
             return {error};
