@@ -43,6 +43,8 @@ import {isPendingPost} from '@utils/general';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
 import {appsEnabled} from '@utils/apps';
 
+import {handleNotViewingGlobalThreadsScreen} from './threads';
+
 const MAX_RETRIES = 3;
 
 export function loadChannelsByTeamName(teamName, errorHandler) {
@@ -222,9 +224,9 @@ export function handleSelectChannel(channelId) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
-            actions.push({
-                type: ViewTypes.NOT_VIEWING_GLOBAL_THREADS_SCREEN,
-            });
+            if (getViewingGlobalThreads(state)) {
+                actions.push(handleNotViewingGlobalThreadsScreen());
+            }
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
