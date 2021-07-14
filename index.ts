@@ -60,7 +60,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
     await NetworkManager.init(serverCredentials);
 
     //fixme:  Remove setupMockData when not testing ?
-    await setupChannelMockData();
+    // await setupChannelMockData();
 
     PushNotifications.init();
 

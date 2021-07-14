@@ -8,15 +8,15 @@ import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
-import {queryCurrentUserId} from '@queries/servers/system';
-import {queryUserById} from '@queries/servers/user';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const ConnectedCustomStatusEmoji = ({emojiSize = 16, style, testID, userRecords}: CustomStatusEmojiProps) => {
-    //todo: ensure that we are storing the custom status in there
-    const customStatus = userRecords?.[0]?.props?.customStatus;
+const {SERVER: {SYSTEM, USER}} = MM_TABLES;
+
+const ConnectedCustomStatusEmoji = ({emojiSize = 16, style, testID, userRecord}: CustomStatusEmojiProps) => {
+    const customStatus = userRecord?.props?.customStatus;
     if (!customStatus?.emoji) {
         return null;
     }
@@ -45,16 +45,15 @@ type CustomStatusEmojiInputProps = {
 type CustomStatusEmojiProps = CustomStatusEmojiInputProps & {
     currentUserIdRecord: SystemModel;
     database: Database;
-    userRecords: UserModel[];
+    userRecord: UserModel;
 };
 
-const enhanceCurrentUserId = withObservables([], ({database}: { database: Database}) => ({
-    currentUserIdRecord: queryCurrentUserId(database),
-}),
-);
+const enhanceCurrentUserId = withObservables([], ({database}: { database: Database }) => ({
+    currentUserIdRecord: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+}));
 
-const enhanceUserId = withObservables(['userId'], ({userId, currentUserIdRecord, database}: {userId: string; currentUserIdRecord: SystemModel; database: Database}) => ({
-    userRecords: queryUserById({database, userId: userId ?? currentUserIdRecord?.value}).observe(),
+const enhanceUserId = withObservables(['userId'], ({userId, currentUserIdRecord, database}: { userId: string; currentUserIdRecord: SystemModel; database: Database }) => ({
+    userRecord: database.collections.get(USER).findAndObserve(userId ?? currentUserIdRecord?.value),
 }));
 
 const CustomStatusEmoji: React.FunctionComponent<CustomStatusEmojiInputProps> = withDatabase(enhanceCurrentUserId(enhanceUserId(ConnectedCustomStatusEmoji)));

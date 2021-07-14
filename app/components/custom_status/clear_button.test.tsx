@@ -7,7 +7,7 @@ import ClearButton, {ClearButtonProps} from '@components/custom_status/clear_but
 import Preferences from '@constants/preferences';
 import {fireEvent, renderWithIntl, waitFor} from '@test/intl-test-helper';
 
-describe('components/custom_status/clear_button', () => {
+describe('@components/custom_status/clear_button', () => {
     const baseProps: ClearButtonProps = {
         theme: Preferences.THEMES.default,
         handlePress: jest.fn(),
