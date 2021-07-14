@@ -958,7 +958,7 @@ export class AppCommandParser {
         }
 
         context.channel_id = channel.id;
-        context.team_id = channel.team_id || getCurrentTeamId(this.store.getState());
+        context.team_id = this.teamID || channel.team_id || getCurrentTeamId(this.store.getState());
 
         return context;
     }
