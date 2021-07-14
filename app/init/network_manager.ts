@@ -54,7 +54,6 @@ class NetworkManager {
     public init = async (serverCredentials: ServerCredential[]) => {
         for await (const {serverUrl, token} of serverCredentials) {
             try {
-                console.log('>>>>>>>>>>>>>>> under try ', {serverUrl, token});
                 this.createClient(serverUrl, token);
             } catch (error) {
                 console.log(error); //eslint-disable-line no-console
@@ -68,7 +67,6 @@ class NetworkManager {
     }
 
     public getClient = (serverUrl: string) => {
-        console.log('>>>>>>>>>>>>>>>getClient ', this.clients);
         const client = this.clients[serverUrl];
         if (!client) {
             throw new Error(`${serverUrl} client not found`);

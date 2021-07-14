@@ -9,6 +9,7 @@ import {Platform, StyleProp, StyleSheet, Text, TextStyle} from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {useServerUrl} from '@context/server_url';
 import NetworkManager from '@init/network_manager';
 import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from '@utils/emojis';
 
@@ -38,7 +39,7 @@ const ConnectedEmoji = ({customEmojiStyle = undefined, emojiName, emojiRecords, 
     const currentUserId = currentUserIdRecord.value as string | undefined;
     const customEmojis = emojiRecords?.[0];
 
-    // const serverUrl = useServerUrl();
+    const serverUrl = useServerUrl();
     const client = NetworkManager.getClient(serverUrl);
 
     let imageUrl = '';
