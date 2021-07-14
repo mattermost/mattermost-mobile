@@ -58,7 +58,7 @@ export function cleanUpState(payload, keepCurrent = false) {
     // Keep the last 60 threads in each team
     nextEntities.threads = {
         ...nextEntities.threads,
-        ...cleanUpThreadsInTeam(payload.entities.threads?.threads, payload.entities.threads?.threadsInTeam),
+        ...cleanUpThreadsInTeam(payload.entities.threads?.threads, payload.entities.threads?.threadsInTeam, keepCurrent ? lastTeamId : ''),
     };
     postIdsToKeep.push(...getAllFromThreadsInTeam(nextEntities.threads?.threadsInTeam));
 
@@ -100,7 +100,7 @@ export function cleanUpState(payload, keepCurrent = false) {
             const post = payload.entities.posts.posts[postId];
 
             if (post) {
-                // Remove thread post if CRT is enabled
+                // Remove non-root posts if CRT is enabled
                 const crtCleanup = collapsedThreadsEnabled && post.root_id;
                 if ((retentionPeriod && post.create_at < retentionPeriod) || crtCleanup) {
                     // This post has been removed by data retention, so don't keep it
@@ -227,7 +227,7 @@ export function cleanUpPostsInChannel(postsInChannel, lastChannelForTeam, curren
     return nextPostsInChannel;
 }
 
-export function cleanUpThreadsInTeam(threads, threadsInTeam, threadsCountPerTeam = 60) {
+export function cleanUpThreadsInTeam(threads, threadsInTeam, currentTeamId, threadsCountPerTeam = 60) {
     const newThreads = {};
     const newThreadsInTeam = {};
     if (threads && threadsInTeam) {
@@ -239,12 +239,16 @@ export function cleanUpThreadsInTeam(threads, threadsInTeam, threadsCountPerTeam
                     return threads[threadId];
                 }) || []
             ).sort((threadA, threadB) => {
-                return threadB.last_reply_at - threadA.last_reply_at;
+                return threadB?.last_reply_at - threadA?.last_reply_at;
             });
+
             newThreadsInTeam[teamId] = [];
-            mappedThreads.slice(0, threadsCountPerTeam).forEach((thread) => {
-                newThreadsInTeam[teamId].push(thread.id);
-                newThreads[thread.id] = thread;
+            const retainedThreads = currentTeamId === teamId ? mappedThreads : mappedThreads.slice(0, threadsCountPerTeam);
+            retainedThreads.forEach((thread) => {
+                if (thread) {
+                    newThreadsInTeam[teamId].push(thread.id);
+                    newThreads[thread.id] = thread;
+                }
             });
         }
     }
