@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, Dimensions, Linking, Platform} from 'react-native';
+import {AppState, Dimensions, Keyboard, Linking, Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from '@react-native-cookies/cookies';
 import DeviceInfo from 'react-native-device-info';
@@ -9,7 +9,7 @@ import {getLocales} from 'react-native-localize';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet} from '@actions/device';
 import {selectDefaultChannel} from '@actions/views/channel';
-import {showOverlay} from '@actions/navigation';
+import {dismissAllModals, popToRoot, showOverlay} from '@actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import LocalConfig from '@assets/config';
@@ -29,6 +29,7 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import initialState from '@store/initial_state';
+import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 import {deleteFileCache} from '@utils/file';
 import {getDeviceTimezone} from '@utils/timezone';
@@ -50,6 +51,7 @@ class GlobalEventHandler {
         EventEmitter.on(NavigationTypes.RESTART_APP, this.onRestartApp);
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         EventEmitter.on(General.CONFIG_CHANGED, this.onServerConfigChanged);
+        EventEmitter.on(General.CRT_PREFERENCE_CHANGED, this.onCRTPreferenceChanged);
         EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, this.onSwitchToDefaultChannel);
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
@@ -124,6 +126,17 @@ class GlobalEventHandler {
         }
 
         emmProvider.previousAppState = appState;
+    };
+
+    onCRTPreferenceChanged = async (/*value = 'off' | 'on'*/) => {
+        Keyboard.dismiss();
+        const componentId = EphemeralStore.getNavigationTopComponentId();
+        if (componentId) {
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+            EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+            await dismissAllModals();
+            await popToRoot();
+        }
     };
 
     onDeepLink = (event) => {

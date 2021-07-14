@@ -440,28 +440,27 @@ export function setUnreadPost(userId: string, postId: string, location: string) 
         let state = getState();
         const post = Selectors.getPost(state, postId);
         let unreadChan;
-
-        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-        const isThreadUnread = collapsedThreadsEnabled && location === THREAD;
-
         try {
             if (isCombinedUserActivityPost(postId)) {
                 return {};
             }
-            if (isThreadUnread) {
+            const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+            const isUnreadFromThreadScreen = collapsedThreadsEnabled && location === THREAD;
+            if (isUnreadFromThreadScreen) {
                 const currentTeamId = getCurrentTeamId(state);
                 const threadId = post.root_id || post.id;
-                handleFollowChanged(dispatch, threadId, currentTeamId, true);
+                dispatch(handleFollowChanged(threadId, currentTeamId, true));
                 await dispatch(updateThreadRead(userId, currentTeamId, threadId, post.create_at));
-            } else {
-                unreadChan = await Client4.markPostAsUnread(userId, postId);
-                dispatch({
-                    type: ChannelTypes.ADD_MANUALLY_UNREAD,
-                    data: {
-                        channelId: post.channel_id,
-                    },
-                });
+                return {data: true};
             }
+
+            unreadChan = await Client4.markPostAsUnread(userId, postId);
+            dispatch({
+                type: ChannelTypes.ADD_MANUALLY_UNREAD,
+                data: {
+                    channelId: post.channel_id,
+                },
+            });
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -472,10 +471,6 @@ export function setUnreadPost(userId: string, postId: string, location: string) 
                 },
             });
             return {error};
-        }
-
-        if (isThreadUnread) {
-            return {data: true};
         }
 
         state = getState();

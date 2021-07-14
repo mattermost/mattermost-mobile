@@ -602,10 +602,11 @@ describe('cleanUpPostsInChannel', () => {
     });
 });
 
-describe('cleanUpThreadsInTeam', () => {
+describe.only('cleanUpThreadsInTeam', () => {
     const threadsInTeam = {
         team1: ['thread1', 'thread2', 'thread3'],
         team2: ['thread3', 'thread4', 'thread5'],
+        team3: ['thread1', 'thread2', 'thread3', 'thread4'],
     };
     const threads = {
         thread1: {id: 'thread1', last_reply_at: 100},
@@ -616,19 +617,23 @@ describe('cleanUpThreadsInTeam', () => {
         thread6: {id: 'thread6', last_reply_at: 95},
     };
 
-    const {threads: nextThreads, threadsInTeam: nextThreadsInTeam} = cleanUpThreadsInTeam(threads, threadsInTeam, 2);
+    const {threads: nextThreads, threadsInTeam: nextThreadsInTeam} = cleanUpThreadsInTeam(threads, threadsInTeam, 'team3', 2);
 
     test('should only keep limited threads per team', () => {
         expect(nextThreadsInTeam.team1).toEqual(['thread1', 'thread2']);
         expect(nextThreadsInTeam.team2).toEqual(['thread3', 'thread4']);
         expect(nextThreads.thread1).toBeTruthy();
-        expect(nextThreads.thread6).toBeFalsy();
+        expect(nextThreads.thread5).toBeFalsy();
     });
 
     test('should not remove the thread if included in one team and not included in another', () => {
         expect(nextThreadsInTeam.team1.indexOf('thread3')).toBe(-1);
         expect(nextThreadsInTeam.team2.indexOf('thread3')).toBeGreaterThan(-1);
         expect(nextThreads.thread3).toBeTruthy();
+    });
+
+    test('Should exclude passed teamId', () => {
+        expect(nextThreadsInTeam.team3).toEqual(threadsInTeam.team3);
     });
 });
 

@@ -189,7 +189,7 @@ function handlePostReceived(nextState: any, post: Post) {
     }
 
     // Edited posts that don't have 'is_following' specified should maintain 'is_following' state
-    if (post.update_at > 0 && post.is_following == null && nextState[post.id]) {
+    if (post.update_at > 0 && (post.is_following === null || post.is_following === undefined) && nextState[post.id]) {
         post.is_following = nextState[post.id].is_following;
     }
 
@@ -301,6 +301,7 @@ export function postsInChannel(state: Dictionary<Array<PostOrderBlock>> = {}, ac
     case PostTypes.RECEIVED_NEW_POST: {
         const post = action.data as Post;
 
+        // When CRT enabled, do not add post to the channel if not a root post
         if (action.features?.collapsedThreadsEnabled && post.root_id) {
             return state;
         }

@@ -1,23 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard} from 'react-native';
-
 import {getAddedDmUsersIfNecessary} from '@actions/helpers/channels';
-import {dismissAllModals, popToRoot} from '@actions/navigation';
+
 import {purgeOfflineStore} from '@actions/views/root';
 import {getPost} from '@actions/views/post';
-import {NavigationTypes} from '@constants';
 import {PreferenceTypes} from '@mm-redux/action_types';
-import {Preferences} from '@mm-redux/constants';
-import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {General, Preferences} from '@mm-redux/constants';
+import {getCollapsedThreadsPreference} from '@mm-redux/selectors/entities/preferences';
 import {getAllPosts} from '@mm-redux/selectors/entities/posts';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
 import {PreferenceType} from '@mm-redux/types/preferences';
-import {GlobalState} from '@mm-redux/types/store';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import EphemeralStore from '@store/ephemeral_store';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 
 export function handlePreferenceChangedEvent(msg: WebSocketMessage) {
@@ -32,9 +27,8 @@ export function handlePreferenceChangedEvent(msg: WebSocketMessage) {
         if (dmActions.length) {
             actions.push(...dmActions);
         }
-
+        dispatch(handleCRTPreferenceChange([preference]));
         dispatch(batchActions(actions, 'BATCH_WS_PREFERENCE_CHANGED'));
-        dispatch(handleCRTPreferenceChange(state));
         return {data: true};
     };
 }
@@ -59,9 +53,8 @@ export function handlePreferencesChangedEvent(msg: WebSocketMessage) {
         if (dmActions.length) {
             actions.push(...dmActions);
         }
-
+        dispatch(handleCRTPreferenceChange(preferences));
         dispatch(batchActions(actions, 'BATCH_WS_PREFERENCES_CHANGED'));
-        dispatch(handleCRTPreferenceChange(state));
         return {data: true};
     };
 }
@@ -72,29 +65,19 @@ export function handlePreferencesDeletedEvent(msg: WebSocketMessage): GenericAct
     return {type: PreferenceTypes.DELETED_PREFERENCES, data: preferences};
 }
 
-export function handleCRTPreferenceChange(oldState: GlobalState) {
+export function handleCRTPreferenceChange(preferences: PreferenceType[]) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
-        const newState = getState();
-
-        // Check for the changes in CRT preferences.
-        if (
-            // Skip for newly logged in user
-            getConfig(oldState).CollapsedThreads !== undefined &&
-            isCollapsedThreadsEnabled(oldState) !== isCollapsedThreadsEnabled(newState)
-        ) {
-            // Clear the data and restart the app.
-            Keyboard.dismiss();
-            requestAnimationFrame(async () => {
-                const componentId = EphemeralStore.getNavigationTopComponentId();
-                if (componentId) {
-                    EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-                    EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
-                    await dismissAllModals();
-                    await popToRoot();
-                }
+        const state = getState();
+        const newCRTPreference = preferences.find((preference) => preference.name === Preferences.COLLAPSED_REPLY_THREADS);
+        if (newCRTPreference && getConfig(state).CollapsedThreads !== undefined) {
+            const newCRTValue = newCRTPreference.value;
+            const oldCRTValue = getCollapsedThreadsPreference(state);
+            if (newCRTValue !== oldCRTValue) {
+                EventEmitter.emit(General.CRT_PREFERENCE_CHANGED, newCRTValue);
                 dispatch(purgeOfflineStore());
-            });
+                return {data: true};
+            }
         }
-        return {data: true};
+        return {data: false};
     };
 }
