@@ -1,50 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useServerUrl} from '@context/server_url';
+import NetworkManager from '@init/network_manager';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useState} from 'react';
 import {Platform, StyleProp, View, ViewProps, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-//fixme: do not use Client4
-import {Client4} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
 import {MM_TABLES} from '@constants/database';
 import useDidUpdate from '@hooks/did_update';
-import {useTheme} from '@contexts/theme_provider';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {queryCurrentUserId} from '@queries/servers/system';
 
 import type {Database} from '@nozbe/watermelondb';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-
-type ProfilePictureInputProps = {
-    profileImageRemove?: boolean; // fixme: is that one really needed ?
-    showStatus?: boolean;
-    size: number;
-    statusSize: number;
-    statusStyle?: StyleProp<ViewProps> | any;
-    testID?: string;
-    userId?: string;
-}
-
-type ProfilePictureProps = ProfilePictureInputProps & {
-    currentUserIdRecord: SystemModel;
-    edit: boolean;
-    iconSize?: number;
-    imageUri?: string;
-    profileImageUri?: string;
-    user? : UserModel;
-    database: Database;
-};
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
     android: 2,
 });
+
+const {SERVER: {USER}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -73,34 +53,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, imageUri, profileImageRemove, profileImageUri, showStatus = true, size = 128, statusSize = 14, statusStyle, testID, user}: ProfilePictureProps) => {
+const ConnectedProfilePicture = ({edit = false, iconSize, imageUri, profileImageRemove, profileImageUri, showStatus = true, size = 128, statusSize = 14, statusStyle, testID, user}: ProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string | undefined>();
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const client = NetworkManager.getClient(serverUrl);
+
     const style = getStyleSheet(theme);
     const buffer = STATUS_BUFFER || 0;
-    const isCurrentUser = user?.id === currentUserIdRecord.value;
     const status = user?.status;
-    const clearProfileImageUri = () => {
-        if (isCurrentUser && profileImageUri !== '') {
-            //fixme:  what do we do here ?
-            // setProfileImageUri('');
-        }
-    };
+
+    // const isCurrentUser = user?.id === currentUserIdRecord.value;
+    // const clearProfileImageUri = () => {
+    //     if (isCurrentUser && profileImageUri !== '') {
+    //         //fixme:  what do we do here ?
+    //         // setProfileImageUri('');
+    //     }
+    // };
 
     useEffect(() => {
-        if (!status && user) {
-            //fixme:  what do we do here ?
-            // getStatusForId(user.id);
-        }
+        // if (!status && user) {
+        //     //fixme:  what do we do here ?
+        //     // getStatusForId(user.id);
+        // }
 
         if (profileImageUri) {
             setPictureUrl(profileImageUri);
         } else if (edit && imageUri) {
             setPictureUrl(imageUri);
         } else if (user) {
-            const uri = Client4.getProfilePictureUrl(user.id, user.lastPictureUpdate);
+            const uri = client.getProfilePictureUrl(user.id, user.lastPictureUpdate);
             setPictureUrl(uri);
-            clearProfileImageUri();
+
+            // clearProfileImageUri();
         }
     }, []);
 
@@ -121,7 +106,7 @@ const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, i
     }, [profileImageUri]);
 
     useDidUpdate(() => {
-        const url = user ? Client4.getProfilePictureUrl(user.id, user.lastPictureUpdate) : undefined;
+        const url = user ? client.getProfilePictureUrl(user.id, user.lastPictureUpdate) : undefined;
         if (url !== pictureUrl) {
             setPictureUrl(url);
         }
@@ -161,12 +146,7 @@ const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, i
     let image;
     if (pictureUrl) {
         let prefix = '';
-        if (
-            Platform.OS === 'android' &&
-            !pictureUrl.startsWith('content://') &&
-            !pictureUrl.startsWith('http://') &&
-            !pictureUrl.startsWith('https://')
-        ) {
+        if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
             prefix = 'file://';
         }
 
@@ -224,9 +204,29 @@ const ConnectedProfilePicture = ({currentUserIdRecord, edit = false, iconSize, i
     );
 };
 
-const ProfilePicture: React.FunctionComponent<ProfilePictureInputProps> = withDatabase(withObservables(['userId'], ({userId, database}: {userId: string, database: Database}) => ({
-    currentUserIdRecord: queryCurrentUserId(database),
-    ...(userId && {user: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(userId)}),
+type ProfilePictureInputProps = {
+    edit?: boolean;
+    iconSize?: number;
+    imageUri?: string;
+    profileImageRemove?: boolean; // fixme: is that one really needed ?
+    profileImageUri?: string;
+    showStatus?: boolean;
+    size?: number;
+    statusSize?: number;
+    statusStyle?: StyleProp<ViewProps> | any;
+    testID?: string;
+    userId?: string;
+}
+
+type ProfilePictureProps = ProfilePictureInputProps & {
+    user?: UserModel;
+    database: Database;
+};
+
+const ProfilePicture: React.FunctionComponent<ProfilePictureInputProps> = withDatabase(withObservables(['userId'], ({userId, database}: {userId: string; database: Database}) => ({
+
+    // currentUserIdRecord: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+    ...(userId && {user: database.collections.get(USER).findAndObserve(userId)}),
 }))(ConnectedProfilePicture));
 
 export default ProfilePicture;

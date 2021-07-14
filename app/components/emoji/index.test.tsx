@@ -2,19 +2,19 @@
 // See LICENSE.txt for license information.
 
 import NetworkManager from '@init/network_manager';
-import {Database} from '@nozbe/watermelondb';
 import React from 'react';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithDatabase} from '@test/intl-test-helper';
 import {MOCKED_DATA} from '@test/mock_database_data';
 
 import Emoji from './index';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ServerDataOperator from '@app/database/operator/server_data_operator';
 
-describe('Emoji Component Test', () => {
+describe('@components/emoji', () => {
     let database: Database;
     let operator: ServerDataOperator;
 

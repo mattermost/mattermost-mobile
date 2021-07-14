@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import NetworkManager from '@init/network_manager';
-import {Database} from '@nozbe/watermelondb';
-import {renderWithDatabase} from '@test/intl-test-helper';
 import {MOCKED_DATA} from '@test/mock_database_data';
-import React from 'react';
+import {renderWithDatabase} from '@test/intl-test-helper';
 
 import CustomStatusEmoji from './custom_status_emoji';
+
+import type {Database} from '@nozbe/watermelondb';
 
 describe('@components/custom_status/custom_status_emoji', () => {
     let database: Database;
