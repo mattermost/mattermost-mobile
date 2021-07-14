@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
+import {Switch} from 'react-native';
 import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import BoolSetting from './bool_setting.js';
+import BoolSetting from './bool_setting';
 
 describe('components/widgets/settings/TextSetting', () => {
     const theme = Preferences.THEMES.default;
@@ -23,11 +24,11 @@ describe('components/widgets/settings/TextSetting', () => {
             />,
         );
 
-        wrapper.instance().handleChange(false);
+        wrapper.find<Switch>(Switch).simulate('valueChange', false);
         expect(onChange).toHaveBeenCalledTimes(1);
         expect(onChange).toHaveBeenCalledWith('elementid', false);
 
-        wrapper.instance().handleChange(true);
+        wrapper.find<Switch>(Switch).simulate('valueChange', true);
         expect(onChange).toHaveBeenCalledTimes(2);
         expect(onChange).toHaveBeenCalledWith('elementid', true);
     });

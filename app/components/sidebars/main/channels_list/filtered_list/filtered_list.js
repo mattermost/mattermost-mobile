@@ -381,7 +381,7 @@ class FilteredList extends Component {
             <View style={styles.container}>
                 <SectionList
                     sections={dataSource}
-                    removeClippedSubviews={true}
+                    removeClippedSubviews={false}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}

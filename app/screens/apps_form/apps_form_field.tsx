@@ -28,7 +28,7 @@ export type Props = {
     theme: Theme;
 
     value: AppFormValue;
-    onChange: (name: string, value: string | AppSelectOption | AppSelectOption[]) => void;
+    onChange: (name: string, value: string | AppSelectOption | AppSelectOption[] | boolean) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 }
 

@@ -664,7 +664,7 @@
   "suggestion.mention.morechannels": "他のチャンネル",
   "suggestion.mention.nonmembers": "チャンネルにいません",
   "suggestion.mention.special": "特殊な誰かについての投稿",
-  "suggestion.mention.you": "(あなた)",
+  "suggestion.mention.you": " (あなた)",
   "suggestion.search.direct": "ダイレクトメッセージ",
   "suggestion.search.private": "非公開チャンネル",
   "suggestion.search.public": "公開チャンネル",
