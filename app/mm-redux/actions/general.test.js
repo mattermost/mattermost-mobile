@@ -171,7 +171,7 @@ describe('Actions.General', () => {
             }).
             reply(200, teamPoliciesResponse2);
 
-        await store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '5.36.0'});
+        await store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '5.37.0'});
         await Actions.getDataRetentionPolicy()(store.dispatch, store.getState);
         await TestHelper.wait(100);
         const {dataRetention} = store.getState().entities.general;

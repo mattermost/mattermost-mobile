@@ -82,7 +82,7 @@ export function getDataRetentionPolicy(): ActionFunc {
             let teamPolicies: TeamDataRetentionPolicy[] = [];
             let channelPolicies: ChannelDataRetentionPolicy[] = [];
 
-            if (isMinimumServerVersion(getServerVersion(getState()), 5, 36)) {
+            if (isMinimumServerVersion(getServerVersion(getState()), 5, 37)) {
                 teamPolicies = await getAllGranularDataRetentionPolicies({
                     userId,
                 });
