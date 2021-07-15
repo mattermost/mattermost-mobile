@@ -43,8 +43,8 @@ export const apiAddUserToChannel = async (userId, channelId) => {
  * See https://api.mattermost.com/#operation/CreateChannel
  * @param {string} option.teamId - The team ID of the team to create the channel on
  * @param {string} option.type - 'O' (default) for a public channel, 'P' for a private channel
- * @param {string} option.prefix - option to add prefix to name and display name
- * @param {Object} option.channel - fix channel object to be created
+ * @param {string} option.prefix - prefix to name, display name, purpose, and header
+ * @param {Object} option.channel - channel object to be created
  * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'channel', channel = null} = {}) => {
