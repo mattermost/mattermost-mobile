@@ -4,7 +4,6 @@ declare module 'gfycat-sdk';
 declare module 'remote-redux-devtools';
 declare module 'redux-action-buffer';
 declare module 'react-intl';
-declare module 'redux-mock-store';
 declare module 'react-native-local-auth';
 declare module 'react-native-cookies';
 declare module 'react-native-keyboard-aware-scrollview';

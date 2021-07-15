@@ -18,6 +18,7 @@
     "@react-navigation/stack": "5.14.5",
     "@rudderstack/rudder-sdk-react-native": "1.0.12",
     "@sentry/react-native": "2.6.0",
+    "@types/redux-mock-store": "1.0.3",
     "analytics-react-native": "1.2.0",
     "array.prototype.flat": "1.2.4",
     "commonmark": "0.30.0",
