@@ -3,11 +3,12 @@
 
 type EmojiCategory = (
     | 'recent'
-    | 'people'
-    | 'nature'
-    | 'foods'
-    | 'activity'
-    | 'places'
+    | 'smileys-emotion'
+    | 'people-body'
+    | 'animals-nature'
+    | 'food-drink'
+    | 'travel-places'
+    | 'activities'
     | 'objects'
     | 'symbols'
     | 'flags'
@@ -21,7 +22,6 @@ type CustomEmoji = {
     delete_at: number;
     creator_id: string;
     name: string;
-    category: 'custom';
 };
 
 type SystemEmoji = {

@@ -47,7 +47,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('SlashCommand');
+        expect(preparedRecords!.collection.modelClass.name).toBe('SlashCommandModel');
     });
 
     it('=> transformMyTeamRecord: should return an array of type MyTeam', async () => {
@@ -71,7 +71,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('MyTeam');
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyTeamModel');
     });
 
     it('=> transformTeamRecord: should return an array of type Team', async () => {
@@ -107,7 +107,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Team');
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamModel');
     });
 
     it('=> transformTeamChannelHistoryRecord: should return an array of type Team', async () => {
@@ -129,7 +129,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamChannelHistory');
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamChannelHistoryModel');
     });
 
     it('=> transformTeamSearchHistoryRecord: should return an array of type TeamSearchHistory', async () => {
@@ -153,7 +153,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamSearchHistory');
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamSearchHistoryModel');
     });
 
     it('=> transformTeamMembershipRecord: should return an array of type TeamMembership', async () => {
@@ -172,15 +172,15 @@ describe('*** TEAM Prepare Records Test ***', () => {
                     user_id: 'ab',
                     roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
                     delete_at: 0,
-                    scheme_guest: false,
                     scheme_user: true,
                     scheme_admin: false,
-                    explicit_roles: '',
+                    msg_count: 0,
+                    mention_count: 0,
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamMembership');
+        expect(preparedRecords!.collection.modelClass.name).toBe('TeamMembershipModel');
     });
 });

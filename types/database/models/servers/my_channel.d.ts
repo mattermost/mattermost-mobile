@@ -4,12 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
  */
-export default class MyChannel extends Model {
+export default class MyChannelModel extends Model {
     /** table (name) : MyChannel */
     static table: string;
 
@@ -35,5 +33,5 @@ export default class MyChannel extends Model {
     roles: string;
 
     /** channel : The relation pointing to the CHANNEL table */
-    channel: Relation<Channel>;
+    channel: Relation<ChannelModel>;
 }

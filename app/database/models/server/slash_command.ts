@@ -6,14 +6,15 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/models/servers/team';
+
+import type TeamModel from '@typings/database/models/servers/team';
 
 const {SLASH_COMMAND, TEAM} = MM_TABLES.SERVER;
 
 /**
  * The SlashCommand model describes the commands of the various commands available in each team.
  */
-export default class SlashCommand extends Model {
+export default class SlashCommandModel extends Model {
     /** table (name) : SlashCommand */
     static table = SLASH_COMMAND;
 
@@ -52,5 +53,5 @@ export default class SlashCommand extends Model {
     @field('update_at') updateAt!: number;
 
     /** team : The related parent TEAM record */
-    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;
 }

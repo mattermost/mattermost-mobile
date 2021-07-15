@@ -4,13 +4,11 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Team from './team';
-
 /**
  * The TeamSearchHistory model holds the term searched within a team.  The searches are performed
  * at team level in the app.
  */
-export default class TeamSearchHistory extends Model {
+export default class TeamSearchHistoryModel extends Model {
     /** table (name) : TeamSearchHistory */
     static table: string;
 
@@ -30,5 +28,5 @@ export default class TeamSearchHistory extends Model {
     term: string;
 
     /** team : The related record to the parent team model */
-    team: Relation<Team>;
+    team: Relation<TeamModel>;
 }

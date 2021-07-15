@@ -27,18 +27,20 @@ describe('*** GROUP Prepare Records Test ***', () => {
                     name: 'mobile_team',
                     display_name: 'mobile team',
                     description: '',
-                    source: '',
+                    type: '',
                     remote_id: '',
                     create_at: 0,
                     update_at: 0,
                     delete_at: 0,
                     has_syncables: true,
+                    member_count: 0,
+                    allow_reference: false,
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Group');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupModel');
     });
 
     it('=> transformGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
@@ -66,7 +68,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInTeam');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInTeamModel');
     });
 
     it('=> transformGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
@@ -97,7 +99,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInChannel');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInChannelModel');
     });
 
     it('=> transformGroupMembershipRecord: should return an array of type GroupMembership', async () => {
@@ -119,6 +121,6 @@ describe('*** GROUP Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('GroupMembership');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupMembershipModel');
     });
 });

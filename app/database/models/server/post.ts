@@ -8,20 +8,20 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type Channel from '@typings/database/models/servers/channel';
-import type Draft from '@typings/database/models/servers/draft';
-import type File from '@typings/database/models/servers/file';
-import type PostInThread from '@typings/database/models/servers/posts_in_thread';
-import type PostMetadata from '@typings/database/models/servers/post_metadata';
-import type Reaction from '@typings/database/models/servers/reaction';
-import type User from '@typings/database/models/servers/user';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type DraftModel from '@typings/database/models/servers/draft';
+import type FileModel from '@typings/database/models/servers/file';
+import type PostInThreadModel from '@typings/database/models/servers/posts_in_thread';
+import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
+import type ReactionModel from '@typings/database/models/servers/reaction';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USER} = MM_TABLES.SERVER;
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
  */
-export default class Post extends Model {
+export default class PostModel extends Model {
     /** table (name) : Post */
     static table = POST;
 
@@ -40,7 +40,7 @@ export default class Post extends Model {
         /** A POST can have multiple POSTS_IN_THREAD. (relationship is 1:N)*/
         [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'post_id'},
 
-        /** A POST can have multiple POST_METADATA. (relationship is 1:N)*/
+        /** A POST can have POST_METADATA. (relationship is 1:1)*/
         [POST_METADATA]: {type: 'has_many', foreignKey: 'post_id'},
 
         /** A POST can have multiple REACTION. (relationship is 1:N)*/
@@ -93,23 +93,23 @@ export default class Post extends Model {
     @json('props', safeParseJSON) props!: object;
 
     // A draft can be associated with this post for as long as this post is a parent post
-    @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<Draft>;
+    @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<DraftModel>;
 
     /** postsInThread: The thread to which this post is associated */
-    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(Q.on(POST, 'id', this.id)) as Query<PostInThread>;
+    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(Q.on(POST, 'id', this.id)) as Query<PostInThreadModel>;
 
     /** files: All the files associated with this Post */
-    @children(FILE) files!: File[];
+    @children(FILE) files!: FileModel[];
 
     /** metadata: All the extra data associated with this Post */
-    @children(POST_METADATA) metadata!: PostMetadata[];
+    @children(POST_METADATA) metadata!: PostMetadataModel[];
 
     /** reactions: All the reactions associated with this Post */
-    @children(REACTION) reactions!: Reaction[];
+    @children(REACTION) reactions!: ReactionModel[];
 
     /** author: The author of this Post */
-    @immutableRelation(USER, 'user_id') author!: Relation<User>;
+    @immutableRelation(USER, 'user_id') author!: Relation<UserModel>;
 
     /** channel: The channel which is presenting this Post */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

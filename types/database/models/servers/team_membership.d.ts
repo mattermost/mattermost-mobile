@@ -4,14 +4,11 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import User from './user';
-import Team from './team';
-
 /**
  * The TeamMembership model represents the 'association table' where many teams have users and many users are in
  * teams (relationship type N:N)
  */
-export default class TeamMembership extends Model {
+export default class TeamMembershipModel extends Model {
     /** table (name) : TeamMembership */
     static table: string;
 
@@ -25,18 +22,18 @@ export default class TeamMembership extends Model {
     userId: string;
 
     /** memberUser: The related user in the team */
-    memberUser: Relation<User>;
+    memberUser: Relation<UserModel>;
 
     /** memberTeam : The related team of users */
-    memberTeam: Relation<Team>;
+    memberTeam: Relation<TeamModel>;
 
     /**
      * getAllTeamsForUser - Retrieves all the teams that the user is part of
      */
-    getAllTeamsForUser: Query<Team>;
+    getAllTeamsForUser: Query<TeamModel>;
 
     /**
      * getAllUsersInTeam - Retrieves all the users who are part of this team
      */
-    getAllUsersInTeam: Query<User>;
+    getAllUsersInTeam: Query<UserModel>;
 }

@@ -31,7 +31,7 @@ describe('*** Role Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Role');
+        expect(preparedRecords!.collection.modelClass.name).toBe('RoleModel');
     });
 });
 
@@ -52,7 +52,7 @@ describe('*** System Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('System');
+        expect(preparedRecords!.collection.modelClass.name).toBe('SystemModel');
     });
 });
 
@@ -79,7 +79,7 @@ describe('*** TOS Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TermsOfService');
+        expect(preparedRecords!.collection.modelClass.name).toBe('TermsOfServiceModel');
     });
 });
 
@@ -107,7 +107,7 @@ describe('*** CustomEmoj Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('CustomEmoji');
+        expect(preparedRecords!.collection.modelClass.name).toBe('CustomEmojiModel');
     });
 });
 

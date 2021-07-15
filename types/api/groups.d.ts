@@ -18,7 +18,7 @@ type Group = {
     delete_at: number;
     has_syncables: boolean;
     member_count: number;
-    scheme_admin: boolean;
+    scheme_admin?: boolean;
     allow_reference: boolean;
 };
 type GroupTeam = {
@@ -27,7 +27,7 @@ type GroupTeam = {
     team_type: string;
     group_id: string;
     auto_add: boolean;
-    scheme_admin: boolean;
+    scheme_admin?: boolean;
     create_at: number;
     delete_at: number;
     update_at: number;
@@ -41,10 +41,12 @@ type GroupChannel = {
     team_type: string;
     group_id: string;
     auto_add: boolean;
-    scheme_admin: boolean;
+    scheme_admin?: boolean;
     create_at: number;
     delete_at: number;
     update_at: number;
+    member_count: number;
+    timezone_count: number;
 };
 type GroupSyncables = {
     teams: GroupTeam[];

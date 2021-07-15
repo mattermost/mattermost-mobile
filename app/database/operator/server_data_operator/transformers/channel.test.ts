@@ -38,7 +38,6 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     extra_update_at: 0,
                     creator_id: '',
                     scheme_id: null,
-                    props: null,
                     group_constrained: null,
                     shared: null,
                 },
@@ -46,7 +45,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords.collection.modelClass.name).toBe('Channel');
+        expect(preparedRecords.collection.modelClass.name).toBe('ChannelModel');
     });
 
     it('=> transformMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
@@ -55,28 +54,34 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
+        const raw: ChannelMembership = {
+            channel_id: 'c',
+            user_id: 'me',
+            roles: '',
+            last_viewed_at: 0,
+            msg_count: 0,
+            mention_count: 0,
+            last_update_at: 0,
+            notify_props: {
+                desktop: 'default',
+                email: 'default',
+                push: 'mention',
+                mark_unread: 'mention',
+                ignore_channel_mentions: 'default',
+            },
+        };
+
         const preparedRecords = await transformMyChannelSettingsRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
                 record: undefined,
-                raw: {
-                    channel_id: 'c',
-                    notify_props: {
-                        desktop: 'all',
-                        desktop_sound: true,
-                        email: true,
-                        first_name: true,
-                        mention_keys: '',
-                        push: 'mention',
-                        channel: true,
-                    },
-                },
+                raw,
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettings');
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettingsModel');
     });
 
     it('=> transformChannelInfoRecord: should return an array of type ChannelInfo', async () => {
@@ -102,7 +107,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfo');
+        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfoModel');
     });
 
     it('=> transformMyChannelRecord: should return an array of type MyChannel', async () => {
@@ -118,16 +123,19 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                 record: undefined,
                 raw: {
                     channel_id: 'cd',
+                    user_id: 'guest',
                     last_post_at: 1617311494451,
                     last_viewed_at: 1617311494451,
-                    mentions_count: 3,
-                    message_count: 10,
+                    last_update_at: 0,
+                    mention_count: 3,
+                    msg_count: 10,
                     roles: 'guest',
+                    notify_props: {},
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannel');
+        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelModel');
     });
 });

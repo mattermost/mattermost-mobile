@@ -4,12 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Team from './team';
-
 /**
  * MyTeam represents only the teams that the current user belongs to
  */
-export default class MyTeam extends Model {
+export default class MyTeamModel extends Model {
     /** table (name) : MyTeam */
     static table: string;
 
@@ -29,5 +27,5 @@ export default class MyTeam extends Model {
     teamId: string;
 
     /** team : The relation to the TEAM table, that this user belongs to  */
-    team: Relation<Team>;
+    team: Relation<TeamModel>;
 }

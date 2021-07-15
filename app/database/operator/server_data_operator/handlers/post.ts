@@ -17,27 +17,15 @@ import {
 } from '@database/operator/server_data_operator/transformers/post';
 import {getRawRecordPairs, getUniqueRawsBy, retrieveRecords} from '@database/operator/utils/general';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
-import {
-    HandleDraftArgs,
-    HandleFilesArgs,
-    HandlePostMetadataArgs,
-    HandlePostsArgs,
-    PostImage,
-    RawCustomEmoji,
-    RawEmbed,
-    RawFile,
-    RawPost,
-    RawPostMetadata,
-    RawPostsInThread,
-    RawReaction, RecordPair,
-} from '@typings/database/database';
-import Draft from '@typings/database/models/servers/draft';
-import File from '@typings/database/models/servers/file';
-import Post from '@typings/database/models/servers/post';
-import PostMetadata from '@typings/database/models/servers/post_metadata';
-import PostsInChannel from '@typings/database/models/servers/posts_in_channel';
-import PostsInThread from '@typings/database/models/servers/posts_in_thread';
-import Reaction from '@typings/database/models/servers/reaction';
+
+import type {HandleDraftArgs, HandleFilesArgs, HandlePostMetadataArgs, HandlePostsArgs, RecordPair} from '@typings/database/database';
+import type DraftModel from '@typings/database/models/servers/draft';
+import type FileModel from '@typings/database/models/servers/file';
+import type PostModel from '@typings/database/models/servers/post';
+import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
+import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
+import type ReactionModel from '@typings/database/models/servers/reaction';
 
 const {
     DRAFT,
@@ -49,12 +37,12 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface PostHandlerMix {
-    handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Draft[] | boolean;
-    handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<File[] | any[]>;
-    handlePostMetadata: ({embeds, images, prepareRecordsOnly}: HandlePostMetadataArgs) => Promise<any[] | PostMetadata[]>;
+    handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
+    handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
+    handlePostMetadata: ({metadatas, prepareRecordsOnly}: HandlePostMetadataArgs) => Promise<PostMetadataModel[]>;
     handlePosts: ({orders, values, previousPostId}: HandlePostsArgs) => Promise<void>;
-    handlePostsInChannel: (posts: RawPost[]) => Promise<void>;
-    handlePostsInThread: (rootPosts: RawPostsInThread[]) => Promise<void>;
+    handlePostsInChannel: (posts: Post[]) => Promise<void>;
+    handlePostsInThread: (rootPosts: PostsInThread[]) => Promise<void>;
 }
 
 const PostHandler = (superclass: any) => class extends superclass {
@@ -64,11 +52,9 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {RawDraft[]} draftsArgs.drafts
      * @param {boolean} draftsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Draft[]}
+     * @returns {Promise<DraftModel[]>}
      */
-    handleDraft = async ({drafts, prepareRecordsOnly = true}: HandleDraftArgs) => {
-        let records: Draft[] = [];
-
+    handleDraft = ({drafts, prepareRecordsOnly = true}: HandleDraftArgs): Promise<DraftModel[]> => {
         if (!drafts.length) {
             throw new DataOperatorException(
                 'An empty "drafts" array has been passed to the handleDraft method',
@@ -77,7 +63,7 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'channel_id',
             findMatchingRecordBy: isRecordDraftEqualToRaw,
             transformer: transformDraftRecord,
@@ -85,8 +71,6 @@ const PostHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: DRAFT,
         });
-
-        return records;
     };
 
     /**
@@ -97,7 +81,7 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {string | undefined} handlePosts.previousPostId
      * @returns {Promise<void>}
      */
-    handlePosts = async ({orders, values, previousPostId}: HandlePostsArgs) => {
+    handlePosts = async ({orders, values, previousPostId}: HandlePostsArgs): Promise<void> => {
         const tableName = POST;
 
         // We rely on the order array; if it is empty, we stop processing
@@ -110,7 +94,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         const rawValues = getUniqueRawsBy({
             raws: values,
             key: 'id',
-        }) as RawPost[];
+        }) as Post[];
 
         // By sanitizing the values, we are separating 'posts' that needs updating ( i.e. un-ordered posts ) from those that need to be created in our database
         const {postsOrdered, postsUnordered} = sanitizePosts({
@@ -128,12 +112,11 @@ const PostHandler = (superclass: any) => class extends superclass {
 
         if (futureEntries.createRaws?.length) {
             let batch: Model[] = [];
-            let files: RawFile[] = [];
+            const files: FileInfo[] = [];
             const postsInThread = [];
-            let reactions: RawReaction[] = [];
-            let emojis: RawCustomEmoji[] = [];
-            const images: Array<{ images: Dictionary<PostImage>; postId: string }> = [];
-            const embeds: Array<{ embed: RawEmbed[]; postId: string }> = [];
+            const reactions: Reaction[] = [];
+            const emojis: CustomEmoji[] = [];
+            const metadatas: Metadata[] = [];
 
             // We create the 'chain of posts' by linking each posts' previousId to the post before it in the order array
             const linkedRawPosts: RecordPair[] = createPostsChain({
@@ -147,7 +130,7 @@ const PostHandler = (superclass: any) => class extends superclass {
                 createRaws: linkedRawPosts,
                 transformer: transformPostRecord,
                 tableName,
-            })) as Post[];
+            })) as PostModel[];
 
             // Appends the processed records into the final batch array
             batch = batch.concat(posts);
@@ -163,31 +146,36 @@ const PostHandler = (superclass: any) => class extends superclass {
                 }
 
                 if (post?.metadata && Object.keys(post?.metadata).length > 0) {
-                    const metadata = post.metadata;
+                    const data = post.metadata;
 
                     // Extracts reaction from post's metadata
-                    reactions = reactions.concat(metadata?.reactions ?? []);
+                    if (data.reactions) {
+                        reactions.push(...data.reactions);
+                        delete data.reactions;
+                    }
 
                     // Extracts emojis from post's metadata
-                    emojis = emojis.concat(metadata?.emojis ?? []);
+                    if (data.emojis) {
+                        emojis.push(...data.emojis);
+                        delete data.emojis;
+                    }
 
                     // Extracts files from post's metadata
-                    files = files.concat(metadata?.files ?? []);
-
-                    // Extracts images and embeds from post's metadata
-                    if (metadata?.images) {
-                        images.push({images: metadata.images, postId: post.id});
+                    if (data.files) {
+                        files.push(...data.files);
+                        delete data.files;
                     }
 
-                    if (metadata?.embeds) {
-                        embeds.push({embed: metadata.embeds, postId: post.id});
-                    }
+                    metadatas.push({
+                        data,
+                        post_id: post.id,
+                    });
                 }
             }
 
             if (reactions.length) {
                 // calls handler for Reactions
-                const postReactions = (await this.handleReactions({reactions, prepareRecordsOnly: true})) as Reaction[];
+                const postReactions = (await this.handleReactions({reactions, prepareRecordsOnly: true})) as ReactionModel[];
                 batch = batch.concat(postReactions);
             }
 
@@ -197,11 +185,10 @@ const PostHandler = (superclass: any) => class extends superclass {
                 batch = batch.concat(postFiles);
             }
 
-            if (images.length || embeds.length) {
+            if (metadatas.length) {
                 // calls handler for postMetadata ( embeds and images )
                 const postMetadata = await this.handlePostMetadata({
-                    images,
-                    embeds,
+                    metadatas,
                     prepareRecordsOnly: true,
                 });
 
@@ -230,7 +217,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
 
         if (postsUnordered.length) {
-        // Truly update those posts that have a different update_at value
+            // Truly update those posts that have a different update_at value
             await this.handleRecords({
                 findMatchingRecordBy: isRecordPostEqualToRaw,
                 fieldName: 'id',
@@ -247,9 +234,9 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {HandleFilesArgs} handleFiles
      * @param {RawFile[]} handleFiles.files
      * @param {boolean} handleFiles.prepareRecordsOnly
-     * @returns {Promise<File[] | any[]>}
+     * @returns {Promise<FileModel[]>}
      */
-    handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs) => {
+    handleFiles = async ({files, prepareRecordsOnly}: HandleFilesArgs): Promise<FileModel[]> => {
         if (!files.length) {
             return [];
         }
@@ -268,7 +255,7 @@ const PostHandler = (superclass: any) => class extends superclass {
             await this.batchRecords(postFiles);
         }
 
-        return [];
+        return postFiles;
     };
 
     /**
@@ -277,40 +264,11 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
      * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
      * @param {boolean} handlePostMetadata.prepareRecordsOnly
-     * @returns {Promise<any[] | PostMetadata[]>}
+     * @returns {Promise<PostMetadataModel[]>}
      */
-    handlePostMetadata = async ({embeds, images, prepareRecordsOnly}: HandlePostMetadataArgs) => {
-        const metadata: RawPostMetadata[] = [];
-
-        if (images?.length) {
-            images.forEach((image) => {
-                const imageEntry = Object.entries(image.images);
-                metadata.push({
-                    data: {...imageEntry?.[0]?.[1], url: imageEntry?.[0]?.[0]},
-                    type: 'images',
-                    postId: image.postId,
-                });
-            });
-        }
-
-        if (embeds?.length) {
-            embeds.forEach((postEmbed) => {
-                postEmbed.embed.forEach((embed: RawEmbed) => {
-                    metadata.push({
-                        data: {...embed.data},
-                        type: embed.type,
-                        postId: postEmbed.postId,
-                    });
-                });
-            });
-        }
-
-        if (!metadata.length) {
-            return [];
-        }
-
+    handlePostMetadata = async ({metadatas, prepareRecordsOnly}: HandlePostMetadataArgs): Promise<PostMetadataModel[]> => {
         const postMetas = await this.prepareRecords({
-            createRaws: getRawRecordPairs(metadata),
+            createRaws: getRawRecordPairs([metadatas]),
             transformer: transformPostMetadataRecord,
             tableName: POST_METADATA,
         });
@@ -323,31 +281,31 @@ const PostHandler = (superclass: any) => class extends superclass {
             await this.batchRecords(postMetas);
         }
 
-        return [];
+        return postMetas;
     };
 
     /**
      * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread table from the 'Server' schema
-     * @param {RawPostsInThread[]} rootPosts
+     * @param {PostsInThread[]} rootPosts
      * @returns {Promise<void>}
      */
-    handlePostsInThread = async (rootPosts: RawPostsInThread[]) => {
+    handlePostsInThread = async (rootPosts: PostsInThread[]): Promise<void> => {
         if (!rootPosts.length) {
             return;
         }
 
         const postIds = rootPosts.map((postThread) => postThread.post_id);
-        const rawPostsInThreads: RawPostsInThread[] = [];
+        const rawPostsInThreads: PostsInThread[] = [];
 
         // Retrieves all threads whereby their root_id can be one of the element in the postIds array
         const threads = (await this.database.collections.
             get(POST).
             query(Q.where('root_id', Q.oneOf(postIds))).
-            fetch()) as Post[];
+            fetch()) as PostModel[];
 
         // The aim here is to find the last reply in that thread; hence the latest create_at value
         rootPosts.forEach((rootPost) => {
-            const maxCreateAt: number = threads.reduce((max: number, thread: Post) => {
+            const maxCreateAt: number = threads.reduce((max: number, thread: PostModel) => {
                 return thread.createAt > max ? thread.createAt : maxCreateAt;
             }, 0);
 
@@ -360,7 +318,7 @@ const PostHandler = (superclass: any) => class extends superclass {
                 createRaws: getRawRecordPairs(rawPostsInThreads),
                 transformer: transformPostInThreadRecord,
                 tableName: POSTS_IN_THREAD,
-            })) as PostsInThread[];
+            })) as PostsInThreadModel[];
 
             if (postInThreadRecords?.length) {
                 await this.batchRecords(postInThreadRecords);
@@ -370,15 +328,15 @@ const PostHandler = (superclass: any) => class extends superclass {
 
     /**
      * handlePostsInChannel: Handler responsible for the Create/Update operations occurring on the PostsInChannel table from the 'Server' schema
-     * @param {RawPost[]} posts
+     * @param {Post[]} posts
      * @returns {Promise<void>}
      */
-    handlePostsInChannel = async (posts: RawPost[]) => {
+    handlePostsInChannel = async (posts: Post[]): Promise<void> => {
         // At this point, the parameter 'posts' is already a chain of posts.  Now, we have to figure out how to plug it
         // into existing chains in the PostsInChannel table
 
         if (!posts.length) {
-            return [];
+            return;
         }
 
         // Sort a clone of 'posts' array by create_at
@@ -387,7 +345,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         });
 
         // The first element (beginning of chain)
-        const tipOfChain: RawPost = sortedPosts[0];
+        const tipOfChain: Post = sortedPosts[0];
 
         // Channel Id for this chain of posts
         const channelId = tipOfChain.channel_id;
@@ -404,7 +362,7 @@ const PostHandler = (superclass: any) => class extends superclass {
             database: this.database,
             tableName: POSTS_IN_CHANNEL,
             condition: Q.where('channel_id', channelId),
-        })) as PostsInChannel[];
+        })) as PostsInChannelModel[];
 
         const createPostsInChannelRecord = async () => {
             await this.execute({
@@ -417,7 +375,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
         if (chunks.length === 0) {
             await createPostsInChannelRecord();
-            return [];
+            return;
         }
 
         // Sort chunks (in-place) by earliest field  ( oldest to newest )
@@ -426,7 +384,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         });
 
         let found = false;
-        let targetChunk: PostsInChannel;
+        let targetChunk: PostsInChannelModel;
 
         for (const chunk of chunks) {
         // find if we should plug the chain before
@@ -446,7 +404,7 @@ const PostHandler = (superclass: any) => class extends superclass {
                 database: this.database,
                 tableName: POST,
                 condition: Q.where('create_at', earliest),
-            })) as Post[];
+            })) as PostModel[];
 
             if (potentialPosts?.length > 0) {
                 const targetPost = potentialPosts[0];
@@ -463,15 +421,11 @@ const PostHandler = (superclass: any) => class extends superclass {
                     });
                 } else {
                     await createPostsInChannelRecord();
-                    return [];
                 }
             }
         } else {
             await createPostsInChannelRecord();
-            return [];
         }
-
-        return [];
     };
 };
 

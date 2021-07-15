@@ -4,13 +4,11 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import User from './user';
-
 /**
  * The Preference model hold information about the user's preference in the app.
  * This includes settings about the account, the themes, etc.
  */
-export default class Preference extends Model {
+export default class PreferenceModel extends Model {
     /** table (name) : Preference */
     static table: string;
 
@@ -30,5 +28,5 @@ export default class Preference extends Model {
     value: string;
 
     /** user : The related record to the parent User model */
-    user: Relation<User>;
+    user: Relation<UserModel>;
 }

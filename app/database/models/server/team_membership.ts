@@ -6,8 +6,9 @@ import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/models/servers/team';
-import User from '@typings/database/models/servers/user';
+
+import type TeamModel from '@typings/database/models/servers/team';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
@@ -15,7 +16,7 @@ const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * The TeamMembership model represents the 'association table' where many teams have users and many users are in
  * teams (relationship type N:N)
  */
-export default class TeamMembership extends Model {
+export default class TeamMembershipModel extends Model {
     /** table (name) : TeamMembership */
     static table = TEAM_MEMBERSHIP;
 
@@ -36,18 +37,18 @@ export default class TeamMembership extends Model {
     @field('user_id') userId!: string;
 
     /** memberUser: The related user in the team */
-    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
+    @immutableRelation(USER, 'user_id') memberUser!: Relation<UserModel>;
 
     /** memberTeam : The related team of users */
-    @immutableRelation(TEAM, 'team_id') memberTeam!: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') memberTeam!: Relation<TeamModel>;
 
     /**
      * getAllTeamsForUser - Retrieves all the teams that the user is part of
      */
-    @lazy getAllTeamsForUser = this.collections.get(TEAM).query(Q.on(USER, 'id', this.userId)) as Query<Team>;
+    @lazy getAllTeamsForUser = this.collections.get(TEAM).query(Q.on(USER, 'id', this.userId)) as Query<TeamModel>;
 
     /**
      * getAllUsersInTeam - Retrieves all the users who are part of this team
      */
-    @lazy getAllUsersInTeam = this.collections.get(USER).query(Q.on(TEAM, 'id', this.teamId)) as Query<User>;
+    @lazy getAllUsersInTeam = this.collections.get(USER).query(Q.on(TEAM, 'id', this.teamId)) as Query<UserModel>;
 }

@@ -2,23 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
-import {
-    IdenticalRecordArgs,
-    RangeOfValueArgs,
-    RawChannel,
-    RawPost,
-    RawSlashCommand,
-    RawTeam,
-    RawUser,
-    RawValue,
-    RecordPair,
-    RetrieveRecordsArgs,
-} from '@typings/database/database';
-import Post from '@typings/database/models/servers/post';
-import SlashCommand from '@typings/database/models/servers/slash_command';
-import Team from '@typings/database/models/servers/team';
-import User from '@typings/database/models/servers/user';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type {IdenticalRecordArgs, RangeOfValueArgs, RecordPair, RetrieveRecordsArgs} from '@typings/database/database';
+import type PostModel from '@typings/database/models/servers/post';
+import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type TeamModel from '@typings/database/models/servers/team';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 
@@ -34,8 +24,8 @@ const {CHANNEL, POST, SLASH_COMMAND, TEAM, USER} = MM_TABLES.SERVER;
 export const getValidRecordsForUpdate = ({tableName, newValue, existingRecord}: IdenticalRecordArgs) => {
     const guardTables = [CHANNEL, POST, SLASH_COMMAND, TEAM, USER];
     if (guardTables.includes(tableName)) {
-        type Raw = RawPost | RawUser | RawTeam | RawSlashCommand | RawChannel;
-        type ExistingRecord = Post | User | Team | SlashCommand | Channel;
+        type Raw = Post | UserProfile | Team | SlashCommand | Channel;
+        type ExistingRecord = PostModel | UserModel | TeamModel | SlashCommandModel | ChannelModel;
 
         const shouldUpdate = (newValue as Raw).update_at === (existingRecord as ExistingRecord).updateAt;
 

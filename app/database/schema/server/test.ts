@@ -208,12 +208,10 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         data: {name: 'data', type: 'string'},
                         post_id: {name: 'post_id', type: 'string', isIndexed: true},
-                        type: {name: 'type', type: 'string'},
                     },
                     columnArray: [
                         {name: 'data', type: 'string'},
                         {name: 'post_id', type: 'string', isIndexed: true},
-                        {name: 'type', type: 'string'},
                     ],
                 },
                 [POST]: {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 type TeamMembership = {
+    id?: string;
     mention_count: number;
     msg_count: number;
     team_id: string;
@@ -35,7 +36,8 @@ type Team = {
     invite_id: string;
     allow_open_invite: boolean;
     scheme_id: string;
-    group_constrained: boolean;
+    group_constrained: boolean|null;
+    last_team_icon_update: number;
 };
 
 type TeamsState = {

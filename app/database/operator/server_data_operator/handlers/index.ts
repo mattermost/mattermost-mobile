@@ -17,85 +17,82 @@ import {
     transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, HandleTOSArgs, OperationArgs} from '@typings/database/database';
+
+import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, HandleTOSArgs, OperationArgs} from '@typings/database/database';
+import type RoleModel from '@typings/database/models/servers/role';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type SystemModel from '@typings/database/models/servers/system';
+import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
 
 const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
-    handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
+    handleRole = ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
         if (!roles.length) {
             throw new DataOperatorException(
                 'An empty "values" array has been passed to the handleRole',
             );
         }
 
-        const records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordRoleEqualToRaw,
             transformer: transformRoleRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: roles, key: 'id'}),
             tableName: ROLE,
-        });
-
-        return records;
+        }) as Promise<RoleModel[]>;
     }
 
-    handleCustomEmojis = async ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
+    handleCustomEmojis = ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
         if (!emojis.length) {
             throw new DataOperatorException(
                 'An empty "values" array has been passed to the handleCustomEmojis',
             );
         }
 
-        const records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordCustomEmojiEqualToRaw,
             transformer: transformCustomEmojiRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'id'}),
             tableName: CUSTOM_EMOJI,
-        });
-
-        return records;
+        }) as Promise<CustomEmojiModel[]>;
     }
 
-    handleSystem = async ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
+    handleSystem = ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
         if (!systems.length) {
             throw new DataOperatorException(
                 'An empty "values" array has been passed to the handleSystem',
             );
         }
 
-        const records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordSystemEqualToRaw,
             transformer: transformSystemRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),
             tableName: SYSTEM,
-        });
-
-        return records;
+        }) as Promise<SystemModel[]>;
     }
 
-    handleTermOfService = async ({termOfService, prepareRecordsOnly = true}: HandleTOSArgs) => {
+    handleTermOfService = ({termOfService, prepareRecordsOnly = true}: HandleTOSArgs) => {
         if (!termOfService.length) {
             throw new DataOperatorException(
                 'An empty "values" array has been passed to the handleTermOfService',
             );
         }
 
-        const records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordTermsOfServiceEqualToRaw,
             transformer: transformTermsOfServiceRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: termOfService, key: 'id'}),
             tableName: TERMS_OF_SERVICE,
-        });
-
-        return records;
+        }) as Promise<TermsOfServiceModel[]>;
     }
 
   /**
@@ -107,7 +104,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
    * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
    * @returns {Promise<void>}
    */
-  execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs) => {
+  execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<void> => {
       const models = await this.prepareRecords({
           tableName,
           createRaws,

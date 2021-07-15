@@ -5,9 +5,10 @@ import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from '@typings/database/models/servers/channel';
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/models/servers/user';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
@@ -15,7 +16,7 @@ const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * The ChannelMembership model represents the 'association table' where many channels have users and many users are on
  * channels ( N:N relationship between model Users and model Channel)
  */
-export default class ChannelMembership extends Model {
+export default class ChannelMembershipModel extends Model {
     /** table (name) : ChannelMembership */
     static table = CHANNEL_MEMBERSHIP;
 
@@ -36,18 +37,18 @@ export default class ChannelMembership extends Model {
     @field('user_id') userId!: string;
 
     /** memberChannel : The related channel this member belongs to */
-    @immutableRelation(CHANNEL, 'channel_id') memberChannel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') memberChannel!: Relation<ChannelModel>;
 
     /** memberUser : The related member belonging to the channel */
-    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
+    @immutableRelation(USER, 'user_id') memberUser!: Relation<UserModel>;
 
     /**
      * getAllChannelsForUser - Retrieves all the channels that the user is part of
      */
-    @lazy getAllChannelsForUser = this.collections.get(CHANNEL).query(Q.on(USER, 'id', this.userId)) as Query<Channel>;
+    @lazy getAllChannelsForUser = this.collections.get(CHANNEL).query(Q.on(USER, 'id', this.userId)) as Query<ChannelModel>;
 
     /**
      * getAllUsersInChannel - Retrieves all the users who are part of this channel
      */
-    @lazy getAllUsersInChannel = this.collections.get(USER).query(Q.on(CHANNEL, 'id', this.channelId)) as Query<User>;
+    @lazy getAllUsersInChannel = this.collections.get(USER).query(Q.on(CHANNEL, 'id', this.channelId)) as Query<UserModel>;
 }

@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 /**  The CustomEmoji model describes all the custom emojis used in the Mattermost app */
-export default class CustomEmoji extends Model {
+export default class CustomEmojiModel extends Model {
     /** table (name) : CustomEmoji */
     static table: string;
 

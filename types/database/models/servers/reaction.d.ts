@@ -4,13 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import User from './user';
-import Post from './post';
-
 /**
  * The Reaction Model is used to present the reactions a user had on a particular post
  */
-export default class Reaction extends Model {
+export default class ReactionModel extends Model {
     /** table (name) : Reaction */
     static table: string;
 
@@ -30,8 +27,8 @@ export default class Reaction extends Model {
     userId: string;
 
     /** user : The related record to the User model */
-    user: Relation<User>;
+    user: Relation<UserModel>;
 
     /** post : The related record to the Post model */
-    post: Relation<Post>;
+    post: Relation<PostModel>;
 }

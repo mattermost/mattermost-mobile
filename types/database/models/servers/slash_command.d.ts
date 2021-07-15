@@ -4,12 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Team from './team';
-
 /**
  * The SlashCommand model describes the commands of the various commands available in each team.
  */
-export default class SlashCommand extends Model {
+export default class SlashCommandModel extends Model {
     /** table (name) : SlashCommand */
     static table: string;
 
@@ -44,5 +42,5 @@ export default class SlashCommand extends Model {
     updateAt!: number;
 
     /** team : The related parent TEAM record */
-    team: Relation<Team>;
+    team: Relation<TeamModel>;
 }

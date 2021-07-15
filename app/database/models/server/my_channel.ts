@@ -5,15 +5,16 @@ import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from '@typings/database/models/servers/channel';
 import {MM_TABLES} from '@constants/database';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
  */
-export default class MyChannel extends Model {
+export default class MyChannelModel extends Model {
     /** table (name) : MyChannel */
     static table = MY_CHANNEL;
 
@@ -43,5 +44,5 @@ export default class MyChannel extends Model {
     @field('roles') roles!: string;
 
     /** channel : The relation pointing to the CHANNEL table */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

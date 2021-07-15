@@ -28,18 +28,20 @@ describe('*** Operator: Group Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const groups = [
+        const groups: Group[] = [
             {
                 id: 'id_groupdfjdlfkjdkfdsf',
                 name: 'mobile_team',
                 display_name: 'mobile team',
                 description: '',
-                source: '',
                 remote_id: '',
                 create_at: 0,
                 update_at: 0,
                 delete_at: 0,
                 has_syncables: true,
+                type: '',
+                member_count: 1,
+                allow_reference: false,
             },
         ];
 

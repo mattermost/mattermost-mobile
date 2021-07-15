@@ -4,14 +4,12 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-
 /**
  * ChannelInfo is an extension of the information contained in the Channel table.
  * In a Separation of Concerns approach, ChannelInfo will provide additional information about a channel but on a more
  * specific level.
  */
-export default class ChannelInfo extends Model {
+export default class ChannelInfoModel extends Model {
     /** table (name) : ChannelInfo */
     static table: string;
 
@@ -37,5 +35,5 @@ export default class ChannelInfo extends Model {
     purpose: string;
 
     /** channel : The lazy query property to the record from the CHANNEL table */
-    channel: Relation<Channel>;
+    channel: Relation<ChannelModel>;
 }

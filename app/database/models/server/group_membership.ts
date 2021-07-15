@@ -6,8 +6,9 @@ import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Group from '@typings/database/models/servers/group';
-import User from '@typings/database/models/servers/user';
+
+import type GroupModel from '@typings/database/models/servers/group';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
@@ -15,7 +16,7 @@ const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  * The GroupMembership model represents the 'association table' where many groups have users and many users are in
  * groups (relationship type N:N)
  */
-export default class GroupMembership extends Model {
+export default class GroupMembershipModel extends Model {
     /** table (name) : GroupMembership */
     static table = GROUP_MEMBERSHIP;
 
@@ -36,18 +37,18 @@ export default class GroupMembership extends Model {
     @field('user_id') userId!: string;
 
     /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') memberGroup!: Relation<Group>;
+    @immutableRelation(GROUP, 'group_id') memberGroup!: Relation<GroupModel>;
 
     /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
+    @immutableRelation(USER, 'user_id') memberUser!: Relation<UserModel>;
 
     /**
      * getAllGroupsForUser : Retrieves all the groups that the user is part of
      */
-    @lazy getAllGroupsForUser = this.collections.get(GROUP).query(Q.on(USER, 'id', this.userId)) as Query<Group>;
+    @lazy getAllGroupsForUser = this.collections.get(GROUP).query(Q.on(USER, 'id', this.userId)) as Query<GroupModel>;
 
     /**
      * getAllUsersInGroup : Retrieves all the users who are part of this group
      */
-    @lazy getAllUsersInGroup = this.collections.get(USER).query(Q.on(GROUP, 'id', this.groupId)) as Query<User>;
+    @lazy getAllUsersInGroup = this.collections.get(USER).query(Q.on(GROUP, 'id', this.groupId)) as Query<UserModel>;
 }

@@ -12,6 +12,5 @@ export default tableSchema({
     columns: [
         {name: 'data', type: 'string'},
         {name: 'post_id', type: 'string', isIndexed: true},
-        {name: 'type', type: 'string'},
     ],
 });

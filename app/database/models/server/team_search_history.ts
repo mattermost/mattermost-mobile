@@ -6,7 +6,8 @@ import {field, immutableRelation, text} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/models/servers/team';
+
+import type TeamModel from '@typings/database/models/servers/team';
 
 const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
 
@@ -14,7 +15,7 @@ const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
  * The TeamSearchHistory model holds the term searched within a team.  The searches are performed
  * at team level in the app.
  */
-export default class TeamSearchHistory extends Model {
+export default class TeamSearchHistoryModel extends Model {
     /** table (name) : TeamSearchHistory */
     static table = TEAM_SEARCH_HISTORY;
 
@@ -38,5 +39,5 @@ export default class TeamSearchHistory extends Model {
     @text('term') term!: string;
 
     /** team : The related record to the parent team model */
-    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;
 }

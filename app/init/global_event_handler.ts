@@ -5,7 +5,7 @@ import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import semver from 'semver';
 
-import {fetchConfigAndLicense} from '@actions/remote/general';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import {General, REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
 import DatabaseManager from '@database/manager';

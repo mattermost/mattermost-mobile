@@ -12,7 +12,8 @@ import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {doPing, fetchConfigAndLicense} from '@actions/remote/general';
+import {doPing} from '@actions/remote/general';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText, {ClientErrorWithIntl} from '@components/error_text';

@@ -4,13 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-import Group from './group';
-
 /**
  * The GroupsInChannel links the Channel model with the Group model
  */
-export default class GroupsInChannel extends Model {
+export default class GroupsInChannelModel extends Model {
     /** table (name) : GroupsInChannel */
     static table: string;
 
@@ -30,8 +27,8 @@ export default class GroupsInChannel extends Model {
     timezoneCount: number;
 
     /** channel : The related record to the parent Channel model */
-    channel: Relation<Channel>;
+    channel: Relation<ChannelModel>;
 
     /** group : The related record to the parent Group model */
-    group: Relation<Group>;
+    group: Relation<GroupModel>;
 }

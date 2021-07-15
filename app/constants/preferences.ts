@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-const Preferences: Dictionary<any> = {
+const Preferences: Record<string, any> = {
     CATEGORY_CHANNEL_OPEN_TIME: 'channel_open_time',
     CATEGORY_CHANNEL_APPROXIMATE_VIEW_TIME: 'channel_approximate_view_time',
     CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
@@ -39,6 +39,7 @@ const Preferences: Dictionary<any> = {
     ADVANCED_CODE_BLOCK_ON_CTRL_ENTER: 'code_block_ctrl_enter',
     ADVANCED_SEND_ON_CTRL_ENTER: 'send_on_ctrl_enter',
     CATEGORY_THEME: 'theme',
+    TEAMS_ORDER: 'teams_order',
     THEMES: {
         default: {
             type: 'Mattermost',
