@@ -18,10 +18,6 @@ type UserNotifyProps = {
     user_id?: string;
 };
 
-interface UserProps {
-    [userPropsName: string]: any;
-}
-
 type UserProfile = {
     id: string;
     create_at: number;
