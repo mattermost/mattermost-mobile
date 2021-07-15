@@ -3,11 +3,9 @@ package com.mattermost.share;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
@@ -15,18 +13,18 @@ import android.util.Log;
 import android.text.TextUtils;
 
 import android.os.ParcelFileDescriptor;
+
 import java.io.*;
 import java.nio.channels.FileChannel;
+import java.util.Objects;
 
 // Class based on the steveevers DocumentHelper https://gist.github.com/steveevers/a5af24c226f44bb8fdc3
 
 public class RealPathUtil {
     public static String getRealPathFromURI(final Context context, final Uri uri) {
 
-        final boolean isKitKatOrNewer = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
         // DocumentProvider
-        if (isKitKatOrNewer && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
@@ -111,6 +109,7 @@ public class RealPathUtil {
             int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
             returnCursor.moveToFirst();
             fileName = sanitizeFilename(returnCursor.getString(nameIndex));
+            returnCursor.close();
 
         } catch (Exception e) {
             // just continue to get the filename with the last segment of the path
@@ -118,7 +117,7 @@ public class RealPathUtil {
 
         try {
             if (TextUtils.isEmpty(fileName)) {
-                fileName = sanitizeFilename(uri.getLastPathSegment().toString().trim());
+                fileName = sanitizeFilename(uri.getLastPathSegment().trim());
             }
 
 
@@ -127,7 +126,6 @@ public class RealPathUtil {
                 cacheDir.mkdirs();
             }
 
-            String mimeType = getMimeType(uri.getPath());
             tmpFile = new File(cacheDir, fileName);
             tmpFile.createNewFile();
 
@@ -234,7 +232,7 @@ public class RealPathUtil {
 
     private static void deleteRecursive(File fileOrDirectory) {
         if (fileOrDirectory.isDirectory())
-            for (File child : fileOrDirectory.listFiles())
+            for (File child : Objects.requireNonNull(fileOrDirectory.listFiles()))
                 deleteRecursive(child);
 
         fileOrDirectory.delete();

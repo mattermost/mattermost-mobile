@@ -22,6 +22,13 @@ const Preferences: Dictionary<any> = {
     INTERVAL_FIFTEEN_MINUTES: 15 * 60,
     INTERVAL_HOUR: 60 * 60,
     INTERVAL_IMMEDIATE: 30,
+    CATEGORY_EMOJI: 'emoji',
+    EMOJI_SKINTONE: 'emoji_skintone',
+
+    CATEGORY_CUSTOM_STATUS: 'custom_status',
+    NAME_CUSTOM_STATUS_TUTORIAL_STATE: 'custom_status_tutorial_state',
+    NAME_RECENT_CUSTOM_STATUSES: 'recent_custom_statuses',
+    CUSTOM_STATUS_MODAL_VIEWED: 'custom_status_modal_viewed',
 
     // "immediate" is a 30 second interval
     INTERVAL_NEVER: 0,

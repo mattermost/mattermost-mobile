@@ -28,4 +28,17 @@ describe('DrawerItem', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
+
+    test('should match snapshot without separator and centered false', () => {
+        const props = {
+            ...baseProps,
+            centered: false,
+            separator: false,
+        };
+        const wrapper = shallowWithIntl(
+            <DrawerItem {...props}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
 });

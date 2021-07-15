@@ -1,6 +1,5 @@
 package com.mattermost.rnbeta;
 
-import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -11,10 +10,10 @@ import android.os.Bundle;
 import android.net.Uri;
 import android.service.notification.StatusBarNotification;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
@@ -24,13 +23,12 @@ import com.facebook.react.bridge.WritableMap;
 public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     private static NotificationPreferencesModule instance;
     private final MainApplication mApplication;
-    private NotificationPreferences mNotificationPreference;
+    private final NotificationPreferences mNotificationPreference;
 
     private NotificationPreferencesModule(MainApplication application, ReactApplicationContext reactContext) {
         super(reactContext);
         mApplication = application;
-        Context context = mApplication.getApplicationContext();
-        mNotificationPreference = NotificationPreferences.getInstance(context);
+        mNotificationPreference = NotificationPreferences.getInstance(reactContext);
     }
 
     public static NotificationPreferencesModule getInstance(MainApplication application, ReactApplicationContext reactContext) {
@@ -46,6 +44,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     }
 
     @Override
+    @NonNull
     public String getName() {
         return "NotificationPreferences";
     }
@@ -53,7 +52,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getPreferences(final Promise promise) {
         try {
-            Context context = mApplication.getApplicationContext();
+            final Context context = mApplication.getApplicationContext();
             RingtoneManager manager = new RingtoneManager(context);
             manager.setType(RingtoneManager.TYPE_NOTIFICATION);
             Cursor cursor = manager.getCursor();
@@ -88,7 +87,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void previewSound(String url) {
-        Context context = mApplication.getApplicationContext();
+        final Context context = mApplication.getApplicationContext();
         Uri uri = Uri.parse(url);
         Ringtone r = RingtoneManager.getRingtone(context, uri);
         r.play();
@@ -111,7 +110,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getDeliveredNotifications(final Promise promise) {
-        Context context = mApplication.getApplicationContext();
+        final Context context = mApplication.getApplicationContext();
         final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         StatusBarNotification[] statusBarNotifications = notificationManager.getActiveNotifications();
         WritableArray result = Arguments.createArray();
@@ -119,9 +118,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
             WritableMap map = Arguments.createMap();
             Notification n = sbn.getNotification();
             Bundle bundle = n.extras;
-            int identifier = sbn.getId();
             String channelId = bundle.getString("channel_id");
-            map.putInt("identifier", identifier);
             map.putString("channel_id", channelId);
             result.pushMap(map);
         }
@@ -129,8 +126,8 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void removeDeliveredNotifications(int identifier, String channelId) {
-        Context context = mApplication.getApplicationContext();
-        CustomPushNotification.clearNotification(context, identifier, channelId);
+    public void removeDeliveredNotifications(String channelId) {
+        final Context context = mApplication.getApplicationContext();
+        CustomPushNotification.clearChannelNotifications(context, channelId);
     }
 }

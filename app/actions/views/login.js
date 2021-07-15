@@ -23,7 +23,6 @@ export function handleSuccessfulLogin() {
         await dispatch(loadConfigAndLicense());
 
         const state = getState();
-        const config = getConfig(state);
         const license = getLicense(state);
         const token = Client4.getToken();
         const url = Client4.getUrl();
@@ -46,8 +45,7 @@ export function handleSuccessfulLogin() {
             },
         });
 
-        if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
-            license.IsLicensed === 'true' && license.DataRetention === 'true') {
+        if (license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
             dispatch(getDataRetentionPolicy());
         } else {
             dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});

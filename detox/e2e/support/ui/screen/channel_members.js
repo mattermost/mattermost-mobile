@@ -34,11 +34,11 @@ class ChannelMembersScreen {
         const userItemTestID = `${this.testID.userItem}.${userId}`;
         const baseMatcher = by.id(userItemTestID);
         const userItemMatcher = diplayUsername ? baseMatcher.withDescendant(by.text(diplayUsername)) : baseMatcher;
-        const userItemUsernameDisplayMatcher = by.id(this.testID.userItemDisplayUsername).withAncestor(userItemMatcher);
+        const userItemDisplayUsernameMatcher = by.id(this.testID.userItemDisplayUsername).withAncestor(userItemMatcher);
 
         return {
             userItem: element(userItemMatcher),
-            userItemUsernameDisplay: element(userItemUsernameDisplayMatcher),
+            userItemDisplayUsername: element(userItemDisplayUsernameMatcher),
         };
     }
 

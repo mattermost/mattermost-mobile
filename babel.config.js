@@ -20,6 +20,7 @@ module.exports = {
                 '@hooks': './app/hooks',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
+                '@mattermost-managed': './app/mattermost_managed/index',
                 '@mm-redux': './app/mm-redux',
                 '@share': './share_extension',
                 '@screens': './app/screens',
@@ -38,6 +39,7 @@ module.exports = {
             safe: false,
             allowUndefined: true,
         }],
+        'react-native-reanimated/plugin',
     ],
     exclude: ['**/*.png', '**/*.jpg', '**/*.gif'],
 };

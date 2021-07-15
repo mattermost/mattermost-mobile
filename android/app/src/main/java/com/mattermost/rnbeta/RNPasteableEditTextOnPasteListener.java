@@ -6,9 +6,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Patterns;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
+
+import androidx.annotation.RequiresApi;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -27,7 +30,7 @@ import java.util.regex.Matcher;
 
 public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteListener {
 
-    private RNPasteableEditText mEditText;
+    private final RNPasteableEditText mEditText;
 
     RNPasteableEditTextOnPasteListener(RNPasteableEditText editText) {
         mEditText = editText;
@@ -88,7 +91,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         // Get fileName
         String fileName = URLUtil.guessFileName(uri, null, mimeType);
 
-        if (uri.contains(ShareModule.CACHE_DIR_NAME)) {
+        if (uri.contains(ShareModule.CACHE_DIR_NAME) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             uri = moveToImagesCache(uri, fileName);
         }
 
@@ -133,6 +136,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
                 );
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private String moveToImagesCache(String src, String fileName) {
         ReactContext ctx = (ReactContext)mEditText.getContext();
         String cacheFolder = ctx.getCacheDir().getAbsolutePath() + "/Images/";
@@ -141,7 +145,10 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
 
         try {
             if (!folder.exists()) {
-                folder.mkdirs();
+                boolean created = folder.mkdirs();
+                if (!created) {
+                    return null;
+                }
             }
 
             Files.move(Paths.get(src), Paths.get(dest));

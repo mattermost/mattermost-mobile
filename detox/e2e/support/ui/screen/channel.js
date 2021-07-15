@@ -10,12 +10,12 @@ import {
     PostDraft,
     PostList,
     PostOptions,
+    ProfilePicture,
     SendButton,
     SettingsSidebar,
 } from '@support/ui/component';
 import {
     LoginScreen,
-    LongPostScreen,
     SelectServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -24,6 +24,7 @@ import {isAndroid} from '@support/utils';
 class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
+        channelIntroProfilePicturePrefix: 'channel_intro.profile_picture.',
         channelScreen: 'channel.screen',
         channelPostList: 'channel.post_list',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
@@ -69,20 +70,17 @@ class ChannelScreen {
 
     postList = new PostList(this.testID.channelScreenPrefix);
 
+    getChannelIntroProfilePicture = (userId) => {
+        const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.channelIntroProfilePicturePrefix, userId);
+        return element(profilePictureItemMatcher);
+    }
+
     getMoreMessagesButton = () => {
         return this.postList.getMoreMessagesButton();
     }
 
     getNewMessagesDivider = () => {
         return this.postList.getNewMessagesDivider();
-    }
-
-    getLongPostItem = (postId, text, postProfileOptions = {}) => {
-        return LongPostScreen.getPost(postId, text, postProfileOptions);
-    }
-
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
     }
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {
@@ -222,6 +220,11 @@ class ChannelScreen {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
+    }
+
+    hasPostMessage = async (postId, postMessage) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
+        await expect(postListPostItem).toBeVisible();
     }
 
     hasPostMessageAtIndex = async (index, postMessage) => {

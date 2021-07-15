@@ -13,9 +13,9 @@ import java.net.URLConnection;
 
 public class RNPasteableImageFromUrl implements Runnable {
 
-    private ReactContext mContext;
-    private String mUri;
-    private ReactEditText mTarget;
+    private final ReactContext mContext;
+    private final String mUri;
+    private final ReactEditText mTarget;
 
     RNPasteableImageFromUrl(ReactContext context, ReactEditText target, String uri) {
         mContext = context;

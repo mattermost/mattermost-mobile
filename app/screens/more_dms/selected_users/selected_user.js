@@ -36,6 +36,11 @@ export default class SelectedUser extends React.PureComponent {
          * A handler function that will deselect a user when clicked on.
          */
         onRemove: PropTypes.func.isRequired,
+
+        /**
+         * The test ID.
+         */
+        testID: PropTypes.string,
     };
 
     onRemove = () => {
@@ -46,13 +51,20 @@ export default class SelectedUser extends React.PureComponent {
         const style = getStyleFromTheme(this.props.theme);
 
         return (
-            <View style={style.container}>
-                <Text style={style.text}>
+            <View
+                style={style.container}
+                testID={`${this.props.testID}.${this.props.user.id}`}
+            >
+                <Text
+                    style={style.text}
+                    testID={`${this.props.testID}.${this.props.user.id}.display_username`}
+                >
                     {displayUsername(this.props.user, this.props.teammateNameDisplay)}
                 </Text>
                 <TouchableOpacity
                     style={style.remove}
                     onPress={this.onRemove}
+                    testID={`${this.props.testID}.${this.props.user.id}.remove.button`}
                 >
                     <CompassIcon
                         name='close'

@@ -19,6 +19,7 @@ import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-
 import {Channel, ChannelNotifyProps, ChannelMembership} from '@mm-redux/types/channels';
 
 import {PreferenceType} from '@mm-redux/types/preferences';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
@@ -934,6 +935,44 @@ export function getArchivedChannels(teamId: string, page = 0, perPage: number = 
             teamId,
             data: channels,
         });
+
+        return {data: channels};
+    };
+}
+
+// Returns all public shared channels
+export function getSharedChannels(teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let channels;
+        try {
+            channels = await Client4.getSharedChannels(teamId, page, perPage);
+            channels = (channels || []).map((channel: Dictionary<string|boolean|number>) => {
+                if (channel.delete_at === undefined) {
+                    channel.delete_at = 0;
+                }
+                channel.type = General.OPEN_CHANNEL;
+                channel.shared = true;
+                return channel;
+            });
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.GET_CHANNELS_FAILURE, error},
+                logError(error),
+            ]));
+            return {error};
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_CHANNELS,
+                teamId,
+                data: channels,
+            },
+            {
+                type: ChannelTypes.GET_CHANNELS_SUCCESS,
+            },
+        ]));
 
         return {data: channels};
     };

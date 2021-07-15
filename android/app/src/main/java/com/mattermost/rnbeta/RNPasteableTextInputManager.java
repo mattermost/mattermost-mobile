@@ -1,8 +1,8 @@
 package com.mattermost.rnbeta;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.view.inputmethod.InputConnectionCompat;
-import androidx.core.os.BuildCompat;
 import android.text.InputType;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -19,11 +19,13 @@ import javax.annotation.Nullable;
 public class RNPasteableTextInputManager extends ReactTextInputManager {
 
     @Override
+    @NonNull
     public String getName() {
         return "PasteableTextInputAndroid";
     }
 
     @Override
+    @NonNull
     public ReactEditText createViewInstance(ThemedReactContext context) {
         RNPasteableEditText editText = new RNPasteableEditText(context) {
             @Override
@@ -36,7 +38,7 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
                 final InputConnectionCompat.OnCommitContentListener callback =
                         (inputContentInfo, flags, opts) -> {
                             // read and display inputContentInfo asynchronously
-                            if (BuildCompat.isAtLeastNMR1() && (flags &
+                            if ((flags &
                                     InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0) {
                                 try {
                                     inputContentInfo.requestPermission();
@@ -72,6 +74,7 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
     @Override
     public Map<String, Object> getExportedCustomBubblingEventTypeConstants() {
         Map<String, Object> map = super.getExportedCustomBubblingEventTypeConstants();
+        assert map != null;
         map.put(
                 "onPaste",
                 MapBuilder.of(

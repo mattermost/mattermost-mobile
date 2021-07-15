@@ -1,0 +1,239 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`screens/custom_status_suggestion should match snapshot 1`] = `
+<ForwardRef
+  onPress={[Function]}
+  testID="custom_status_suggestion.In a meeting"
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "flexDirection": "row",
+        "minHeight": 50,
+      }
+    }
+  >
+    <Text
+      style={
+        Object {
+          "color": "#3d3c40",
+          "height": 46,
+          "left": 14,
+          "marginRight": 6,
+          "top": 12,
+          "width": 45,
+        }
+      }
+    >
+      <Connect(Emoji)
+        emojiName="calendar"
+        size={20}
+      />
+    </Text>
+    <View
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingBottom": 14,
+            "paddingTop": 14,
+            "width": "70%",
+          }
+        }
+      >
+        <CustomStatusText
+          text="In a meeting"
+          textStyle={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+        />
+      </View>
+    </View>
+  </View>
+</ForwardRef>
+`;
+
+exports[`screens/custom_status_suggestion should match snapshot with separator and clear button 1`] = `
+<ForwardRef
+  onPress={[Function]}
+  testID="custom_status_suggestion.In a meeting"
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "flexDirection": "row",
+        "minHeight": 50,
+      }
+    }
+  >
+    <Text
+      style={
+        Object {
+          "color": "#3d3c40",
+          "height": 46,
+          "left": 14,
+          "marginRight": 6,
+          "top": 12,
+          "width": 45,
+        }
+      }
+    >
+      <Connect(Emoji)
+        emojiName="calendar"
+        size={20}
+      />
+    </Text>
+    <View
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "justifyContent": "center",
+            "paddingBottom": 14,
+            "paddingTop": 14,
+            "width": "70%",
+          }
+        }
+      >
+        <CustomStatusText
+          text="In a meeting"
+          textStyle={
+            Object {
+              "color": "#3d3c40",
+            }
+          }
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "position": "absolute",
+            "right": 13,
+            "top": 4,
+          }
+        }
+      >
+        <ClearButton
+          containerSize={40}
+          handlePress={[Function]}
+          iconName="close"
+          size={18}
+          testID="custom_status_suggestion.clear.button"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            }
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "height": 1,
+          }
+        }
+      />
+    </View>
+  </View>
+</ForwardRef>
+`;

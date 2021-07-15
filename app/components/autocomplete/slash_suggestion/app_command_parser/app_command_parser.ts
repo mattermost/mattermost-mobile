@@ -23,7 +23,7 @@ import {
     AppCallTypes,
     AppFieldTypes,
     getAppsBindings,
-    getChannel,
+    selectChannel,
     getCurrentTeamId,
     doAppCall,
     getStore,
@@ -38,6 +38,9 @@ import {
     getCurrentTeam,
     selectChannelByName,
     errorMessage as parserErrorMessage,
+    selectUser,
+    getUser,
+    getChannel,
 } from './app_command_parser_dependencies';
 
 export type Store = {
@@ -236,6 +239,7 @@ export class ParsedCommand {
             fields = this.form.fields;
         }
 
+        fields = fields.filter((f) => f.type !== AppFieldTypes.MARKDOWN && !f.readonly);
         this.state = ParseState.StartParameter;
         this.i = this.incompleteStart || 0;
         let flagEqualsUsed = false;
@@ -563,6 +567,8 @@ export class AppCommandParser {
             return {call: null, errorMessage: parserErrorMessage(this.intl, parsed.error, parsed.command, parsed.i)};
         }
 
+        await this.addDefaultAndReadOnlyValues(parsed);
+
         const missing = this.getMissingFields(parsed);
         if (missing.length > 0) {
             const missingStr = missing.map((f) => f.label).join(', ');
@@ -576,6 +582,62 @@ export class AppCommandParser {
         }
 
         return this.composeCallFromParsed(parsed);
+    }
+
+    private async addDefaultAndReadOnlyValues(parsed: ParsedCommand) {
+        await Promise.all(parsed.form?.fields?.map(async (f) => {
+            if (!f.value) {
+                return;
+            }
+
+            if (!f.readonly || f.name in parsed.values) {
+                return;
+            }
+
+            switch (f.type) {
+            case AppFieldTypes.TEXT:
+                parsed.values[f.name] = f.value as string;
+                break;
+            case AppFieldTypes.BOOL:
+                parsed.values[f.name] = 'true';
+                break;
+            case AppFieldTypes.USER: {
+                const userID = (f.value as AppSelectOption).value;
+                let user = selectUser(this.store.getState(), userID);
+                if (!user) {
+                    const dispatchResult = await this.store.dispatch(getUser(userID));
+                    if ('error' in dispatchResult) {
+                        // Silently fail on default value
+                        break;
+                    }
+                    user = dispatchResult.data;
+                }
+                parsed.values[f.name] = user.username;
+                break;
+            }
+            case AppFieldTypes.CHANNEL: {
+                const channelID = (f.value as AppSelectOption).label;
+                let channel = selectChannel(this.store.getState(), channelID);
+                if (!channel) {
+                    const dispatchResult = await this.store.dispatch(getChannel(channelID));
+                    if ('error' in dispatchResult) {
+                        // Silently fail on default value
+                        break;
+                    }
+                    channel = dispatchResult.data;
+                }
+                parsed.values[f.name] = channel.name;
+                break;
+            }
+            case AppFieldTypes.STATIC_SELECT:
+            case AppFieldTypes.DYNAMIC_SELECT:
+                parsed.values[f.name] = (f.value as AppSelectOption).value;
+                break;
+            case AppFieldTypes.MARKDOWN:
+
+                // Do nothing
+            }
+        }) || []);
     }
 
     // getSuggestionsBase is a synchronous function that returns results for base commands
@@ -837,7 +899,7 @@ export class AppCommandParser {
     // getChannel gets the channel in which the user is typing the command
     getChannel = (): Channel | null => {
         const state = this.store.getState();
-        return getChannel(state, this.channelID);
+        return selectChannel(state, this.channelID);
     }
 
     setChannelContext = (channelID: string, rootPostID?: string) => {

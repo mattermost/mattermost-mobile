@@ -120,7 +120,11 @@ class FilteredList extends Component {
             return channels;
         }
 
-        const text = term.toLowerCase();
+        let text = term.toLowerCase();
+        if (text.startsWith('@')) {
+            text = text.substring(1);
+        }
+
         return channels.filter((c) => {
             const fieldsToCheck = ['display_name', 'username', 'email', 'full_name', 'nickname'];
 
@@ -377,7 +381,7 @@ class FilteredList extends Component {
             <View style={styles.container}>
                 <SectionList
                     sections={dataSource}
-                    removeClippedSubviews={true}
+                    removeClippedSubviews={false}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}

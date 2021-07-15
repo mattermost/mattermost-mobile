@@ -8,6 +8,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
       "paddingRight": 10,
     }
   }
+  testID="markdown_table"
   type="opacity"
 >
   <ScrollView

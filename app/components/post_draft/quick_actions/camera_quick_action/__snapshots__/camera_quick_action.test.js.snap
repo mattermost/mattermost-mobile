@@ -1,22 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CameraButton should match snapshot 1`] = `
-<TouchableWithFeedbackIOS
-  onPress={[Function]}
+<View
+  accessible={true}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
   style={
     Object {
       "alignItems": "center",
       "justifyContent": "center",
+      "opacity": 1,
       "padding": 10,
     }
   }
   testID="post_draft.quick_actions.camera_action"
-  type="opacity"
 >
-  <CompassIcon
+  <Icon
     color="rgba(61,60,64,0.64)"
     name="camera-outline"
     size={24}
   />
-</TouchableWithFeedbackIOS>
+</View>
 `;

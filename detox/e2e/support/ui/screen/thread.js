@@ -11,7 +11,6 @@ import {
     PostOptions,
     SendButton,
 } from '@support/ui/component';
-import {LongPostScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 
 class ThreadScreen {
@@ -45,14 +44,6 @@ class ThreadScreen {
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.threadScreenPrefix);
 
     postList = new PostList(this.testID.threadScreenPrefix);
-
-    getLongPostItem = (postId, text, postProfileOptions = {}) => {
-        return LongPostScreen.getPost(postId, text, postProfileOptions);
-    }
-
-    getLongPostMessage = () => {
-        return LongPostScreen.getPostMessage();
-    }
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
@@ -117,6 +108,11 @@ class ThreadScreen {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
+    }
+
+    hasPostMessage = async (postId, postMessage) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
+        await expect(postListPostItem).toBeVisible();
     }
 
     hasPostMessageAtIndex = async (index, postMessage) => {
