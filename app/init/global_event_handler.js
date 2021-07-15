@@ -8,9 +8,9 @@ import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet} from '@actions/device';
-import {selectDefaultChannel} from '@actions/views/channel';
 import {dismissAllModals, popToRoot, showOverlay} from '@actions/navigation';
-import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
+import {selectDefaultChannel} from '@actions/views/channel';
+import {loadConfigAndLicense, purgeOfflineStore, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
@@ -129,15 +129,18 @@ class GlobalEventHandler {
         emmProvider.previousAppState = appState;
     };
 
-    onCRTPreferenceChanged = async (/*value = 'off' | 'on'*/) => {
+    onCRTPreferenceChanged = () => {
         Keyboard.dismiss();
-        const componentId = EphemeralStore.getNavigationTopComponentId();
-        if (componentId) {
-            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-            EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
-            await dismissAllModals();
-            await popToRoot();
-        }
+        requestAnimationFrame(async () => {
+            const componentId = EphemeralStore.getNavigationTopComponentId();
+            if (componentId) {
+                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+                EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+                await dismissAllModals();
+                await popToRoot();
+            }
+            Store.redux.dispatch(purgeOfflineStore());
+        });
     };
 
     onDeepLink = (event) => {
