@@ -99,14 +99,9 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             analytics.setUserId(data.user.id);
             analytics.setUserRoles(data.user.roles);
 
-            const preferences = await Client4.getMyPreferences();
-            data.preferences = preferences;
-            const crtPreferenceChanged = dispatch(handleCRTPreferenceChange(preferences));
+            data.preferences = await Client4.getMyPreferences();
+            const crtPreferenceChanged = dispatch(handleCRTPreferenceChange(data.preferences));
             if (crtPreferenceChanged.data) {
-                dispatch({
-                    type: UserTypes.LOGIN,
-                    data,
-                });
                 return {data};
             }
 
