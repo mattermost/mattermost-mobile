@@ -13,7 +13,6 @@ import {useServerUrl} from '@context/server_url';
 import NetworkManager from '@init/network_manager';
 import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from '@utils/emojis';
 
-import type {Config} from '@typings/database/models/servers/config';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type SystemModel from '@typings/database/models/servers/system';
 
@@ -35,7 +34,7 @@ type EmojiProps = EmojiInputProps & {
 const {SERVER: {SYSTEM, CUSTOM_EMOJI}} = MM_TABLES;
 
 const ConnectedEmoji = ({customEmojiStyle = undefined, emojiName, emojiRecords, literal = '', size, configRecord, currentUserIdRecord, testID, textStyle}: EmojiProps) => {
-    const config = configRecord.value as Config | undefined;
+    const config = configRecord.value as ClientConfig | undefined;
     const currentUserId = currentUserIdRecord.value as string | undefined;
     const customEmojis = emojiRecords?.[0];
 

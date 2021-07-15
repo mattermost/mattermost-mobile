@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/custom_status/custom_status_text should match snapshot 1`] = `
+exports[`@components/custom_status/custom_status_text should match snapshot 1`] = `
 <Text
   style={
     Array [
@@ -18,7 +18,7 @@ exports[`components/custom_status/custom_status_text should match snapshot 1`] =
 </Text>
 `;
 
-exports[`components/custom_status/custom_status_text should match snapshot with empty text 1`] = `
+exports[`@components/custom_status/custom_status_text should match snapshot with empty text 1`] = `
 <Text
   style={
     Array [

@@ -6,12 +6,12 @@ import {Alert, AlertButton} from 'react-native';
 import ViewTypes from '@constants/view';
 import {tryOpenURL} from '@utils/url';
 
-interface FormatObjectType {
+export interface FormatObjectType {
     id: string;
     defaultMessage: string;
 }
 
-interface FormatMessageType {
+export interface FormatMessageType {
     (obj: FormatObjectType, values?: any): string;
 }
 

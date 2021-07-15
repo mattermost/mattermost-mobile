@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Emoji Component Test should match snapshot 1`] = `
+exports[`@components/emoji should match snapshot 1`] = `
 <Text
   style={
     Array [

@@ -9,7 +9,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '@context/theme';
 import VIEWS from '@constants/view';
 import DEVICE from '@constants/device';
-import {Config} from '@typings/database/models/servers/config';
 import {General} from '@constants';
 import {getUserIdFromChannelName} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -22,7 +21,7 @@ type ChannelNavBar = {
     channel: ChannelModel;
     currentUserId: string;
     onPress: () => void;
-    config: Config ;
+    config: ClientConfig;
 }
 
 //todo: Read Messages - Include MainSidebarDrawerButton, ChannelSearchButton, SettingsSidebarDrawerButton

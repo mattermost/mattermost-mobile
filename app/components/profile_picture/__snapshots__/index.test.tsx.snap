@@ -1,5 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`@components/app_version should match snapshot 1`] = `null`;
-
-exports[`@components/profile_picture should match snapshot 1`] = `null`;

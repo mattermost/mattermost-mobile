@@ -6,8 +6,6 @@ import shallowEqual from 'shallow-equals';
 import Preferences from '@constants/preferences';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import type {Config} from '@typings/database/models/servers/config';
-
 export function emptyFunction(e?: any) {// eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
 }
 
@@ -63,7 +61,7 @@ export function memoizeResult<F extends Function>(func: F): any {
     };
 }
 
-export function isCustomStatusEnabled(config: Config) {
+export function isCustomStatusEnabled(config: ClientConfig) {
     //fixme: isMinimumServerVersion has been modified here - is that correct ?
     return config && config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(config.Version, 5, 36);
 }

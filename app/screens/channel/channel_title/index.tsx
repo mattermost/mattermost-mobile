@@ -13,7 +13,6 @@ import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
-import {Config} from '@typings/database/models/servers/config';
 import {isCustomStatusEnabled} from '@utils/general';
 import {isGuest as isTeamMateGuest} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -271,7 +270,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
 type ChannelTitleInputProps = {
     canHaveSubtitle: boolean;
     channel: ChannelModel;
-    config: Config;
+    config: ClientConfig;
     currentUserId: string;
     teammateId?: string;
     onPress: () => void;
