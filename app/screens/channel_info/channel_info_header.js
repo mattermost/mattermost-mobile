@@ -28,8 +28,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import mattermostManaged from 'app/mattermost_managed';
 
-import {CustomStatusDuration} from '@mm-redux/types/users';
-
 export default class ChannelInfoHeader extends React.PureComponent {
     static propTypes = {
         createAt: PropTypes.number.isRequired,
@@ -165,7 +163,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         });
 
         const showCustomStatus = isCustomStatusEnabled && type === General.DM_CHANNEL && customStatus?.emoji && !isCustomStatusExpired;
-        const showCustomStatusExpiry = customStatus?.duration !== undefined && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR && isCustomStatusExpirySupported;
+        const showCustomStatusExpiry = Boolean(customStatus?.duration && isCustomStatusExpirySupported);
 
         return (
             <View style={style.container}>

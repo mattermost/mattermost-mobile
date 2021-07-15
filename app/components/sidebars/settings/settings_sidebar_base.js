@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {ScrollView, View, Text} from 'react-native';
 
 import {General} from '@mm-redux/constants';
-import {CustomStatusDuration} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
@@ -273,7 +272,7 @@ export default class SettingsSidebarBase extends PureComponent {
             </View>
         );
 
-        const customStatusExpiryTime = isStatusSet && customStatus?.duration !== undefined && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR && isCustomStatusExpirySupported ? (
+        const customStatusExpiryTime = isStatusSet && customStatus?.duration && isCustomStatusExpirySupported ? (
             <Text style={style.customStatusExpiryContainer}>
                 <CustomStatusExpiry
                     time={customStatus?.expires_at}
