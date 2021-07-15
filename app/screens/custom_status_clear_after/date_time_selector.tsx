@@ -23,7 +23,7 @@ type Props = {
 type AndroidMode = 'date' | 'time';
 
 const CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES = 30;
-function getRoundedTime(value: Moment) {
+export function getRoundedTime(value: Moment) {
     const roundedTo = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES;
     const start = moment(value);
     const diff = start.minute() % roundedTo;
@@ -60,9 +60,15 @@ const DateTimeSelector = (props: Props) => {
         setMode(currentMode);
     };
 
-    const showDatepicker = () => showMode('date');
+    const showDatepicker = () => {
+        showMode('date');
+        props.handleChange(moment(date));
+    };
 
-    const showTimepicker = () => showMode('time');
+    const showTimepicker = () => {
+        showMode('time');
+        props.handleChange(moment(date));
+    };
 
     return (
         <View style={styles.container}>

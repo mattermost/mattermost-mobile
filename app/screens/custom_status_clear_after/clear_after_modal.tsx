@@ -33,6 +33,7 @@ type State = {
     showExpiryTime: boolean;
 }
 
+const {DATE_AND_TIME} = CustomStatusDuration;
 class ClearAfterModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
         id: 'update-custom-status-clear-after',
@@ -95,7 +96,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         this.setState({
             duration,
             expiresAt,
-            showExpiryTime: duration === CustomStatusDuration.DATE_AND_TIME && expiresAt !== '',
+            showExpiryTime: duration === DATE_AND_TIME && expiresAt !== '',
         });
     };
 
@@ -147,11 +148,12 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                     <View style={style.block}>
                         <ClearAfterMenuItem
                             handleItemClick={this.handleItemClick}
-                            duration={CustomStatusDuration.DATE_AND_TIME}
+                            duration={DATE_AND_TIME}
                             theme={theme}
                             separator={false}
-                            isSelected={duration === CustomStatusDuration.DATE_AND_TIME && expiresAt === ''}
+                            isSelected={duration === DATE_AND_TIME && expiresAt === ''}
                             showExpiryTime={showExpiryTime}
+                            showDateTimePicker={duration === DATE_AND_TIME}
                         />
                     </View>
                 </KeyboardAwareScrollView>

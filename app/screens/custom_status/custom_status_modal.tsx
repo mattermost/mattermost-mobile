@@ -22,6 +22,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
+import {getRoundedTime} from '@screens/custom_status_clear_after/date_time_selector';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {getCurrentMomentForTimezone} from '@utils/timezone';
@@ -66,7 +67,6 @@ interface Props extends NavigationComponentProps {
         unsetCustomStatus: () => ActionFunc;
         removeRecentCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
     };
-    isTimezoneEnabled: boolean;
     isExpirySupported: boolean;
     isCustomStatusExpired: boolean;
 }
@@ -98,7 +98,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const {customStatus, userTimezone, isCustomStatusExpired, intl, theme, componentId, isTimezoneEnabled} = props;
+        const {customStatus, userTimezone, isCustomStatusExpired, intl, theme, componentId} = props;
 
         this.rightButton.text = intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = theme.sidebarHeaderTextColor;
@@ -110,14 +110,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         };
         mergeNavigationOptions(componentId, options);
 
-        let currentTime = moment();
+        const currentTime = getCurrentMomentForTimezone(userTimezone);
 
-        if (isTimezoneEnabled) {
-            currentTime = getCurrentMomentForTimezone(userTimezone);
-        }
-
-        let initialCustomExpiryTime: Moment = currentTime;
-
+        let initialCustomExpiryTime: Moment = getRoundedTime(currentTime);
         const isCurrentCustomStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
         if (isCurrentCustomStatusSet && customStatus?.duration === DATE_AND_TIME && customStatus?.expires_at) {
             initialCustomExpiryTime = moment(customStatus?.expires_at);
@@ -324,7 +319,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) => {
         this.setState({
             duration,
-            expires_at: duration === DATE_AND_TIME ? moment(expires_at) : this.state.expires_at,
+            expires_at: duration === DATE_AND_TIME && expires_at ? moment(expires_at) : this.state.expires_at,
         });
     };
 
@@ -332,7 +327,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const {intl, theme} = this.props;
         const screen = 'ClearAfter';
         const title = intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'});
-        const passProps = {handleClearAfterClick: this.handleClearAfterClick, initialDuration: this.state.duration, intl, theme};
+        const passProps = {
+            handleClearAfterClick: this.handleClearAfterClick,
+            initialDuration: this.state.duration,
+            intl,
+            theme,
+        };
 
         goToScreen(screen, title, passProps);
     };

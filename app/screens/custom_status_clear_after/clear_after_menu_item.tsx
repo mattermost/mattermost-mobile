@@ -25,6 +25,7 @@ type Props = {
     isSelected: boolean;
     intl: typeof intlShape;
     showExpiryTime?: boolean;
+    showDateTimePicker?: boolean;
 };
 
 const {
@@ -37,10 +38,9 @@ const {
     DATE_AND_TIME,
 } = CustomStatusDuration;
 
-const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime = false}: Props) => {
+const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime = false, showDateTimePicker = false}: Props) => {
     const style = getStyleSheet(theme);
 
-    const [showDateAndTimePicker, setShowDateAndTimePicker] = useState<boolean>(false);
     const [expiry, setExpiry] = useState<string>('');
 
     const expiryMenuItems: { [key in CustomStatusDuration]: string } = {
@@ -56,9 +56,6 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
     const handleClick = useCallback(
         preventDoubleTap(() => {
             handleItemClick(duration, '');
-            if (duration === CustomStatusDuration.DATE_AND_TIME) {
-                setShowDateAndTimePicker(true);
-            }
         }),
         [handleItemClick, duration],
     );
@@ -105,7 +102,7 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
                 </View>
                 {separator && <View style={style.divider}/>}
             </TouchableOpacity>
-            {showDateAndTimePicker && (
+            {showDateTimePicker && (
                 <DateTimePicker
                     theme={theme}
                     handleChange={handleCustomExpiresAtChange}

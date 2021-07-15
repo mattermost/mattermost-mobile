@@ -6,7 +6,7 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {setCustomStatus, unsetCustomStatus, removeRecentCustomStatus} from '@actions/views/custom_status';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentUserTimezone, isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
 import {UserCustomStatus} from '@mm-redux/types/users';
@@ -25,7 +25,6 @@ function makeMapStateToProps() {
         const customStatusExpired = isCustomStatusExpired(state, customStatus);
 
         return {
-            isTimezoneEnabled: isTimezoneEnabled(state),
             userTimezone,
             customStatus,
             recentCustomStatuses,
