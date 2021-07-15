@@ -21,6 +21,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
     <SelectedUser
       onRemove={[MockFunction]}
       teammateNameDisplay="full_name"
+      testID="more_direct_messages.selected_user"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -99,6 +100,7 @@ exports[`SelectedUsers should match snapshot for no warning message 1`] = `
     <SelectedUser
       onRemove={[MockFunction]}
       teammateNameDisplay="full_name"
+      testID="more_direct_messages.selected_user"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -159,6 +161,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
     <SelectedUser
       onRemove={[MockFunction]}
       teammateNameDisplay="full_name"
+      testID="more_direct_messages.selected_user"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -197,6 +200,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
     <SelectedUser
       onRemove={[MockFunction]}
       teammateNameDisplay="full_name"
+      testID="more_direct_messages.selected_user"
       theme={
         Object {
           "awayIndicator": "#ffbc42",

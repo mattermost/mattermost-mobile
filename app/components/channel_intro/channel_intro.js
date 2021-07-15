@@ -3,10 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Text,
-    View,
-} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -386,6 +383,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 12,
             marginBottom: 12,
             overflow: 'hidden',
+            ...Platform.select({
+                android: {
+                    scaleY: -1,
+                },
+            }),
         },
         displayName: {
             color: theme.centerChannelColor,

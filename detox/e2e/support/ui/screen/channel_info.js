@@ -110,6 +110,12 @@ class ChannelInfoScreen {
         }
     }
 
+    closeDirectOrGroupMessage = async () => {
+        await this.channelInfoScrollView.scrollTo('bottom');
+        await this.leaveAction.tap();
+        await expect(this.channelInfoScreen).not.toBeVisible();
+    }
+
     leaveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.leaveAction.tap();
