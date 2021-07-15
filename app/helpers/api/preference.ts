@@ -9,6 +9,10 @@ export function getPreferenceValue(preferences: PreferenceType[], category: stri
 
 export function getPreferenceAsBool(preferences: PreferenceType[], category: string, name: string, defaultValue = false) {
     const value = getPreferenceValue(preferences, category, name, defaultValue);
+    if (typeof value === 'boolean') {
+        return defaultValue;
+    }
+
     return value !== 'false';
 }
 
