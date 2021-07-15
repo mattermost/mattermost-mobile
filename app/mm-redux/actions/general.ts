@@ -4,8 +4,10 @@ import {Client4} from '@client/rest';
 
 import {GeneralTypes} from '@mm-redux/action_types';
 
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {TeamDataRetentionPolicy, ChannelDataRetentionPolicy} from '@mm-redux/types/data_retention';
 import {GeneralState} from '@mm-redux/types/general';
 import {logLevel} from '@mm-redux/types/client4';
 import {GetStateFunc, DispatchFunc, ActionFunc, batchActions} from '@mm-redux/types/actions';
@@ -72,7 +74,27 @@ export function getDataRetentionPolicy(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
-            data = await Client4.getDataRetentionPolicy();
+            const state = getState();
+            const userId = getCurrentUserId(state);
+            const globalPolicy = await Client4.getGlobalDataRetentionPolicy();
+
+            let teamPolicies: TeamDataRetentionPolicy[] = [];
+            let channelPolicies: ChannelDataRetentionPolicy[] = [];
+
+            if (isMinimumServerVersion(getServerVersion(getState()), 5, 37)) {
+                teamPolicies = await getAllGranularDataRetentionPolicies({
+                    userId,
+                });
+                channelPolicies = await getAllGranularDataRetentionPolicies({
+                    isChannel: true,
+                    userId,
+                });
+            }
+            data = {
+                global: globalPolicy,
+                teams: teamPolicies,
+                channels: channelPolicies,
+            };
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(batchActions([
@@ -91,6 +113,22 @@ export function getDataRetentionPolicy(): ActionFunc {
 
         return {data};
     };
+}
+
+async function getAllGranularDataRetentionPolicies(options: {
+    isChannel?: boolean;
+    page?: number;
+    policies?: TeamDataRetentionPolicy[] | ChannelDataRetentionPolicy[];
+    userId: string;
+}): Promise<TeamDataRetentionPolicy[] | ChannelDataRetentionPolicy[]> {
+    const {isChannel, page = 0, policies = [], userId} = options;
+    const api = isChannel ? 'getChannelDataRetentionPolicies' : 'getTeamDataRetentionPolicies';
+    const data = await Client4[api](userId, page);
+    policies.push(...data.policies);
+    if (policies.length < data.total_count) {
+        await getAllGranularDataRetentionPolicies({...options, policies, page: page + 1});
+    }
+    return policies;
 }
 
 export function getLicenseConfig(): ActionFunc {

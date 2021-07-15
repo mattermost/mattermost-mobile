@@ -46,11 +46,57 @@ export function cleanUpState(payload, keepCurrent = false) {
             threadsInTeam: {},
             counts: payload.entities?.threads?.counts,
         },
+        general: {
+            ...payload.entities?.general,
+            dataRetention: {
+                ...payload.entities?.general?.dataRetention,
+            },
+        },
     };
 
-    let retentionPeriod = 0;
-    if (payload.entities?.general?.dataRetentionPolicy?.message_deletion_enabled) {
-        retentionPeriod = payload.entities.general.dataRetentionPolicy.message_retention_cutoff;
+    // Migrate old data retention policy value to the granular structure
+    if (nextEntities.general.dataRetentionPolicy) {
+        nextEntities.general.dataRetention = {
+            ...nextEntities.general.dataRetention,
+            policies: {
+                ...nextEntities.general.dataRetention?.policies?.global,
+                global: nextEntities.general.dataRetentionPolicy,
+            },
+        };
+        delete nextEntities.general.dataRetentionPolicy;
+    }
+
+    let globalRetentionCutoff = 0;
+    const channelsRetentionCutoff = {};
+
+    const {policies, lastCleanUpAt} = nextEntities.general.dataRetention || {};
+
+    const lastCleanedToday = new Date(lastCleanUpAt).toDateString() === new Date().toDateString();
+    if (policies && (!lastCleanUpAt || !lastCleanedToday)) {
+        if (policies.global?.message_deletion_enabled) {
+            globalRetentionCutoff = policies.global.message_retention_cutoff;
+        }
+
+        // Channels from team policies
+        policies?.teams?.forEach((policy) => {
+            const channels = payload.entities?.channels?.channelsInTeam?.[policy.team_id];
+            if (channels) {
+                const cutoff = getRetentionCutoffFromPolicy(policy);
+                channels.forEach((channel_id) => {
+                    channelsRetentionCutoff[channel_id] = cutoff;
+                });
+            }
+        });
+
+        // Add/Override from channels only policies
+        policies?.channels?.forEach((policy) => {
+            channelsRetentionCutoff[policy.channel_id] = getRetentionCutoffFromPolicy(policy);
+        });
+
+        // Update the last cleanup date only when we have atleast one policy
+        if (globalRetentionCutoff || Object.keys(channelsRetentionCutoff).length) {
+            nextEntities.general.dataRetention.lastCleanUpAt = new Date();
+        }
     }
 
     const postIdsToKeep = [];
@@ -64,6 +110,7 @@ export function cleanUpState(payload, keepCurrent = false) {
 
     // Keep the last 60 posts in each recently viewed channel
     nextEntities.posts.postsInChannel = cleanUpPostsInChannel(payload.entities.posts?.postsInChannel, lastChannelForTeam, keepCurrent ? currentChannelId : '');
+
     postIdsToKeep.push(...getAllFromPostsInChannel(nextEntities.posts.postsInChannel));
 
     // Keep any posts that appear in search results
@@ -102,7 +149,7 @@ export function cleanUpState(payload, keepCurrent = false) {
             if (post) {
                 // Remove non-root posts if CRT is enabled
                 const crtCleanup = collapsedThreadsEnabled && post.root_id;
-                if ((retentionPeriod && post.create_at < retentionPeriod) || crtCleanup) {
+                if (shouldRemovePost(globalRetentionCutoff, channelsRetentionCutoff, post) || crtCleanup) {
                     // This post has been removed by data retention, so don't keep it
                     removeFromPostsInChannel(nextEntities.posts.postsInChannel, post.channel_id, postId);
                     removeFromThreadsInTeam(nextEntities.threads, postId);
@@ -278,6 +325,23 @@ export function getAllFromThreadsInTeam(threadsInTeam) {
         }
     }
     return postIds;
+}
+
+// Returns cutoff time for the policy
+function getRetentionCutoffFromPolicy(policy) {
+    const periodDate = new Date();
+    periodDate.setDate(periodDate.getDate() - policy.post_duration);
+    return periodDate.getTime();
+}
+
+function shouldRemovePost(globalRetentionCutoff, channelsRetentionCutoff, post) {
+    // If cutoff is found for the channel
+    if (channelsRetentionCutoff[post.channel_id]) {
+        return post.create_at < channelsRetentionCutoff[post.channel_id];
+    } else if (globalRetentionCutoff) {
+        return post.create_at < globalRetentionCutoff;
+    }
+    return false;
 }
 
 function removeFromPostsInChannel(postsInChannel, channelId, postId) {
