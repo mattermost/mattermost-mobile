@@ -4,7 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {NavigationTypes} from 'app/constants';
-import {handleCRTPreferenceChange} from '@actions/websocket/preferences';
+import {handleCRTPreferenceChange} from '@actions/views/crt';
 import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
@@ -100,8 +100,13 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             analytics.setUserRoles(data.user.roles);
 
             const preferences = await Client4.getMyPreferences();
+            data.preferences = preferences;
             const crtPreferenceChanged = dispatch(handleCRTPreferenceChange(preferences));
             if (crtPreferenceChanged.data) {
+                dispatch({
+                    type: UserTypes.LOGIN,
+                    data,
+                });
                 return {data};
             }
 
@@ -122,7 +127,6 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             data.teams = teams;
             data.teamMembers = teamMembers;
             data.teamUnreads = teamUnreads;
-            data.preferences = preferences;
             data.config = config;
             data.url = Client4.getUrl();
 
