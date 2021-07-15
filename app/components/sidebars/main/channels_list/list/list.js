@@ -260,6 +260,7 @@ export default class List extends PureComponent {
                 leftButtons: [{
                     id: 'close-dms',
                     icon: this.closeButton,
+                    testID: 'close.more_direct_messages.button',
                 }],
             },
         };

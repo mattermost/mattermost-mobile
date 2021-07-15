@@ -10,6 +10,7 @@ import {
     PostDraft,
     PostList,
     PostOptions,
+    ProfilePicture,
     SendButton,
     SettingsSidebar,
 } from '@support/ui/component';
@@ -23,6 +24,7 @@ import {isAndroid} from '@support/utils';
 class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
+        channelIntroProfilePicturePrefix: 'channel_intro.profile_picture.',
         channelScreen: 'channel.screen',
         channelPostList: 'channel.post_list',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
@@ -67,6 +69,11 @@ class ChannelScreen {
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.channelScreenPrefix);
 
     postList = new PostList(this.testID.channelScreenPrefix);
+
+    getChannelIntroProfilePicture = (userId) => {
+        const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.channelIntroProfilePicturePrefix, userId);
+        return element(profilePictureItemMatcher);
+    }
 
     getMoreMessagesButton = () => {
         return this.postList.getMoreMessagesButton();

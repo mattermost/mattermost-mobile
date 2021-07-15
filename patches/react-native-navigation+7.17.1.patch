@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 2d8f1ba..708f130 100644
+index 3b4e398..8e91f6b 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 @@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
@@ -29,7 +29,7 @@ index 2d8f1ba..708f130 100644
              }
          });
      }
-@@ -201,8 +205,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -210,8 +214,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -45,7 +45,7 @@ index 2d8f1ba..708f130 100644
          });
      }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
-index 6b28fc7..8bb2a76 100644
+index 1e5751e..f921605 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
 @@ -1,10 +1,12 @@
@@ -59,9 +59,9 @@ index 6b28fc7..8bb2a76 100644
  import android.view.ViewTreeObserver;
 +import android.view.inputmethod.InputMethodManager;
  
- import com.reactnativenavigation.options.Options;
- import com.reactnativenavigation.options.params.Bool;
-@@ -275,6 +277,8 @@ public abstract class ViewController<T extends ViewGroup> implements ViewTreeObs
+ import androidx.annotation.CallSuper;
+ import androidx.annotation.CheckResult;
+@@ -276,6 +278,8 @@ public abstract class ViewController<T extends ViewGroup> implements ViewTreeObs
              ((Destroyable) view).destroy();
          }
          if (view != null) {
@@ -93,3 +93,18 @@ index 815e1c6..a35a087 100644
          return nil;
      }
  
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
+index 2e60123..56830c8 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
+@@ -21,8 +21,8 @@
+     self.toBounds = [self convertViewBounds:toElement];
+     self.fromCenter = [self convertViewCenter:fromElement];
+     self.toCenter = [self convertViewCenter:toElement];
+-    self.fromPath = [self resolveViewPath:fromElement withSuperView:fromElement.superview];
+-    self.toPath = [self resolveViewPath:toElement withSuperView:toElement.superview];
++    self.fromPath = fromElement.bounds;
++    self.toPath = toElement.bounds;
+ 
+     return self;
+ }

@@ -11,7 +11,7 @@ import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 
@@ -25,7 +25,6 @@ const HTTP_UNAUTHORIZED = 401;
 export function completeLogin(user, deviceToken) {
     return async (dispatch, getState) => {
         const state = getState();
-        const config = getConfig(state);
         const license = getLicense(state);
         const token = Client4.getToken();
         const url = Client4.getUrl();
@@ -40,8 +39,7 @@ export function completeLogin(user, deviceToken) {
         }
 
         // Data retention
-        if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
-            license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+        if (license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
             dispatch(getDataRetentionPolicy());
         } else {
             dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});

@@ -13,6 +13,7 @@ class Post {
         postHeaderCommentedOn: 'post_header.commented_on',
         postHeaderDateTime: 'post_header.date_time',
         postHeaderDisplayName: 'post_header.display_name',
+        postHeaderBotTag: 'post_header.bot_tag',
         postHeaderGuestTag: 'post_header.guest_tag',
         postHeaderReply: 'post_header.reply',
         postHeaderReplyCount: 'post_header.reply.count',
@@ -58,6 +59,7 @@ class Post {
         const postItemHeaderCommentedOnMatcher = by.id(this.testID.postHeaderCommentedOn).withAncestor(postItemMatcher);
         const postItemHeaderDateTimeMatcher = by.id(this.testID.postHeaderDateTime).withAncestor(postItemMatcher);
         const postItemHeaderDisplayNameMatcher = by.id(this.testID.postHeaderDisplayName).withAncestor(postItemMatcher);
+        const postItemHeaderBotTagMatcher = by.id(this.testID.postHeaderBotTag).withAncestor(postItemMatcher);
         const postItemHeaderGuestTagMatcher = by.id(this.testID.postHeaderGuestTag).withAncestor(postItemMatcher);
         const postItemHeaderReplyMatcher = by.id(this.testID.postHeaderReply).withAncestor(postItemMatcher);
         const postItemHeaderReplyCountMatcher = by.id(this.testID.postHeaderReplyCount).withAncestor(postItemMatcher);
@@ -66,6 +68,7 @@ class Post {
             postItemHeaderCommentedOn: element(postItemHeaderCommentedOnMatcher),
             postItemHeaderDateTime: element(postItemHeaderDateTimeMatcher),
             postItemHeaderDisplayName: element(postItemHeaderDisplayNameMatcher),
+            postItemHeaderBotTag: element(postItemHeaderBotTagMatcher),
             postItemHeaderGuestTag: element(postItemHeaderGuestTagMatcher),
             postItemHeaderReply: element(postItemHeaderReplyMatcher),
             postItemHeaderReplyCount: element(postItemHeaderReplyCountMatcher),

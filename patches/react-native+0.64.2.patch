@@ -1,3 +1,24 @@
+diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+index a069a24..a21fa38 100644
+--- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
++++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+@@ -1222,9 +1222,15 @@ class ScrollView extends React.Component<Props, State> {
+         // Note: we should split props.style on the inner and outer props
+         // however, the ScrollView still needs the baseStyle to be scrollable
+         const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
++        let inverted;
++        if (inner.scaleY) {
++          inverted = {scaleY: -1};
++          delete inner['scaleY']
++        }
++
+         return React.cloneElement(
+           refreshControl,
+-          {style: [baseStyle, outer]},
++          {style: [baseStyle, outer, inverted]},
+           <ScrollViewClass
+             {...props}
+             style={[baseStyle, inner]}
 diff --git a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
 index dffccc4..dc426c2 100644
 --- a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
@@ -40,10 +61,10 @@ index 2249d54..cc303b3 100644
    horizontallyInverted: {
      transform: [{scaleX: -1}],
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index 5995ad5..dbae7e3 100644
+index dd34c98..4d74938 100644
 --- a/node_modules/react-native/react.gradle
 +++ b/node_modules/react-native/react.gradle
-@@ -157,7 +157,7 @@ afterEvaluate {
+@@ -151,7 +151,7 @@ afterEvaluate {
  
              // Set up dev mode
              def devEnabled = !(config."devDisabledIn${targetName}"
@@ -52,7 +73,7 @@ index 5995ad5..dbae7e3 100644
  
              def extraArgs = config.extraPackagerArgs ?: [];
  
-@@ -177,7 +177,7 @@ afterEvaluate {
+@@ -171,7 +171,7 @@ afterEvaluate {
                      def hermesFlags;
                      def hbcTempFile = file("${jsBundleFile}.hbc")
                      exec {
@@ -61,7 +82,7 @@ index 5995ad5..dbae7e3 100644
                              // Can't use ?: since that will also substitute valid empty lists
                              hermesFlags = config.hermesFlagsRelease
                              if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -221,7 +221,7 @@ afterEvaluate {
+@@ -215,7 +215,7 @@ afterEvaluate {
                  ? config."bundleIn${targetName}"
                  : config."bundleIn${variant.buildType.name.capitalize()}" != null
                      ? config."bundleIn${variant.buildType.name.capitalize()}"
@@ -70,7 +91,7 @@ index 5995ad5..dbae7e3 100644
          }
  
          // Expose a minimal interface on the application variant and the task itself:
-@@ -318,7 +318,7 @@ afterEvaluate {
+@@ -312,7 +312,7 @@ afterEvaluate {
          // This should really be done by packaging all Hermes releated libs into
          // two separate HermesDebug and HermesRelease AARs, but until then we'll
          // kludge it by deleting the .so files out of the /transforms/ directory.
