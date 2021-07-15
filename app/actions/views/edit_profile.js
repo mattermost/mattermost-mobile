@@ -28,6 +28,7 @@ export function setProfileImageUri(imageUri = '') {
 export function removeProfileImage(user) {
     return async (dispatch) => {
         const result = await dispatch(setDefaultProfileImage(user));
+        dispatch(setProfileImageUri());
         return result;
     };
 }

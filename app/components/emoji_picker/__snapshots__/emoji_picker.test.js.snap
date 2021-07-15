@@ -12861,7 +12861,25 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
               "key": "flags",
             },
             Object {
-              "data": Array [],
+              "data": Array [
+                Object {
+                  "items": Array [
+                    Object {
+                      "aliases": Array [
+                        "mattermost",
+                      ],
+                      "name": "mattermost",
+                    },
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                  ],
+                  "key": "custom-0",
+                },
+              ],
               "defaultMessage": undefined,
               "icon": "emoticon-custom-outline",
               "id": "emoji_picker.custom",

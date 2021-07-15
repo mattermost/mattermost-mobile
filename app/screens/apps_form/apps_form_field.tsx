@@ -24,11 +24,11 @@ const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 export type Props = {
     field: AppField;
     name: string;
-    errorText?: React.ReactNode;
+    errorText?: string;
     theme: Theme;
 
     value: AppFormValue;
-    onChange: (name: string, value: string | AppSelectOption) => void;
+    onChange: (name: string, value: string | AppSelectOption | boolean) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 }
 

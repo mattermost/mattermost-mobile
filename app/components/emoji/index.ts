@@ -26,11 +26,17 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 
     let imageUrl = '';
     let unicode;
+    let assetImage = '';
     let isCustomEmoji = false;
     let displayTextOnly = false;
     if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)!];
-        unicode = emoji.image;
+        if (emoji.category === 'custom') {
+            assetImage = emoji.fileName;
+            isCustomEmoji = true;
+        } else {
+            unicode = emoji.image;
+        }
     } else if (customEmojis.has(emojiName) && serverUrl) {
         const emoji = customEmojis.get(emojiName);
         imageUrl = Client4.getCustomEmojiImageUrl(emoji!.id);
@@ -45,6 +51,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 
     return {
         imageUrl,
+        assetImage,
         isCustomEmoji,
         displayTextOnly,
         unicode,

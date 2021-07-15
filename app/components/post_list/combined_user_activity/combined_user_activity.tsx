@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import Markdown from '@components/markdown';
@@ -31,6 +31,7 @@ type Props = {
     testID?: string;
     theme: Theme;
     usernamesById: Record<string, string>;
+    style?: StyleProp<ViewStyle>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -87,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const CombinedUserActivity = ({
     canDelete, currentUserId, currentUsername, intl, post,
-    showJoinLeave, testID, theme, usernamesById,
+    showJoinLeave, testID, theme, usernamesById, style,
 }: Props) => {
     const itemTestID = `${testID}.${post.id}`;
     const textStyles = getMarkdownTextStyles(theme);
@@ -215,6 +216,7 @@ const CombinedUserActivity = ({
 
     return (
         <View
+            style={style}
             testID={testID}
         >
             <TouchableWithFeedback

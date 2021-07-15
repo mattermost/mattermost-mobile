@@ -6,6 +6,8 @@ import {createSelector} from 'reselect';
 import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
 import {CategoryNames, CategoryTranslations, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory, CategoryMessage} from '@utils/emojis';
+import {get} from '@mm-redux/selectors/entities/preferences';
+import {Preferences} from '@mm-redux/constants';
 
 const icons = {
     recent: 'clock-outline',
@@ -38,24 +40,47 @@ function fillEmoji(indice) {
     };
 }
 
+// if an emoji
+// - has `skin_variations` then it uses the default skin (yellow)
+// - has `skins` it's first value is considered the skin version (it can contain more values)
+// - any other case it doesn't have variations or is a custom emoji.
+function getSkin(emoji) {
+    if ('skin_variations' in emoji) {
+        return 'default';
+    }
+    if ('skins' in emoji) {
+        return emoji.skins && emoji.skins[0];
+    }
+    return null;
+}
+
 export const selectEmojisByName = createIdsSelector(
     selectCustomEmojisByName,
-    (customEmojis) => {
+    getUserSkinTone,
+    (customEmojis, skinTone) => {
         const emoticons = new Set();
-        for (const [key] of [...EmojiIndicesByAlias.entries(), ...customEmojis.entries()]) {
-            if (!key.includes('skin_tone')) {
+        for (const [key, index] of EmojiIndicesByAlias.entries()) {
+            const skin = getSkin(Emojis[index]);
+            if (!skin || skin === skinTone) {
                 emoticons.add(key);
             }
         }
-
+        for (const [key] of customEmojis.entries()) {
+            emoticons.add(key);
+        }
         return Array.from(emoticons);
     },
 );
 
+export function getUserSkinTone(state) {
+    return get(state, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE, 'default');
+}
+
 export const selectEmojisBySection = createSelector(
     selectCustomEmojisByName,
     (state) => state.views.recentEmojis,
-    (customEmojis, recentEmojis) => {
+    getUserSkinTone,
+    (customEmojis, recentEmojis, skinTone) => {
         const customEmojiItems = [];
         for (const [key] of customEmojis) {
             customEmojiItems.push({
@@ -66,8 +91,7 @@ export const selectEmojisBySection = createSelector(
         const filteredCategories = CategoryNames.filter((category) => category !== 'recent' || recentItems.length > 0);
 
         const emoticons = filteredCategories.map((category) => {
-            // TODO: change default into user selected category once the user is able to choose it
-            const items = EmojiIndicesByCategory.get('default').get(category).map(fillEmoji);
+            const items = EmojiIndicesByCategory.get(skinTone).get(category).map(fillEmoji);
             const data = items;
             if (category === 'custom') {
                 data.push(...customEmojiItems);
