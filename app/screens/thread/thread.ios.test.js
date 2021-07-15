@@ -15,7 +15,11 @@ import ThreadIOS from './thread.ios';
 jest.mock('react-native-navigation', () => {
     return {
         Navigation: {
+            events: () => ({
+                registerAppLaunchedListener: jest.fn(),
+            }),
             registerComponent: jest.fn(),
+            setLazyComponentRegistrator: jest.fn(),
         },
     };
 });
