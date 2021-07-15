@@ -271,8 +271,8 @@ const Post = ({
     if (thread?.unread_mentions || thread?.unread_replies) {
         if (thread.unread_replies && thread.unread_replies > 0) {
             badge = (
-                <View style={style.badgeContainer}>
-                    <View style={style.unreadDot}/>
+                <View style={styles.badgeContainer}>
+                    <View style={styles.unreadDot}/>
                 </View>
             );
         }
