@@ -189,9 +189,13 @@ describe('cleanUpState', () => {
                     fileIdsByPostId: {},
                 },
                 general: {
-                    dataRetentionPolicy: {
-                        message_deletion_enabled: true,
-                        message_retention_cutoff: 1000,
+                    dataRetention: {
+                        policies: {
+                            global: {
+                                message_deletion_enabled: true,
+                                message_retention_cutoff: 1000,
+                            },
+                        },
                     },
                 },
                 posts: {
@@ -228,6 +232,122 @@ describe('cleanUpState', () => {
         expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1'], recent: true}]);
         expect(result.entities.search.results).toEqual(['post1', 'post2']);
         expect(result.entities.search.flagged).toEqual(['post1', 'post2', 'post3']);
+    });
+
+    test('should migrate dataRetentionPolicy key to granular data retention structure', () => {
+        const dataRetentionPolicy = {
+            file_deletion_enabled: false,
+            file_retention_cutoff: 0,
+            message_deletion_enabled: false,
+            message_retention_cutoff: 0,
+        };
+
+        const state = {
+            entities: {
+                general: {
+                    dataRetentionPolicy,
+                },
+            },
+        };
+
+        const result = cleanUpState(state);
+
+        expect(result.entities.general.dataRetentionPolicy).toBeUndefined();
+        expect(result.entities.general.dataRetention.policies.global).toEqual(dataRetentionPolicy);
+    });
+
+    test('should remove post because of granular data retention', () => {
+        const getCreateAtBeforeDays = (days) => {
+            const date = new Date();
+            date.setDate(date.getDate() - days);
+            return date.getTime();
+        };
+        const state = {
+            entities: {
+                channels: {
+                    currentChannelId: 'channel1',
+                    channelsInTeam: {
+                        team1: new Set(['team1_channel1', 'team1_channel2']),
+                        team2: new Set(['team2_channel1', 'team2_channel2']),
+                    },
+                },
+                files: {
+                    fileIdsByPostId: {},
+                },
+                general: {
+                    dataRetention: {
+                        policies: {
+                            teams: [{
+                                post_duration: 5,
+                                team_id: 'team1',
+                            }, {
+                                post_duration: 10,
+                                team_id: 'team2',
+                            }],
+                            channels: [{
+                                post_duration: 2,
+                                channel_id: 'team1_channel1',
+                            }],
+                        },
+                    },
+                },
+                posts: {
+                    posts: {
+
+                        // Team 1 - Channel 1, Channel Policy - 2 Days
+                        post1: {id: 'post1', channel_id: 'team1_channel1', create_at: getCreateAtBeforeDays(1)},
+                        post2: {id: 'post2', channel_id: 'team1_channel1', create_at: getCreateAtBeforeDays(3)}, // X
+
+                        // Team 1 - Channel 2, Team Policy - 5 Days
+                        post3: {id: 'post3', channel_id: 'team1_channel2', create_at: getCreateAtBeforeDays(3)},
+                        post4: {id: 'post4', channel_id: 'team1_channel2', create_at: getCreateAtBeforeDays(6)}, // X
+
+                        // Team 2, Channel 1 & 2, Team Policy - 10 Days
+                        post5: {id: 'post5', channel_id: 'team2_channel1', create_at: getCreateAtBeforeDays(9)},
+                        post6: {id: 'post6', channel_id: 'team2_channel2', create_at: getCreateAtBeforeDays(11)}, // X
+                    },
+                    postsInChannel: {
+                        team1_channel1: [
+                            {order: ['post1', 'post2'], recent: true},
+                        ],
+                        team1_channel2: [
+                            {order: ['post3', 'post4'], recent: true},
+                        ],
+                        team2_channel1: [
+                            {order: ['post5'], recent: true},
+                        ],
+                        team2_channel2: [
+                            {order: ['post6'], recent: true},
+                        ],
+                    },
+                    postsInThread: {},
+                    reactions: {},
+                },
+                search: {
+                    results: [],
+                    flagged: [],
+                },
+            },
+            views: {
+                team: {
+                    lastChannelForTeam: {
+                        team1: ['team1_channel1', 'team1_channel2'],
+                        team2: ['team2_channel1', 'team2_channel2'],
+                    },
+                },
+            },
+        };
+
+        const result = cleanUpState(state);
+
+        expect(result.entities.posts.posts.post1).toBeDefined();
+        expect(result.entities.posts.posts.post2).toBeUndefined();
+
+        expect(result.entities.posts.posts.post3).toBeDefined();
+        expect(result.entities.posts.posts.post4).toBeUndefined();
+
+        expect(result.entities.posts.posts.post5).toBeDefined();
+        expect(result.entities.posts.posts.post6).toBeUndefined();
     });
 
     test('should keep failed pending post', () => {
