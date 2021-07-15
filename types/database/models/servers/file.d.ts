@@ -4,12 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Post from './post';
-
 /**
  * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
  */
-export default class File extends Model {
+export default class FileModel extends Model {
     /** table (name) : File */
     static table: string;
 
@@ -44,5 +42,5 @@ export default class File extends Model {
     width: number;
 
     /** post : The related Post record for this file */
-    post: Relation<Post>;
+    post: Relation<PostModel>;
 }

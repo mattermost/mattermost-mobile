@@ -17,7 +17,6 @@ import type {
     OperationArgs,
     ProcessRecordResults,
     ProcessRecordsArgs,
-    RawValue,
     RecordPair,
 } from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
@@ -123,7 +122,7 @@ export default class BaseDataOperator {
      * @throws {DataOperatorException}
      * @returns {Promise<Model[]>}
      */
-    prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs) => {
+    prepareRecords = async ({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs): Promise<Model[]> => {
         if (!this.database) {
             throw new DataOperatorException('Database not defined');
         }
@@ -180,7 +179,7 @@ export default class BaseDataOperator {
      * @throws {DataOperatorException}
      * @returns {Promise<void>}
      */
-    batchRecords = async (models: Model[]) => {
+    batchRecords = async (models: Model[]): Promise<void> => {
         try {
             if (models.length > 0) {
                 await this.database.action(async () => {
@@ -203,7 +202,7 @@ export default class BaseDataOperator {
      * @param {string} handleRecordsArgs.tableName
      * @returns {Promise<Model[]>}
      */
-    handleRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs) => {
+    handleRecords = async ({findMatchingRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues = [], tableName, prepareRecordsOnly = true}: HandleRecordsArgs): Promise<Model[]> => {
         if (!createOrUpdateRawValues.length) {
             throw new DataOperatorException(
                 `An empty "rawValues" array has been passed to the handleRecords method for tableName ${tableName}`,

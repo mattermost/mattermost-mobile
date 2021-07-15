@@ -5,16 +5,17 @@ import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Group from '@typings/database/models/servers/group';
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/models/servers/team';
+
+import type GroupModel from '@typings/database/models/servers/group';
+import type TeamModel from '@typings/database/models/servers/team';
 
 const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
 
 /**
  * The GroupsInTeam links the Team model with the Group model
  */
-export default class GroupsInTeam extends Model {
+export default class GroupsInTeamModel extends Model {
     /** table (name) : GroupsInTeam */
     static table = GROUPS_IN_TEAM;
 
@@ -35,8 +36,8 @@ export default class GroupsInTeam extends Model {
     @field('team_id') teamId!: string;
 
     /** team : The related record to the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;
 
     /** group : The related record to the parent Team model */
-    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
+    @immutableRelation(GROUP, 'group_id') group!: Relation<GroupModel>;
 }

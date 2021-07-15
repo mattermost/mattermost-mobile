@@ -17,18 +17,18 @@ import {
 } from '@database/operator/server_data_operator/transformers/user';
 import {getRawRecordPairs, getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
-import ChannelMembership from '@typings/database/models/servers/channel_membership';
-import CustomEmoji from '@typings/database/models/servers/custom_emoji';
-import {
+
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {
     HandleChannelMembershipArgs,
     HandlePreferencesArgs,
     HandleReactionsArgs,
     HandleUsersArgs,
-    RawReaction,
 } from '@typings/database/database';
-import Preference from '@typings/database/models/servers/preference';
-import Reaction from '@typings/database/models/servers/reaction';
-import User from '@typings/database/models/servers/user';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type ReactionModel from '@typings/database/models/servers/reaction';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {
     CHANNEL_MEMBERSHIP,
@@ -39,24 +39,22 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface UserHandlerMix {
-    handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembership[]>;
-    handlePreferences: ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Promise<Preference[]>;
-    handleReactions: ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<Array<Reaction | CustomEmoji>>;
-    handleUsers: ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<User[]>;
+    handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
+    handlePreferences: ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Promise<PreferenceModel[]>;
+    handleReactions: ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<Array<ReactionModel | CustomEmojiModel>>;
+    handleUsers: ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<UserModel[]>;
 }
 
 const UserHandler = (superclass: any) => class extends superclass {
     /**
      * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP table from the 'Server' schema
      * @param {HandleChannelMembershipArgs} channelMembershipsArgs
-     * @param {RawChannelMembership[]} channelMembershipsArgs.channelMemberships
+     * @param {ChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<ChannelMembership[]>}
+     * @returns {Promise<ChannelMembershipModel[]>}
      */
-    handleChannelMembership = async ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs) => {
-        let records: ChannelMembership[] = [];
-
+    handleChannelMembership = ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
         if (!channelMemberships.length) {
             throw new DataOperatorException(
                 'An empty "channelMemberships" array has been passed to the handleChannelMembership method',
@@ -65,7 +63,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
             transformer: transformChannelMembershipRecord,
@@ -73,21 +71,17 @@ const UserHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });
-
-        return records;
     };
 
     /**
      * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE table from the 'Server' schema
      * @param {HandlePreferencesArgs} preferencesArgs
-     * @param {RawPreference[]} preferencesArgs.preferences
+     * @param {PreferenceType[]} preferencesArgs.preferences
      * @param {boolean} preferencesArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<Preference[]>}
+     * @returns {Promise<PreferenceModel[]>}
      */
-    handlePreferences = async ({preferences, prepareRecordsOnly = true}: HandlePreferencesArgs) => {
-        let records: Preference[] = [];
-
+    handlePreferences = ({preferences, prepareRecordsOnly = true}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
         if (!preferences.length) {
             throw new DataOperatorException(
                 'An empty "preferences" array has been passed to the handlePreferences method',
@@ -96,7 +90,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             transformer: transformPreferenceRecord,
@@ -104,20 +98,18 @@ const UserHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: PREFERENCE,
         });
-
-        return records;
     };
 
     /**
      * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction table from the 'Server' schema
      * @param {HandleReactionsArgs} handleReactions
-     * @param {RawReaction[]} handleReactions.reactions
+     * @param {Reaction[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<(Reaction| CustomEmoji)[]>}
+     * @returns {Promise<Array<(ReactionModel | CustomEmojiModel)>>}
      */
-    handleReactions = async ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => {
-        let batchRecords: Array<Reaction| CustomEmoji> = [];
+    handleReactions = async ({reactions, prepareRecordsOnly}: HandleReactionsArgs): Promise<Array<(ReactionModel | CustomEmojiModel)>> => {
+        let batchRecords: Array<ReactionModel | CustomEmojiModel> = [];
 
         if (!reactions.length) {
             throw new DataOperatorException(
@@ -125,7 +117,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as RawReaction[];
+        const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as Reaction[];
 
         const {
             createEmojis,
@@ -143,7 +135,7 @@ const UserHandler = (superclass: any) => class extends superclass {
                 createRaws: createReactions,
                 transformer: transformReactionRecord,
                 tableName: REACTION,
-            })) as Reaction[];
+            })) as ReactionModel[];
             batchRecords = batchRecords.concat(reactionsRecords);
         }
 
@@ -153,7 +145,7 @@ const UserHandler = (superclass: any) => class extends superclass {
                 createRaws: getRawRecordPairs(createEmojis),
                 transformer: transformCustomEmojiRecord,
                 tableName: CUSTOM_EMOJI,
-            })) as CustomEmoji[];
+            })) as CustomEmojiModel[];
             batchRecords = batchRecords.concat(emojiRecords);
         }
 
@@ -167,20 +159,18 @@ const UserHandler = (superclass: any) => class extends superclass {
             await this.batchRecords(batchRecords);
         }
 
-        return [];
+        return batchRecords;
     };
 
     /**
      * handleUsers: Handler responsible for the Create/Update operations occurring on the User table from the 'Server' schema
      * @param {HandleUsersArgs} usersArgs
-     * @param {RawUser[]} usersArgs.users
+     * @param {UserProfile[]} usersArgs.users
      * @param {boolean} usersArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<User[]>}
+     * @returns {Promise<UserModel[]>}
      */
-    handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs) => {
-        let records: User[] = [];
-
+    handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs): Promise<UserModel[]> => {
         if (!users.length) {
             throw new DataOperatorException(
                 'An empty "users" array has been passed to the handleUsers method',
@@ -189,7 +179,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordUserEqualToRaw,
             transformer: transformUserRecord,
@@ -197,8 +187,6 @@ const UserHandler = (superclass: any) => class extends superclass {
             tableName: USER,
             prepareRecordsOnly,
         });
-
-        return records;
     };
 };
 

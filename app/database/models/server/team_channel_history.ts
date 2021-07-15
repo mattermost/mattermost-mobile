@@ -8,7 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type Team from '@typings/database/models/servers/team';
+import type TeamModel from '@typings/database/models/servers/team';
 
 const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 
@@ -16,7 +16,7 @@ const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
  * The TeamChannelHistory model helps keeping track of the last channel visited
  * by the user.
  */
-export default class TeamChannelHistory extends Model {
+export default class TeamChannelHistoryModel extends Model {
     /** table (name) : TeamChannelHistory */
     static table = TEAM_CHANNEL_HISTORY;
 
@@ -34,5 +34,5 @@ export default class TeamChannelHistory extends Model {
     @json('channel_ids', safeParseJSON) channelIds!: string[];
 
     /** team : The related record from the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;
 }

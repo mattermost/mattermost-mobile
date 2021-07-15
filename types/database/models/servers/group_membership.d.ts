@@ -4,14 +4,11 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Group from './group';
-import User from './user';
-
 /**
  * The GroupMembership model represents the 'association table' where many groups have users and many users are in
  * groups (relationship type N:N)
  */
-export default class GroupMembership extends Model {
+export default class GroupMembershipModel extends Model {
     /** table (name) : GroupMembership */
     static table: string;
 
@@ -21,18 +18,18 @@ export default class GroupMembership extends Model {
     userId: string;
 
     /** memberGroup : The related group this user belongs to */
-    memberGroup: Relation<Group>;
+    memberGroup: Relation<GroupModel>;
 
     /** memberUser : The related user in the group */
-    memberUser: Relation<User>;
+    memberUser: Relation<UserModel>;
 
     /**
      * getAllGroupsForUser : Retrieves all the groups that the user is part of
      */
-    getAllGroupsForUser: Query<Group>;
+    getAllGroupsForUser: Query<GroupModel>;
 
     /**
      * getAllUsersInGroup : Retrieves all the users who are part of this group
      */
-    getAllUsersInGroup: Query<User>;
+    getAllUsersInGroup: Query<UserModel>;
 }

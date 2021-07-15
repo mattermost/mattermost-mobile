@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChainPostsArgs, RawPost, RecordPair, SanitizePostsArgs} from '@typings/database/database';
+import type {ChainPostsArgs, RecordPair, SanitizePostsArgs} from '@typings/database/database';
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
  * present in the orders array
  * @param {SanitizePostsArgs} sanitizePosts
- * @param {RawPost[]} sanitizePosts.posts
+ * @param {Post[]} sanitizePosts.posts
  * @param {string[]} sanitizePosts.orders
  */
 export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
-    const orderedPosts: RawPost[] = [];
-    const unOrderedPosts: RawPost[] = [];
+    const orderedPosts: Post[] = [];
+    const unOrderedPosts: Post[] = [];
 
     posts.forEach((post) => {
         if (post?.id && orders.includes(post.id)) {
@@ -33,9 +33,9 @@ export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
  * by the previous_post_id field.
  * @param {ChainPostsArgs} chainPosts
  * @param {string[]} chainPosts.orders
- * @param {RawPost[]} chainPosts.rawPosts
+ * @param {Post[]} chainPosts.rawPosts
  * @param {string} chainPosts.previousPostId
- * @returns {RawPost[]}
+ * @returns {Post[]}
  */
 export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPostsArgs) => {
     const posts: RecordPair[] = [];

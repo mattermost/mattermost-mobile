@@ -4,13 +4,11 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-
 /**
  * PostsInChannel model helps us to combine adjacent posts together without leaving
  * gaps in between for an efficient user reading experience of posts.
  */
-export default class PostsInChannel extends Model {
+export default class PostsInChannelModel extends Model {
     /** table (name) : PostsInChannel */
     static table: string;
 
@@ -27,5 +25,5 @@ export default class PostsInChannel extends Model {
     latest: number;
 
     /** channel : The parent record of the channel for those posts */
-    channel: Relation<Channel>;
+    channel: Relation<ChannelModel>;
 }

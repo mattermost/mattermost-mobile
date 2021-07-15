@@ -1,20 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type PostType = 'system_add_remove' |
-                       'system_add_to_channel' |
-                       'system_add_to_team' |
-                       'system_channel_deleted' |
-                       'system_channel_restored' |
-                       'system_displayname_change' |
-                       'system_convert_channel' |
-                       'system_ephemeral' |
-                       'system_header_change' |
-                       'system_join_channel' |
-                       'system_join_leave' |
-                       'system_leave_channel' |
-                       'system_purpose_change' |
-                       'system_remove_from_channel';
+type PostType =
+    | ''
+    | 'system_add_remove'
+    | 'system_add_to_channel'
+    | 'system_add_to_team'
+    | 'system_channel_deleted'
+    | 'system_channel_restored'
+    | 'system_displayname_change'
+    | 'system_convert_channel'
+    | 'system_ephemeral'
+    | 'system_header_change'
+    | 'system_join_channel'
+    | 'system_join_leave'
+    | 'system_leave_channel'
+    | 'system_purpose_change'
+    | 'system_remove_from_channel';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 
@@ -32,11 +34,11 @@ type PostImage = {
 };
 
 type PostMetadata = {
-    embeds: PostEmbed[];
-    emojis: CustomEmoji[];
-    files: FileInfo[];
-    images: Dictionary<PostImage>;
-    reactions: Reaction[];
+    embeds?: PostEmbed[];
+    emojis?: CustomEmoji[];
+    files?: FileInfo[];
+    images?: Dictionary<PostImage>;
+    reactions?: Reaction[];
 };
 
 type Post = {
@@ -59,10 +61,13 @@ type Post = {
     reply_count: number;
     file_ids?: any[];
     metadata: PostMetadata;
+    last_reply_at?: number;
     failed?: boolean;
     user_activity_posts?: Post[];
     state?: 'DELETED';
     ownPost?: boolean;
+    prev_post_id?: string;
+    participants: null|string[];
 };
 
 type PostWithFormatData = Post & {

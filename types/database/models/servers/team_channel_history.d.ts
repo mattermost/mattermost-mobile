@@ -4,13 +4,11 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Team from './team';
-
 /**
  * The TeamChannelHistory model helps keeping track of the last channel visited
  * by the user.
  */
-export default class TeamChannelHistory extends Model {
+export default class TeamChannelHistoryModel extends Model {
     /** table (name) : TeamChannelHistory */
     static table: string;
 
@@ -24,5 +22,5 @@ export default class TeamChannelHistory extends Model {
     channelIds: string[];
 
     /** team : The related record from the parent Team model */
-    team: Relation<Team>;
+    team: Relation<TeamModel>;
 }

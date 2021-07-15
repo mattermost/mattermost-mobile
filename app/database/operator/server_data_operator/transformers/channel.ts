@@ -3,18 +3,13 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import Channel from '@typings/database/models/servers/channel';
-import ChannelInfo from '@typings/database/models/servers/channel_info';
-import {
-    TransformerArgs,
-    RawChannel,
-    RawChannelInfo,
-    RawMyChannel,
-    RawMyChannelSettings,
-} from '@typings/database/database';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import MyChannel from '@typings/database/models/servers/my_channel';
-import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 const {
     CHANNEL,
@@ -28,15 +23,15 @@ const {
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<ChannelModel>}
  */
-export const transformChannelRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawChannel;
-    const record = value.record as Channel;
+export const transformChannelRecord = ({action, database, value}: TransformerArgs): Promise<ChannelModel> => {
+    const raw = value.raw as Channel;
+    const record = value.record as ChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (channel: Channel) => {
+    const fieldsMapper = (channel: ChannelModel) => {
         channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record.id;
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
@@ -54,7 +49,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         tableName: CHANNEL,
         value,
         fieldsMapper,
-    });
+    }) as Promise<ChannelModel>;
 };
 
 /**
@@ -62,14 +57,14 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<MyChannelSettingsModel>}
  */
-export const transformMyChannelSettingsRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawMyChannelSettings;
-    const record = value.record as MyChannelSettings;
+export const transformMyChannelSettingsRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelSettingsModel> => {
+    const raw = value.raw as ChannelMembership;
+    const record = value.record as MyChannelSettingsModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (myChannelSetting: MyChannelSettings) => {
+    const fieldsMapper = (myChannelSetting: MyChannelSettingsModel) => {
         myChannelSetting._raw.id = isCreateAction ? myChannelSetting.id : record.id;
         myChannelSetting.channelId = raw.channel_id;
         myChannelSetting.notifyProps = raw.notify_props;
@@ -81,7 +76,7 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
         tableName: MY_CHANNEL_SETTINGS,
         value,
         fieldsMapper,
-    });
+    }) as Promise<MyChannelSettingsModel>;
 };
 
 /**
@@ -89,14 +84,14 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<ChannelInfoModel>}
  */
-export const transformChannelInfoRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawChannelInfo;
-    const record = value.record as ChannelInfo;
+export const transformChannelInfoRecord = ({action, database, value}: TransformerArgs): Promise<ChannelInfoModel> => {
+    const raw = value.raw as ChannelInfo;
+    const record = value.record as ChannelInfoModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (channelInfo: ChannelInfo) => {
+    const fieldsMapper = (channelInfo: ChannelInfoModel) => {
         channelInfo._raw.id = isCreateAction ? channelInfo.id : record.id;
         channelInfo.channelId = raw.channel_id;
         channelInfo.guestCount = raw.guest_count;
@@ -112,7 +107,7 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
         tableName: CHANNEL_INFO,
         value,
         fieldsMapper,
-    });
+    }) as Promise<ChannelInfoModel>;
 };
 
 /**
@@ -120,20 +115,20 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<MyChannelModel>}
  */
-export const transformMyChannelRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawMyChannel;
-    const record = value.record as MyChannel;
+export const transformMyChannelRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
+    const raw = value.raw as ChannelMembership;
+    const record = value.record as MyChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (myChannel: MyChannel) => {
+    const fieldsMapper = (myChannel: MyChannelModel) => {
         myChannel._raw.id = isCreateAction ? myChannel.id : record.id;
         myChannel.channelId = raw.channel_id;
         myChannel.roles = raw.roles;
-        myChannel.messageCount = raw.message_count;
-        myChannel.mentionsCount = raw.mentions_count;
-        myChannel.lastPostAt = raw.last_post_at;
+        myChannel.messageCount = raw.msg_count;
+        myChannel.mentionsCount = raw.mention_count;
+        myChannel.lastPostAt = raw.last_post_at || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;
     };
 
@@ -143,6 +138,6 @@ export const transformMyChannelRecord = ({action, database, value}: TransformerA
         tableName: MY_CHANNEL,
         value,
         fieldsMapper,
-    });
+    }) as Promise<MyChannelModel>;
 };
 

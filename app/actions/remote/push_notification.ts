@@ -8,7 +8,6 @@ import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import {queryCommonSystemValues} from '@app/queries/servers/system';
 import {getSessions} from '@actions/remote/user';
-import {Config} from '@typings/database/models/servers/config';
 
 const sortByNewest = (a: Session, b: Session) => {
     if (a.create_at > b.create_at) {
@@ -20,7 +19,7 @@ const sortByNewest = (a: Session, b: Session) => {
 
 export const scheduleExpiredNotification = async (serverUrl: string, intl: IntlShape) => {
     const database = DatabaseManager.serverDatabases[serverUrl].database;
-    const {currentUserId, config}: {currentUserId: string; config: Partial<Config>} = await queryCommonSystemValues(database);
+    const {currentUserId, config}: {currentUserId: string; config: Partial<ClientConfig>} = await queryCommonSystemValues(database);
 
     if (config.ExtendSessionLengthWithActivity === 'true') {
         PushNotifications.cancelAllLocalNotifications();

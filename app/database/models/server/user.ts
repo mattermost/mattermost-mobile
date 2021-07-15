@@ -7,13 +7,13 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type Channel from '@typings/database/models/servers/channel';
-import type ChannelMembership from '@typings/database/models/servers/channel_membership';
-import type GroupMembership from '@typings/database/models/servers/group_membership';
-import type Post from '@typings/database/models/servers/post';
-import type Preference from '@typings/database/models/servers/preference';
-import type Reaction from '@typings/database/models/servers/reaction';
-import type TeamMembership from '@typings/database/models/servers/team_membership';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type PostModel from '@typings/database/models/servers/post';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type ReactionModel from '@typings/database/models/servers/reaction';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 const {
     CHANNEL,
@@ -30,7 +30,7 @@ const {
  * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
-export default class User extends Model {
+export default class UserModel extends Model {
     /** table (name) : User */
     static table = USER;
 
@@ -105,34 +105,34 @@ export default class User extends Model {
     @field('username') username!: string;
 
     /** notify_props : Notification preferences/configurations */
-    @json('notify_props', safeParseJSON) notifyProps!: NotifyProps;
+    @json('notify_props', safeParseJSON) notifyProps!: UserNotifyProps | null;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
      *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
      */
-    @json('props', safeParseJSON) props!: UserProps;
+    @json('props', safeParseJSON) props!: UserProps | null;
 
     /** timezone : The timezone for this user */
-    @json('timezone', safeParseJSON) timezone!: Timezone;
+    @json('timezone', safeParseJSON) timezone!: UserTimezone | null;
 
     /** channelsCreated : All the channels that this user created */
-    @children(CHANNEL) channelsCreated!: Channel[];
+    @children(CHANNEL) channelsCreated!: ChannelModel[];
 
     /** channels : All the channels that this user is part of  */
-    @children(CHANNEL_MEMBERSHIP) channels!: ChannelMembership[];
+    @children(CHANNEL_MEMBERSHIP) channels!: ChannelMembershipModel[];
 
     /** groups : All the groups that this user is part of  */
-    @children(GROUP_MEMBERSHIP) groups!: GroupMembership[];
+    @children(GROUP_MEMBERSHIP) groups!: GroupMembershipModel[];
 
     /** posts :  All the posts that this user has written*/
-    @children(POST) posts!: Post[];
+    @children(POST) posts!: PostModel[];
 
     /** preferences : All user preferences */
-    @children(PREFERENCE) preferences!: Preference[];
+    @children(PREFERENCE) preferences!: PreferenceModel[];
 
     /** reactions : All the reactions to posts that this user had */
-    @children(REACTION) reactions!: Reaction[];
+    @children(REACTION) reactions!: ReactionModel[];
 
     /** teams : All the team that this user is part of  */
-    @children(TEAM_MEMBERSHIP) teams!: TeamMembership[];
+    @children(TEAM_MEMBERSHIP) teams!: TeamMembershipModel[];
 }

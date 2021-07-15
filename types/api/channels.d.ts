@@ -28,12 +28,13 @@ type Channel = {
     total_msg_count: number;
     extra_update_at: number;
     creator_id: string;
-    scheme_id: string;
+    scheme_id: string|null;
     isCurrent?: boolean;
     teammate_id?: string;
     status?: string;
     fake?: boolean;
-    group_constrained: boolean;
+    group_constrained: boolean|null;
+    shared: boolean|null;
 };
 type ChannelWithTeamData = Channel & {
     team_display_name: string;
@@ -41,6 +42,7 @@ type ChannelWithTeamData = Channel & {
     team_update_at: number;
 }
 type ChannelMembership = {
+    id?: string;
     channel_id: string;
     user_id: string;
     roles: string;
@@ -48,9 +50,10 @@ type ChannelMembership = {
     msg_count: number;
     mention_count: number;
     notify_props: Partial<ChannelNotifyProps>;
+    last_post_at?: number;
     last_update_at: number;
-    scheme_user: boolean;
-    scheme_admin: boolean;
+    scheme_user?: boolean;
+    scheme_admin?: boolean;
     post_root_id?: string;
 };
 type ChannelUnread = {

@@ -20,20 +20,17 @@ import {
     transformTeamSearchHistoryRecord,
 } from '@database/operator/server_data_operator/transformers/team';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {
-    HandleMyTeamArgs,
-    HandleSlashCommandArgs,
-    HandleTeamArgs,
-    HandleTeamChannelHistoryArgs,
-    HandleTeamMembershipArgs,
-    HandleTeamSearchHistoryArgs,
+
+import type {
+    HandleMyTeamArgs, HandleSlashCommandArgs, HandleTeamArgs,
+    HandleTeamChannelHistoryArgs, HandleTeamMembershipArgs, HandleTeamSearchHistoryArgs,
 } from '@typings/database/database';
-import MyTeam from '@typings/database/models/servers/my_team';
-import SlashCommand from '@typings/database/models/servers/slash_command';
-import Team from '@typings/database/models/servers/team';
-import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
-import TeamMembership from '@typings/database/models/servers/team_membership';
-import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type TeamModel from '@typings/database/models/servers/team';
+import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
     MY_TEAM,
@@ -45,25 +42,24 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface TeamHandlerMix {
-  handleTeamMemberships: ({teamMemberships, prepareRecordsOnly}: HandleTeamMembershipArgs) => TeamMembership[];
-  handleTeam: ({teams, prepareRecordsOnly}: HandleTeamArgs) => Team[];
-  handleTeamChannelHistory: ({teamChannelHistories, prepareRecordsOnly}: HandleTeamChannelHistoryArgs) => TeamChannelHistory[];
-  handleSlashCommand: ({slashCommands, prepareRecordsOnly}: HandleSlashCommandArgs) => SlashCommand[];
-  handleMyTeam: ({myTeams, prepareRecordsOnly}: HandleMyTeamArgs) => MyTeam[];
+  handleTeamMemberships: ({teamMemberships, prepareRecordsOnly}: HandleTeamMembershipArgs) => Promise<TeamMembershipModel[]>;
+  handleTeam: ({teams, prepareRecordsOnly}: HandleTeamArgs) => Promise<TeamModel[]>;
+  handleTeamChannelHistory: ({teamChannelHistories, prepareRecordsOnly}: HandleTeamChannelHistoryArgs) => Promise<TeamChannelHistoryModel[]>;
+  handleTeamSearchHistory: ({teamSearchHistories, prepareRecordsOnly}: HandleTeamSearchHistoryArgs) => Promise<TeamSearchHistoryModel[]>;
+  handleSlashCommand: ({slashCommands, prepareRecordsOnly}: HandleSlashCommandArgs) => Promise<SlashCommandModel[]>;
+  handleMyTeam: ({myTeams, prepareRecordsOnly}: HandleMyTeamArgs) => Promise<MyTeamModel[]>;
 }
 
 const TeamHandler = (superclass: any) => class extends superclass {
     /**
      * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP table from the 'Server' schema
      * @param {HandleTeamMembershipArgs} teamMembershipsArgs
-     * @param {RawTeamMembership[]} teamMembershipsArgs.teamMemberships
+     * @param {TeamMembership[]} teamMembershipsArgs.teamMemberships
      * @param {boolean} teamMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {TeamMembership[]}
+     * @returns {Promise<TeamMembershipModel[]>}
      */
-    handleTeamMemberships = async ({teamMemberships, prepareRecordsOnly = true}: HandleTeamMembershipArgs) => {
-        let records: TeamMembership[] = [];
-
+    handleTeamMemberships = ({teamMemberships, prepareRecordsOnly = true}: HandleTeamMembershipArgs): Promise<TeamMembershipModel[]> => {
         if (!teamMemberships.length) {
             throw new DataOperatorException(
                 'An empty "teamMemberships" array has been passed to the handleTeamMemberships method',
@@ -72,7 +68,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamMemberships, key: 'team_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordTeamMembershipEqualToRaw,
             transformer: transformTeamMembershipRecord,
@@ -80,21 +76,17 @@ const TeamHandler = (superclass: any) => class extends superclass {
             tableName: TEAM_MEMBERSHIP,
             prepareRecordsOnly,
         });
-
-        return records;
     };
 
     /**
      * handleTeam: Handler responsible for the Create/Update operations occurring on the TEAM table from the 'Server' schema
      * @param {HandleTeamArgs} teamsArgs
-     * @param {RawTeam[]} teamsArgs.teams
+     * @param {Team[]} teamsArgs.teams
      * @param {boolean} teamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Team[]}
+     * @returns {Promise<TeamModel[]>}
      */
-    handleTeam = async ({teams, prepareRecordsOnly = true}: HandleTeamArgs) => {
-        let records: Team[] = [];
-
+    handleTeam = ({teams, prepareRecordsOnly = true}: HandleTeamArgs): Promise<TeamModel[]> => {
         if (!teams.length) {
             throw new DataOperatorException(
                 'An empty "teams" array has been passed to the handleTeam method',
@@ -103,7 +95,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teams, key: 'id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordTeamEqualToRaw,
             transformer: transformTeamRecord,
@@ -111,21 +103,17 @@ const TeamHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: TEAM,
         });
-
-        return records;
     };
 
     /**
      * handleTeamChannelHistory: Handler responsible for the Create/Update operations occurring on the TEAM_CHANNEL_HISTORY table from the 'Server' schema
      * @param {HandleTeamChannelHistoryArgs} teamChannelHistoriesArgs
-     * @param {RawTeamChannelHistory[]} teamChannelHistoriesArgs.teamChannelHistories
+     * @param {TeamChannelHistory[]} teamChannelHistoriesArgs.teamChannelHistories
      * @param {boolean} teamChannelHistoriesArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {TeamChannelHistory[]}
+     * @returns {Promise<TeamChannelHistoryModel[]>}
      */
-    handleTeamChannelHistory = async ({teamChannelHistories, prepareRecordsOnly = true}: HandleTeamChannelHistoryArgs) => {
-        let records: TeamChannelHistory[] = [];
-
+    handleTeamChannelHistory = ({teamChannelHistories, prepareRecordsOnly = true}: HandleTeamChannelHistoryArgs): Promise<TeamChannelHistoryModel[]> => {
         if (!teamChannelHistories.length) {
             throw new DataOperatorException(
                 'An empty "teamChannelHistories" array has been passed to the handleTeamChannelHistory method',
@@ -134,7 +122,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamChannelHistories, key: 'team_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordTeamChannelHistoryEqualToRaw,
             transformer: transformTeamChannelHistoryRecord,
@@ -142,21 +130,17 @@ const TeamHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: TEAM_CHANNEL_HISTORY,
         });
-
-        return records;
     };
 
     /**
      * handleTeamSearchHistory: Handler responsible for the Create/Update operations occurring on the TEAM_SEARCH_HISTORY table from the 'Server' schema
      * @param {HandleTeamSearchHistoryArgs} teamSearchHistoriesArgs
-     * @param {RawTeamSearchHistory[]} teamSearchHistoriesArgs.teamSearchHistories
+     * @param {TeamSearchHistory[]} teamSearchHistoriesArgs.teamSearchHistories
      * @param {boolean} teamSearchHistoriesArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {TeamSearchHistory[]}
+     * @returns {Promise<TeamSearchHistoryModel[]>}
      */
-    handleTeamSearchHistory = async ({teamSearchHistories, prepareRecordsOnly = true}: HandleTeamSearchHistoryArgs) => {
-        let records: TeamSearchHistory[] = [];
-
+    handleTeamSearchHistory = ({teamSearchHistories, prepareRecordsOnly = true}: HandleTeamSearchHistoryArgs): Promise<TeamSearchHistoryModel[]> => {
         if (!teamSearchHistories.length) {
             throw new DataOperatorException(
                 'An empty "teamSearchHistories" array has been passed to the handleTeamSearchHistory method',
@@ -165,7 +149,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: teamSearchHistories, key: 'term'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordTeamSearchHistoryEqualToRaw,
             transformer: transformTeamSearchHistoryRecord,
@@ -173,21 +157,17 @@ const TeamHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: TEAM_SEARCH_HISTORY,
         });
-
-        return records;
     };
 
     /**
      * handleSlashCommand: Handler responsible for the Create/Update operations occurring on the SLASH_COMMAND table from the 'Server' schema
      * @param {HandleSlashCommandArgs} slashCommandsArgs
-     * @param {RawSlashCommand[]} slashCommandsArgs.slashCommands
+     * @param {SlashCommand[]} slashCommandsArgs.slashCommands
      * @param {boolean} slashCommandsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {SlashCommand[]}
+     * @returns {Promise<SlashCommandModel[]>}
      */
-    handleSlashCommand = async ({slashCommands, prepareRecordsOnly = true}: HandleSlashCommandArgs) => {
-        let records: SlashCommand[] = [];
-
+    handleSlashCommand = ({slashCommands, prepareRecordsOnly = true}: HandleSlashCommandArgs): Promise<SlashCommandModel[]> => {
         if (!slashCommands.length) {
             throw new DataOperatorException(
                 'An empty "slashCommands" array has been passed to the handleSlashCommand method',
@@ -196,7 +176,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: slashCommands, key: 'id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordSlashCommandEqualToRaw,
             transformer: transformSlashCommandRecord,
@@ -204,21 +184,17 @@ const TeamHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: SLASH_COMMAND,
         });
-
-        return records;
     };
 
     /**
      * handleMyTeam: Handler responsible for the Create/Update operations occurring on the MY_TEAM table from the 'Server' schema
      * @param {HandleMyTeamArgs} myTeamsArgs
-     * @param {RawMyTeam[]} myTeamsArgs.myTeams
+     * @param {MyTeam[]} myTeamsArgs.myTeams
      * @param {boolean} myTeamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {MyTeam[]}
+     * @returns {Promise<MyTeamModel[]>}
      */
-    handleMyTeam = async ({myTeams, prepareRecordsOnly = true}: HandleMyTeamArgs) => {
-        let records: MyTeam[] = [];
-
+    handleMyTeam = ({myTeams, prepareRecordsOnly = true}: HandleMyTeamArgs): Promise<MyTeamModel[]> => {
         if (!myTeams.length) {
             throw new DataOperatorException(
                 'An empty "myTeams" array has been passed to the handleSlashCommand method',
@@ -227,7 +203,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'team_id',
             findMatchingRecordBy: isRecordMyTeamEqualToRaw,
             transformer: transformMyTeamRecord,
@@ -235,8 +211,6 @@ const TeamHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: MY_TEAM,
         });
-
-        return records;
     };
 };
 

@@ -9,7 +9,7 @@ import {MM_TABLES} from '@constants/database';
 const {CUSTOM_EMOJI} = MM_TABLES.SERVER;
 
 /**  The CustomEmoji model describes all the custom emojis used in the Mattermost app */
-export default class CustomEmoji extends Model {
+export default class CustomEmojiModel extends Model {
     /** table (name) : CustomEmoji */
     static table = CUSTOM_EMOJI;
 

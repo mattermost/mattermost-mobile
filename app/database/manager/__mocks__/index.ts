@@ -12,14 +12,14 @@ import urlParse from 'url-parse';
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDataOperator from '@database/operator/app_data_operator';
 import AppDatabaseMigrations from '@app/database/migration/app';
-import {Info, Global, Servers} from '@app/database/models/app';
+import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {schema as appSchema} from '@app/database/schema/app';
 import ServerDatabaseMigrations from '@database/migration/server';
-import {Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
-    Group, GroupMembership, GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam,
-    Post, PostMetadata, PostsInChannel, PostsInThread, PreferenceModel, Reaction, Role,
-    SlashCommand, SystemModel, Team, TeamChannelHistory, TeamMembership, TeamSearchHistory,
-    TermsOfService, User,
+import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+    GroupModel, GroupMembershipModel, GroupsInChannelModel, GroupsInTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+    PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+    SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+    TermsOfServiceModel, UserModel,
 } from '@database/models/server';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer} from '@queries/app/servers';
@@ -50,36 +50,13 @@ class DatabaseManager {
     private readonly serverModels: Models;
 
     constructor() {
-        this.appModels = [Info, Global, Servers];
+        this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
-            Channel,
-            ChannelInfo,
-            ChannelMembership,
-            CustomEmoji,
-            Draft,
-            File,
-            Group,
-            GroupMembership,
-            GroupsInChannel,
-            GroupsInTeam,
-            MyChannel,
-            MyChannelSettings,
-            MyTeam,
-            Post,
-            PostMetadata,
-            PostsInChannel,
-            PostsInThread,
-            PreferenceModel,
-            Reaction,
-            Role,
-            SlashCommand,
-            SystemModel,
-            Team,
-            TeamChannelHistory,
-            TeamMembership,
-            TeamSearchHistory,
-            TermsOfService,
-            User,
+            ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+            GroupModel, GroupMembershipModel, GroupsInChannelModel, GroupsInTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+            PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+            SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+            TermsOfServiceModel, UserModel,
         ];
         this.databaseDirectory = '';
     }
@@ -89,6 +66,14 @@ class DatabaseManager {
         for await (const serverUrl of serverUrls) {
             await this.initServerDatabase(serverUrl);
         }
+        this.appDatabase?.operator.handleInfo({
+            info: [{
+                build_number: '123',
+                created_at: Date.now(),
+                version_number: '2.0.0',
+            }],
+            prepareRecordsOnly: false,
+        });
     };
 
     private createAppDatabase = async (): Promise<AppDatabase|undefined> => {
@@ -108,7 +93,7 @@ class DatabaseManager {
 
             return this.appDatabase;
         } catch (e) {
-            // TODO : report to sentry? Show something on the UI ?
+            // do nothing
         }
 
         return undefined;
@@ -141,7 +126,7 @@ class DatabaseManager {
 
                 return serverDatabase;
             } catch (e) {
-                // TODO : report to sentry? Show something on the UI ?
+                // do nothing
             }
         }
 
@@ -160,7 +145,7 @@ class DatabaseManager {
 
     private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl}: RegisterServerDatabaseArgs): Promise<void> => {
         try {
-            const isServerPresent = await this.isServerPresent(serverUrl); // TODO: Use normalized serverUrl
+            const isServerPresent = await this.isServerPresent(serverUrl);
 
             if (this.appDatabase?.database && !isServerPresent) {
                 const appDatabase = this.appDatabase.database;
@@ -171,14 +156,14 @@ class DatabaseManager {
                         server.displayName = displayName;
                         server.mentionCount = 0;
                         server.unreadCount = 0;
-                        server.url = serverUrl; // TODO: Use normalized serverUrl
+                        server.url = serverUrl;
                         server.isSecured = urlParse(serverUrl).protocol === 'https';
                         server.lastActiveAt = 0;
                     });
                 });
             }
         } catch (e) {
-        // TODO : report to sentry? Show something on the UI ?
+            // do nothing
         }
     };
 
@@ -219,7 +204,7 @@ class DatabaseManager {
             await database.action(async () => {
                 const servers = await database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch();
                 if (servers.length) {
-                    servers[0].update((server: Servers) => {
+                    servers[0].update((server: ServersModel) => {
                         server.lastActiveAt = Date.now();
                     });
                 }

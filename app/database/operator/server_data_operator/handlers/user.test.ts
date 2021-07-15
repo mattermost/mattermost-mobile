@@ -32,10 +32,8 @@ describe('*** Operator: User Handlers tests ***', () => {
             reactions: [
                 {
                     create_at: 1608263728086,
-                    delete_at: 0,
                     emoji_name: 'p4p1',
                     post_id: '4r9jmr7eqt8dxq3f9woypzurry',
-                    update_at: 1608263728077,
                     user_id: 'ooumoqgq3bfiijzwbn8badznwc',
                 },
             ],
@@ -52,7 +50,7 @@ describe('*** Operator: User Handlers tests ***', () => {
     it('=> HandleUsers: should write to the User table', async () => {
         expect.assertions(2);
 
-        const users = [
+        const users: UserProfile[] = [
             {
                 id: '9ciscaqbrpd6d8s68k76xb9bte',
                 create_at: 1599457495881,
@@ -71,19 +69,19 @@ describe('*** Operator: User Handlers tests ***', () => {
                 props: {},
                 notify_props: {
                     desktop: 'all',
-                    desktop_sound: true,
-                    email: true,
-                    first_name: true,
+                    desktop_sound: 'true',
+                    email: 'true',
+                    first_name: 'true',
+                    mark_unread: 'mention',
                     mention_keys: '',
                     push: 'mention',
-                    channel: true,
-                    auto_responder_active: false,
+                    channel: 'true',
+                    auto_responder_active: 'false',
                     auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
                     comments: 'never',
                     desktop_notification_sound: 'Hello',
                     push_status: 'online',
                 },
-                last_password_update: 1604323112537,
                 last_picture_update: 1604686302260,
                 locale: 'en',
                 timezone: {
@@ -159,7 +157,7 @@ describe('*** Operator: User Handlers tests ***', () => {
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {
         expect.assertions(2);
-        const channelMemberships = [
+        const channelMemberships: ChannelMembership[] = [
             {
                 channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
@@ -175,10 +173,8 @@ describe('*** Operator: User Handlers tests ***', () => {
                     push: 'default',
                 },
                 last_update_at: 1613667352029,
-                scheme_guest: false,
                 scheme_user: true,
                 scheme_admin: false,
-                explicit_roles: '',
             },
             {
                 channel_id: '1yw6gxfr4bn1jbyp9nr7d53yew',
@@ -195,10 +191,8 @@ describe('*** Operator: User Handlers tests ***', () => {
                     push: 'default',
                 },
                 last_update_at: 1615300540549,
-                scheme_guest: false,
                 scheme_user: true,
                 scheme_admin: false,
-                explicit_roles: '',
             },
         ];
 

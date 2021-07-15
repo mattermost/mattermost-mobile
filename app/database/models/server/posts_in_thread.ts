@@ -6,7 +6,8 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/models/servers/post';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
 
@@ -14,7 +15,7 @@ const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
  * PostsInThread model helps us to combine adjacent threads together without leaving
  * gaps in between for an efficient user reading experience for threads.
  */
-export default class PostsInThread extends Model {
+export default class PostsInThreadModel extends Model {
     /** table (name) : PostsInThread */
     static table = POSTS_IN_THREAD;
 
@@ -35,5 +36,5 @@ export default class PostsInThread extends Model {
     @field('post_id') postId!: string;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 }

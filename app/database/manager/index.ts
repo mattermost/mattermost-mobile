@@ -11,15 +11,15 @@ import urlParse from 'url-parse';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDataOperator from '@database/operator/app_data_operator';
-import AppDatabaseMigrations from '@app/database/migration/app';
-import {Info, Global, Servers} from '@app/database/models/app';
-import {schema as appSchema} from '@app/database/schema/app';
+import AppDatabaseMigrations from '@database/migration/app';
+import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
+import {schema as appSchema} from '@database/schema/app';
 import ServerDatabaseMigrations from '@database/migration/server';
-import {Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
-    Group, GroupMembership, GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam,
-    Post, PostMetadata, PostsInChannel, PostsInThread, PreferenceModel, Reaction, Role,
-    SlashCommand, SystemModel, Team, TeamChannelHistory, TeamMembership, TeamSearchHistory,
-    TermsOfService, User,
+import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+    GroupModel, GroupMembershipModel, GroupsInChannelModel, GroupsInTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+    PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+    SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+    TermsOfServiceModel, UserModel,
 } from '@database/models/server';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer} from '@queries/app/servers';
@@ -43,13 +43,13 @@ class DatabaseManager {
   private readonly serverModels: Models;
 
   constructor() {
-      this.appModels = [Info, Global, Servers];
+      this.appModels = [InfoModel, GlobalModel, ServersModel];
       this.serverModels = [
-          Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File,
-          Group, GroupMembership, GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam,
-          Post, PostMetadata, PostsInChannel, PostsInThread, PreferenceModel, Reaction, Role,
-          SlashCommand, SystemModel, Team, TeamChannelHistory, TeamMembership, TeamSearchHistory,
-          TermsOfService, User,
+          ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+          GroupModel, GroupMembershipModel, GroupsInChannelModel, GroupsInTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+          PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+          SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+          TermsOfServiceModel, UserModel,
       ];
 
       this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : FileSystem.documentDirectory;
@@ -182,7 +182,7 @@ class DatabaseManager {
   */
   private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl}: RegisterServerDatabaseArgs): Promise<void> => {
       try {
-          const isServerPresent = await this.isServerPresent(serverUrl); // TODO: Use normalized serverUrl
+          const isServerPresent = await this.isServerPresent(serverUrl);
 
           if (this.appDatabase?.database && !isServerPresent) {
               const appDatabase = this.appDatabase.database;
@@ -193,7 +193,7 @@ class DatabaseManager {
                       server.displayName = displayName;
                       server.mentionCount = 0;
                       server.unreadCount = 0;
-                      server.url = serverUrl; // TODO: Use normalized serverUrl
+                      server.url = serverUrl;
                       server.isSecured = urlParse(serverUrl).protocol === 'https';
                       server.lastActiveAt = 0;
                   });
@@ -260,7 +260,7 @@ class DatabaseManager {
           await database.action(async () => {
               const servers = await database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch();
               if (servers.length) {
-                  servers[0].update((server: Servers) => {
+                  servers[0].update((server: ServersModel) => {
                       server.lastActiveAt = Date.now();
                   });
               }

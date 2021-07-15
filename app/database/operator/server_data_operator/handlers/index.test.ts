@@ -15,9 +15,10 @@ import {
     transformSystemRecord,
     transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
-import {RawRole, RawTermsOfService} from '@typings/database/database';
 
-import ServerDataOperator from '..';
+import type {Model} from '@nozbe/watermelondb';
+
+import type ServerDataOperator from '..';
 
 describe('*** DataOperator: Base Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -31,7 +32,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
-        const roles: RawRole[] = [
+        const roles: Role[] = [
             {
                 id: 'custom-role-id-1',
                 name: 'custom-role-1',
@@ -58,7 +59,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const emojis = [
+        const emojis: CustomEmoji[] = [
             {
                 id: 'i',
                 create_at: 1580913641769,
@@ -112,7 +113,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
 
-        const termOfService: RawTermsOfService[] = [
+        const termOfService: TermsOfService[] = [
             {
                 id: 'tos-1',
                 accepted_at: 1,
@@ -145,13 +146,20 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(appDatabase).toBeTruthy();
         expect(appOperator).toBeTruthy();
 
+        const findMatchingRecordBy = (existing: Model, newRecord: any) => {
+            return existing === newRecord;
+        };
+
+        const transformer = async (model: Model) => model;
+
         await expect(
             operator?.handleRecords({
                 fieldName: 'invalidField',
                 tableName: 'INVALID_TABLE_NAME',
-
-                // @ts-expect-error: Type does not match RawValue
-                createOrUpdateRawValues: [{id: 'tos-1', accepted_at: 1}],
+                findMatchingRecordBy,
+                transformer,
+                createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
+                prepareRecordsOnly: false,
             }),
         ).rejects.toThrow(DataOperatorException);
     });

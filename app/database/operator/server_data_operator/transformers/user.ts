@@ -3,12 +3,13 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import ChannelMembership from '@typings/database/models/servers/channel_membership';
-import {TransformerArgs, RawChannelMembership, RawPreference, RawReaction, RawUser} from '@typings/database/database';
+
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Preference from '@typings/database/models/servers/preference';
-import Reaction from '@typings/database/models/servers/reaction';
-import User from '@typings/database/models/servers/user';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type ReactionModel from '@typings/database/models/servers/reaction';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {
     CHANNEL_MEMBERSHIP,
@@ -22,15 +23,15 @@ const {
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<ReactionModel>}
  */
-export const transformReactionRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawReaction;
-    const record = value.record as Reaction;
+export const transformReactionRecord = ({action, database, value}: TransformerArgs): Promise<ReactionModel> => {
+    const raw = value.raw as Reaction;
+    const record = value.record as ReactionModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // id of reaction comes from server response
-    const fieldsMapper = (reaction: Reaction) => {
+    const fieldsMapper = (reaction: ReactionModel) => {
         reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record.id;
         reaction.userId = raw.user_id;
         reaction.postId = raw.post_id;
@@ -44,7 +45,7 @@ export const transformReactionRecord = ({action, database, value}: TransformerAr
         tableName: REACTION,
         value,
         fieldsMapper,
-    });
+    }) as Promise<ReactionModel>;
 };
 
 /**
@@ -52,15 +53,15 @@ export const transformReactionRecord = ({action, database, value}: TransformerAr
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<UserModel>}
  */
-export const transformUserRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawUser;
-    const record = value.record as User;
+export const transformUserRecord = ({action, database, value}: TransformerArgs): Promise<UserModel> => {
+    const raw = value.raw as UserProfile;
+    const record = value.record as UserModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // id of user comes from server response
-    const fieldsMapper = (user: User) => {
+    const fieldsMapper = (user: UserModel) => {
         user._raw.id = isCreateAction ? (raw?.id ?? user.id) : record.id;
         user.authService = raw.auth_service;
         user.deleteAt = raw.delete_at;
@@ -76,8 +77,8 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs) 
         user.roles = raw.roles;
         user.username = raw.username;
         user.notifyProps = raw.notify_props;
-        user.props = raw.props;
-        user.timezone = raw.timezone;
+        user.props = raw.props || null;
+        user.timezone = raw.timezone || null;
         user.isBot = raw.is_bot;
     };
 
@@ -87,7 +88,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs) 
         tableName: USER,
         value,
         fieldsMapper,
-    });
+    }) as Promise<UserModel>;
 };
 
 /**
@@ -95,15 +96,15 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs) 
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<PreferenceModel>}
  */
-export const transformPreferenceRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawPreference;
-    const record = value.record as Preference;
+export const transformPreferenceRecord = ({action, database, value}: TransformerArgs): Promise<PreferenceModel> => {
+    const raw = value.raw as PreferenceType;
+    const record = value.record as PreferenceModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // id of preference comes from server response
-    const fieldsMapper = (preference: Preference) => {
+    const fieldsMapper = (preference: PreferenceModel) => {
         preference._raw.id = isCreateAction ? preference.id : record.id;
         preference.category = raw.category;
         preference.name = raw.name;
@@ -117,7 +118,7 @@ export const transformPreferenceRecord = ({action, database, value}: Transformer
         tableName: PREFERENCE,
         value,
         fieldsMapper,
-    });
+    }) as Promise<PreferenceModel>;
 };
 
 /**
@@ -125,15 +126,15 @@ export const transformPreferenceRecord = ({action, database, value}: Transformer
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<ChannelMembershipModel>}
  */
-export const transformChannelMembershipRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawChannelMembership;
-    const record = value.record as ChannelMembership;
+export const transformChannelMembershipRecord = ({action, database, value}: TransformerArgs): Promise<ChannelMembershipModel> => {
+    const raw = value.raw as ChannelMembership;
+    const record = value.record as ChannelMembershipModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (channelMember: ChannelMembership) => {
+    const fieldsMapper = (channelMember: ChannelMembershipModel) => {
         channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
@@ -145,5 +146,5 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
         tableName: CHANNEL_MEMBERSHIP,
         value,
         fieldsMapper,
-    });
+    }) as Promise<ChannelMembershipModel>;
 };

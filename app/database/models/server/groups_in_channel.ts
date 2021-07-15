@@ -6,15 +6,16 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
-import Group from '@typings/database/models/servers/group';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type GroupModel from '@typings/database/models/servers/group';
 
 const {GROUP, GROUPS_IN_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * The GroupsInChannel links the Channel model with the Group model
  */
-export default class GroupsInChannel extends Model {
+export default class GroupsInChannelModel extends Model {
     /** table (name) : GroupsInChannel */
     static table = GROUPS_IN_CHANNEL;
 
@@ -41,8 +42,8 @@ export default class GroupsInChannel extends Model {
     @field('timezone_count') timezoneCount!: number;
 
     /** channel : The related record to the parent Channel model */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 
     /** group : The related record to the parent Group model */
-    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
+    @immutableRelation(GROUP, 'group_id') group!: Relation<GroupModel>;
 }

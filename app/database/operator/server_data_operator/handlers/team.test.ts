@@ -32,7 +32,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const teams = [
+        const teams: Team[] = [
             {
                 id: 'rcgiyftm7jyrxnmdfdfa1osd8zswby',
                 create_at: 1445538153952,
@@ -73,16 +73,16 @@ describe('*** Operator: Team Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const teamMemberships = [
+        const teamMemberships: TeamMembership[] = [
             {
                 team_id: 'a',
                 user_id: 'ab',
-                roles: '3ngdqe1e7tfcbmam4qgnxp91bw',
+                roles: '',
                 delete_at: 0,
-                scheme_guest: false,
+                msg_count: 0,
+                mention_count: 0,
                 scheme_user: true,
                 scheme_admin: false,
-                explicit_roles: '',
             },
         ];
 
@@ -162,7 +162,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const teamSearchHistories = [
+        const teamSearchHistories: TeamSearchHistory[] = [
             {
                 team_id: 'a',
                 term: 'termA',

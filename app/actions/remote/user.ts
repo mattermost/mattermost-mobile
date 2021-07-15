@@ -1,42 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {logError} from '@actions/remote/error';
 import {loadRolesIfNeeded} from '@actions/remote/role';
-import {getDataRetentionPolicy} from '@actions/remote/systems';
-import {Database, General} from '@constants';
+import {fetchDataRetentionPolicy} from '@actions/remote/systems';
+import {Database} from '@constants';
 import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
 import {queryDeviceToken} from '@queries/app/global';
-import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
+import {queryCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
 import type {Client4Error} from '@typings/api/client';
-import type {Config} from '@typings/database/models/servers/config';
-import type {LoadMeArgs, LoginArgs, RawMyTeam, RawPreference,
-    RawRole, RawTeam, RawTeamMembership, RawUser} from '@typings/database/database';
-import type {License} from '@typings/database/models/servers/license';
-import type Role from '@typings/database/models/servers/role';
-import type User from '@typings/database/models/servers/user';
+import type {LoadMeArgs, LoginArgs} from '@typings/database/database';
+import type RoleModel from '@typings/database/models/servers/role';
+import type UserModel from '@typings/database/models/servers/user';
+
+import {forceLogoutIfNecessary} from './general';
+
+// import {initAfterLogin} from './init';
 
 type LoadedUser = {
-    currentUser?: RawUser;
+    currentUser?: UserProfile;
     error?: Client4Error;
 }
 
-const HTTP_UNAUTHORIZED = 401;
-
-export const completeLogin = async (serverUrl: string, user: RawUser) => {
+export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const {config, license}: { config: Partial<Config>; license: Partial<License> } = await queryCommonSystemValues(database);
+    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await queryCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
@@ -50,25 +47,10 @@ export const completeLogin = async (serverUrl: string, user: RawUser) => {
 
     // Data retention
     if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-        getDataRetentionPolicy(serverUrl);
+        fetchDataRetentionPolicy(serverUrl);
     }
 
     return null;
-};
-
-export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Error) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const currentUserId = await queryCurrentUserId(database);
-
-    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(serverUrl);
-    }
-
-    return {error: null};
 };
 
 export const getSessions = async (serverUrl: string, currentUserId: string) => {
@@ -91,7 +73,7 @@ export const getSessions = async (serverUrl: string, currentUserId: string) => {
 
 export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
     let deviceToken;
-    let user: RawUser;
+    let user: UserProfile;
 
     const appDatabase = DatabaseManager.appDatabase?.database;
     if (!appDatabase) {
@@ -107,13 +89,13 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
 
     try {
         deviceToken = await queryDeviceToken(appDatabase);
-        user = (await client.login(
+        user = await client.login(
             loginId,
             password,
             mfaToken,
             deviceToken,
             ldapOnly,
-        ) as unknown) as RawUser;
+        );
 
         await DatabaseManager.createServerDatabase({
             config: {
@@ -133,6 +115,8 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     if (!result?.error) {
         await completeLogin(serverUrl, user);
     }
+
+    // initAfterLogin({serverUrl, user, deviceToken});
 
     return {error: undefined};
 };
@@ -158,7 +142,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         }
 
         if (!currentUser) {
-            currentUser = (await client.getMe() as unknown) as RawUser;
+            currentUser = await client.getMe();
         }
     } catch (e) {
         await forceLogoutIfNecessary(serverUrl, e);
@@ -186,7 +170,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         const [
             teams,
-            teamMembers,
+            teamMemberships,
             teamUnreads,
             preferences,
             config,
@@ -201,17 +185,17 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         ]);
 
         const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams: teams as RawTeam[]});
-        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships: (teamMembers as unknown) as RawTeamMembership[]});
+        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
+        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
 
         const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMembers.find((team) => team.team_id === unread.team_id);
+            const matchingTeam = teamMemberships.find((team) => team.team_id === unread.team_id);
             return {team_id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
         });
 
         const myTeamRecords = operator.handleMyTeam({
             prepareRecordsOnly: true,
-            myTeams: (myTeams as unknown) as RawMyTeam[],
+            myTeams,
         });
 
         const systemRecords = operator.handleSystem({
@@ -239,7 +223,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         const preferenceRecords = operator.handlePreferences({
             prepareRecordsOnly: true,
-            preferences: (preferences as unknown) as RawPreference[],
+            preferences,
         });
 
         let roles: string[] = [];
@@ -247,18 +231,18 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
             roles = roles.concat(role);
         }
 
-        for (const teamMember of teamMembers) {
+        for (const teamMember of teamMemberships) {
             roles = roles.concat(teamMember.roles.split(' '));
         }
 
         const rolesToLoad = new Set<string>(roles);
 
-        let rolesRecords: Role[] = [];
+        let rolesRecords: RoleModel[] = [];
         if (rolesToLoad.size > 0) {
-            const rolesByName = (await client.getRolesByNames(Array.from(rolesToLoad)) as unknown) as RawRole[];
+            const rolesByName = await client.getRolesByNames(Array.from(rolesToLoad));
 
             if (rolesByName?.length) {
-                rolesRecords = await operator.handleRole({prepareRecordsOnly: true, roles: rolesByName}) as Role[];
+                rolesRecords = await operator.handleRole({prepareRecordsOnly: true, roles: rolesByName});
             }
         }
 
@@ -273,23 +257,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
     }
 
     return {currentUser, error: undefined};
-};
-
-export const logout = async (serverUrl: string, skipServerLogout = false) => {
-    if (!skipServerLogout) {
-        try {
-            const client = NetworkManager.getClient(serverUrl);
-            await client.logout();
-        } catch (error) {
-            // We want to log the user even if logging out from the server failed
-            // eslint-disable-next-line no-console
-            console.warn('An error ocurred loging out from the server', serverUrl, error);
-        }
-    }
-
-    DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
-
-    return {data: true};
 };
 
 export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken: string) => {
@@ -360,7 +327,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     };
 };
 
-export const updateMe = async (serverUrl: string, user: User) => {
+export const updateMe = async (serverUrl: string, user: UserModel) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!database) {
@@ -374,9 +341,9 @@ export const updateMe = async (serverUrl: string, user: User) => {
         return {error};
     }
 
-    let data;
+    let data: UserProfile;
     try {
-        data = (await client.patchMe(user._raw) as unknown) as RawUser;
+        data = await client.patchMe(user._raw);
     } catch (e) {
         logError(e);
         return {error: e};

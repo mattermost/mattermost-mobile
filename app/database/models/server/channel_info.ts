@@ -6,7 +6,8 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
 
@@ -15,7 +16,7 @@ const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
  * In a Separation of Concerns approach, ChannelInfo will provide additional information about a channel but on a more
  * specific level.
  */
-export default class ChannelInfo extends Model {
+export default class ChannelInfoModel extends Model {
     /** table (name) : ChannelInfo */
     static table = CHANNEL_INFO;
 
@@ -45,5 +46,5 @@ export default class ChannelInfo extends Model {
     @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from CHANNEL table */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

@@ -5,9 +5,10 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import GroupMembership from '@typings/database/models/servers/group_membership';
-import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
-import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
+
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
+import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
 
 const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
 
@@ -16,7 +17,7 @@ const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.S
  * all users who are in the mobile team.  If one needs to send that group a message, then s/he can mention the group's
  * name in the message. (e.g @mobile_team)
  */
-export default class Group extends Model {
+export default class GroupModel extends Model {
     /** table (name) : Group */
     static table = GROUP;
 
@@ -40,11 +41,11 @@ export default class Group extends Model {
     @field('name') name!: string;
 
     /** groupsInChannel : All the related children records from GroupsInChannel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel[];
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannelModel[];
 
     /** groupsInTeam : All the related children records from GroupsInTeam */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeamModel[];
 
     /** groupMemberships : All the related children records from GroupMembership */
-    @children(GROUP_MEMBERSHIP) groupMemberships!: GroupMembership[];
+    @children(GROUP_MEMBERSHIP) groupMemberships!: GroupMembershipModel[];
 }

@@ -8,7 +8,7 @@ import {Model} from '@nozbe/watermelondb';
  * will mostly hold configuration information about the client, the licences and some
  * custom data (e.g. recent emoji used)
  */
-export default class System extends Model {
+export default class SystemModel extends Model {
     /** table (name) : System */
     static table: string;
 

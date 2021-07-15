@@ -3,18 +3,13 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import CustomEmoji from '@typings/database/models/servers/custom_emoji';
-import {
-    TransformerArgs,
-    RawCustomEmoji,
-    RawRole,
-    RawSystem,
-    RawTermsOfService,
-} from '@typings/database/database';
+
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Role from '@typings/database/models/servers/role';
-import System from '@typings/database/models/servers/system';
-import TermsOfService from '@typings/database/models/servers/terms_of_service';
+import type RoleModel from '@typings/database/models/servers/role';
+import type SystemModel from '@typings/database/models/servers/system';
+import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
 
 const {
     CUSTOM_EMOJI,
@@ -28,15 +23,15 @@ const {
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<CustomEmojiModel>}
  */
-export const transformCustomEmojiRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawCustomEmoji;
-    const record = value.record as CustomEmoji;
+export const transformCustomEmojiRecord = ({action, database, value}: TransformerArgs): Promise<CustomEmojiModel> => {
+    const raw = value.raw as CustomEmoji;
+    const record = value.record as CustomEmojiModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (emoji: CustomEmoji) => {
+    const fieldsMapper = (emoji: CustomEmojiModel) => {
         emoji._raw.id = isCreateAction ? (raw?.id ?? emoji.id) : record.id;
         emoji.name = raw.name;
     };
@@ -47,7 +42,7 @@ export const transformCustomEmojiRecord = ({action, database, value}: Transforme
         tableName: CUSTOM_EMOJI,
         value,
         fieldsMapper,
-    });
+    }) as Promise<CustomEmojiModel>;
 };
 
 /**
@@ -55,15 +50,15 @@ export const transformCustomEmojiRecord = ({action, database, value}: Transforme
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<RoleModel>}
  */
-export const transformRoleRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawRole;
-    const record = value.record as Role;
+export const transformRoleRecord = ({action, database, value}: TransformerArgs): Promise<RoleModel> => {
+    const raw = value.raw as Role;
+    const record = value.record as RoleModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (role: Role) => {
+    const fieldsMapper = (role: RoleModel) => {
         role._raw.id = isCreateAction ? (raw?.id ?? role.id) : record.id;
         role.name = raw?.name;
         role.permissions = raw?.permissions;
@@ -75,7 +70,7 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs) 
         tableName: ROLE,
         value,
         fieldsMapper,
-    });
+    }) as Promise<RoleModel>;
 };
 
 /**
@@ -83,13 +78,13 @@ export const transformRoleRecord = ({action, database, value}: TransformerArgs) 
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<SystemModel>}
  */
-export const transformSystemRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawSystem;
+export const transformSystemRecord = ({action, database, value}: TransformerArgs): Promise<SystemModel> => {
+    const raw = value.raw as IdValue;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (system: System) => {
+    const fieldsMapper = (system: SystemModel) => {
         system._raw.id = raw?.id;
         system.value = raw?.value;
     };
@@ -100,7 +95,7 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
         tableName: SYSTEM,
         value,
         fieldsMapper,
-    });
+    }) as Promise<SystemModel>;
 };
 
 /**
@@ -108,15 +103,15 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<TermsOfServiceModel>}
  */
-export const transformTermsOfServiceRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawTermsOfService;
-    const record = value.record as TermsOfService;
+export const transformTermsOfServiceRecord = ({action, database, value}: TransformerArgs): Promise<TermsOfServiceModel> => {
+    const raw = value.raw as TermsOfService;
+    const record = value.record as TermsOfServiceModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (tos: TermsOfService) => {
+    const fieldsMapper = (tos: TermsOfServiceModel) => {
         tos._raw.id = isCreateAction ? (raw?.id ?? tos.id) : record.id;
         tos.acceptedAt = raw?.accepted_at;
     };
@@ -127,5 +122,5 @@ export const transformTermsOfServiceRecord = ({action, database, value}: Transfo
         tableName: TERMS_OF_SERVICE,
         value,
         fieldsMapper,
-    });
+    }) as Promise<TermsOfServiceModel>;
 };

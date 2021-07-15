@@ -6,7 +6,8 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
 
@@ -14,7 +15,7 @@ const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
  * PostsInChannel model helps us to combine adjacent posts together without leaving
  * gaps in between for an efficient user reading experience of posts.
  */
-export default class PostsInChannel extends Model {
+export default class PostsInChannelModel extends Model {
     /** table (name) : PostsInChannel */
     static table = POSTS_IN_CHANNEL;
 
@@ -35,5 +36,5 @@ export default class PostsInChannel extends Model {
     @field('latest') latest!: number;
 
     /** channel : The parent record of the channel for those posts */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

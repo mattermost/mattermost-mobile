@@ -8,7 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type Channel from '@typings/database/models/servers/channel';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 
@@ -16,7 +16,7 @@ const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
  * The MyChannelSettings model represents the specific user's configuration to
  * the channel this user belongs to.
  */
-export default class MyChannelSettings extends Model {
+export default class MyChannelSettingsModel extends Model {
     /** table (name) : MyChannelSettings */
     static table = MY_CHANNEL_SETTINGS;
 
@@ -31,8 +31,8 @@ export default class MyChannelSettings extends Model {
     @field('channel_id') channelId!: string;
 
     /** notify_props : Configurations with regards to this channel */
-    @json('notify_props', safeParseJSON) notifyProps!: NotifyProps;
+    @json('notify_props', safeParseJSON) notifyProps!: ChannelNotifyProps;
 
     /** channel : The relation pointing to the CHANNEL table */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

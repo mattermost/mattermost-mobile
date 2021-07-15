@@ -38,16 +38,14 @@ describe('*** USER Prepare Records Test ***', () => {
                         push: 'default',
                     },
                     last_update_at: 1613667352029,
-                    scheme_guest: false,
                     scheme_user: true,
                     scheme_admin: false,
-                    explicit_roles: '',
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelMembership');
+        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelMembershipModel');
     });
 
     it('=> transformPreferenceRecord: should return an array of type Preference', async () => {
@@ -66,7 +64,7 @@ describe('*** USER Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Preference');
+        expect(preparedRecords!.collection.modelClass.name).toBe('PreferenceModel');
     });
 
     it('=> transformReactionRecord: should return an array of type Reaction', async () => {
@@ -93,7 +91,7 @@ describe('*** USER Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Reaction');
+        expect(preparedRecords!.collection.modelClass.name).toBe('ReactionModel');
     });
 
     it('=> transformUserRecord: should return an array of type User', async () => {
@@ -114,9 +112,8 @@ describe('*** USER Prepare Records Test ***', () => {
                     update_at: 1607683720173,
                     delete_at: 0,
                     username: 'a.l',
-                    auth_service: 'saml',
+                    auth_service: '',
                     email: 'a.l@mattermost.com',
-                    email_verified: true,
                     nickname: '',
                     first_name: 'A',
                     last_name: 'L',
@@ -125,19 +122,19 @@ describe('*** USER Prepare Records Test ***', () => {
                     props: {},
                     notify_props: {
                         desktop: 'all',
-                        desktop_sound: true,
-                        email: true,
-                        first_name: true,
+                        desktop_sound: 'true',
+                        email: 'true',
+                        first_name: 'true',
                         mention_keys: '',
+                        mark_unread: 'mention',
                         push: 'mention',
-                        channel: true,
-                        auto_responder_active: false,
+                        channel: 'true',
+                        auto_responder_active: 'false',
                         auto_responder_message: 'Hello, I am out of office and unable to respond to messages.',
                         comments: 'never',
                         desktop_notification_sound: 'Hello',
                         push_status: 'online',
                     },
-                    last_password_update: 1604323112537,
                     last_picture_update: 1604686302260,
                     locale: 'en',
                     timezone: {
@@ -150,6 +147,6 @@ describe('*** USER Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('User');
+        expect(preparedRecords!.collection.modelClass.name).toBe('UserModel');
     });
 });
