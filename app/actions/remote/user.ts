@@ -19,7 +19,8 @@ import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
 import {forceLogoutIfNecessary} from './general';
-import {initAfterLogin} from './init';
+
+// import {initAfterLogin} from './init';
 
 type LoadedUser = {
     currentUser?: UserProfile;
@@ -109,12 +110,13 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         return {error: e};
     }
 
-    // const result = await loadMe(serverUrl, {user, deviceToken});
+    const result = await loadMe(serverUrl, {user, deviceToken});
 
-    // if (!result?.error) {
-    //     await completeLogin(serverUrl, user);
-    // }
-    initAfterLogin({serverUrl, user, deviceToken});
+    if (!result?.error) {
+        await completeLogin(serverUrl, user);
+    }
+
+    // initAfterLogin({serverUrl, user, deviceToken});
 
     return {error: undefined};
 };
