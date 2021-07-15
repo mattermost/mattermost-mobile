@@ -15,6 +15,7 @@ class Alert {
     leavePublicChannelTitle = isAndroid() ? element(by.text('Leave Public Channel')) : element(by.label('Leave Public Channel')).atIndex(0);
     messageLengthTitle = isAndroid() ? element(by.text('Message Length')) : element(by.label('Message Length')).atIndex(0);
     removeMembersTitle = isAndroid() ? element(by.text('Remove Members')) : element(by.label('Remove Members')).atIndex(0);
+    untrustedCertificateTitle = isAndroid() ? element(by.text('Untrusted Certificate')) : element(by.label('Untrusted Certificate')).atIndex(0);
 
     // alert buttons
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);

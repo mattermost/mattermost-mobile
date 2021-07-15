@@ -34,6 +34,23 @@ export const apiSaveFavoriteChannelPreference = (userId, channelId) => {
 };
 
 /**
+ * Save the user's teammate name display preference.
+ * @param {string} userId - the user ID
+ * @param {string} nameFormat - one of "username" (default), "nickname_full_name" or "full_name"
+ * @returns
+ */
+export const apiSaveTeammateNameDisplayPreference = (userId, nameFormat = 'username') => {
+    const preference = {
+        user_id: userId,
+        category: 'display_settings',
+        name: 'name_format',
+        value: nameFormat,
+    };
+
+    return apiSaveUserPreferences(userId, [preference]);
+};
+
+/**
  * Save the user's teams order preference.
  * @param {string} userId - the user ID
  * @param {Array} orderedTeamIds - ordered array of team IDs
@@ -72,6 +89,7 @@ export const apiSaveUserPreferences = async (userId, preferences = []) => {
 
 export const Preference = {
     apiSaveFavoriteChannelPreference,
+    apiSaveTeammateNameDisplayPreference,
     apiSaveTeamsOrderPreference,
     apiSaveUserPreferences,
 };

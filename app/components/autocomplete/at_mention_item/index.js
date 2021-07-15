@@ -7,6 +7,7 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {isShared} from '@mm-redux/utils/user_utils';
+import {isCustomStatusEnabled} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
 import AtMentionItem from './at_mention_item';
@@ -25,6 +26,7 @@ function mapStateToProps(state, ownProps) {
         isShared: isShared(user),
         theme: getTheme(state),
         isCurrentUser: getCurrentUserId(state) === user.id,
+        isCustomStatusEnabled: isCustomStatusEnabled(state),
     };
 }
 

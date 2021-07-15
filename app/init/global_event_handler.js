@@ -18,6 +18,7 @@ import {resetMomentLocale} from '@i18n';
 import {setupPermanentSidebar} from '@init/device';
 import PushNotifications from '@init/push_notifications';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
 import {Client4} from '@client/rest';
@@ -213,6 +214,7 @@ class GlobalEventHandler {
 
         await dispatch(loadConfigAndLicense());
         await dispatch(loadMe(user));
+        dispatch(getTeams());
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});

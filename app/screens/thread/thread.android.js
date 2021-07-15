@@ -42,6 +42,7 @@ export default class ThreadAndroid extends ThreadBase {
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}
                             location={THREAD}
+                            rootId={rootId}
                         />
                     </Animated.View>
                     <PostDraft
