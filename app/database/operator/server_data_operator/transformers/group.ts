@@ -3,18 +3,13 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import {
-    TransformerArgs,
-    RawGroup,
-    RawGroupMembership,
-    RawGroupsInChannel,
-    RawGroupsInTeam,
-} from '@typings/database/database';
+
+import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import Group from '@typings/database/models/servers/group';
-import GroupMembership from '@typings/database/models/servers/group_membership';
-import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
-import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
+import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
+import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
 
 const {
     GROUP,
@@ -28,15 +23,15 @@ const {
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<GroupMembershipModel>}
  */
-export const transformGroupMembershipRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawGroupMembership;
-    const record = value.record as GroupMembership;
+export const transformGroupMembershipRecord = ({action, database, value}: TransformerArgs): Promise<GroupMembershipModel> => {
+    const raw = value.raw as GroupMembership;
+    const record = value.record as GroupMembershipModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (groupMember: GroupMembership) => {
+    const fieldsMapper = (groupMember: GroupMembershipModel) => {
         groupMember._raw.id = isCreateAction ? (raw?.id ?? groupMember.id) : record.id;
         groupMember.groupId = raw.group_id;
         groupMember.userId = raw.user_id;
@@ -48,7 +43,7 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
         tableName: GROUP_MEMBERSHIP,
         value,
         fieldsMapper,
-    });
+    }) as Promise<GroupMembershipModel>;
 };
 
 /**
@@ -56,15 +51,15 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<GroupModel>}
  */
-export const transformGroupRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawGroup;
-    const record = value.record as Group;
+export const transformGroupRecord = ({action, database, value}: TransformerArgs): Promise<GroupModel> => {
+    const raw = value.raw as Group;
+    const record = value.record as GroupModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (group: Group) => {
+    const fieldsMapper = (group: GroupModel) => {
         group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record.id;
         group.name = raw.name;
         group.displayName = raw.display_name;
@@ -76,7 +71,7 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
         tableName: GROUP,
         value,
         fieldsMapper,
-    });
+    }) as Promise<GroupModel>;
 };
 
 /**
@@ -84,14 +79,14 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<GroupsInTeamModel>}
  */
-export const transformGroupsInTeamRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawGroupsInTeam;
-    const record = value.record as GroupsInTeam;
+export const transformGroupsInTeamRecord = ({action, database, value}: TransformerArgs): Promise<GroupsInTeamModel> => {
+    const raw = value.raw as GroupTeam;
+    const record = value.record as GroupsInTeamModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (groupsInTeam: GroupsInTeam) => {
+    const fieldsMapper = (groupsInTeam: GroupsInTeamModel) => {
         groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record.id;
         groupsInTeam.teamId = raw.team_id;
         groupsInTeam.groupId = raw.group_id;
@@ -103,7 +98,7 @@ export const transformGroupsInTeamRecord = ({action, database, value}: Transform
         tableName: GROUPS_IN_TEAM,
         value,
         fieldsMapper,
-    });
+    }) as Promise<GroupsInTeamModel>;
 };
 
 /**
@@ -111,14 +106,14 @@ export const transformGroupsInTeamRecord = ({action, database, value}: Transform
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<GroupsInChannelModel>}
  */
-export const transformGroupsInChannelRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawGroupsInChannel;
-    const record = value.record as GroupsInChannel;
+export const transformGroupsInChannelRecord = ({action, database, value}: TransformerArgs): Promise<GroupsInChannelModel> => {
+    const raw = value.raw as GroupChannel;
+    const record = value.record as GroupsInChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (groupsInChannel: GroupsInChannel) => {
+    const fieldsMapper = (groupsInChannel: GroupsInChannelModel) => {
         groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record.id;
         groupsInChannel.channelId = raw.channel_id;
         groupsInChannel.groupId = raw.group_id;
@@ -132,5 +127,5 @@ export const transformGroupsInChannelRecord = ({action, database, value}: Transf
         tableName: GROUPS_IN_CHANNEL,
         value,
         fieldsMapper,
-    });
+    }) as Promise<GroupsInChannelModel>;
 };

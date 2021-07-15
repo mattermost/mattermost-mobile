@@ -6,10 +6,9 @@ import {getTimeZone} from 'react-native-localize';
 import DatabaseManager from '@database/manager';
 import {queryUserById} from '@queries/servers/user';
 import {updateMe} from '@actions/remote/user';
-import {Config} from '@typings/database/models/servers/config';
 import User from '@typings/database/models/servers/user';
 
-export const isTimezoneEnabled = (config: Partial<Config>) => {
+export const isTimezoneEnabled = (config: Partial<ClientConfig>) => {
     return config?.ExperimentalTimezone === 'true';
 };
 

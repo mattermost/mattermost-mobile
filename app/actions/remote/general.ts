@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {DeviceEventEmitter} from 'react-native';
+
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
+import {queryCurrentUserId} from '@queries/servers/system';
 
 import type {ClientResponse} from '@mattermost/react-native-network-client';
+import type {Client4Error} from '@typings/api/client';
 
-import type {RawSystem} from '@typings/database/database';
+const HTTP_UNAUTHORIZED = 401;
 
 export const doPing = async (serverUrl: string) => {
     const client = await NetworkManager.createClient(serverUrl);
@@ -46,41 +49,32 @@ export const doPing = async (serverUrl: string) => {
     return {error: undefined};
 };
 
-export const fetchConfigAndLicense = async (serverUrl: string) => {
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
+export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Error) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
     }
 
-    try {
-        const [config, license] = await Promise.all<ClientConfig, ClientLicense>([
-            client.getClientConfigOld(),
-            client.getClientLicenseOld(),
-        ]);
+    const currentUserId = await queryCurrentUserId(database);
 
-        // If we have credentials for this server then update the values in the database
-        const credentials = await getServerCredentials(serverUrl);
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (credentials && operator) {
-            const systems: RawSystem[] = [{
-                id: SYSTEM_IDENTIFIERS.CONFIG,
-                value: JSON.stringify(config),
-            }, {
-                id: SYSTEM_IDENTIFIERS.LICENSE,
-                value: JSON.stringify(license),
-            }];
+    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
+        await logout(serverUrl);
+    }
 
-            operator.handleSystem({systems, prepareRecordsOnly: false}).
-                catch((error) => {
-                    // eslint-disable-next-line no-console
-                    console.log('An error ocurred while saving config & license', error);
-                });
+    return {error: null};
+};
+
+export const logout = async (serverUrl: string, skipServerLogout = false) => {
+    if (!skipServerLogout) {
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+            await client.logout();
+        } catch (error) {
+            // We want to log the user even if logging out from the server failed
+            // eslint-disable-next-line no-console
+            console.warn('An error ocurred loging out from the server', serverUrl, error);
         }
-
-        return {config, license};
-    } catch (error) {
-        return {error};
     }
+
+    DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
 };

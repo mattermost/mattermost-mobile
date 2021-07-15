@@ -6,15 +6,16 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/models/servers/post';
-import User from '@typings/database/models/servers/user';
+
+import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {POST, REACTION, USER} = MM_TABLES.SERVER;
 
 /**
  * The Reaction Model is used to present the reactions a user had on a particular post
  */
-export default class Reaction extends Model {
+export default class ReactionModel extends Model {
     /** table (name) : Reaction */
     static table = REACTION;
 
@@ -41,8 +42,8 @@ export default class Reaction extends Model {
     @field('user_id') userId!: string;
 
     /** user : The related record to the User model */
-    @immutableRelation(USER, 'user_id') user!: Relation<User>;
+    @immutableRelation(USER, 'user_id') user!: Relation<UserModel>;
 
     /** post : The related record to the Post model */
-    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 }

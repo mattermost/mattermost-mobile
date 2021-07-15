@@ -7,7 +7,7 @@ import {Model} from '@nozbe/watermelondb';
  * The Global model will act as a dictionary of name-value pairs.  The value field can be a JSON object or any other
  * data type.  It will hold information that applies to the whole app ( e.g. sidebar settings for tablets)
  */
-export default class Global extends Model {
+export default class GlobalModel extends Model {
     /** table (name) : global */
     static table: string;
 

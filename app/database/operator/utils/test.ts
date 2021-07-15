@@ -4,15 +4,15 @@
 import DatabaseManager from '@database/manager';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
-import {RawPost} from '@typings/database/database';
-import Reaction from '@typings/database/models/servers/reaction';
+
+import type ReactionModel from '@typings/database/models/servers/reaction';
 
 import {mockedPosts, mockedReactions} from './mock';
 
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {
         const {postsOrdered, postsUnordered} = sanitizePosts({
-            posts: Object.values(mockedPosts.posts),
+            posts: Object.values(mockedPosts.posts) as Post[],
             orders: mockedPosts.order,
         });
         expect(postsOrdered.length).toBe(4);
@@ -23,42 +23,42 @@ describe('DataOperator: Utils tests', () => {
         const previousPostId = 'prev_xxyuoxmehne';
         const chainedOfPosts = createPostsChain({
             orders: mockedPosts.order,
-            rawPosts: Object.values(mockedPosts.posts),
+            rawPosts: Object.values(mockedPosts.posts) as Post[],
             previousPostId,
         });
 
         // eslint-disable-next-line max-nested-callbacks
         const post1 = chainedOfPosts.find((post) => {
-            const p = post.raw as unknown as RawPost;
+            const p = post.raw as Post;
             return p.id === '8swgtrrdiff89jnsiwiip3y1eoe';
-        })?.raw as unknown as RawPost;
+        })?.raw as Post;
 
         expect(post1).toBeTruthy();
         expect(post1?.prev_post_id).toBe(previousPostId);
 
         // eslint-disable-next-line max-nested-callbacks
         const post2 = chainedOfPosts.find((post) => {
-            const p = post.raw as unknown as RawPost;
+            const p = post.raw as Post;
             return p.id === '8fcnk3p1jt8mmkaprgajoxz115a';
-        })?.raw as unknown as RawPost;
+        })?.raw as Post;
 
         expect(post2).toBeTruthy();
         expect(post2!.prev_post_id).toBe('8swgtrrdiff89jnsiwiip3y1eoe');
 
         // eslint-disable-next-line max-nested-callbacks
         const post3 = chainedOfPosts.find((post) => {
-            const p = post.raw as unknown as RawPost;
+            const p = post.raw as Post;
             return p.id === '3y3w3a6gkbg73bnj3xund9o5ic';
-        })?.raw as unknown as RawPost;
+        })?.raw as Post;
 
         expect(post3).toBeTruthy();
         expect(post3?.prev_post_id).toBe('8fcnk3p1jt8mmkaprgajoxz115a');
 
         // eslint-disable-next-line max-nested-callbacks
         const post4 = chainedOfPosts.find((post) => {
-            const p = post.raw as unknown as RawPost;
+            const p = post.raw as Post;
             return p.id === '4btbnmticjgw7ewd3qopmpiwqw';
-        })?.raw as unknown as RawPost;
+        })?.raw as Post;
 
         expect(post4).toBeTruthy();
         expect(post4!.prev_post_id).toBe('3y3w3a6gkbg73bnj3xund9o5ic');
@@ -82,12 +82,10 @@ describe('DataOperator: Utils tests', () => {
                     post_id: '8ww8kb1dbpf59fu4d5xhu5nf5w',
                     emoji_name: 'tada_will_be_removed',
                     create_at: 1601558322701,
-                    update_at: 1601558322701,
-                    delete_at: 0,
                 },
             ],
             prepareRecordsOnly: true,
-        }) as Reaction[];
+        }) as ReactionModel[];
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here
         // eslint-disable-next-line max-nested-callbacks

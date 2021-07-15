@@ -4,21 +4,10 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import ChannelInfo from './channel_info';
-import ChannelMembership from './channel_membership';
-import Draft from './draft';
-import GroupsInChannel from './groups_in_channel';
-import MyChannel from './my_channel';
-import MyChannelSettings from './my_channel_settings';
-import Post from './post';
-import PostsInChannel from './posts_in_channel';
-import Team from './team';
-import User from './user';
-
 /**
  * The Channel model represents a channel in the Mattermost app.
  */
-export default class Channel extends Model {
+export default class ChannelModel extends Model {
     /** table (name) : Channel */
     static table: string;
 
@@ -53,32 +42,32 @@ export default class Channel extends Model {
     type: string;
 
     /** members : Users belonging to this channel */
-    members: ChannelMembership[];
+    members: ChannelMembershipModel[];
 
     /** drafts : All drafts for this channel */
-    drafts: Draft[];
+    drafts: DraftModel[];
 
     /** groupsInChannel : Every group contained in this channel */
-    groupsInChannel: GroupsInChannel[];
+    groupsInChannel: GroupsInChannelModel[];
 
     /** posts : All posts made in the channel */
-    posts: Post[];
+    posts: PostModel[];
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    postsInChannel: PostsInChannel[];
+    postsInChannel: PostsInChannelModel[];
 
     /** team : The TEAM to which this CHANNEL belongs */
-    team: Relation<Team>;
+    team: Relation<TeamModel>;
 
     /** creator : The USER who created this CHANNEL*/
-    creator: Relation<User>;
+    creator: Relation<UserModel>;
 
     /** info : Query returning extra information about this channel from the CHANNEL_INFO table */
-    info: Query<ChannelInfo>;
+    info: Query<ChannelInfoModel>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
-    membership: Query<MyChannel>;
+    membership: Query<MyChannelModel>;
 
     /** settings: User specific settings/preferences for this channel */
-    settings: Query<MyChannelSettings>;
+    settings: Query<MyChannelSettingsModel>;
 }

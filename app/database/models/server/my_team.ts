@@ -6,14 +6,15 @@ import {field, relation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Team from '@typings/database/models/servers/team';
+
+import type TeamModel from '@typings/database/models/servers/team';
 
 const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
 
 /**
  * MyTeam represents only the teams that the current user belongs to
  */
-export default class MyTeam extends Model {
+export default class MyTeamModel extends Model {
     /** table (name) : MyTeam */
     static table = MY_TEAM;
 
@@ -37,5 +38,5 @@ export default class MyTeam extends Model {
     @field('team_id') teamId!: string;
 
     /** team : The relation to the TEAM, that this user belongs to  */
-    @relation(MY_TEAM, 'team_id') team!: Relation<Team>;
+    @relation(MY_TEAM, 'team_id') team!: Relation<TeamModel>;
 }

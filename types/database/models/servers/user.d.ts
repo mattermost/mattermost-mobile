@@ -3,19 +3,11 @@
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-import ChannelMembership from './channel_membership';
-import GroupMembership from './group_membership';
-import Post from './post';
-import Preference from './preference';
-import Reaction from './reaction';
-import TeamMembership from './team_membership';
-
 /**
  * The User model represents the 'USER' table and its relationship to other
  * shareholders in the app.
  */
-export default class User extends Model {
+export default class UserModel extends Model {
     /** table (name) : User */
     static table: string;
 
@@ -68,34 +60,34 @@ export default class User extends Model {
     username: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: NotifyProps;
+    notifyProps: UserNotifyProps | null;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
      *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
      */
-    props: UserProps;
+    props: UserProps | null;
 
     /** timezone : The timezone for this user */
-    timezone: Timezone;
+    timezone: UserTimezone | null;
 
     /** channelsCreated : All the channels that this user created */
-    channelsCreated: Channel[];
+    channelsCreated: ChannelModel[];
 
     /** channels : All the channels that this user is part of  */
-    channels: ChannelMembership[];
+    channels: ChannelMembershipModel[];
 
     /** groups : All the groups that this user is part of  */
-    groups: GroupMembership[];
+    groups: GroupMembershipModel[];
 
     /** posts :  All the posts that this user has written*/
-    posts: Post[];
+    posts: PostModel[];
 
     /** preferences : All user preferences */
-    preferences: Preference[];
+    preferences: PreferenceModel[];
 
     /** reactions : All the reactions to posts that this user had */
-    reactions: Reaction[];
+    reactions: ReactionModel[];
 
     /** teams : All the team that this user is part of  */
-    teams: TeamMembership[];
+    teams: TeamMembershipModel[];
 }

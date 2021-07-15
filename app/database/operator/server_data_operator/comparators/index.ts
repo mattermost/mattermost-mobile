@@ -1,54 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Channel from '@typings/database/models/servers/channel';
-import ChannelInfo from '@typings/database/models/servers/channel_info';
-import ChannelMembership from '@typings/database/models/servers/channel_membership';
-import CustomEmoji from '@typings/database/models/servers/custom_emoji';
-import {
-    RawChannel,
-    RawChannelInfo,
-    RawChannelMembership,
-    RawCustomEmoji,
-    RawDraft,
-    RawGroup,
-    RawGroupMembership,
-    RawGroupsInChannel,
-    RawGroupsInTeam,
-    RawMyChannel,
-    RawMyChannelSettings,
-    RawMyTeam,
-    RawPost,
-    RawPreference,
-    RawRole,
-    RawSlashCommand,
-    RawSystem,
-    RawTeam,
-    RawTeamChannelHistory,
-    RawTeamMembership,
-    RawTeamSearchHistory,
-    RawTermsOfService,
-    RawUser,
-} from '@typings/database/database';
-import Draft from '@typings/database/models/servers/draft';
-import Group from '@typings/database/models/servers/group';
-import GroupMembership from '@typings/database/models/servers/group_membership';
-import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
-import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
-import MyChannel from '@typings/database/models/servers/my_channel';
-import MyChannelSettings from '@typings/database/models/servers/my_channel_settings';
-import MyTeam from '@typings/database/models/servers/my_team';
-import Post from '@typings/database/models/servers/post';
-import Preference from '@typings/database/models/servers/preference';
-import Role from '@typings/database/models/servers/role';
-import SlashCommand from '@typings/database/models/servers/slash_command';
-import System from '@typings/database/models/servers/system';
-import Team from '@typings/database/models/servers/team';
-import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
-import TeamMembership from '@typings/database/models/servers/team_membership';
-import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
-import TermsOfService from '@typings/database/models/servers/terms_of_service';
-import User from '@typings/database/models/servers/user';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type DraftModel from '@typings/database/models/servers/draft';
+import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
+import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type PostModel from '@typings/database/models/servers/post';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type RoleModel from '@typings/database/models/servers/role';
+import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type SystemModel from '@typings/database/models/servers/system';
+import type TeamModel from '@typings/database/models/servers/team';
+import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
+import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
+import type UserModel from '@typings/database/models/servers/user';
 
 /**
  *  This file contains all the comparators that are used by the handlers to find out which records to truly update and
@@ -57,31 +32,31 @@ import User from '@typings/database/models/servers/user';
  *  'record' and the 'raw'
  */
 
-export const isRecordRoleEqualToRaw = (record: Role, raw: RawRole) => {
+export const isRecordRoleEqualToRaw = (record: RoleModel, raw: Role) => {
     return raw.id === record.id;
 };
 
-export const isRecordSystemEqualToRaw = (record: System, raw: RawSystem) => {
+export const isRecordSystemEqualToRaw = (record: SystemModel, raw: IdValue) => {
     return raw.id === record.id;
 };
 
-export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfService, raw: RawTermsOfService) => {
+export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfServiceModel, raw: TermsOfService) => {
     return raw.id === record.id;
 };
 
-export const isRecordDraftEqualToRaw = (record: Draft, raw: RawDraft) => {
+export const isRecordDraftEqualToRaw = (record: DraftModel, raw: Draft) => {
     return raw.channel_id === record.channelId;
 };
 
-export const isRecordPostEqualToRaw = (record: Post, raw: RawPost) => {
+export const isRecordPostEqualToRaw = (record: PostModel, raw: Post) => {
     return raw.id === record.id;
 };
 
-export const isRecordUserEqualToRaw = (record: User, raw: RawUser) => {
+export const isRecordUserEqualToRaw = (record: UserModel, raw: UserProfile) => {
     return raw.id === record.id;
 };
 
-export const isRecordPreferenceEqualToRaw = (record: Preference, raw: RawPreference) => {
+export const isRecordPreferenceEqualToRaw = (record: PreferenceModel, raw: PreferenceType) => {
     return (
         raw.category === record.category &&
         raw.name === record.name &&
@@ -89,66 +64,66 @@ export const isRecordPreferenceEqualToRaw = (record: Preference, raw: RawPrefere
     );
 };
 
-export const isRecordTeamMembershipEqualToRaw = (record: TeamMembership, raw: RawTeamMembership) => {
+export const isRecordTeamMembershipEqualToRaw = (record: TeamMembershipModel, raw: TeamMembership) => {
     return raw.team_id === record.teamId && raw.user_id === record.userId;
 };
 
-export const isRecordCustomEmojiEqualToRaw = (record: CustomEmoji, raw: RawCustomEmoji) => {
+export const isRecordCustomEmojiEqualToRaw = (record: CustomEmojiModel, raw: CustomEmoji) => {
     return raw.id === record.id;
 };
 
-export const isRecordGroupMembershipEqualToRaw = (record: GroupMembership, raw: RawGroupMembership) => {
+export const isRecordGroupMembershipEqualToRaw = (record: GroupMembershipModel, raw: GroupMembership) => {
     return raw.user_id === record.userId && raw.group_id === record.groupId;
 };
 
-export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembership, raw: RawChannelMembership) => {
+export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembershipModel, raw: ChannelMembership) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
 };
 
-export const isRecordGroupEqualToRaw = (record: Group, raw: RawGroup) => {
+export const isRecordGroupEqualToRaw = (record: GroupModel, raw: Group) => {
     return raw.id === record.id;
 };
 
-export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeam, raw: RawGroupsInTeam) => {
+export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeamModel, raw: GroupTeam) => {
     return raw.team_id === record.teamId && raw.group_id === record.groupId;
 };
 
-export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannel, raw: RawGroupsInChannel) => {
+export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannelModel, raw: GroupChannel) => {
     return raw.channel_id === record.channelId && raw.group_id === record.groupId;
 };
 
-export const isRecordTeamEqualToRaw = (record: Team, raw: RawTeam) => {
+export const isRecordTeamEqualToRaw = (record: TeamModel, raw: Team) => {
     return raw.id === record.id;
 };
 
-export const isRecordTeamChannelHistoryEqualToRaw = (record: TeamChannelHistory, raw: RawTeamChannelHistory) => {
+export const isRecordTeamChannelHistoryEqualToRaw = (record: TeamChannelHistoryModel, raw: TeamChannelHistory) => {
     return raw.team_id === record.teamId;
 };
 
-export const isRecordTeamSearchHistoryEqualToRaw = (record: TeamSearchHistory, raw: RawTeamSearchHistory) => {
+export const isRecordTeamSearchHistoryEqualToRaw = (record: TeamSearchHistoryModel, raw: TeamSearchHistory) => {
     return raw.team_id === record.teamId && raw.term === record.term;
 };
 
-export const isRecordSlashCommandEqualToRaw = (record: SlashCommand, raw: RawSlashCommand) => {
+export const isRecordSlashCommandEqualToRaw = (record: SlashCommandModel, raw: SlashCommand) => {
     return raw.id === record.id;
 };
 
-export const isRecordMyTeamEqualToRaw = (record: MyTeam, raw: RawMyTeam) => {
+export const isRecordMyTeamEqualToRaw = (record: MyTeamModel, raw: MyTeam) => {
     return raw.team_id === record.teamId;
 };
 
-export const isRecordChannelEqualToRaw = (record: Channel, raw: RawChannel) => {
+export const isRecordChannelEqualToRaw = (record: ChannelModel, raw: Channel) => {
     return raw.id === record.id;
 };
 
-export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettings, raw: RawMyChannelSettings) => {
+export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettingsModel, raw: ChannelMembership) => {
     return raw.channel_id === record.channelId;
 };
 
-export const isRecordChannelInfoEqualToRaw = (record: ChannelInfo, raw: RawChannelInfo) => {
+export const isRecordChannelInfoEqualToRaw = (record: ChannelInfoModel, raw: ChannelInfo) => {
     return raw.channel_id === record.channelId;
 };
 
-export const isRecordMyChannelEqualToRaw = (record: MyChannel, raw: RawMyChannel) => {
+export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: ChannelMembership) => {
     return raw.channel_id === record.channelId;
 };

@@ -4,14 +4,11 @@
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-import User from './user';
-
 /**
  * The ChannelMembership model represents the 'association table' where many channels have users and many users are on
  * channels ( N:N relationship between model Users and model Channel)
  */
-export default class ChannelMembership extends Model {
+export default class ChannelMembershipModel extends Model {
     /** table (name) : ChannelMembership */
     static table: string;
 
@@ -25,7 +22,7 @@ export default class ChannelMembership extends Model {
     userId: string;
 
     /** memberChannel : The related channel this member belongs to */
-    memberChannel: Relation<Channel>;
+    memberChannel: Relation<ChannelModel>;
 
     /** memberUser : The related member belonging to the channel */
     memberUser: Relation<User>;
@@ -33,10 +30,10 @@ export default class ChannelMembership extends Model {
     /**
      * getAllChannelsForUser - Retrieves all the channels that the user is part of
      */
-    getAllChannelsForUser: Query<Channel>;
+    getAllChannelsForUser: Query<ChannelModel>;
 
     /**
      * getAllUsersInChannel - Retrieves all the users who are part of this channel
      */
-    getAllUsersInChannel: Query<User>;
+    getAllUsersInChannel: Query<UserModel>;
 }

@@ -18,16 +18,20 @@ type UserNotifyProps = {
     user_id?: string;
 };
 
+interface UserProps {
+    [userPropsName: string]: any;
+}
+
 type UserProfile = {
     id: string;
     create_at: number;
     update_at: number;
     delete_at: number;
     username: string;
-    auth_data: string;
+    auth_data?: string;
     auth_service: string;
     email: string;
-    email_verified: boolean;
+    email_verified?: boolean;
     nickname: string;
     first_name: string;
     last_name: string;
@@ -35,8 +39,9 @@ type UserProfile = {
     roles: string;
     locale: string;
     notify_props: UserNotifyProps;
-    terms_of_service_id: string;
-    terms_of_service_create_at: number;
+    props?: UserProps;
+    terms_of_service_id?: string;
+    terms_of_service_create_at?: number;
     timezone?: UserTimezone;
     is_bot: boolean;
     last_picture_update: number;
@@ -77,4 +82,8 @@ type UserStatus = {
 	manual: boolean;
 	last_activity_at: number;
 	active_channel?: string;
+};
+
+type UserProps = {
+    [userPropsName: string]: any;
 };

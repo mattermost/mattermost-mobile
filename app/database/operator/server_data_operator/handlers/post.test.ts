@@ -58,9 +58,9 @@ describe('*** Operator: Post Handlers tests ***', () => {
     });
 
     it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {
-        expect.assertions(12);
+        // expect.assertions(12);
 
-        const posts = [
+        const posts: Post[] = [
             {
                 id: '8swgtrrdiff89jnsiwiip3y1eoe',
                 create_at: 1596032651747,
@@ -96,8 +96,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                             post_id: 'a7ebyw883trm884p1qcgt8yw4a',
                             emoji_name: 'clap',
                             create_at: 1608252965442,
-                            update_at: 1608252965442,
-                            delete_at: 0,
                         },
                     ],
                     embeds: [
@@ -235,8 +233,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                     post_id: 'a7ebyw883trm884p1qcgt8yw4a',
                     emoji_name: 'clap',
                     create_at: 1608252965442,
-                    update_at: 1608252965442,
-                    delete_at: 0,
                 },
             ],
             prepareRecordsOnly: true,
@@ -268,9 +264,9 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostMetadata).toHaveBeenCalledWith({
-            embeds: [
-                {
-                    embed: [
+            metadatas: [{
+                data: {
+                    embeds: [
                         {
                             type: 'opengraph',
                             url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
@@ -297,11 +293,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                             },
                         },
                     ],
-                    postId: '8swgtrrdiff89jnsiwiip3y1eoe',
-                },
-            ],
-            images: [
-                {
                     images: {
                         'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
                             width: 400,
@@ -310,9 +301,9 @@ describe('*** Operator: Post Handlers tests ***', () => {
                             frame_count: 0,
                         },
                     },
-                    postId: '8swgtrrdiff89jnsiwiip3y1eoe',
                 },
-            ],
+                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+            }],
             prepareRecordsOnly: true,
         });
 

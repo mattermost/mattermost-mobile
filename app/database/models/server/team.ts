@@ -6,13 +6,14 @@ import {children, field, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/models/servers/channel';
-import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
-import MyTeam from '@typings/database/models/servers/my_team';
-import SlashCommand from '@typings/database/models/servers/slash_command';
-import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
-import TeamMembership from '@typings/database/models/servers/team_membership';
-import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
     CHANNEL,
@@ -28,7 +29,7 @@ const {
 /**
  * A Team houses and enables communication to happen across channels and users.
  */
-export default class Team extends Model {
+export default class TeamModel extends Model {
     /** table (name) : Team */
     static table = TEAM;
 
@@ -85,23 +86,23 @@ export default class Team extends Model {
     @field('allowed_domains') allowedDomains!: string;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels!: Channel[];
+    @children(CHANNEL) channels!: ChannelModel[];
 
     /** groupsInTeam : All the groups associated with this team */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeamModel[];
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
-    @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
+    @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeamModel>;
 
     /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands!: SlashCommand[];
+    @children(SLASH_COMMAND) slashCommands!: SlashCommandModel[];
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
-    @lazy teamChannelHistory = this.collections.get(TEAM_CHANNEL_HISTORY).query(Q.on(TEAM, 'id', this.id)) as Query<TeamChannelHistory>;
+    @lazy teamChannelHistory = this.collections.get(TEAM_CHANNEL_HISTORY).query(Q.on(TEAM, 'id', this.id)) as Query<TeamChannelHistoryModel>;
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members!: TeamMembership[];
+    @children(TEAM_MEMBERSHIP) members!: TeamMembershipModel[];
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistory[];
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistoryModel[];
 }

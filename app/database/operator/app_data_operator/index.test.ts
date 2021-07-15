@@ -5,14 +5,11 @@ import DatabaseManager from '@database/manager';
 import {
     isRecordInfoEqualToRaw,
     isRecordGlobalEqualToRaw,
-    isRecordServerEqualToRaw,
 } from '@database/operator/app_data_operator/comparator';
 import {
     transformInfoRecord,
     transformGlobalRecord,
-    transformServersRecord,
 } from '@database/operator/app_data_operator/transformers';
-import {RawGlobal, RawServers} from '@typings/database/database';
 
 describe('** APP DATA OPERATOR **', () => {
     beforeAll(async () => {
@@ -72,7 +69,7 @@ describe('** APP DATA OPERATOR **', () => {
         expect(appOperator).toBeTruthy();
 
         const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
-        const global: RawGlobal[] = [{id: 'global-1-name', value: 'global-1-value'}];
+        const global: IdValue[] = [{id: 'global-1-name', value: 'global-1-value'}];
 
         await appOperator?.handleGlobal({
             global,
@@ -85,51 +82,6 @@ describe('** APP DATA OPERATOR **', () => {
             transformer: transformGlobalRecord,
             createOrUpdateRawValues: global,
             tableName: 'Global',
-            prepareRecordsOnly: false,
-        });
-    });
-
-    it('=> HandleServers: should write to SERVERS table', async () => {
-        const appDatabase = DatabaseManager.appDatabase?.database;
-        const appOperator = DatabaseManager.appDatabase?.operator;
-        expect(appDatabase).toBeTruthy();
-        expect(appOperator).toBeTruthy();
-
-        const spyOnHandleRecords = jest.spyOn(appOperator as any, 'handleRecords');
-
-        const servers: RawServers[] = [
-            {
-                db_path: 'server.db',
-                display_name: 'community',
-                mention_count: 0,
-                unread_count: 0,
-                url: 'https://community.mattermost.com',
-                isSecured: true,
-                lastActiveAt: 1623926359,
-            },
-        ];
-
-        await appOperator?.handleServers({
-            servers,
-            prepareRecordsOnly: false,
-        });
-
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'url',
-            transformer: transformServersRecord,
-            findMatchingRecordBy: isRecordServerEqualToRaw,
-            createOrUpdateRawValues: [
-                {
-                    db_path: 'server.db',
-                    display_name: 'community',
-                    mention_count: 0,
-                    unread_count: 0,
-                    url: 'https://community.mattermost.com',
-                    isSecured: true,
-                    lastActiveAt: 1623926359,
-                },
-            ],
-            tableName: 'Servers',
             prepareRecordsOnly: false,
         });
     });

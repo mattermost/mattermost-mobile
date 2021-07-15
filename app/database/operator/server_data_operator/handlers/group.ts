@@ -16,16 +16,12 @@ import {
     transformGroupsInTeamRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {
-    HandleGroupArgs,
-    HandleGroupMembershipArgs,
-    HandleGroupsInChannelArgs,
-    HandleGroupsInTeamArgs,
-} from '@typings/database/database';
-import Group from '@typings/database/models/servers/group';
-import GroupMembership from '@typings/database/models/servers/group_membership';
-import GroupsInChannel from '@typings/database/models/servers/groups_in_channel';
-import GroupsInTeam from '@typings/database/models/servers/groups_in_team';
+
+import type {HandleGroupArgs, HandleGroupMembershipArgs, HandleGroupsInChannelArgs, HandleGroupsInTeamArgs} from '@typings/database/database';
+import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
+import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
 
 const {
     GROUP,
@@ -35,10 +31,10 @@ const {
 } = MM_TABLES.SERVER;
 
 export interface GroupHandlerMix {
-    handleGroupMembership: ({groupMemberships, prepareRecordsOnly}: HandleGroupMembershipArgs) => GroupMembership[] | boolean;
-    handleGroup: ({groups, prepareRecordsOnly}: HandleGroupArgs) => Group[] | boolean;
-    handleGroupsInTeam: ({groupsInTeams, prepareRecordsOnly}: HandleGroupsInTeamArgs) => GroupsInTeam[] | boolean;
-    handleGroupsInChannel: ({groupsInChannels, prepareRecordsOnly}: HandleGroupsInChannelArgs) => GroupsInChannel[] | boolean;
+    handleGroupMembership: ({groupMemberships, prepareRecordsOnly}: HandleGroupMembershipArgs) => Promise<GroupMembershipModel[]>;
+    handleGroup: ({groups, prepareRecordsOnly}: HandleGroupArgs) => Promise<GroupModel[]>;
+    handleGroupsInTeam: ({groupsInTeams, prepareRecordsOnly}: HandleGroupsInTeamArgs) => Promise<GroupsInTeamModel[]>;
+    handleGroupsInChannel: ({groupsInChannels, prepareRecordsOnly}: HandleGroupsInChannelArgs) => Promise<GroupsInChannelModel[]>;
 }
 
 const GroupHandler = (superclass: any) => class extends superclass {
@@ -48,11 +44,9 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroupMembership[]} groupMembershipsArgs.groupMemberships
      * @param {boolean} groupMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {GroupMembership[]}
+     * @returns {Promise<GroupMembershipModel[]>}
      */
-    handleGroupMembership = async ({groupMemberships, prepareRecordsOnly = true}: HandleGroupMembershipArgs) => {
-        let records: GroupMembership[] = [];
-
+    handleGroupMembership = ({groupMemberships, prepareRecordsOnly = true}: HandleGroupMembershipArgs): Promise<GroupMembershipModel[]> => {
         if (!groupMemberships.length) {
             throw new DataOperatorException(
                 'An empty "groupMemberships" array has been passed to the handleGroupMembership method',
@@ -61,7 +55,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             transformer: transformGroupMembershipRecord,
@@ -69,8 +63,6 @@ const GroupHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: GROUP_MEMBERSHIP,
         });
-
-        return records;
     };
 
     /**
@@ -79,11 +71,9 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroup[]} groupsArgs.groups
      * @param {boolean} groupsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Group[]}
+     * @returns {Promise<GroupModel[]>}
      */
-    handleGroup = async ({groups, prepareRecordsOnly = true}: HandleGroupArgs) => {
-        let records: Group[] = [];
-
+    handleGroup = ({groups, prepareRecordsOnly = true}: HandleGroupArgs): Promise<GroupModel[]> => {
         if (!groups.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroup method',
@@ -92,7 +82,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'name'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'name',
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             transformer: transformGroupRecord,
@@ -100,8 +90,6 @@ const GroupHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: GROUP,
         });
-
-        return records;
     };
 
     /**
@@ -110,11 +98,9 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroupsInTeam[]} groupsInTeamsArgs.groupsInTeams
      * @param {boolean} groupsInTeamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {GroupsInTeam[]}
+     * @returns {Promise<GroupsInTeamModel[]>}
      */
-    handleGroupsInTeam = async ({groupsInTeams, prepareRecordsOnly = true}: HandleGroupsInTeamArgs) => {
-        let records: GroupsInTeam[] = [];
-
+    handleGroupsInTeam = ({groupsInTeams, prepareRecordsOnly = true}: HandleGroupsInTeamArgs): Promise<GroupsInTeamModel[]> => {
         if (!groupsInTeams.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
@@ -123,7 +109,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
             transformer: transformGroupsInTeamRecord,
@@ -131,8 +117,6 @@ const GroupHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: GROUPS_IN_TEAM,
         });
-
-        return records;
     };
 
     /**
@@ -141,11 +125,9 @@ const GroupHandler = (superclass: any) => class extends superclass {
      * @param {RawGroupsInChannel[]} groupsInChannelsArgs.groupsInChannels
      * @param {boolean} groupsInChannelsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {GroupsInChannel[]}
+     * @returns {Promise<GroupsInChannelModel[]>}
      */
-    handleGroupsInChannel = async ({groupsInChannels, prepareRecordsOnly = true}: HandleGroupsInChannelArgs) => {
-        let records: GroupsInChannel[] = [];
-
+    handleGroupsInChannel = ({groupsInChannels, prepareRecordsOnly = true}: HandleGroupsInChannelArgs): Promise<GroupsInChannelModel[]> => {
         if (!groupsInChannels.length) {
             throw new DataOperatorException(
                 'An empty "groups" array has been passed to the handleGroupsInTeam method',
@@ -154,7 +136,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
 
-        records = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
             transformer: transformGroupsInChannelRecord,
@@ -162,8 +144,6 @@ const GroupHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: GROUPS_IN_CHANNEL,
         });
-
-        return records;
     };
 };
 

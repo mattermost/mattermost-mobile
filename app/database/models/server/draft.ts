@@ -12,7 +12,7 @@ const {CHANNEL, DRAFT, POST} = MM_TABLES.SERVER;
 /**
  * The Draft model represents  the draft state of messages in Direct/Group messages and in channels
  */
-export default class Draft extends Model {
+export default class DraftModel extends Model {
     /** table (name) : Draft */
     static table = DRAFT;
 

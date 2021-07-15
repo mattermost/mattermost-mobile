@@ -3,16 +3,12 @@
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import GroupMembership from './group_membership';
-import GroupsInChannel from './groups_in_channel';
-import GroupsInTeam from './groups_in_team';
-
 /**
  * The Group model unifies/assembles users, teams and channels based on a common ground.  For example, a group can be
  * all users who are in the mobile team.  If one needs to send that group a message, then s/he can mention the group's
  * name in the message. (e.g @mobile_team)
  */
-export default class Group extends Model {
+export default class GroupModel extends Model {
     /** table (name) : Group */
     static table: string;
 
@@ -26,11 +22,11 @@ export default class Group extends Model {
     name: string;
 
     /** groupsInChannel : All the related children records from GroupsInChannel */
-    groupsInChannel: GroupsInChannel[];
+    groupsInChannel: GroupsInChannelModel[];
 
     /** groupsInTeam : All the related children records from GroupsInTeam */
-    groupsInTeam: GroupsInTeam[];
+    groupsInTeam: GroupsInTeamModel[];
 
     /** groupMemberships : All the related children records from GroupMembership */
-    groupMemberships: GroupMembership[];
+    groupMemberships: GroupMembershipModel[];
 }

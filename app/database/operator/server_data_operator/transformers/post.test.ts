@@ -50,7 +50,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Post');
+        expect(preparedRecords!.collection.modelClass.name).toBe('PostModel');
     });
 
     it('=> transformPostInThreadRecord: should return an array of type PostsInThread', async () => {
@@ -75,7 +75,7 @@ describe('***  POST Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe(
-            'PostsInThread',
+            'PostsInThreadModel',
         );
     });
 
@@ -91,13 +91,17 @@ describe('***  POST Prepare Records Test ***', () => {
             value: {
                 record: undefined,
                 raw: {
+                    id: 'file-id',
                     post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                     name: 'test_file',
                     extension: '.jpg',
+                    has_preview_image: true,
+                    mime_type: 'image/jpeg',
                     size: 1000,
                     create_at: 1609253011321,
                     delete_at: 1609253011321,
                     height: 20,
+                    width: 20,
                     update_at: 1609253011321,
                     user_id: 'wqyby5r5pinxxdqhoaomtacdhc',
                 },
@@ -105,7 +109,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('File');
+        expect(preparedRecords!.collection.modelClass.name).toBe('FileModel');
     });
 
     it('=> transformPostMetadataRecord: should return an array of type PostMetadata', async () => {
@@ -121,15 +125,33 @@ describe('***  POST Prepare Records Test ***', () => {
                 record: undefined,
                 raw: {
                     id: 'ps81i4yypoo',
-                    data: {},
-                    postId: 'ps81iqbddesfby8jayz7owg4yypoo',
-                    type: 'opengraph',
+                    data: {
+                        files: [
+                            {
+                                id: 'mjagj4ta4tb93f7mwdn68yw9rc',
+                                user_id: 'gy5cnn5q9i8txdkcrj4dhntnta',
+                                post_id: '4wpufe8d5pd7jpwshzrumgjd7r',
+                                create_at: 1626207675617,
+                                update_at: 1626207675617,
+                                delete_at: 0,
+                                name: 'Image Pasted at 2021-7-13 22-21.png',
+                                extension: 'png',
+                                size: 4668,
+                                mime_type: 'image/png',
+                                width: 67,
+                                height: 116,
+                                has_preview_image: true,
+                                mini_preview: '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APPv2c/gr8O/GvwHbWNW0CDW/Elxd6nbS3janMH090jj+xK1tDIHEUhZy0wjl27ANpDZXhP2kvgzo3wk8OeDjZPpbahfXE8bm2kdbqWKOOIieWFpXMSs7yKoYKxCZIGcCz+zvB8J5vD98vjIacmutFCLGfV4XlsIzvfzjKsfzmTGzAY7dp45zXjvirV9I1LXdRW4gXw7GLib7Iuh6J59uyo22IqWnDhZASzZ6bVwOTjuelS7vockKr9m4RUdd9r6equvkz//2Q==',
+                            },
+                        ],
+                    },
+                    post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('PostMetadata');
+        expect(preparedRecords!.collection.modelClass.name).toBe('PostMetadataModel');
     });
 
     it('=> transformDraftRecord: should return an array of type Draft', async () => {
@@ -154,7 +176,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('Draft');
+        expect(preparedRecords!.collection.modelClass.name).toBe('DraftModel');
     });
 
     it('=> transformPostsInChannelRecord: should return an array of type PostsInChannel', async () => {
@@ -179,7 +201,7 @@ describe('***  POST Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe(
-            'PostsInChannel',
+            'PostsInChannelModel',
         );
     });
 });

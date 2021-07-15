@@ -42,6 +42,7 @@
             "@constants/*": ["app/constants/*"],
             "@context/*": ["app/context/*"],
             "@database/*": ["app/database/*"],
+            "@helpers/*": ["app/helpers/*"],
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
             "@notifications": ["app/notifications/index"],

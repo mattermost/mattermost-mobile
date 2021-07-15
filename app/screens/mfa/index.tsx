@@ -19,16 +19,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {login} from '@actions/remote/user';
-import {Config} from '@typings/database/models/servers/config';
-import {License} from '@typings/database/models/servers/license';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
-    config: Partial<Config>;
+    config: Partial<ClientConfig>;
     goToChannel: () => void;
-    license: Partial<License>;
+    license: Partial<ClientLicense>;
     loginId: string;
     password: string;
     serverUrl: string;

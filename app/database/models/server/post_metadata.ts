@@ -8,15 +8,14 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type {PostMetadataData, PostMetadataType} from '@typings/database/database';
-import type Post from '@typings/database/models/servers/post';
+import type PostModel from '@typings/database/models/servers/post';
 
 const {POST, POST_METADATA} = MM_TABLES.SERVER;
 
 /**
  * PostMetadata provides additional information on a POST
  */
-export default class PostMetadata extends Model {
+export default class PostMetadataModel extends Model {
     /** table (name) : PostMetadata */
     static table = POST_METADATA;
 
@@ -30,12 +29,9 @@ export default class PostMetadata extends Model {
     /** post_id : The foreign key of the parent POST model */
     @field('post_id') postId!: string;
 
-    /** type : The type will work in tandem with the value present in the field 'data'.  One 'type' for each kind of 'data' */
-    @field('type') type!: PostMetadataType;
-
     /** data : Different types of data ranging from embeds to images. */
-    @json('data', safeParseJSON) data!: PostMetadataData;
+    @json('data', safeParseJSON) data!: PostMetadata;
 
     /** post: The record representing the POST parent.  */
-    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 }

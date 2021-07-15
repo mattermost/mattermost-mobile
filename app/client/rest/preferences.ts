@@ -4,7 +4,7 @@
 export interface ClientPreferencesMix {
     savePreferences: (userId: string, preferences: PreferenceType[]) => Promise<any>;
     deletePreferences: (userId: string, preferences: PreferenceType[]) => Promise<any>;
-    getMyPreferences: () => Promise<PreferenceType>;
+    getMyPreferences: () => Promise<PreferenceType[]>;
 }
 
 const ClientPreferences = (superclass: any) => class extends superclass {

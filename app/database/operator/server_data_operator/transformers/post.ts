@@ -4,22 +4,15 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import type{
-    TransformerArgs,
-    RawDraft,
-    RawFile,
-    RawPost,
-    RawPostMetadata,
-    RawPostsInChannel,
-    RawPostsInThread,
-} from '@typings/database/database';
-import Draft from '@typings/database/models/servers/draft';
+
+import type{TransformerArgs} from '@typings/database/database';
+import type DraftModel from '@typings/database/models/servers/draft';
 import {OperationType} from '@typings/database/enums';
-import File from '@typings/database/models/servers/file';
-import Post from '@typings/database/models/servers/post';
-import PostMetadata from '@typings/database/models/servers/post_metadata';
-import PostsInChannel from '@typings/database/models/servers/posts_in_channel';
-import PostsInThread from '@typings/database/models/servers/posts_in_thread';
+import type FileModel from '@typings/database/models/servers/file';
+import type PostModel from '@typings/database/models/servers/post';
+import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
+import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
 const {
     DRAFT,
@@ -35,15 +28,15 @@ const {
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<PostModel>}
  */
-export const transformPostRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawPost;
-    const record = value.record as Post;
+export const transformPostRecord = ({action, database, value}: TransformerArgs): Promise<PostModel> => {
+    const raw = value.raw as Post;
+    const record = value.record as PostModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (post: Post) => {
+    const fieldsMapper = (post: PostModel) => {
         post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record.id;
         post.channelId = raw.channel_id;
         post.createAt = raw.create_at;
@@ -67,7 +60,7 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs) 
         tableName: POST,
         value,
         fieldsMapper,
-    });
+    }) as Promise<PostModel>;
 };
 
 /**
@@ -75,14 +68,14 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs) 
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<PostsInThreadModel>}
  */
-export const transformPostInThreadRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawPostsInThread;
-    const record = value.record as PostsInThread;
+export const transformPostInThreadRecord = ({action, database, value}: TransformerArgs): Promise<PostsInThreadModel> => {
+    const raw = value.raw as PostsInThread;
+    const record = value.record as PostsInThreadModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (postsInThread: PostsInThread) => {
+    const fieldsMapper = (postsInThread: PostsInThreadModel) => {
         postsInThread.postId = isCreateAction ? raw.post_id : record.id;
         postsInThread.earliest = raw.earliest;
         postsInThread.latest = raw.latest!;
@@ -94,7 +87,7 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
         tableName: POSTS_IN_THREAD,
         value,
         fieldsMapper,
-    });
+    }) as Promise<PostsInThreadModel>;
 };
 
 /**
@@ -102,15 +95,15 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<FileModel>}
  */
-export const transformFileRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawFile;
-    const record = value.record as File;
+export const transformFileRecord = ({action, database, value}: TransformerArgs): Promise<FileModel> => {
+    const raw = value.raw as FileInfo;
+    const record = value.record as FileModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (file: File) => {
+    const fieldsMapper = (file: FileModel) => {
         file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record.id;
         file.postId = raw.post_id;
         file.name = raw.name;
@@ -129,7 +122,7 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs) 
         tableName: FILE,
         value,
         fieldsMapper,
-    });
+    }) as Promise<FileModel>;
 };
 
 /**
@@ -137,18 +130,17 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs) 
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<PostMetadataModel>}
  */
-export const transformPostMetadataRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawPostMetadata;
-    const record = value.record as PostMetadata;
+export const transformPostMetadataRecord = ({action, database, value}: TransformerArgs): Promise<PostMetadataModel> => {
+    const raw = value.raw as Metadata;
+    const record = value.record as PostMetadataModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (postMeta: PostMetadata) => {
+    const fieldsMapper = (postMeta: PostMetadataModel) => {
         postMeta._raw.id = isCreateAction ? postMeta.id : record.id;
         postMeta.data = raw.data;
-        postMeta.postId = raw.postId;
-        postMeta.type = raw.type;
+        postMeta.postId = raw.post_id;
     };
 
     return prepareBaseRecord({
@@ -157,7 +149,7 @@ export const transformPostMetadataRecord = ({action, database, value}: Transform
         tableName: POST_METADATA,
         value,
         fieldsMapper,
-    });
+    }) as Promise<PostMetadataModel>;
 };
 
 /**
@@ -165,14 +157,14 @@ export const transformPostMetadataRecord = ({action, database, value}: Transform
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<DraftModel>}
  */
-export const transformDraftRecord = ({action, database, value}: TransformerArgs) => {
+export const transformDraftRecord = ({action, database, value}: TransformerArgs): Promise<DraftModel> => {
     const emptyFileInfo: FileInfo[] = [];
-    const raw = value.raw as RawDraft;
+    const raw = value.raw as Draft;
 
     // We use the raw id as  Draft is client side only and  we would only be creating/deleting drafts
-    const fieldsMapper = (draft: Draft) => {
+    const fieldsMapper = (draft: DraftModel) => {
         draft._raw.id = draft.id;
         draft.rootId = raw?.root_id ?? '';
         draft.message = raw?.message ?? '';
@@ -186,7 +178,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
         tableName: DRAFT,
         value,
         fieldsMapper,
-    });
+    }) as Promise<DraftModel>;
 };
 
 /**
@@ -194,14 +186,14 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<PostsInChannelModel>}
  */
-export const transformPostsInChannelRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawPostsInChannel;
-    const record = value.record as PostsInChannel;
+export const transformPostsInChannelRecord = ({action, database, value}: TransformerArgs): Promise<PostsInChannelModel> => {
+    const raw = value.raw as PostsInChannel;
+    const record = value.record as PostsInChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (postsInChannel: PostsInChannel) => {
+    const fieldsMapper = (postsInChannel: PostsInChannelModel) => {
         postsInChannel._raw.id = isCreateAction ? postsInChannel.id : record.id;
         postsInChannel.channelId = raw.channel_id;
         postsInChannel.earliest = raw.earliest;
@@ -214,5 +206,5 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
         tableName: POSTS_IN_CHANNEL,
         value,
         fieldsMapper,
-    });
+    }) as Promise<PostsInChannelModel>;
 };

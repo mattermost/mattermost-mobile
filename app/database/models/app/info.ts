@@ -12,7 +12,7 @@ const {INFO} = MM_TABLES.APP;
  * The App model will hold information - such as the version number, build number and creation date -
  * for the Mattermost mobile app.
  */
-export default class Info extends Model {
+export default class InfoModel extends Model {
     /** table (name) : info */
     static table = INFO;
 

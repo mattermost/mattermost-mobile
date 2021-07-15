@@ -6,14 +6,15 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Post from '@typings/database/models/servers/post';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 const {FILE, POST} = MM_TABLES.SERVER;
 
 /**
  * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
  */
-export default class File extends Model {
+export default class FileModel extends Model {
     /** table (name) : File */
     static table = FILE;
 
@@ -52,5 +53,5 @@ export default class File extends Model {
     @field('width') width!: number;
 
     /** post : The related Post record for this file */
-    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 }

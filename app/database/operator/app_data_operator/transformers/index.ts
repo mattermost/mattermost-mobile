@@ -3,13 +3,15 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers';
-import Info from '@typings/database/models/app/info';
-import {TransformerArgs, RawInfo, RawGlobal, RawServers} from '@typings/database/database';
-import {OperationType} from '@typings/database/enums';
-import Global from '@typings/database/models/app/global';
-import Servers from '@typings/database/models/app/servers';
 
-const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
+import type {Model} from '@nozbe/watermelondb';
+
+import type InfoModel from '@typings/database/models/app/info';
+import type {TransformerArgs} from '@typings/database/database';
+import {OperationType} from '@typings/database/enums';
+import type GlobalModel from '@typings/database/models/app/global';
+
+const {INFO, GLOBAL} = MM_TABLES.APP;
 
 /**
  * transformInfoRecord: Prepares a record of the APP database 'Info' table for update or create actions.
@@ -18,12 +20,12 @@ const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
  * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
-export const transformInfoRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawInfo;
-    const record = value.record as Info;
+export const transformInfoRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
+    const raw = value.raw as AppInfo;
+    const record = value.record as InfoModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (app: Info) => {
+    const fieldsMapper = (app: InfoModel) => {
         app._raw.id = isCreateAction ? app.id : record.id;
         app.buildNumber = raw?.build_number;
         app.createdAt = raw?.created_at;
@@ -46,10 +48,10 @@ export const transformInfoRecord = ({action, database, value}: TransformerArgs) 
  * @param {RecordPair} operator.value
  * @returns {Promise<Model>}
  */
-export const transformGlobalRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawGlobal;
+export const transformGlobalRecord = ({action, database, value}: TransformerArgs): Promise<Model> => {
+    const raw = value.raw as IdValue;
 
-    const fieldsMapper = (global: Global) => {
+    const fieldsMapper = (global: GlobalModel) => {
         global._raw.id = raw?.id;
         global.value = raw?.value;
     };
@@ -63,34 +65,3 @@ export const transformGlobalRecord = ({action, database, value}: TransformerArgs
     });
 };
 
-/**
- * transformServersRecord: Prepares a record of the APP database 'Servers' table for update or create actions.
- * @param {TransformerArgs} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
- */
-export const transformServersRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawServers;
-    const record = value.record as Servers;
-    const isCreateAction = action === OperationType.CREATE;
-
-    const fieldsMapper = (servers: Servers) => {
-        servers._raw.id = isCreateAction ? servers.id : record.id;
-        servers.dbPath = raw?.db_path;
-        servers.displayName = raw?.display_name;
-        servers.mentionCount = raw?.mention_count;
-        servers.unreadCount = raw?.unread_count;
-        servers.url = raw?.url;
-        servers.isSecured = raw?.isSecured;
-        servers.lastActiveAt = raw?.lastActiveAt;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: SERVERS,
-        value,
-        fieldsMapper,
-    });
-};

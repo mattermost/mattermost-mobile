@@ -17,8 +17,6 @@ import {
 
 import ServerDataOperator from '..';
 
-import type {RawChannel} from '@typings/database/database';
-
 describe('*** Operator: Channel Handlers tests ***', () => {
     let operator: ServerDataOperator;
     beforeAll(async () => {
@@ -30,7 +28,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const channels: RawChannel[] = [
+        const channels: Channel[] = [
             {
                 create_at: 1600185541285,
                 creator_id: '',
@@ -42,14 +40,11 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 id: 'kjlw9j1ttnxwig7tnqgebg7dtipno',
                 last_post_at: 1617311494451,
                 name: 'gh781zkzkhh357b4bejephjz5u8daw__9ciscaqbrpd6d8s68k76xb9bte',
-                policy_id: 'policy',
-                props: null,
                 purpose: '',
                 scheme_id: null,
                 shared: false,
                 team_id: '',
                 total_msg_count: 585,
-                total_msg_count_root: 1,
                 type: 'D',
                 update_at: 1604401077256,
             },
@@ -75,17 +70,21 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const settings = [
+        const settings: ChannelMembership[] = [
             {
+                user_id: 'me',
                 channel_id: 'c',
+                roles: '',
+                msg_count: 0,
+                mention_count: 0,
+                last_viewed_at: 0,
+                last_update_at: 0,
                 notify_props: {
-                    desktop: 'all',
-                    desktop_sound: true,
-                    email: true,
-                    first_name: true,
-                    mention_keys: '',
+                    desktop: 'default',
+                    email: 'default',
+                    mark_unread: 'mention',
                     push: 'mention',
-                    channel: true,
+                    ignore_channel_mentions: 'default',
                 },
             },
         ];
@@ -109,7 +108,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
     it('=> HandleChannelInfo: should write to the CHANNEL_INFO table', async () => {
         expect.assertions(2);
 
-        const spyOnHandleRecords = jest.spyOn(operator as any, 'handleRecords');
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const channelInfos = [
             {
                 channel_id: 'c',
@@ -142,14 +141,23 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const myChannels = [
+        const myChannels: ChannelMembership[] = [
             {
+                user_id: 'me',
                 channel_id: 'c',
                 last_post_at: 1617311494451,
                 last_viewed_at: 1617311494451,
-                mentions_count: 3,
-                message_count: 10,
+                last_update_at: 1617311494451,
+                mention_count: 3,
+                msg_count: 10,
                 roles: 'guest',
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    mark_unread: 'mention',
+                    push: 'mention',
+                    ignore_channel_mentions: 'default',
+                },
             },
         ];
 

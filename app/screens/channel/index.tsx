@@ -13,7 +13,7 @@ import {
 
 import type {LaunchProps} from '@typings/launch';
 
-import {logout} from '@actions/remote/user';
+import {logout} from '@actions/remote/general';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 

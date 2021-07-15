@@ -4,18 +4,10 @@
 import {Query} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-import GroupsInTeam from './groups_in_team';
-import MyTeam from './my_team';
-import SlashCommand from './slash_command';
-import TeamChannelHistory from './team_channel_history';
-import TeamMembership from './team_membership';
-import TeamSearchHistory from './team_search_history';
-
 /**
  * A Team houses and enables communication to happen across channels and users.
  */
-export default class Team extends Model {
+export default class TeamModel extends Model {
     /** table (name) : Team */
     static table: string;
 
@@ -50,23 +42,23 @@ export default class Team extends Model {
     allowedDomains: string;
 
     /** channels : All the channels associated with this team */
-    channels: Channel[];
+    channels: ChannelModel[];
 
     /** groupsInTeam : All the groups associated with this team */
-    groupsInTeam: GroupsInTeam[];
+    groupsInTeam: GroupsInTeamModel[];
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
-    myTeam: Query<MyTeam>;
+    myTeam: Query<MyTeamModel>;
 
     /** slashCommands : All the slash commands associated with this team */
-    slashCommands: SlashCommand[];
+    slashCommands: SlashCommandModel[];
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
-    teamChannelHistory: Query<TeamChannelHistory>;
+    teamChannelHistory: Query<TeamChannelHistoryModel>;
 
     /** members : All the users associated with this team */
-    members: TeamMembership[];
+    members: TeamMembershipModel[];
 
     /** teamSearchHistories : All the searches performed on this team */
-    teamSearchHistories: TeamSearchHistory[];
+    teamSearchHistories: TeamSearchHistoryModel[];
 }

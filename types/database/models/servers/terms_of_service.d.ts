@@ -6,7 +6,7 @@ import {Model} from '@nozbe/watermelondb';
 /**
  * The model for Terms of Service
  */
-export default class TermsOfService extends Model {
+export default class TermsOfServiceModel extends Model {
     /** table (name) : TermsOfService */
     static table: string;
 

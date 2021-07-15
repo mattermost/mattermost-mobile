@@ -4,18 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Channel from './channel';
-import Draft from './draft';
-import File from './file';
-import PostInThread from './posts_in_thread';
-import PostMetadata from './post_metadata';
-import Reaction from './reaction';
-import User from './user';
-
 /**
  * The Post model is the building block of communication in the Mattermost app.
  */
-export default class Post extends Model {
+export default class PostModel extends Model {
     /** table (name) : Post */
     static table: string;
 
@@ -65,23 +57,23 @@ export default class Post extends Model {
     props: object;
 
     /** drafts  : Every drafts associated with this Post */
-    drafts: Draft;
+    drafts: DraftModel;
 
     /** files: All the files associated with this Post */
-    files: File[];
+    files: FileModel[];
 
     /** postsInThread: Every posts associated to a thread */
-    postsInThread: PostInThread[];
+    postsInThread: PostInThreadModel[];
 
     /** metadata: All the extra data associated with this Post */
-    metadata: PostMetadata[];
+    metadata: PostMetadataModel[];
 
     /** reactions: All the reactions associated with this Post */
-    reactions: Reaction[];
+    reactions: ReactionModel[];
 
     /** author: The author of this Post */
-    author: Relation<User>;
+    author: Relation<UserModel>;
 
     /** channel: The channel which is presenting this Post */
-    channel: Relation<Channel>;
+    channel: Relation<ChannelModel>;
 }

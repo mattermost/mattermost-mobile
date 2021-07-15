@@ -4,13 +4,10 @@
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import Group from './group';
-import Team from './team';
-
 /**
  * The GroupsInTeam links the Team model with the Group model
  */
-export default class GroupsInTeam extends Model {
+export default class GroupsInTeamModel extends Model {
     /** table (name) : GroupsInTeam */
     static table: string;
 
@@ -30,8 +27,8 @@ export default class GroupsInTeam extends Model {
     timezoneCount: number;
 
     /** team : The related record to the parent Team model */
-    team: Relation<Team>;
+    team: Relation<TeamModel>;
 
     /** group : The related record to the parent Team model */
-    group: Relation<Group>;
+    group: Relation<GroupModel>;
 }

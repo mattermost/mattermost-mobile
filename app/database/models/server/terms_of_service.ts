@@ -11,7 +11,7 @@ const {TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 /**
  * The model for Terms of Service
  */
-export default class TermsOfService extends Model {
+export default class TermsOfServiceModel extends Model {
     /** table (name) : TermsOfService */
     static table = TERMS_OF_SERVICE;
 

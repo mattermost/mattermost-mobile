@@ -4,22 +4,14 @@
 import {MM_TABLES} from '@constants/database';
 
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import type {
-    TransformerArgs,
-    RawMyTeam,
-    RawSlashCommand,
-    RawTeam,
-    RawTeamChannelHistory,
-    RawTeamMembership,
-    RawTeamSearchHistory,
-} from '@typings/database/database';
+import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
-import MyTeam from '@typings/database/models/servers/my_team';
-import SlashCommand from '@typings/database/models/servers/slash_command';
-import Team from '@typings/database/models/servers/team';
-import TeamChannelHistory from '@typings/database/models/servers/team_channel_history';
-import TeamMembership from '@typings/database/models/servers/team_membership';
-import TeamSearchHistory from '@typings/database/models/servers/team_search_history';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type SlashCommandModel from '@typings/database/models/servers/slash_command';
+import type TeamModel from '@typings/database/models/servers/team';
+import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
     MY_TEAM,
@@ -35,15 +27,15 @@ const {
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<TeamMembershipModel>}
  */
-export const transformTeamMembershipRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawTeamMembership;
-    const record = value.record as TeamMembership;
+export const transformTeamMembershipRecord = ({action, database, value}: TransformerArgs): Promise<TeamMembershipModel> => {
+    const raw = value.raw as TeamMembership;
+    const record = value.record as TeamMembershipModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (teamMembership: TeamMembership) => {
+    const fieldsMapper = (teamMembership: TeamMembershipModel) => {
         teamMembership._raw.id = isCreateAction ? (raw?.id ?? teamMembership.id) : record.id;
         teamMembership.teamId = raw.team_id;
         teamMembership.userId = raw.user_id;
@@ -55,7 +47,7 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
         tableName: TEAM_MEMBERSHIP,
         value,
         fieldsMapper,
-    });
+    }) as Promise<TeamMembershipModel>;
 };
 
 /**
@@ -63,15 +55,15 @@ export const transformTeamMembershipRecord = ({action, database, value}: Transfo
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<TeamModel>}
  */
-export const transformTeamRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawTeam;
-    const record = value.record as Team;
+export const transformTeamRecord = ({action, database, value}: TransformerArgs): Promise<TeamModel> => {
+    const raw = value.raw as Team;
+    const record = value.record as TeamModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (team: Team) => {
+    const fieldsMapper = (team: TeamModel) => {
         team._raw.id = isCreateAction ? (raw?.id ?? team.id) : record.id;
         team.isAllowOpenInvite = raw.allow_open_invite;
         team.description = raw.description;
@@ -90,7 +82,7 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs) 
         tableName: TEAM,
         value,
         fieldsMapper,
-    });
+    }) as Promise<TeamModel>;
 };
 
 /**
@@ -98,14 +90,14 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs) 
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<TeamChannelHistoryModel>}
  */
-export const transformTeamChannelHistoryRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawTeamChannelHistory;
-    const record = value.record as TeamChannelHistory;
+export const transformTeamChannelHistoryRecord = ({action, database, value}: TransformerArgs): Promise<TeamChannelHistoryModel> => {
+    const raw = value.raw as TeamChannelHistory;
+    const record = value.record as TeamChannelHistoryModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (teamChannelHistory: TeamChannelHistory) => {
+    const fieldsMapper = (teamChannelHistory: TeamChannelHistoryModel) => {
         teamChannelHistory._raw.id = isCreateAction ? (teamChannelHistory.id) : record.id;
         teamChannelHistory.teamId = raw.team_id;
         teamChannelHistory.channelIds = raw.channel_ids;
@@ -117,7 +109,7 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
         tableName: TEAM_CHANNEL_HISTORY,
         value,
         fieldsMapper,
-    });
+    }) as Promise<TeamChannelHistoryModel>;
 };
 
 /**
@@ -125,14 +117,14 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<TeamSearchHistoryModel>}
  */
-export const transformTeamSearchHistoryRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawTeamSearchHistory;
-    const record = value.record as TeamSearchHistory;
+export const transformTeamSearchHistoryRecord = ({action, database, value}: TransformerArgs): Promise<TeamSearchHistoryModel> => {
+    const raw = value.raw as TeamSearchHistory;
+    const record = value.record as TeamSearchHistoryModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (teamSearchHistory: TeamSearchHistory) => {
+    const fieldsMapper = (teamSearchHistory: TeamSearchHistoryModel) => {
         teamSearchHistory._raw.id = isCreateAction ? (teamSearchHistory.id) : record.id;
         teamSearchHistory.createdAt = raw.created_at;
         teamSearchHistory.displayTerm = raw.display_term;
@@ -146,7 +138,7 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
         tableName: TEAM_SEARCH_HISTORY,
         value,
         fieldsMapper,
-    });
+    }) as Promise<TeamSearchHistoryModel>;
 };
 
 /**
@@ -154,15 +146,15 @@ export const transformTeamSearchHistoryRecord = ({action, database, value}: Tran
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<SlashCommandModel>}
  */
-export const transformSlashCommandRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawSlashCommand;
-    const record = value.record as SlashCommand;
+export const transformSlashCommandRecord = ({action, database, value}: TransformerArgs): Promise<SlashCommandModel> => {
+    const raw = value.raw as SlashCommand;
+    const record = value.record as SlashCommandModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (slashCommand: SlashCommand) => {
+    const fieldsMapper = (slashCommand: SlashCommandModel) => {
         slashCommand._raw.id = isCreateAction ? (raw?.id ?? slashCommand.id) : record.id;
         slashCommand.isAutoComplete = raw.auto_complete;
         slashCommand.description = raw.description;
@@ -181,7 +173,7 @@ export const transformSlashCommandRecord = ({action, database, value}: Transform
         tableName: SLASH_COMMAND,
         value,
         fieldsMapper,
-    });
+    }) as Promise<SlashCommandModel>;
 };
 
 /**
@@ -189,14 +181,14 @@ export const transformSlashCommandRecord = ({action, database, value}: Transform
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<Model>}
+ * @returns {Promise<MyTeamModel>}
  */
-export const transformMyTeamRecord = ({action, database, value}: TransformerArgs) => {
-    const raw = value.raw as RawMyTeam;
-    const record = value.record as MyTeam;
+export const transformMyTeamRecord = ({action, database, value}: TransformerArgs): Promise<MyTeamModel> => {
+    const raw = value.raw as MyTeam;
+    const record = value.record as MyTeamModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (myTeam: MyTeam) => {
+    const fieldsMapper = (myTeam: MyTeamModel) => {
         myTeam._raw.id = isCreateAction ? myTeam.id : record.id;
         myTeam.teamId = raw.team_id;
         myTeam.roles = raw.roles;
@@ -210,5 +202,5 @@ export const transformMyTeamRecord = ({action, database, value}: TransformerArgs
         tableName: MY_TEAM,
         value,
         fieldsMapper,
-    });
+    }) as Promise<MyTeamModel>;
 };
