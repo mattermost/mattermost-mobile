@@ -21,6 +21,7 @@ import {debounce} from '@mm-redux/actions/helpers';
 
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
 
@@ -42,6 +43,7 @@ export default class List extends PureComponent {
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
+        collapsedThreadsEnabled: PropTypes.bool.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -168,12 +170,22 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s) => {
+        const sections = orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
             };
         });
+
+        if (props.collapsedThreadsEnabled) {
+            sections.unshift(({
+                data: [''],
+                defaultMessage: '',
+                id: 'sidebar.threads',
+            }));
+        }
+
+        return sections;
     };
 
     showCreateChannelOptions = () => {
@@ -314,7 +326,12 @@ export default class List extends PureComponent {
         );
     };
 
-    renderItem = ({item}) => {
+    renderItem = ({item, section}) => {
+        if (section.id === 'sidebar.threads') {
+            return (
+                <ThreadsSidebarEntry/>
+            );
+        }
         const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
         const channelItemTestID = `${testID}.channel_item`;
 
@@ -335,6 +352,9 @@ export default class List extends PureComponent {
         const {action, defaultMessage, id} = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
+        if (id === 'sidebar.threads') {
+            return (<></>);
+        }
 
         return (
             <View style={styles.titleContainer}>
