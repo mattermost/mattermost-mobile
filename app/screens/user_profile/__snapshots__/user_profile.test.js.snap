@@ -505,7 +505,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
           <View
             style={
               Object {
-                "flexDirection": "row",
+                "justifyContent": "center",
                 "width": "80%",
               }
             }
@@ -751,7 +751,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
           <View
             style={
               Object {
-                "flexDirection": "row",
+                "justifyContent": "center",
                 "width": "80%",
               }
             }
@@ -1084,7 +1084,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
           <View
             style={
               Object {
-                "flexDirection": "row",
+                "justifyContent": "center",
                 "width": "80%",
               }
             }
