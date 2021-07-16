@@ -39,6 +39,7 @@ describe('user_profile', () => {
         isMyUser: false,
         componentId: 'component-id',
         isCustomStatusExpired: false,
+        isCustomStatusExpirySupported: false,
     };
 
     const user = {
@@ -106,6 +107,7 @@ describe('user_profile', () => {
                     duration: CustomStatusDuration.DATE_AND_TIME,
                     expires_at: '2200-04-13T18:09:12.451Z',
                 }}
+                isCustomStatusExpirySupported={true}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );

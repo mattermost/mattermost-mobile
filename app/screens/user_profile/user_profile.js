@@ -522,7 +522,7 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         customStatusTextContainer: {
             width: '80%',
-            flexDirection: 'row',
+            justifyContent: 'center',
         },
         customStatusExpiry: {
             fontSize: 13,

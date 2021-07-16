@@ -491,6 +491,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
             style={
               Object {
                 "color": "#3d3c40",
+                "marginBottom": 3,
                 "marginRight": 5,
               }
             }
@@ -736,6 +737,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
             style={
               Object {
                 "color": "#3d3c40",
+                "marginBottom": 3,
                 "marginRight": 5,
               }
             }
@@ -1068,6 +1070,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
             style={
               Object {
                 "color": "#3d3c40",
+                "marginBottom": 3,
                 "marginRight": 5,
               }
             }
