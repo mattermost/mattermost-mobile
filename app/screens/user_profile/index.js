@@ -15,7 +15,7 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme, getBool} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired} from '@selectors/custom_status';
+import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported} from '@selectors/custom_status';
 
 import UserProfile from './user_profile';
 
@@ -44,6 +44,7 @@ function makeMapStateToProps() {
             remoteClusterInfo: state.entities.remoteCluster.info[user?.remote_id],
             customStatus,
             isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : true,
+            isCustomStatusExpirySupported: customStatusEnabled ? isCustomStatusExpirySupported(state) : false,
         };
     };
 }

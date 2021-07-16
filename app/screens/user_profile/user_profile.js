@@ -31,7 +31,6 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {BotTag, GuestTag} from '@components/tag';
 import {General} from '@mm-redux/constants';
-import {CustomStatusDuration} from '@mm-redux/types/users';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
@@ -64,6 +63,7 @@ export default class UserProfile extends PureComponent {
         remoteClusterInfo: PropTypes.object,
         customStatus: PropTypes.object,
         isCustomStatusExpired: PropTypes.bool.isRequired,
+        isCustomStatusExpirySupported: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -236,9 +236,9 @@ export default class UserProfile extends PureComponent {
 
     buildCustomStatusBlock = () => {
         const {formatMessage} = this.context.intl;
-        const {customStatus, theme, isMyUser, isCustomStatusExpired} = this.props;
+        const {customStatus, theme, isMyUser, isCustomStatusExpired, isCustomStatusExpirySupported} = this.props;
         const style = createStyleSheet(theme);
-        const isStatusSet = Boolean(!isCustomStatusExpired && customStatus?.emoji);
+        const isStatusSet = !isCustomStatusExpired && customStatus?.emoji;
 
         if (!isStatusSet) {
             return null;
@@ -253,7 +253,7 @@ export default class UserProfile extends PureComponent {
                 <Text style={style.header}>
                     {label}
                     {' '}
-                    {isStatusSet && customStatus?.duration !== CustomStatusDuration.DONT_CLEAR && (
+                    {Boolean(isStatusSet && customStatus?.duration && isCustomStatusExpirySupported) && (
                         <CustomStatusExpiry
                             time={customStatus?.expires_at}
                             theme={theme}
@@ -513,6 +513,7 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         iconContainer: {
+            marginBottom: 3,
             marginRight: 5,
             color: theme.centerChannelColor,
         },
