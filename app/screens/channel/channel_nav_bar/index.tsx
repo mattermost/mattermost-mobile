@@ -15,6 +15,8 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelTitle from '../channel_title';
 
+import MainSidebarDrawerButton from '../main_sidebar_drawer_button';
+
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type ChannelNavBar = {
@@ -79,11 +81,20 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
         teammateId = getUserIdFromChannelName(currentUserId, channel.name);
     }
 
+    const populateMockData = () => {
+        return '';
+    };
+
     return (
         <View
             onLayout={onLayout}
             style={[style.header, {height: height + insets.top, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}]}
         >
+            <MainSidebarDrawerButton
+                openSidebar={populateMockData}
+                visible={true}
+                badgeCount={0}
+            />
             <ChannelTitle
                 currentUserId={currentUserId}
                 channel={channel}

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setupChannelMockData} from '@test/mock_database_data';
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
@@ -56,6 +57,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
 
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
+        await setupChannelMockData();
         if (credentials) {
             launchToChannel({...props, serverUrl}, resetNavigation);
             return;
