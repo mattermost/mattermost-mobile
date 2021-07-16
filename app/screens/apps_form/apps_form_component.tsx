@@ -184,23 +184,34 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
     updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
-
-        if (fieldErrors &&
-            Object.keys(fieldErrors).length >= 0 &&
-            checkIfErrorsMatchElements(fieldErrors as any, elements)
-        ) {
-            hasErrors = true;
-            this.setState({fieldErrors});
-        }
-
+        const state = {} as State;
         if (formError) {
             hasErrors = true;
-            this.setState({formError});
-            if (this.scrollView?.current) {
-                this.scrollView.current.scrollTo({x: 0, y: 0});
+            state.formError = formError;
+        }
+
+        if (fieldErrors && Object.keys(fieldErrors).length >= 0) {
+            hasErrors = true;
+            if (checkIfErrorsMatchElements(fieldErrors as any, elements)) {
+                state.fieldErrors = fieldErrors;
+            } else if (!state.formError) {
+                const field = Object.keys(fieldErrors)[0];
+                state.formError = this.context.intl.formatMessage({
+                    id: 'apps.error.responses.unknown_field_error',
+                    defaultMessage: 'Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.',
+                }, {
+                    field,
+                    error: fieldErrors[field],
+                });
             }
         }
 
+        if (hasErrors) {
+            this.setState(state);
+            if (state.formError && this.scrollView?.current) {
+                this.scrollView.current.scrollTo({x: 0, y: 0});
+            }
+        }
         return hasErrors;
     }
 
