@@ -9,11 +9,11 @@ import testConfig from '@support/test_config';
  * Get email url.
  * @returns {string} email url
  */
-export function getEmailUrl() {
+export const getEmailUrl = () => {
     const smtpUrl = testConfig.smtpUrl || 'http://localhost:10080';
 
     return `${smtpUrl}/api/v1/mailbox`;
-}
+};
 
 /**
  * Get email reset email template.
