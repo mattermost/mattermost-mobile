@@ -16,7 +16,7 @@ export function getThreadsInTeam(state: GlobalState): RelationOneToMany<Team, Us
 export const getThreadsInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getCurrentTeamId,
     getThreadsInTeam,
-    (currentTeamId, threadsInTeam) => {
+    (currentTeamId: $ID<Team>, threadsInTeam: ThreadsState['threadsInTeam']) => {
         return threadsInTeam?.[currentTeamId] ?? [];
     },
 );
@@ -32,7 +32,7 @@ export function getTeamThreadCounts(state: GlobalState, teamId: $ID<Team>): Thre
 export const getThreadCountsInCurrentTeam: (state: GlobalState) => ThreadsState['counts'][$ID<Team>] = createSelector(
     getCurrentTeamId,
     getThreadCounts,
-    (currentTeamId, counts) => {
+    (currentTeamId: $ID<Team>, counts: ThreadsState['counts']) => {
         return counts?.[currentTeamId];
     },
 );
@@ -42,14 +42,19 @@ export function getThreads(state: GlobalState) {
 }
 
 export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbackFromPosts?: boolean): UserThread | null {
-    if (!threadId || !getThreadsInCurrentTeam(state)?.includes(threadId)) {
+    const thread = getThreads(state)[threadId];
+
+    // fallbackfromPosts is for In-Channel view, where we need to show the footer from post data as user might not follow all the threads.
+    // "thread" will be undefined for unfollowed threads
+    // "thread.id" might not be there when user pressed on follow the thread, but thread is not received from server
+    if (!thread || !thread?.id) {
         if (fallbackFromPosts) {
             const post = getPost(state, threadId);
             if (post?.participants?.length) {
                 const {id, is_following, reply_count, last_reply_at, participants} = post;
                 return {
                     id,
-                    is_following,
+                    is_following: thread?.is_following || is_following,
                     reply_count,
                     participants,
                     last_reply_at: last_reply_at || 0,
@@ -60,15 +65,14 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
                 };
             }
         }
-        return null;
     }
-    return getThreads(state)[threadId];
+    return null;
 }
 
 export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getThreadsInCurrentTeam,
     getThreads,
-    (threadsInTeam, threads) => {
+    (threadsInTeam: Array<$ID<UserThread>>, threads: ThreadsState['threads']) => {
         const ids = threadsInTeam.filter((id) => {
             return threads[id]?.is_following;
         });
@@ -79,7 +83,7 @@ export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<User
 export const getUnreadThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getThreadsInCurrentTeam,
     getThreads,
-    (threadsInTeam, threads) => {
+    (threadsInTeam: Array<$ID<UserThread>>, threads: ThreadsState['threads']) => {
         const ids = threadsInTeam.filter((id) => {
             const thread = threads[id];
             return thread?.unread_mentions || thread?.unread_replies;
