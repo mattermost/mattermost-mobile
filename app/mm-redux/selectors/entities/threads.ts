@@ -66,7 +66,7 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
             }
         }
     }
-    return null;
+    return thread || null;
 }
 
 export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
