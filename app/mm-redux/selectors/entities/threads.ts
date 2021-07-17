@@ -43,14 +43,18 @@ export function getThreads(state: GlobalState) {
 
 export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbackFromPosts?: boolean): UserThread | null {
     const thread = getThreads(state)[threadId];
-    if (!thread) {
+
+    // fallbackfromPosts is for In-Channel view, where we need to show the footer from post data as user might not follow all the threads.
+    // "thread" will be undefined for unfollowed threads
+    // "thread.id" might not be there when user pressed on follow the thread, but thread is not received from server
+    if (!thread || !thread?.id) {
         if (fallbackFromPosts) {
             const post = getPost(state, threadId);
             if (post?.participants?.length) {
                 const {id, is_following, reply_count, last_reply_at, participants} = post;
                 return {
                     id,
-                    is_following,
+                    is_following: thread?.is_following || is_following,
                     reply_count,
                     participants,
                     last_reply_at: last_reply_at || 0,
@@ -61,9 +65,8 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
                 };
             }
         }
-        return null;
     }
-    return thread;
+    return thread || null;
 }
 
 export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
