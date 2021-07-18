@@ -84,7 +84,7 @@ function makeMapStateToProps() {
             isChannelMuted: isChannelMuted(member),
             isGuest,
             isManualUnread: isManuallyUnread(state, ownProps.channelId),
-            mentions: member?.mention_count_root ?? 0,
+            mentions: member?.mention_count_root || 0,
             shouldHideChannel,
             showUnreadForMsgs,
             teammateId,
