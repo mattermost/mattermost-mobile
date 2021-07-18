@@ -41,13 +41,13 @@ export type Props = DispatchProps & OwnProps & StateProps & {
 function ThreadFooter({actions, currentTeamId, currentUserId, intl, location, testID, theme, thread, threadStarter}: Props) {
     const style = getStyleSheet(theme);
 
-    const onUnfollow = () => {
+    const onUnfollow = useCallback(preventDoubleTap(() => {
         actions.setThreadFollow(currentUserId, currentTeamId, thread.id, false);
-    };
+    }));
 
-    const onFollow = () => {
+    const onFollow =  useCallback(preventDoubleTap(() => {
         actions.setThreadFollow(currentUserId, currentTeamId, thread.id, true);
-    };
+    }));
 
     let replyIcon;
     let followButton;
