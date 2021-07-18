@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
-import {Alert, FlatList} from 'react-native';
-import {intlShape} from 'react-intl';
 
-import {ActionResult} from '@mm-redux/types/actions';
-import {Team} from '@mm-redux/types/teams';
-import {UserProfile} from '@mm-redux/types/users';
-import {$ID} from '@mm-redux/types/utilities';
-import {ThreadsState, UserThread} from '@mm-redux/types/threads';
+import React from 'react';
+import {intlShape} from 'react-intl';
+import {Alert, FlatList} from 'react-native';
+
+import type {ActionResult} from '@mm-redux/types/actions';
+import type {Team} from '@mm-redux/types/teams';
+import type {UserProfile} from '@mm-redux/types/users';
+import type {$ID} from '@mm-redux/types/utilities';
+import type {ThreadsState, UserThread} from '@mm-redux/types/threads';
 
 import ThreadList from './thread_list';
 
