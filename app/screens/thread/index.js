@@ -29,7 +29,7 @@ function makeMapStateToProps() {
             myMember: getMyCurrentChannelMembership(state),
             postIds: getPostIdsForThread(state, ownProps.rootId),
             rootId: ownProps.rootId,
-            teamId: getCurrentTeamId(state),
+            teamId: channel?.team_id || getCurrentTeamId(state),
             theme: getTheme(state),
             thread: getThread(state, ownProps.rootId, true),
             threadLoadingStatus: state.requests.posts.getPostThread,
