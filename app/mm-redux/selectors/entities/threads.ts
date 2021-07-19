@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {createSelector} from 'reselect';
+import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {GlobalState} from '@mm-redux/types/store';
@@ -79,6 +80,16 @@ export const getThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<User
         return sortByLastReply(ids, threads);
     },
 );
+
+export function getThreadTeamId(state: GlobalState, threadId: $ID<UserThread>): $ID<Team> {
+    let teamId;
+    const thread = getThread(state, threadId, true);
+    if (thread && thread.post.channel_id) {
+        const channel = getChannel(state, thread.post.channel_id);
+        teamId = channel.team_id;
+    }
+    return teamId || getCurrentTeamId(state);
+}
 
 export const getUnreadThreadOrderInCurrentTeam: (state: GlobalState) => Array<$ID<UserThread>> = createSelector(
     getThreadsInCurrentTeam,

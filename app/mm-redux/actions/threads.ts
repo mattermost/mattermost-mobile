@@ -7,7 +7,7 @@ import {Client4} from '@client/rest';
 import {ThreadTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getThread as getThreadSelector} from '@mm-redux/selectors/entities/threads';
+import {getThread as getThreadSelector, getThreadTeamId} from '@mm-redux/selectors/entities/threads';
 import {ActionResult, batchActions, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
 import type {Post} from '@mm-redux/types/posts';
 import type {UserThread, UserThreadList} from '@mm-redux/types/threads';
@@ -188,8 +188,9 @@ export function markAllThreadsInTeamRead(userId: string, teamId: string) {
     };
 }
 
-export function updateThreadRead(userId: string, teamId: string, threadId: string, timestamp: number) {
+export function updateThreadRead(userId: string, threadId: string, timestamp: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const teamId = getThreadTeamId(getState(), threadId);
         try {
             await Client4.updateThreadReadForUser(userId, teamId, threadId, timestamp);
         } catch (error) {
@@ -215,8 +216,9 @@ export function handleFollowChanged(threadId: string, teamId: string, following:
     };
 }
 
-export function setThreadFollow(userId: string, teamId: string, threadId: string, newState: boolean) {
+export function setThreadFollow(userId: string, threadId: string, newState: boolean) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const teamId = getThreadTeamId(getState(), threadId);
         try {
             await Client4.updateThreadFollowForUser(userId, teamId, threadId, newState);
         } catch (error) {
