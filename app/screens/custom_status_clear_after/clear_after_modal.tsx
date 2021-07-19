@@ -92,13 +92,12 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         popTopScreen();
     };
 
-    handleItemClick = (duration: CustomStatusDuration, expiresAt: string) => {
+    handleItemClick = (duration: CustomStatusDuration, expiresAt: string) =>
         this.setState({
             duration,
             expiresAt,
             showExpiryTime: duration === DATE_AND_TIME && expiresAt !== '',
         });
-    };
 
     renderClearAfterMenu = () => {
         const {theme} = this.props;
@@ -124,11 +123,15 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
             },
         );
 
-        return clearAfterMenu.length > 0 ? (
+        if (clearAfterMenu.length === 0) {
+            return null;
+        }
+
+        return (
             <View testID='clear_after.menu'>
                 <View style={style.block}>{clearAfterMenu}</View>
             </View>
-        ) : null;
+        );
     };
 
     render() {

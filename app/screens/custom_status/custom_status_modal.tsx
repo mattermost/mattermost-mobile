@@ -316,12 +316,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.setState({emoji});
     }
 
-    handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) => {
+    handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) =>
         this.setState({
             duration,
             expires_at: duration === DATE_AND_TIME && expires_at ? moment(expires_at) : this.state.expires_at,
         });
-    };
 
     openClearAfterModal = async () => {
         const {intl, theme} = this.props;

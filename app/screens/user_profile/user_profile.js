@@ -253,7 +253,7 @@ export default class UserProfile extends PureComponent {
                 <Text style={style.header}>
                     {label}
                     {' '}
-                    {Boolean(isStatusSet && customStatus?.duration && isCustomStatusExpirySupported) && (
+                    {customStatus?.duration && isCustomStatusExpirySupported && (
                         <CustomStatusExpiry
                             time={customStatus?.expires_at}
                             theme={theme}
