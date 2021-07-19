@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleProp, Text, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
+import {DateTypes} from '@constants';
 import {isYesterday} from '@utils/datetime';
 
 type Props = {
@@ -27,7 +28,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     const difference = (today.getTime() - date.getTime()) / 1000;
 
     // Message: Now
-    if (difference < 60) {
+    if (difference < DateTypes.SECONDS.MINUTE) {
         return intl.formatMessage({
             id: 'friendly_date.now',
             defaultMessage: 'Now',
@@ -35,8 +36,8 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     }
 
     // Message: Minutes Ago
-    if (difference < 3600) { // 1 hour = 60 seconds * 60
-        const minutes = Math.floor(difference / 60);
+    if (difference < DateTypes.SECONDS.HOUR) {
+        const minutes = Math.floor(difference / DateTypes.SECONDS.MINUTE);
         return intl.formatMessage({
             id: 'friendly_date.minsAgo',
             defaultMessage: '{count} {count, plural, one {min} other {mins}} ago',
@@ -46,8 +47,8 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     }
 
     // Message: Hours Ago
-    if (difference < 86400) {
-        const hours = Math.floor(difference / 3600);
+    if (difference < DateTypes.SECONDS.DAY) {
+        const hours = Math.floor(difference / DateTypes.SECONDS.HOUR);
         return intl.formatMessage({
             id: 'friendly_date.hoursAgo',
             defaultMessage: '{count} {count, plural, one {hour} other {hours}} ago',
@@ -57,7 +58,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     }
 
     // Message: Days Ago
-    if (difference < 2678400) { // 31 days = 86400 seconds * 31 days (max value)
+    if (difference < DateTypes.SECONDS.DAYS_31) {
         if (isYesterday(date)) {
             return intl.formatMessage({
                 id: 'friendly_date.yesterday',
@@ -66,7 +67,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
         }
         const completedAMonth = today.getMonth() !== date.getMonth() && today.getDate() >= date.getDate();
         if (!completedAMonth) {
-            const days = Math.floor(difference / 86400) || 1;
+            const days = Math.floor(difference / DateTypes.SECONDS.DAY) || 1;
             return intl.formatMessage({
                 id: 'friendly_date.daysAgo',
                 defaultMessage: '{count} {count, plural, one {day} other {days}} ago',
@@ -77,12 +78,12 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     }
 
     // Message: Months Ago
-    if (difference < 31622400) { // 366 days * 86400 seconds
+    if (difference < DateTypes.SECONDS.DAYS_366) {
         const completedAnYear = today.getFullYear() !== date.getFullYear() &&
             today.getMonth() >= date.getMonth() &&
             today.getDate() >= date.getDate();
         if (!completedAnYear) {
-            const months = Math.floor(difference / 2592000) || 1; // 30 days per month * 86400 seconds
+            const months = Math.floor(difference / DateTypes.SECONDS.DAYS_30) || 1;
             return intl.formatMessage({
                 id: 'friendly_date.monthsAgo',
                 defaultMessage: '{count} {count, plural, one {month} other {months}} ago',
@@ -93,7 +94,7 @@ export function getFriendlyDate(intl: typeof intlShape, inputDate: number | Date
     }
 
     // Message: Years Ago
-    const years = Math.floor(difference / 31536000) || 1; // 365 days * 86400 seconds
+    const years = Math.floor(difference / DateTypes.SECONDS.DAYS_365) || 1;
     return intl.formatMessage({
         id: 'friendly_date.yearsAgo',
         defaultMessage: '{count} {count, plural, one {year} other {years}} ago',
