@@ -5,13 +5,28 @@ We'll use this document for now to track down all the implementations that need 
 ### Channel Post List 
     
 To add the following methods/logic  : 
-1. componentDidMount logic 
-2. componentDidUpdate logic 
-3. componentWillUnmount logic 
-4. bottomPaddingAnimation animation
-5. goToThread logic 
-6. loadMorePostsTop logic / api call 
-7. loadPostsRetry logic / api call 
-8. render <FailedNetworkAction/> if (postIds.length === 0 && channelRefreshingFailed)
-9. render  <RetryBarIndicator/>
-10. Testscript 
+- componentDidMount logic 
+- componentDidUpdate logic 
+- componentWillUnmount logic 
+- bottomPaddingAnimation animation
+- goToThread logic 
+- loadMorePostsTop logic / api call 
+- loadPostsRetry logic / api call 
+- render <FailedNetworkAction/> if (postIds.length === 0 && channelRefreshingFailed)
+- render  <RetryBarIndicator/>
+- Testscript 
+
+
+##  Post List Component 
+
+To add the following methods/logic  :
+- registerViewableItemsListener
+- registerScrollEndIndexListener
+- onPermalinkPress
+- onRefresh 
+- useEffect => scrollToBottom
+- useEffect => deepLinkURL
+- useLayoutEffect => deepLinkURL
+- useLayoutEffect => PERF_MARKERS.CHANNEL_RENDER
+- useLayoutEffect => scrollToIndex
+- hook useResetNativeScrollView
