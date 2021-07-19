@@ -3,11 +3,11 @@
 
 import {bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
-import {injectIntl} from 'react-intl';
 
 import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
 import {getThreads, markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getTeamThreadCounts, getThreadOrderInCurrentTeam, getUnreadThreadOrderInCurrentTeam} from '@mm-redux/selectors/entities/threads';
 import type {GlobalState} from '@mm-redux/types/store';
@@ -24,6 +24,7 @@ function mapStateToProps(state: GlobalState) {
         allThreadIds: getThreadOrderInCurrentTeam(state),
         unreadThreadIds: getUnreadThreadOrderInCurrentTeam(state),
         threadCount: getTeamThreadCounts(state, teamId),
+        theme: getTheme(state),
     };
 }
 
@@ -38,4 +39,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(injectIntl(GlobalThreads));
+export default connect(mapStateToProps, mapDispatchToProps)(GlobalThreads);

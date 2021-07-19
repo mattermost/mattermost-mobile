@@ -9,7 +9,7 @@ import {UserProfile} from '@mm-redux/types/users';
 import {UserThread} from '@mm-redux/types/threads';
 import {intl} from 'test/intl-test-helper';
 
-import ThreadFooter from './thread_footer';
+import {ThreadFooter} from './thread_footer';
 
 describe('Global Thread Footer', () => {
     const testID = 'thread_footer.footer';
@@ -42,7 +42,7 @@ describe('Global Thread Footer', () => {
         const wrapper = shallow(
             <ThreadFooter
                 {...baseProps}
-                location='channel'
+                location='Channel'
             />,
         );
 
@@ -54,7 +54,7 @@ describe('Global Thread Footer', () => {
         const followingButton = wrapper.find({testID: `${testID}.following`});
         expect(followingButton.exists()).toBeTruthy();
         followingButton.simulate('press');
-        expect(setThreadFollow).toBeCalledWith('user1', 'team1', 'thread1', false);
+        expect(setThreadFollow).toBeCalledWith('user1', 'thread1', false);
 
         const replyCount = wrapper.find({testID: `${testID}.reply_count`});
         expect(replyCount.exists()).toBeTruthy();
@@ -72,13 +72,13 @@ describe('Global Thread Footer', () => {
         const wrapper = shallow(
             <ThreadFooter
                 {...props}
-                location='channel'
+                location='Channel'
             />,
         );
         const followButton = wrapper.find({testID: `${testID}.follow`});
         expect(followButton.exists()).toBeTruthy();
         followButton.simulate('press');
-        expect(setThreadFollow).toBeCalledWith('user1', 'team1', 'thread1', true);
+        expect(setThreadFollow).toBeCalledWith('user1', 'thread1', true);
     });
 
     test('Should render for global threads view', () => {
@@ -88,12 +88,11 @@ describe('Global Thread Footer', () => {
                 ...baseProps.thread,
                 unread_replies: 2,
             },
-            location: 'globalThreads',
         };
         const wrapper = shallow(
             <ThreadFooter
                 {...props}
-                location='globalThreads'
+                location='GlobalThreads'
             />,
         );
         expect(wrapper.getElement()).toMatchSnapshot();

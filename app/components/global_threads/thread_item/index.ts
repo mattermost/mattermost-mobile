@@ -3,7 +3,6 @@
 
 import {bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
-import {injectIntl} from 'react-intl';
 
 import {selectPost} from '@mm-redux/actions/posts';
 import {getPost, getPostThread} from '@actions/views/post';
@@ -36,4 +35,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(injectIntl(ThreadItem));
+export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(ThreadItem);

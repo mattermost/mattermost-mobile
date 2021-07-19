@@ -14,7 +14,7 @@ import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import {intl} from 'test/intl-test-helper';
 
-import ThreadItem from './thread_item';
+import {ThreadItem} from './thread_item';
 
 describe('Global Thread Item', () => {
     const testID = 'thread_item';

@@ -2,20 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList} from 'react-native';
 import {shallow} from 'enzyme';
 
-import {Preferences} from '@mm-redux/constants';
 import {intl} from 'test/intl-test-helper';
 
-import ThreadList from './thread_list';
+import {ThreadListHeader} from './index';
 
 jest.mock('app/components/compass_icon', () => 'Icon');
-jest.spyOn(React, 'useRef').mockReturnValue({
-    current: {},
-});
 
-describe('Global Thread List', () => {
+describe('Global Thread List Header', () => {
     const testID = 'thread_list';
 
     const markAllAsRead = jest.fn();
@@ -25,22 +20,16 @@ describe('Global Thread List', () => {
     const baseProps = {
         haveUnreads: true,
         intl,
-        isLoading: false,
-        listRef: React.useRef<FlatList>(null),
-        loadMoreThreads: jest.fn(),
         markAllAsRead,
+        style: {},
         testID,
-        theme: Preferences.THEMES.default,
-        threadIds: ['thread1'],
         viewingUnreads: true,
         viewAllThreads,
         viewUnreadThreads,
     };
 
     const wrapper = shallow(
-        <ThreadList
-            {...baseProps}
-        />,
+        <ThreadListHeader {...baseProps}/>,
     );
 
     test('Should render threads with functional tabs & mark all as read button', () => {

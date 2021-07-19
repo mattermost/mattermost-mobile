@@ -135,7 +135,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         />
       </Text>
       <Connect(InjectIntl(ThreadFooter))
-        location="globalThreads"
+        location="GlobalThreads"
         testID="thread_item.post1.footer"
         theme={
           Object {
@@ -332,7 +332,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         />
       </Text>
       <Connect(InjectIntl(ThreadFooter))
-        location="globalThreads"
+        location="GlobalThreads"
         testID="thread_item.post1.footer"
         theme={
           Object {

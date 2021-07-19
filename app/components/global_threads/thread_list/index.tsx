@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {FlatList, Platform, Text, TouchableOpacity, View} from 'react-native';
-import {intlShape} from 'react-intl';
+import {FlatList, Platform, View} from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
 
-import CompassIcon from '@components/compass_icon';
+import EmptyState from '@components/global_threads/empty_state';
+import ThreadItem from '@components/global_threads/thread_item';
 import Loading from '@components/loading';
 import {INITIAL_BATCH_TO_RENDER} from '@components/post_list/post_list_config';
 import {ViewTypes} from '@constants';
@@ -13,28 +14,21 @@ import type {UserThread} from '@mm-redux/types/threads';
 import type {$ID} from '@mm-redux/types/utilities';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import EmptyState from '../empty_state';
-import ThreadItem from '../thread_item';
+import ThreadListHeader from './thread_list_header';
 
-export type OwnProps = {
+export type Props = {
     haveUnreads: boolean;
+    intl: typeof intlShape;
     isLoading: boolean;
     loadMoreThreads: () => Promise<void>;
     listRef: React.RefObject<FlatList>;
     markAllAsRead: () => void;
     testID: string;
+    theme: Theme;
     threadIds: $ID<UserThread>[];
     viewAllThreads: () => void;
     viewUnreadThreads: () => void;
     viewingUnreads: boolean;
-}
-
-export type StateProps = {
-    theme: Theme;
-};
-
-export type Props = OwnProps & StateProps & {
-    intl: typeof intlShape;
 };
 
 function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, markAllAsRead, testID, theme, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
@@ -61,60 +55,15 @@ function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, mar
             return null;
         }
         return (
-            <View style={[style.headerContainer, style.borderBottom]}>
-                <View style={style.menuContainer}>
-                    <TouchableOpacity
-                        onPress={viewAllThreads}
-                        testID={`${testID}.all_threads`}
-                    >
-                        <View style={[style.menuItemContainer, viewingUnreads ? undefined : style.menuItemContainerSelected]}>
-                            <Text style={[style.menuItem, viewingUnreads ? {} : style.menuItemSelected]}>
-                                {
-                                    intl.formatMessage({
-                                        id: 'global_threads.allThreads',
-                                        defaultMessage: 'All Your Threads',
-                                    })
-                                }
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={viewUnreadThreads}
-                        testID={`${testID}.unread_threads`}
-                    >
-                        <View style={[style.menuItemContainer, viewingUnreads ? style.menuItemContainerSelected : undefined]}>
-                            <View>
-                                <Text style={[style.menuItem, viewingUnreads ? style.menuItemSelected : {}]}>
-                                    {
-                                        intl.formatMessage({
-                                            id: 'global_threads.unreads',
-                                            defaultMessage: 'Unreads',
-                                        })
-                                    }
-                                </Text>
-                                {haveUnreads ? (
-                                    <View
-                                        style={style.unreadsDot}
-                                        testID={`${testID}.unreads_dot`}
-                                    />
-                                ) : null}
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-                <View style={style.markAllReadIconContainer}>
-                    <TouchableOpacity
-                        disabled={!haveUnreads}
-                        onPress={markAllAsRead}
-                        testID={`${testID}.mark_all_read`}
-                    >
-                        <CompassIcon
-                            name='playlist-check'
-                            style={[style.markAllReadIcon, haveUnreads ? undefined : style.markAllReadIconDisabled]}
-                        />
-                    </TouchableOpacity>
-                </View>
-            </View>
+            <ThreadListHeader
+                haveUnreads={haveUnreads}
+                markAllAsRead={markAllAsRead}
+                style={style}
+                testId={testID}
+                viewAllThreads={viewAllThreads}
+                viewUnreadThreads={viewUnreadThreads}
+                viewingUnreads={viewingUnreads}
+            />
         );
     };
 
@@ -240,4 +189,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ThreadList;
+export {ThreadList}; // Used for shallow render test cases
+
+export default injectIntl(ThreadList);

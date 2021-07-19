@@ -3,10 +3,11 @@
 
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
+import {GLOBAL_THREADS, CHANNEL} from '@constants/screen';
 import type {Theme} from '@mm-redux/types/preferences';
 import {Team} from '@mm-redux/types/teams';
 import {UserThread} from '@mm-redux/types/threads';
@@ -17,12 +18,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type DispatchProps = {
     actions: {
-        setThreadFollow: (currentUserId: $ID<UserProfile>, currentTeamId: $ID<Team>, threadId: $ID<UserThread>, newState: boolean) => void;
+        setThreadFollow: (currentUserId: $ID<UserProfile>, threadId: $ID<UserThread>, newState: boolean) => void;
     };
 };
 
 export type OwnProps = {
-    location: 'globalThreads' | 'channel';
+    location: 'GlobalThreads' | 'Channel';
     testID: string;
     thread: UserThread;
     threadStarter: UserProfile;
@@ -38,20 +39,20 @@ export type Props = DispatchProps & OwnProps & StateProps & {
     intl: typeof intlShape;
 };
 
-function ThreadFooter({actions, currentTeamId, currentUserId, intl, location, testID, theme, thread, threadStarter}: Props) {
+function ThreadFooter({actions, currentUserId, intl, location, testID, theme, thread, threadStarter}: Props) {
     const style = getStyleSheet(theme);
 
-    const onUnfollow = useCallback(preventDoubleTap(() => {
-        actions.setThreadFollow(currentUserId, currentTeamId, thread.id, false);
-    }));
+    const onUnfollow = React.useCallback(preventDoubleTap(() => {
+        actions.setThreadFollow(currentUserId, thread.id, false);
+    }), []);
 
-    const onFollow =  useCallback(preventDoubleTap(() => {
-        actions.setThreadFollow(currentUserId, currentTeamId, thread.id, true);
-    }));
+    const onFollow = React.useCallback(preventDoubleTap(() => {
+        actions.setThreadFollow(currentUserId, thread.id, true);
+    }), []);
 
     let replyIcon;
     let followButton;
-    if (location === 'channel') {
+    if (location === CHANNEL) {
         if (thread.reply_count) {
             replyIcon = (
                 <View style={style.replyIconContainer}>
@@ -100,7 +101,7 @@ function ThreadFooter({actions, currentTeamId, currentUserId, intl, location, te
     }
 
     let repliesComponent;
-    if (location === 'globalThreads' && thread.unread_replies) {
+    if (location === GLOBAL_THREADS && thread.unread_replies) {
         repliesComponent = (
             <Text
                 style={style.unreadReplies}
@@ -154,11 +155,6 @@ function ThreadFooter({actions, currentTeamId, currentUserId, intl, location, te
                 userIds={participants}
             />
         );
-    }
-
-    // Hide footer, when user follows and then unfollows a thread without any replies
-    if (location === 'channel' && !participants.length && thread.reply_count && !thread.is_following) {
-        return null;
     }
 
     return (
@@ -234,4 +230,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ThreadFooter;
+export {ThreadFooter}; // Used for shallow render test cases
+
+export default injectIntl(ThreadFooter);

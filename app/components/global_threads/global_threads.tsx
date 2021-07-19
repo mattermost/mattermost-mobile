@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 import {Alert, FlatList} from 'react-native';
 
 import type {ActionResult} from '@mm-redux/types/actions';
+import type {Theme} from '@mm-redux/types/preferences';
 import type {Team} from '@mm-redux/types/teams';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';
@@ -15,7 +16,7 @@ import ThreadList from './thread_list';
 
 type Props = {
     actions: {
-        getThreads: (userId: $ID<UserProfile>, teamId: $ID<Team>, before?: $ID<UserThread>[], after?: $ID<UserThread>[], perPage?: number, deleted?: boolean, unread?: boolean) => Promise<ActionResult>;
+        getThreads: (userId: $ID<UserProfile>, teamId: $ID<Team>, before?: $ID<UserThread>, after?: $ID<UserThread>, perPage?: number, deleted?: boolean, unread?: boolean) => Promise<ActionResult>;
         handleViewingGlobalThreadsAll: () => void;
         handleViewingGlobalThreadsUnreads: () => void;
         markAllThreadsInTeamRead: (userId: $ID<UserProfile>, teamId: $ID<Team>) => void;
@@ -23,13 +24,14 @@ type Props = {
     allThreadIds: $ID<UserThread>[];
     intl: typeof intlShape;
     teamId: $ID<Team>;
+    theme: Theme;
     threadCount: ThreadsState['counts'][$ID<Team>];
     unreadThreadIds: $ID<UserThread>[];
     userId: $ID<UserProfile>;
     viewingUnreads: boolean;
 }
 
-function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, unreadThreadIds, userId, viewingUnreads}: Props) {
+function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCount, unreadThreadIds, userId, viewingUnreads}: Props) {
     const ids = viewingUnreads ? unreadThreadIds : allThreadIds;
     const haveUnreads = threadCount?.total_unread_threads > 0;
 
@@ -37,27 +39,28 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
 
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
-    const scrollToTop = React.useCallback(() => {
+    const scrollToTop = () => {
         listRef.current?.scrollToOffset({offset: 0});
-    }, []);
+    };
 
-    const loadThreads = React.useCallback(async (before = '', after = '', unread = false) => {
-        setIsLoading(true);
+    const loadThreads = async (before = '', after = '', unread = false) => {
+        if (!isLoading) {
+            setIsLoading(true);
+        }
         await actions.getThreads(userId, teamId, before, after, undefined, false, unread);
         setIsLoading(false);
-    }, [teamId]);
+    };
 
     React.useEffect(() => {
         // Loads on mount, Loads on team change
         scrollToTop();
         loadThreads('', ids[0]);
-    }, [loadThreads, teamId]);
+    }, [teamId]);
 
     // Prevent from being called when an active request is pending.
-    const isLoadingMoreThreads = React.useRef<boolean>(false);
-    const loadMoreThreads = React.useCallback(async () => {
+    const loadMoreThreads = async () => {
         if (
-            !isLoadingMoreThreads.current &&
+            !isLoading &&
             ids.length &&
             threadCount.total
         ) {
@@ -72,30 +75,23 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
 
             // Get the last thread, send request for threads after this thread.
             const lastThreadId = ids[ids.length - 1];
-            isLoadingMoreThreads.current = true;
-            try {
-                await loadThreads(lastThreadId, '', viewingUnreads);
-            } finally {
-                isLoadingMoreThreads.current = false;
-            }
+            await loadThreads(lastThreadId, '', viewingUnreads);
         }
-    }, [allThreadIds, ids, loadThreads, unreadThreadIds, viewingUnreads]);
+    };
 
-    const handleViewAllThreads = React.useCallback(() => {
+    const handleViewAllThreads = () => {
         scrollToTop();
-        isLoadingMoreThreads.current = false;
         loadThreads('', allThreadIds[0], false);
         actions.handleViewingGlobalThreadsAll();
-    }, [loadThreads, allThreadIds]);
+    };
 
-    const handleViewUnreadThreads = React.useCallback(() => {
+    const handleViewUnreadThreads = () => {
         scrollToTop();
-        isLoadingMoreThreads.current = false;
         loadThreads('', unreadThreadIds[0], true);
         actions.handleViewingGlobalThreadsUnreads();
-    }, [loadThreads, unreadThreadIds]);
+    };
 
-    const markAllAsRead = React.useCallback(() => {
+    const markAllAsRead = () => {
         Alert.alert(
             intl.formatMessage({
                 id: 'global_threads.markAllRead.title',
@@ -122,7 +118,7 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
                 },
             }],
         );
-    }, [teamId, userId]);
+    };
 
     return (
         <ThreadList
@@ -132,6 +128,7 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
             loadMoreThreads={loadMoreThreads}
             markAllAsRead={markAllAsRead}
             testID={'global_threads'}
+            theme={theme}
             threadIds={ids}
             viewingUnreads={viewingUnreads}
             viewAllThreads={handleViewAllThreads}
@@ -140,4 +137,4 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, threadCount, un
     );
 }
 
-export default GlobalThreadsList;
+export default injectIntl(GlobalThreadsList);

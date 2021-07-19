@@ -3,12 +3,12 @@
 
 import React from 'react';
 import {View, Text, TouchableHighlight} from 'react-native';
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 
 import {goToScreen} from '@actions/navigation';
 import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
-import {THREAD} from '@constants/screen';
+import {GLOBAL_THREADS, THREAD} from '@constants/screen';
 import {Posts, Preferences} from '@mm-redux/constants';
 
 import {Channel} from '@mm-redux/types/channels';
@@ -53,19 +53,14 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
         return null;
     }
 
-    let postItem = post;
+    const postItem = post || thread.post;
 
     React.useEffect(() => {
-        if (!postItem) {
-            // Get the latest post
+        // Get the latest post
+        if (!post) {
             actions.getPost(threadId);
         }
     }, []);
-
-    if (!postItem) {
-        // Have the post from thread item
-        postItem = thread.post;
-    }
 
     const channelName = channel?.display_name;
     const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
@@ -168,7 +163,7 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
                         thread={thread}
                         theme={theme}
                         threadStarter={threadStarter}
-                        location='globalThreads'
+                        location={GLOBAL_THREADS}
                     />
                 </View>
             </View>
@@ -270,4 +265,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ThreadItem;
+export {ThreadItem}; // Used for shallow render test cases
+
+export default injectIntl(ThreadItem);

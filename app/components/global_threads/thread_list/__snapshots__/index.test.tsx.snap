@@ -8,7 +8,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     }
   }
 >
-  <InjectIntl(ThreadHeader)
+  <InjectIntl(ThreadListHeader)
     haveUnreads={true}
     markAllAsRead={[MockFunction]}
     style={

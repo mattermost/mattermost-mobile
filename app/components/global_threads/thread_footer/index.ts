@@ -3,7 +3,6 @@
 
 import {bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
-import {injectIntl} from 'react-intl';
 
 import {setThreadFollow} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
@@ -27,4 +26,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(injectIntl(ThreadFooter));
+export default connect<StateProps, DispatchProps, OwnProps>(mapStateToProps, mapDispatchToProps)(ThreadFooter);
