@@ -6,14 +6,12 @@ import {connect} from 'react-redux';
 
 import {setThreadFollow} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import type {GlobalState} from '@mm-redux/types/store';
 
 import ThreadFooter, {StateProps, DispatchProps, OwnProps} from './thread_footer';
 
 function mapStateToProps(state: GlobalState) {
     return {
-        currentTeamId: getCurrentTeamId(state),
         currentUserId: getCurrentUserId(state),
     };
 }

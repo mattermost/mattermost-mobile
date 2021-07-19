@@ -9,7 +9,6 @@ import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
 import {GLOBAL_THREADS, CHANNEL} from '@constants/screen';
 import type {Theme} from '@mm-redux/types/preferences';
-import {Team} from '@mm-redux/types/teams';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import {$ID} from '@mm-redux/types/utilities';
@@ -31,7 +30,6 @@ export type OwnProps = {
 }
 
 export type StateProps = {
-    currentTeamId: $ID<Team>;
     currentUserId: $ID<UserProfile>;
 };
 
