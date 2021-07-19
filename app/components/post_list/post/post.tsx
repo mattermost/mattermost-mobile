@@ -255,14 +255,19 @@ const Post = ({
     }
 
     let footer;
-    if (collapsedThreadsEnabled && Boolean(thread) && post.state !== Posts.POST_DELETED) {
+    if (
+        collapsedThreadsEnabled &&
+        Boolean(thread) &&
+        post.state !== Posts.POST_DELETED &&
+        thread?.participants?.length
+    ) {
         footer = (
             <ThreadFooter
                 testID={`${itemTestID}.footer`}
                 theme={theme}
                 thread={thread}
                 threadStarter={threadStarter}
-                location='channel'
+                location={Screens.CHANNEL}
             />
         );
     }

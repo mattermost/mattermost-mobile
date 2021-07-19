@@ -65,17 +65,7 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
     renderItem={[Function]}
     renderSectionHeader={[Function]}
     scrollEventThrottle={50}
-    sections={
-      Array [
-        Object {
-          "data": Array [
-            "",
-          ],
-          "defaultMessage": "",
-          "id": "sidebar.threads",
-        },
-      ]
-    }
+    sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
     updateCellsBatchingPeriod={50}

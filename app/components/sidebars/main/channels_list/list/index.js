@@ -33,6 +33,7 @@ const filterZeroUnreads = memoizeResult((sections) => {
 
 function mapStateToProps(state) {
     const config = getConfig(state);
+    const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
     const license = getLicense(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const currentTeamId = getCurrentTeamId(state);
@@ -49,6 +50,7 @@ function mapStateToProps(state) {
         sidebarPrefs.sorting,
         true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
+        collapsedThreadsEnabled,
     ));
 
     let canJoinPublicChannels = true;
@@ -65,7 +67,7 @@ function mapStateToProps(state) {
         canJoinPublicChannels,
         canCreatePrivateChannels,
         canCreatePublicChannels,
-        collapsedThreadsEnabled: isCollapsedThreadsEnabled(state),
+        collapsedThreadsEnabled,
         favoriteChannelIds,
         theme: getTheme(state),
         unreadChannelIds,

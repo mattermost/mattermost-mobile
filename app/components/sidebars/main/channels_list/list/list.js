@@ -156,6 +156,12 @@ export default class List extends PureComponent {
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
             };
+        case SidebarSectionTypes.THREADS: // Used only to identity the threads, hence not translating "id: t('...')"
+            return {
+                data: [''],
+                id: 'sidebar.threads',
+                defaultMessage: '',
+            };
         default:
             return {
                 action: this.showCreateChannelOptions,
@@ -176,14 +182,6 @@ export default class List extends PureComponent {
                 data: s.items,
             };
         });
-
-        if (props.collapsedThreadsEnabled) {
-            sections.unshift(({
-                data: [''],
-                defaultMessage: '',
-                id: 'sidebar.threads',
-            }));
-        }
 
         return sections;
     };
@@ -351,10 +349,11 @@ export default class List extends PureComponent {
         const {intl} = this.context;
         const {action, defaultMessage, id} = section;
 
-        const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
         if (id === 'sidebar.threads') {
-            return (<></>);
+            return null;
         }
+
+        const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 
         return (
             <View style={styles.titleContainer}>
