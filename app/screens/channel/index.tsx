@@ -77,6 +77,7 @@ const Channel = ({launchType, channelRecord: channel, userRecord: user, configRe
                 onPress={() => null}
                 config={config.value}
             />
+            <ChannelPostList registerTypingAnimation={registerTypingAnimation}/>
         </SafeAreaView>
     );
 };
