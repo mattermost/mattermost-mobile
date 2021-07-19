@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {emptyFunction} from '@utils/general';
-import {makeExtraData} from '@utils/list_view';
 import React, {ReactElement, useCallback, useRef, useState} from 'react';
+import {IntlShape} from 'react-intl';
 import {
     DeviceEventEmitter,
     FlatList,
@@ -14,14 +13,20 @@ import {
     ViewToken,
 } from 'react-native';
 
-import Post from './post';
+import POST from '@constants/posts';
+import {emptyFunction} from '@utils/general';
+import {makeExtraData} from '@utils/list_view';
 
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './post_list_config';
+import {
+    INITIAL_BATCH_TO_RENDER,
+    SCROLL_POSITION_CONFIG,
+    VIEWABILITY_CONFIG,
+} from './post_list_config';
 
 export type ActionResult = {
     data?: any;
     error?: any;
-}
+};
 
 type PostListProps = {
     channelId?: string;
@@ -30,11 +35,16 @@ type PostListProps = {
     deepLinkURL?: string;
     extraData: never;
     getPostThread: (rootId: string) => Promise<ActionResult>;
-    handleSelectChannelByName: (channelName: string, teamName: string, errorHandler: (intl: typeof intlShape) => void, intl: typeof intlShape) => Promise<ActionResult>;
+    handleSelectChannelByName: (
+        channelName: string,
+        teamName: string,
+        errorHandler: (intl: IntlShape) => void,
+        intl: IntlShape
+    ) => Promise<ActionResult>;
     highlightPinnedOrFlagged?: boolean;
     highlightPostId?: string;
     initialIndex: number;
-    intl: typeof intlShape;
+    intl: IntlShape;
     loadMorePostsVisible?: boolean;
     location: string;
     onLoadMoreUp: () => void;
@@ -48,15 +58,20 @@ type PostListProps = {
     showMoreMessagesButton?: boolean;
     siteURL: string;
     setDeepLinkURL: (url?: string) => void;
-    showPermalink: (intl: typeof intlShape, teamName: string, postId: string, openAsPermalink?: boolean) => Promise<{}>;
+    showPermalink: (
+        intl: IntlShape,
+        teamName: string,
+        postId: string,
+        openAsPermalink?: boolean
+    ) => Promise<{}>;
     testID?: string;
     theme: Theme;
-}
+};
 
 type ViewableItemsChanged = {
     viewableItems: ViewToken[];
     changed: ViewToken[];
-}
+};
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
 type ViewableItemsChangedListenerEvent = (viewableItms: ViewToken[]) => void;
@@ -86,17 +101,29 @@ const styles = StyleSheet.create({
 const buildExtraData = makeExtraData();
 
 const PostList = ({
-    channelId, currentTeamName = '', closePermalink, deepLinkURL, extraData, getPostThread,
-    handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl, loadMorePostsVisible,
-    location, onLoadMoreUp = emptyFunction, postIds = [], refreshChannelWithRetry, renderFooter = (() => null), rootId,
-    serverURL = '', setDeepLinkURL, showMoreMessagesButton, showPermalink, siteURL = '', scrollViewNativeID, shouldRenderReplyButton, testID, theme,
+    channelId,
+    deepLinkURL,
+    extraData,
+    highlightPostId,
+    highlightPinnedOrFlagged,
+    loadMorePostsVisible,
+    location,
+    onLoadMoreUp = emptyFunction,
+    postIds = [],
+    renderFooter = () => null,
+    scrollViewNativeID,
+    shouldRenderReplyButton,
+    testID,
+    theme,
 }: PostListProps) => {
-    const prevChannelId = useRef(channelId);
+    // const prevChannelId = useRef(channelId);
     const hasPostsKey = postIds.length ? 'true' : 'false';
     const flatListRef = useRef<FlatList<never>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
-    const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
-    const [refreshing, setRefreshing] = useState(false);
+    const onViewableItemsChangedListener =
+        useRef<ViewableItemsChangedListenerEvent>();
+
+    // const [refreshing, setRefreshing] = useState(false);
     const [offsetY, setOffsetY] = useState(0);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
@@ -110,106 +137,118 @@ const PostList = ({
         });
     }, []);
 
-    const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
-        if (!viewableItems.length) {
-            return;
-        }
-
-        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable) {
-                acc[item] = true;
+    const onViewableItemsChanged = useCallback(
+        ({viewableItems}: ViewableItemsChanged) => {
+            if (!viewableItems.length) {
+                return;
             }
-            return acc;
-        }, {});
 
-        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+            const viewableItemsMap = viewableItems.reduce(
+                (acc: Record<string, boolean>, {item, isViewable}) => {
+                    if (isViewable) {
+                        acc[item] = true;
+                    }
+                    return acc;
+                },
+                {},
+            );
 
-        if (onViewableItemsChangedListener.current && !deepLinkURL) {
-            onViewableItemsChangedListener.current(viewableItems);
-        }
-    }, []);
+            DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+
+            if (onViewableItemsChangedListener.current && !deepLinkURL) {
+                onViewableItemsChangedListener.current(viewableItems);
+            }
+        },
+        [],
+    );
 
     const keyExtractor = useCallback((item) => {
         // All keys are strings (either post IDs or special keys)
         return item;
     }, []);
 
-    const renderItem = useCallback(({item, index}) => {
-        // if (isStartOfNewMessages(item)) {
-        //     // postIds includes a date item after the new message indicator so 2
-        //     // needs to be added to the index for the length check to be correct.
-        //     const moreNewMessages = postIds.length === index + 2;
-        //
-        //     // The date line and new message line each count for a line. So the
-        //     // goal of this is to check for the 3rd previous, which for the start
-        //     // of a thread would be null as it doesn't exist.
-        //     const checkForPostId = index < postIds.length - 3;
-        //
-        //     return (
-        //         <NewMessagesLine
-        //             theme={theme}
-        //             moreMessages={moreNewMessages && checkForPostId}
-        //             testID={`${testID}.new_messages_line`}
-        //             style={styles.scale}
-        //         />
-        //     );
-        // } else if (isDateLine(item)) {
-        //     return (
-        //         <DateSeparator
-        //             date={getDateForDateLine(item)}
-        //             theme={theme}
-        //             style={styles.scale}
-        //         />
-        //     );
-        // }
+    const renderItem = useCallback(
+        ({item, index}) => {
+            // if (isStartOfNewMessages(item)) {
+            //     // postIds includes a date item after the new message indicator so 2
+            //     // needs to be added to the index for the length check to be correct.
+            //     const moreNewMessages = postIds.length === index + 2;
+            //
+            //     // The date line and new message line each count for a line. So the
+            //     // goal of this is to check for the 3rd previous, which for the start
+            //     // of a thread would be null as it doesn't exist.
+            //     const checkForPostId = index < postIds.length - 3;
+            //
+            //     return (
+            //         <NewMessagesLine
+            //             theme={theme}
+            //             moreMessages={moreNewMessages && checkForPostId}
+            //             testID={`${testID}.new_messages_line`}
+            //             style={styles.scale}
+            //         />
+            //     );
+            // } else if (isDateLine(item)) {
+            //     return (
+            //         <DateSeparator
+            //             date={getDateForDateLine(item)}
+            //             theme={theme}
+            //             style={styles.scale}
+            //         />
+            //     );
+            // }
 
-        if (isCombinedUserActivityPost(item)) {
+            // if (isCombinedUserActivityPost(item)) {
+            //     const postProps = {
+            //         postId: item,
+            //         style: styles.scale,
+            //         testID: `${testID}.combined_user_activity`,
+            //         theme,
+            //     };
+            //
+            //     return <CombinedUserActivity {...postProps}/>;
+            // }
+
+            // let previousPostId: string | undefined;
+            // let nextPostId: string | undefined;
+            // if (index < postIds.length - 1) {
+            //     previousPostId = postIds.
+            //         slice(index + 1).
+            //         find((v) => !isStartOfNewMessages(v) && !isDateLine(v));
+            // }
+            //
+            // if (index > 0) {
+            //     const next = postIds.slice(0, index);
+            //     for (let i = next.length - 1; i >= 0; i--) {
+            //         const v = next[i];
+            //         if (!isStartOfNewMessages(v) && !isDateLine(v)) {
+            //             nextPostId = v;
+            //             break;
+            //         }
+            //     }
+            // }
+
             const postProps = {
-                postId: item,
-                style: styles.scale,
-                testID: `${testID}.combined_user_activity`,
+                highlightPinnedOrFlagged,
+                location,
+
+                // nextPostId,
+                // previousPostId,
+                shouldRenderReplyButton,
                 theme,
             };
 
-            return (<CombinedUserActivity {...postProps}/>);
-        }
-
-        let previousPostId: string|undefined;
-        let nextPostId: string|undefined;
-        if (index < postIds.length - 1) {
-            previousPostId = postIds.slice(index + 1).find((v) => !isStartOfNewMessages(v) && !isDateLine(v));
-        }
-
-        if (index > 0) {
-            const next = postIds.slice(0, index);
-            for (let i = next.length - 1; i >= 0; i--) {
-                const v = next[i];
-                if (!isStartOfNewMessages(v) && !isDateLine(v)) {
-                    nextPostId = v;
-                    break;
-                }
-            }
-        }
-
-        const postProps = {
-            highlightPinnedOrFlagged,
-            location,
-            nextPostId,
-            previousPostId,
-            shouldRenderReplyButton,
-            theme,
-        };
-
-        return (
-            <Post
-                highlight={highlightPostId === item}
-                postId={item}
-                style={styles.scale}
-                testID={`${testID}.post`}
-                {...postProps}
-            />
-        );
-    }, [postIds, theme]);
+            return (
+                <Post
+                    highlight={highlightPostId === item}
+                    postId={item}
+                    style={styles.scale}
+                    testID={`${testID}.post`}
+                    {...postProps}
+                />
+            );
+        },
+        [postIds, theme],
+    );
 
     const scrollToIndex = useCallback((index: number, animated = true) => {
         flatListRef.current?.scrollToIndex({
@@ -220,22 +259,30 @@ const PostList = ({
         });
     }, []);
 
-    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (Platform.OS === 'android') {
-            const {y} = event.nativeEvent.contentOffset;
-            if (y === 0) {
-                setOffsetY(y);
-            } else if (offsetY === 0 && y !== 0) {
-                setOffsetY(y);
+    const onScroll = useCallback(
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            if (Platform.OS === 'android') {
+                const {y} = event.nativeEvent.contentOffset;
+                if (y === 0) {
+                    setOffsetY(y);
+                } else if (offsetY === 0 && y !== 0) {
+                    setOffsetY(y);
+                }
             }
-        }
-    }, [offsetY]);
+        },
+        [offsetY],
+    );
 
     const list = (
         <FlatList
             contentContainerStyle={styles.postListContent}
             data={postIds}
-            extraData={buildExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
+            extraData={buildExtraData(
+                channelId,
+                highlightPostId,
+                extraData,
+                loadMorePostsVisible,
+            )}
             initialNumToRender={INITIAL_BATCH_TO_RENDER}
             key={`recyclerFor-${channelId}-${hasPostsKey}`}
             keyboardDismissMode={'interactive'}
@@ -256,7 +303,7 @@ const PostList = ({
             renderItem={renderItem}
             scrollEventThrottle={60}
             style={styles.flex}
-            windowSize={Posts.POST_CHUNK_SIZE / 2}
+            windowSize={POST.POST_CHUNK_SIZE / 2}
             viewabilityConfig={VIEWABILITY_CONFIG}
             testID={testID}
         />
@@ -290,4 +337,4 @@ const PostList = ({
     );
 };
 
-export default injectIntl(PostList);
+export default PostList;
