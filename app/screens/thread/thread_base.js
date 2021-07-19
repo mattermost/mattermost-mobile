@@ -15,10 +15,6 @@ import DeletedPost from 'app/components/deleted_post';
 import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
 import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
 
-import ThreadFollow from './thread_follow';
-
-Navigation.registerComponent('ThreadFollow', () => ThreadFollow);
-
 export default class ThreadBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -29,15 +25,16 @@ export default class ThreadBase extends PureComponent {
         componentId: PropTypes.string,
         channelType: PropTypes.string,
         collapsedThreadsEnabled: PropTypes.bool,
+        currentUserId: PropTypes.string,
         displayName: PropTypes.string,
         myMember: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
         rootId: PropTypes.string.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
+        channelIsArchived: PropTypes.bool,
         thread: PropTypes.object,
         threadLoadingStatus: PropTypes.object,
-        userId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -145,8 +142,8 @@ export default class ThreadBase extends PureComponent {
     }
 
     handleThreadFollow() {
-        const {userId, teamId, rootId, thread} = this.props;
-        this.props.actions.setThreadFollow(userId, teamId, rootId, !thread?.is_following);
+        const {currentUserId, rootId, thread} = this.props;
+        this.props.actions.setThreadFollow(currentUserId, rootId, !thread?.is_following);
     }
 
     markThreadRead(hasNewPost = false) {
@@ -161,7 +158,7 @@ export default class ThreadBase extends PureComponent {
             )
         ) {
             this.props.actions.updateThreadRead(
-                this.props.userId,
+                this.props.currentUserId,
                 this.props.teamId,
                 this.props.rootId,
                 Date.now(),

@@ -106,16 +106,18 @@ export default class ChannelIOS extends ChannelBase {
                     {component}
                 </SafeAreaView>
                 {indicators}
-                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                    <Autocomplete
-                        maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
-                        onChangeText={this.handleAutoComplete}
-                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        channelId={currentChannelId}
-                        offsetY={0}
-                    />
-                </View>
+                {!viewingGlobalThreads && (
+                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                        <Autocomplete
+                            maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
+                            onChangeText={this.handleAutoComplete}
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            channelId={currentChannelId}
+                            offsetY={0}
+                        />
+                    </View>
+                )}
                 {renderDraftArea &&
                     <PostDraft
                         testID='channel.post_draft'

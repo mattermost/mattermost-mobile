@@ -19,13 +19,10 @@ type Props = {
 
 function ThreadFollow({active, intl, onPress, theme}: Props) {
     const styles = getStyleSheet(theme);
-    const [containerStyle] = React.useMemo(() => {
-        let container = styles.container;
-        if (active) {
-            container = [container, styles.containerActive];
-        }
-        return [container];
-    }, [active, styles]);
+    const containerStyle = [styles.container];
+    if (active) {
+        containerStyle.push(styles.containerActive);
+    }
 
     return (
         <TouchableOpacity

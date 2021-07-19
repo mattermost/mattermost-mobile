@@ -45,15 +45,14 @@ export default class PostOptions extends PureComponent {
         canEdit: PropTypes.bool,
         canMarkAsUnread: PropTypes.bool,
         canEditUntil: PropTypes.number.isRequired,
-        currentTeamId: PropTypes.string.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
-        isThread: PropTypes.bool,
         location: PropTypes.string,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        thread: PropTypes.object,
     };
 
     static contextTypes = {
@@ -110,14 +109,14 @@ export default class PostOptions extends PureComponent {
     }
 
     getFollowThreadOption = () => {
-        const {isThread, post} = this.props;
-        if (!isThread) {
+        const {thread} = this.props;
+        if (!thread) {
             return null;
         }
         const key = 'follow';
         let icon;
         let message;
-        if (post.is_following) {
+        if (thread.is_following) {
             icon = 'message-minus-outline';
             message = {id: t('threads.unfollowThread'), defaultMessage: 'Unfollow Thread'};
         } else {
@@ -310,8 +309,8 @@ export default class PostOptions extends PureComponent {
     };
 
     handleToggleFollow = () => {
-        const {actions, currentTeamId, currentUserId, post} = this.props;
-        actions.setThreadFollow(currentUserId, currentTeamId, post.id, !post.is_following);
+        const {actions, currentUserId, thread} = this.props;
+        actions.setThreadFollow(currentUserId, thread.id, !thread.is_following);
         this.closeWithAnimation();
     };
 

@@ -25,6 +25,7 @@ import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {getMyPreferences, getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
 import {canEditPost, isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {getDimensions} from '@selectors/device';
 import {canDeletePost} from '@selectors/permissions';
@@ -141,12 +142,11 @@ export function makeMapStateToProps() {
             canFlag,
             canPin,
             canMarkAsUnread,
-            currentTeamId,
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
             isFlagged: isPostFlagged(post.id, myPreferences),
-            isThread: isCollapsedThreadsEnabled(state) && Boolean(post?.participants?.length),
             theme: getTheme(state),
+            thread: isCollapsedThreadsEnabled(state) && getThread(state, post.id, true),
         };
     };
 }

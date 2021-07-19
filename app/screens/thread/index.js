@@ -25,15 +25,14 @@ function makeMapStateToProps() {
             channelIsArchived: channel ? channel.delete_at !== 0 : false,
             channelType: channel ? channel.type : '',
             collapsedThreadsEnabled,
+            currentUserId: getCurrentUserId(state),
             displayName: channel ? channel.display_name : '',
             myMember: getMyCurrentChannelMembership(state),
             postIds: getPostIdsForThread(state, ownProps.rootId),
-            rootId: ownProps.rootId,
             teamId: channel?.team_id || getCurrentTeamId(state),
             theme: getTheme(state),
             thread: getThread(state, ownProps.rootId, true),
             threadLoadingStatus: state.requests.posts.getPostThread,
-            userId: getCurrentUserId(state),
         };
     };
 }
