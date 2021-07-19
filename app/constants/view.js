@@ -16,6 +16,7 @@ export const SidebarSectionTypes = {
     DIRECT: 'direct',
     RECENT_ACTIVITY: 'recent',
     ALPHA: 'alpha',
+    THREADS: 'threads',
 };
 
 export const NotificationLevels = {

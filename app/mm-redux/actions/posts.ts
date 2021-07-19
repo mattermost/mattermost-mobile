@@ -13,7 +13,7 @@ import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, i
 import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import * as Selectors from '@mm-redux/selectors/entities/posts';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getThreadTeamId} from '@mm-redux/selectors/entities/threads';
 import {getCurrentUserId, getUsersByUsername} from '@mm-redux/selectors/entities/users';
 
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
@@ -447,10 +447,10 @@ export function setUnreadPost(userId: string, postId: string, location: string) 
             const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
             const isUnreadFromThreadScreen = collapsedThreadsEnabled && location === THREAD;
             if (isUnreadFromThreadScreen) {
-                const currentTeamId = getCurrentTeamId(state);
+                const currentTeamId = getThreadTeamId(state, postId);
                 const threadId = post.root_id || post.id;
                 dispatch(handleFollowChanged(threadId, currentTeamId, true));
-                await dispatch(updateThreadRead(userId, currentTeamId, threadId, post.create_at));
+                await dispatch(updateThreadRead(userId, threadId, post.create_at));
                 return {data: true};
             }
 
