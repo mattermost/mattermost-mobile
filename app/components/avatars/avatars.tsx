@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React, {PureComponent} from 'react';
-import {Platform, StyleProp, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import type {Theme} from '@mm-redux/types/preferences';
 import {showModalOverCurrentContext} from '@actions/navigation';
 import {ViewTypes} from '@constants';
@@ -109,9 +110,10 @@ export default class Avatars extends PureComponent<AvatarsProps> {
         const style = getStyleSheet(theme);
 
         return (
-            <TouchableOpacity
+            <TouchableWithFeedback
                 onPress={this.showParticipantsList}
                 style={baseContainerStyle}
+                type={'opacity'}
             >
                 <View style={style.container}>
                     {displayUserIds.map((userId: string, i: number) => (
@@ -139,7 +141,7 @@ export default class Avatars extends PureComponent<AvatarsProps> {
                         </View>
                     )}
                 </View>
-            </TouchableOpacity>
+            </TouchableWithFeedback>
         );
     }
 }

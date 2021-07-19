@@ -1,8 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Avatars should match snapshot for overflow 1`] = `
-<ForwardRef
+<TouchableWithFeedbackIOS
   onPress={[Function]}
+  type="opacity"
 >
   <View
     style={
@@ -207,12 +208,13 @@ exports[`Avatars should match snapshot for overflow 1`] = `
       </View>
     </View>
   </View>
-</ForwardRef>
+</TouchableWithFeedbackIOS>
 `;
 
 exports[`Avatars should match snapshot for single avatar 1`] = `
-<ForwardRef
+<TouchableWithFeedbackIOS
   onPress={[Function]}
+  type="opacity"
 >
   <View
     style={
@@ -272,5 +274,5 @@ exports[`Avatars should match snapshot for single avatar 1`] = `
       />
     </View>
   </View>
-</ForwardRef>
+</TouchableWithFeedbackIOS>
 `;
