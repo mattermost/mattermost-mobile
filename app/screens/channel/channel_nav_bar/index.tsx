@@ -88,7 +88,6 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
                 channel={channel}
                 onPress={onPress}
                 canHaveSubtitle={canHaveSubtitle}
-                config={config}
                 teammateId={teammateId}
             />
         </View>
