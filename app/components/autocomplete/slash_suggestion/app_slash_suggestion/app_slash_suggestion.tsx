@@ -172,9 +172,9 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
         case COMMAND_SUGGESTION_USER:
             return (
                 <AtMentionItem
-                    testID={`autocomplete.at_mention.item.${item.item}`}
-                    onPress={this.completeUserSuggestion(item.Complete)}
                     userId={item.item || ''}
+                    onPress={this.completeUserSuggestion(item.Complete)}
+                    testID={`autocomplete.at_mention.item.${item.item}`}
                 />
             );
         case COMMAND_SUGGESTION_CHANNEL:
@@ -182,6 +182,7 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
                 <ChannelMentionItem
                     channelId={item.item || ''}
                     onPress={this.completeChannelMention(item.Complete)}
+                    testID={`autocomplete.channel_mention.item.${item.item}`}
                 />
             );
         default:
@@ -215,7 +216,6 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
                 testID='app_slash_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 style={[style.listView, {maxHeight: maxListHeight}]}
-                extraData={this.state}
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
                 removeClippedSubviews={true}

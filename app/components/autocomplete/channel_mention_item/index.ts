@@ -24,7 +24,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     let isBot = false;
     let isGuest = false;
     if (channel?.type === General.DM_CHANNEL) {
-        const teammate = channel.teammate_id ? getUser(state, channel.teammate_id) : undefined;
+        const teammate = getUser(state, channel.teammate_id!);
         if (teammate) {
             displayName = teammate.username;
             isBot = teammate.is_bot || false;

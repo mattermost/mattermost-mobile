@@ -66,7 +66,6 @@ describe('components/autocomplete/slash_suggestion', () => {
         rootId: '',
         channelId: 'thechannel',
         appsEnabled: true,
-        appsTakeOver: false,
     };
 
     const f = Client4.getServerVersion;

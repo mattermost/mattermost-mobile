@@ -38,7 +38,6 @@ export type Props = {
     rootId?: string;
     channelId: string;
     appsEnabled: boolean;
-    appsTakeOver?: boolean;
 };
 
 type State = {
@@ -79,9 +78,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
     }
 
     componentDidUpdate(prevProps: Props) {
-        if (this.props.appsTakeOver) {
-            return;
-        }
         if ((this.props.value === prevProps.value && this.props.suggestions === prevProps.suggestions && this.props.commands === prevProps.commands) ||
             this.props.isSearch || this.props.value.startsWith('//') || !this.props.channelId) {
             return;
@@ -238,9 +234,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
     )
 
     render() {
-        if (this.props.appsTakeOver) {
-            return null;
-        }
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
 
         if (!this.state.active) {

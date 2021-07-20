@@ -227,55 +227,52 @@ export default class Autocomplete extends PureComponent {
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
-                    <AtMention
-                        {...this.props}
-                        cursorPosition={cursorPosition}
-                        maxListHeight={maxListHeight}
-                        onChangeText={this.onChangeText}
-                        onResultCountChange={this.handleAtMentionCountChange}
-                        value={value || ''}
-                        nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={appsTakeOver}
-                    />
-                    <ChannelMention
-                        {...this.props}
-                        cursorPosition={cursorPosition}
-                        maxListHeight={maxListHeight}
-                        onChangeText={this.onChangeText}
-                        onResultCountChange={this.handleChannelMentionCountChange}
-                        value={value || ''}
-                        nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={appsTakeOver}
-                    />
-                    <EmojiSuggestion
-                        {...this.props}
-                        cursorPosition={cursorPosition}
-                        maxListHeight={maxListHeight}
-                        onChangeText={this.onChangeText}
-                        onResultCountChange={this.handleEmojiCountChange}
-                        value={value || ''}
-                        nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={appsTakeOver}
-                    />
-                    <SlashSuggestion
-                        {...this.props}
-                        maxListHeight={maxListHeight}
-                        onChangeText={this.onChangeText}
-                        onResultCountChange={this.handleCommandCountChange}
-                        value={value || ''}
-                        nestedScrollEnabled={this.props.nestedScrollEnabled}
-                        appsTakeOver={appsTakeOver}
-                    />
-                    {(this.props.isSearch && this.props.enableDateSuggestion) &&
-                    <DateSuggestion
-                        {...this.props}
-                        cursorPosition={cursorPosition}
-                        onChangeText={this.onChangeText}
-                        onResultCountChange={this.handleIsDateFilterChange}
-                        value={value || ''}
-                        appsTakeOver={appsTakeOver}
-                    />
-                    }
+                    {!appsTakeOver && (<>
+                        <AtMention
+                            {...this.props}
+                            cursorPosition={cursorPosition}
+                            maxListHeight={maxListHeight}
+                            onChangeText={this.onChangeText}
+                            onResultCountChange={this.handleAtMentionCountChange}
+                            value={value || ''}
+                            nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        />
+                        <ChannelMention
+                            {...this.props}
+                            cursorPosition={cursorPosition}
+                            maxListHeight={maxListHeight}
+                            onChangeText={this.onChangeText}
+                            onResultCountChange={this.handleChannelMentionCountChange}
+                            value={value || ''}
+                            nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        />
+                        <EmojiSuggestion
+                            {...this.props}
+                            cursorPosition={cursorPosition}
+                            maxListHeight={maxListHeight}
+                            onChangeText={this.onChangeText}
+                            onResultCountChange={this.handleEmojiCountChange}
+                            value={value || ''}
+                            nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        />
+                        <SlashSuggestion
+                            {...this.props}
+                            maxListHeight={maxListHeight}
+                            onChangeText={this.onChangeText}
+                            onResultCountChange={this.handleCommandCountChange}
+                            value={value || ''}
+                            nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        />
+                        {(this.props.isSearch && this.props.enableDateSuggestion) &&
+                        <DateSuggestion
+                            {...this.props}
+                            cursorPosition={cursorPosition}
+                            onChangeText={this.onChangeText}
+                            onResultCountChange={this.handleIsDateFilterChange}
+                            value={value || ''}
+                        />
+                        }
+                    </>)}
                 </View>
             </View>
         );
