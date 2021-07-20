@@ -7,6 +7,7 @@ import {StyleProp, Text, View, ViewStyle} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import General from '@constants/general';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type ChannelIconProps = {
@@ -17,11 +18,10 @@ type ChannelIconProps = {
     isUnread?: boolean;
     membersCount?: number;
     shared: boolean;
-    size: number;
+    size?: number;
     statusStyle?: StyleProp<ViewStyle>;
     style?: StyleProp<ViewStyle>;
     testID?: string;
-    theme: Theme;
     type: string;
     userId?: string;
 };
@@ -76,7 +76,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ChannelIcon = ({hasDraft = false, isActive = false, isArchived = false, isInfo = false, isUnread = false, membersCount = 0, shared, size = 12, statusStyle, style, testID, theme, type, userId}: ChannelIconProps) => {
+const ChannelIcon = ({
+    hasDraft = false,
+    isActive = false,
+    isArchived = false,
+    isInfo = false,
+    isUnread = false,
+    membersCount = 0,
+    shared,
+    size = 12,
+    statusStyle,
+    style,
+    testID,
+    type,
+    userId,
+}: ChannelIconProps) => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     let activeIcon;
