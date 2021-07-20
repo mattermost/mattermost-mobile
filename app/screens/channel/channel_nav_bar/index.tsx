@@ -24,7 +24,7 @@ type ChannelNavBar = {
     config: ClientConfig;
 }
 
-const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar) => {
+const ChannelNavBar = ({currentUserId, channel, onPress}: ChannelNavBar) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -74,7 +74,6 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
 
     let teammateId: string | undefined;
     if (channel?.type === General.DM_CHANNEL) {
-        // fixme: validate this teammateId
         teammateId = getUserIdFromChannelName(currentUserId, channel.name);
     }
 
