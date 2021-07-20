@@ -8,7 +8,7 @@ import DocumentPicker from 'react-native-document-picker';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
-import {ICON_SIZE, MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
+import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {hasStoragePermission} from '@utils/permission';
 import {changeOpacity} from '@utils/theme';
@@ -25,7 +25,7 @@ const style = StyleSheet.create({
     },
 });
 
-const FileQuickAction = ({disabled, fileCount = 0, intl, maxFileCount = MAX_FILE_COUNT, onUploadFiles, testID = '', theme}: QuickActionAttachmentProps) => {
+const FileQuickAction = ({disabled, fileCount = 0, intl, maxFileCount, onUploadFiles, testID = '', theme}: QuickActionAttachmentProps) => {
     const attachFileFromFiles = async () => {
         const hasPermission = await hasStoragePermission(intl);
         const browseFileTypes = DocumentPicker.types.allFiles;

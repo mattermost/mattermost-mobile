@@ -7,17 +7,17 @@ import {injectIntl, intlShape} from 'react-intl';
 import {Alert, BackHandler, NativeModules, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 
-import {MAX_FILE_COUNT, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {Client4} from '@client/rest';
 import {Preferences} from '@mm-redux/constants';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
-import {getConfig, canUploadFilesOnMobile} from '@mm-redux/selectors/entities/general';
+import {getConfig, getServerVersion, canUploadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {Channel} from '@mm-redux/types/channels';
 import type {Team} from '@mm-redux/types/teams';
-import {getAllowedServerMaxFileSize} from '@utils/file';
+import {getAllowedServerMaxFileSize, getMaxFileCount} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
 import ChannelButton from '@share/components/channel_button';
@@ -59,11 +59,12 @@ const Share = ({intl}: ShareProps) => {
     const [team, setTeam] = useState<Team|undefined|null>(currentTeam);
     const [channel, setChannel] = useState<Channel|undefined|null>(currentChannel);
     const maxFileSize = getAllowedServerMaxFileSize(config);
+    const maxFileCount = getMaxFileCount(useSelector(getServerVersion));
 
     const showPostButton = (error?: string, text?: string, extensionFiles?: Array<ShareFileInfo>, calculatedSize?: number) => {
         const files = extensionFiles || state.files;
         const totalSize = calculatedSize || state.totalSize;
-        const filesOK = files.length ? files.length <= MAX_FILE_COUNT : false;
+        const filesOK = files.length ? files.length <= maxFileCount : false;
         const sizeOK = totalSize ? totalSize <= maxFileSize : false;
 
         if ((!error && ((filesOK && sizeOK) || text?.length)) && team?.id && channel?.id) {
@@ -173,7 +174,7 @@ const Share = ({intl}: ShareProps) => {
         }, []),
     );
 
-    const errorElement = getErrorElement(state, canUploadFiles, maxFileSize, team, intl);
+    const errorElement = getErrorElement(state, canUploadFiles, maxFileSize, maxFileCount, team, intl);
 
     if (errorElement) {
         return errorElement;

@@ -16,6 +16,7 @@ describe('QuickActions', () => {
         fileCount: 1,
         inputEventType: 'input-event-type',
         maxFileSize: 10,
+        maxFileCount: 10,
         theme: Preferences.THEMES.default,
     };
 
