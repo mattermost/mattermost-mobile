@@ -14,21 +14,6 @@ exports[`components/autocomplete/app_slash_suggestion should match snapshot 1`] 
     ]
   }
   disableVirtualization={false}
-  extraData={
-    Object {
-      "active": true,
-      "dataSource": Array [
-        Object {
-          "Complete": "thetrigger",
-          "Description": "The Description",
-          "Hint": "The Hint",
-          "IconData": "iconurl.com",
-          "Suggestion": "/thetrigger",
-        },
-      ],
-      "lastCommandRequest": 1234,
-    }
-  }
   horizontal={false}
   initialNumToRender={10}
   keyExtractor={[Function]}
