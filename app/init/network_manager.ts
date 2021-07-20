@@ -79,7 +79,6 @@ class NetworkManager {
         const config = await this.buildConfig();
         const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
         const csrfToken = await getCSRFFromCookie(serverUrl);
-
         this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
 
         return this.clients[serverUrl];
