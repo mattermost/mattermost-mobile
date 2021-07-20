@@ -45,6 +45,7 @@
   "apps.error.responses.navigate.no_url": "Response type is `navigate`, but no url was included in response.",
   "apps.error.responses.unexpected_error": "Received an unexpected error.",
   "apps.error.responses.unexpected_type": "App response type was not expected. Response type: {type}.",
+  "apps.error.responses.unknown_field_error": "Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.",
   "apps.error.responses.unknown_type": "App response type not supported. Response type: {type}.",
   "apps.error.unknown": "Unknown error occurred.",
   "apps.suggestion.dynamic.error": "Dynamic select error",

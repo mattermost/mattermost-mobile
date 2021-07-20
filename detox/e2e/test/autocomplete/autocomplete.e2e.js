@@ -124,12 +124,10 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
         const {
             atMentionItem,
-            atMentionItemName,
-            atMentionItemUsername,
+            atMentionItemText,
         } = Autocomplete.getAtMentionItem(testUser.id);
         await expect(atMentionItem).toExist();
-        await expect(atMentionItemName).toHaveText(`${testUser.first_name} ${testUser.last_name}`);
-        await expect(atMentionItemUsername).toHaveText(`(you) @${testUser.username}`);
+        await expect(atMentionItemText).toHaveText(`${testUser.first_name} ${testUser.last_name} (you) @${testUser.username}`);
     });
 
     it('MM-T2349 should have autocomplete using nickname', async () => {
@@ -141,12 +139,10 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
         const {
             atMentionItem,
-            atMentionItemName,
-            atMentionItemUsername,
+            atMentionItemText,
         } = Autocomplete.getAtMentionItem(testOtherUser.id);
         await expect(atMentionItem).toExist();
-        await expect(atMentionItemName).toHaveText(`${testOtherUser.first_name} ${testOtherUser.last_name} (${testOtherUser.nickname})`);
-        await expect(atMentionItemUsername).toHaveText(` @${testOtherUser.username}`);
+        await expect(atMentionItemText).toHaveText(`${testOtherUser.first_name} ${testOtherUser.last_name} (${testOtherUser.nickname}) @${testOtherUser.username}`);
     });
 
     it('MM-T170 should be able to search usernames as case insensitive', async () => {

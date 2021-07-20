@@ -31,6 +31,7 @@ const HeaderTag = ({
         return (
             <BotTag
                 style={style.tag}
+                testID='post_header.bot_tag'
                 theme={theme}
             />
         );
