@@ -82,6 +82,7 @@ describe('Messaging', () => {
         } = PostOptions;
 
         // # Log in as sysadmin
+        await device.reloadReactNative();
         await ChannelScreen.logout();
         await ChannelScreen.open(getAdminAccount());
 

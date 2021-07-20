@@ -26,6 +26,7 @@ describe('Message Draft', () => {
     });
 
     afterAll(async () => {
+        await device.reloadReactNative();
         await ChannelScreen.logout();
     });
 

@@ -56,7 +56,7 @@ describe('Channel Link', () => {
         await expect(channelNavBarTitle).toHaveText(testChannel.display_name);
     });
 
-    xit('MM-T178 should be able to open channel by tapping on channel link from reply thread', async () => { // related issue https://mattermost.atlassian.net/browse/MM-36532
+    it('MM-T178 should be able to open channel by tapping on channel link from reply thread', async () => {
         // # Post a channel link
         await goToChannel(townSquareChannel.display_name);
         const channelLink = `${testConfig.siteUrl}/${testTeam.name}/channels/${testChannel.name}`;

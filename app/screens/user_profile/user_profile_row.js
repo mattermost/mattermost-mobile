@@ -79,7 +79,7 @@ function userProfileRow(props) {
     const RowComponent = (
         <View
             style={style.wrapper}
-            testID={testID}
+            testID={`${testID}.row`}
         >
             <View style={style.container}>
                 {iconComponent}

@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import base64 from 'base-64';
 import React from 'react';
 import {Image, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SvgXml} from 'react-native-svg';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Theme} from '@mm-redux/types/preferences';
@@ -25,6 +27,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             alignItems: 'center',
             marginTop: 8,
+        },
+        uriIcon: {
+            width: 16,
+            height: 16,
         },
         iconColor: {
             tintColor: theme.centerChannelColor,
@@ -112,9 +118,27 @@ const SlashSuggestionItem = (props: Props) => {
         image = (
             <FastImage
                 source={{uri: props.icon}}
-                style={{width: 16, height: 16}}
+                style={style.uriIcon}
             />
         );
+    } else if (props.icon && props.icon.startsWith('data:')) {
+        if (props.icon.startsWith('data:image/svg+xml')) {
+            const xml = base64.decode(props.icon.substring('data:image/svg+xml;base64,'.length));
+            image = (
+                <SvgXml
+                    xml={xml}
+                    width={32}
+                    height={32}
+                />
+            );
+        } else {
+            image = (
+                <Image
+                    source={{uri: props.icon}}
+                    style={style.uriIcon}
+                />
+            );
+        }
     }
 
     return (

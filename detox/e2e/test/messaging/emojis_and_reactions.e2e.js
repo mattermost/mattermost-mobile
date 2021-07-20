@@ -125,8 +125,9 @@ describe('Emojis and Reactions', () => {
         await AddReactionScreen.open();
 
         // * Verify Emojis exist in recently used section
-        await expect(element(by.text('🦊').withAncestor(by.id('RECENTLY USED')))).toExist();
-        await expect(element(by.text('🐶').withAncestor(by.id('RECENTLY USED')))).toExist();
+        await expect(element(by.text('Recent'))).toExist();
+        await expect(element(by.text('🦊'))).toExist();
+        await expect(element(by.text('🐶'))).toExist();
 
         // # Close AddReaction Screen
         await AddReactionScreen.close();

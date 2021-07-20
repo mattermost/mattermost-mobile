@@ -45,8 +45,7 @@ export function loadConfigAndLicense() {
             }];
 
             if (currentUserId) {
-                if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
-                    license.IsLicensed === 'true' && license.DataRetention === 'true') {
+                if (license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
                     dispatch(getDataRetentionPolicy());
                 } else {
                     actions.push({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
