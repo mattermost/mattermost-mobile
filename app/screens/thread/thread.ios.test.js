@@ -38,7 +38,6 @@ describe('thread', () => {
         theme: Preferences.THEMES.default,
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
-        teamId: 'team_id',
         threadLoadingStatus: {status: RequestStatus.STARTED},
     };
 

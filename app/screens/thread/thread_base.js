@@ -30,7 +30,6 @@ export default class ThreadBase extends PureComponent {
         myMember: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
         rootId: PropTypes.string.isRequired,
-        teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         channelIsArchived: PropTypes.bool,
         thread: PropTypes.object,
@@ -159,7 +158,6 @@ export default class ThreadBase extends PureComponent {
         ) {
             this.props.actions.updateThreadRead(
                 this.props.currentUserId,
-                this.props.teamId,
                 this.props.rootId,
                 Date.now(),
             );

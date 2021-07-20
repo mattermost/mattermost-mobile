@@ -10,7 +10,6 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getThread} from '@mm-redux/selectors/entities/threads';
 
 import Thread from './thread';
@@ -29,7 +28,6 @@ function makeMapStateToProps() {
             displayName: channel ? channel.display_name : '',
             myMember: getMyCurrentChannelMembership(state),
             postIds: getPostIdsForThread(state, ownProps.rootId),
-            teamId: channel?.team_id || getCurrentTeamId(state),
             theme: getTheme(state),
             thread: getThread(state, ownProps.rootId, true),
             threadLoadingStatus: state.requests.posts.getPostThread,
