@@ -54,9 +54,9 @@ class NetworkManager {
     public init = async (serverCredentials: ServerCredential[]) => {
         for await (const {serverUrl, token} of serverCredentials) {
             try {
-                this.createClient(serverUrl, token);
+                await this.createClient(serverUrl, token);
             } catch (error) {
-                console.log(error); //eslint-disable-line no-console
+                console.log('NetworkManager init error', error); //eslint-disable-line no-console
             }
         }
     }
@@ -78,7 +78,6 @@ class NetworkManager {
     public createClient = async (serverUrl: string, bearerToken?: string) => {
         const config = await this.buildConfig();
         const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
-
         const csrfToken = await getCSRFFromCookie(serverUrl);
         this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
 
