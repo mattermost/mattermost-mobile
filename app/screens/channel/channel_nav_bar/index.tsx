@@ -47,7 +47,8 @@ const ChannelNavBar = ({currentUserId, channel, onPress, config}: ChannelNavBar)
             height = layoutHeight;
         }
 
-        DeviceEventEmitter.emit(VIEWS.CHANNEL_NAV_BAR_CHANGED, layoutHeight);
+        //todo: Enable after installing MainSidebar and SettingsSidebar
+        // DeviceEventEmitter.emit(VIEWS.CHANNEL_NAV_BAR_CHANGED, layoutHeight);
     };
 
     switch (Platform.OS) {
