@@ -98,8 +98,7 @@ export const transformTeamChannelHistoryRecord = ({action, database, value}: Tra
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (teamChannelHistory: TeamChannelHistoryModel) => {
-        teamChannelHistory._raw.id = isCreateAction ? (teamChannelHistory.id) : record.id;
-        teamChannelHistory.teamId = raw.team_id;
+        teamChannelHistory._raw.id = isCreateAction ? (raw.id || teamChannelHistory.id) : record.id;
         teamChannelHistory.channelIds = raw.channel_ids;
     };
 
@@ -189,8 +188,7 @@ export const transformMyTeamRecord = ({action, database, value}: TransformerArgs
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (myTeam: MyTeamModel) => {
-        myTeam._raw.id = isCreateAction ? myTeam.id : record.id;
-        myTeam.teamId = raw.team_id;
+        myTeam._raw.id = isCreateAction ? (raw.id || myTeam.id) : record.id;
         myTeam.roles = raw.roles;
         myTeam.isUnread = raw.is_unread;
         myTeam.mentionsCount = raw.mentions_count;

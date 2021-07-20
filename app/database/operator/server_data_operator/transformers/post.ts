@@ -76,7 +76,7 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (postsInThread: PostsInThreadModel) => {
-        postsInThread.postId = isCreateAction ? raw.post_id : record.id;
+        postsInThread._raw.id = isCreateAction ? raw.id : record.id;
         postsInThread.earliest = raw.earliest;
         postsInThread.latest = raw.latest!;
     };
@@ -104,7 +104,7 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (file: FileModel) => {
-        file._raw.id = isCreateAction ? (raw?.id ?? file.id) : record.id;
+        file._raw.id = isCreateAction ? (raw.id || file.id) : record.id;
         file.postId = raw.post_id;
         file.name = raw.name;
         file.extension = raw.extension;
@@ -138,9 +138,8 @@ export const transformPostMetadataRecord = ({action, database, value}: Transform
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (postMeta: PostMetadataModel) => {
-        postMeta._raw.id = isCreateAction ? postMeta.id : record.id;
+        postMeta._raw.id = isCreateAction ? (raw.id || postMeta.id) : record.id;
         postMeta.data = raw.data;
-        postMeta.postId = raw.post_id;
     };
 
     return prepareBaseRecord({
@@ -194,8 +193,7 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (postsInChannel: PostsInChannelModel) => {
-        postsInChannel._raw.id = isCreateAction ? postsInChannel.id : record.id;
-        postsInChannel.channelId = raw.channel_id;
+        postsInChannel._raw.id = isCreateAction ? (raw.channel_id || postsInChannel.id) : record.id;
         postsInChannel.earliest = raw.earliest;
         postsInChannel.latest = raw.latest;
     };

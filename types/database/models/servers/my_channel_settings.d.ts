@@ -15,9 +15,6 @@ export default class MyChannelSettingsModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** channel_id : The foreign key to the related CHANNEL record */
-    channelId: string;
-
     /** notify_props : Configurations with regards to this channel */
     notifyProps: Partial<ChannelNotifyProps>;
 

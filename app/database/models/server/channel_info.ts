@@ -24,11 +24,8 @@ export default class ChannelInfoModel extends Model {
     static associations: Associations = {
 
         /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
-        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'id'},
     };
-
-    /** channel_id : The foreign key from CHANNEL */
-    @field('channel_id') channelId!: string;
 
     /** guest_count : The number of guest in this channel */
     @field('guest_count') guestCount!: number;
@@ -46,5 +43,5 @@ export default class ChannelInfoModel extends Model {
     @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from CHANNEL table */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+    @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 }

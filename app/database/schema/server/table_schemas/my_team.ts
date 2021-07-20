@@ -13,6 +13,5 @@ export default tableSchema({
         {name: 'is_unread', type: 'boolean'},
         {name: 'mentions_count', type: 'number'},
         {name: 'roles', type: 'string'},
-        {name: 'team_id', type: 'string', isIndexed: true},
     ],
 });

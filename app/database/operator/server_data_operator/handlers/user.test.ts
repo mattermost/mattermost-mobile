@@ -22,26 +22,29 @@ describe('*** Operator: User Handlers tests ***', () => {
         operator = DatabaseManager.serverDatabases['baseHandler.test.com'].operator;
     });
 
-    it('=> HandleReactions: should write to both Reactions and CustomEmoji tables', async () => {
+    it('=> HandleReactions: should write to Reactions table', async () => {
         expect.assertions(2);
 
         const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
         const spyOnBatchOperation = jest.spyOn(operator, 'batchRecords');
 
         await operator.handleReactions({
-            reactions: [
-                {
-                    create_at: 1608263728086,
-                    emoji_name: 'p4p1',
-                    post_id: '4r9jmr7eqt8dxq3f9woypzurry',
-                    user_id: 'ooumoqgq3bfiijzwbn8badznwc',
-                },
-            ],
+            postsReactions: [{
+                post_id: '4r9jmr7eqt8dxq3f9woypzurry',
+                reactions: [
+                    {
+                        create_at: 1608263728086,
+                        emoji_name: 'p4p1',
+                        post_id: '4r9jmr7eqt8dxq3f9woypzurry',
+                        user_id: 'ooumoqgq3bfiijzwbn8badznwc',
+                    },
+                ],
+            }],
             prepareRecordsOnly: false,
         });
 
-        // Called twice:  Once for Reaction record and once for CustomEmoji record
-        expect(spyOnPrepareRecords).toHaveBeenCalledTimes(2);
+        // Called twice:  Once for Reaction record
+        expect(spyOnPrepareRecords).toHaveBeenCalledTimes(1);
 
         // Only one batch operation for both tables
         expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);

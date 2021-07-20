@@ -96,6 +96,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
             value: {
                 record: undefined,
                 raw: {
+                    id: 'c',
                     channel_id: 'c',
                     guest_count: 10,
                     header: 'channel info header',

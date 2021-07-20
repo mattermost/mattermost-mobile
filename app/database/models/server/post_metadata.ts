@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
+import {immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -23,15 +23,12 @@ export default class PostMetadataModel extends Model {
     static associations: Associations = {
 
         /** A POST can have multiple POST_METADATA.(relationship is 1:N)*/
-        [POST]: {type: 'belongs_to', key: 'post_id'},
+        [POST]: {type: 'belongs_to', key: 'id'},
     };
-
-    /** post_id : The foreign key of the parent POST model */
-    @field('post_id') postId!: string;
 
     /** data : Different types of data ranging from embeds to images. */
     @json('data', safeParseJSON) data!: PostMetadata;
 
     /** post: The record representing the POST parent.  */
-    @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
+    @immutableRelation(POST, 'id') post!: Relation<PostModel>;
 }

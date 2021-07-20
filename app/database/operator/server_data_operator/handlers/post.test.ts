@@ -1,12 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+
+import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import {isRecordDraftEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {transformDraftRecord} from '@database/operator/server_data_operator/transformers/post';
+import {createPostsChain} from '@database/operator/utils/post';
 
 import ServerDataOperator from '..';
 
+Q.experimentalSortBy = jest.fn().mockImplementation((field) => {
+    return Q.where(field, Q.gte(0));
+});
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
 
@@ -93,7 +100,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                     reactions: [
                         {
                             user_id: 'njic1w1k5inefp848jwk6oukio',
-                            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                            post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
                             emoji_name: 'clap',
                             create_at: 1608252965442,
                         },
@@ -207,6 +214,13 @@ describe('*** Operator: Post Handlers tests ***', () => {
             },
         ];
 
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+
         const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
         const spyOnHandlePostMetadata = jest.spyOn(operator, 'handlePostMetadata');
         const spyOnHandleReactions = jest.spyOn(operator, 'handleReactions');
@@ -216,25 +230,25 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
         // handlePosts will in turn call handlePostsInThread
         await operator.handlePosts({
-            orders: [
-                '8swgtrrdiff89jnsiwiip3y1eoe',
-                '8fcnk3p1jt8mmkaprgajoxz115a',
-                '3y3w3a6gkbg73bnj3xund9o5ic',
-            ],
-            values: posts,
+            actionType,
+            order,
+            posts,
             previousPostId: '',
         });
 
         expect(spyOnHandleReactions).toHaveBeenCalledTimes(1);
         expect(spyOnHandleReactions).toHaveBeenCalledWith({
-            reactions: [
-                {
-                    user_id: 'njic1w1k5inefp848jwk6oukio',
-                    post_id: 'a7ebyw883trm884p1qcgt8yw4a',
-                    emoji_name: 'clap',
-                    create_at: 1608252965442,
-                },
-            ],
+            postsReactions: [{
+                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                reactions: [
+                    {
+                        user_id: 'njic1w1k5inefp848jwk6oukio',
+                        post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                        emoji_name: 'clap',
+                        create_at: 1608252965442,
+                    },
+                ],
+            }],
             prepareRecordsOnly: true,
         });
 
@@ -302,14 +316,14 @@ describe('*** Operator: Post Handlers tests ***', () => {
                         },
                     },
                 },
-                post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                id: '8swgtrrdiff89jnsiwiip3y1eoe',
             }],
             prepareRecordsOnly: true,
         });
 
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledTimes(1);
         expect(spyOnHandleCustomEmojis).toHaveBeenCalledWith({
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
             emojis: [
                 {
                     id: 'dgwyadacdbbwjc8t357h6hwsrh',
@@ -322,12 +336,19 @@ describe('*** Operator: Post Handlers tests ***', () => {
             ],
         });
 
+        const postInThreadExpected: Record<string, Post[]> = {};
+        posts.filter((p) => p.root_id).forEach((p) => {
+            if (postInThreadExpected[p.root_id]) {
+                postInThreadExpected[p.root_id].push(p);
+            } else {
+                postInThreadExpected[p.root_id] = [p];
+            }
+        });
         expect(spyOnHandlePostsInThread).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith([
-            {earliest: 1596032651747, post_id: '8swgtrrdiff89jnsiwiip3y1eoe'},
-        ]);
+        expect(spyOnHandlePostsInThread).toHaveBeenCalledWith(postInThreadExpected, ActionType.POSTS.RECEIVED_IN_CHANNEL, true);
 
+        const linkedPosts = createPostsChain({order, posts, previousPostId: ''});
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(posts.slice(0, 3));
+        expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(linkedPosts.slice(0, 3), actionType, true);
     });
 });

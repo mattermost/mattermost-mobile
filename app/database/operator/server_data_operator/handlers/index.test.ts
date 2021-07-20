@@ -77,7 +77,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'id',
+            fieldName: 'name',
             createOrUpdateRawValues: emojis,
             tableName: 'CustomEmoji',
             prepareRecordsOnly: false,
