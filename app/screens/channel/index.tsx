@@ -9,6 +9,7 @@ import {useIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import StatusBar from '@components/status_bar';
+import {General} from '@constants';
 import ViewTypes from '@constants/view';
 import {MM_TABLES} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -47,7 +48,7 @@ const Channel = ({channelRecord: channel, userRecord: user, configRecord: config
     useEffect(() => {
         const serverVersion = (config.value?.Version) || '';
 
-        const isSystemAdmin = false; //checkIsSystemAdmin(user.roles); //fixme: use `hasPermission` method from Elias PR
+        const isSystemAdmin = user.roles === General.SYSTEM_ADMIN_ROLE;
 
         if (serverVersion) {
             const {RequiredServer: {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION}} = ViewTypes;
