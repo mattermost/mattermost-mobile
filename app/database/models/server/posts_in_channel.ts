@@ -23,11 +23,8 @@ export default class PostsInChannelModel extends Model {
     static associations: Associations = {
 
         /** A CHANNEL can have multiple POSTS_IN_CHANNEL. (relationship is 1:N)*/
-        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'id'},
     };
-
-    /** channel_id : The foreign key of the related parent channel */
-    @field('channel_id') channelId!: string;
 
     /** earliest : The earliest timestamp of the post in that channel  */
     @field('earliest') earliest!: number;
@@ -36,5 +33,5 @@ export default class PostsInChannelModel extends Model {
     @field('latest') latest!: number;
 
     /** channel : The parent record of the channel for those posts */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+    @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 }

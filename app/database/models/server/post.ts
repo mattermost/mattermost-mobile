@@ -38,10 +38,10 @@ export default class PostModel extends Model {
         [FILE]: {type: 'has_many', foreignKey: 'post_id'},
 
         /** A POST can have multiple POSTS_IN_THREAD. (relationship is 1:N)*/
-        [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'post_id'},
+        [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'id'},
 
         /** A POST can have POST_METADATA. (relationship is 1:1)*/
-        [POST_METADATA]: {type: 'has_many', foreignKey: 'post_id'},
+        [POST_METADATA]: {type: 'has_many', foreignKey: 'id'},
 
         /** A POST can have multiple REACTION. (relationship is 1:N)*/
         [REACTION]: {type: 'has_many', foreignKey: 'post_id'},

@@ -10,7 +10,6 @@ const {MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 export default tableSchema({
     name: MY_CHANNEL_SETTINGS,
     columns: [
-        {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'notify_props', type: 'string'},
     ],
 });

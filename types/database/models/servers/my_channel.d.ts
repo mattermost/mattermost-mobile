@@ -14,9 +14,6 @@ export default class MyChannelModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** channel_id : The foreign key to the related Channel record  */
-    channelId: string;
-
     /** last_post_at : The timestamp for any last post on this channel */
     lastPostAt: number;
 

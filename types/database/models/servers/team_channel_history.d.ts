@@ -15,9 +15,6 @@ export default class TeamChannelHistoryModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** team_id : The foreign key to the related Team record */
-    teamId: string;
-
     /** channel_ids : An array containing the last 5 channels visited within this team order by recency */
     channelIds: string[];
 

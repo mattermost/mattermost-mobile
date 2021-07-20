@@ -22,7 +22,7 @@ export default class MyTeamModel extends Model {
     static associations: Associations = {
 
         /** TEAM and MY_TEAM have a 1:1 relationship. */
-        [TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: {type: 'belongs_to', key: 'id'},
     };
 
     /** is_unread : Boolean flag for unread messages on team level */
@@ -34,9 +34,6 @@ export default class MyTeamModel extends Model {
     /** roles : The different permissions that this user has in the team, concatenated together with comma to form a single string. */
     @field('roles') roles!: string;
 
-    /** team_id : The foreign key of the 'parent' Team record */
-    @field('team_id') teamId!: string;
-
     /** team : The relation to the TEAM, that this user belongs to  */
-    @relation(MY_TEAM, 'team_id') team!: Relation<TeamModel>;
+    @relation(MY_TEAM, 'id') team!: Relation<TeamModel>;
 }

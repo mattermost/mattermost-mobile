@@ -18,6 +18,8 @@ import {
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
+import type {Model} from '@nozbe/watermelondb';
+
 import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, HandleTOSArgs, OperationArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -52,11 +54,11 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         }
 
         return this.handleRecords({
-            fieldName: 'id',
+            fieldName: 'name',
             findMatchingRecordBy: isRecordCustomEmojiEqualToRaw,
             transformer: transformCustomEmojiRecord,
             prepareRecordsOnly,
-            createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'id'}),
+            createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'name'}),
             tableName: CUSTOM_EMOJI,
         }) as Promise<CustomEmojiModel[]>;
     }
@@ -104,7 +106,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
    * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
    * @returns {Promise<void>}
    */
-  execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<void> => {
+  execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<Model[]> => {
       const models = await this.prepareRecords({
           tableName,
           createRaws,
@@ -115,5 +117,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
       if (models?.length > 0) {
           await this.batchRecords(models);
       }
+
+      return models;
   };
 }

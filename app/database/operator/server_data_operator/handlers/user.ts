@@ -8,14 +8,13 @@ import {
     isRecordPreferenceEqualToRaw,
     isRecordUserEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
-import {transformCustomEmojiRecord} from '@database/operator/server_data_operator/transformers/general';
 import {
     transformChannelMembershipRecord,
     transformPreferenceRecord,
     transformReactionRecord,
     transformUserRecord,
 } from '@database/operator/server_data_operator/transformers/user';
-import {getRawRecordPairs, getUniqueRawsBy} from '@database/operator/utils/general';
+import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -32,7 +31,6 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {
     CHANNEL_MEMBERSHIP,
-    CUSTOM_EMOJI,
     PREFERENCE,
     REACTION,
     USER,
@@ -41,7 +39,7 @@ const {
 export interface UserHandlerMix {
     handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
     handlePreferences: ({preferences, prepareRecordsOnly}: HandlePreferencesArgs) => Promise<PreferenceModel[]>;
-    handleReactions: ({reactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<Array<ReactionModel | CustomEmojiModel>>;
+    handleReactions: ({postsReactions, prepareRecordsOnly}: HandleReactionsArgs) => Promise<Array<ReactionModel | CustomEmojiModel>>;
     handleUsers: ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<UserModel[]>;
 }
 
@@ -103,53 +101,46 @@ const UserHandler = (superclass: any) => class extends superclass {
     /**
      * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction table from the 'Server' schema
      * @param {HandleReactionsArgs} handleReactions
-     * @param {Reaction[]} handleReactions.reactions
+     * @param {ReactionsPerPost[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @throws DataOperatorException
      * @returns {Promise<Array<(ReactionModel | CustomEmojiModel)>>}
      */
-    handleReactions = async ({reactions, prepareRecordsOnly}: HandleReactionsArgs): Promise<Array<(ReactionModel | CustomEmojiModel)>> => {
-        let batchRecords: Array<ReactionModel | CustomEmojiModel> = [];
+    handleReactions = async ({postsReactions, prepareRecordsOnly}: HandleReactionsArgs): Promise<ReactionModel[]> => {
+        const batchRecords: ReactionModel[] = [];
 
-        if (!reactions.length) {
+        if (!postsReactions.length) {
             throw new DataOperatorException(
                 'An empty "reactions" array has been passed to the handleReactions method',
             );
         }
 
-        const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as Reaction[];
+        for await (const postReactions of postsReactions) {
+            const {post_id, reactions} = postReactions;
+            const rawValues = getUniqueRawsBy({raws: reactions, key: 'emoji_name'}) as Reaction[];
+            const {
+                createReactions,
+                deleteReactions,
+            } = await sanitizeReactions({
+                database: this.database,
+                post_id,
+                rawReactions: rawValues,
+            });
 
-        const {
-            createEmojis,
-            createReactions,
-            deleteReactions,
-        } = await sanitizeReactions({
-            database: this.database,
-            post_id: reactions[0].post_id,
-            rawReactions: rawValues,
-        });
+            if (createReactions?.length) {
+                // Prepares record for model Reactions
+                const reactionsRecords = (await this.prepareRecords({
+                    createRaws: createReactions,
+                    transformer: transformReactionRecord,
+                    tableName: REACTION,
+                })) as ReactionModel[];
+                batchRecords.push(...reactionsRecords);
+            }
 
-        if (createReactions.length) {
-            // Prepares record for model Reactions
-            const reactionsRecords = (await this.prepareRecords({
-                createRaws: createReactions,
-                transformer: transformReactionRecord,
-                tableName: REACTION,
-            })) as ReactionModel[];
-            batchRecords = batchRecords.concat(reactionsRecords);
+            if (deleteReactions?.length) {
+                batchRecords.push(...deleteReactions);
+            }
         }
-
-        if (createEmojis.length) {
-            // Prepares records for model CustomEmoji
-            const emojiRecords = (await this.prepareRecords({
-                createRaws: getRawRecordPairs(createEmojis),
-                transformer: transformCustomEmojiRecord,
-                tableName: CUSTOM_EMOJI,
-            })) as CustomEmojiModel[];
-            batchRecords = batchRecords.concat(emojiRecords);
-        }
-
-        batchRecords = batchRecords.concat(deleteReactions);
 
         if (prepareRecordsOnly) {
             return batchRecords;

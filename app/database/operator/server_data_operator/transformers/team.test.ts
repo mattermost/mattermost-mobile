@@ -62,7 +62,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    team_id: 'teamA',
+                    id: 'teamA',
                     roles: 'roleA, roleB, roleC',
                     is_unread: true,
                     mentions_count: 3,
@@ -122,7 +122,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
             value: {
                 record: undefined,
                 raw: {
-                    team_id: 'a',
+                    id: 'a',
                     channel_ids: ['ca', 'cb'],
                 },
             },

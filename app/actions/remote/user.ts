@@ -190,7 +190,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         const myTeams = teamUnreads.map((unread) => {
             const matchingTeam = teamMemberships.find((team) => team.team_id === unread.team_id);
-            return {team_id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
+            return {id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
         });
 
         const myTeamRecords = operator.handleMyTeam({

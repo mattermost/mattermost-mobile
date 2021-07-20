@@ -23,9 +23,6 @@ export default class MyTeamModel extends Model {
     /** roles : The different permissions that this user has in the team, concatenated together with comma to form a single string. */
     roles: string;
 
-    /** team_id : The foreign key of the 'parent' Team table */
-    teamId: string;
-
     /** team : The relation to the TEAM table, that this user belongs to  */
     team: Relation<TeamModel>;
 }

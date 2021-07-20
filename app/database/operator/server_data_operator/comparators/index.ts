@@ -6,6 +6,7 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type FileModel from '@typings/database/models/servers/file';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
@@ -14,6 +15,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
+import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
@@ -97,7 +99,7 @@ export const isRecordTeamEqualToRaw = (record: TeamModel, raw: Team) => {
 };
 
 export const isRecordTeamChannelHistoryEqualToRaw = (record: TeamChannelHistoryModel, raw: TeamChannelHistory) => {
-    return raw.team_id === record.teamId;
+    return raw.id === record.id;
 };
 
 export const isRecordTeamSearchHistoryEqualToRaw = (record: TeamSearchHistoryModel, raw: TeamSearchHistory) => {
@@ -109,7 +111,7 @@ export const isRecordSlashCommandEqualToRaw = (record: SlashCommandModel, raw: S
 };
 
 export const isRecordMyTeamEqualToRaw = (record: MyTeamModel, raw: MyTeam) => {
-    return raw.team_id === record.teamId;
+    return raw.id === record.id;
 };
 
 export const isRecordChannelEqualToRaw = (record: ChannelModel, raw: Channel) => {
@@ -117,13 +119,21 @@ export const isRecordChannelEqualToRaw = (record: ChannelModel, raw: Channel) =>
 };
 
 export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettingsModel, raw: ChannelMembership) => {
-    return raw.channel_id === record.channelId;
+    return raw.channel_id === record.id;
 };
 
 export const isRecordChannelInfoEqualToRaw = (record: ChannelInfoModel, raw: ChannelInfo) => {
-    return raw.channel_id === record.channelId;
+    return raw.id === record.id;
 };
 
 export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: ChannelMembership) => {
-    return raw.channel_id === record.channelId;
+    return raw.channel_id === record.id;
+};
+
+export const isRecordFileEqualToRaw = (record: FileModel, raw: FileInfo) => {
+    return raw.id === record.id;
+};
+
+export const isRecordMetadataEqualToRaw = (record: PostMetadataModel, raw: Metadata) => {
+    return raw.id === record.id;
 };

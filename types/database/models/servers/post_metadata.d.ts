@@ -14,9 +14,6 @@ export default class PostMetadataModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** post_id : The foreign key of the parent POST model */
-    postId: string;
-
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
     data: PostMetadata;
 

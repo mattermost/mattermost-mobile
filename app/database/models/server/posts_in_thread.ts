@@ -22,8 +22,8 @@ export default class PostsInThreadModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A POST can have multiple POSTS_IN_THREAD.(relationship is 1:N)*/
-        [POST]: {type: 'belongs_to', key: 'post_id'},
+        /** A POST can have a POSTS_IN_THREAD.(relationship is 1:1)*/
+        [POST]: {type: 'belongs_to', key: 'id'},
     };
 
     /** earliest : Lower bound of a timestamp range */
@@ -32,9 +32,6 @@ export default class PostsInThreadModel extends Model {
     /** latest : Upper bound of a timestamp range */
     @field('latest') latest!: number;
 
-    /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId!: string;
-
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
+    @immutableRelation(POST, 'id') post!: Relation<PostModel>;
 }
