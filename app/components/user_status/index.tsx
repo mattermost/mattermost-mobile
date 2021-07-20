@@ -12,6 +12,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 
 import type {Database} from '@nozbe/watermelondb';
+
 import type UserModel from '@typings/database/models/servers/user';
 
 type UserStatusInputProps = {
