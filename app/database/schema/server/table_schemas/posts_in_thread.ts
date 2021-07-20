@@ -12,6 +12,5 @@ export default tableSchema({
     columns: [
         {name: 'earliest', type: 'number'},
         {name: 'latest', type: 'number'},
-        {name: 'post_id', type: 'string', isIndexed: true},
     ],
 });

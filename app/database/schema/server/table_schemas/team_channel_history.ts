@@ -11,6 +11,5 @@ export default tableSchema({
     name: TEAM_CHANNEL_HISTORY,
     columns: [
         {name: 'channel_ids', type: 'string'},
-        {name: 'team_id', type: 'string', isIndexed: true},
     ],
 });

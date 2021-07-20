@@ -65,8 +65,7 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (myChannelSetting: MyChannelSettingsModel) => {
-        myChannelSetting._raw.id = isCreateAction ? myChannelSetting.id : record.id;
-        myChannelSetting.channelId = raw.channel_id;
+        myChannelSetting._raw.id = isCreateAction ? (raw.channel_id || myChannelSetting.id) : record.id;
         myChannelSetting.notifyProps = raw.notify_props;
     };
 
@@ -92,8 +91,7 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (channelInfo: ChannelInfoModel) => {
-        channelInfo._raw.id = isCreateAction ? channelInfo.id : record.id;
-        channelInfo.channelId = raw.channel_id;
+        channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record.id;
         channelInfo.guestCount = raw.guest_count;
         channelInfo.header = raw.header;
         channelInfo.memberCount = raw.member_count;
@@ -123,8 +121,7 @@ export const transformMyChannelRecord = ({action, database, value}: TransformerA
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (myChannel: MyChannelModel) => {
-        myChannel._raw.id = isCreateAction ? myChannel.id : record.id;
-        myChannel.channelId = raw.channel_id;
+        myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
         myChannel.roles = raw.roles;
         myChannel.messageCount = raw.msg_count;
         myChannel.mentionsCount = raw.mention_count;

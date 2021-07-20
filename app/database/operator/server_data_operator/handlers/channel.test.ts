@@ -72,6 +72,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const settings: ChannelMembership[] = [
             {
+                id: 'c',
                 user_id: 'me',
                 channel_id: 'c',
                 roles: '',
@@ -96,7 +97,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'channel_id',
+            fieldName: 'id',
             createOrUpdateRawValues: settings,
             tableName: 'MyChannelSettings',
             prepareRecordsOnly: false,
@@ -111,7 +112,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const channelInfos = [
             {
-                channel_id: 'c',
+                id: 'c',
                 guest_count: 10,
                 header: 'channel info header',
                 member_count: 10,
@@ -128,7 +129,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'channel_id',
+            fieldName: 'id',
             createOrUpdateRawValues: channelInfos,
             tableName: 'ChannelInfo',
             prepareRecordsOnly: false,
@@ -143,6 +144,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const myChannels: ChannelMembership[] = [
             {
+                id: 'c',
                 user_id: 'me',
                 channel_id: 'c',
                 last_post_at: 1617311494451,
@@ -168,7 +170,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'channel_id',
+            fieldName: 'id',
             createOrUpdateRawValues: myChannels,
             tableName: 'MyChannel',
             prepareRecordsOnly: false,

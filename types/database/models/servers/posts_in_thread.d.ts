@@ -21,9 +21,6 @@ export default class PostsInThreadModel extends Model {
     /** latest : Upper bound of a timestamp range */
     latest: number;
 
-    /** post_id : The foreign key of the related Post model */
-    postId: string;
-
     /** post : The related record to the parent Post model */
     post: Relation<PostModel>;
 }

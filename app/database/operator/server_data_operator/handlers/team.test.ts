@@ -108,7 +108,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const myTeams = [
             {
-                team_id: 'teamA',
+                id: 'teamA',
                 roles: 'roleA, roleB, roleC',
                 is_unread: true,
                 mentions_count: 3,
@@ -122,7 +122,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'team_id',
+            fieldName: 'id',
             createOrUpdateRawValues: myTeams,
             tableName: 'MyTeam',
             prepareRecordsOnly: false,
@@ -137,7 +137,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
         const teamChannelHistories = [
             {
-                team_id: 'a',
+                id: 'a',
                 channel_ids: ['ca', 'cb'],
             },
         ];
@@ -149,7 +149,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'team_id',
+            fieldName: 'id',
             createOrUpdateRawValues: teamChannelHistories,
             tableName: 'TeamChannelHistory',
             prepareRecordsOnly: false,

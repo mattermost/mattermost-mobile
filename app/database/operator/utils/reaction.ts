@@ -17,7 +17,7 @@ const {REACTION} = MM_TABLES.SERVER;
  * @param {Database} sanitizeReactions.database
  * @param {string} sanitizeReactions.post_id
  * @param {RawReaction[]} sanitizeReactions.rawReactions
- * @returns {Promise<{createReactions: RawReaction[], createEmojis: {name: string}[], deleteReactions: Reaction[]}>}
+ * @returns {Promise<{createReactions: RawReaction[],  deleteReactions: Reaction[]}>}
  */
 export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactionsArgs) => {
     const reactions = (await database.collections.
@@ -30,28 +30,18 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
 
     const createReactions: RecordPair[] = [];
 
-    const emojiSet = new Set();
-
     for (let i = 0; i < rawReactions.length; i++) {
-        const rawReaction = rawReactions[i];
+        const raw = rawReactions[i];
 
-        // Do we have a similar value of rawReaction in the REACTION table?
-        const idxPresent = reactions.findIndex((value) => {
-            return (
-                value.userId === rawReaction.user_id &&
-                value.emojiName === rawReaction.emoji_name
-            );
-        });
+        // If the reaction is not present let's add it to the db
+        const exists = reactions.find((r) => (
+            r.userId === raw.user_id &&
+            r.emojiName === raw.emoji_name));
 
-        if (idxPresent === -1) {
-            // So, we don't have a similar Reaction object.  That one is new...so we'll create it
-            createReactions.push({record: undefined, raw: rawReaction});
-
-            // If that reaction is new, that implies that the emoji might also be new
-            emojiSet.add(rawReaction.emoji_name);
+        if (exists) {
+            similarObjects.push(exists);
         } else {
-            // we have a similar object in both reactions and rawReactions; we'll pop it out from both arrays
-            similarObjects.push(reactions[idxPresent]);
+            createReactions.push({raw});
         }
     }
 
@@ -60,9 +50,5 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
         filter((reaction) => !similarObjects.includes(reaction)).
         map((outCast) => outCast.prepareDestroyPermanently());
 
-    const createEmojis = Array.from(emojiSet).map((emoji) => {
-        return {name: emoji};
-    });
-
-    return {createReactions, createEmojis, deleteReactions};
+    return {createReactions, deleteReactions};
 };

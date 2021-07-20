@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {MM_TABLES} from '@constants/database';
 
 import {serverSchema} from './index';
@@ -44,7 +46,6 @@ describe('*** Test schema for SERVER database ***', () => {
                 [CHANNEL_INFO]: {
                     name: CHANNEL_INFO,
                     columns: {
-                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         guest_count: {name: 'guest_count', type: 'number'},
                         header: {name: 'header', type: 'string'},
                         member_count: {name: 'member_count', type: 'number'},
@@ -52,7 +53,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         purpose: {name: 'purpose', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'guest_count', type: 'number'},
                         {name: 'header', type: 'string'},
                         {name: 'member_count', type: 'number'},
@@ -110,7 +110,6 @@ describe('*** Test schema for SERVER database ***', () => {
                 [MY_CHANNEL]: {
                     name: MY_CHANNEL,
                     columns: {
-                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         last_post_at: {name: 'last_post_at', type: 'number'},
                         last_viewed_at: {name: 'last_viewed_at', type: 'number'},
                         mentions_count: {name: 'mentions_count', type: 'number'},
@@ -118,7 +117,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         roles: {name: 'roles', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'last_post_at', type: 'number'},
                         {name: 'last_viewed_at', type: 'number'},
                         {name: 'mentions_count', type: 'number'},
@@ -129,23 +127,19 @@ describe('*** Test schema for SERVER database ***', () => {
                 [MY_CHANNEL_SETTINGS]: {
                     name: MY_CHANNEL_SETTINGS,
                     columns: {
-                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         notify_props: {name: 'notify_props', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'notify_props', type: 'string'},
                     ],
                 },
                 [POSTS_IN_CHANNEL]: {
                     name: POSTS_IN_CHANNEL,
                     columns: {
-                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         earliest: {name: 'earliest', type: 'number'},
                         latest: {name: 'latest', type: 'number'},
                     },
                     columnArray: [
-                        {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'earliest', type: 'number'},
                         {name: 'latest', type: 'number'},
                     ],
@@ -195,23 +189,19 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         earliest: {name: 'earliest', type: 'number'},
                         latest: {name: 'latest', type: 'number'},
-                        post_id: {name: 'post_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'earliest', type: 'number'},
                         {name: 'latest', type: 'number'},
-                        {name: 'post_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [POST_METADATA]: {
                     name: POST_METADATA,
                     columns: {
                         data: {name: 'data', type: 'string'},
-                        post_id: {name: 'post_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'data', type: 'string'},
-                        {name: 'post_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [POST]: {
@@ -225,7 +215,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         is_pinned: {name: 'is_pinned', type: 'boolean'},
                         message: {name: 'message', type: 'string'},
                         original_id: {name: 'original_id', type: 'string'},
-                        pending_post_id: {name: 'pending_post_id', type: 'string'},
+                        pending_post_id: {name: 'pending_post_id', type: 'string', isIndexed: true},
                         previous_post_id: {name: 'previous_post_id', type: 'string'},
                         props: {name: 'props', type: 'string'},
                         root_id: {name: 'root_id', type: 'string'},
@@ -241,7 +231,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'is_pinned', type: 'boolean'},
                         {name: 'message', type: 'string'},
                         {name: 'original_id', type: 'string'},
-                        {name: 'pending_post_id', type: 'string'},
+                        {name: 'pending_post_id', type: 'string', isIndexed: true},
                         {name: 'previous_post_id', type: 'string'},
                         {name: 'props', type: 'string'},
                         {name: 'root_id', type: 'string'},
@@ -333,13 +323,11 @@ describe('*** Test schema for SERVER database ***', () => {
                         is_unread: {name: 'is_unread', type: 'boolean'},
                         mentions_count: {name: 'mentions_count', type: 'number'},
                         roles: {name: 'roles', type: 'string'},
-                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
                         {name: 'mentions_count', type: 'number'},
                         {name: 'roles', type: 'string'},
-                        {name: 'team_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [ROLE]: {
@@ -425,11 +413,9 @@ describe('*** Test schema for SERVER database ***', () => {
                     name: TEAM_CHANNEL_HISTORY,
                     columns: {
                         channel_ids: {name: 'channel_ids', type: 'string'},
-                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'channel_ids', type: 'string'},
-                        {name: 'team_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [TEAM_MEMBERSHIP]: {

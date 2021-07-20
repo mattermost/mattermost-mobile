@@ -11,6 +11,5 @@ export default tableSchema({
     name: POST_METADATA,
     columns: [
         {name: 'data', type: 'string'},
-        {name: 'post_id', type: 'string', isIndexed: true},
     ],
 });

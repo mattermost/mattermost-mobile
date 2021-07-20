@@ -69,7 +69,7 @@ export type CreateServerDatabaseArgs = {
 
 export type HandleReactionsArgs = {
   prepareRecordsOnly: boolean;
-  reactions: Reaction[];
+  postsReactions: ReactionsPerPost[];
 };
 
 export type HandleFilesArgs = {
@@ -83,9 +83,10 @@ export type HandlePostMetadataArgs = {
 };
 
 export type HandlePostsArgs = {
-  orders: string[];
+  actionType: string;
+  order: string[];
   previousPostId?: string;
-  values: Post[];
+  posts: Post[];
 };
 
 export type SanitizeReactionsArgs = {
@@ -95,9 +96,9 @@ export type SanitizeReactionsArgs = {
 };
 
 export type ChainPostsArgs = {
-  orders: string[];
+  order: string[];
   previousPostId: string;
-  rawPosts: Post[];
+  posts: Post[];
 };
 
 export type SanitizePostsArgs = {

@@ -10,7 +10,6 @@ const {CHANNEL_INFO} = MM_TABLES.SERVER;
 export default tableSchema({
     name: CHANNEL_INFO,
     columns: [
-        {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'guest_count', type: 'number'},
         {name: 'header', type: 'string'},
         {name: 'member_count', type: 'number'},

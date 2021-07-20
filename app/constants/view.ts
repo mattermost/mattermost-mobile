@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import keyMirror from '@utils/key_mirror';
@@ -111,7 +110,6 @@ const RequiredServer = {
 export default {
     ...ViewTypes,
     RequiredServer,
-    POST_VISIBILITY_CHUNK_SIZE: Platform.OS === 'android' ? 15 : 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',

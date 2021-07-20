@@ -18,7 +18,7 @@ export default tableSchema({
         {name: 'is_pinned', type: 'boolean'},
         {name: 'message', type: 'string'},
         {name: 'original_id', type: 'string'},
-        {name: 'pending_post_id', type: 'string'},
+        {name: 'pending_post_id', type: 'string', isIndexed: true},
         {name: 'previous_post_id', type: 'string'},
         {name: 'props', type: 'string'},
         {name: 'root_id', type: 'string'},

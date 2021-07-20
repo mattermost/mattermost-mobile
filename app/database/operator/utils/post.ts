@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ChainPostsArgs, RecordPair, SanitizePostsArgs} from '@typings/database/database';
+import type {ChainPostsArgs, SanitizePostsArgs} from '@typings/database/database';
 
 /**
  * sanitizePosts: Creates arrays of ordered and unordered posts.  Unordered posts are those posts that are not
@@ -32,29 +32,36 @@ export const sanitizePosts = ({posts, orders}: SanitizePostsArgs) => {
  * createPostsChain: Basically creates the 'chain of posts' using the 'orders' array; each post is linked to the other
  * by the previous_post_id field.
  * @param {ChainPostsArgs} chainPosts
- * @param {string[]} chainPosts.orders
- * @param {Post[]} chainPosts.rawPosts
+ * @param {string[]} chainPosts.order
+ * @param {Post[]} chainPosts.posts
  * @param {string} chainPosts.previousPostId
  * @returns {Post[]}
  */
-export const createPostsChain = ({orders, rawPosts, previousPostId = ''}: ChainPostsArgs) => {
-    const posts: RecordPair[] = [];
+export const createPostsChain = ({order, posts, previousPostId = ''}: ChainPostsArgs) => {
+    return order.reduce((result, id, index) => {
+        const post = posts.find((p) => p.id === id);
 
-    rawPosts.forEach((post) => {
-        const postId = post.id;
-        const orderIndex = orders.findIndex((order) => {
-            return order === postId;
-        });
-
-        if (orderIndex === -1) {
-            // This case will not occur as we are using 'ordered' posts for this step.  However, if this happens, that
-            // implies that we might be dealing with an unordered post and in which case we do not action on it.
-        } else if (orderIndex === 0) {
-            posts.push({record: undefined, raw: {...post, prev_post_id: previousPostId}});
-        } else {
-            posts.push({record: undefined, raw: {...post, prev_post_id: orders[orderIndex - 1]}});
+        if (post) {
+            if (index === order.length - 1) {
+                result.push({...post, prev_post_id: previousPostId});
+            } else {
+                result.push({...post, prev_post_id: order[index + 1]});
+            }
         }
+
+        return result;
+    }, [] as Post[]);
+};
+
+export const getPostListEdges = (posts: Post[]) => {
+    // Sort a clone of 'posts' array by create_at
+    const sortedPosts = [...posts].sort((a, b) => {
+        return a.create_at - b.create_at;
     });
 
-    return posts;
+    // The first element (beginning of chain)
+    const firstPost = sortedPosts[0];
+    const lastPost = sortedPosts[sortedPosts.length - 1];
+
+    return {firstPost, lastPost};
 };

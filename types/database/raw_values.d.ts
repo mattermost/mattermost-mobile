@@ -8,7 +8,7 @@ type AppInfo = {
 };
 
 type ChannelInfo = {
-    channel_id: string;
+    id: string;
     guest_count: number;
     header: string;
     member_count: number;
@@ -30,7 +30,7 @@ type GroupMembership = {
 };
 
 type MyTeam = {
-    team_id: string;
+    id: string;
     roles: string;
     is_unread: boolean;
     mentions_count: number;
@@ -45,12 +45,17 @@ type PostsInChannel = {
 type PostsInThread = {
     earliest: number;
     latest?: number;
-    post_id: string;
+    id: string;
 };
 
 type Metadata = {
     data: PostMetadata;
+    id: string;
+}
+
+type ReactionsPerPost = {
     post_id: string;
+    reactions: Reactions[];
 }
 
 type IdValue = {
@@ -59,7 +64,7 @@ type IdValue = {
 };
 
 type TeamChannelHistory = {
-    team_id: string;
+    id: string;
     channel_ids: string[];
 };
 

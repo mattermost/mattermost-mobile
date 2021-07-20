@@ -16,9 +16,6 @@ export default class ChannelInfoModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** channel_id : The foreign key from CHANNEL */
-    channelId: string;
-
     /** guest_count : The number of guest in this channel */
     guestCount: number;
 

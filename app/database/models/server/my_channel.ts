@@ -22,11 +22,8 @@ export default class MyChannelModel extends Model {
     static associations: Associations = {
 
         /** A CHANNEL can be associated to only one record from the MY_CHANNEL table (relationship is 1:1) */
-        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'id'},
     };
-
-    /** channel_id : The foreign key to the related Channel record  */
-    @field('channel_id') channelId!: string;
 
     /** last_post_at : The timestamp for any last post on this channel */
     @field('last_post_at') lastPostAt!: number;
@@ -44,5 +41,5 @@ export default class MyChannelModel extends Model {
     @field('roles') roles!: string;
 
     /** channel : The relation pointing to the CHANNEL table */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+    @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 }

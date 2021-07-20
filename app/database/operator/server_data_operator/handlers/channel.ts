@@ -80,10 +80,10 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'channel_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: settings, key: 'id'});
 
         return this.handleRecords({
-            fieldName: 'channel_id',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordMyChannelSettingsEqualToRaw,
             transformer: transformMyChannelSettingsRecord,
             prepareRecordsOnly,
@@ -109,11 +109,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: channelInfos,
-            key: 'channel_id',
+            key: 'id',
         });
 
         return this.handleRecords({
-            fieldName: 'channel_id',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordChannelInfoEqualToRaw,
             transformer: transformChannelInfoRecord,
             prepareRecordsOnly,
@@ -139,11 +139,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: myChannels,
-            key: 'channel_id',
+            key: 'id',
         });
 
         return this.handleRecords({
-            fieldName: 'channel_id',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
             transformer: transformMyChannelRecord,
             prepareRecordsOnly,
