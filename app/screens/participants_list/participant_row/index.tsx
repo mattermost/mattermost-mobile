@@ -7,22 +7,25 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import type {Theme} from '@mm-redux/types/preferences';
 import {UserProfile} from '@mm-redux/types/users';
+import {$ID} from '@mm-redux/types/utilities';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {Preferences} from '@mm-redux/constants';
 
-interface ParticipantRowProps {
-        theme: Theme,
-        user: UserProfile,
-        intl: typeof intlShape;
-    }
+type Props = {
+    currentUserId: $ID<UserProfile>;
+    teammateNameDisplay: string;
+    theme: Theme,
+    user: UserProfile,
+    intl: typeof intlShape;
+}
 
-const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
-    const goToUserProfile = async () => {
+const ParticipantRow = ({currentUserId, teammateNameDisplay, theme, user, intl}: Props) => {
+    const goToUserProfile = React.useCallback(preventDoubleTap(async () => {
         const {formatMessage} = intl;
         const screen = 'UserProfile';
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -42,7 +45,7 @@ const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
         };
 
         showModal(screen, title, passProps, options);
-    };
+    }), []);
 
     if (!user.id) {
         return null;
@@ -50,14 +53,16 @@ const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
 
     const {id, username} = user;
     const usernameDisplay = '@' + username;
-    const displayName = displayUsername(user, Preferences.DISPLAY_PREFER_FULL_NAME);
+    const displayName = displayUsername(user, teammateNameDisplay);
 
     const style = getStyleSheet(theme);
+
+    const isCurrentUser = true || currentUserId === id;
 
     return (
         <TouchableOpacity
             key={user.id}
-            onPress={preventDoubleTap(goToUserProfile)}
+            onPress={goToUserProfile}
         >
             <View style={style.container}>
                 <View style={style.profileContainer}>
@@ -80,6 +85,12 @@ const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
                     { displayName !== username &&
                         <Text style={style.username}>
                             {`  ${usernameDisplay}`}
+                            {isCurrentUser && (
+                                <FormattedText
+                                    id='suggestion.mention.you'
+                                    defaultMessage='(you)'
+                                />
+                            )}
                         </Text>
                     }
                 </Text>
