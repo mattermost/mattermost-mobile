@@ -57,7 +57,7 @@ const ParticipantRow = ({currentUserId, teammateNameDisplay, theme, user, intl}:
 
     const style = getStyleSheet(theme);
 
-    const isCurrentUser = true || currentUserId === id;
+    const isCurrentUser = currentUserId === id;
 
     return (
         <TouchableOpacity
@@ -82,15 +82,15 @@ const ParticipantRow = ({currentUserId, teammateNameDisplay, theme, user, intl}:
                     <Text style={style.displayName}>
                         {`${displayName === username ? username : displayName}`}
                     </Text>
-                    { displayName !== username &&
+                    {displayName !== username &&
                         <Text style={style.username}>
-                            {`  ${usernameDisplay}`}
                             {isCurrentUser && (
                                 <FormattedText
-                                    id='suggestion.mention.you'
+                                    id='mobile.participants.you'
                                     defaultMessage='(you)'
                                 />
                             )}
+                            {`  ${usernameDisplay}`}
                         </Text>
                     }
                 </Text>
