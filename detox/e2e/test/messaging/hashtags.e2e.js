@@ -9,6 +9,7 @@
 
 import {
     ChannelScreen,
+    PermalinkScreen,
     SearchScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -86,12 +87,12 @@ describe('Hashtags', () => {
         await searchInput.typeText(invalid1);
         await searchInput.tapReturnKey();
         await element(by.text(invalid1).withAncestor(by.id(SearchScreen.testID.searchResultsList))).atIndex(1).tap();
-        await ThreadScreen.toBeVisible();
 
-        // # Go back to channel
-        await ThreadScreen.back();
-        await searchInput.clearText();
-        await SearchScreen.cancel();
+        // * Verify at permalink screen
+        await PermalinkScreen.toBeVisible();
+
+        // # Jump to recent messages
+        await PermalinkScreen.jumpToRecentMessages();
     });
 
     it('MM-T357 should be able to tap on hashtag from search result reply thread', async () => {
@@ -106,8 +107,8 @@ describe('Hashtags', () => {
 
         // # Open reply thread from search result and tap on hashtag
         const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
-        const {searchResultPostItem} = await getSearchResultPostItem(post.id, hashtag);
-        await searchResultPostItem.tap();
+        const {searchResultPostItemHeaderReply} = await getSearchResultPostItem(post.id, hashtag);
+        await searchResultPostItemHeaderReply.tap();
         await ThreadScreen.toBeVisible();
         await element(by.text(hashtag)).atIndex(1).tap();
 
