@@ -1,17 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
-
-import {withManagedConfig} from '@mattermost/react-native-emm';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-
 import {withServerDatabase} from '@database/components';
 
 // TODO: Remove this and uncomment screens as they get added
@@ -36,6 +35,16 @@ const withIntl = (Screen: React.ComponentType) => {
             </IntlProvider>
     );
         }
+}
+
+const withSafeAreaInsets = (Screen: React.ComponentType) => {
+    return function SafeAreaInsets(props: any){
+        return (
+            <SafeAreaProvider>
+                <Screen {...props} />
+            </SafeAreaProvider>
+        )
+    }
 }
 
 Navigation.setLazyComponentRegistrator((screenName) => {
@@ -219,6 +228,6 @@ export function registerScreens() {
     const channelScreen = require('@screens/channel').default;
     const serverScreen = require('@screens/server').default;
 
-    Navigation.registerComponent(Screens.CHANNEL, () => withIntl(withServerDatabase(withManagedConfig(channelScreen))));
+    Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withIntl(withServerDatabase(withManagedConfig(channelScreen)))));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 }
