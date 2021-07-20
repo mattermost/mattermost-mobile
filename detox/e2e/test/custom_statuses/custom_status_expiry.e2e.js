@@ -16,7 +16,7 @@ import {
     UserProfileScreen,
     ClearAfterScreen,
 } from '@support/ui/screen';
-import {wait, timeouts} from '@support/utils';
+import {wait, timeouts, isAndroid} from '@support/utils';
 
 describe('Custom status expiry', () => {
     const {
@@ -189,14 +189,18 @@ describe('Custom status expiry', () => {
 
         // * Select some time in future in date time picker
         await ClearAfterScreen.openTimePicker();
-        await DateTimePicker.changeTime('11', '30');
-        await DateTimePicker.tapOkButtonAndroid();
+
+        if (isAndroid()) {
+            await DateTimePicker.changeTimeAndroid('11', '30');
+            await DateTimePicker.tapOkButtonAndroid();
+        } else {
+            const timePicker = DateTimePicker.getDateTimePickerIOS();
+            await timePicker.setColumnToValue(0, '11');
+            await timePicker.setColumnToValue(1, '30');
+        }
 
         await ClearAfterScreen.close();
         await CustomStatusScreen.close();
-
-        // # Close settings sidebar
-        await closeSettingsSidebar();
 
         // * Check if the selected emoji and text are visible in the sidebar
         await openSettingsSidebar();
