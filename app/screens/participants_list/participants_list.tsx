@@ -8,16 +8,19 @@ import FormattedText from '@components/formatted_text';
 import SlideUpPanel from '@components/slide_up_panel';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {Theme} from '@mm-redux/types/preferences';
+import type {$ID} from '@mm-redux/types/utilities';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ParticipantRow from './participant_row';
 
-interface ParticipantsListProps {
+type Props = {
+    currentUserId: $ID<UserProfile>;
     userProfiles: UserProfile[];
+    teammateNameDisplay: string;
     theme: Theme;
 }
 
-const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
+const ParticipantsList = ({currentUserId, teammateNameDisplay, theme, userProfiles}: Props) => {
     const close = () => {
         dismissModal();
     };
@@ -27,7 +30,7 @@ const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
         return (
             <View style={style.header}>
                 <FormattedText
-                    id='mobile.participants_header'
+                    id='mobile.participants.header'
                     defaultMessage={'THREAD PARTICIPANTS'}
                     style={style.headerText}
                 />
@@ -38,7 +41,9 @@ const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
     const renderParticipantRows = () => {
         return userProfiles.map((user: UserProfile) => (
             <ParticipantRow
+                currentUserId={currentUserId}
                 key={user.id}
+                teammateNameDisplay={teammateNameDisplay}
                 theme={theme}
                 user={user}
             />
