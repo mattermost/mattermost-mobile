@@ -54,7 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ConnectedProfilePicture = ({edit = false, iconSize, imageUri, profileImageRemove, profileImageUri, showStatus = true, size = 128, statusSize = 14, statusStyle, testID, user}: ProfilePictureProps) => {
+const ConnectedProfilePicture = ({iconSize, showStatus = true, size = 128, statusSize = 14, testID, user}: ProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string | undefined>();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -64,77 +64,36 @@ const ConnectedProfilePicture = ({edit = false, iconSize, imageUri, profileImage
     const buffer = STATUS_BUFFER || 0;
     const status = user?.status;
 
-    // const isCurrentUser = user?.id === currentUserIdRecord.value;
-    // const clearProfileImageUri = () => {
-    //     if (isCurrentUser && profileImageUri !== '') {
-    //         //fixme:  what do we do here ?
-    //         // setProfileImageUri('');
-    //     }
-    // };
-
     useEffect(() => {
-        // if (!status && user) {
-        //     //fixme:  what do we do here ?
-        //     // getStatusForId(user.id);
-        // }
-
-        if (profileImageUri) {
-            setPictureUrl(profileImageUri);
-        } else if (edit && imageUri) {
-            setPictureUrl(imageUri);
-        } else if (user) {
-            const uri = client.getProfilePictureUrl(user.id, user.lastPictureUpdate);
-            setPictureUrl(uri);
-
-            // clearProfileImageUri();
+        try {
+            if (user) {
+                const uri = client.getProfilePictureUrl(user.id, user.lastPictureUpdate);
+                setPictureUrl(uri);
+            }
+        } catch (e) {
+            // do nothing
         }
     }, []);
 
     useDidUpdate(() => {
-        setPictureUrl(undefined);
-    }, [profileImageRemove]);
-
-    useDidUpdate(() => {
-        if (edit && imageUri) {
-            setPictureUrl(imageUri);
-        }
-    }, [edit, imageUri]);
-
-    useDidUpdate(() => {
-        if (profileImageUri) {
-            setPictureUrl(profileImageUri);
-        }
-    }, [profileImageUri]);
-
-    useDidUpdate(() => {
-        const url = user ? client.getProfilePictureUrl(user.id, user.lastPictureUpdate) : undefined;
-        if (url !== pictureUrl) {
-            setPictureUrl(url);
+        try {
+            const url = user ? client.getProfilePictureUrl(user.id, user.lastPictureUpdate) : undefined;
+            if (url !== pictureUrl) {
+                setPictureUrl(url);
+            }
+        } catch (e) {
+            // do nothing
         }
     }, [user]);
 
     let statusIcon;
-    let profileStatusStyle = statusStyle;
+
     let containerStyle: StyleProp<ViewStyle> = {
         width: size + buffer,
         height: size + buffer,
     };
 
-    if (edit) {
-        const iconColor = changeOpacity(theme.centerChannelColor, 0.6);
-        profileStatusStyle = {
-            width: statusSize,
-            height: statusSize,
-            backgroundColor: theme.centerChannelBg,
-        };
-        statusIcon = (
-            <CompassIcon
-                name='camera-outline'
-                size={statusSize / 1.7}
-                color={iconColor}
-            />
-        );
-    } else if (status && !edit) {
+    if (status) {
         statusIcon = (
             <UserStatus
                 size={statusSize}
@@ -190,11 +149,10 @@ const ConnectedProfilePicture = ({edit = false, iconSize, imageUri, profileImage
             testID={`${testID}.${user?.id}`}
         >
             {image}
-            {(showStatus || edit) && !user?.isBot && (
+            {showStatus && !user?.isBot && (
                 <View
                     style={[
                         style.statusWrapper,
-                        profileStatusStyle,
                         {borderRadius: statusSize / 2},
                     ]}
                 >
@@ -206,11 +164,7 @@ const ConnectedProfilePicture = ({edit = false, iconSize, imageUri, profileImage
 };
 
 type ProfilePictureInputProps = {
-    edit?: boolean;
     iconSize?: number;
-    imageUri?: string;
-    profileImageRemove?: boolean; // fixme: is that one really needed ?
-    profileImageUri?: string;
     showStatus?: boolean;
     size?: number;
     statusSize?: number;
