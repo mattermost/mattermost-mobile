@@ -13,7 +13,10 @@ const state = {
             appState: false,
             credentials: {},
             config: {},
-            dataRetentionPolicy: {},
+            dataRetention: {
+                policies: {},
+                lastCleanUpAt: null,
+            },
             deviceToken: '',
             license: {},
             serverVersion: '',

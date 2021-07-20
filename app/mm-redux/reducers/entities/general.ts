@@ -43,10 +43,13 @@ function credentials(state: any = {}, action: GenericAction) {
     }
 }
 
-function dataRetentionPolicy(state: any = {}, action: GenericAction) {
+function dataRetention(state: any = {}, action: GenericAction) {
     switch (action.type) {
     case GeneralTypes.RECEIVED_DATA_RETENTION_POLICY:
-        return action.data;
+        return {
+            ...state,
+            policies: action.data,
+        };
     default:
         return state;
     }
@@ -95,7 +98,7 @@ export default combineReducers({
     appState,
     credentials,
     config,
-    dataRetentionPolicy,
+    dataRetention,
     deviceToken,
     license,
     serverVersion,
