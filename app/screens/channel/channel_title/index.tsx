@@ -32,15 +32,14 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
     const hasGuests = channelInfo[0]?.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings[0]?.notifyProps?.mark_unread === 'mention';
-    const isChannelShared = false; // todo: Read from ChannelModel when implemented
+    const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
 
     let isGuest = false;
     let isSelfDMChannel = false;
     let wrapperWidth = 90;
 
     if (channel.type === General.DM_CHANNEL && teammate) {
-        //fixme: use util method from Elias' PR.
-        isGuest = false; //isTeamMateGuest(teammate.roles);
+        isGuest = teammate.roles === General.SYSTEM_GUEST_ROLE;
         isSelfDMChannel = currentUserId === teammateId;
     }
 
@@ -109,7 +108,6 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
                     size={18}
                     shared={isChannelShared}
                     style={style.channelIconContainer}
-                    theme={theme}
                     type={channelType}
                 />
             );
@@ -152,8 +150,6 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
     };
 
     const renderIcon = () => {
-        //fixme: is this correct ?
-        // if (channelDisplayName) {
         return (
             <CompassIcon
                 style={style.icon}
@@ -161,9 +157,6 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
                 name='chevron-down'
             />
         );
-
-        // }
-        // return null;
     };
 
     return (
@@ -251,7 +244,6 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
 type ChannelTitleInputProps = {
     canHaveSubtitle: boolean;
     channel: ChannelModel;
-    config: ClientConfig;
     currentUserId: string;
     teammateId?: string;
     onPress: () => void;
