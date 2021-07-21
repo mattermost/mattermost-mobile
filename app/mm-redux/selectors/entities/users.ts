@@ -480,6 +480,27 @@ export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: Array<$I
     );
 }
 
+export function makeGetProfilesByIds(): (a: GlobalState, b: Array<$ID<UserProfile>>) => Array<UserProfile> {
+    return createSelector(
+        getUsers,
+        (state: GlobalState, userIds: Array<$ID<UserProfile>>) => userIds,
+        (allProfilesById: Dictionary<UserProfile>, userIds: Array<string>) => {
+            const userProfiles: UserProfile[] = [];
+
+            if (userIds && userIds.length > 0) {
+                const profilesById = userIds.
+                    filter((userId) => allProfilesById[userId]).
+                    map((userId) => allProfilesById[userId]);
+
+                if (profilesById && profilesById.length > 0) {
+                    userProfiles.push(...profilesById);
+                }
+            }
+            return userProfiles;
+        },
+    );
+}
+
 export const getUsernamesByUserId = createSelector(
     getUsers,
     getUsersByUsername,
