@@ -56,14 +56,12 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
     const handleClick = useCallback(
         preventDoubleTap(() => {
             handleItemClick(duration, '');
-        }),
-        [handleItemClick, duration],
-    );
+        }), [handleItemClick, duration]);
 
-    const handleCustomExpiresAtChange = (expiresAt: Moment) => {
+    const handleCustomExpiresAtChange = useCallback((expiresAt: Moment) => {
         setExpiry(expiresAt.toISOString());
         handleItemClick(duration, expiresAt.toISOString());
-    };
+    }, [handleItemClick, duration]);
 
     return (
         <View>

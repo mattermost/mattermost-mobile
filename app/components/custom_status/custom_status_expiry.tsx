@@ -43,22 +43,7 @@ const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBra
     const isCurrentYear = currentMomentTime.get('y') === expiryMomentTime.get('y');
 
     let dateComponent;
-    if (showToday && expiryMomentTime.isSameOrBefore(todayEndTime)) {
-        dateComponent = (
-            <Text>
-                <FormattedText
-                    id='custom_status.expiry_time.today'
-                    defaultMessage='Today'
-                />
-                {' '}
-                <FormattedText
-                    id='custom_status.expiry.at'
-                    defaultMessage='at'
-                />
-                {' '}
-            </Text>
-        );
-    } else if (expiryMomentTime.isSame(todayEndTime)) {
+    if ((showToday && expiryMomentTime.isBefore(todayEndTime)) || expiryMomentTime.isSame(todayEndTime)) {
         dateComponent = (
             <FormattedText
                 id='custom_status.expiry_time.today'
@@ -67,18 +52,10 @@ const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBra
         );
     } else if (expiryMomentTime.isAfter(todayEndTime) && expiryMomentTime.isSameOrBefore(tomorrowEndTime)) {
         dateComponent = (
-            <Text>
-                <FormattedText
-                    id='custom_status.expiry_time.tomorrow'
-                    defaultMessage='Tomorrow'
-                />
-                {' '}
-                <FormattedText
-                    id='custom_status.expiry.at'
-                    defaultMessage='at'
-                />
-                {' '}
-            </Text>
+            <FormattedText
+                id='custom_status.expiry_time.tomorrow'
+                defaultMessage='Tomorrow'
+            />
         );
     } else if (expiryMomentTime.isAfter(tomorrowEndTime)) {
         let format = 'dddd';
@@ -95,18 +72,6 @@ const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBra
                 value={expiryMomentTime.toDate()}
             />
         );
-
-        dateComponent = showTimeCompulsory ? (
-            <Text>
-                {dateComponent}
-                {' '}
-                <FormattedText
-                    id='custom_status.expiry.at'
-                    defaultMessage='at'
-                />
-                {' '}
-            </Text>
-        ) : dateComponent;
     }
 
     const useTime = showTimeCompulsory || !(expiryMomentTime.isSame(todayEndTime) || expiryMomentTime.isAfter(tomorrowEndTime));
@@ -125,6 +90,16 @@ const CustomStatusExpiry = ({time, theme, textStyles = {}, showPrefix, withinBra
             )}
             {showPrefix && ' '}
             {dateComponent}
+            {useTime && dateComponent && (
+                <>
+                    {' '}
+                    <FormattedText
+                        id='custom_status.expiry.at'
+                        defaultMessage='at'
+                    />
+                    {' '}
+                </>
+            )}
             {useTime && (
                 <FormattedTime
                     isMilitaryTime={militaryTime}

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View, Text} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -289,16 +289,14 @@ export default class SettingsSidebarBase extends PureComponent {
                         theme={theme}
                     />
                     {Boolean(isStatusSet && isCustomStatusExpirySupported && customStatus?.duration) && (
-                        <Text style={style.customStatusExpiryContainer}>
-                            <CustomStatusExpiry
-                                time={customStatus?.expires_at}
-                                theme={theme}
-                                textStyles={style.customStatusExpiryText}
-                                withinBrackets={true}
-                                showPrefix={true}
-                                testID={'custom_status.expiry'}
-                            />
-                        </Text>
+                        <CustomStatusExpiry
+                            time={customStatus?.expires_at}
+                            theme={theme}
+                            textStyles={style.customStatusExpiryText}
+                            withinBrackets={true}
+                            showPrefix={true}
+                            testID={'custom_status.expiry'}
+                        />
                     )}
                 </View>
                 {showRetryMessage && (
@@ -435,12 +433,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         customStatusIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
-        customStatusExpiryContainer: {
+        customStatusExpiryText: {
             paddingTop: 3,
             fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.35),
-        },
-        customStatusExpiryText: {
             color: changeOpacity(theme.centerChannelColor, 0.35),
         },
         clearButton: {
