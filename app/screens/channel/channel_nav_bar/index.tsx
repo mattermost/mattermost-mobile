@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {DeviceEventEmitter, LayoutChangeEvent, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Dimensions, LayoutChangeEvent, Platform, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -28,18 +28,11 @@ const ChannelNavBar = ({currentUserId, channel, onPress}: ChannelNavBar) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+
+    const isLandscape = DEVICE.IS_LANDSCAPE;
+
     let height = 0;
     let canHaveSubtitle = true;
-
-    const [isLandscape, setIsLandscape] = useState<boolean>(false);
-
-    useEffect(() => {
-        const checkOrientation = async () => {
-            const isInLandscape = await DeviceInfo.isLandscape();
-            setIsLandscape(isInLandscape);
-        };
-        checkOrientation();
-    }, []);
 
     const onLayout = ({nativeEvent}: LayoutChangeEvent) => {
         const {height: layoutHeight} = nativeEvent.layout;

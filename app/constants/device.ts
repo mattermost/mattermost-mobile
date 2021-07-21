@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
+import {Dimensions, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 import DeviceInfo from 'react-native-device-info';
 
@@ -15,6 +15,8 @@ const device = keyMirror({
     STATUSBAR_HEIGHT_CHANGED: null,
 });
 
+const dimensions = Dimensions.get('window');
+
 export default {
     ...device,
     DOCUMENTS_PATH: `${FileSystem.cacheDirectory}/Documents`,
@@ -26,4 +28,5 @@ export default {
     PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
     TABLET_WIDTH: 250,
     VIDEOS_PATH: `${FileSystem.cacheDirectory}/Videos`,
+    IS_LANDSCAPE: dimensions.width >= dimensions.height,
 };
