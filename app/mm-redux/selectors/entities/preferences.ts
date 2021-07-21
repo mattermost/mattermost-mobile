@@ -3,9 +3,9 @@
 
 import * as reselect from 'reselect';
 
-import {getConfig, getFeatureFlagValue, getLicense} from '@mm-redux/selectors/entities/general';
+import {getConfig, getFeatureFlagValue, getLicense, getOsColorScheme} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {PreferenceType} from '@mm-redux/types/preferences';
+import {PreferenceType, Theme} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {createShallowSelector} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
@@ -105,26 +105,13 @@ export const getTeammateNameDisplaySetting = reselect.createSelector(
     },
 );
 
-const getThemePreference = reselect.createSelector(
-    getMyPreferences,
-    getCurrentTeamId,
-    (myPreferences, currentTeamId) => {
-        // Prefer the user's current team-specific theme over the user's current global theme
-        let themePreference;
+export const getDisableThemeSync = reselect.createSelector(getCurrentTeamId, getMyPreferences, (currentTeamId, preferences) => {
+    const preference = preferences[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, currentTeamId)] ||
+        preferences[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')];
+    return Boolean(preference) && preference.value === 'true';
+});
 
-        if (currentTeamId) {
-            themePreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME, currentTeamId)];
-        }
-
-        if (!themePreference) {
-            themePreference = myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME, '')];
-        }
-
-        return themePreference;
-    },
-);
-
-const getDefaultTheme = reselect.createSelector(getConfig, (config) => {
+export const getDefaultLightTheme = reselect.createSelector(getConfig, (config) => {
     if (config.DefaultTheme) {
         const theme = Preferences.THEMES[config.DefaultTheme];
         if (theme) {
@@ -136,51 +123,92 @@ const getDefaultTheme = reselect.createSelector(getConfig, (config) => {
     return Preferences.THEMES.default;
 });
 
-export const getTheme = createShallowSelector(
-    getThemePreference,
-    getDefaultTheme,
-    (themePreference, defaultTheme) => {
-        let theme: any;
-        if (themePreference) {
-            theme = themePreference.value;
-        } else {
-            theme = defaultTheme;
-        }
-
-        if (typeof theme === 'string') {
-            // A custom theme will be a JSON-serialized object stored in a preference
-            theme = JSON.parse(theme);
-        }
-
-        // At this point, the theme should be a plain object
-
-        // If this is a system theme, find it in case the user's theme is missing any fields
-        if (theme.type && theme.type !== 'custom') {
-            const match = Object.values(Preferences.THEMES).find((v: any) => v.type === theme.type) as any;
-            if (match) {
-                if (!match.mentionBg) {
-                    match.mentionBg = match.mentionBj;
-                }
-
-                return match;
-            }
-        }
-
-        for (const key of Object.keys(defaultTheme)) {
-            if (theme[key]) {
-                // Fix a case where upper case theme colours are rendered as black
-                theme[key] = theme[key].toLowerCase();
-            }
-        }
-
-        // Backwards compatability with old name
-        if (!theme.mentionBg) {
-            theme.mentionBg = theme.mentionBj;
-        }
-
-        return Object.assign({}, defaultTheme, theme);
+const getLightThemePreference = createShallowSelector(
+    getCurrentTeamId,
+    getMyPreferences,
+    (currentTeamId, myPreferences) => {
+        return myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME, currentTeamId)] ||
+            myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME, '')];
     },
 );
+
+export const getLightTheme = createShallowSelector(
+    getDefaultLightTheme,
+    getLightThemePreference,
+    (defaultLightTheme, lightThemePreference) => {
+        return normalizeTheme(lightThemePreference ? lightThemePreference.value : defaultLightTheme, defaultLightTheme);
+    },
+);
+
+const getDefaultDarkTheme = () => Preferences.THEMES.windows10;
+
+const getDarkThemePreference = createShallowSelector(
+    getCurrentTeamId,
+    getMyPreferences,
+    (currentTeamId, myPreferences) => {
+        return myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME_DARK, currentTeamId)] ||
+            myPreferences[getPreferenceKey(Preferences.CATEGORY_THEME_DARK, '')];
+    },
+);
+
+export const getDarkTheme = createShallowSelector(
+    getDefaultDarkTheme,
+    getDarkThemePreference,
+    (defaultDarkTheme, darkThemePreference) => {
+        return normalizeTheme(darkThemePreference ? darkThemePreference.value : defaultDarkTheme, defaultDarkTheme);
+    },
+);
+
+export const getTheme = createShallowSelector(
+    getLightThemePreference,
+    getDarkThemePreference,
+    getDisableThemeSync,
+    getOsColorScheme,
+    getDefaultDarkTheme,
+    getDefaultLightTheme,
+    (lightThemePreference, darkThemePreference, disableThemeSync, osColorScheme, defaultDarkTheme, defaultLightTheme) => {
+        const isDarkActive = !disableThemeSync && osColorScheme === 'dark';
+        const themePreference = isDarkActive ? darkThemePreference : lightThemePreference;
+        const defaultTheme = isDarkActive ? defaultDarkTheme : defaultLightTheme;
+        return normalizeTheme(themePreference ? themePreference.value : defaultTheme, defaultTheme);
+    },
+);
+
+const normalizeTheme = (themeToNormalize: any, defaultTheme: Theme) => {
+    let theme = themeToNormalize;
+    if (typeof theme === 'string') {
+        // A custom theme will be a JSON-serialized object stored in a preference
+        theme = JSON.parse(theme);
+    }
+
+    // At this point, the theme should be a plain object
+
+    // If this is a system theme, find it in case the user's theme is missing any fields
+    if (theme.type && theme.type !== 'custom') {
+        const match = Object.values(Preferences.THEMES).find((v: any) => v.type === theme.type) as any;
+        if (match) {
+            if (!match.mentionBg) {
+                match.mentionBg = match.mentionBj;
+            }
+
+            return match;
+        }
+    }
+
+    for (const key of Object.keys(defaultTheme)) {
+        if (theme[key]) {
+            // Fix a case where upper case theme colours are rendered as black
+            theme[key] = theme[key].toLowerCase();
+        }
+    }
+
+    // Backwards compatability with old name
+    if (!theme.mentionBg) {
+        theme.mentionBg = theme.mentionBj;
+    }
+
+    return Object.assign({}, defaultTheme, theme);
+};
 
 export function makeGetStyleFromTheme() {
     return reselect.createSelector(

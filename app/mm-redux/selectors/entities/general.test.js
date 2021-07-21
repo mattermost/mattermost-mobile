@@ -339,5 +339,27 @@ describe('Selectors.General', () => {
             assert.equal(Selectors.getAutolinkedUrlSchemes(state), Selectors.getAutolinkedUrlSchemes(state));
         });
     });
+
+    it('getOsColorScheme', () => {
+        const state = {
+            entities: {
+                general: {
+                    osColorScheme: 'light',
+                },
+            },
+        };
+        assert.strictEqual(Selectors.getOsColorScheme(state), 'light');
+    });
+
+    it('getAllowCustomThemes', () => {
+        const undefinedState = {entities: {general: {config: {}}}};
+        assert.strictEqual(Selectors.getAllowCustomThemes(undefinedState), false);
+
+        const falseState = {entities: {general: {config: {AllowCustomThemes: 'false'}}}};
+        assert.strictEqual(Selectors.getAllowCustomThemes(falseState), false);
+
+        const trueState = {entities: {general: {config: {AllowCustomThemes: 'true'}}}};
+        assert.strictEqual(Selectors.getAllowCustomThemes(trueState), true);
+    });
 });
 

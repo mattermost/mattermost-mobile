@@ -48,6 +48,7 @@ function sectionItem(props) {
             <Switch
                 onValueChange={action}
                 value={selected}
+                testID={`${testID}.switch`}
             />
         );
     } else if (actionType === ActionTypes.ARROW) {
@@ -110,6 +111,7 @@ sectionItem.propTypes = {
     selected: PropTypes.bool,
     theme: PropTypes.object.isRequired,
     description: PropTypes.node,
+    testID: PropTypes.string,
 };
 
 sectionItem.defaultProps = {

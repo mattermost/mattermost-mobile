@@ -54,9 +54,12 @@ const Preferences: Dictionary<any> = {
     ADVANCED_SEND_ON_CTRL_ENTER: 'send_on_ctrl_enter',
     TEAMS_ORDER: 'teams_order',
     CATEGORY_THEME: 'theme',
+    CATEGORY_THEME_DARK: 'theme_dark',
+    CATEGORY_DISABLE_THEME_SYNC: 'disable_theme_sync',
     THEMES: {
         default: {
             type: 'Mattermost',
+            colorScheme: 'light',
             sidebarBg: '#145dbf',
             sidebarText: '#ffffff',
             sidebarUnreadText: '#ffffff',
@@ -84,6 +87,7 @@ const Preferences: Dictionary<any> = {
         } as Theme,
         organization: {
             type: 'Organization',
+            colorScheme: 'light',
             sidebarBg: '#2071a7',
             sidebarText: '#ffffff',
             sidebarUnreadText: '#ffffff',
@@ -111,6 +115,7 @@ const Preferences: Dictionary<any> = {
         } as Theme,
         mattermostDark: {
             type: 'Mattermost Dark',
+            colorScheme: 'dark',
             sidebarBg: '#1b2c3e',
             sidebarText: '#ffffff',
             sidebarUnreadText: '#ffffff',
@@ -138,6 +143,7 @@ const Preferences: Dictionary<any> = {
         } as Theme,
         windows10: {
             type: 'Windows Dark',
+            colorScheme: 'dark',
             sidebarBg: '#171717',
             sidebarText: '#ffffff',
             sidebarUnreadText: '#ffffff',

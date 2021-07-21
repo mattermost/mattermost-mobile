@@ -25,6 +25,7 @@ const ThemeTile = (props) => {
         label,
         selected,
         theme,
+        testID,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -50,6 +51,7 @@ const ThemeTile = (props) => {
         <TouchableOpacity
             style={[style.container, layoutStyle.container]}
             onPress={() => action(actionValue)}
+            testID={testID}
         >
             <View style={[style.imageWrapper, layoutStyle.thumbnail]}>
                 {imageSrc && (
@@ -67,6 +69,7 @@ const ThemeTile = (props) => {
                         name='check-circle'
                         size={31.2}
                         style={style.check}
+                        {...testID && {testID: `${testID}.selected`}}
                     />
                 )}
             </View>
@@ -87,6 +90,7 @@ ThemeTile.propTypes = {
     label: PropTypes.node.isRequired,
     selected: PropTypes.bool,
     theme: PropTypes.object.isRequired,
+    testID: PropTypes.string,
 };
 
 ThemeTile.defaultProps = {

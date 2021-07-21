@@ -1,0 +1,510 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Theme Matches snapshot when OS sync off 1`] = `
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
+  style={
+    Object {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+  testID="theme_settings.screen"
+>
+  <Connect(StatusBar) />
+  <ScrollView
+    alwaysBounceVertical={false}
+    contentContainerStyle={
+      Object {
+        "paddingVertical": 35,
+      }
+    }
+    style={
+      Object {
+        "backgroundColor": "rgba(61,60,64,0.06)",
+        "flex": 1,
+      }
+    }
+  >
+    <OsSyncSection
+      onToggle={[Function]}
+      osColorScheme="light"
+      selected={false}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "colorScheme": "light",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <ThemeSection
+      activeThemeType="Mattermost"
+      allowCustomThemes={true}
+      allowedThemes={
+        Array [
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "colorScheme": "light",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "key": "default",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          },
+          Object {
+            "awayIndicator": "#dcbd4e",
+            "buttonBg": "#1dacfc",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#f2f4f8",
+            "centerChannelColor": "#333333",
+            "codeTheme": "github",
+            "colorScheme": "light",
+            "dndIndicator": "#ff6a6a",
+            "errorTextColor": "#a94442",
+            "key": "organization",
+            "linkColor": "#2f81b7",
+            "mentionBg": "#fbfbfb",
+            "mentionBj": "#fbfbfb",
+            "mentionColor": "#2071f7",
+            "mentionHighlightBg": "#f3e197",
+            "mentionHighlightLink": "#2f81b7",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#7dbe00",
+            "sidebarBg": "#2071a7",
+            "sidebarHeaderBg": "#2f81b7",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#7ab0d6",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#136197",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Organization",
+          },
+          Object {
+            "awayIndicator": "#c1b966",
+            "buttonBg": "#4cbba4",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#2f3e4e",
+            "centerChannelColor": "#dddddd",
+            "codeTheme": "solarized-dark",
+            "colorScheme": "dark",
+            "dndIndicator": "#e81023",
+            "errorTextColor": "#ff6461",
+            "key": "mattermostDark",
+            "linkColor": "#a4ffeb",
+            "mentionBg": "#b74a4a",
+            "mentionBj": "#b74a4a",
+            "mentionColor": "#ffffff",
+            "mentionHighlightBg": "#984063",
+            "mentionHighlightLink": "#a4ffeb",
+            "newMessageSeparator": "#5de5da",
+            "onlineIndicator": "#65dcc8",
+            "sidebarBg": "#1b2c3e",
+            "sidebarHeaderBg": "#1b2c3e",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#66b9a7",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4a5664",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost Dark",
+          },
+          Object {
+            "awayIndicator": "#c1b966",
+            "buttonBg": "#0177e7",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#1f1f1f",
+            "centerChannelColor": "#dddddd",
+            "codeTheme": "monokai",
+            "colorScheme": "dark",
+            "dndIndicator": "#e81023",
+            "errorTextColor": "#ff6461",
+            "key": "windows10",
+            "linkColor": "#0d93ff",
+            "mentionBg": "#0177e7",
+            "mentionBj": "#0177e7",
+            "mentionColor": "#ffffff",
+            "mentionHighlightBg": "#784098",
+            "mentionHighlightLink": "#a4ffeb",
+            "newMessageSeparator": "#cc992d",
+            "onlineIndicator": "#399fff",
+            "sidebarBg": "#171717",
+            "sidebarHeaderBg": "#1f1f1f",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#196caf",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#302e30",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Windows Dark",
+          },
+        ]
+      }
+      customThemeAvailable={false}
+      headerDefaultMessage="Choose a theme"
+      headerId="user.settings.display.theme.chooseTheme"
+      isLandscape={false}
+      isTablet={false}
+      onSelect={[Function]}
+      testID="all_themes"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "colorScheme": "light",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+  </ScrollView>
+</RNCSafeAreaView>
+`;
+
+exports[`Theme Matches snapshot when OS sync on 1`] = `
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
+  style={
+    Object {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+  testID="theme_settings.screen"
+>
+  <Connect(StatusBar) />
+  <ScrollView
+    alwaysBounceVertical={false}
+    contentContainerStyle={
+      Object {
+        "paddingVertical": 35,
+      }
+    }
+    style={
+      Object {
+        "backgroundColor": "rgba(61,60,64,0.06)",
+        "flex": 1,
+      }
+    }
+  >
+    <OsSyncSection
+      onToggle={[Function]}
+      osColorScheme="light"
+      selected={true}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "colorScheme": "light",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <React.Fragment>
+      <ThemeSection
+        activeThemeType="Mattermost"
+        allowCustomThemes={true}
+        allowedThemes={
+          Array [
+            Object {
+              "awayIndicator": "#ffbc42",
+              "buttonBg": "#166de0",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3d3c40",
+              "codeTheme": "github",
+              "colorScheme": "light",
+              "dndIndicator": "#f74343",
+              "errorTextColor": "#fd5960",
+              "key": "default",
+              "linkColor": "#2389d7",
+              "mentionBg": "#ffffff",
+              "mentionBj": "#ffffff",
+              "mentionColor": "#145dbf",
+              "mentionHighlightBg": "#ffe577",
+              "mentionHighlightLink": "#166de0",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#06d6a0",
+              "sidebarBg": "#145dbf",
+              "sidebarHeaderBg": "#1153ab",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4578bf",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost",
+            },
+            Object {
+              "awayIndicator": "#dcbd4e",
+              "buttonBg": "#1dacfc",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#f2f4f8",
+              "centerChannelColor": "#333333",
+              "codeTheme": "github",
+              "colorScheme": "light",
+              "dndIndicator": "#ff6a6a",
+              "errorTextColor": "#a94442",
+              "key": "organization",
+              "linkColor": "#2f81b7",
+              "mentionBg": "#fbfbfb",
+              "mentionBj": "#fbfbfb",
+              "mentionColor": "#2071f7",
+              "mentionHighlightBg": "#f3e197",
+              "mentionHighlightLink": "#2f81b7",
+              "newMessageSeparator": "#ff8800",
+              "onlineIndicator": "#7dbe00",
+              "sidebarBg": "#2071a7",
+              "sidebarHeaderBg": "#2f81b7",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#7ab0d6",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#136197",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Organization",
+            },
+          ]
+        }
+        customThemeAvailable={false}
+        headerDefaultMessage="Choose a light theme"
+        headerId="user.settings.display.theme.chooseLight"
+        isLandscape={false}
+        isTablet={false}
+        onSelect={[Function]}
+        testID="light_themes"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "colorScheme": "light",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+      />
+      <ThemeSection
+        activeThemeType="Windows Dark"
+        allowCustomThemes={true}
+        allowedThemes={
+          Array [
+            Object {
+              "awayIndicator": "#c1b966",
+              "buttonBg": "#4cbba4",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#2f3e4e",
+              "centerChannelColor": "#dddddd",
+              "codeTheme": "solarized-dark",
+              "colorScheme": "dark",
+              "dndIndicator": "#e81023",
+              "errorTextColor": "#ff6461",
+              "key": "mattermostDark",
+              "linkColor": "#a4ffeb",
+              "mentionBg": "#b74a4a",
+              "mentionBj": "#b74a4a",
+              "mentionColor": "#ffffff",
+              "mentionHighlightBg": "#984063",
+              "mentionHighlightLink": "#a4ffeb",
+              "newMessageSeparator": "#5de5da",
+              "onlineIndicator": "#65dcc8",
+              "sidebarBg": "#1b2c3e",
+              "sidebarHeaderBg": "#1b2c3e",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#66b9a7",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#4a5664",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Mattermost Dark",
+            },
+            Object {
+              "awayIndicator": "#c1b966",
+              "buttonBg": "#0177e7",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#1f1f1f",
+              "centerChannelColor": "#dddddd",
+              "codeTheme": "monokai",
+              "colorScheme": "dark",
+              "dndIndicator": "#e81023",
+              "errorTextColor": "#ff6461",
+              "key": "windows10",
+              "linkColor": "#0d93ff",
+              "mentionBg": "#0177e7",
+              "mentionBj": "#0177e7",
+              "mentionColor": "#ffffff",
+              "mentionHighlightBg": "#784098",
+              "mentionHighlightLink": "#a4ffeb",
+              "newMessageSeparator": "#cc992d",
+              "onlineIndicator": "#399fff",
+              "sidebarBg": "#171717",
+              "sidebarHeaderBg": "#1f1f1f",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#196caf",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#302e30",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Windows Dark",
+            },
+          ]
+        }
+        customThemeAvailable={false}
+        headerDefaultMessage="Choose a dark theme"
+        headerId="user.settings.display.theme.chooseDark"
+        isLandscape={false}
+        isTablet={false}
+        onSelect={[Function]}
+        testID="dark_themes"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "colorScheme": "light",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+      />
+    </React.Fragment>
+  </ScrollView>
+</RNCSafeAreaView>
+`;

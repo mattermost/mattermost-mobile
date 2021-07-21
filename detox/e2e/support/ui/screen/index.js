@@ -35,6 +35,7 @@ import SearchResultPostScreen from './search_result_post';
 import SelectServerScreen from './select_server';
 import SelectTeamScreen from './select_team';
 import TableScreen from './table';
+import ThemeSettingsScreen from './theme_settings';
 import ThreadScreen from './thread';
 import UserProfileScreen from './user_profile';
 
@@ -73,6 +74,7 @@ export {
     SelectServerScreen,
     SelectTeamScreen,
     TableScreen,
+    ThemeSettingsScreen,
     ThreadScreen,
     UserProfileScreen,
 };

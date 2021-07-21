@@ -68,6 +68,39 @@ export const apiSaveTeamsOrderPreference = (userId, orderedTeamIds = []) => {
 };
 
 /**
+ * Delete the user's theme preferences.
+ * @param {string} userId - the user ID
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiDeleteThemePreferences = async (userId) => {
+    try {
+        const preferences = await client.get(`/api/v4/users/${userId}/preferences`);
+        const deleteResult = await client.post(
+            `/api/v4/users/${userId}/preferences/delete`,
+            preferences.data.filter((pref) => ['disable_theme_sync', 'theme', 'theme_dark'].includes(pref.category)),
+        );
+
+        return {status: deleteResult.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Save the user's theme preference.
+ * @param {string} userId - the user ID
+ * @param {string} teamId - the team ID
+ * @param {Object} theme - the theme object
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiSaveTheme = async (userId, teamId, theme) => apiSaveUserPreferences(userId, [{
+    user_id: userId,
+    category: 'theme',
+    name: teamId,
+    value: JSON.stringify(theme),
+}]);
+
+/**
  * Save the user's preferences.
  * See https://api.mattermost.com/#operation/UpdatePreferences
  * @param {string} userId - the user ID
@@ -91,6 +124,8 @@ export const Preference = {
     apiSaveFavoriteChannelPreference,
     apiSaveTeammateNameDisplayPreference,
     apiSaveTeamsOrderPreference,
+    apiDeleteThemePreferences,
+    apiSaveTheme,
     apiSaveUserPreferences,
 };
 

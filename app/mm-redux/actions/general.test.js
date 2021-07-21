@@ -234,4 +234,16 @@ describe('Actions.General', () => {
             assert.equal(nonexistingURL, 'http://nonexisting.url');
         });
     });
+
+    it('initOsColorScheme', () => {
+        assert.strictEqual(store.getState().entities.general.osColorScheme, 'light');
+        store.dispatch(Actions.initOsColorScheme('dark'));
+        assert.strictEqual(store.getState().entities.general.osColorScheme, 'dark');
+    });
+
+    it('changeOsColorScheme', () => {
+        assert.strictEqual(store.getState().entities.general.osColorScheme, 'light');
+        store.dispatch(Actions.changeOsColorScheme('dark'));
+        assert.strictEqual(store.getState().entities.general.osColorScheme, 'dark');
+    });
 });

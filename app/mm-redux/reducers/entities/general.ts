@@ -6,6 +6,7 @@ import {combineReducers} from 'redux';
 import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Config} from '@mm-redux/types/config';
+import {OsColorSchemeName} from '@mm-redux/types/general';
 
 function config(state: Partial<Config> = {}, action: GenericAction) {
     switch (action.type) {
@@ -95,6 +96,16 @@ function serverVersion(state = '', action: GenericAction) {
     }
 }
 
+function osColorScheme(state: OsColorSchemeName = 'light', action:GenericAction) {
+    switch (action.type) {
+    case GeneralTypes.OS_COLOR_SCHEME_INIT:
+    case GeneralTypes.OS_COLOR_SCHEME_CHANGED:
+        return action.data;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     appState,
     credentials,
@@ -104,4 +115,5 @@ export default combineReducers({
     license,
     serverVersion,
     timezones,
+    osColorScheme,
 });

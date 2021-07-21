@@ -66,6 +66,7 @@ const Reactions = ({
         return null;
     }
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const pressed = useRef(false);
     const styles = getStyleSheet(theme);
 

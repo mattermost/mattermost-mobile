@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Linking} from 'react-native';
+import {Appearance, Linking} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 
@@ -15,6 +15,7 @@ import {setupPermanentSidebar} from '@init/device';
 import emmProvider from '@init/emm_provider';
 import '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
+import {initOsColorScheme} from '@mm-redux/actions/general';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {registerScreens} from '@screens';
 import configureStore from '@store';
@@ -56,6 +57,8 @@ const launchApp = (credentials) => {
                 store.dispatch(setDeepLinkURL(url));
             }
         });
+
+        store.dispatch(initOsColorScheme(Appearance.getColorScheme()));
 
         if (credentials) {
             const {previousVersion} = store.getState().app;

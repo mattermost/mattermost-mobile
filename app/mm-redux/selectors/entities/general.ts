@@ -3,6 +3,7 @@
 import {createSelector} from 'reselect';
 
 import {Config, FeatureFlags} from '@mm-redux/types/config';
+import {OsColorSchemeName} from '@mm-redux/types/general';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
@@ -82,4 +83,12 @@ export const getAutolinkedUrlSchemes: (a: GlobalState) => string[] = createSelec
 
 export const getServerVersion = (state: GlobalState): string => {
     return state.entities.general.serverVersion;
+};
+
+export const getOsColorScheme = (state: GlobalState): OsColorSchemeName => {
+    return state.entities.general.osColorScheme;
+};
+
+export const getAllowCustomThemes = (state: GlobalState): boolean => {
+    return state.entities.general.config.AllowCustomThemes === 'true';
 };

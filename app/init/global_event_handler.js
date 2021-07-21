@@ -4,7 +4,7 @@
 import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from '@react-native-cookies/cookies';
 
-import {AppState, Dimensions, Keyboard, Linking, Platform} from 'react-native';
+import {AppState, Dimensions, Keyboard, Linking, Platform, Appearance} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
 
@@ -22,7 +22,7 @@ import {analytics} from '@init/analytics.ts';
 import {setupPermanentSidebar} from '@init/device';
 import PushNotifications from '@init/push_notifications';
 import mattermostManaged from '@mattermost-managed';
-import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {setAppState, changeOsColorScheme, setServerVersion} from '@mm-redux/actions/general';
 import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {General} from '@mm-redux/constants';
@@ -60,6 +60,7 @@ class GlobalEventHandler {
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
         Linking.addEventListener('url', this.onDeepLink);
+        Appearance.addChangeListener(({colorScheme}) => this.onColorSchemeChanged(colorScheme));
     }
 
     appActive = async () => {
@@ -277,6 +278,7 @@ class GlobalEventHandler {
                     general: {
                         ...initialState.entities.general,
                         deviceToken: state.entities.general.deviceToken,
+                        osColorScheme: state.entities.general.osColorScheme,
                     },
                 },
                 views: {
@@ -376,6 +378,10 @@ class GlobalEventHandler {
             }
         }
     };
+
+    onColorSchemeChanged = (colorScheme) => {
+        Store.redux.dispatch(changeOsColorScheme(colorScheme));
+    }
 }
 
 export default new GlobalEventHandler();

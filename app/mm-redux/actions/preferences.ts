@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {Client4} from '@client/rest';
 import {PreferenceTypes} from '@mm-redux/action_types';
-import {getMyPreferences as getMyPreferencesSelector, makeGetCategory} from '@mm-redux/selectors/entities/preferences';
+import {getMyPreferences as getMyPreferencesSelector} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {GetStateFunc, DispatchFunc, ActionFunc} from '@mm-redux/types/actions';
 import {PreferenceType} from '@mm-redux/types/preferences';
@@ -115,39 +115,6 @@ export function savePreferences(userId: string, preferences: Array<PreferenceTyp
                 data: preferences,
             });
             return {error};
-        }
-
-        return {data: true};
-    };
-}
-
-export function saveTheme(teamId: string, theme: {}): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const state = getState();
-        const currentUserId = getCurrentUserId(state);
-        const preference: PreferenceType = {
-            user_id: currentUserId,
-            category: Preferences.CATEGORY_THEME,
-            name: teamId || '',
-            value: JSON.stringify(theme),
-        };
-
-        await savePreferences(currentUserId, [preference])(dispatch);
-        return {data: true};
-    };
-}
-
-export function deleteTeamSpecificThemes(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const getCategory: (state: any, preferenceId: string) => Array<PreferenceType> = makeGetCategory();
-
-        const state = getState();
-        const themePreferences: Array<PreferenceType> = getCategory(state, Preferences.CATEGORY_THEME);
-        const currentUserId = getCurrentUserId(state);
-
-        const toDelete = themePreferences.filter((pref) => pref.name !== '');
-        if (toDelete.length > 0) {
-            await deletePreferences(currentUserId, toDelete)(dispatch, getState);
         }
 
         return {data: true};

@@ -3,6 +3,7 @@
 
 import {render} from '@testing-library/react-native';
 
+import PropTypes from 'prop-types';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Provider} from 'react-redux';
@@ -39,3 +40,15 @@ export function renderWithReduxIntl(component, store = defaultStore, locale = 'e
         </Provider>,
     );
 }
+
+export const ReduxIntlProvider = ({children}) => (
+    <Provider store={defaultStore}>
+        <IntlProvider locale='en'>
+            {children}
+        </IntlProvider>
+    </Provider>
+);
+
+ReduxIntlProvider.propTypes = {
+    children: PropTypes.node.isRequired,
+};

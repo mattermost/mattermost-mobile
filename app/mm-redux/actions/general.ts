@@ -7,7 +7,7 @@ import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {GetStateFunc, DispatchFunc, ActionFunc, batchActions} from '@mm-redux/types/actions';
 import {logLevel} from '@mm-redux/types/client4';
 import {TeamDataRetentionPolicy, ChannelDataRetentionPolicy} from '@mm-redux/types/data_retention';
-import {GeneralState} from '@mm-redux/types/general';
+import {GeneralState, OsColorSchemeName} from '@mm-redux/types/general';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {logError} from './errors';
@@ -211,6 +211,20 @@ export function getRedirectLocation(url: string): ActionFunc {
     };
 }
 
+export function initOsColorScheme(colorScheme: OsColorSchemeName) {
+    return {
+        type: GeneralTypes.OS_COLOR_SCHEME_INIT,
+        data: colorScheme,
+    };
+}
+
+export function changeOsColorScheme(colorScheme: OsColorSchemeName) {
+    return {
+        type: GeneralTypes.OS_COLOR_SCHEME_CHANGED,
+        data: colorScheme,
+    };
+}
+
 export default {
     getPing,
     getClientConfig,
@@ -223,4 +237,6 @@ export default {
     setServerVersion,
     setUrl,
     getRedirectLocation,
+    initOsColorScheme,
+    changeOsColorScheme,
 };

@@ -20,6 +20,7 @@ const state = {
             deviceToken: '',
             license: {},
             serverVersion: '',
+            osColorScheme: 'light',
         },
         users: {
             currentUserId: '',

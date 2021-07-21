@@ -171,6 +171,34 @@ describe('Selectors.Preferences', () => {
         );
     });
 
+    it.each([
+        [{}, {}, false],
+        [{currentTeamId: '1234'}, {}, false],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'true'}}, true],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'false'}}, false],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '1234')]: {value: 'true'}}, true],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '1234')]: {value: 'false'}}, false],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, 'otherTeam')]: {value: 'true'}}, false],
+        [
+            {currentTeamId: '1234'},
+            {
+                [getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'false'},
+                [getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '1234')]: {value: 'true'},
+            },
+            true,
+        ],
+    ])('get disable theme sync', (teams, myPref, expected) => {
+        assert.strictEqual(
+            Selectors.getDisableThemeSync({
+                entities: {
+                    teams,
+                    preferences: {myPreferences: myPref},
+                },
+            }),
+            expected,
+        );
+    });
+
     describe('get theme', () => {
         it('default theme', () => {
             const currentTeamId = '1234';
@@ -530,6 +558,87 @@ describe('Selectors.Preferences', () => {
                     },
                 },
             }).codeTheme, Preferences.THEMES.default.codeTheme);
+        });
+
+        it.each([
+            [{}, {}],
+            [
+                {currentTeamId: '1234'},
+                {
+                    [getPreferenceKey(Preferences.CATEGORY_THEME, '1234')]: {value: JSON.stringify(Preferences.THEMES.organization)},
+                    [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, 'otherTeam')]: {value: JSON.stringify(Preferences.THEMES.mattermostDark)},
+                },
+            ],
+        ])('returns default dark theme when system appearance is dark', (teams, myPref) => {
+            assert.strictEqual(
+                Selectors.getTheme({
+                    entities: {
+                        general: {
+                            config: {},
+                            osColorScheme: 'dark',
+                        },
+                        teams,
+                        preferences: {myPreferences: myPref},
+                    },
+                }).type,
+                Preferences.THEMES.windows10.type,
+            );
+        });
+
+        it('returns global dark theme when team theme is not defined', () => {
+            assert.strictEqual(
+                Selectors.getTheme({
+                    entities: {
+                        general: {
+                            config: {},
+                            osColorScheme: 'dark',
+                        },
+                        teams: {currentTeamId: '1234'},
+                        preferences: {myPreferences: {
+                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, '')]: {value: JSON.stringify(Preferences.THEMES.mattermostDark)},
+                        }},
+                    },
+                }).type,
+                Preferences.THEMES.mattermostDark.type,
+            );
+        });
+
+        it('returns custom team-specific dark theme', () => {
+            const currentTeamId = '1234';
+            assert.strictEqual(
+                Selectors.getTheme({
+                    entities: {
+                        general: {
+                            config: {},
+                            osColorScheme: 'dark',
+                        },
+                        teams: {currentTeamId},
+                        preferences: {myPreferences: {
+                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, currentTeamId)]: {value: JSON.stringify(Preferences.THEMES.mattermostDark)},
+                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, '')]: {value: JSON.stringify({type: 'custom'})},
+                        }},
+                    },
+                }).type,
+                Preferences.THEMES.mattermostDark.type,
+            );
+        });
+
+        it('returns light theme when OS appearance is dark and sync wit OS is disabled', () => {
+            assert.strictEqual(
+                Selectors.getTheme({
+                    entities: {
+                        general: {
+                            config: {},
+                            osColorScheme: 'dark',
+                        },
+                        teams: {},
+                        preferences: {myPreferences: {
+                            [getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'true'},
+                        }},
+                    },
+                }).type,
+                Preferences.THEMES.default.type,
+            );
         });
     });
 

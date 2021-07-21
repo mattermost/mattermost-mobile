@@ -173,6 +173,7 @@ export default class ForgotPassword extends PureComponent {
 const style = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: 'white',
     },
     innerContainer: {
         alignItems: 'center',

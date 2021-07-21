@@ -21,6 +21,7 @@ function section(props) {
         headerDefaultMessage,
         headerId,
         headerValues,
+        headerStyle,
         theme,
     } = props;
 
@@ -33,7 +34,7 @@ function section(props) {
                     id={headerId}
                     defaultMessage={headerDefaultMessage}
                     values={headerValues}
-                    style={style.header}
+                    style={{...style.header, ...headerStyle}}
                 />
             }
             <View style={style.items}>
@@ -61,6 +62,7 @@ section.propTypes = {
     headerDefaultMessage: PropTypes.string,
     headerId: PropTypes.string,
     headerValues: PropTypes.object,
+    headerStyle: PropTypes.object,
     theme: PropTypes.object.isRequired,
 };
 

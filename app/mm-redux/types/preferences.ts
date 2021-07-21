@@ -1,5 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {OsColorSchemeName} from '@mm-redux/types/general';
+
 export type PreferenceType = {
     category: string;
     name: string;
@@ -14,6 +16,7 @@ export type PreferencesType = {
 export type Theme = {
     [key: string]: string | undefined;
     type?: string;
+    colorScheme?: OsColorSchemeName;
     sidebarBg: string;
     sidebarText: string;
     sidebarUnreadText: string;

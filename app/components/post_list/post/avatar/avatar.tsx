@@ -50,6 +50,7 @@ const Avatar = ({enablePostIconOverride, intl, isBoot, pendingPostStyle, post, t
         return (<SystemAvatar theme={theme}/>);
     }
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const closeButton = useRef<ImageSource>();
     const fromWebHook = post.props?.from_webhook === 'true';
     const iconOverride = enablePostIconOverride && post.props?.use_user_icon !== 'true';

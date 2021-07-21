@@ -20,9 +20,12 @@ export type GeneralState = {
     license: any;
     serverVersion: string;
     timezones: Array<string>;
+    osColorScheme: OsColorSchemeName;
 };
 
 export type FormattedMsg = {
     id: string;
     defaultMessage: string;
 };
+
+export type OsColorSchemeName = 'light' | 'dark'
