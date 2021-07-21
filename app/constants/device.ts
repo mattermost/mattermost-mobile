@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions, Platform} from 'react-native';
+import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 import DeviceInfo from 'react-native-device-info';
 
