@@ -3,6 +3,7 @@
 
 import {connect} from 'react-redux';
 
+import {getMissingProfilesByIds, getMissingProfilesByUsernames} from '@mm-redux/actions/users';
 import {Preferences} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUser, getUsernamesByUserId} from '@mm-redux/selectors/entities/users';
@@ -45,4 +46,9 @@ export function mapStateToProps() {
     };
 }
 
-export default connect(mapStateToProps)(CombinedUserActivity);
+const mapDispatchToProps = {
+    getMissingProfilesByIds,
+    getMissingProfilesByUsernames,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CombinedUserActivity);
