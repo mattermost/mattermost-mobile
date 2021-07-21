@@ -5,7 +5,6 @@ import React from 'react';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import ProfilePicture from '@components/profile_picture';
 import General from '@constants/general';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -19,11 +18,9 @@ type ChannelIconProps = {
     membersCount?: number;
     shared: boolean;
     size?: number;
-    statusStyle?: StyleProp<ViewStyle>;
     style?: StyleProp<ViewStyle>;
     testID?: string;
     type: string;
-    userId?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -85,11 +82,9 @@ const ChannelIcon = ({
     membersCount = 0,
     shared,
     size = 12,
-    statusStyle,
     style,
     testID,
     type,
-    userId,
 }: ChannelIconProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -178,15 +173,7 @@ const ChannelIcon = ({
             </View>
         );
     } else if (type === General.DM_CHANNEL) {
-        icon = (
-            <ProfilePicture
-                size={size}
-                statusSize={12}
-                userId={userId}
-                testID={testID}
-                statusStyle={statusStyle}
-            />
-        );
+        //todo: Implement ProfilePicture component
     }
 
     return (
