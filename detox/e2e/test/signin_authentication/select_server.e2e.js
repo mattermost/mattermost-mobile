@@ -22,10 +22,6 @@ describe('Select Server', () => {
         serverUrlInput,
     } = SelectServerScreen;
 
-    beforeEach(async () => {
-        await device.reloadReactNative();
-    });
-
     it('should show Select server screen on initial load', async () => {
         // * Verify basic elements on Select Server screen
         await SelectServerScreen.toBeVisible();
@@ -38,7 +34,7 @@ describe('Select Server', () => {
         const screen = await SelectServerScreen.toBeVisible();
 
         // # Enter an empty server URL
-        await serverUrlInput.typeText(' ');
+        await serverUrlInput.clearText();
 
         // # Tap anywhere to hide keyboard
         await screen.tap({x: 5, y: 10});
@@ -55,11 +51,12 @@ describe('Select Server', () => {
     });
 
     it('should show error on invalid server URL', async () => {
+        await device.reloadReactNative();
         const screen = await SelectServerScreen.toBeVisible();
 
         // # Enter invalid server URL
         await serverUrlInput.clearText();
-        await serverUrlInput.typeText(serverUrl.substring(0, serverUrl.length - 1));
+        await serverUrlInput.replaceText(serverUrl.substring(0, serverUrl.length - 1));
 
         // # Tap anywhere to hide keyboard
         await screen.tap({x: 5, y: 10});
@@ -79,6 +76,7 @@ describe('Select Server', () => {
         await SelectServerScreen.toBeVisible();
 
         // # Enter valid server URL
+        await serverUrlInput.clearText();
         await serverUrlInput.replaceText(serverUrl);
 
         // # Tap connect button
@@ -86,6 +84,7 @@ describe('Select Server', () => {
 
         // * Verify that it goes into Login screen
         await LoginScreen.toBeVisible();
+        await LoginScreen.back();
     });
 
     it('MM-T2348 should show untrusted certificate prompt when connecting to a server with invalid SSL or invalid host', async () => {
@@ -94,7 +93,7 @@ describe('Select Server', () => {
         // # Attempt to connect to invalid SSL
         const invalidSsl = 'expired.badssl.com';
         await serverUrlInput.clearText();
-        await serverUrlInput.typeText(invalidSsl);
+        await serverUrlInput.replaceText(invalidSsl);
         await connectButton.tap();
 
         // * Verify untrusted certificate alert is displayed with invalid SSL
@@ -105,7 +104,7 @@ describe('Select Server', () => {
         // # Attempt to connect to invalid host
         const invalidHost = 'wrong.host.badssl.com';
         await serverUrlInput.clearText();
-        await serverUrlInput.typeText(invalidHost);
+        await serverUrlInput.replaceText(invalidHost);
         await connectButton.tap();
 
         // * Verify untrusted certificate alert is displayed with invalid host
