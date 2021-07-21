@@ -11,7 +11,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import StatusBar from '@components/status_bar';
 import {General} from '@constants';
 import ViewTypes from '@constants/view';
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {unsupportedServer} from '@utils/supported_server/supported_server';
@@ -26,7 +26,7 @@ import {useTheme} from '@context/theme';
 
 const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
 
-const Channel = ({channelRecord: channel, userRecord: user, configRecord: config, currentUserIdRecord}: ChannelProps) => {
+const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
@@ -69,7 +69,7 @@ const Channel = ({channelRecord: channel, userRecord: user, configRecord: config
         >
             <StatusBar theme={theme}/>
             <ChannelNavBar
-                currentUserId={currentUserIdRecord.value}
+                currentUserId={currentUserId.value}
                 channel={channel}
                 onPress={() => null}
                 config={config.value}
@@ -88,26 +88,26 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
 // TODO: Move as helper methods
 type WithDatabaseArgs = { database: Database }
 type WithChannelAndThemeArgs = WithDatabaseArgs & {
-    currentChannelIdRecord: SystemModel;
-    currentUserIdRecord: SystemModel;
+    currentChannelId: SystemModel;
+    currentUserId: SystemModel;
 }
 type ChannelProps = WithDatabaseArgs & {
-    channelRecord: ChannelModel;
-    configRecord: SystemModel;
+    channel: ChannelModel;
+    config: SystemModel;
     launchType: LaunchType;
-    userRecord: UserModel;
-    currentUserIdRecord: SystemModel;
+    user: UserModel;
+    currentUserId: SystemModel;
 };
 
 export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentChannelIdRecord: database.collections.get(SYSTEM).findAndObserve('currentChannelId'),
-    currentUserIdRecord: database.collections.get(SYSTEM).findAndObserve('currentUserId'),
-    configRecord: database.collections.get(SYSTEM).findAndObserve('config'),
+    currentChannelId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID),
+    currentUserId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+    config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
 }));
 
-const withChannelAndTheme = withObservables(['currentChannelIdRecord'], ({currentChannelIdRecord, currentUserIdRecord, database}: WithChannelAndThemeArgs) => ({
-    channelRecord: database.collections.get(CHANNEL).findAndObserve(currentChannelIdRecord.value),
-    userRecord: database.collections.get(USER).findAndObserve(currentUserIdRecord.value),
+const withChannelAndTheme = withObservables(['currentChannelId'], ({currentChannelId, currentUserId, database}: WithChannelAndThemeArgs) => ({
+    channel: database.collections.get(CHANNEL).findAndObserve(currentChannelId.value),
+    user: database.collections.get(USER).findAndObserve(currentUserId.value),
 }));
 
 export default withDatabase(withSystemIds(withChannelAndTheme(Channel)));

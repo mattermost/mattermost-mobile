@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
-import {DeviceEventEmitter, Dimensions, LayoutChangeEvent, Platform, View} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
+import React from 'react';
+import {DeviceEventEmitter, LayoutChangeEvent, Platform, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
@@ -29,7 +28,8 @@ const ChannelNavBar = ({currentUserId, channel, onPress}: ChannelNavBar) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const isLandscape = DEVICE.IS_LANDSCAPE;
+    const dimensions = useWindowDimensions();
+    const isLandscape = dimensions.width > dimensions.height;
 
     let height = 0;
     let canHaveSubtitle = true;

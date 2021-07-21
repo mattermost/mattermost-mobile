@@ -15,8 +15,6 @@ const device = keyMirror({
     STATUSBAR_HEIGHT_CHANGED: null,
 });
 
-const dimensions = Dimensions.get('window');
-
 export default {
     ...device,
     DOCUMENTS_PATH: `${FileSystem.cacheDirectory}/Documents`,
@@ -28,5 +26,4 @@ export default {
     PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
     TABLET_WIDTH: 250,
     VIDEOS_PATH: `${FileSystem.cacheDirectory}/Videos`,
-    IS_LANDSCAPE: dimensions.width >= dimensions.height,
 };

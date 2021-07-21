@@ -27,8 +27,7 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
 
     const style = getStyle(theme);
     const channelType = channel.type;
-    const currentChannelName = channel ? channel.displayName : '';
-    const displayName = channel.displayName;
+    const displayName = channel ? channel.displayName : '';
     const hasGuests = channelInfo[0]?.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings[0]?.notifyProps?.mark_unread === 'mention';
@@ -75,15 +74,13 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
         } else if (channelType === General.GM_CHANNEL) {
             messageId = t('channel.hasGuests');
             defaultMessage = 'This group message has guests';
-        } else if (
-            channelType === General.OPEN_CHANNEL ||
-            channelType === General.PRIVATE_CHANNEL
-        ) {
+        } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
             messageId = t('channel.channelHasGuests');
             defaultMessage = 'This channel has guests';
         } else {
             return null;
         }
+
         return (
             <View style={style.guestsWrapper}>
                 <FormattedText
@@ -116,12 +113,10 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
     };
 
     const renderChannelDisplayName = () => {
-        const channelDisplayName = displayName || currentChannelName;
-
         if (isSelfDMChannel) {
             const messageId = t('channel_header.directchannel.you');
             const defaultMessage = '{displayname} (you)';
-            const values = {displayname: channelDisplayName};
+            const values = {displayname: displayName};
 
             return (
                 <FormattedText
@@ -132,7 +127,7 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
             );
         }
 
-        return channelDisplayName;
+        return displayName;
     };
 
     const renderMutedIcon = () => {
@@ -258,7 +253,7 @@ type ChannelTitleProps = ChannelTitleInputProps & {
 };
 
 const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> = withDatabase(
-    withObservables(['channel', 'teammateId', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
+    withObservables(['channel', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
         return {
             channelInfo: channel.info.observe(),
             channelSettings: channel.settings.observe(),
