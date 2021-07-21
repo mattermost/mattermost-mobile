@@ -120,7 +120,11 @@ class FilteredList extends Component {
             return channels;
         }
 
-        const text = term.toLowerCase();
+        let text = term.toLowerCase();
+        if (text.startsWith('@')) {
+            text = text.substring(1);
+        }
+
         return channels.filter((c) => {
             const fieldsToCheck = ['display_name', 'username', 'email', 'full_name', 'nickname'];
 
@@ -179,7 +183,7 @@ class FilteredList extends Component {
     };
 
     buildCurrentDMSForSearch = (props, term) => {
-        const {channels, teammateNameDisplay, profiles, statuses, pastDirectMessages, groupChannelMemberDetails} = props;
+        const {channels, currentUserId, teammateNameDisplay, profiles, pastDirectMessages, groupChannelMemberDetails} = props;
         const {favoriteChannels} = channels;
 
         const favoriteDms = favoriteChannels.filter((c) => {
@@ -206,7 +210,6 @@ class FilteredList extends Component {
 
             return {
                 id: u.id,
-                status: statuses[u.id],
                 display_name: displayName,
                 username: u.username,
                 email: u.email,
@@ -215,10 +218,7 @@ class FilteredList extends Component {
                 nickname: u.nickname,
                 fullname: `${u.first_name} ${u.last_name}`,
                 delete_at: u.delete_at,
-                isBot: u.is_bot,
-
-                // need name key for DM's as we use it for sortChannelsByDisplayName with same display_name
-                name: displayName,
+                name: `${currentUserId}__${u.id}`,
             };
         });
 
@@ -233,7 +233,7 @@ class FilteredList extends Component {
     }
 
     buildMembersForSearch = (props, term) => {
-        const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, statuses, pastDirectMessages, restrictDms} = props;
+        const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, pastDirectMessages, restrictDms} = props;
         const {favoriteChannels, unreadChannels} = channels;
 
         const favoriteAndUnreadDms = [...favoriteChannels, ...unreadChannels].filter((c) => {
@@ -251,17 +251,15 @@ class FilteredList extends Component {
 
             return {
                 id: u.id,
-                status: statuses[u.id],
                 display_name: displayName,
                 username: u.username,
                 email: u.email,
-                name: displayName,
+                name: `${currentUserId}__${u.id}`,
                 type: General.DM_CHANNEL,
                 fake: true,
                 nickname: u.nickname,
                 fullname: `${u.first_name} ${u.last_name}`,
                 delete_at: u.delete_at,
-                isBot: u.is_bot,
             };
         });
 
@@ -383,7 +381,7 @@ class FilteredList extends Component {
             <View style={styles.container}>
                 <SectionList
                     sections={dataSource}
-                    removeClippedSubviews={true}
+                    removeClippedSubviews={false}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}

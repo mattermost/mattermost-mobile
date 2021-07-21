@@ -14,6 +14,7 @@ import initialState from '@store/initial_state';
 import {
     cleanUpPostsInChannel,
     cleanUpState,
+    cleanUpThreadsInTeam,
     getAllFromPostsInChannel,
 } from './helpers';
 import messageRetention from './message_retention';
@@ -37,6 +38,12 @@ describe('messageRetention', () => {
                         channels: {
                         },
                         posts: {
+                        },
+                        general: {
+                            config: {},
+                        },
+                        preferences: {
+                            myPreferences: {},
                         },
                     },
                     views: {
@@ -86,7 +93,13 @@ describe('messageRetention', () => {
         };
         const entities = {
             channels: {},
+            general: {
+                config: {},
+            },
             posts: {},
+            preferences: {
+                myPreferences: {},
+            },
         };
         const views = {
             team: {
@@ -189,9 +202,14 @@ describe('cleanUpState', () => {
                     fileIdsByPostId: {},
                 },
                 general: {
-                    dataRetentionPolicy: {
-                        message_deletion_enabled: true,
-                        message_retention_cutoff: 1000,
+                    config: {},
+                    dataRetention: {
+                        policies: {
+                            global: {
+                                message_deletion_enabled: true,
+                                message_retention_cutoff: 1000,
+                            },
+                        },
                     },
                 },
                 posts: {
@@ -206,6 +224,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
                 search: {
                     results: ['post1', 'post2'],
@@ -230,6 +251,122 @@ describe('cleanUpState', () => {
         expect(result.entities.search.flagged).toEqual(['post1', 'post2', 'post3']);
     });
 
+    test('should migrate dataRetentionPolicy key to granular data retention structure', () => {
+        const dataRetentionPolicy = {
+            file_deletion_enabled: false,
+            file_retention_cutoff: 0,
+            message_deletion_enabled: false,
+            message_retention_cutoff: 0,
+        };
+
+        const state = {
+            entities: {
+                general: {
+                    dataRetentionPolicy,
+                },
+            },
+        };
+
+        const result = cleanUpState(state);
+
+        expect(result.entities.general.dataRetentionPolicy).toBeUndefined();
+        expect(result.entities.general.dataRetention.policies.global).toEqual(dataRetentionPolicy);
+    });
+
+    test('should remove post because of granular data retention', () => {
+        const getCreateAtBeforeDays = (days) => {
+            const date = new Date();
+            date.setDate(date.getDate() - days);
+            return date.getTime();
+        };
+        const state = {
+            entities: {
+                channels: {
+                    currentChannelId: 'channel1',
+                    channelsInTeam: {
+                        team1: new Set(['team1_channel1', 'team1_channel2']),
+                        team2: new Set(['team2_channel1', 'team2_channel2']),
+                    },
+                },
+                files: {
+                    fileIdsByPostId: {},
+                },
+                general: {
+                    dataRetention: {
+                        policies: {
+                            teams: [{
+                                post_duration: 5,
+                                team_id: 'team1',
+                            }, {
+                                post_duration: 10,
+                                team_id: 'team2',
+                            }],
+                            channels: [{
+                                post_duration: 2,
+                                channel_id: 'team1_channel1',
+                            }],
+                        },
+                    },
+                },
+                posts: {
+                    posts: {
+
+                        // Team 1 - Channel 1, Channel Policy - 2 Days
+                        post1: {id: 'post1', channel_id: 'team1_channel1', create_at: getCreateAtBeforeDays(1)},
+                        post2: {id: 'post2', channel_id: 'team1_channel1', create_at: getCreateAtBeforeDays(3)}, // X
+
+                        // Team 1 - Channel 2, Team Policy - 5 Days
+                        post3: {id: 'post3', channel_id: 'team1_channel2', create_at: getCreateAtBeforeDays(3)},
+                        post4: {id: 'post4', channel_id: 'team1_channel2', create_at: getCreateAtBeforeDays(6)}, // X
+
+                        // Team 2, Channel 1 & 2, Team Policy - 10 Days
+                        post5: {id: 'post5', channel_id: 'team2_channel1', create_at: getCreateAtBeforeDays(9)},
+                        post6: {id: 'post6', channel_id: 'team2_channel2', create_at: getCreateAtBeforeDays(11)}, // X
+                    },
+                    postsInChannel: {
+                        team1_channel1: [
+                            {order: ['post1', 'post2'], recent: true},
+                        ],
+                        team1_channel2: [
+                            {order: ['post3', 'post4'], recent: true},
+                        ],
+                        team2_channel1: [
+                            {order: ['post5'], recent: true},
+                        ],
+                        team2_channel2: [
+                            {order: ['post6'], recent: true},
+                        ],
+                    },
+                    postsInThread: {},
+                    reactions: {},
+                },
+                search: {
+                    results: [],
+                    flagged: [],
+                },
+            },
+            views: {
+                team: {
+                    lastChannelForTeam: {
+                        team1: ['team1_channel1', 'team1_channel2'],
+                        team2: ['team2_channel1', 'team2_channel2'],
+                    },
+                },
+            },
+        };
+
+        const result = cleanUpState(state);
+
+        expect(result.entities.posts.posts.post1).toBeDefined();
+        expect(result.entities.posts.posts.post2).toBeUndefined();
+
+        expect(result.entities.posts.posts.post3).toBeDefined();
+        expect(result.entities.posts.posts.post4).toBeUndefined();
+
+        expect(result.entities.posts.posts.post5).toBeDefined();
+        expect(result.entities.posts.posts.post6).toBeUndefined();
+    });
+
     test('should keep failed pending post', () => {
         const state = {
             entities: {
@@ -238,6 +375,9 @@ describe('cleanUpState', () => {
                 },
                 files: {
                     fileIdsByPostId: {},
+                },
+                general: {
+                    config: {},
                 },
                 posts: {
                     pendingPostIds: ['pending'],
@@ -253,6 +393,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
             views: {
@@ -280,6 +423,9 @@ describe('cleanUpState', () => {
                 files: {
                     fileIdsByPostId: {},
                 },
+                general: {
+                    config: {},
+                },
                 posts: {
                     pendingPostIds: ['pending'],
                     posts: {
@@ -294,6 +440,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
             views: {
@@ -321,6 +470,9 @@ describe('cleanUpState', () => {
                 files: {
                     fileIdsByPostId: {},
                 },
+                general: {
+                    config: {},
+                },
                 posts: {
                     pendingPostIds: ['pending'],
                     posts: {
@@ -334,6 +486,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
             views: {
@@ -564,6 +719,41 @@ describe('cleanUpPostsInChannel', () => {
                 {order: ['a', 'b', 'c', 'd'], recent: true},
             ],
         });
+    });
+});
+
+describe.only('cleanUpThreadsInTeam', () => {
+    const threadsInTeam = {
+        team1: ['thread1', 'thread2', 'thread3'],
+        team2: ['thread3', 'thread4', 'thread5'],
+        team3: ['thread1', 'thread2', 'thread3', 'thread4'],
+    };
+    const threads = {
+        thread1: {id: 'thread1', last_reply_at: 100},
+        thread2: {id: 'thread2', last_reply_at: 99},
+        thread3: {id: 'thread3', last_reply_at: 98},
+        thread4: {id: 'thread4', last_reply_at: 97},
+        thread5: {id: 'thread5', last_reply_at: 96},
+        thread6: {id: 'thread6', last_reply_at: 95},
+    };
+
+    const {threads: nextThreads, threadsInTeam: nextThreadsInTeam} = cleanUpThreadsInTeam(threads, threadsInTeam, 'team3', 2);
+
+    test('should only keep limited threads per team', () => {
+        expect(nextThreadsInTeam.team1).toEqual(['thread1', 'thread2']);
+        expect(nextThreadsInTeam.team2).toEqual(['thread3', 'thread4']);
+        expect(nextThreads.thread1).toBeTruthy();
+        expect(nextThreads.thread5).toBeFalsy();
+    });
+
+    test('should not remove the thread if included in one team and not included in another', () => {
+        expect(nextThreadsInTeam.team1.indexOf('thread3')).toBe(-1);
+        expect(nextThreadsInTeam.team2.indexOf('thread3')).toBeGreaterThan(-1);
+        expect(nextThreads.thread3).toBeTruthy();
+    });
+
+    test('Should exclude passed teamId', () => {
+        expect(nextThreadsInTeam.team3).toEqual(threadsInTeam.team3);
     });
 });
 

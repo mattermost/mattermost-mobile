@@ -12,7 +12,6 @@ import SafeAreaView from '@components/safe_area_view';
 import StatusBar from '@components/status_bar';
 import DEVICE from '@constants/device';
 import {THREAD} from '@constants/screen';
-import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadBase from './thread_base';
@@ -53,11 +52,10 @@ export default class ThreadIOS extends ThreadBase {
                             renderFooter={this.renderFooter()}
                             indicateNewMessages={false}
                             postIds={postIds}
-                            lastPostIndex={getLastPostIndex(postIds)}
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}
-                            onPostPress={this.hideKeyboard}
                             location={THREAD}
+                            rootId={rootId}
                             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                         />
                     </Animated.View>

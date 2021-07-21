@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ProfilePicture from './profile_picture';
+
 class Autocomplete {
     testID = {
         atMentionItemPrefix: 'autocomplete.at_mention.item.',
+        atMentionItemProfilePicturePrefix: 'at_mention_item.profile_picture.',
         channelMentionItemPrefix: 'autocomplete.channel_mention.item.',
         autocomplete: 'autocomplete',
+        atMentionItemText: 'at_mention_item.text',
         atMentionSuggestionList: 'at_mention_suggestion.list',
         channelMentionSuggestionList: 'channel_mention_suggestion.list',
         dateSuggestion: 'autocomplete.date_suggestion',
@@ -21,7 +25,15 @@ class Autocomplete {
     slashSuggestionList = element(by.id(this.testID.slashSuggestionList));
 
     getAtMentionItem = (userId) => {
-        return element(by.id(`${this.testID.atMentionItemPrefix}${userId}`));
+        const atMentionItemMatcher = by.id(`${this.testID.atMentionItemPrefix}${userId}`);
+        const atMentionItemProfilePictureMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.atMentionItemProfilePicturePrefix, userId).withAncestor(atMentionItemMatcher);
+        const atMentionItemTextMatcher = by.id(this.testID.atMentionItemText).withAncestor(atMentionItemMatcher);
+
+        return {
+            atMentionItem: element(atMentionItemMatcher),
+            atMentionItemProfilePicture: element(atMentionItemProfilePictureMatcher),
+            atMentionItemText: element(atMentionItemTextMatcher),
+        };
     }
 
     getChannelMentionItem = (channelId) => {

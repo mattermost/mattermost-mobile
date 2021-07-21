@@ -8,7 +8,10 @@
 // *******************************************************************
 
 import {MainSidebar} from '@support/ui/component';
-import {ChannelScreen} from '@support/ui/screen';
+import {
+    ChannelScreen,
+    MoreDirectMessagesScreen,
+} from '@support/ui/screen';
 import {
     Channel,
     Post,
@@ -17,8 +20,27 @@ import {
     Team,
     User,
 } from '@support/server_api';
+import {getRandomId} from '@support/utils';
 
 describe('Channels', () => {
+    const searchTerm = getRandomId();
+    const {
+        channelNavBarTitle,
+        closeMainSidebar,
+        goToChannel,
+        openMainSidebar,
+    } = ChannelScreen;
+    const {
+        getUserAtIndex,
+        startButton,
+    } = MoreDirectMessagesScreen;
+    const {
+        filteredChannelsList,
+        getFilteredChannelByDisplayName,
+        hasChannelDisplayNameAtIndex,
+        hasFilteredChannelDisplayNameAtIndex,
+        searchInput,
+    } = MainSidebar;
     let testMessage;
     let unreadChannel;
     let favoriteChannel;
@@ -28,21 +50,9 @@ describe('Channels', () => {
     let directMessageChannel;
     let dmOtherUser;
     let nonDmOtherUser;
-    const {
-        channelNavBarTitle,
-        closeMainSidebar,
-        goToChannel,
-        openMainSidebar,
-    } = ChannelScreen;
-    const {
-        getFilteredChannelByDisplayName,
-        hasChannelDisplayNameAtIndex,
-        hasFilteredChannelDisplayNameAtIndex,
-        searchInput,
-    } = MainSidebar;
 
     beforeAll(async () => {
-        const {user, channel, team} = await Setup.apiInit();
+        const {user, channel, team} = await Setup.apiInit({channelOptions: {prefix: `channel-${searchTerm}`}});
         unreadChannel = channel;
         testMessage = `Mention @${user.username}`;
         await Post.apiCreatePost({
@@ -50,19 +60,19 @@ describe('Channels', () => {
             message: testMessage,
         });
 
-        ({channel: favoriteChannel} = await Channel.apiCreateChannel({type: 'O', prefix: '4-favorite-channel', teamId: team.id}));
+        ({channel: favoriteChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `4-favorite-${searchTerm}`, teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, favoriteChannel.id);
         await Preference.apiSaveFavoriteChannelPreference(user.id, favoriteChannel.id);
 
-        ({channel: publicChannel} = await Channel.apiCreateChannel({type: 'O', prefix: '3-public-channel', teamId: team.id}));
+        ({channel: publicChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `3-public-${searchTerm}`, teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, publicChannel.id);
 
-        ({channel: privateChannel} = await Channel.apiCreateChannel({type: 'P', prefix: '2-private-channel', teamId: team.id}));
+        ({channel: privateChannel} = await Channel.apiCreateChannel({type: 'P', prefix: `2-private-${searchTerm}`, teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, privateChannel.id);
 
-        ({channel: nonJoinedChannel} = await Channel.apiCreateChannel({type: 'O', prefix: '1-non-joined-channel', teamId: team.id}));
+        ({channel: nonJoinedChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `1-non-joined-${searchTerm}`, teamId: team.id}));
 
-        ({user: dmOtherUser} = await User.apiCreateUser({prefix: 'testchannel-1'}));
+        ({user: dmOtherUser} = await User.apiCreateUser({prefix: `user-${searchTerm}-1`}));
         await Team.apiAddUserToTeam(dmOtherUser.id, team.id);
         ({channel: directMessageChannel} = await Channel.apiCreateDirectChannel([user.id, dmOtherUser.id]));
         await Post.apiCreatePost({
@@ -70,7 +80,7 @@ describe('Channels', () => {
             message: testMessage,
         });
 
-        ({user: nonDmOtherUser} = await User.apiCreateUser({prefix: 'testchannel-2'}));
+        ({user: nonDmOtherUser} = await User.apiCreateUser({prefix: `user-${searchTerm}-2`}));
         await Team.apiAddUserToTeam(nonDmOtherUser.id, team.id);
 
         // # Open channel screen
@@ -97,11 +107,17 @@ describe('Channels', () => {
         await expect(element(by.id(nonDmOtherUser.username))).not.toBeVisible();
         await closeMainSidebar();
 
-        // # Visit private, public, favorite, and direct message channels
+        // # Visit private, public, and favorite channels
         await goToChannel(privateChannel.display_name);
         await goToChannel(publicChannel.display_name);
         await goToChannel(favoriteChannel.display_name);
-        await goToChannel(dmOtherUser.username);
+
+        // # Open DM with the other user
+        await openMainSidebar();
+        await MoreDirectMessagesScreen.open();
+        await MoreDirectMessagesScreen.searchInput.typeText(dmOtherUser.username);
+        await getUserAtIndex(0).tap();
+        await startButton.tap();
 
         // * Verify order when all channels are read except for unread channel
         await openMainSidebar();
@@ -120,11 +136,23 @@ describe('Channels', () => {
     });
 
     it('MM-T3186 should display filtered channels list and be able to change channels', async () => {
+        // # Visit private, public, and favorite channels
+        await goToChannel(privateChannel.display_name);
+        await goToChannel(publicChannel.display_name);
+        await goToChannel(favoriteChannel.display_name);
+
+        // # Open DM with the other user
+        await openMainSidebar();
+        await MoreDirectMessagesScreen.open();
+        await MoreDirectMessagesScreen.searchInput.typeText(dmOtherUser.username);
+        await getUserAtIndex(0).tap();
+        await startButton.tap();
+
         // # Open main sidebar
         await openMainSidebar();
 
         // # Enter search term
-        await searchInput.typeText('channel');
+        await searchInput.typeText(searchTerm);
         await searchInput.tapBackspaceKey();
 
         // * Verify order when channels list is filtered
@@ -134,6 +162,7 @@ describe('Channels', () => {
         await hasFilteredChannelDisplayNameAtIndex(3, publicChannel.display_name);
         await hasFilteredChannelDisplayNameAtIndex(4, favoriteChannel.display_name);
         await hasFilteredChannelDisplayNameAtIndex(5, nonDmOtherUser.username);
+        await filteredChannelsList.scrollTo('bottom');
         await hasFilteredChannelDisplayNameAtIndex(6, nonJoinedChannel.display_name);
         await expect(element(by.text('Off-Topic'))).not.toBeVisible();
         await expect(element(by.text('Town Square'))).not.toBeVisible();

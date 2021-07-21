@@ -26,9 +26,11 @@ import {
 } from '@support/server_api';
 import {
     capitalize,
+    getMentionEmailTemplate,
     getRecentEmail,
     isAndroid,
     splitEmailBodyText,
+    verifyEmailBody,
 } from '@support/utils';
 
 describe('Email Notifications', () => {
@@ -48,7 +50,7 @@ describe('Email Notifications', () => {
 
         await Status.apiUpdateUserStatus(testUser.id, 'offline');
 
-        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         testChannel = channel;
 
         ({user: testOtherUser1} = await User.apiCreateUser());
@@ -79,23 +81,20 @@ describe('Email Notifications', () => {
         // # Post an at-mention message to mentioned user by other user
         const testMessage = `Mention @${testUser.username} by ${testOtherUser1.username}`;
         await User.apiLogin(testOtherUser1);
-        await Post.apiCreatePost({
+        const {post} = await Post.apiCreatePost({
             channelId: testChannel.id,
             message: testMessage,
         });
 
         // * Verify mentioned user receives email notification
-        const response = await getRecentEmail(testUser.username);
-        verifyEmailNotification(
-            response,
-            testConfig.TeamSettings.SiteName,
-            testTeam.display_name,
-            testChannel.display_name,
+        await verifyEmailNotification(
+            testConfig,
+            testTeam,
+            testChannel,
             testUser,
             testOtherUser1,
-            testMessage,
-            testConfig.EmailSettings.FeedbackEmail,
-            testConfig.SupportSettings.SupportEmail);
+            post.id,
+            testMessage);
     });
 
     it('MM-T3256_2 should be able to change email notification setting to never', async () => {
@@ -192,7 +191,10 @@ async function verifyEmailNotificationsIsSetTo(sendKey) {
     }
 }
 
-function verifyEmailNotification(response, siteName, teamDisplayName, channelDisplayName, mentionedUser, byUser, message, feedbackEmail, supportEmail) {
+async function verifyEmailNotification(testConfig, team, channel, mentionedUser, sender, postId, message) {
+    const siteName = testConfig.TeamSettings.SiteName;
+    const feedbackEmail = testConfig.EmailSettings.FeedbackEmail;
+    const response = await getRecentEmail(mentionedUser.username);
     const isoDate = new Date().toISOString().substring(0, 10);
     const {data, status} = response;
 
@@ -210,18 +212,17 @@ function verifyEmailNotification(response, siteName, teamDisplayName, channelDis
     jestExpect(data.date).toContain(isoDate);
 
     // * Verify that the email subject is correct
-    jestExpect(data.subject).toContain(`[${siteName}] Notification in ${teamDisplayName}`);
+    jestExpect(data.subject).toContain(`[${siteName}] Notification in ${team.display_name}`);
 
     // * Verify that the email body is correct
-    const bodyText = splitEmailBodyText(data.body.text);
-    jestExpect(bodyText.length).toEqual(16);
-    jestExpect(bodyText[1]).toEqual('You have a new notification.');
-    jestExpect(bodyText[4]).toEqual(`Channel: ${channelDisplayName}`);
-    jestExpect(bodyText[5]).toContain(`@${byUser.username}`);
-    jestExpect(bodyText[7]).toEqual(message);
-    jestExpect(bodyText[9]).toContain('Go To Post');
-    jestExpect(bodyText[11]).toEqual(`Any questions at all, mail us any time: ${supportEmail}`);
-    jestExpect(bodyText[12]).toEqual('Best wishes,');
-    jestExpect(bodyText[13]).toEqual(`The ${siteName} Team`);
-    jestExpect(bodyText[15]).toEqual('To change your notification preferences, log in to your team site and go to Account Settings > Notifications.');
+    const expectedEmailBody = getMentionEmailTemplate(
+        sender.username,
+        message.trim(),
+        postId,
+        siteName,
+        team.name,
+        channel.display_name,
+    );
+    const actualEmailBody = splitEmailBodyText(data.body.text);
+    verifyEmailBody(expectedEmailBody, actualEmailBody);
 }

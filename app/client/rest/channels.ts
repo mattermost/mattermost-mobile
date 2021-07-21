@@ -24,7 +24,7 @@ export interface ClientChannelsMix {
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getArchivedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
-    getMyChannels: (teamId: string, includeDeleted?: boolean) => Promise<Channel[]>;
+    getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number) => Promise<Channel[]>;
     getMyChannelMember: (channelId: string) => Promise<ChannelMembership>;
     getMyChannelMembers: (teamId: string) => Promise<ChannelMembership[]>;
     getChannelMembers: (channelId: string, page?: number, perPage?: number) => Promise<ChannelMembership[]>;
@@ -186,9 +186,12 @@ const ClientChannels = (superclass: any) => class extends superclass {
         );
     };
 
-    getMyChannels = async (teamId: string, includeDeleted = false) => {
+    getMyChannels = async (teamId: string, includeDeleted = false, lastDeleteAt = 0) => {
         return this.doFetch(
-            `${this.getUserRoute('me')}/teams/${teamId}/channels${buildQueryString({include_deleted: includeDeleted})}`,
+            `${this.getUserRoute('me')}/teams/${teamId}/channels${buildQueryString({
+                include_deleted: includeDeleted,
+                last_delete_at: lastDeleteAt,
+            })}`,
             {method: 'get'},
         );
     };
@@ -269,7 +272,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     viewMyChannel = async (channelId: string, prevChannelId?: string) => {
-        const data = {channel_id: channelId, prev_channel_id: prevChannelId};
+        const data = {channel_id: channelId, prev_channel_id: prevChannelId, collapsed_threads_supported: true};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
             {method: 'post', body: JSON.stringify(data)},

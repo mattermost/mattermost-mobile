@@ -46,9 +46,8 @@ describe('components/autocomplete/emoji_suggestion', () => {
     });
 
     test('searchEmojis should return the right values on fuse', () => {
-        const output1 = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'rage1', 'u7121', 'u7981'];
+        const output1 = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'u7121', 'u7981'];
         const output2 = ['+1'];
-        const output3 = ['-1', 'e-mail', 'non-potable_water'];
         const output4 = ['checkered_flag', 'ballot_box_with_check', 'heavy_check_mark', 'white_check_mark'];
 
         const wrapper = shallowWithIntl(<EmojiSuggestion {...baseProps}/>);
@@ -65,12 +64,6 @@ describe('components/autocomplete/emoji_suggestion', () => {
         jest.runAllTimers();
         setTimeout(() => {
             expect(wrapper.state('dataSource')).toEqual(output2);
-        }, 100);
-
-        wrapper.instance().searchEmojis('-');
-        jest.runAllTimers();
-        setTimeout(() => {
-            expect(wrapper.state('dataSource')).toEqual(output3);
         }, 100);
 
         wrapper.instance().searchEmojis('check');

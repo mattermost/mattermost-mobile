@@ -2,16 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
+import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
-
-import {DeviceTypes} from 'app/constants';
-import SettingsItem from 'app/screens/settings/settings_item';
+import SettingsItem from '@screens/settings/settings_item';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import DisplaySettings from './display_settings';
-
-jest.mock('react-intl');
 
 describe('DisplaySettings', () => {
     const baseProps = {
@@ -22,7 +19,7 @@ describe('DisplaySettings', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <DisplaySettings {...baseProps}/>,
         );
 
@@ -37,7 +34,7 @@ describe('DisplaySettings', () => {
     test('should match snapshot on Tablet devices', () => {
         DeviceTypes.IS_TABLET = true;
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <DisplaySettings {...baseProps}/>,
         );
 

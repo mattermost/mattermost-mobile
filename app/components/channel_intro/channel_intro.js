@@ -3,10 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Text,
-    View,
-} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -17,6 +14,7 @@ import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
@@ -27,6 +25,7 @@ class ChannelIntro extends PureComponent {
         creator: PropTypes.object,
         currentChannel: PropTypes.object.isRequired,
         currentChannelMembers: PropTypes.array.isRequired,
+        emptyChannel: PropTypes.bool,
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
@@ -35,6 +34,12 @@ class ChannelIntro extends PureComponent {
     static defaultProps = {
         currentChannelMembers: [],
     };
+
+    componentDidMount() {
+        if (this.props.emptyChannel) {
+            telemetry.end([PERF_MARKERS.CHANNEL_RENDER]);
+        }
+    }
 
     goToUserProfile = async (userId) => {
         const {intl, theme} = this.props;
@@ -53,6 +58,7 @@ class ChannelIntro extends PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -377,6 +383,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 12,
             marginBottom: 12,
             overflow: 'hidden',
+            ...Platform.select({
+                android: {
+                    scaleY: -1,
+                },
+            }),
         },
         displayName: {
             color: theme.centerChannelColor,

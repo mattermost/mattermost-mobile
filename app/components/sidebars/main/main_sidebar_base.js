@@ -15,8 +15,6 @@ import {NavigationTypes, WebsocketEvents} from '@constants';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
-import tracker from '@utils/time_tracker';
-import telemetry from '@telemetry/';
 
 import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swiper';
@@ -28,9 +26,9 @@ export default class MainSidebarBase extends Component {
             getTeams: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func,
             joinChannel: PropTypes.func.isRequired,
-            logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            handleNotViewingGlobalThreadsScreen: PropTypes.func,
         }).isRequired,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
@@ -38,6 +36,11 @@ export default class MainSidebarBase extends Component {
         locale: PropTypes.string,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        viewingGlobalThreads: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
@@ -56,9 +59,12 @@ export default class MainSidebarBase extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
+        const {currentTeamId, teamsCount, theme, viewingGlobalThreads} = this.props;
         const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, searching} = this.state;
 
+        if (viewingGlobalThreads !== nextProps.viewingGlobalThreads) {
+            return true;
+        }
         if (nextState.openDrawerOffset !== openDrawerOffset && Platform.OS === 'ios') {
             return true;
         }
@@ -267,20 +273,16 @@ export default class MainSidebarBase extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {logChannelSwitch, handleSelectChannel} = this.props.actions;
+        const {handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;
 
         if (closeDrawer) {
-            telemetry.start(['channel:close_drawer']);
             this.closeMainSidebar();
         }
 
         if (channel.id === currentChannelId) {
+            handleNotViewingGlobalThreadsScreen();
             return;
         }
-
-        logChannelSwitch(channel.id, currentChannelId);
-
-        tracker.channelSwitch = Date.now();
 
         if (!channel) {
             const utils = require('app/utils/general');

@@ -28,6 +28,7 @@ export type Channel = {
     purpose: string;
     last_post_at: number;
     total_msg_count: number;
+    total_msg_count_root: number;
     extra_update_at: number;
     creator_id: string;
     scheme_id: string;
@@ -49,6 +50,8 @@ export type ChannelMembership = {
     last_viewed_at: number;
     msg_count: number;
     mention_count: number;
+    msg_count_root: number;
+    mention_count_root: number;
     notify_props: Partial<ChannelNotifyProps>;
     last_update_at: number;
     scheme_user: boolean;
@@ -61,6 +64,8 @@ export type ChannelUnread = {
     team_id: string;
     msg_count: number;
     mention_count: number;
+    msg_count_root: number;
+    mention_count_root: number;
     last_viewed_at: number;
     deltaMsgs: number;
 };
@@ -106,3 +111,18 @@ export type ChannelMemberCountByGroup = {
 };
 
 export type ChannelMemberCountsByGroup = Record<string, ChannelMemberCountByGroup>;
+
+export type SharedChannel = {
+    channel_id: string;
+    team_id: string;
+    home: boolean;
+    readonly: boolean;
+    share_name: string;
+    share_displayname: string;
+    share_purpose: string;
+    share_header: string;
+    creator_id: string;
+    create_at: number;
+    update_at: number;
+    remote_id: string;
+};

@@ -3,16 +3,18 @@
 
 export type EmojiCategory = (
     | 'recent'
-    | 'people'
-    | 'nature'
-    | 'foods'
-    | 'activity'
-    | 'places'
+    | 'smileys-emotion'
+    | 'people-body'
+    | 'animals-nature'
+    | 'food-drink'
+    | 'travel-places'
+    | 'activities'
     | 'objects'
     | 'symbols'
     | 'flags'
     | 'custom'
 );
+
 export type CustomEmoji = {
     id: string;
     create_at: number;
@@ -22,13 +24,14 @@ export type CustomEmoji = {
     name: string;
     category: 'custom';
 };
-export type SystemEmoji = {
-    filename: string;
-    aliases: Array<string>;
+export type StandardEmoji = {
+    image: string;
+    short_names: Array<string>;
+    short_name: string;
     category: EmojiCategory;
     batch: number;
 };
-export type Emoji = SystemEmoji | CustomEmoji;
+export type Emoji = StandardEmoji | CustomEmoji;
 export type EmojisState = {
     customEmoji: {
         [x: string]: CustomEmoji;

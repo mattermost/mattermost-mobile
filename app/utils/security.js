@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-cookies/cookies';
 
 export function setCSRFFromCookie(url) {
     return new Promise((resolve) => {

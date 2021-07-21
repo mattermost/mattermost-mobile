@@ -17,26 +17,6 @@ import {getResponseFromError} from './common';
 // ****************************************************************
 
 /**
- * Save the user's preferences.
- * See https://api.mattermost.com/#tag/preferences/paths/~1users~1{user_id}~1preferences/put
- * @param {string} userId - the user ID
- * @param {Array} preferences - a list of user's preferences
- * @return {string} returns {status} on success or {error, status} on error
- */
-export const apiSaveUserPreferences = async (userId, preferences = []) => {
-    try {
-        const response = await client.put(
-            `/api/v4/users/${userId}/preferences`,
-            preferences,
-        );
-
-        return {status: response.status};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
  * Save the user's favorite channel preference.
  * @param {string} userId - the user ID
  * @param {string} channelId - the channel id to be favorited
@@ -48,6 +28,23 @@ export const apiSaveFavoriteChannelPreference = (userId, channelId) => {
         category: 'favorite_channel',
         name: channelId,
         value: 'true',
+    };
+
+    return apiSaveUserPreferences(userId, [preference]);
+};
+
+/**
+ * Save the user's teammate name display preference.
+ * @param {string} userId - the user ID
+ * @param {string} nameFormat - one of "username" (default), "nickname_full_name" or "full_name"
+ * @returns
+ */
+export const apiSaveTeammateNameDisplayPreference = (userId, nameFormat = 'username') => {
+    const preference = {
+        user_id: userId,
+        category: 'display_settings',
+        name: 'name_format',
+        value: nameFormat,
     };
 
     return apiSaveUserPreferences(userId, [preference]);
@@ -70,8 +67,29 @@ export const apiSaveTeamsOrderPreference = (userId, orderedTeamIds = []) => {
     return apiSaveUserPreferences(userId, [preference]);
 };
 
+/**
+ * Save the user's preferences.
+ * See https://api.mattermost.com/#operation/UpdatePreferences
+ * @param {string} userId - the user ID
+ * @param {Array} preferences - a list of user's preferences
+ * @return {string} returns {status} on success or {error, status} on error
+ */
+export const apiSaveUserPreferences = async (userId, preferences = []) => {
+    try {
+        const response = await client.put(
+            `/api/v4/users/${userId}/preferences`,
+            preferences,
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Preference = {
     apiSaveFavoriteChannelPreference,
+    apiSaveTeammateNameDisplayPreference,
     apiSaveTeamsOrderPreference,
     apiSaveUserPreferences,
 };

@@ -17,7 +17,9 @@ import {Role} from './roles';
 import {PreferenceType} from './preferences';
 import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
+import {RemoteCluster} from './remote_cluster';
 import {Dictionary} from './utilities';
+import {ThreadsState} from './threads';
 import {AppsState} from './apps';
 
 export type GlobalState = {
@@ -27,6 +29,7 @@ export type GlobalState = {
         teams: TeamsState;
         channels: ChannelsState;
         posts: PostsState;
+        threads: ThreadsState;
         bots: {
             accounts: Dictionary<Bot>;
         };
@@ -49,6 +52,11 @@ export type GlobalState = {
         gifs: any;
         groups: GroupsState;
         channelCategories: ChannelCategoriesState;
+        remoteCluster: {
+            info: {
+                [x: string]: RemoteCluster;
+            };
+        };
         apps: AppsState;
     };
     errors: Array<any>;

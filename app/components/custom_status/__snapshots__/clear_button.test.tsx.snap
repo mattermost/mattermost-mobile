@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/custom_status/clear_button should match snapshot 1`] = `
+<ForwardRef
+  onPress={[Function]}
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+      },
+      Object {
+        "height": 40,
+        "width": 40,
+      },
+    ]
+  }
+>
+  <CompassIcon
+    name="close-circle"
+    size={20}
+    style={
+      Object {
+        "borderRadius": 1000,
+        "color": "rgba(61,60,64,0.52)",
+      }
+    }
+  />
+</ForwardRef>
+`;

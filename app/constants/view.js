@@ -1,20 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import keyMirror from '@mm-redux/utils/key_mirror';
 
 // The iPhone 11 and iPhone 11 Pro Max have a navbar height of 44 and iPhone 11 Pro has 32
 const IPHONE_11_LANDSCAPE_HEIGHT = ['iPhone 11', 'iPhone 11 Pro Max'];
-
-export const UpgradeTypes = {
-    CAN_UPGRADE: 'can_upgrade',
-    MUST_UPGRADE: 'must_upgrade',
-    NO_UPGRADE: 'no_upgrade',
-    IS_BETA: 'is_beta',
-};
 
 export const SidebarSectionTypes = {
     UNREADS: 'unreads',
@@ -24,6 +16,7 @@ export const SidebarSectionTypes = {
     DIRECT: 'direct',
     RECENT_ACTIVITY: 'recent',
     ALPHA: 'alpha',
+    THREADS: 'threads',
 };
 
 export const NotificationLevels = {
@@ -89,8 +82,6 @@ const ViewTypes = keyMirror({
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
 
-    SET_LAST_UPGRADE_CHECK: null,
-
     ADD_RECENT_EMOJI: null,
     ADD_RECENT_EMOJI_ARRAY: null,
     ANNOUNCEMENT_BANNER: null,
@@ -109,19 +100,26 @@ const ViewTypes = keyMirror({
 
     INDICATOR_BAR_VISIBLE: null,
     CHANNEL_NAV_BAR_CHANGED: null,
+
+    VIEWING_GLOBAL_THREADS_SCREEN: null,
+    NOT_VIEWING_GLOBAL_THREADS_SCREEN: null,
+
+    VIEWING_GLOBAL_THREADS_UNREADS: null,
+    VIEWING_GLOBAL_THREADS_ALL: null,
 });
 
 const RequiredServer = {
-    FULL_VERSION: 5.31,
+    FULL_VERSION: '5.31.3',
     MAJOR_VERSION: 5,
     MIN_VERSION: 31,
-    PATCH_VERSION: 0,
+    PATCH_VERSION: 3,
 };
 
 export default {
     ...ViewTypes,
     RequiredServer,
-    POST_VISIBILITY_CHUNK_SIZE: Platform.OS === 'android' ? 15 : 60,
+    POST_VISIBILITY_CHUNK_SIZE: 60,
+    CRT_CHUNK_SIZE: 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',

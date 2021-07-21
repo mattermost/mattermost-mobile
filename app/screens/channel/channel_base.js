@@ -10,19 +10,14 @@ import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
-import LocalConfig from '@assets/config';
-import {UPDATE_NATIVE_SCROLLVIEW, TYPING_VISIBLE} from '@constants/post_draft';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 import CompassIcon from '@components/compass_icon';
+import PushNotifications from '@init/push_notifications';
 import EphemeralStore from '@store/ephemeral_store';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {unsupportedServer} from '@utils/supported_server';
 import {preventDoubleTap} from '@utils/tap';
 import {setNavigatorStyles} from '@utils/theme';
-import tracker from '@utils/time_tracker';
-
-import PushNotifications from '@init/push_notifications';
-import telemetry from 'app/telemetry';
-
-export let ClientUpgradeListener;
 
 export default class ChannelBase extends PureComponent {
     static propTypes = {
@@ -31,7 +26,6 @@ export default class ChannelBase extends PureComponent {
             loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
-            recordLoadTime: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -44,6 +38,7 @@ export default class ChannelBase extends PureComponent {
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
         skipMetrics: PropTypes.bool,
+        viewingGlobalThreads: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -52,6 +47,7 @@ export default class ChannelBase extends PureComponent {
 
     static defaultProps = {
         disableTermsModal: false,
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
@@ -63,8 +59,8 @@ export default class ChannelBase extends PureComponent {
             channelsRequestFailed: false,
         };
 
-        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
-            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
+        if (props.currentChannelId) {
+            telemetry.start([PERF_MARKERS.CHANNEL_RENDER], Date.now(), ['Initial Channel Render']);
         }
 
         this.typingAnimations = [];
@@ -79,7 +75,6 @@ export default class ChannelBase extends PureComponent {
             isSupportedServer,
             isSystemAdmin,
             showTermsOfService,
-            skipMetrics,
         } = this.props;
 
         EventEmitter.on('leave_team', this.handleLeaveTeam);
@@ -93,14 +88,10 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (currentChannelId) {
-            PushNotifications.clearChannelNotifications(currentChannelId);
+            this.clearChannelNotifications();
             requestAnimationFrame(() => {
                 actions.getChannelStats(currentChannelId);
             });
-        }
-
-        if (tracker.initialLoad && !skipMetrics) {
-            actions.recordLoadTime('Start time', 'initialLoad');
         }
 
         if (showTermsOfService && !disableTermsModal) {
@@ -109,17 +100,9 @@ export default class ChannelBase extends PureComponent {
             // Only display the Alert if the TOS does not need to show first
             unsupportedServer(isSystemAdmin, this.context.intl.formatMessage);
         }
-
-        if (!skipMetrics) {
-            telemetry.end(['start:channel_screen']);
-        }
     }
 
     componentDidUpdate(prevProps) {
-        if (tracker.teamSwitch) {
-            this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
-        }
-
         if (prevProps.isSupportedServer && !this.props.isSupportedServer) {
             unsupportedServer(this.props.isSystemAdmin, this.context.intl.formatMessage);
         }
@@ -143,16 +126,11 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
-            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+            this.clearChannelNotifications();
 
             requestAnimationFrame(() => {
                 this.props.actions.getChannelStats(this.props.currentChannelId);
-                this.updateNativeScrollView();
             });
-        }
-
-        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
-            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
     }
 
@@ -160,6 +138,13 @@ export default class ChannelBase extends PureComponent {
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
         EventEmitter.off(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
+    }
+
+    clearChannelNotifications = () => {
+        const clearNotificationsTimeout = setTimeout(() => {
+            clearTimeout(clearNotificationsTimeout);
+            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+        }, 1000);
     }
 
     registerTypingAnimation = (animation) => {
@@ -319,10 +304,6 @@ export default class ChannelBase extends PureComponent {
 
             showModalOverCurrentContext(screen, passProps, options);
         });
-    };
-
-    updateNativeScrollView = () => {
-        EventEmitter.emit(UPDATE_NATIVE_SCROLLVIEW, this.props.currentChannelId);
     };
 
     render() {

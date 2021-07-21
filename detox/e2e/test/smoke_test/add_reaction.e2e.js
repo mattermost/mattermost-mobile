@@ -26,7 +26,7 @@ describe('Add Reaction', () => {
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
 
-        ({channel: testChannel} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+        ({channel: testChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
 
         ({user: testOtherUser} = await User.apiCreateUser());
         await Team.apiAddUserToTeam(testOtherUser.id, team.id);
@@ -67,8 +67,9 @@ describe('Add Reaction', () => {
         // * Verify emoji exists in recently used section
         await openPostOptionsFor(post.id, message);
         await AddReactionScreen.open();
-        await expect(element(by.text('🦊').withAncestor(by.id('RECENTLY USED')))).toExist();
-        await expect(element(by.text('🐶').withAncestor(by.id('RECENTLY USED')))).toExist();
+        await expect(element(by.text('Recent'))).toExist();
+        await expect(element(by.text('🦊'))).toExist();
+        await expect(element(by.text('🐶'))).toExist();
 
         // # Close add reaction screen
         await AddReactionScreen.close();

@@ -11,12 +11,10 @@ import {intlShape} from 'react-intl';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import PushNotifications from '@init/push_notifications';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
-import telemetry from '@telemetry';
 import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION, MAX_BADGE_RIGHT_POSITION} from '@constants/view';
 
 export default class MainSidebarDrawerButton extends PureComponent {
@@ -38,25 +36,7 @@ export default class MainSidebarDrawerButton extends PureComponent {
         visible: true,
     };
 
-    componentDidMount() {
-        if (this.props.badgeCount > 0) {
-            // Only set the icon badge number if once the component mounts we have at least one mention
-            // reason is to prevent the notification in the notification center to get cleared
-            // while the app is retrieving unread mentions from the server
-            PushNotifications.setApplicationIconBadgeNumber(this.props.badgeCount);
-        }
-    }
-
-    componentDidUpdate(prevProps) {
-        // Once the component updates we know for sure if there are or not mentions when it mounted
-        // a) the app had mentions
-        if (prevProps.badgeCount !== this.props.badgeCount) {
-            PushNotifications.setApplicationIconBadgeNumber(this.props.badgeCount);
-        }
-    }
-
     handlePress = preventDoubleTap(() => {
-        telemetry.start(['channel:open_drawer']);
         this.props.openSidebar();
     });
 

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import shallowEqual from 'shallow-equals';
 
-import Emoji from 'app/components/emoji';
+import Emoji from '@components/emoji';
 
 export default class EmojiPickerRow extends Component {
     static propTypes = {
@@ -51,16 +51,18 @@ export default class EmojiPickerRow extends Component {
             );
         }
 
+        const name = 'short_name' in emoji ? emoji.short_name : emoji.name;
+
         return (
             <TouchableOpacity
-                key={emoji.name}
+                key={name}
                 style={style}
                 onPress={() => {
-                    this.props.onEmojiPress(emoji.name);
+                    this.props.onEmojiPress(name);
                 }}
             >
                 <Emoji
-                    emojiName={emoji.name}
+                    emojiName={name}
                     textStyle={styles.emojiText}
                     size={emojiSize}
                 />

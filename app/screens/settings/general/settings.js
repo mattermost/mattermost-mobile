@@ -15,7 +15,6 @@ import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {goToScreen, dismissModal} from '@actions/navigation';
-import LocalConfig from '@assets/config';
 import StatusBar from '@components/status_bar';
 import SettingsItem from '@screens/settings/settings_item';
 import {t} from '@utils/i18n';
@@ -118,17 +117,6 @@ class Settings extends PureComponent {
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
             currentUrl,
-        };
-
-        goToScreen(screen, title, passProps);
-    });
-
-    goToClientUpgrade = preventDoubleTap(() => {
-        const {intl} = this.props;
-        const screen = 'ClientUpgrade';
-        const title = intl.formatMessage({id: 'mobile.client_upgrade', defaultMessage: 'Upgrade App'});
-        const passProps = {
-            userCheckedForUpgrade: true,
         };
 
         goToScreen(screen, title, passProps);
@@ -246,18 +234,6 @@ class Settings extends PureComponent {
                         theme={theme}
                         separator={true}
                     />
-                    {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
-                        <SettingsItem
-                            testID='general_settings.check_for_upgrade.action'
-                            defaultMessage='Check for Upgrade'
-                            i18nId={t('mobile.settings.modal.check_for_upgrade')}
-                            iconName='update'
-                            onPress={this.goToClientUpgrade}
-                            showArrow={showArrow}
-                            theme={theme}
-                            separator={true}
-                        />
-                    }
                     <SettingsItem
                         testID='general_settings.about.action'
                         defaultMessage='About {appTitle}'

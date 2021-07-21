@@ -9,8 +9,8 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {Client4} from '@client/rest';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import FileAttachmentImage from '@components/file_attachment_list/file_attachment_image';
-import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import ImageFile from '@components/post_list/post/body/files/image_file';
+import FileIcon from '@components//post_list/post/body/files/file_icon';
 import ProgressBar from '@components/progress_bar';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8, isImage} from '@utils/file';
 import {emptyFunction} from '@utils/general';
@@ -170,7 +170,7 @@ export default class UploadItem extends PureComponent {
             filePreviewComponent = (
                 <TouchableOpacity onPress={this.handlePress}>
                     <View style={styles.filePreview}>
-                        <FileAttachmentImage
+                        <ImageFile
                             file={file}
                             theme={theme}
                             resizeMode='cover'
@@ -182,10 +182,11 @@ export default class UploadItem extends PureComponent {
             filePreviewComponent = (
                 <TouchableOpacity onPress={this.handlePress}>
                     <View style={styles.filePreview}>
-                        <FileAttachmentIcon
+                        <FileIcon
+                            backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
+                            iconSize={60}
                             file={file}
                             theme={theme}
-                            backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                         />
                     </View>
                 </TouchableOpacity>

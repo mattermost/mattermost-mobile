@@ -19,85 +19,8 @@ import {getResponseFromError} from './common';
 // ****************************************************************
 
 /**
- * Create a channel.
- * See https://api.mattermost.com/#tag/channels/paths/~1channels/post
- * @param {string} option.teamId - The team ID of the team to create the channel on
- * @param {string} option.type - 'O' (default) for a public channel, 'P' for a private channel
- * @param {string} option.prefix - option to add prefix to name and display name
- * @param {Object} option.channel - fix channel object to be created
- * @return {Object} returns {channel} on success or {error, status} on error
- */
-export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'channel', channel = null} = {}) => {
-    try {
-        const response = await client.post(
-            '/api/v4/channels',
-            channel || generateRandomChannel(teamId, type, prefix),
-        );
-
-        return {channel: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Create a direct message channel.
- * See https://api.mattermost.com/#tag/channels/paths/~1channels~1direct/post
- * @param {Array} userIds - the two user IDs to be in the direct message
- * @return {Object} returns {channel} on success or {error, status} on error
- */
-export const apiCreateDirectChannel = async (userIds = []) => {
-    try {
-        const response = await client.post(
-            '/api/v4/channels/direct',
-            userIds,
-        );
-
-        return {channel: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Create a group message channel.
- * See https://api.mattermost.com/#tag/channels/paths/~1channels~1group/post
- * @param {Array} userIds - user IDs to be in the group message channel
- * @return {Object} returns {channel} on success or {error, status} on error
- */
-export const apiCreateGroupChannel = async (userIds = []) => {
-    try {
-        const response = await client.post(
-            '/api/v4/channels/group',
-            userIds,
-        );
-
-        return {channel: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Get a channel by name and team name.
- * See https://api.mattermost.com/#tag/channels/paths/~1teams~1name~1{team_name}~1channels~1name~1{channel_name}/get
- * @param {string} teamName - team name
- * @param {string} channelName - channel name
- * @return {Object} returns {channel} on success or {error, status} on error
- */
-export const apiGetChannelByName = async (teamName, channelName) => {
-    try {
-        const response = await client.get(`/api/v4/teams/name/${teamName}/channels/name/${channelName}`);
-
-        return {channel: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
  * Add user to channel.
- * See https://api.mattermost.com/#tag/channels/paths/~1channels~1{channel_id}~1members/post
+ * See https://api.mattermost.com/#operation/AddChannelMember
  * @param {string} userId - The ID of user to add into the channel
  * @param {string} channelId - The channel ID
  * @return {Object} returns {member} on success or {error, status} on error
@@ -116,13 +39,139 @@ export const apiAddUserToChannel = async (userId, channelId) => {
 };
 
 /**
+ * Create a channel.
+ * See https://api.mattermost.com/#operation/CreateChannel
+ * @param {string} option.teamId - The team ID of the team to create the channel on
+ * @param {string} option.type - 'O' (default) for a public channel, 'P' for a private channel
+ * @param {string} option.prefix - prefix to name, display name, purpose, and header
+ * @param {Object} option.channel - channel object to be created
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'channel', channel = null} = {}) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels',
+            channel || generateRandomChannel(teamId, type, prefix),
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Create a direct message channel.
+ * See https://api.mattermost.com/#operation/CreateDirectChannel
+ * @param {Array} userIds - the two user IDs to be in the direct message
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateDirectChannel = async (userIds = []) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels/direct',
+            userIds,
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Create a group message channel.
+ * See https://api.mattermost.com/#operation/CreateGroupChannel
+ * @param {Array} userIds - user IDs to be in the group message channel
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiCreateGroupChannel = async (userIds = []) => {
+    try {
+        const response = await client.post(
+            '/api/v4/channels/group',
+            userIds,
+        );
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get a channel by name.
+ * See https://api.mattermost.com/#operation/GetChannelByName
+ * @param {string} teamId - team ID
+ * @param {string} channelName - channel name
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiGetChannelByName = async (teamId, channelName) => {
+    try {
+        const response = await client.get(`/api/v4/teams/${teamId}/channels/name/${channelName}`);
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get a channel by name and team name.
+ * See https://api.mattermost.com/#operation/GetChannelByNameForTeamName
+ * @param {string} teamName - team name
+ * @param {string} channelName - channel name
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiGetChannelByNameAndTeamName = async (teamName, channelName) => {
+    try {
+        const response = await client.get(`/api/v4/teams/name/${teamName}/channels/name/${channelName}`);
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get channels for user.
+ * See https://api.mattermost.com/#operation/GetChannelsForTeamForUser
+ * @param {string} userId - The user ID
+ * @param {string} teamId - The team ID the user belongs to
+ * @return {Object} returns {channels} on success or {error, status} on error
+ */
+export const apiGetChannelsForUser = async (userId, teamId) => {
+    try {
+        const response = await client.get(`/api/v4/users/${userId}/teams/${teamId}/channels`);
+
+        return {channels: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get unread messages.
+ * See https://api.mattermost.com/#operation/GetChannelUnread
+ * @param {string} userId - The user ID to perform view actions for
+ * @param {string} channelId - The channel ID that is being viewed
+ * @return {Object} returns response on success or {error, status} on error
+ */
+export const apiGetUnreadMessages = async (userId, channelId) => {
+    try {
+        return await client.get(`/api/v4/users/${userId}/channels/${channelId}/unread`);
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Remove user from channel.
- * See https://api.mattermost.com/#tag/channels/paths/~1channels~1{channel_id}~1members~1{user_id}/delete
+ * See https://api.mattermost.com/#operation/RemoveUserFromChannel
  * @param {string} channelId - The channel ID
  * @param {string} userId - The user ID to be removed from channel
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeleteUserFromChannel = async (channelId, userId) => {
+export const apiRemoveUserFromChannel = async (channelId, userId) => {
     try {
         const response = await client.delete(
             `/api/v4/channels/${channelId}/members/${userId}`,
@@ -135,17 +184,20 @@ export const apiDeleteUserFromChannel = async (channelId, userId) => {
 };
 
 /**
- * Get channels for user.
- * See https://api.mattermost.com/#tag/channels/paths/~1users~1{user_id}~1teams~1{team_id}~1channels/get
- * @param {string} userId - The user ID
- * @param {string} teamId - The team ID the user belongs to
- * @return {Object} returns {channels} on success or {error, status} on error
+ * View channel.
+ * See https://api.mattermost.com/#operation/ViewChannel
+ * @param {string} userId - The user ID to perform view actions for
+ * @param {string} channelId - The channel ID that is being viewed
+ * @return {Object} returns {viewed} on success or {error, status} on error
  */
-export const apiGetChannelsForUser = async (userId, teamId) => {
+export const apiViewChannel = async (userId, channelId) => {
     try {
-        const response = await client.get(`/api/v4/users/${userId}/teams/${teamId}/channels`);
+        const response = await client.post(
+            `/api/v4/channels/members/${userId}/view`,
+            {channel_id: channelId},
+        );
 
-        return {channels: response.data};
+        return {viewed: response.data};
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -169,9 +221,11 @@ export const Channel = {
     apiCreateChannel,
     apiCreateDirectChannel,
     apiCreateGroupChannel,
-    apiDeleteUserFromChannel,
     apiGetChannelByName,
     apiGetChannelsForUser,
+    apiGetUnreadMessages,
+    apiRemoveUserFromChannel,
+    apiViewChannel,
 };
 
 export default Channel;

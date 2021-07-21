@@ -12,7 +12,7 @@ describe('MarkdownEmoji', () => {
     const baseProps = {
         baseTextStyle: {color: '#3d3c40', fontSize: 15, lineHeight: 20},
         isEdited: false,
-        shouldRenderJumboEmoji: true,
+        isJumboEmoji: true,
         theme: Preferences.THEMES.default,
         value: ':smile:',
     };
@@ -20,6 +20,19 @@ describe('MarkdownEmoji', () => {
     test('should match snapshot', () => {
         const wrapper = shallow(
             <MarkdownEmoji {...baseProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should render with hardbreaks', () => {
+        const wrapper = shallow(
+            <MarkdownEmoji
+                {...baseProps}
+                value={`:fire: :fire:       
+               :fire: :fire: :fire:
+               `}
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

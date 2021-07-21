@@ -38,19 +38,18 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelGuestCount: PropTypes.number,
         currentChannelMemberCount: PropTypes.number,
         currentUserId: PropTypes.string,
-        isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
-        status: PropTypes.string,
+        teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        customStatus: PropTypes.object,
+        isCustomStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -81,10 +80,6 @@ export default class ChannelInfo extends PureComponent {
         }
 
         dismissModal();
-    };
-
-    handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     permalinkBadTeam = () => {
@@ -172,10 +167,11 @@ export default class ChannelInfo extends PureComponent {
             currentChannelCreatorName,
             currentChannelMemberCount,
             currentChannelGuestCount,
-            status,
+            teammateId,
             theme,
-            isBot,
             isTeammateGuest,
+            customStatus,
+            isCustomStatusEnabled,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -199,17 +195,18 @@ export default class ChannelInfo extends PureComponent {
                         displayName={currentChannel.display_name}
                         header={currentChannel.header}
                         memberCount={currentChannelMemberCount}
-                        onPermalinkPress={this.handlePermalinkPress}
                         purpose={currentChannel.purpose}
-                        status={status}
+                        shared={currentChannel.shared}
+                        teammateId={teammateId}
                         theme={theme}
                         type={currentChannel.type}
                         isArchived={channelIsArchived}
-                        isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                         testID='channel_info.header'
+                        customStatus={customStatus}
+                        isCustomStatusEnabled={isCustomStatusEnabled}
                     />
                     }
                     <View style={style.rowsContainer}>

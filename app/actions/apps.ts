@@ -2,8 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import {ActionFunc} from '@mm-redux/types/actions';
-import {AppCallResponse, AppForm, AppCallRequest, AppCallType} from '@mm-redux/types/apps';
+
+import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
+import {AppCallResponse, AppForm, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
+import {Post} from '@mm-redux/types/posts';
+
 import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {showModal} from './navigation';
@@ -12,6 +15,8 @@ import CompassIcon from '@components/compass_icon';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeCallErrorResponse} from '@utils/apps';
+import {sendEphemeralPost} from '@actions/views/post';
+import {CommandArgs} from '@mm-redux/types/integrations';
 
 export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, intl: any): ActionFunc {
     return async (dispatch, getState) => {
@@ -83,24 +88,17 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
 const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
-    let submitButtons = [{
-        id: 'submit-form',
-        showAsAction: 'always',
-        text: 'Submit',
-    }];
-    if (form.submit_buttons) {
-        const options = form.fields.find((f) => f.name === form.submit_buttons)?.options;
-        const newButtons = options?.map((o) => {
-            return {
-                id: 'submit-form_' + o.value,
-                showAsAction: 'always',
-                text: o.label,
-            };
-        });
-        if (newButtons && newButtons.length > 0) {
-            submitButtons = newButtons;
-        }
+    let submitButtons;
+    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
+
+    if (!customSubmitButtons?.length) {
+        submitButtons = [{
+            id: 'submit-form',
+            showAsAction: 'always',
+            text: 'Submit',
+        }];
     }
+
     const options = {
         topBar: {
             leftButtons: [{
@@ -114,3 +112,47 @@ const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) =>
     const passProps = {form, call};
     showModal('AppForm', form.title, passProps, options);
 };
+
+export function postEphemeralCallResponseForPost(response: AppCallResponse, message: string, post: Post): ActionFunc {
+    return (dispatch: DispatchFunc) => {
+        return dispatch(sendEphemeralPost(
+            message,
+            post.channel_id,
+            post.root_id || post.id,
+            response.app_metadata?.bot_user_id,
+        ));
+    };
+}
+
+export function postEphemeralCallResponseForChannel(response: AppCallResponse, message: string, channelID: string): ActionFunc {
+    return (dispatch: DispatchFunc) => {
+        return dispatch(sendEphemeralPost(
+            message,
+            channelID,
+            '',
+            response.app_metadata?.bot_user_id,
+        ));
+    };
+}
+
+export function postEphemeralCallResponseForContext(response: AppCallResponse, message: string, context: AppContext): ActionFunc {
+    return (dispatch: DispatchFunc) => {
+        return dispatch(sendEphemeralPost(
+            message,
+            context.channel_id,
+            context.root_id || context.post_id,
+            response.app_metadata?.bot_user_id,
+        ));
+    };
+}
+
+export function postEphemeralCallResponseForCommandArgs(response: AppCallResponse, message: string, args: CommandArgs): ActionFunc {
+    return (dispatch: DispatchFunc) => {
+        return dispatch(sendEphemeralPost(
+            message,
+            args.channel_id,
+            args.root_id,
+            response.app_metadata?.bot_user_id,
+        ));
+    };
+}

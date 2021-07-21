@@ -5,9 +5,9 @@ import React from 'react';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import LocalConfig from '@assets/config';
 import AnnouncementBanner from 'app/components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
+import GlobalThreadsList from '@components/global_threads';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
@@ -18,7 +18,7 @@ import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import ChannelBase, {ClientUpgradeListener} from './channel_base';
+import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
@@ -54,21 +54,27 @@ export default class ChannelIOS extends ChannelBase {
     };
 
     render() {
-        const {currentChannelId, theme} = this.props;
-        let component = this.renderLoadingOrFailedChannel();
-        let renderDraftArea = false;
+        const {currentChannelId, theme, viewingGlobalThreads} = this.props;
 
-        if (!component) {
-            renderDraftArea = true;
+        let component;
+        let renderDraftArea = false;
+        const safeAreaEdges = ['left', 'right'];
+
+        if (viewingGlobalThreads) {
             component = (
-                <>
-                    <ChannelPostList
-                        updateNativeScrollView={this.updateNativeScrollView}
-                        registerTypingAnimation={this.registerTypingAnimation}
-                    />
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
-                </>
+                <GlobalThreadsList/>
             );
+        } else {
+            safeAreaEdges.push('bottom');
+            component = this.renderLoadingOrFailedChannel();
+            if (!component) {
+                renderDraftArea = true;
+                component = (
+                    <>
+                        <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
+                    </>
+                );
+            }
         }
 
         const style = getStyle(theme);
@@ -84,6 +90,7 @@ export default class ChannelIOS extends ChannelBase {
                     openMainSidebar={this.openMainSidebar}
                     openSettingsSidebar={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
+                    isGlobalThreads={viewingGlobalThreads}
                 />
             </>
         );
@@ -93,22 +100,24 @@ export default class ChannelIOS extends ChannelBase {
                 {header}
                 <SafeAreaView
                     mode='margin'
-                    edges={['left', 'right', 'bottom']}
+                    edges={safeAreaEdges}
                     style={style.flex}
                 >
                     {component}
                 </SafeAreaView>
                 {indicators}
-                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                    <Autocomplete
-                        maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
-                        onChangeText={this.handleAutoComplete}
-                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        channelId={currentChannelId}
-                        offsetY={0}
-                    />
-                </View>
+                {!viewingGlobalThreads && (
+                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                        <Autocomplete
+                            maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
+                            onChangeText={this.handleAutoComplete}
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            channelId={currentChannelId}
+                            offsetY={0}
+                        />
+                    </View>
+                )}
                 {renderDraftArea &&
                     <PostDraft
                         testID='channel.post_draft'

@@ -7,15 +7,15 @@ import React, {PureComponent} from 'react';
 import {Platform, Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Emoji from 'app/components/emoji';
-import FormattedText from 'app/components/formatted_text';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
+import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class MarkdownEmoji extends PureComponent {
     static propTypes = {
         baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         isEdited: PropTypes.bool,
-        shouldRenderJumboEmoji: PropTypes.bool.isRequired,
+        isJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string.isRequired,
     };
@@ -39,12 +39,13 @@ export default class MarkdownEmoji extends PureComponent {
                 paragraph: this.renderParagraph,
                 document: this.renderParagraph,
                 text: this.renderText,
+                hardbreak: this.renderNewLine,
             },
         });
     };
 
     computeTextStyle = (baseStyle) => {
-        if (!this.props.shouldRenderJumboEmoji) {
+        if (!this.props.isJumboEmoji) {
             return baseStyle;
         }
 
@@ -73,9 +74,13 @@ export default class MarkdownEmoji extends PureComponent {
 
     renderText = ({context, literal}) => {
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
-
         return <Text style={style}>{literal}</Text>;
     };
+
+    renderNewLine = ({context}) => {
+        const style = this.computeTextStyle(this.props.baseTextStyle, context);
+        return <Text style={style}>{'\n'}</Text>;
+    }
 
     renderEditedIndicator = ({context}) => {
         let spacer = '';
@@ -101,7 +106,7 @@ export default class MarkdownEmoji extends PureComponent {
     };
 
     render() {
-        const ast = this.parser.parse(this.props.value);
+        const ast = this.parser.parse(this.props.value.replace(/\n*$/, ''));
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import {General} from '@mm-redux/constants';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
@@ -61,7 +61,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         label: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            flex: 1,
             fontSize: 17,
             textAlignVertical: 'center',
             includeFontPadding: false,

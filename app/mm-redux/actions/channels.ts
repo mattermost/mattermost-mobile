@@ -12,14 +12,11 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
-
 import {Channel, ChannelNotifyProps, ChannelMembership} from '@mm-redux/types/channels';
-
 import {PreferenceType} from '@mm-redux/types/preferences';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
@@ -58,6 +55,8 @@ export function createChannel(channel: Channel, userId: string): ActionFunc {
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -108,6 +107,8 @@ export function createDirectChannel(userId: string, otherUserId: string): Action
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -185,6 +186,8 @@ export function createGroupChannel(userIds: Array<string>): ActionFunc {
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -546,9 +549,9 @@ export function fetchMyChannelsAndMembers(teamId: string): ActionFunc {
         let channels;
         let channelMembers;
         const state = getState();
-        const shouldFetchArchived = isMinimumServerVersion(getServerVersion(state), 5, 21);
+        const lastConnectAt = state.websocket?.lastConnectAt || 0;
         try {
-            const channelRequest = Client4.getMyChannels(teamId, shouldFetchArchived);
+            const channelRequest = Client4.getMyChannels(teamId, true, lastConnectAt);
             const memberRequest = Client4.getMyChannelMembers(teamId);
             channels = await channelRequest;
             channelMembers = await memberRequest;
@@ -577,7 +580,6 @@ export function fetchMyChannelsAndMembers(teamId: string): ActionFunc {
             {
                 type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS,
                 data: channelMembers,
-                sync: !shouldFetchArchived,
                 channels,
                 remove: getChannelsIdForTeam(state, teamId),
                 currentUserId,
@@ -941,6 +943,44 @@ export function getArchivedChannels(teamId: string, page = 0, perPage: number = 
     };
 }
 
+// Returns all public shared channels
+export function getSharedChannels(teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let channels;
+        try {
+            channels = await Client4.getSharedChannels(teamId, page, perPage);
+            channels = (channels || []).map((channel: Dictionary<string|boolean|number>) => {
+                if (channel.delete_at === undefined) {
+                    channel.delete_at = 0;
+                }
+                channel.type = General.OPEN_CHANNEL;
+                channel.shared = true;
+                return channel;
+            });
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(batchActions([
+                {type: ChannelTypes.GET_CHANNELS_FAILURE, error},
+                logError(error),
+            ]));
+            return {error};
+        }
+
+        dispatch(batchActions([
+            {
+                type: ChannelTypes.RECEIVED_CHANNELS,
+                teamId,
+                data: channels,
+            },
+            {
+                type: ChannelTypes.GET_CHANNELS_SUCCESS,
+            },
+        ]));
+
+        return {data: channels};
+    };
+}
+
 export function getAllChannelsWithCount(page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE, notAssociatedToGroup = '', excludeDefaultChannels = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         dispatch({type: ChannelTypes.GET_ALL_CHANNELS_REQUEST, data: null});
@@ -1246,6 +1286,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: channel.team_id,
                     channelId,
                     amount: channel.total_msg_count - channelMember.msg_count,
+                    amountRoot: channel.total_msg_count_root - channelMember.msg_count_root,
                 },
             });
 
@@ -1255,6 +1296,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: channel.team_id,
                     channelId,
                     amount: channelMember.mention_count,
+                    amountRoot: channelMember.mention_count_root,
                 },
             });
         }
@@ -1273,6 +1315,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: prevChannel.team_id,
                     channelId: prevChannelId,
                     amount: prevChannel.total_msg_count - prevChannelMember.msg_count,
+                    amountRoot: prevChannel.total_msg_count_root - prevChannelMember.msg_count_root,
                 },
             });
 
@@ -1282,6 +1325,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: prevChannel.team_id,
                     channelId: prevChannelId,
                     amount: prevChannelMember.mention_count,
+                    amountRoot: prevChannelMember.mention_count_root,
                 },
             });
         }

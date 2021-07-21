@@ -5,10 +5,9 @@ import React, {PureComponent} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import Markdown from 'app/components/markdown';
-
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import Markdown from '@components/markdown';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class DialogIntroductionText extends PureComponent {
     static propTypes = {

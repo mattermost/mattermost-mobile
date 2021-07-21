@@ -16,14 +16,14 @@ import mattermostManaged from 'app/mattermost_managed';
 export default class AtMention extends React.PureComponent {
     static propTypes = {
         isSearchResult: PropTypes.bool,
-        mentionKeys: PropTypes.array.isRequired,
+        mentionKeys: PropTypes.array,
         mentionName: PropTypes.string.isRequired,
         mentionStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         onPostPress: PropTypes.func,
         textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        usersByUsername: PropTypes.object.isRequired,
+        usersByUsername: PropTypes.object,
         groupsByName: PropTypes.object,
     };
 
@@ -64,6 +64,7 @@ export default class AtMention extends React.PureComponent {
                 leftButtons: [{
                     id: 'close-settings',
                     icon: this.closeButton,
+                    testID: 'close.settings.button',
                 }],
             },
         };
@@ -205,7 +206,7 @@ export default class AtMention extends React.PureComponent {
         }
 
         if (highlighted) {
-            mentionTextStyle.push({backgroundColor, color: theme.mentionColor});
+            mentionTextStyle.push({backgroundColor, color: theme.mentionHighlightLink});
         }
 
         return (

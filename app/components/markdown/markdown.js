@@ -11,13 +11,13 @@ import {
     View,
 } from 'react-native';
 
-import AtMention from 'app/components/at_mention';
-import ChannelLink from 'app/components/channel_link';
-import Emoji from 'app/components/emoji';
-import FormattedText from 'app/components/formatted_text';
-import Hashtag from 'app/components/markdown/hashtag';
-import {blendColors, concatStyles, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getScheme} from 'app/utils/url';
+import AtMention from '@components/at_mention';
+import ChannelLink from '@components/channel_link';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
+import Hashtag from '@components/markdown/hashtag';
+import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {getScheme} from '@utils/url';
 
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
@@ -49,13 +49,11 @@ export default class Markdown extends PureComponent {
         mentionKeys: PropTypes.array,
         minimumHashtagLength: PropTypes.number,
         onChannelLinkPress: PropTypes.func,
-        onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         postId: PropTypes.string,
         textStyles: PropTypes.object,
         theme: PropTypes.object,
-        value: PropTypes.string.isRequired,
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         disableHashtags: PropTypes.bool,
         disableAtMentions: PropTypes.bool,
         disableChannelLink: PropTypes.bool,
@@ -274,7 +272,6 @@ export default class Markdown extends PureComponent {
             <Hashtag
                 hashtag={hashtag}
                 linkStyle={this.props.textStyles.link}
-                onHashtagPress={this.props.onHashtagPress}
             />
         );
     };
@@ -369,7 +366,12 @@ export default class Markdown extends PureComponent {
     };
 
     renderThematicBreak = () => {
-        return <View style={this.props.blockStyles.horizontalRule}/>;
+        return (
+            <View
+                style={this.props.blockStyles.horizontalRule}
+                testID='markdown_thematic_break'
+            />
+        );
     };
 
     renderSoftBreak = () => {
@@ -412,10 +414,7 @@ export default class Markdown extends PureComponent {
 
     renderLink = ({children, href}) => {
         return (
-            <MarkdownLink
-                href={href}
-                onPermalinkPress={this.props.onPermalinkPress}
-            >
+            <MarkdownLink href={href}>
                 {children}
             </MarkdownLink>
         );

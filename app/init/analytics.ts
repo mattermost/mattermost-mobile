@@ -6,7 +6,6 @@ import {Dimensions} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
 import {Config} from '@mm-redux/types/config';
-import tracker from '@utils/time_tracker';
 import {isSystemAdmin} from '@mm-redux/utils/user_utils';
 
 type RudderClient = {
@@ -101,24 +100,6 @@ class Analytics {
         };
 
         this.analytics.track(event, properties, options);
-    }
-
-    recordTime(screenName: string, category: string, userId: string) {
-        if (this.analytics) {
-            const track: Record<string, number> = tracker;
-            const startTime: number = track[category];
-            track[category] = 0;
-            this.analytics.screen(
-                screenName, {
-                    userId: this.diagnosticId,
-                    context: this.context,
-                    properties: {
-                        user_actual_id: userId,
-                        time: Date.now() - startTime,
-                    },
-                },
-            );
-        }
     }
 
     trackAPI(event: string, props?: any) {

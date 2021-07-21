@@ -67,6 +67,7 @@ export default class Gallery extends PureComponent {
             sharedElementTransitions.push({
                 fromId: `gallery-${file.id}`,
                 toId: `image-${file.id}`,
+                duration: 300,
                 interpolation: {type: 'accelerateDecelerate', factor: 8},
             });
         }
@@ -79,10 +80,6 @@ export default class Gallery extends PureComponent {
             });
         }
         const options = {
-            layout: {
-                backgroundColor: '#000',
-                componentBackgroundColor: '#000',
-            },
             topBar: {
                 visible: this.footer.current?.getWrappedInstance().isVisible(),
                 background: {
@@ -90,6 +87,7 @@ export default class Gallery extends PureComponent {
                 },
                 title: {
                     text: title,
+                    color: '#FFF',
                 },
                 backButton: {
                     enableMenu: false,

@@ -1,16 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {loadChannelsForTeam} from '@actions/views/channel';
+import {loadChannelsForTeam, setChannelRetryFailed} from '@actions/views/channel';
 import {getPostsSince} from '@actions/views/post';
 import {loadMe} from '@actions/views/user';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {Client4} from '@client/rest';
+import {getThreads} from '@mm-redux/actions/threads';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getUsers, getUserStatuses} from '@mm-redux/selectors/entities/users';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
@@ -43,9 +46,9 @@ import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePrefe
 import {handleAddEmoji, handleReactionAddedEvent, handleReactionRemovedEvent} from './reactions';
 import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
+import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
 import {getChannelSinceValue} from '@utils/channels';
-import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {handleRefreshAppsBindings} from './apps';
 
 export function init(additionalOptions: any = {}) {
@@ -57,6 +60,7 @@ export function init(additionalOptions: any = {}) {
         connUrl += `${Client4.getUrlVersion()}/websocket`;
         websocketClient.setFirstConnectCallback(() => dispatch(handleFirstConnect()));
         websocketClient.setEventCallback((evt: WebSocketMessage) => dispatch(handleEvent(evt)));
+        websocketClient.setMissedEventsCallback(() => dispatch(doMissedEvents()));
         websocketClient.setReconnectCallback(() => dispatch(handleReconnect()));
         websocketClient.setCloseCallback((connectFailCount: number) => dispatch(handleClose(connectFailCount)));
 
@@ -81,15 +85,19 @@ export function close(shouldReconnect = false): GenericAction {
     };
 }
 
+function wsConnected(timestamp = Date.now()) {
+    return {
+        type: GeneralTypes.WEBSOCKET_SUCCESS,
+        timestamp,
+        data: null,
+    };
+}
+
 export function doFirstConnect(now: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
         const {lastDisconnectAt} = state.websocket;
-        const actions: Array<GenericAction> = [{
-            type: GeneralTypes.WEBSOCKET_SUCCESS,
-            timestamp: now,
-            data: null,
-        }];
+        const actions: Array<GenericAction> = [wsConnected(now)];
 
         if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
@@ -112,6 +120,14 @@ export function doFirstConnect(now: number) {
     };
 }
 
+export function doMissedEvents() {
+    return async (dispatch: DispatchFunc): Promise<ActionResult> => {
+        dispatch(wsConnected());
+
+        return {data: true};
+    };
+}
+
 export function doReconnect(now: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
@@ -122,11 +138,10 @@ export function doReconnect(now: number) {
         const {lastDisconnectAt} = state.websocket;
         const actions: Array<GenericAction> = [];
 
-        dispatch({
-            type: GeneralTypes.WEBSOCKET_SUCCESS,
-            timestamp: now,
-            data: null,
-        });
+        dispatch(batchActions([
+            wsConnected(now),
+            setChannelRetryFailed(false),
+        ], 'BATCH_WS_SUCCESS'));
 
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
@@ -139,6 +154,9 @@ export function doReconnect(now: number) {
                 }
 
                 actions.push({
+                    type: UserTypes.RECEIVED_ME,
+                    data: me.user,
+                }, {
                     type: PreferenceTypes.RECEIVED_ALL_PREFERENCES,
                     data: me.preferences,
                 }, {
@@ -155,13 +173,17 @@ export function doReconnect(now: number) {
                 const currentTeamMembership = me.teamMembers.find((tm: TeamMembership) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
                 if (currentTeamMembership) {
-                    const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true));
+                    const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true, true));
 
                     if (myData?.channels && myData?.channelMembers) {
                         actions.push({
                             type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
                             data: myData,
                         });
+
+                        if (isCollapsedThreadsEnabled(state)) {
+                            dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, false, false, (state.websocket?.lastDisconnectAt || Date.now())));
+                        }
 
                         const stillMemberOfCurrentChannel = myData.channelMembers.find((cm: ChannelMembership) => cm.channel_id === currentChannelId);
 
@@ -273,13 +295,16 @@ export function handleUserTypingEvent(msg: WebSocketMessage) {
 }
 
 function handleFirstConnect() {
-    return (dispatch: DispatchFunc) => {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const config = getConfig(state);
         const now = Date.now();
 
-        if (reconnect) {
+        if (reconnect && config?.EnableReliableWebSockets !== 'true') {
             reconnect = false;
             return dispatch(doReconnect(now));
         }
+
         return dispatch(doFirstConnect(now));
     };
 }
@@ -378,6 +403,12 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleOpenDialogEvent(msg));
         case WebsocketEvents.RECEIVED_GROUP:
             return dispatch(handleGroupUpdatedEvent(msg));
+        case WebsocketEvents.THREAD_UPDATED:
+            return dispatch(handleThreadUpdated(msg));
+        case WebsocketEvents.THREAD_READ_CHANGED:
+            return dispatch(handleThreadReadChanged(msg));
+        case WebsocketEvents.THREAD_FOLLOW_CHANGED:
+            return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS: {
             return dispatch(handleRefreshAppsBindings());
         }
