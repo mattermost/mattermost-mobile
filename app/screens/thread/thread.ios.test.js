@@ -16,6 +16,7 @@ describe('thread', () => {
     const baseProps = {
         actions: {
             selectPost: jest.fn(),
+            setThreadFollow: jest.fn(),
         },
         channelId: 'channel_id',
         channelType: General.OPEN_CHANNEL,

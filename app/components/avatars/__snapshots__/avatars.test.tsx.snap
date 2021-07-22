@@ -2,7 +2,8 @@
 
 exports[`Avatars should match snapshot for overflow 1`] = `
 <TouchableWithFeedbackIOS
-  type="native"
+  onPress={[Function]}
+  type="opacity"
 >
   <View
     style={
@@ -197,6 +198,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
             Object {
               "color": "rgba(61,60,64,0.64)",
               "fontSize": 10,
+              "fontWeight": "bold",
               "textAlign": "center",
             }
           }
@@ -211,7 +213,8 @@ exports[`Avatars should match snapshot for overflow 1`] = `
 
 exports[`Avatars should match snapshot for single avatar 1`] = `
 <TouchableWithFeedbackIOS
-  type="native"
+  onPress={[Function]}
+  type="opacity"
 >
   <View
     style={

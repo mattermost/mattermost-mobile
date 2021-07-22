@@ -32,6 +32,7 @@ export default class PostOptions extends PureComponent {
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
+            setThreadFollow: PropTypes.func.isRequired,
             setUnreadPost: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
@@ -48,9 +49,11 @@ export default class PostOptions extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
+        location: PropTypes.string,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         bindings: PropTypes.array,
+        thread: PropTypes.object,
     };
 
     static contextTypes = {
@@ -104,6 +107,25 @@ export default class PostOptions extends PureComponent {
         }
 
         return null;
+    }
+
+    getFollowThreadOption = () => {
+        const {thread} = this.props;
+        if (!thread) {
+            return null;
+        }
+        const key = 'follow';
+        let icon;
+        let message;
+        if (thread.is_following) {
+            icon = 'message-minus-outline';
+            message = {id: t('threads.unfollowThread'), defaultMessage: 'Unfollow Thread'};
+        } else {
+            icon = 'message-plus-outline';
+            message = {id: t('threads.followThread'), defaultMessage: 'Follow Thread'};
+        }
+        const onPress = this.handleToggleFollow;
+        return this.getOption(key, icon, message, onPress);
     }
 
     getCopyPermalink = () => {
@@ -251,6 +273,7 @@ export default class PostOptions extends PureComponent {
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
+            this.getFollowThreadOption(),
             this.getMarkAsUnreadOption(),
             this.getCopyPermalink(),
             this.getFlagOption(),
@@ -285,6 +308,12 @@ export default class PostOptions extends PureComponent {
         this.closeWithAnimation(() => {
             EventEmitter.emit('goToThread', post);
         });
+    };
+
+    handleToggleFollow = () => {
+        const {actions, currentUserId, thread} = this.props;
+        actions.setThreadFollow(currentUserId, thread.id, !thread.is_following);
+        this.closeWithAnimation();
     };
 
     handleAddReaction = preventDoubleTap((emoji) => {
@@ -332,11 +361,11 @@ export default class PostOptions extends PureComponent {
     };
 
     handleMarkUnread = () => {
-        const {actions, post, currentUserId} = this.props;
+        const {actions, currentUserId, location, post} = this.props;
 
         this.closeWithAnimation();
         requestAnimationFrame(() => {
-            actions.setUnreadPost(currentUserId, post.id);
+            actions.setUnreadPost(currentUserId, post.id, location);
         });
     }
 
