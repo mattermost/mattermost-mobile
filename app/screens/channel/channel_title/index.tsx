@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import ChannelGuestLabel from '@screens/channel/channel_title/channel_guest_label';
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
@@ -53,60 +54,14 @@ const ConnectedChannelTitle = ({
     const style = getStyle(theme);
     const channelType = channel.type;
     const displayName = channel.displayName;
-    const hasGuests = channelInfo.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
 
-    let isGuest = false;
     let isSelfDMChannel = false;
-
     if (channel.type === General.DM_CHANNEL && teammate) {
-        isGuest = teammate.roles === General.SYSTEM_GUEST_ROLE;
         isSelfDMChannel = currentUserId === teammateId;
     }
-
-    const renderHasGuestsText = () => {
-        if (!canHaveSubtitle) {
-            return null;
-        }
-        if (!isGuest && !hasGuests) {
-            return null;
-        }
-        if (channelType === General.DM_CHANNEL && !isGuest) {
-            return null;
-        }
-
-        let messageId;
-        let defaultMessage;
-        if (channelType === General.DM_CHANNEL) {
-            messageId = t('channel.isGuest');
-            defaultMessage = 'This person is a guest';
-        } else if (channelType === General.GM_CHANNEL) {
-            messageId = t('channel.hasGuests');
-            defaultMessage = 'This group message has guests';
-        } else if (
-            channelType === General.OPEN_CHANNEL ||
-            channelType === General.PRIVATE_CHANNEL
-        ) {
-            messageId = t('channel.channelHasGuests');
-            defaultMessage = 'This channel has guests';
-        } else {
-            return null;
-        }
-
-        return (
-            <View style={style.guestsWrapper}>
-                <FormattedText
-                    numberOfLines={1}
-                    ellipsizeMode='tail'
-                    id={messageId}
-                    defaultMessage={defaultMessage}
-                    style={style.guestsText}
-                />
-            </View>
-        );
-    };
 
     const renderChannelDisplayName = () => {
         if (isSelfDMChannel) {
@@ -170,7 +125,13 @@ const ConnectedChannelTitle = ({
                     />
                 )}
             </View>
-            {renderHasGuestsText()}
+            <ChannelGuestLabel
+                canHaveSubtitle={canHaveSubtitle}
+                channelType={channelType}
+                guestCount={channelInfo.guestCount}
+                teammateRoles={teammate?.roles ?? ''}
+                theme={theme}
+            />
         </TouchableOpacity>
     );
 };
