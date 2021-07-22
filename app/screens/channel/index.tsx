@@ -26,6 +26,19 @@ import {useTheme} from '@context/theme';
 
 const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
 
+type WithDatabaseArgs = { database: Database }
+type WithChannelAndThemeArgs = WithDatabaseArgs & {
+    currentChannelId: SystemModel;
+    currentUserId: SystemModel;
+}
+type ChannelProps = WithDatabaseArgs & {
+    channel: ChannelModel;
+    config: SystemModel;
+    launchType: LaunchType;
+    user: UserModel;
+    currentUserId: SystemModel;
+};
+
 const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
@@ -84,19 +97,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
 
     },
 }));
-
-type WithDatabaseArgs = { database: Database }
-type WithChannelAndThemeArgs = WithDatabaseArgs & {
-    currentChannelId: SystemModel;
-    currentUserId: SystemModel;
-}
-type ChannelProps = WithDatabaseArgs & {
-    channel: ChannelModel;
-    config: SystemModel;
-    launchType: LaunchType;
-    user: UserModel;
-    currentUserId: SystemModel;
-};
 
 export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentChannelId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID),
