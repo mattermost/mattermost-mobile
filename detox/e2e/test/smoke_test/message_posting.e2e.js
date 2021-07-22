@@ -97,6 +97,17 @@ describe('Message Posting', () => {
         await expect(postListPostItem).toBeVisible();
     });
 
+    it('MM-T4125 should be able to post multi-line emojis', async () => {
+        // # Post multi-line emojis
+        const message = ':fire: :fire:\n:fire: :fire: :fire:\n:fire:';
+        await postMessage(message);
+
+        // * Verify message is posted
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        const {postListPostItem} = await getPostListPostItem(post.id, '🔥 🔥\n🔥 🔥 🔥\n🔥');
+        await expect(postListPostItem).toBeVisible();
+    });
+
     it('MM-T3189 should be able to scroll up in channel with long history', async () => {
         // # Post messages
         await goToChannel(testChannel.display_name);

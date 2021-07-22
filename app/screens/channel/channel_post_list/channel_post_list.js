@@ -9,7 +9,7 @@ import {goToScreen} from '@actions/navigation';
 import PostList from '@components/post_list';
 import RetryBarIndicator from '@components/retry_bar_indicator';
 import {TYPING_HEIGHT} from '@constants/post_draft';
-import {CHANNEL} from '@constants/screen';
+import {CHANNEL, THREAD} from '@constants/screen';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -87,7 +87,7 @@ export default class ChannelPostList extends PureComponent {
         actions.getPostThread(rootId);
         actions.selectPost(rootId);
 
-        const screen = 'Thread';
+        const screen = THREAD;
         const title = '';
         const passProps = {
             channelId: post.channel_id,

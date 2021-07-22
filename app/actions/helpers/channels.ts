@@ -118,7 +118,7 @@ export async function fetchMyChannelMember(channelId: string) {
     }
 }
 
-export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: Array<string>): Array<GenericAction> {
+export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: Array<string>, isRoot = false): Array<GenericAction> {
     const {myMembers} = state.entities.channels;
     const {currentUserId} = state.entities.users;
 
@@ -127,6 +127,7 @@ export function markChannelAsUnread(state: GlobalState, teamId: string, channelI
         data: {
             channelId,
             amount: 1,
+            amountRoot: isRoot ? 1 : 0,
         },
     }, {
         type: ChannelTypes.INCREMENT_UNREAD_MSG_COUNT,
@@ -134,6 +135,7 @@ export function markChannelAsUnread(state: GlobalState, teamId: string, channelI
             teamId,
             channelId,
             amount: 1,
+            amountRoot: isRoot ? 1 : 0,
             onlyMentions: myMembers[channelId] && myMembers[channelId].notify_props &&
                 myMembers[channelId].notify_props.mark_unread === General.MENTION,
         },
@@ -146,6 +148,7 @@ export function markChannelAsUnread(state: GlobalState, teamId: string, channelI
                 teamId,
                 channelId,
                 amount: 1,
+                amountRoot: isRoot ? 1 : 0,
             },
         });
     }

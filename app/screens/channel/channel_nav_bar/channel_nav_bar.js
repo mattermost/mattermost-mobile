@@ -5,9 +5,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
-import {Dimensions, Platform, View} from 'react-native';
+import {Dimensions, Platform, View, Text} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import FormattedText from '@components/formatted_text';
 import {DeviceTypes, ViewTypes} from '@constants';
 import mattermostManaged from '@mattermost-managed';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -43,11 +44,26 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 },
             }),
         },
+        wrapper: {
+            alignItems: 'center',
+            flex: 1,
+            position: 'relative',
+            top: -1,
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            width: '90%',
+        },
+        threadsTitle: {
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 18,
+            fontWeight: '600',
+            textAlign: 'center',
+        },
     };
 });
 
 const ChannelNavBar = (props) => {
-    const {isLandscape, onPress, openMainSidebar, openSettingsSidebar, theme} = props;
+    const {isLandscape, onPress, openMainSidebar, openSettingsSidebar, theme, isGlobalThreads} = props;
     const insets = useSafeAreaInsets();
     const style = getStyleFromTheme(theme);
     const [splitView, setSplitView] = useState(false);
@@ -126,6 +142,33 @@ const ChannelNavBar = (props) => {
         break;
     }
 
+    let title;
+    if (isGlobalThreads) {
+        title = (<View style={style.wrapper}>
+            <Text
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={style.threadsTitle}
+            >
+                <FormattedText
+                    numberOfLines={1}
+                    ellipsizeMode='tail'
+                    id='threads'
+                    defaultMessage='Threads'
+                />
+            </Text>
+        </View>
+        );
+    } else {
+        title = (
+            <ChannelTitle
+                onPress={onPress}
+                canHaveSubtitle={canHaveSubtitle}
+            />
+
+        );
+    }
+
     return (
         <View
             onLayout={onLayout}
@@ -135,10 +178,7 @@ const ChannelNavBar = (props) => {
                 openSidebar={openMainSidebar}
                 visible={drawerButtonVisible()}
             />
-            <ChannelTitle
-                onPress={onPress}
-                canHaveSubtitle={canHaveSubtitle}
-            />
+            {title}
             <ChannelSearchButton
                 theme={theme}
             />
@@ -153,6 +193,7 @@ ChannelNavBar.propTypes = {
     openSettingsSidebar: PropTypes.func.isRequired,
     onPress: PropTypes.func.isRequired,
     theme: PropTypes.object.isRequired,
+    isGlobalThreads: PropTypes.bool,
 };
 
 export default ChannelNavBar;

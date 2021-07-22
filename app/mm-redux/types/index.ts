@@ -21,6 +21,7 @@ import * as roles from './roles';
 import * as search from './search';
 import * as store from './store';
 import * as teams from './teams';
+import * as threads from './threads';
 import * as typing from './typing';
 import * as users from './users';
 import * as utilities from './utilities';
@@ -49,4 +50,5 @@ export {
     requests,
     reactions,
     users,
+    threads,
 };

@@ -19,6 +19,7 @@ import remoteCluster from './remote_cluster';
 import roles from './roles';
 import search from './search';
 import teams from './teams';
+import threads from './threads';
 import typing from './typing';
 import users from './users';
 
@@ -39,6 +40,7 @@ export default combineReducers({
     groups,
     bots,
     channelCategories,
+    threads,
     remoteCluster,
     apps,
 });

@@ -7,11 +7,13 @@ import {loadMe} from '@actions/views/user';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
+import {getThreads} from '@mm-redux/actions/threads';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getUsers, getUserStatuses} from '@mm-redux/selectors/entities/users';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
@@ -46,6 +48,7 @@ import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePrefe
 import {handleAddEmoji, handleReactionAddedEvent, handleReactionRemovedEvent} from './reactions';
 import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
+import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
 
 export function init(additionalOptions: any = {}) {
@@ -177,6 +180,10 @@ export function doReconnect(now: number) {
                             type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
                             data: myData,
                         });
+
+                        if (isCollapsedThreadsEnabled(state)) {
+                            dispatch(getThreads(currentUserId, currentTeamId, '', '', undefined, false, false, (state.websocket?.lastDisconnectAt || Date.now())));
+                        }
 
                         const stillMemberOfCurrentChannel = myData.channelMembers.find((cm: ChannelMembership) => cm.channel_id === currentChannelId);
 
@@ -396,6 +403,12 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleOpenDialogEvent(msg));
         case WebsocketEvents.RECEIVED_GROUP:
             return dispatch(handleGroupUpdatedEvent(msg));
+        case WebsocketEvents.THREAD_UPDATED:
+            return dispatch(handleThreadUpdated(msg));
+        case WebsocketEvents.THREAD_READ_CHANGED:
+            return dispatch(handleThreadReadChanged(msg));
+        case WebsocketEvents.THREAD_FOLLOW_CHANGED:
+            return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS: {
             return dispatch(handleRefreshAppsBindings());
         }

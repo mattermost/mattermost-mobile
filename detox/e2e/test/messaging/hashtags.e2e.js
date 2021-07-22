@@ -18,6 +18,7 @@ import {
     PermalinkScreen,
     ThreadScreen,
 } from '@support/ui/screen';
+import {isIos} from '@support/utils';
 
 describe('Hashtags', () => {
     const {postMessage} = ChannelScreen;
@@ -103,18 +104,30 @@ describe('Hashtags', () => {
         // * Verify tapping on hashtag shows result containing post of hashtag
         await element(by.text(hashtag)).tap();
         await SearchScreen.toBeVisible();
-        await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        if (isIos()) {
+            await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        } else {
+            await expect(element(by.text(hashtag)).atIndex(0)).toExist();
+        }
 
         // # Open reply thread from search result and tap on hashtag
         const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
         const {searchResultPostItemHeaderReply} = await getSearchResultPostItem(post.id, hashtag);
         await searchResultPostItemHeaderReply.tap();
         await ThreadScreen.toBeVisible();
-        await element(by.text(hashtag)).atIndex(1).tap();
+        if (isIos()) {
+            await element(by.text(hashtag)).atIndex(1).tap();
+        } else {
+            await element(by.text(hashtag)).atIndex(0).tap();
+        }
 
         // * Verify tapping on hashtag from reply thread shows result containing post of hashtag
         await SearchScreen.toBeVisible();
-        await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        if (isIos()) {
+            await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        } else {
+            await expect(element(by.text(hashtag)).atIndex(0)).toExist();
+        }
 
         // # Go back to channel
         await searchInput.clearText();

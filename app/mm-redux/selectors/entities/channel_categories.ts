@@ -7,7 +7,7 @@ import shallowEquals from 'shallow-equals';
 import {getCurrentChannelId, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 import {getLastPostPerChannel} from '@mm-redux/selectors/entities/posts';
-import {getMyPreferences, getTeammateNameDisplaySetting, shouldAutocloseDMs} from '@mm-redux/selectors/entities/preferences';
+import {getMyPreferences, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled, shouldAutocloseDMs} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {ChannelCategory} from '@mm-redux/types/channel_categories';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
@@ -110,7 +110,8 @@ export function makeFilterAutoclosedDMs(getAutocloseCutoff = getDefaultAutoclose
         getCurrentUserId,
         getMyChannelMemberships,
         getLastPostPerChannel,
-        (channels, categoryType, myPreferences, autocloseDMs, currentChannelId, profiles, currentUserId, myChannelMembers, lastPosts) => {
+        isCollapsedThreadsEnabled,
+        (channels, categoryType, myPreferences, autocloseDMs, currentChannelId, profiles, currentUserId, myChannelMembers, lastPosts, collapsedThreadsEnabled) => {
             if (categoryType !== CategoryTypes.DIRECT_MESSAGES) {
                 // Only autoclose DMs that haven't been assigned to a category
                 return channels;
@@ -125,7 +126,7 @@ export function makeFilterAutoclosedDMs(getAutocloseCutoff = getDefaultAutoclose
                 }
 
                 // Unread channels will never be hidden
-                if (isUnreadChannel(myChannelMembers, channel)) {
+                if (isUnreadChannel(myChannelMembers, channel, collapsedThreadsEnabled)) {
                     return true;
                 }
 

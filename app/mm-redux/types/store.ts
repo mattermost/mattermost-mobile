@@ -17,6 +17,7 @@ import {ChannelsRequestsStatuses, GeneralRequestsStatuses, PostsRequestsStatuses
 import {Role} from './roles';
 import {SearchState} from './search';
 import {TeamsState} from './teams';
+import {ThreadsState} from './threads';
 import {Typing} from './typing';
 import {UsersState} from './users';
 import {Dictionary} from './utilities';
@@ -28,6 +29,7 @@ export type GlobalState = {
         teams: TeamsState;
         channels: ChannelsState;
         posts: PostsState;
+        threads: ThreadsState;
         bots: {
             accounts: Dictionary<Bot>;
         };

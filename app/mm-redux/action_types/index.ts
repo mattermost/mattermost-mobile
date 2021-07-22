@@ -19,6 +19,7 @@ import RemoteClusterTypes from './remote_cluster';
 import RoleTypes from './roles';
 import SearchTypes from './search';
 import TeamTypes from './teams';
+import ThreadTypes from './threads';
 import UserTypes from './users';
 
 export {
@@ -39,6 +40,7 @@ export {
     BotTypes,
     PluginTypes,
     ChannelCategoryTypes,
+    ThreadTypes,
     RemoteClusterTypes,
     AppsTypes,
 };

@@ -190,7 +190,7 @@ describe('Search', () => {
         // # Perform search on keyword
         await SearchScreen.open();
         await searchInput.clearText();
-        await searchInput.typeText(keyword);
+        await searchInput.replaceText(keyword);
         await searchInput.tapReturnKey();
 
         // * Verify user can scroll down multiple times until first matching post is seen
@@ -230,14 +230,15 @@ async function postMessageAndSearchFrom(testMessage, testUser, atMentionSuggesti
     await userAtMentionAutocomplete.tap();
 
     // # Type end of search term
-    await searchInput.typeText(testPartialSearchTerm);
+    const searchTerms = `${searchFromModifier} ${testUser.username} ${testPartialSearchTerm}`;
+    await searchInput.clearText();
+    await searchInput.replaceText(searchTerms);
 
     // # Search user
     await searchInput.tapReturnKey();
     await expect(atMentionSuggestionList).not.toExist();
 
     // * Verify recent search item is displayed
-    const searchTerms = `${searchFromModifier} ${testUser.username} ${testPartialSearchTerm}`;
     const {recentSearchItem} = await getRecentSearchItem(searchTerms);
     await expect(recentSearchItem).toBeVisible();
 }
@@ -270,14 +271,15 @@ async function postMessageAndSearchIn(testMessage, testChannel, channelMentionSu
     await channelMentionAutocomplete.tap();
 
     // # Type end of search term
-    await searchInput.typeText(testPartialSearchTerm);
+    const searchTerms = `${searchInModifier} ${testChannel.name} ${testPartialSearchTerm}`;
+    await searchInput.clearText();
+    await searchInput.replaceText(searchTerms);
 
     // # Search channel
     await searchInput.tapReturnKey();
     await expect(channelMentionSuggestionList).not.toExist();
 
     // * Verify recent search item is displayed
-    const searchTerms = `${searchInModifier} ${testChannel.name} ${testPartialSearchTerm}`;
     const {recentSearchItem} = await getRecentSearchItem(searchTerms);
     await expect(recentSearchItem).toBeVisible();
 }
@@ -296,7 +298,7 @@ async function postMessageAndSearchText(testMessage, testPartialSearchTerm) {
 
     // # Type beginning of search term
     await searchInput.clearText();
-    await searchInput.typeText(testPartialSearchTerm);
+    await searchInput.replaceText(testPartialSearchTerm);
 
     // # Search text
     await searchInput.tapReturnKey();

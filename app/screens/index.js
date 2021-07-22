@@ -10,6 +10,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Provider} from 'react-redux';
 
 import RootWrapper from '@components/root';
+import ThreadFollow from '@screens/thread/thread_follow';
 
 let store;
 
@@ -147,6 +148,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'OptionsModal':
         screen = require('@screens/options_modal').default;
         break;
+    case 'ParticipantsList':
+        screen = require('@screens/participants_list').default;
+        break;
     case 'PerfMetrics':
         screen = require('@screens/perf_metrics').default;
         break;
@@ -201,6 +205,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'Thread':
         screen = require('@screens/thread').default;
         break;
+    case 'ThreadFollow': {
+        Navigation.registerComponent('ThreadFollow', () => ThreadFollow);
+        break;
+    }
     case 'TimezoneSettings':
         screen = require('@screens/settings/timezone').default;
         break;

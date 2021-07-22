@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
 
-import {Config} from '@mm-redux/types/config';
+import {Config, FeatureFlags} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
@@ -10,6 +10,13 @@ import {General} from '../../constants';
 
 export function getConfig(state: GlobalState): Partial<Config> {
     return state.entities.general.config;
+}
+
+/**
+ * Safely get value of a specific or known FeatureFlag
+ */
+export function getFeatureFlagValue(state: GlobalState, key: keyof FeatureFlags): string | undefined {
+    return getConfig(state)?.[`FeatureFlag${key}` as keyof Partial<Config>];
 }
 
 export function getLicense(state: GlobalState): any {

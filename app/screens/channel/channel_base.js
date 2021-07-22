@@ -36,6 +36,8 @@ export default class ChannelBase extends PureComponent {
         teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
+        skipMetrics: PropTypes.bool,
+        viewingGlobalThreads: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -44,6 +46,7 @@ export default class ChannelBase extends PureComponent {
 
     static defaultProps = {
         disableTermsModal: false,
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
