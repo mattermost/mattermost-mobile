@@ -12,7 +12,7 @@ import {General} from '@constants';
 import {getUserIdFromChannelName} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import ChannelTitle from '../channel_title';
+import ChannelTitle from './channel_title';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
