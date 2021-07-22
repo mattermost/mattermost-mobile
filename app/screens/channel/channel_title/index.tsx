@@ -22,12 +22,37 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type UserModel from '@typings/database/models/servers/user';
 
-const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId, channelInfo, channelSettings, teammateId, teammate}: ChannelTitleProps) => {
+type ChannelTitleInputProps = {
+    canHaveSubtitle: boolean;
+    channel: ChannelModel;
+    currentUserId: string;
+    teammateId?: string;
+    onPress: () => void;
+};
+
+type ChannelTitleProps = ChannelTitleInputProps & {
+    channelInfo: ChannelInfoModel;
+    channelSettings: MyChannelSettingsModel;
+    database: Database;
+    teammate?: UserModel;
+    teammateId: string;
+};
+
+const ConnectedChannelTitle = ({
+    canHaveSubtitle,
+    channel,
+    channelInfo,
+    channelSettings,
+    currentUserId,
+    onPress,
+    teammate,
+    teammateId,
+}: ChannelTitleProps) => {
     const theme = useTheme();
 
     const style = getStyle(theme);
     const channelType = channel.type;
-    const displayName = channel ? channel.displayName : '';
+    const displayName = channel.displayName;
     const hasGuests = channelInfo.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
@@ -35,25 +60,11 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
 
     let isGuest = false;
     let isSelfDMChannel = false;
-    let wrapperWidth = 90;
 
     if (channel.type === General.DM_CHANNEL && teammate) {
         isGuest = teammate.roles === General.SYSTEM_GUEST_ROLE;
         isSelfDMChannel = currentUserId === teammateId;
     }
-
-    const renderArchiveIcon = () => {
-        let content = null;
-        if (isArchived) {
-            content = (
-                <CompassIcon
-                    name='archive-outline'
-                    style={[style.archiveIcon]}
-                />
-            );
-        }
-        return content;
-    };
 
     const renderHasGuestsText = () => {
         if (!canHaveSubtitle) {
@@ -74,7 +85,10 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
         } else if (channelType === General.GM_CHANNEL) {
             messageId = t('channel.hasGuests');
             defaultMessage = 'This group message has guests';
-        } else if (channelType === General.OPEN_CHANNEL || channelType === General.PRIVATE_CHANNEL) {
+        } else if (
+            channelType === General.OPEN_CHANNEL ||
+            channelType === General.PRIVATE_CHANNEL
+        ) {
             messageId = t('channel.channelHasGuests');
             defaultMessage = 'This channel has guests';
         } else {
@@ -92,24 +106,6 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
                 />
             </View>
         );
-    };
-
-    const renderChannelIcon = () => {
-        if (isChannelShared) {
-            return (
-                <ChannelIcon
-                    isActive={true}
-                    isArchived={false}
-
-                    // isBot={false}
-                    size={18}
-                    shared={isChannelShared}
-                    style={style.channelIconContainer}
-                    type={channelType}
-                />
-            );
-        }
-        return null;
     };
 
     const renderChannelDisplayName = () => {
@@ -130,38 +126,19 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
         return displayName;
     };
 
-    const renderMutedIcon = () => {
-        if (isChannelMuted) {
-            wrapperWidth -= 10;
-            return (
-                <CompassIcon
-                    style={[style.icon, style.muted]}
-                    size={24}
-                    name='bell-off-outline'
-                />
-            );
-        }
-        return null;
-    };
-
-    const renderIcon = () => {
-        return (
-            <CompassIcon
-                style={style.icon}
-                size={24}
-                name='chevron-down'
-            />
-        );
-    };
-
     return (
         <TouchableOpacity
             testID={'channel.title.button'}
             style={style.container}
             onPress={onPress}
         >
-            <View style={[style.wrapper, {width: `${wrapperWidth}%`}]}>
-                {renderArchiveIcon()}
+            <View style={style.wrapper}>
+                {isArchived && (
+                    <CompassIcon
+                        name='archive-outline'
+                        style={[style.archiveIcon]}
+                    />
+                )}
                 <Text
                     ellipsizeMode='tail'
                     numberOfLines={1}
@@ -170,9 +147,28 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
                 >
                     {renderChannelDisplayName()}
                 </Text>
-                {renderChannelIcon()}
-                {renderIcon()}
-                {renderMutedIcon()}
+                {isChannelShared && (
+                    <ChannelIcon
+                        isActive={true}
+                        isArchived={false}
+                        size={18}
+                        shared={isChannelShared}
+                        style={style.channelIconContainer}
+                        type={channelType}
+                    />
+                )}
+                <CompassIcon
+                    style={style.icon}
+                    size={24}
+                    name='chevron-down'
+                />
+                {isChannelMuted && (
+                    <CompassIcon
+                        style={[style.icon, style.muted]}
+                        size={24}
+                        name='bell-off-outline'
+                    />
+                )}
             </View>
             {renderHasGuestsText()}
         </TouchableOpacity>
@@ -191,6 +187,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            width: '90%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
@@ -236,31 +233,35 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-type ChannelTitleInputProps = {
-    canHaveSubtitle: boolean;
-    channel: ChannelModel;
-    currentUserId: string;
-    teammateId?: string;
-    onPress: () => void;
-};
-
-type ChannelTitleProps = ChannelTitleInputProps & {
-    channelInfo: ChannelInfoModel;
-    channelSettings: MyChannelSettingsModel;
-    database: Database;
-    teammate?: UserModel;
-    teammateId: string;
-};
-
-const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> = withDatabase(
-    withObservables(['channel', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
-        return {
-            channelInfo: database.collections.get(MM_TABLES.SERVER.CHANNEL_INFO).findAndObserve(channel.id),
-            channelSettings: database.collections.get(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS).findAndObserve(channel.id),
-            ...(teammateId && channel.displayName && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
-        };
-    },
-    )(ConnectedChannelTitle),
-);
+const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> =
+    withDatabase(
+        withObservables(
+            ['channel', 'teammateId'],
+            ({
+                channel,
+                teammateId,
+                database,
+            }: {
+                channel: ChannelModel;
+                teammateId: string;
+                database: Database;
+            }) => {
+                return {
+                    channelInfo: database.collections.
+                        get(MM_TABLES.SERVER.CHANNEL_INFO).
+                        findAndObserve(channel.id),
+                    channelSettings: database.collections.
+                        get(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS).
+                        findAndObserve(channel.id),
+                    ...(teammateId &&
+                        channel.displayName && {
+                        teammate: database.collections.
+                            get(MM_TABLES.SERVER.USER).
+                            findAndObserve(teammateId),
+                    }),
+                };
+            },
+        )(ConnectedChannelTitle),
+    );
 
 export default ChannelTitle;
