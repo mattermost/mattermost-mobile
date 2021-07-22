@@ -42,7 +42,7 @@ type ChannelWithTeamData = Channel & {
     team_update_at: number;
 }
 type ChannelMembership = {
-    id: string;
+    id?: string;
     channel_id: string;
     user_id: string;
     roles: string;
