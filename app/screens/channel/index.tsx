@@ -1,28 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
-import {
-    Colors,
-    DebugInstructions,
-    Header,
-    LearnMoreLinks,
-    ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-import type {LaunchProps} from '@typings/launch';
+import {Database} from '@nozbe/watermelondb';
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
+import React, {useEffect} from 'react';
+import {useIntl} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {logout} from '@actions/remote/general';
+import StatusBar from '@components/status_bar';
+import ViewTypes from '@constants/view';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
+import {isMinimumServerVersion} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {unsupportedServer} from '@utils/supported_server/supported_server';
+import {isSystemAdmin as isUserSystemAdmin} from '@utils/user';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+
+import ChannelNavBar from './channel_nav_bar';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type SystemModel from '@typings/database/models/servers/system';
+import type UserModel from '@typings/database/models/servers/user';
+import type {LaunchType} from '@typings/launch';
 import {useTheme} from '@context/theme';
+import {Text, View} from 'react-native';
 
-type ChannelProps = LaunchProps;
+const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
 
-const Channel = (props: ChannelProps) => {
+type WithDatabaseArgs = { database: Database }
+type WithChannelAndThemeArgs = WithDatabaseArgs & {
+    currentChannelId: SystemModel;
+    currentUserId: SystemModel;
+}
+type ChannelProps = WithDatabaseArgs & {
+    channel: ChannelModel;
+    config: SystemModel;
+    launchType: LaunchType;
+    user: UserModel;
+    currentUserId: SystemModel;
+};
+
+const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
-    const {launchType} = props;
-    console.log(launchType); // eslint-disable-line no-console
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
     // if (props.launchError) {
@@ -33,69 +55,64 @@ const Channel = (props: ChannelProps) => {
     //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
     //     }
     // }
-    const serverUrl = useServerUrl();
+
+    //todo: https://mattermost.atlassian.net/browse/MM-37266
+
+    const intl = useIntl();
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
+    useEffect(() => {
+        const serverVersion = (config.value?.Version) || '';
+
+        const isSystemAdmin = isUserSystemAdmin(user.roles);
+
+        if (serverVersion) {
+            const {RequiredServer: {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION}} = ViewTypes;
+            const isSupportedServer = isMinimumServerVersion(serverVersion, MAJOR_VERSION, MIN_VERSION, PATCH_VERSION);
+
+            if (!isSupportedServer) {
+                // Only display the Alert if the TOS does not need to show first
+                unsupportedServer(isSystemAdmin, intl.formatMessage);
+            }
+        }
+    }, [config.value?.Version, intl.formatMessage, user.roles]);
+
+    const serverUrl = useServerUrl();
 
     const doLogout = () => {
         logout(serverUrl!);
     };
 
     return (
-        <>
-            <StatusBar barStyle='dark-content'/>
-            <SafeAreaView>
-                <ScrollView
-                    contentInsetAdjustmentBehavior='automatic'
-                    style={styles.scrollView}
+        <SafeAreaView
+            style={styles.flex}
+            mode='margin'
+            edges={['left', 'right', 'bottom']}
+        >
+            <StatusBar theme={theme}/>
+            <ChannelNavBar
+                currentUserId={currentUserId.value}
+                channel={channel}
+                onPress={() => null}
+                config={config.value}
+            />
+            <View style={styles.sectionContainer}>
+                <Text
+                    onPress={doLogout}
+                    style={styles.sectionTitle}
                 >
-                    <Header/>
-                    <View style={styles.body}>
-                        <View style={styles.sectionContainer}>
-                            <Text
-                                onPress={doLogout}
-                                style={styles.sectionTitle}
-                            >{`Logout from ${serverUrl}`}</Text>
-                            <Text style={[styles.sectionDescription, {color: theme.centerChannelColor}]}>
-                                {'Edit '}<Text style={[styles.highlight, {color: theme.centerChannelColor}]}>{'screens/channel/index.tsx'}</Text>{' to change this'}
-                                {' screen and then come back to see your edits.'}
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'See Your Changes'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                <ReloadInstructions/>
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Debug'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                <DebugInstructions/>
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Learn More'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                {'Read the docs to discover what to do next:'}
-                            </Text>
-                        </View>
-                        <LearnMoreLinks/>
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-        </>
+                    {`Logout from ${serverUrl}`}
+                </Text>
+            </View>
+
+        </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    scrollView: {
-        backgroundColor: Colors.lighter,
-    },
-    engine: {
-        position: 'absolute',
-        right: 0,
-    },
-    body: {
-        backgroundColor: Colors.white,
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
+    flex: {
+        flex: 1,
     },
     sectionContainer: {
         marginTop: 32,
@@ -106,23 +123,17 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: Colors.black,
     },
-    sectionDescription: {
-        marginTop: 8,
-        fontSize: 18,
-        fontWeight: '400',
-        color: Colors.dark,
-    },
-    highlight: {
-        fontWeight: '700',
-    },
-    footer: {
-        color: Colors.dark,
-        fontSize: 12,
-        fontWeight: '600',
-        padding: 4,
-        paddingRight: 12,
-        textAlign: 'right',
-    },
-});
+}));
 
-export default Channel;
+export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentChannelId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID),
+    currentUserId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+    config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+}));
+
+const withChannelAndUser = withObservables(['currentChannelId'], ({currentChannelId, currentUserId, database}: WithChannelAndThemeArgs) => ({
+    channel: database.collections.get(CHANNEL).findAndObserve(currentChannelId.value),
+    user: database.collections.get(USER).findAndObserve(currentUserId.value),
+}));
+
+export default withDatabase(withSystemIds(withChannelAndUser(Channel)));

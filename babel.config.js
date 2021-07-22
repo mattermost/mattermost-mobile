@@ -28,6 +28,7 @@ module.exports = {
                 '@context': './app/context',
                 '@database': './app/database',
                 '@helpers': './app/helpers',
+                '@hooks': './app/hooks',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
                 '@notifications': './app/notifications',
