@@ -3,18 +3,17 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import ChannelGuestLabel from '@screens/channel/channel_title/channel_guest_label';
 import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
-import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {t} from '@utils/i18n';
+
+import ChannelDisplayName from './channel_display_name';
+import ChannelGuestLabel from './channel_guest_label';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -58,29 +57,6 @@ const ConnectedChannelTitle = ({
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
 
-    let isSelfDMChannel = false;
-    if (channel.type === General.DM_CHANNEL && teammate) {
-        isSelfDMChannel = currentUserId === teammateId;
-    }
-
-    const renderChannelDisplayName = () => {
-        if (isSelfDMChannel) {
-            const messageId = t('channel_header.directchannel.you');
-            const defaultMessage = '{displayname} (you)';
-            const values = {displayname: displayName};
-
-            return (
-                <FormattedText
-                    id={messageId}
-                    defaultMessage={defaultMessage}
-                    values={values}
-                />
-            );
-        }
-
-        return displayName;
-    };
-
     return (
         <TouchableOpacity
             testID={'channel.title.button'}
@@ -94,14 +70,13 @@ const ConnectedChannelTitle = ({
                         style={[style.archiveIcon]}
                     />
                 )}
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={style.text}
-                    testID='channel.nav_bar.title'
-                >
-                    {renderChannelDisplayName()}
-                </Text>
+                <ChannelDisplayName
+                    channelType={channelType}
+                    currentUserId={currentUserId}
+                    displayName={displayName}
+                    teammateId={teammateId}
+                    theme={theme}
+                />
                 {isChannelShared && (
                     <ChannelIcon
                         isActive={true}
