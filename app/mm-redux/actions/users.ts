@@ -802,29 +802,32 @@ export function searchProfiles(term: string, options: any = {}): ActionFunc {
 }
 
 let statusIntervalId: NodeJS.Timeout|null;
-export function startPeriodicStatusUpdates(): ActionFunc {
+export function startPeriodicStatusUpdates(forceStatusUpdate = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         if (statusIntervalId) {
             clearInterval(statusIntervalId);
         }
 
-        statusIntervalId = setInterval(
-            () => {
-                const {statuses} = getState().entities.users;
+        const getStatusForUsers = () => {
+            const {statuses} = getState().entities.users;
 
-                if (!statuses) {
-                    return;
-                }
+            if (!statuses) {
+                return;
+            }
 
-                const userIds = Object.keys(statuses);
-                if (!userIds.length) {
-                    return;
-                }
+            const userIds = Object.keys(statuses).filter((u) => u);
+            if (!userIds.length) {
+                return;
+            }
 
-                dispatch(getStatusesByIds(userIds));
-            },
-            General.STATUS_INTERVAL,
-        );
+            dispatch(getStatusesByIds(userIds));
+        };
+
+        statusIntervalId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
+
+        if (forceStatusUpdate) {
+            getStatusForUsers();
+        }
 
         return {data: true};
     };

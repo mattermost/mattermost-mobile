@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
+  node: circleci/node@4.5.1
 
 executors:
   android:
@@ -91,12 +92,15 @@ commands:
   npm-dependencies:
     description: "Get JavaScript dependencies"
     steps:
+      - node/install:
+          node-version: '16.2.0'
+          install-npm: false
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
-          command: NODE_ENV=development npm install --ignore-scripts
+          command: NODE_ENV=development npm ci --ignore-scripts
       - save_cache:
           name: Save npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
@@ -587,6 +591,7 @@ workflows:
                 - /^build-\d+$/
                 - /^build-ios-\d+$/
                 - /^build-ios-beta-\d+$/
+                - /^build-ios-sim-\d+$/
                 
       - github-release:
           context: mattermost-mobile-unsigned

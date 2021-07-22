@@ -9,20 +9,31 @@
 
 import {Autocomplete} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {Setup} from '@support/server_api';
+import {
+    Setup,
+    Team,
+    User,
+} from '@support/server_api';
 
 describe('Autocomplete', () => {
-    let user;
     const {postInput} = ChannelScreen;
     const {atMentionSuggestionList} = Autocomplete;
+    let testUser;
+    let testOtherUser;
     let userAtMentionAutocomplete;
+    let otherUserAtMentionAutocomplete;
 
     beforeAll(async () => {
-        ({user} = await Setup.apiInit());
-        userAtMentionAutocomplete = Autocomplete.getAtMentionItem(user.id);
+        const {team, user} = await Setup.apiInit();
+        testUser = user;
+        ({atMentionItem: userAtMentionAutocomplete} = Autocomplete.getAtMentionItem(testUser.id));
+
+        ({user: testOtherUser} = await User.apiCreateUser());
+        await Team.apiAddUserToTeam(testOtherUser.id, team.id);
+        ({atMentionItem: otherUserAtMentionAutocomplete} = Autocomplete.getAtMentionItem(testOtherUser.id));
 
         // # Open channel screen
-        await ChannelScreen.open(user);
+        await ChannelScreen.open(testUser);
     });
 
     beforeEach(async () => {
@@ -42,7 +53,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type username
-        await postInput.typeText(user.username);
+        await postInput.typeText(testUser.username);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -55,7 +66,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type nickname
-        await postInput.typeText(user.nickname);
+        await postInput.typeText(testUser.nickname);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -68,7 +79,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type first name
-        await postInput.typeText(user.first_name);
+        await postInput.typeText(testUser.first_name);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -81,7 +92,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type last name
-        await postInput.typeText(user.last_name);
+        await postInput.typeText(testUser.last_name);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -94,7 +105,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type lowercase first name
-        await postInput.typeText(user.first_name.toLowerCase());
+        await postInput.typeText(testUser.first_name.toLowerCase());
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -107,7 +118,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type lowercase last name
-        await postInput.typeText(user.last_name.toLowerCase());
+        await postInput.typeText(testUser.last_name.toLowerCase());
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -120,7 +131,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type full name
-        await postInput.typeText(`${user.first_name} ${user.last_name}`);
+        await postInput.typeText(`${testUser.first_name} ${testUser.last_name}`);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -133,7 +144,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type partial full name
-        await postInput.typeText(`${user.first_name} ${user.last_name.substring(0, user.last_name.length - 6)}`);
+        await postInput.typeText(`${testUser.first_name} ${testUser.last_name.substring(0, testUser.last_name.length - 6)}`);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -146,7 +157,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type full name
-        await postInput.typeText(`${user.first_name} ${user.last_name}`);
+        await postInput.typeText(`${testUser.first_name} ${testUser.last_name}`);
 
         // * Expect at mention autocomplete to contain associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
@@ -178,7 +189,7 @@ describe('Autocomplete', () => {
         await expect(atMentionSuggestionList).toExist();
 
         // # Type username
-        await postInput.typeText(user.username);
+        await postInput.typeText(testUser.username);
 
         // # Tap user
         await userAtMentionAutocomplete.tap();
@@ -189,5 +200,37 @@ describe('Autocomplete', () => {
         // # Type "@" again to re-activate mention autocomplete
         await postInput.typeText('@');
         await expect(atMentionSuggestionList).toExist();
+    });
+
+    it('MM-T511 should not be able to autocomplete deactivated user', async () => {
+        // # Deactivate user
+        await User.apiDeactivateUser(testOtherUser.id);
+
+        // # Type "@" to activate at mention autocomplete
+        await postInput.typeText('@');
+        await Autocomplete.toBeVisible();
+        await expect(atMentionSuggestionList).toExist();
+
+        // # Type username
+        await postInput.typeText(testOtherUser.username);
+
+        // * Expect at mention autocomplete to not contain associated user suggestion
+        await expect(otherUserAtMentionAutocomplete).not.toExist();
+
+        // # Reactivate user
+        await User.apiUpdateUserActiveStatus(testOtherUser.id, true);
+
+        // # Type "@" to activate at mention autocomplete
+        await postInput.clearText();
+        await Autocomplete.toBeVisible(false);
+        await postInput.typeText('@');
+        await Autocomplete.toBeVisible();
+        await expect(atMentionSuggestionList).toExist();
+
+        // # Type username
+        await postInput.typeText(testOtherUser.username);
+
+        // * Expect at mention autocomplete to contain associated user suggestion
+        await expect(otherUserAtMentionAutocomplete).toExist();
     });
 });

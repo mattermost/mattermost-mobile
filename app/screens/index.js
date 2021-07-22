@@ -10,6 +10,8 @@ import {Provider} from 'react-redux';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import RootWrapper from '@components/root';
+import ThreadFollow from '@screens/thread/thread_follow';
+
 let store;
 
 const withGestures = (screen, styles) => {
@@ -70,6 +72,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'CreateChannel':
         screen = require('@screens/create_channel').default;
         break;
+    case 'CustomStatus':
+        screen = require('@screens/custom_status').default;
+        break;
     case 'DisplaySettings':
         screen = require('@screens/settings/display_settings').default;
         break;
@@ -105,9 +110,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'LoginOptions':
         screen = require('@screens/login_options').default;
-        break;
-    case 'LongPost':
-        screen = require('@screens/long_post').default;
         break;
     case 'MainSidebar':
         screen = require('app/components/sidebars/main').default;
@@ -145,6 +147,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'OptionsModal':
         screen = require('@screens/options_modal').default;
+        break;
+    case 'ParticipantsList':
+        screen = require('@screens/participants_list').default;
         break;
     case 'PerfMetrics':
         screen = require('@screens/perf_metrics').default;
@@ -200,11 +205,18 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'Thread':
         screen = require('@screens/thread').default;
         break;
+    case 'ThreadFollow': {
+        Navigation.registerComponent('ThreadFollow', () => ThreadFollow);
+        break;
+    }
     case 'TimezoneSettings':
         screen = require('@screens/settings/timezone').default;
         break;
     case 'UserProfile':
         screen = require('@screens/user_profile').default;
+        break;
+    case 'SlideUp':
+        screen = require('@screens/slide_up').default;
         break;
     }
 

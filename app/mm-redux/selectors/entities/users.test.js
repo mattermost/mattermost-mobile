@@ -402,7 +402,24 @@ describe('Selectors.Users', () => {
         ];
 
         testCases.forEach((testCase) => {
-            assert.deepEqual(getProfilesByIdsAndUsernames(testState, testCase.input), testCase.output);
+            assert.deepEqual(getProfilesByIdsAndUsernames(testState, testCase.input.allUserIds, testCase.input.allUsernames), testCase.output);
+        });
+    });
+
+    it('makeGetProfilesByIds', () => {
+        const getProfilesByIds = Selectors.makeGetProfilesByIds();
+
+        const testCases = [
+            {input: [], output: []},
+            {input: ['nonexistentid'], output: []},
+            {input: [user1.id], output: [user1]},
+            {input: [user1.id, 'nonexistentid'], output: [user1]},
+            {input: [user1.id, user2.id], output: [user1, user2]},
+            {input: ['nonexistentid', user1.id, user2.id], output: [user1, user2]},
+        ];
+
+        testCases.forEach((testCase) => {
+            assert.deepStrictEqual(getProfilesByIds(testState, testCase.input), testCase.output);
         });
     });
 

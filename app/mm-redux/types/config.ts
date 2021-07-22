@@ -21,6 +21,7 @@ export type Config = {
     BuildHashEnterprise: string;
     BuildNumber: string;
     CloseUnusedDirectMessages: string;
+    CollapsedThreads: 'disabled' | 'default_off' | 'default_on';
     CustomBrandText: string;
     CustomDescriptionText: string;
     CustomTermsOfServiceId: string;
@@ -50,6 +51,7 @@ export type Config = {
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
     EnableCustomTermsOfService: string;
+    EnableCustomUserStatuses: string;
     EnableDeveloper: string;
     EnableDiagnostics: string;
     EnableEmailBatching: string;
@@ -168,3 +170,5 @@ export type Config = {
     WebsocketSecurePort: string;
     WebsocketURL: string;
 };
+
+export type FeatureFlags = Record<string, string>;

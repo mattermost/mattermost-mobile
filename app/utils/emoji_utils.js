@@ -5,7 +5,7 @@ import emojiRegex from 'emoji-regex';
 
 import {Emojis, EmojiIndicesByAlias} from './emojis';
 
-const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_-]+):)/g;
+const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_+-]+):)/g;
 
 const RE_UNICODE_EMOJI = emojiRegex();
 
@@ -28,8 +28,6 @@ const RE_EMOTICON = {
     mask: /(^|\s)(:-x)(?=$|\s)/gi, // :-x
     heart: /(^|\s)(<3|&lt;3)(?=$|\s)/g, // <3
     broken_heart: /(^|\s)(<\/3|&lt;&#x2F;3)(?=$|\s)/g, // </3
-    thumbsup: /(^|\s)(:\+1:)(?=$|\s)/g, // :+1:
-    thumbsdown: /(^|\s)(:-1:)(?=$|\s)/g, // :-1:
 };
 
 const MAX_JUMBO_EMOJIS = 4;
@@ -52,13 +50,13 @@ export function getEmoticonName(value) {
 
 export function hasEmojisOnly(message, customEmojis) {
     if (!message || message.length === 0 || (/^\s{4}/).test(message)) {
-        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
+        return {isEmojiOnly: false, isJumboEmoji: false};
     }
 
     const chunks = message.trim().replace(/\n/g, ' ').split(' ').filter((m) => m && m.length > 0);
 
     if (chunks.length === 0) {
-        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
+        return {isEmojiOnly: false, isJumboEmoji: false};
     }
 
     let emojiCount = 0;
@@ -87,12 +85,12 @@ export function hasEmojisOnly(message, customEmojis) {
             continue;
         }
 
-        return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
+        return {isEmojiOnly: false, isJumboEmoji: false};
     }
 
     return {
         isEmojiOnly: true,
-        shouldRenderJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
+        isJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
     };
 }
 
@@ -141,8 +139,25 @@ function doDefaultComparison(aName, bName) {
 }
 
 export function compareEmojis(emojiA, emojiB, searchedName) {
-    const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
-    const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
+    if (!emojiA) {
+        return 1;
+    }
+
+    if (!emojiB) {
+        return -1;
+    }
+    let aName;
+    if (typeof emojiA === 'string') {
+        aName = emojiA;
+    } else {
+        aName = 'short_name' in emojiA ? emojiA.short_name : emojiA.name;
+    }
+    let bName;
+    if (typeof emojiB === 'string') {
+        bName = emojiB;
+    } else {
+        bName = 'short_name' in emojiB ? emojiB.short_name : emojiB.name;
+    }
 
     if (!searchedName) {
         return doDefaultComparison(aName, bName);

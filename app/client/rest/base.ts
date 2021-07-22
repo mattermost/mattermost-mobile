@@ -186,6 +186,10 @@ export default class ClientBase {
         return `${this.getPostsRoute()}/${postId}`;
     }
 
+    getSharedChannelsRoute() {
+        return `${this.getBaseRoute()}/sharedchannels`;
+    }
+
     getReactionsRoute() {
         return `${this.getBaseRoute()}/reactions`;
     }
@@ -272,6 +276,14 @@ export default class ClientBase {
 
     getBotRoute(botUserId: string) {
         return `${this.getBotsRoute()}/${botUserId}`;
+    }
+
+    getUserThreadsRoute(userID: string, teamID: string): string {
+        return `${this.getUserRoute(userID)}/teams/${teamID}/threads`;
+    }
+
+    getUserThreadRoute(userId: string, teamId: string, threadId: string): string {
+        return `${this.getUserThreadsRoute(userId, teamId)}/${threadId}`;
     }
 
     getAppsProxyRoute() {

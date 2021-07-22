@@ -30,6 +30,7 @@ function mapStateToProps(state, ownProps) {
     return {
         displayName,
         name: channel?.name,
+        shared: channel?.shared,
         type: channel?.type,
         isBot,
         isGuest,

@@ -18,12 +18,11 @@ import {Navigation} from 'react-native-navigation';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {goToScreen, dismissModal} from '@actions/navigation';
-import {showingPermalink} from '@actions/views/permalink';
+import {dismissModal} from '@actions/navigation';
 import Autocomplete from '@components/autocomplete';
 import CompassIcon from '@components/compass_icon';
 import KeyboardLayout from '@components/layout/keyboard_layout';
-import DateHeader from '@components/post_list/date_header';
+import DateSeparator from '@components/post_list/date_separator';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostListRetry from '@components/post_list_retry';
@@ -41,8 +40,6 @@ import {
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
 
-import mattermostManaged from 'app/mattermost_managed';
-
 import ChannelDisplayName from './channel_display_name';
 import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
 import RecentItem, {RECENT_LABEL_HEIGHT} from './recent_item';
@@ -59,14 +56,10 @@ export default class Search extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
-            closePermalink: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
-            getPostThread: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPostsWithParams: PropTypes.func.isRequired,
             getMorePostsForSearch: PropTypes.func.isRequired,
-            selectPost: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
@@ -211,46 +204,9 @@ export default class Search extends PureComponent {
         dismissModal();
     });
 
-    goToThread = (post) => {
-        const {actions} = this.props;
-        const channelId = post.channel_id;
-        const rootId = (post.root_id || post.id);
-
-        Keyboard.dismiss();
-        actions.getPostThread(rootId);
-        actions.selectPost(rootId);
-
-        const screen = 'Thread';
-        const title = '';
-        const passProps = {
-            channelId,
-            rootId,
-        };
-
-        goToScreen(screen, title, passProps);
-    };
-
-    handleHashtagPress = (hashtag) => {
-        if (showingPermalink) {
-            dismissModal();
-            this.props.actions.closePermalink();
-        }
-
-        const terms = '#' + hashtag;
-
-        this.handleTextChanged(terms);
-        this.search(terms, false);
-
-        Keyboard.dismiss();
-    };
-
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({searchListHeight: height});
-    };
-
-    handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     handleScroll = (event) => {
@@ -341,10 +297,6 @@ export default class Search extends PureComponent {
         DeviceEventEmitter.emit('scrolled', viewableItemsMap);
     };
 
-    previewPost = (post) => {
-        this.props.actions.showPermalink(this.context.intl, '', post.id, false);
-    };
-
     removeSearchTerms = preventDoubleTap((item) => {
         const {actions, currentTeamId} = this.props;
         const recent = [...this.state.recent];
@@ -399,9 +351,9 @@ export default class Search extends PureComponent {
 
         if (isDateLine(item)) {
             return (
-                <DateHeader
+                <DateSeparator
                     date={getDateForDateLine(item)}
-                    index={index}
+                    theme={theme}
                 />
             );
         }
@@ -418,12 +370,8 @@ export default class Search extends PureComponent {
                 {this.archivedIndicator(postIds[index], style)}
                 <SearchResultPost
                     postId={item}
-                    previewPost={this.previewPost}
-                    goToThread={this.goToThread}
-                    onHashtagPress={this.handleHashtagPress}
-                    onPermalinkPress={this.handlePermalinkPress}
-                    managedConfig={mattermostManaged.getCachedConfig()}
                     skipPinnedHeader={true}
+                    theme={theme}
                 />
                 {separator}
             </View>

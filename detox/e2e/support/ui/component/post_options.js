@@ -6,6 +6,7 @@ import {isAndroid, timeouts, wait} from '@support/utils';
 
 class PostOptions {
     testID = {
+        reactionButtonPrefix: 'reaction_picker.reaction_button.',
         postOptions: 'post.options',
         reactionPickerAction: 'post.options.reaction_picker.action',
         replyAction: 'post.options.reply.action',
@@ -26,6 +27,7 @@ class PostOptions {
     reactionPickerAction = element(by.id(this.testID.reactionPickerAction));
     replyAction = element(by.id(this.testID.replyAction));
     permalinkAction = element(by.id(this.testID.permalinkAction));
+    copyAction = element(by.id(this.testID.copyAction));
     deleteAction = element(by.id(this.testID.deleteAction));
     editAction = element(by.id(this.testID.editAction));
     saveAction = element(by.id(this.testID.saveAction));
@@ -35,6 +37,10 @@ class PostOptions {
     markUnreadAction = element(by.id(this.testID.markUnreadAction));
     openAddReactionButton = element(by.id(this.testID.openAddReactionButton));
     slideUpPanel = element(by.id(this.testID.slideUpPanel));
+
+    getReactionButton = (emojiName) => {
+        return element(by.id(`${this.testID.reactionButtonPrefix}${emojiName}`));
+    }
 
     toBeVisible = async () => {
         await expect(this.postOptions).toExist();

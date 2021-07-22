@@ -242,6 +242,7 @@ export default class MarkdownTable extends React.PureComponent {
                     type='opacity'
                     onPress={this.handlePress}
                     style={[style.expandButton, {left: expandButtonOffset}]}
+                    testID='markdown_table.expand.button'
                 >
                     <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
                         <View style={style.iconButton}>
@@ -260,6 +261,7 @@ export default class MarkdownTable extends React.PureComponent {
                 style={style.tablePadding}
                 onPress={this.handlePress}
                 type='opacity'
+                testID='markdown_table'
             >
                 <ScrollView
                     onContentSizeChange={this.handleContentSizeChange}

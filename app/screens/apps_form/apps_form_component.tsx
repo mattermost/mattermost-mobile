@@ -3,27 +3,31 @@
 
 import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
-import {ScrollView} from 'react-native';
+import {ScrollView, Text, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import Button from 'react-native-button';
 
-import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import ErrorText from 'app/components/error_text';
-import StatusBar from 'app/components/status_bar';
-import FormattedText from 'app/components/formatted_text';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {dismissModal} from 'app/actions/navigation';
-
-import DialogIntroductionText from './dialog_introduction_text';
-import {Theme} from '@mm-redux/types/preferences';
+import {AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
-import {AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
-import AppsFormField from './apps_form_field';
-import {preventDoubleTap} from '@utils/tap';
+import {Theme} from '@mm-redux/types/preferences';
+import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 import {DoAppCallResult} from 'types/actions/apps';
+
+import {dismissModal} from '@actions/navigation';
+
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {GlobalStyles} from 'app/styles';
+
+import StatusBar from '@components/status_bar';
+import Markdown from '@components/markdown';
+
+import AppsFormField from './apps_form_field';
+import DialogIntroductionText from './dialog_introduction_text';
 
 export type Props = {
     call: AppCallRequest;
@@ -42,7 +46,7 @@ export type Props = {
 export type State = {
     values: AppFormValues;
     formError: string | null;
-    fieldErrors: {[name: string]: React.ReactNode};
+    fieldErrors: {[name: string]: string};
     form: AppForm;
 }
 
@@ -109,11 +113,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             return;
         case 'close-dialog':
             this.handleHide();
-            return;
-        }
-
-        if (buttonId.startsWith('submit-form_')) {
-            this.handleSubmit(buttonId.substr('submit-form_'.length));
         }
     }
 
@@ -124,7 +123,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
         const {fields} = this.props.form;
         const values = this.state.values;
-        const fieldErrors: {[name: string]: React.ReactNode} = {};
+        const fieldErrors: {[name: string]: string} = {};
 
         const elements = fieldsAsElements(fields);
         elements?.forEach((element) => {
@@ -133,13 +132,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 values[element.name],
             );
             if (error) {
-                fieldErrors[element.name] = (
-                    <FormattedText
-                        id={error.id}
-                        defaultMessage={error.defaultMessage}
-                        values={error.values}
-                    />
-                );
+                fieldErrors[element.name] = this.context.intl.formatMessage(error.id, error.defaultMessage, error.values);
             }
         });
 
@@ -196,23 +189,34 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
     updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
-
-        if (fieldErrors &&
-            Object.keys(fieldErrors).length >= 0 &&
-            checkIfErrorsMatchElements(fieldErrors as any, elements)
-        ) {
-            hasErrors = true;
-            this.setState({fieldErrors});
-        }
-
+        const state = {} as State;
         if (formError) {
             hasErrors = true;
-            this.setState({formError});
-            if (this.scrollView?.current) {
-                this.scrollView.current.scrollTo({x: 0, y: 0});
+            state.formError = formError;
+        }
+
+        if (fieldErrors && Object.keys(fieldErrors).length >= 0) {
+            hasErrors = true;
+            if (checkIfErrorsMatchElements(fieldErrors as any, elements)) {
+                state.fieldErrors = fieldErrors;
+            } else if (!state.formError) {
+                const field = Object.keys(fieldErrors)[0];
+                state.formError = this.context.intl.formatMessage({
+                    id: 'apps.error.responses.unknown_field_error',
+                    defaultMessage: 'Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.',
+                }, {
+                    field,
+                    error: fieldErrors[field],
+                });
             }
         }
 
+        if (hasErrors) {
+            this.setState(state);
+            if (state.formError && this.scrollView?.current) {
+                this.scrollView.current.scrollTo({x: 0, y: 0});
+            }
+        }
         return hasErrors;
     }
 
@@ -335,6 +339,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const {formError, fieldErrors, values} = this.state;
         const style = getStyleFromTheme(theme);
 
+        const submitButtons = fields && fields.find((f) => f.name === form.submit_buttons);
+
         return (
             <SafeAreaView
                 testID='interactive_dialog.screen'
@@ -346,11 +352,14 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 >
                     <StatusBar/>
                     {formError && (
-                        <ErrorText
-                            testID='interactive_dialog.error.text'
-                            textStyle={style.errorContainer}
-                            error={formError}
-                        />
+                        <View style={style.errorContainer} >
+                            <Markdown
+                                baseTextStyle={style.errorLabel}
+                                textStyles={getMarkdownTextStyles(theme)}
+                                blockStyles={getMarkdownBlockStyles(theme)}
+                                value={formError}
+                            />
+                        </View>
                     )}
                     {header &&
                         <DialogIntroductionText
@@ -372,6 +381,19 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                             />
                         );
                     })}
+                    <View
+                        style={{marginHorizontal: 5}}
+                    >
+                        {submitButtons?.options?.map((o) => (
+                            <Button
+                                key={o.value}
+                                onPress={() => this.handleSubmit(o.value)}
+                                containerStyle={GlobalStyles.signupButton}
+                            >
+                                <Text style={GlobalStyles.signupButtonText}>{o.label}</Text>
+                            </Button>
+                        ))}
+                    </View>
                 </ScrollView>
             </SafeAreaView>
         );
@@ -401,6 +423,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         scrollView: {
             marginBottom: 20,
             marginTop: 10,
+        },
+        button: {
+            alignSelf: 'stretch',
+            backgroundColor: theme.sidebarHeaderBg,
+            borderRadius: 3,
+            padding: 15,
+        },
+        errorLabel: {
+            fontSize: 12,
+            textAlign: 'left',
+            color: (theme.errorTextColor || '#DA4A4A'),
         },
     };
 });

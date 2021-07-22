@@ -13,6 +13,10 @@ const Preferences: Dictionary<any> = {
     CATEGORY_FAVORITE_CHANNEL: 'favorite_channel',
     CATEGORY_AUTO_RESET_MANUAL_STATUS: 'auto_reset_manual_status',
     CATEGORY_NOTIFICATIONS: 'notifications',
+    COLLAPSED_REPLY_THREADS: 'collapsed_reply_threads',
+    COLLAPSED_REPLY_THREADS_OFF: 'off',
+    COLLAPSED_REPLY_THREADS_ON: 'on',
+    COLLAPSED_REPLY_THREADS_FALLBACK_DEFAULT: 'off',
     COMMENTS: 'comments',
     COMMENTS_ANY: 'any',
     COMMENTS_ROOT: 'root',
@@ -22,6 +26,13 @@ const Preferences: Dictionary<any> = {
     INTERVAL_FIFTEEN_MINUTES: 15 * 60,
     INTERVAL_HOUR: 60 * 60,
     INTERVAL_IMMEDIATE: 30,
+    CATEGORY_EMOJI: 'emoji',
+    EMOJI_SKINTONE: 'emoji_skintone',
+
+    CATEGORY_CUSTOM_STATUS: 'custom_status',
+    NAME_CUSTOM_STATUS_TUTORIAL_STATE: 'custom_status_tutorial_state',
+    NAME_RECENT_CUSTOM_STATUSES: 'recent_custom_statuses',
+    CUSTOM_STATUS_MODAL_VIEWED: 'custom_status_modal_viewed',
 
     // "immediate" is a 30 second interval
     INTERVAL_NEVER: 0,

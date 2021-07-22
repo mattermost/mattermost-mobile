@@ -8,6 +8,7 @@ class LoginScreen {
         loginScreen: 'login.screen',
         usernameInput: 'login.username.input',
         passwordInput: 'login.password.input',
+        backButton: 'screen.back.button',
         signinButton: 'login.signin.button',
         errorText: 'login.error.text',
     }
@@ -15,6 +16,7 @@ class LoginScreen {
     loginScreen = element(by.id(this.testID.loginScreen));
     usernameInput = element(by.id(this.testID.usernameInput));
     passwordInput = element(by.id(this.testID.passwordInput));
+    backButton = element(by.id(this.testID.backButton));
     signinButton = element(by.id(this.testID.signinButton));
     errorText = element(by.id(this.testID.errorText));
 
@@ -29,6 +31,11 @@ class LoginScreen {
         await SelectServerScreen.connectToServer();
 
         return this.toBeVisible();
+    }
+
+    back = async () => {
+        await this.backButton.tap();
+        await expect(this.loginScreen).not.toBeVisible();
     }
 
     /**

@@ -198,7 +198,9 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
               }
             }
             testID="custom_list.user_item.display_username"
-          />
+          >
+            @user - you
+          </Text>
           <BotTag
             show={false}
             theme={
@@ -410,7 +412,9 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
               "marginTop": 2,
             }
           }
-        />
+        >
+          Deactivated
+        </Text>
       </View>
     </View>
   </CustomListRow>
@@ -549,6 +553,189 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
         </View>
       </View>
     </View>
+  </CustomListRow>
+</View>
+`;
+
+exports[`UserListRow should match snapshot for remote user 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginHorizontal": 10,
+      "overflow": "hidden",
+    }
+  }
+>
+  <CustomListRow
+    enabled={true}
+    id="21345"
+    onPress={[Function]}
+    testID="custom_list.user_item"
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "color": "#3d3c40",
+          "flexDirection": "row",
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        iconSize={24}
+        size={32}
+        testID="custom_list.user_item.21345.profile_picture"
+        userId="21345"
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "marginLeft": 10,
+        }
+      }
+      testID="custom_list.user_item.21345"
+    >
+      <View>
+        <View
+          style={
+            Object {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              }
+            }
+            testID="custom_list.user_item.display_username"
+          >
+            @user
+          </Text>
+          <BotTag
+            show={false}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+          />
+          <GuestTag
+            show={false}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+          />
+        </View>
+      </View>
+    </View>
+    <ChannelIcon
+      hasDraft={false}
+      isActive={false}
+      isArchived={false}
+      isBot={false}
+      isInfo={true}
+      isUnread={true}
+      membersCount={0}
+      shared={true}
+      size={18}
+      style={
+        Object {
+          "alignSelf": "center",
+          "opacity": 0.75,
+        }
+      }
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+      type="D"
+    />
   </CustomListRow>
 </View>
 `;

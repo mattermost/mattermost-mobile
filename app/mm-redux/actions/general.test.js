@@ -8,6 +8,7 @@ import {FormattedError} from './helpers.ts';
 import {GeneralTypes} from '@mm-redux/action_types';
 import * as Actions from '@mm-redux/actions/general';
 import {Client4} from '@client/rest';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
@@ -100,22 +101,85 @@ describe('Actions.General', () => {
     });
 
     it('getDataRetentionPolicy', async () => {
-        const responseData = {
+        const globalPolicyResponse = {
             message_deletion_enabled: true,
             file_deletion_enabled: false,
             message_retention_cutoff: Date.now(),
             file_retention_cutoff: 0,
         };
 
+        const channelPoliciesResponse1 = {
+            policies: [{
+                post_duration: 5,
+                channel_id: 'channe1',
+            }],
+            total_count: 2,
+        };
+
+        const channelPoliciesResponse2 = {
+            policies: [{
+                post_duration: 2,
+                channel_id: 'channe2',
+            }],
+            total_count: 2,
+        };
+
+        const teamPoliciesResponse1 = {
+            policies: [{
+                post_duration: 1,
+                team_id: 'team1',
+            }],
+            total_count: 2,
+        };
+
+        const teamPoliciesResponse2 = {
+            policies: [{
+                post_duration: 2,
+                team_id: 'team2',
+            }],
+            total_count: 2,
+        };
+
+        const userId = '';
+
         nock(Client4.getBaseRoute()).
             get('/data_retention/policy').
             query(true).
-            reply(200, responseData);
+            reply(200, globalPolicyResponse).
+            get(`/users/${userId}/data_retention/channel_policies`).
+            query({
+                page: 0,
+                per_page: PER_PAGE_DEFAULT,
+            }).
+            reply(200, channelPoliciesResponse1).
+            get(`/users/${userId}/data_retention/channel_policies`).
+            query({
+                page: 1,
+                per_page: PER_PAGE_DEFAULT,
+            }).
+            reply(200, channelPoliciesResponse2).
+            get(`/users/${userId}/data_retention/team_policies`).
+            query({
+                page: 0,
+                per_page: PER_PAGE_DEFAULT,
+            }).
+            reply(200, teamPoliciesResponse1).
+            get(`/users/${userId}/data_retention/team_policies`).
+            query({
+                page: 1,
+                per_page: PER_PAGE_DEFAULT,
+            }).
+            reply(200, teamPoliciesResponse2);
 
+        await store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '5.37.0'});
         await Actions.getDataRetentionPolicy()(store.dispatch, store.getState);
         await TestHelper.wait(100);
-        const {dataRetentionPolicy} = store.getState().entities.general;
-        assert.deepEqual(dataRetentionPolicy, responseData);
+        const {dataRetention} = store.getState().entities.general;
+        assert.deepEqual(dataRetention.policies, {
+            global: globalPolicyResponse,
+            channels: [...channelPoliciesResponse1.policies, ...channelPoliciesResponse2.policies],
+            teams: [...teamPoliciesResponse1.policies, ...teamPoliciesResponse2.policies],
+        });
     });
 
     it('getTimezones', async () => {

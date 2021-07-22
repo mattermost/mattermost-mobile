@@ -1,17 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, Dimensions, Linking, Platform} from 'react-native';
+import {AppState, Dimensions, Keyboard, Linking, Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-cookies/cookies';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
-import RNFetchBlob from 'rn-fetch-blob';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet} from '@actions/device';
+import {dismissAllModals, popToRoot, showOverlay} from '@actions/navigation';
 import {selectDefaultChannel} from '@actions/views/channel';
-import {showOverlay} from '@actions/navigation';
-import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
+import {loadConfigAndLicense, purgeOfflineStore, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
@@ -19,6 +18,7 @@ import {resetMomentLocale} from '@i18n';
 import {setupPermanentSidebar} from '@init/device';
 import PushNotifications from '@init/push_notifications';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
 import {Client4} from '@client/rest';
@@ -30,6 +30,7 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import initialState from '@store/initial_state';
+import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 import {deleteFileCache} from '@utils/file';
 import {getDeviceTimezone} from '@utils/timezone';
@@ -51,6 +52,7 @@ class GlobalEventHandler {
         EventEmitter.on(NavigationTypes.RESTART_APP, this.onRestartApp);
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         EventEmitter.on(General.CONFIG_CHANGED, this.onServerConfigChanged);
+        EventEmitter.on(General.CRT_PREFERENCE_CHANGED, this.onCRTPreferenceChanged);
         EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, this.onSwitchToDefaultChannel);
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
@@ -127,6 +129,20 @@ class GlobalEventHandler {
         emmProvider.previousAppState = appState;
     };
 
+    onCRTPreferenceChanged = () => {
+        Keyboard.dismiss();
+        requestAnimationFrame(async () => {
+            const componentId = EphemeralStore.getNavigationTopComponentId();
+            if (componentId) {
+                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+                EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+                await dismissAllModals();
+                await popToRoot();
+            }
+            Store.redux.dispatch(purgeOfflineStore());
+        });
+    };
+
     onDeepLink = (event) => {
         const {url} = event;
         if (url) {
@@ -140,44 +156,14 @@ class GlobalEventHandler {
 
     clearCookiesAndWebData = async () => {
         try {
-            await CookieManager.clearAll(Platform.OS === 'ios');
+            await CookieManager.clearAll(true);
+
+            if (Platform.OS === 'ios') {
+                // on iOS we will also detele the Cookies stored by NSCookieStore
+                await CookieManager.clearAll(false);
+            }
         } catch (error) {
-            // Nothing to clear
-        }
-
-        switch (Platform.OS) {
-        case 'ios': {
-            const mainPath = RNFetchBlob.fs.dirs.DocumentDir.split('/').slice(0, -1).join('/');
-            const libraryDir = `${mainPath}/Library`;
-            const cookiesDir = `${libraryDir}/Cookies`;
-            const cookies = await RNFetchBlob.fs.exists(cookiesDir);
-            const webkitDir = `${libraryDir}/WebKit`;
-            const webkit = await RNFetchBlob.fs.exists(webkitDir);
-
-            if (cookies) {
-                RNFetchBlob.fs.unlink(cookiesDir);
-            }
-
-            if (webkit) {
-                RNFetchBlob.fs.unlink(webkitDir);
-            }
-            break;
-        }
-
-        case 'android': {
-            const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
-            const mainPath = cacheDir.split('/').slice(0, -1).join('/');
-            const cookies = await RNFetchBlob.fs.exists(`${mainPath}/app_webview/Cookies`);
-            const cookiesJ = await RNFetchBlob.fs.exists(`${mainPath}/app_webview/Cookies-journal`);
-            if (cookies) {
-                RNFetchBlob.fs.unlink(`${mainPath}/app_webview/Cookies`);
-            }
-
-            if (cookiesJ) {
-                RNFetchBlob.fs.unlink(`${mainPath}/app_webview/Cookies-journal`);
-            }
-            break;
-        }
+            // Nothing to do
         }
     };
 
@@ -244,6 +230,7 @@ class GlobalEventHandler {
 
         await dispatch(loadConfigAndLicense());
         await dispatch(loadMe(user));
+        dispatch(getTeams());
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -291,7 +278,7 @@ class GlobalEventHandler {
                 },
                 views: {
                     i18n: {
-                        locale: getLocales()[0].languageCode,
+                        locale: getLocales()[0].languageTag,
                     },
                     root: {
                         hydrationComplete: true,

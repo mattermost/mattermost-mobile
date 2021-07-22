@@ -22,7 +22,7 @@ import {
     Team,
     User,
 } from '@support/server_api';
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 
 describe('Channel Moderation', () => {
     const {
@@ -69,14 +69,14 @@ describe('Channel Moderation', () => {
         await ChannelInfoScreen.close();
 
         // # Remove user while on channel
-        await Channel.apiDeleteUserFromChannel(testChannel.id, testUser.id);
+        await Channel.apiRemoveUserFromChannel(testChannel.id, testUser.id);
 
         // * Verify user is prompted removal alert
         const removeFromChannelTitleText = `Removed from ${testChannel.display_name}`;
         const removeFromChannelDescriptionText = 'You were removed from the channel.';
         const removeFromChannelTitle = isAndroid() ? element(by.text(removeFromChannelTitleText)) : element(by.label(removeFromChannelTitleText)).atIndex(0);
         const removeFromChannelDescription = isAndroid() ? element(by.text(removeFromChannelDescriptionText)) : element(by.label(removeFromChannelDescriptionText)).atIndex(0);
-        await expect(removeFromChannelTitle).toBeVisible();
+        await waitFor(removeFromChannelTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await expect(removeFromChannelDescription).toBeVisible();
 
         // # Tap on ok button
@@ -112,7 +112,7 @@ describe('Channel Moderation', () => {
         await goToChannel(townSquareChannel.display_name);
 
         // # Remove user while on channel
-        await Channel.apiDeleteUserFromChannel(testChannel.id, testOtherUser.id);
+        await Channel.apiRemoveUserFromChannel(testChannel.id, testOtherUser.id);
 
         // * Verify channel is not in the channels list anymore
         await openMainSidebar();

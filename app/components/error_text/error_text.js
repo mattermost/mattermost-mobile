@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {GlobalStyles} from 'app/styles';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 

@@ -11,9 +11,11 @@ class SearchResultPostScreen {
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
             postItem,
+            postItemBlockQuote,
             postItemEmoji,
             postItemHeaderDateTime,
             postItemHeaderDisplayName,
+            postItemHeaderBotTag,
             postItemHeaderGuestTag,
             postItemHeaderReply,
             postItemImage,
@@ -22,13 +24,18 @@ class SearchResultPostScreen {
             postItemProfilePictureUserStatus,
             postItemShowLessButton,
             postItemShowMoreButton,
+            postItemTable,
+            postItemTableExpandButton,
+            postItemThematicBreak,
         } = Post.getPost(this.testID.searchResultPostItem, postId, postMessage, postProfileOptions);
 
         return {
             searchResultPostItem: postItem,
+            searchResultPostItemBlockQuote: postItemBlockQuote,
             searchResultPostItemEmoji: postItemEmoji,
             searchResultPostItemHeaderDateTime: postItemHeaderDateTime,
             searchResultPostItemHeaderDisplayName: postItemHeaderDisplayName,
+            searchResultPostItemHeaderBotTag: postItemHeaderBotTag,
             searchResultPostItemHeaderGuestTag: postItemHeaderGuestTag,
             searchResultPostItemHeaderReply: postItemHeaderReply,
             searchResultPostItemImage: postItemImage,
@@ -37,6 +44,9 @@ class SearchResultPostScreen {
             searchResultPostItemProfilePictureUserStatus: postItemProfilePictureUserStatus,
             searchResultPostItemShowLessButton: postItemShowLessButton,
             searchResultPostItemShowMoreButton: postItemShowMoreButton,
+            searchResultPostItemTable: postItemTable,
+            searchResultPostItemTableExpandButton: postItemTableExpandButton,
+            searchResultPostItemThematicBreak: postItemThematicBreak,
         };
     }
 

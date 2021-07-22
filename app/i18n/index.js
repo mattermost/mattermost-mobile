@@ -8,6 +8,8 @@ import moment from 'moment';
 
 import en from '@assets/i18n/en.json';
 
+import availableLanguages from './languages';
+
 export const DEFAULT_LOCALE = 'en';
 
 addLocaleData(enLocaleData);
@@ -27,6 +29,11 @@ function loadTranslation(locale) {
             translations = require('@assets/i18n/de.json');
             localeData = require('react-intl/locale-data/de');
             momentData = require('moment/locale/de');
+            break;
+        case 'en-AU':
+            translations = require('@assets/i18n/en_AU.json');
+            localeData = require('react-intl/locale-data/en');
+            momentData = require('moment/locale/en-au');
             break;
         case 'es':
             translations = require('@assets/i18n/es.json');
@@ -130,6 +137,12 @@ function loadTranslation(locale) {
     }
 }
 
+export function getLocaleFromLanguage(lang) {
+    const languageCode = lang.split('-')[0];
+    const locale = availableLanguages[lang] || languageCode;
+    return locale;
+}
+
 export function resetMomentLocale() {
     moment.locale(DEFAULT_LOCALE);
 }
@@ -138,7 +151,8 @@ export function getTranslations(locale) {
     return loadTranslation(locale);
 }
 
-export function getLocalizedMessage(locale, id) {
+export function getLocalizedMessage(lang, id) {
+    const locale = getLocaleFromLanguage(lang);
     const translations = getTranslations(locale);
 
     return translations[id];

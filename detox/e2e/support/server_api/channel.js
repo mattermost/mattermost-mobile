@@ -43,8 +43,8 @@ export const apiAddUserToChannel = async (userId, channelId) => {
  * See https://api.mattermost.com/#operation/CreateChannel
  * @param {string} option.teamId - The team ID of the team to create the channel on
  * @param {string} option.type - 'O' (default) for a public channel, 'P' for a private channel
- * @param {string} option.prefix - option to add prefix to name and display name
- * @param {Object} option.channel - fix channel object to be created
+ * @param {string} option.prefix - prefix to name, display name, purpose, and header
+ * @param {Object} option.channel - channel object to be created
  * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'channel', channel = null} = {}) => {
@@ -93,25 +93,6 @@ export const apiCreateGroupChannel = async (userIds = []) => {
         );
 
         return {channel: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Remove user from channel.
- * See https://api.mattermost.com/#operation/RemoveUserFromChannel
- * @param {string} channelId - The channel ID
- * @param {string} userId - The user ID to be removed from channel
- * @return {Object} returns {status} on success or {error, status} on error
- */
-export const apiDeleteUserFromChannel = async (channelId, userId) => {
-    try {
-        const response = await client.delete(
-            `/api/v4/channels/${channelId}/members/${userId}`,
-        );
-
-        return {status: response.status};
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -168,6 +149,60 @@ export const apiGetChannelsForUser = async (userId, teamId) => {
     }
 };
 
+/**
+ * Get unread messages.
+ * See https://api.mattermost.com/#operation/GetChannelUnread
+ * @param {string} userId - The user ID to perform view actions for
+ * @param {string} channelId - The channel ID that is being viewed
+ * @return {Object} returns response on success or {error, status} on error
+ */
+export const apiGetUnreadMessages = async (userId, channelId) => {
+    try {
+        return await client.get(`/api/v4/users/${userId}/channels/${channelId}/unread`);
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Remove user from channel.
+ * See https://api.mattermost.com/#operation/RemoveUserFromChannel
+ * @param {string} channelId - The channel ID
+ * @param {string} userId - The user ID to be removed from channel
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiRemoveUserFromChannel = async (channelId, userId) => {
+    try {
+        const response = await client.delete(
+            `/api/v4/channels/${channelId}/members/${userId}`,
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * View channel.
+ * See https://api.mattermost.com/#operation/ViewChannel
+ * @param {string} userId - The user ID to perform view actions for
+ * @param {string} channelId - The channel ID that is being viewed
+ * @return {Object} returns {viewed} on success or {error, status} on error
+ */
+export const apiViewChannel = async (userId, channelId) => {
+    try {
+        const response = await client.post(
+            `/api/v4/channels/members/${userId}/view`,
+            {channel_id: channelId},
+        );
+
+        return {viewed: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 function generateRandomChannel(teamId, type, prefix) {
     const randomId = getRandomId();
 
@@ -186,9 +221,11 @@ export const Channel = {
     apiCreateChannel,
     apiCreateDirectChannel,
     apiCreateGroupChannel,
-    apiDeleteUserFromChannel,
     apiGetChannelByName,
     apiGetChannelsForUser,
+    apiGetUnreadMessages,
+    apiRemoveUserFromChannel,
+    apiViewChannel,
 };
 
 export default Channel;
