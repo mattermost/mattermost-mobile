@@ -8,13 +8,16 @@ import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {logout} from '@actions/remote/general';
 import StatusBar from '@components/status_bar';
 import ViewTypes from '@constants/view';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {useServerUrl} from '@context/server_url';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {unsupportedServer} from '@utils/supported_server/supported_server';
 import {isSystemAdmin as isUserSystemAdmin} from '@utils/user';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 import ChannelNavBar from './channel_nav_bar';
 
@@ -23,6 +26,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {LaunchType} from '@typings/launch';
 import {useTheme} from '@context/theme';
+import {Text, View} from 'react-native';
 
 const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
 
@@ -74,6 +78,12 @@ const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
         }
     }, [config.value?.Version, intl.formatMessage, user.roles]);
 
+    const serverUrl = useServerUrl();
+
+    const doLogout = () => {
+        logout(serverUrl!);
+    };
+
     return (
         <SafeAreaView
             style={styles.flex}
@@ -87,6 +97,15 @@ const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
                 onPress={() => null}
                 config={config.value}
             />
+            <View style={styles.sectionContainer}>
+                <Text
+                    onPress={doLogout}
+                    style={styles.sectionTitle}
+                >
+                    {`Logout from ${serverUrl}`}
+                </Text>
+            </View>
+
         </SafeAreaView>
     );
 };
@@ -94,7 +113,15 @@ const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
 const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
-
+    },
+    sectionContainer: {
+        marginTop: 32,
+        paddingHorizontal: 24,
+    },
+    sectionTitle: {
+        fontSize: 24,
+        fontWeight: '600',
+        color: Colors.black,
     },
 }));
 
