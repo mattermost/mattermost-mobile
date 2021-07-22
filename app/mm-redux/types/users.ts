@@ -80,7 +80,7 @@ export type UserStatus = {
 	active_channel?: string;
 }
 
-export enum CustomStatusDuration {  // eslint-disable-line
+export enum CustomStatusDuration {
     DONT_CLEAR = '',
     THIRTY_MINUTES = 'thirty_minutes',
     ONE_HOUR = 'one_hour',

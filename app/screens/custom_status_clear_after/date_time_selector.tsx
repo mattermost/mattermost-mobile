@@ -88,7 +88,7 @@ const DateTimeSelector = (props: Props) => {
             </View>
             {show && (
                 <DateTimePicker
-                    testID='dateTimePicker'
+                    testID='clear_after.date_time_picker'
                     value={date.toDate()}
                     mode={mode}
                     is24Hour={militaryTime}

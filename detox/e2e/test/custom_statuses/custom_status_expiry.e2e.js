@@ -26,6 +26,7 @@ describe('Custom status expiry', () => {
     const {
         getCustomStatusSuggestion,
         tapSuggestion,
+        getCustomStatusSelectedDuration,
     } = CustomStatusScreen;
     const defaultCustomStatuses = ['In a meeting', 'Out for lunch', 'Out sick', 'Working from home', 'On a vacation'];
     const defaultStatus = {
@@ -67,7 +68,7 @@ describe('Custom status expiry', () => {
 
         // * Tap a suggestion and check if it is selected
         await tapSuggestion(defaultStatus);
-        await expect(element(by.id(`custom_status.duration.${defaultStatus.duration}`))).toBeVisible();
+        await expect(getCustomStatusSelectedDuration(defaultStatus.duration)).toBeVisible();
 
         // # Tap on Done button and check if the modal closes
         await CustomStatusScreen.close();
@@ -101,7 +102,7 @@ describe('Custom status expiry', () => {
 
         // * Tap a suggestion and check if it is selected
         await tapSuggestion(defaultStatus);
-        await expect(element(by.id(`custom_status.duration.${defaultStatus.duration}`))).toBeVisible();
+        await expect(getCustomStatusSelectedDuration(defaultStatus.duration)).toBeVisible();
 
         // # Tap on Done button and check if the modal closes
         await CustomStatusScreen.close();
@@ -163,7 +164,7 @@ describe('Custom status expiry', () => {
 
         // * Tap a suggestion and check if it is selected
         await tapSuggestion(defaultStatus);
-        await expect(element(by.id(`custom_status.duration.${defaultStatus.duration}`))).toBeVisible();
+        await expect(getCustomStatusSelectedDuration(defaultStatus.duration)).toBeVisible();
 
         // # Click on the Clear After option and check if the modal opens
         await ClearAfterScreen.open();
@@ -173,7 +174,7 @@ describe('Custom status expiry', () => {
         await ClearAfterScreen.close();
 
         // Check if selected duration is shown in clear after
-        await expect(element(by.id('custom_status.duration.four_hours'))).toBeVisible();
+        await expect(getCustomStatusSelectedDuration('four_hours')).toBeVisible();
 
         // * Open Clear After modal
         await ClearAfterScreen.open();

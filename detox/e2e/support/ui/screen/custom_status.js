@@ -8,6 +8,7 @@ class CustomStatusScreen {
         customStatusScreen: 'custom_status.screen',
         input: 'custom_status.input',
         selectedEmojiPrefix: 'custom_status.emoji.',
+        selectedDurationPrefix: 'custom_status.duration.',
         inputClearButton: 'custom_status.input.clear.button',
         doneButton: 'custom_status.done.button',
         suggestionPrefix: 'custom_status_suggestion.',
@@ -23,6 +24,11 @@ class CustomStatusScreen {
     getCustomStatusSelectedEmoji = (emoji) => {
         const emojiTestID = `${this.testID.selectedEmojiPrefix}${emoji}`;
         return element(by.id(emojiTestID));
+    }
+
+    getCustomStatusSelectedDuration = (duration) => {
+        const durationTestID = `${this.testID.selectedDurationPrefix}${duration}`;
+        return element(by.id(durationTestID));
     }
 
     getCustomStatusSuggestion = (text) => {

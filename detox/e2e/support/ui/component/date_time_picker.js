@@ -2,6 +2,10 @@
 // See LICENSE.txt for license information.
 
 class DateTimePicker {
+    testID = {
+        dateTimePicker: 'clear_after.date_time_picker',
+    }
+
     changeTimeAndroid = async (hour, minute) => {
         const keyboardIconButton = element(
             by.type('androidx.appcompat.widget.AppCompatImageButton'),
@@ -29,7 +33,7 @@ class DateTimePicker {
         await element(by.text('OK')).tap();
     }
 
-    getDateTimePickerIOS = () => element(by.type('UIPickerView').withAncestor(by.id('dateTimePicker')))
+    getDateTimePickerIOS = () => element(by.type('UIPickerView').withAncestor(by.id(this.testID.dateTimePicker)))
 }
 
 const dateTimePicker = new DateTimePicker();
