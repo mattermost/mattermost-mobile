@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState} from 'react';
 import {Alert} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
 
@@ -12,12 +12,13 @@ import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
-import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
+import {Client4} from '@client/rest';
 
 type Props = {
-    bindings: AppBinding[],
+    bindings: AppBinding[] | null,
     theme: Theme,
     post: Post,
     currentUser: UserProfile,
@@ -31,13 +32,31 @@ type Props = {
     }
 }
 
+const fetchBindings = (userId: string, channelId: string, teamId: string, setState: React.Dispatch<React.SetStateAction<AppBinding[] | null>>) => {
+    Client4.getAppsBindings(userId, channelId, teamId).then(
+        (allBindings) => {
+            const headerBindings = allBindings.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM);
+            const postMenuBindings = headerBindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
+            setState(postMenuBindings);
+        },
+        () => {/* Do nothing */},
+    ).catch(() => {/* Do nothing */});
+};
+
 const Bindings = injectIntl((props: Props) => {
+    const [bindings, setBindings] = useState(props.bindings);
+
+    if (!bindings) {
+        setBindings([]);
+        fetchBindings(props.currentUser.id, props.post.channel_id, props.teamID, setBindings);
+    }
+
     if (!props.appsEnabled) {
         return null;
     }
 
-    const {bindings, post, ...optionProps} = props;
-    if (bindings.length === 0) {
+    const {post, ...optionProps} = props;
+    if (!bindings || bindings.length === 0) {
         return null;
     }
 

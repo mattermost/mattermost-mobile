@@ -7,16 +7,24 @@ import {connect} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {selectPost} from '@mm-redux/actions/posts';
-import {getChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
+import {getChannel, getCurrentChannelId, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 
 import Thread from './thread';
+import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
+import {AppBindingLocations} from '@mm-redux/constants/apps';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 
 function makeMapStateToProps() {
     const getPostIdsForThread = makeGetPostIdsForThread();
     return function mapStateToProps(state, ownProps) {
         const channel = getChannel(state, ownProps.channelId);
 
+        let postBindings = null;
+        if (ownProps.channelId === getCurrentChannelId(state)) {
+            postBindings = getAppsBindings(state, AppBindingLocations.POST_MENU_ITEM);
+        }
         return {
             channelId: ownProps.channelId,
             channelType: channel ? channel.type : '',
@@ -27,6 +35,9 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             channelIsArchived: channel ? channel.delete_at !== 0 : false,
             threadLoadingStatus: state.requests.posts.getPostThread,
+            postBindings,
+            teamId: channel.team_id || getCurrentTeamId(state),
+            userId: getCurrentUserId(state),
         };
     };
 }

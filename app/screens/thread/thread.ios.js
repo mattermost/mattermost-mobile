@@ -57,6 +57,7 @@ export default class ThreadIOS extends ThreadBase {
                             location={THREAD}
                             rootId={rootId}
                             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                            bindings={this.state.postBindings}
                         />
                     </Animated.View>
                 </>

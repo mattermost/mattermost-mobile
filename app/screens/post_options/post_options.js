@@ -50,6 +50,7 @@ export default class PostOptions extends PureComponent {
         isFlagged: PropTypes.bool,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        bindings: PropTypes.array,
     };
 
     static contextTypes = {
@@ -242,6 +243,7 @@ export default class PostOptions extends PureComponent {
                 key='bindings'
                 post={post}
                 closeWithAnimation={this.closeWithAnimation}
+                bindings={this.props.bindings}
             />
         );
     }

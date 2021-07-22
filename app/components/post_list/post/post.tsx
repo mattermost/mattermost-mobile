@@ -24,6 +24,7 @@ import Body from './body';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
+import {AppBinding} from '@mm-redux/types/apps';
 
 type PostProps = {
     canDelete: boolean;
@@ -48,6 +49,7 @@ type PostProps = {
     teammateNameDisplay: string;
     testID?: string;
     theme: Theme
+    bindings?: AppBinding[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -93,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
     location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink,
-    teammateNameDisplay, testID, theme, style,
+    teammateNameDisplay, testID, theme, style, bindings,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const styles = getStyleSheet(theme);
@@ -144,6 +146,7 @@ const Post = ({
             location,
             post,
             showAddReaction,
+            bindings,
         };
 
         Keyboard.dismiss();

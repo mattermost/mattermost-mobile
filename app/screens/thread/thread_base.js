@@ -13,6 +13,8 @@ import Loading from 'app/components/loading';
 import DeletedPost from 'app/components/deleted_post';
 import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
 import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
+import {Client4} from '@client/rest';
+import {AppBindingLocations} from '@mm-redux/constants/apps';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
@@ -29,6 +31,9 @@ export default class ThreadBase extends PureComponent {
         postIds: PropTypes.array.isRequired,
         channelIsArchived: PropTypes.bool,
         threadLoadingStatus: PropTypes.object,
+        postBindings: PropTypes.array,
+        userId: PropTypes.string.isRequired,
+        teamId: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
@@ -71,9 +76,27 @@ export default class ThreadBase extends PureComponent {
         this.typingAnimations = [];
     }
 
+    fetchBindings = () => {
+        Client4.getAppsBindings(this.props.userId, this.props.channelId, this.props.teamId).then(
+            (bindings) => {
+                const headerBindings = bindings.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM);
+                const postMenuBindings = headerBindings.reduce((accum, current) => accum.concat(current.bindings || []), []);
+                this.setState({postBindings: postMenuBindings});
+            },
+            () => {
+                this.setState({postBindings: []});
+            },
+        ).catch(() => {
+            this.setState({postBindings: []});
+        });
+    }
+
     componentDidMount() {
         this.removeTypingAnimation = this.registerTypingAnimation(this.bottomPaddingAnimation);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
+        if (!this.state.bindings) {
+            this.fetchBindings();
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -84,6 +107,10 @@ export default class ThreadBase extends PureComponent {
 
         if (!this.state.lastViewedAt) {
             this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
+        }
+
+        if (nextProps.postBindings !== null && nextProps.postBindings !== this.state.postBindings) {
+            this.setState({postBindings: nextProps.postBindings});
         }
     }
 

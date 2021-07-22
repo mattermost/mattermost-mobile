@@ -28,6 +28,7 @@ import MoreMessagesButton from './more_messages_button';
 import NewMessagesLine from './new_message_line';
 import Post from './post';
 import PostListRefreshControl from './post_list_refresh_control';
+import {AppBinding} from '@mm-redux/types/apps';
 
 type PostListProps = {
     channelId?: string;
@@ -57,6 +58,7 @@ type PostListProps = {
     showPermalink: (intl: typeof intlShape, teamName: string, postId: string, openAsPermalink?: boolean) => Promise<{}>;
     testID?: string;
     theme: Theme
+    bindings?: AppBinding[],
 }
 
 type ViewableItemsChanged = {
@@ -96,6 +98,7 @@ const PostList = ({
     handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl, loadMorePostsVisible,
     location, onLoadMoreUp = emptyFunction, postIds = [], refreshChannelWithRetry, renderFooter = (() => null), rootId,
     serverURL = '', setDeepLinkURL, showMoreMessagesButton, showPermalink, siteURL = '', scrollViewNativeID, shouldRenderReplyButton, testID, theme,
+    bindings,
 }: PostListProps) => {
     const prevChannelId = useRef(channelId);
     const hasPostsKey = postIds.length ? 'true' : 'false';
@@ -245,6 +248,7 @@ const PostList = ({
                 highlight={highlightPostId === item}
                 postId={item}
                 style={styles.scale}
+                bindings={bindings}
                 testID={`${testID}.post`}
                 {...postProps}
             />

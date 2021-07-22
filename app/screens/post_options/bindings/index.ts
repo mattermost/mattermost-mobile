@@ -18,16 +18,28 @@ import {appsEnabled} from '@utils/apps';
 import Bindings from './bindings';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {Post} from '@mm-redux/types/posts';
-import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
+import {AppBinding} from '@mm-redux/types/apps';
 
 type OwnProps = {
     post: Post;
+    bindings?: AppBinding[];
 }
 
 function mapStateToProps(state: GlobalState, props: OwnProps) {
     const apps = appsEnabled(state);
-    const bindings = apps ? getAppsBindings(state, AppBindingLocations.POST_MENU_ITEM) : [];
+    let bindings: AppBinding[] | null = [];
+    if (apps) {
+        if (props.bindings) {
+            bindings = props.bindings;
+        } else if (props.post.channel_id === getCurrentChannelId(state)) {
+            bindings = getAppsBindings(state, AppBindingLocations.POST_MENU_ITEM);
+        } else {
+            bindings = null;
+        }
+    }
+
     const currentUser = getCurrentUser(state);
     const teamID = getChannel(state, props.post.channel_id)?.team_id || getCurrentTeamId(state);
 

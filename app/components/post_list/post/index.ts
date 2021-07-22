@@ -21,6 +21,7 @@ import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 
 import Post from './post';
+import {AppBinding} from '@mm-redux/types/apps';
 
 type OwnProps = {
     highlight?: boolean;
@@ -31,6 +32,7 @@ type OwnProps = {
     style?: StyleProp<ViewStyle>;
     testID: string;
     theme: Theme;
+    bindings?: AppBinding[];
 }
 
 function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
