@@ -27,7 +27,7 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
 
     const style = getStyle(theme);
     const channelType = channel.type;
-    const displayName = channel ? channel.displayName : '';
+    const displayName = channel.displayName;
     const hasGuests = channelInfo[0]?.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings[0]?.notifyProps?.mark_unread === 'mention';
@@ -160,8 +160,13 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
             style={style.container}
             onPress={onPress}
         >
-            <View style={[style.wrapper, {width: `${wrapperWidth}%`}]}>
-                {renderArchiveIcon()}
+            <View style={style.wrapper}>
+                {isArchived &&
+                <CompassIcon
+                    name='archive-outline'
+                    style={[style.archiveIcon]}
+                />
+                }
                 <Text
                     ellipsizeMode='tail'
                     numberOfLines={1}
@@ -170,9 +175,28 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
                 >
                     {renderChannelDisplayName()}
                 </Text>
-                {renderChannelIcon()}
-                {renderIcon()}
-                {renderMutedIcon()}
+                {isChannelShared &&
+                 <ChannelIcon
+                    isActive={true}
+                    isArchived={false}
+                    size={18}
+                    shared={isChannelShared}
+                    style={style.channelIconContainer}
+                    type={channelType}
+                />
+                }
+                <CompassIcon
+                    style={style.icon}
+                    size={24}
+                    name='chevron-down'
+                />
+                {isChannelMuted &&
+                <CompassIcon
+                    style={[style.icon, style.muted]}
+                    size={24}
+                    name='bell-off-outline'
+                />
+                }
             </View>
             {renderHasGuestsText()}
         </TouchableOpacity>
@@ -191,6 +215,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
             top: -1,
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            width: '90%',
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
