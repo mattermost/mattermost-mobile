@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode} from 'react';
+import React, {memo, ReactNode} from 'react';
 
 import {StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 
@@ -46,4 +46,4 @@ const style = StyleSheet.create({
     },
 });
 
-export default MarkdownBlockQuote;
+export default memo(MarkdownBlockQuote);
