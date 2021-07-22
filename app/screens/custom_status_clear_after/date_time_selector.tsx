@@ -51,8 +51,10 @@ const DateTimeSelector = (props: Props) => {
     const onChange = (_: React.ChangeEvent<HTMLInputElement>, selectedDate: Date) => {
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
-        setDate(moment(currentDate));
-        props.handleChange(moment(currentDate));
+        if (moment(currentDate).isAfter(minimumDate)) {
+            setDate(moment(currentDate));
+            props.handleChange(moment(currentDate));
+        }
     };
 
     const showMode = (currentMode: AndroidMode) => {
