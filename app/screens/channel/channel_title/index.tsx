@@ -257,7 +257,7 @@ const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> = withDataba
         return {
             channelInfo: channel.info.observe(),
             channelSettings: channel.settings.observe(),
-            ...(teammateId && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
+            ...(teammateId && channel.displayName && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
         };
     },
     )(ConnectedChannelTitle),
