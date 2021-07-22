@@ -24,20 +24,6 @@ const ChannelDisplayName = ({channelType, currentUserId, displayName, teammateId
         isSelfDMChannel = currentUserId === teammateId;
     }
 
-    if (isSelfDMChannel) {
-        const messageId = t('channel_header.directchannel.you');
-        const defaultMessage = '{displayname} (you)';
-        const values = {displayname: displayName};
-
-        return (
-            <FormattedText
-                id={messageId}
-                defaultMessage={defaultMessage}
-                values={values}
-            />
-        );
-    }
-
     return (
         <Text
             ellipsizeMode='tail'
@@ -45,7 +31,13 @@ const ChannelDisplayName = ({channelType, currentUserId, displayName, teammateId
             style={style.text}
             testID='channel.nav_bar.title'
         >
-            {displayName}
+            {isSelfDMChannel ? (
+                <FormattedText
+                    id={t('channel_header.directchannel.you')}
+                    defaultMessage={'{displayname} (you)'}
+                    values={{displayname: displayName}}
+                />) : displayName
+            }
         </Text>
     );
 };
