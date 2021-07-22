@@ -52,7 +52,6 @@ const ConnectedChannelTitle = ({
 
     const style = getStyle(theme);
     const channelType = channel.type;
-    const displayName = channel.displayName;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
@@ -73,7 +72,7 @@ const ConnectedChannelTitle = ({
                 <ChannelDisplayName
                     channelType={channelType}
                     currentUserId={currentUserId}
-                    displayName={displayName}
+                    displayName={channel.displayName}
                     teammateId={teammateId}
                     theme={theme}
                 />
@@ -171,32 +170,13 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
 
 const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> =
     withDatabase(
-        withObservables(
-            ['channel', 'teammateId'],
-            ({
-                channel,
-                teammateId,
-                database,
-            }: {
-                channel: ChannelModel;
-                teammateId: string;
-                database: Database;
-            }) => {
-                return {
-                    channelInfo: database.collections.
-                        get(MM_TABLES.SERVER.CHANNEL_INFO).
-                        findAndObserve(channel.id),
-                    channelSettings: database.collections.
-                        get(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS).
-                        findAndObserve(channel.id),
-                    ...(teammateId &&
-                        channel.displayName && {
-                        teammate: database.collections.
-                            get(MM_TABLES.SERVER.USER).
-                            findAndObserve(teammateId),
-                    }),
-                };
-            },
+        withObservables(['channel', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
+            return {
+                channelInfo: database.collections.get(MM_TABLES.SERVER.CHANNEL_INFO).findAndObserve(channel.id),
+                channelSettings: database.collections.get(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS).findAndObserve(channel.id),
+                ...(teammateId && channel.displayName && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
+            };
+        },
         )(ConnectedChannelTitle),
     );
 
