@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {General} from '@constants';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {isGuest as isTeammateGuest} from '@utils/user';
 import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
@@ -56,6 +58,12 @@ const ConnectedChannelTitle = ({
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
 
+    const hasGuests = channelInfo.guestCount > 0;
+    const teammateRoles = teammate?.roles ?? '';
+    const isGuest = channelType === General.DM_CHANNEL && isTeammateGuest(teammateRoles);
+
+    const showGuestLabel = (canHaveSubtitle || (isGuest && hasGuests) || (channelType === General.DM_CHANNEL && isGuest));
+
     return (
         <TouchableOpacity
             testID={'channel.title.button'}
@@ -99,13 +107,12 @@ const ConnectedChannelTitle = ({
                     />
                 )}
             </View>
-            <ChannelGuestLabel
-                canHaveSubtitle={canHaveSubtitle}
-                channelType={channelType}
-                guestCount={channelInfo.guestCount}
-                teammateRoles={teammate?.roles ?? ''}
-                theme={theme}
-            />
+            {showGuestLabel && (
+                <ChannelGuestLabel
+                    channelType={channelType}
+                    theme={theme}
+                />
+            )}
         </TouchableOpacity>
     );
 };

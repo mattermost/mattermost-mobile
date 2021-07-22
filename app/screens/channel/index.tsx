@@ -104,9 +104,9 @@ export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) 
     config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
 }));
 
-const withChannelAndTheme = withObservables(['currentChannelId'], ({currentChannelId, currentUserId, database}: WithChannelAndThemeArgs) => ({
+const withChannelAndUser = withObservables(['currentChannelId'], ({currentChannelId, currentUserId, database}: WithChannelAndThemeArgs) => ({
     channel: database.collections.get(CHANNEL).findAndObserve(currentChannelId.value),
     user: database.collections.get(USER).findAndObserve(currentUserId.value),
 }));
 
-export default withDatabase(withSystemIds(withChannelAndTheme(Channel)));
+export default withDatabase(withSystemIds(withChannelAndUser(Channel)));

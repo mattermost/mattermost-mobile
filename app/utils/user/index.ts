@@ -11,15 +11,15 @@ export function getUserIdFromChannelName(userId: string, channelName: string): s
     return ids[0];
 }
 
-export function rolesIncludePermission(roles: string, permission: string): boolean {
+export function isRoleInRoles(roles: string, role: string): boolean {
     const rolesArray = roles.split(' ');
-    return rolesArray.includes(permission);
+    return rolesArray.includes(role);
 }
 
 export function isGuest(roles: string): boolean {
-    return rolesIncludePermission(roles, 'system_guest');
+    return isRoleInRoles(roles, General.SYSTEM_GUEST_ROLE);
 }
 
 export function isSystemAdmin(roles: string): boolean {
-    return rolesIncludePermission(roles, General.SYSTEM_ADMIN_ROLE);
+    return isRoleInRoles(roles, General.SYSTEM_ADMIN_ROLE);
 }
