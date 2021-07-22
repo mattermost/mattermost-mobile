@@ -28,9 +28,9 @@ const ConnectedChannelTitle = ({channel, onPress, canHaveSubtitle, currentUserId
     const style = getStyle(theme);
     const channelType = channel.type;
     const displayName = channel ? channel.displayName : '';
-    const hasGuests = channelInfo[0]?.guestCount > 0;
+    const hasGuests = channelInfo.guestCount > 0;
     const isArchived = channel.deleteAt !== 0;
-    const isChannelMuted = channelSettings[0]?.notifyProps?.mark_unread === 'mention';
+    const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
 
     let isGuest = false;
@@ -245,8 +245,8 @@ type ChannelTitleInputProps = {
 };
 
 type ChannelTitleProps = ChannelTitleInputProps & {
-    channelInfo: ChannelInfoModel[];
-    channelSettings: MyChannelSettingsModel[];
+    channelInfo: ChannelInfoModel;
+    channelSettings: MyChannelSettingsModel;
     database: Database;
     teammate?: UserModel;
     teammateId: string;
@@ -255,8 +255,8 @@ type ChannelTitleProps = ChannelTitleInputProps & {
 const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> = withDatabase(
     withObservables(['channel', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
         return {
-            channelInfo: channel.info.observe(),
-            channelSettings: channel.settings.observe(),
+            channelInfo: database.collections.get(MM_TABLES.SERVER.CHANNEL_INFO).findAndObserve(channel.id),
+            channelSettings: database.collections.get(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS).findAndObserve(channel.id),
             ...(teammateId && channel.displayName && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
         };
     },

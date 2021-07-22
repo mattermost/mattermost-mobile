@@ -85,7 +85,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     },
 }));
 
-// TODO: Move as helper methods
 type WithDatabaseArgs = { database: Database }
 type WithChannelAndThemeArgs = WithDatabaseArgs & {
     currentChannelId: SystemModel;
