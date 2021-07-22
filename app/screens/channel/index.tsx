@@ -9,12 +9,12 @@ import {useIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import StatusBar from '@components/status_bar';
-import {General} from '@constants';
 import ViewTypes from '@constants/view';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {unsupportedServer} from '@utils/supported_server/supported_server';
+import {isSystemAdmin as isUserSystemAdmin} from '@utils/user';
 
 import ChannelNavBar from './channel_nav_bar';
 
@@ -48,7 +48,7 @@ const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
     useEffect(() => {
         const serverVersion = (config.value?.Version) || '';
 
-        const isSystemAdmin = user.roles === General.SYSTEM_ADMIN_ROLE;
+        const isSystemAdmin = isUserSystemAdmin(user.roles);
 
         if (serverVersion) {
             const {RequiredServer: {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION}} = ViewTypes;

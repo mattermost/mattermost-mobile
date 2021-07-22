@@ -8,6 +8,7 @@ import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {isGuest as isTeammateGuest} from '@utils/user';
 
 type ChannelGuestLabelProps = {
     canHaveSubtitle: boolean;
@@ -21,10 +22,7 @@ const ChannelGuestLabel = ({teammateRoles, canHaveSubtitle, guestCount, channelT
     const style = getStyle(theme);
     const hasGuests = guestCount > 0;
 
-    let isGuest = false;
-    if (channelType === General.DM_CHANNEL && teammateRoles) {
-        isGuest = teammateRoles === General.SYSTEM_GUEST_ROLE;
-    }
+    const isGuest = channelType === General.DM_CHANNEL && isTeammateGuest(teammateRoles);
 
     if (!canHaveSubtitle || (!isGuest && !hasGuests) || (channelType === General.DM_CHANNEL && !isGuest)) {
         return null;
