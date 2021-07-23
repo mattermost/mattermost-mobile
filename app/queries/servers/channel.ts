@@ -23,7 +23,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         let guest_count = 0;
         let pinned_post_count = 0;
         if (storedChannel) {
-            storedInfo = (await storedChannel.info.fetch())[0] as ChannelInfoModel;
+            storedInfo = (await storedChannel.info.fetch()) as ChannelInfoModel;
             member_count = storedInfo.memberCount;
             guest_count = storedInfo.guestCount;
             pinned_post_count = storedInfo.pinnedPostCount;

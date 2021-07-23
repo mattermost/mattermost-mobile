@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {immutableRelation, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
@@ -19,13 +19,6 @@ const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 export default class TeamChannelHistoryModel extends Model {
     /** table (name) : TeamChannelHistory */
     static table = TEAM_CHANNEL_HISTORY;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations = {
-
-        /** A TEAM and TEAM_CHANNEL_HISTORY share a 1:1 relationship */
-        [TEAM]: {type: 'belongs_to', key: 'id'},
-    };
 
     /** channel_ids : An array containing the last 5 channels visited within this team order by recency */
     @json('channel_ids', safeParseJSON) channelIds!: string[];

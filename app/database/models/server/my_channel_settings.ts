@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {immutableRelation, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
@@ -19,13 +19,6 @@ const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 export default class MyChannelSettingsModel extends Model {
     /** table (name) : MyChannelSettings */
     static table = MY_CHANNEL_SETTINGS;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations = {
-
-        /** A CHANNEL is related to only one MY_CHANNEL_SETTINGS (relationship is 1:1) */
-        [CHANNEL]: {type: 'belongs_to', key: 'id'},
-    };
 
     /** notify_props : Configurations with regards to this channel */
     @json('notify_props', safeParseJSON) notifyProps!: ChannelNotifyProps;

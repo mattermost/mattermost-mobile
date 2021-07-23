@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Query} from '@nozbe/watermelondb';
-import {children, field, lazy} from '@nozbe/watermelondb/decorators';
+import {Relation} from '@nozbe/watermelondb';
+import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -42,14 +42,8 @@ export default class TeamModel extends Model {
         /** A TEAM has a 1:N relationship with GROUPS_IN_TEAM. A TEAM can possess multiple groups */
         [GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
 
-        /** A TEAM has a 1:1 relationship with MY_TEAM. */
-        [MY_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
-
         /** A TEAM has a 1:N relationship with SLASH_COMMAND. A TEAM can possess multiple slash commands */
         [SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
-
-        /** A TEAM has a 1:1 relationship with TEAM_CHANNEL_HISTORY.*/
-        [TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with TEAM_MEMBERSHIP. A TEAM can regroup multiple users */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'team_id'},
@@ -91,14 +85,14 @@ export default class TeamModel extends Model {
     /** groupsInTeam : All the groups associated with this team */
     @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeamModel[];
 
-    /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
-    @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeamModel>;
+    /** myTeam : Retrieves additional information about the team that this user is possibly part of. */
+    @immutableRelation(MY_TEAM, 'id') myTeam!: Relation<MyTeamModel>;
 
     /** slashCommands : All the slash commands associated with this team */
     @children(SLASH_COMMAND) slashCommands!: SlashCommandModel[];
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
-    @lazy teamChannelHistory = this.collections.get(TEAM_CHANNEL_HISTORY).query(Q.on(TEAM, 'id', this.id)) as Query<TeamChannelHistoryModel>;
+    @immutableRelation(TEAM_CHANNEL_HISTORY, 'id') teamChannelHistory!: Relation<TeamChannelHistoryModel>;
 
     /** members : All the users associated with this team */
     @children(TEAM_MEMBERSHIP) members!: TeamMembershipModel[];

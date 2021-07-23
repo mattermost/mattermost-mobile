@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 /**
  * MyTeam represents only the teams that the current user belongs to
@@ -10,9 +10,6 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 export default class MyTeamModel extends Model {
     /** table (name) : MyTeam */
     static table: string;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations;
 
     /** is_unread : Boolean flag for unread messages on team level */
     isUnread: boolean;

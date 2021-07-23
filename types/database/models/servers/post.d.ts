@@ -66,7 +66,7 @@ export default class PostModel extends Model {
     postsInThread: PostInThreadModel[];
 
     /** metadata: All the extra data associated with this Post */
-    metadata: PostMetadataModel[];
+    metadata: Relation<PostMetadataModel>;
 
     /** reactions: All the reactions associated with this Post */
     reactions: ReactionModel[];

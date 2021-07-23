@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -19,13 +19,6 @@ const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
 export default class ChannelInfoModel extends Model {
     /** table (name) : ChannelInfo */
     static table = CHANNEL_INFO;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations = {
-
-        /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
-        [CHANNEL]: {type: 'belongs_to', key: 'id'},
-    };
 
     /** guest_count : The number of guest in this channel */
     @field('guest_count') guestCount!: number;

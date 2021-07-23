@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {immutableRelation, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
@@ -18,13 +18,6 @@ const {POST, POST_METADATA} = MM_TABLES.SERVER;
 export default class PostMetadataModel extends Model {
     /** table (name) : PostMetadata */
     static table = POST_METADATA;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations = {
-
-        /** A POST can have multiple POST_METADATA.(relationship is 1:N)*/
-        [POST]: {type: 'belongs_to', key: 'id'},
-    };
 
     /** data : Different types of data ranging from embeds to images. */
     @json('data', safeParseJSON) data!: PostMetadata;
