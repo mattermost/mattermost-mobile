@@ -3,7 +3,7 @@
 
 import React, {ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {Dimensions, ScrollView, Platform, View, ScaledSize} from 'react-native';
+import {Dimensions, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
@@ -12,8 +12,8 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import DeviceTypes from '@constants/device';
 import {withTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const MAX_HEIGHT = 300;
 const MAX_PREVIEW_COLUMNS = 5;
@@ -33,8 +33,8 @@ type MarkdownTableProps = {
 }
 
 class MarkdownTable extends React.PureComponent<MarkdownTableProps, MarkdownTableState> {
-    private rowsSliced: boolean;
-    private colsSliced: boolean;
+    private rowsSliced: boolean | undefined;
+    private colsSliced: boolean | undefined;
 
     constructor(props: MarkdownTableProps) {
         super(props);
@@ -86,7 +86,7 @@ class MarkdownTable extends React.PureComponent<MarkdownTableProps, MarkdownTabl
         goToScreen(screen, title, passProps);
     });
 
-    handleContainerLayout = (e) => {
+    handleContainerLayout = (e: LayoutChangeEvent) => {
         this.setState({
             containerWidth: e.nativeEvent.layout.width,
         });
@@ -146,7 +146,7 @@ class MarkdownTable extends React.PureComponent<MarkdownTableProps, MarkdownTabl
     renderRows = (isFullView = false, isPreview = false) => {
         const tableStyle = this.getTableStyle(isFullView);
 
-        let rows = React.Children.toArray(this.props.children);
+        let rows = React.Children.toArray(this.props.children) as React.ReactElement[];
         if (isPreview) {
             const {maxPreviewColumns} = this.state;
             const prevRowLength = rows.length;
