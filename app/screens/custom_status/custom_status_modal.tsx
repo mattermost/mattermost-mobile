@@ -9,10 +9,10 @@ import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBar
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal, showModal, mergeNavigationOptions, goToScreen} from '@actions/navigation';
-import Emoji from '@components/emoji';
 import CompassIcon from '@components/compass_icon';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
+import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {CustomStatus, DeviceTypes} from '@constants';
@@ -25,8 +25,8 @@ import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggest
 import {getRoundedTime} from '@screens/custom_status_clear_after/date_time_selector';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {getCurrentMomentForTimezone} from '@utils/timezone';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {getCurrentMomentForTimezone} from '@utils/timezone';
 
 type DefaultUserCustomStatus = {
     emoji: string;

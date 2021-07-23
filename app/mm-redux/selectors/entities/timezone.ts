@@ -4,7 +4,6 @@
 import {createSelector} from 'reselect';
 
 import {getCurrentUser} from '@mm-redux/selectors/entities/common';
-
 import {GlobalState} from '@mm-redux/types/store';
 import {UserProfile} from '@mm-redux/types/users';
 

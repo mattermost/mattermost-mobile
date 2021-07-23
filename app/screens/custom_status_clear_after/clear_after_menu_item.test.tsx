@@ -5,7 +5,8 @@ import {TouchableOpacity} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {CustomStatusDuration} from '@mm-redux/types/users';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
+
 import ClearAfterMenuItem from './clear_after_menu_item';
 
 describe('screens/clear_after_menu_item', () => {

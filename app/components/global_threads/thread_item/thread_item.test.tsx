@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {shallow} from 'enzyme';
 import React from 'react';
 import {Text} from 'react-native';
-import {shallow} from 'enzyme';
 
 import * as navigationActions from '@actions/navigation';
 import {THREAD} from '@constants/screen';
@@ -12,7 +12,7 @@ import {Channel} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
-import {intl} from 'test/intl-test-helper';
+import {intl} from '@test/intl-test-helper';
 
 import {ThreadItem} from './thread_item';
 

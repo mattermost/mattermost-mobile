@@ -1,30 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
-import {General, Permissions} from '../../constants';
+
 import {getCurrentChannelId, getCurrentUser, getUsers, getMyChannelMemberships, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/common';
 import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
-import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting, getVisibleTeammate, getVisibleGroupIds, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getLastPostPerChannel, getAllPosts} from '@mm-redux/selectors/entities/posts';
-import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
+import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting, getVisibleTeammate, getVisibleGroupIds, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@mm-redux/selectors/entities/roles';
+import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {isCurrentUserSystemAdmin, getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {Channel, ChannelStats, ChannelMembership, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
+import {Config} from '@mm-redux/types/config';
+import {Post} from '@mm-redux/types/posts';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {GlobalState} from '@mm-redux/types/store';
+import {TeamMembership, Team} from '@mm-redux/types/teams';
+import {ThreadsState} from '@mm-redux/types/threads';
+import {UsersState, UserProfile} from '@mm-redux/types/users';
+import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
 import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency, getMsgCountInChannel} from '@mm-redux/utils/channel_utils';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
 
-export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembership};
-import {Config} from '@mm-redux/types/config';
-import {GlobalState} from '@mm-redux/types/store';
-import {ThreadsState} from '@mm-redux/types/threads';
-import {Channel, ChannelStats, ChannelMembership, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
-import {UsersState, UserProfile} from '@mm-redux/types/users';
-import {PreferenceType} from '@mm-redux/types/preferences';
-import {Post} from '@mm-redux/types/posts';
-import {TeamMembership, Team} from '@mm-redux/types/teams';
-import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
+import {General, Permissions} from '../../constants';
 
 import {getThreadCounts} from './threads';
 import {getUserIdsInChannels} from './users';
+
+export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembership};
 
 type SortingType = 'recent' | 'alpha';
 

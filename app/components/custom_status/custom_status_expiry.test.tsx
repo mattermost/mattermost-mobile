@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import moment from 'moment-timezone';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {renderWithReduxIntl} from 'test/testing_library';
+import {renderWithReduxIntl} from '@test/testing_library';
+
 import CustomStatusExpiry from './custom_status_expiry';
 
 jest.mock('@mm-redux/selectors/entities/preferences');

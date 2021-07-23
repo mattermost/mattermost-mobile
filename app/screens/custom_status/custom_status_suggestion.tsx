@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {injectIntl, intlShape} from 'react-intl';
 import React, {useCallback} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {View, TouchableOpacity, Text} from 'react-native';
 
-import Emoji from '@components/emoji';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
+import Emoji from '@components/emoji';
 import {durationValues} from '@constants/custom_status';
 import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';

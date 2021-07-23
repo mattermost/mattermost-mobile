@@ -2,24 +2,24 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, Text, TouchableHighlight} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {View, Text, TouchableHighlight} from 'react-native';
 
 import {goToScreen} from '@actions/navigation';
-import RemoveMarkdown from '@components/remove_markdown';
 import FriendlyDate from '@components/friendly_date';
+import RemoveMarkdown from '@components/remove_markdown';
 import {GLOBAL_THREADS, THREAD} from '@constants/screen';
 import {Posts, Preferences} from '@mm-redux/constants';
-
 import {Channel} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import {UserThread} from '@mm-redux/types/threads';
-import {displayUsername} from '@mm-redux/utils/user_utils';
 import {UserProfile} from '@mm-redux/types/users';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadFooter from '../thread_footer';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 export type DispatchProps = {
     actions: {

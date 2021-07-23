@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
+import {Text, View} from 'react-native';
 import Svg, {
     Ellipse,
     G,
@@ -13,8 +13,9 @@ import Svg, {
 } from 'react-native-svg';
 import {useSelector} from 'react-redux';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
 import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
 

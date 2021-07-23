@@ -2,18 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
 import {GLOBAL_THREADS, CHANNEL} from '@constants/screen';
-import type {Theme} from '@mm-redux/types/preferences';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import {$ID} from '@mm-redux/types/utilities';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 export type DispatchProps = {
     actions: {

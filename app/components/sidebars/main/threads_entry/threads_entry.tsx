@@ -2,22 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {TouchableHighlight, Text, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {TouchableHighlight, Text, View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {getStyleSheet} from '@components/sidebars/main/channels_list/channel_item/channel_item';
 import {NavigationTypes} from '@constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {makeStyleFromTheme} from '@mm-redux/utils/theme_utils';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+
 import type {Theme} from '@mm-redux/types/preferences';
 import type {Team} from '@mm-redux/types/teams';
 import type {ThreadsState} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {makeStyleFromTheme} from '@mm-redux/utils/theme_utils';
-import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity} from '@utils/theme';
 
 type Props = {
     actions: {

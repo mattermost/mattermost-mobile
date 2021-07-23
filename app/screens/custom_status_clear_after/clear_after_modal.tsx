@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SafeAreaView, View, StatusBar} from 'react-native';
 import React from 'react';
 import {intlShape, injectIntl} from 'react-intl';
+import {SafeAreaView, View, StatusBar} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {
     Navigation,
@@ -14,11 +14,11 @@ import {
     OptionsTopBarButton,
 } from 'react-native-navigation';
 
+import {mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import {Theme} from '@mm-redux/types/preferences';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import {mergeNavigationOptions, popTopScreen} from 'app/actions/navigation';
 import ClearAfterMenuItem from './clear_after_menu_item';
 interface Props extends NavigationComponentProps {
     intl: typeof intlShape;

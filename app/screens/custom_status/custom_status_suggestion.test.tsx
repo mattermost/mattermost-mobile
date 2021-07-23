@@ -5,9 +5,9 @@ import React from 'react';
 import {TouchableOpacity} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
-import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {CustomStatusDuration} from '@mm-redux/types/users';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 describe('screens/custom_status_suggestion', () => {
     const baseProps = {

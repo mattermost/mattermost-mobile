@@ -4,14 +4,13 @@
 import moment from 'moment-timezone';
 import {createSelector} from 'reselect';
 
-import {GlobalState} from '@mm-redux/types/store';
-import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
-
 import {Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {get} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
+import {GlobalState} from '@mm-redux/types/store';
+import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getCurrentMomentForTimezone} from '@utils/timezone';
 

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 

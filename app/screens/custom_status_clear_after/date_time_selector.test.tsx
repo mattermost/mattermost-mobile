@@ -4,7 +4,8 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {renderWithRedux} from 'test/testing_library';
+import {renderWithRedux} from '@test/testing_library';
+
 import DateTimeSelector from './date_time_selector';
 
 describe('screens/date_time_selector', () => {
