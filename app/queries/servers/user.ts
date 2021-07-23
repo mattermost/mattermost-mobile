@@ -5,10 +5,10 @@ import {Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+import {queryCurrentUserId} from './system';
+
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type UserModel from '@typings/database/models/servers/user';
-
-import {queryCurrentUserId} from './system';
 
 export const queryUserById = async (database: Database, userId: string) => {
     try {
