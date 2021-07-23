@@ -4,8 +4,6 @@
 import assert from 'assert';
 
 import nock from 'nock';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import {logout} from '@actions/views/user';
 import {Client4} from '@client/rest';
@@ -14,6 +12,8 @@ import * as Actions from '@mm-redux/actions/users';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import initialState from '@store/initial_state';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 import {RequestStatus} from '../constants';
 

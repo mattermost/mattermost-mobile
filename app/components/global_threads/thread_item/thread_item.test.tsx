@@ -4,7 +4,6 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 import {Text} from 'react-native';
-import {intl} from 'test/intl-test-helper';
 
 import * as navigationActions from '@actions/navigation';
 import {THREAD} from '@constants/screen';
@@ -13,6 +12,7 @@ import {Channel} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
+import {intl} from '@test/intl-test-helper';
 
 import {ThreadItem} from './thread_item';
 

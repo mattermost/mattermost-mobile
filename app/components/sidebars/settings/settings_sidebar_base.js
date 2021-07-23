@@ -8,6 +8,7 @@ import {ScrollView, View} from 'react-native';
 import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import ClearButton from '@components/custom_status/clear_button';
+import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
@@ -36,6 +37,8 @@ export default class SettingsSidebarBase extends PureComponent {
         theme: PropTypes.object.isRequired,
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         customStatus: PropTypes.object,
+        isCustomStatusExpired: PropTypes.bool.isRequired,
+        isCustomStatusExpirySupported: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -76,7 +79,7 @@ export default class SettingsSidebarBase extends PureComponent {
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
         const isStatusSet = Boolean(customStatus?.emoji);
         if (isStatusSet) {
-            const isStatusChanged = prevCustomStatus?.emoji !== customStatus.emoji || prevCustomStatus?.text !== customStatus.text;
+            const isStatusChanged = prevCustomStatus?.emoji !== customStatus?.emoji || prevCustomStatus?.text !== customStatus?.text || prevCustomStatus?.expires_at !== customStatus?.expires_at;
             if (isStatusChanged) {
                 this.setState({
                     showStatus: true,
@@ -239,7 +242,7 @@ export default class SettingsSidebarBase extends PureComponent {
     }
 
     renderCustomStatus = () => {
-        const {isCustomStatusEnabled, customStatus, theme} = this.props;
+        const {isCustomStatusEnabled, customStatus, theme, isCustomStatusExpired, isCustomStatusExpirySupported} = this.props;
         const {showStatus, showRetryMessage} = this.state;
 
         if (!isCustomStatusEnabled) {
@@ -247,7 +250,7 @@ export default class SettingsSidebarBase extends PureComponent {
         }
 
         const style = getStyleSheet(theme);
-        const isStatusSet = customStatus?.emoji && showStatus;
+        const isStatusSet = !isCustomStatusExpired && customStatus?.emoji && showStatus;
 
         const customStatusEmoji = (
             <View
@@ -268,24 +271,6 @@ export default class SettingsSidebarBase extends PureComponent {
             </View>
         );
 
-        const clearButton = isStatusSet ?
-            (
-                <ClearButton
-                    handlePress={this.clearCustomStatus}
-                    theme={theme}
-                    testID='settings.sidebar.custom_status.action.clear'
-                />
-            ) : null;
-
-        const retryMessage = showRetryMessage ?
-            (
-                <FormattedText
-                    id='custom_status.failure_message'
-                    defaultMessage='Failed to update status. Try again'
-                    style={style.retryMessage}
-                />
-            ) : null;
-
         const text = isStatusSet ? customStatus.text : (
             <FormattedText
                 id='mobile.routes.custom_status'
@@ -302,15 +287,35 @@ export default class SettingsSidebarBase extends PureComponent {
                         text={text}
                         theme={theme}
                     />
+                    {Boolean(isStatusSet && isCustomStatusExpirySupported && customStatus?.duration) && (
+                        <CustomStatusExpiry
+                            time={customStatus?.expires_at}
+                            theme={theme}
+                            textStyles={style.customStatusExpiryText}
+                            withinBrackets={true}
+                            showPrefix={true}
+                            testID={'custom_status.expiry'}
+                        />
+                    )}
                 </View>
-                {retryMessage}
-                {clearButton &&
+                {showRetryMessage && (
+                    <FormattedText
+                        id='custom_status.failure_message'
+                        defaultMessage='Failed to update status. Try again'
+                        style={style.retryMessage}
+                    />
+                )}
+                {isStatusSet && (
                     <View
                         style={style.clearButton}
                     >
-                        {clearButton}
+                        <ClearButton
+                            handlePress={this.clearCustomStatus}
+                            theme={theme}
+                            testID='settings.sidebar.custom_status.action.clear'
+                        />
                     </View>
-                }
+                )}
             </>
         );
 
@@ -426,6 +431,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         customStatusIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+        customStatusExpiryText: {
+            paddingTop: 3,
+            fontSize: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.35),
         },
         clearButton: {
             position: 'absolute',

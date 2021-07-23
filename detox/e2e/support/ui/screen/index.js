@@ -12,6 +12,7 @@ import ChannelNotificationPreferenceScreen from './channel_notification_preferen
 import ClockDisplaySettingsScreen from './clock_display_settings';
 import CreateChannelScreen from './create_channel';
 import CustomStatusScreen from './custom_status';
+import ClearAfterScreen from './custom_status_clear_after';
 import DisplaySettingsScreen from './display_settings';
 import EditChannelScreen from './edit_channel';
 import EditPostScreen from './edit_post';
@@ -46,6 +47,7 @@ export {
     ChannelMembersScreen,
     ChannelNotificationPreferenceScreen,
     ChannelScreen,
+    ClearAfterScreen,
     ClockDisplaySettingsScreen,
     CreateChannelScreen,
     CustomStatusScreen,

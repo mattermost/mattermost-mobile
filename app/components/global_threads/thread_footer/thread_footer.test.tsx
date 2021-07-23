@@ -3,11 +3,11 @@
 
 import {shallow} from 'enzyme';
 import React from 'react';
-import {intl} from 'test/intl-test-helper';
 
 import {Preferences} from '@mm-redux/constants';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
+import {intl} from '@test/intl-test-helper';
 
 import {ThreadFooter} from './thread_footer';
 

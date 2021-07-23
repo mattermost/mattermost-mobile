@@ -4,9 +4,9 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 import {FlatList} from 'react-native';
-import {intl} from 'test/intl-test-helper';
 
 import {Preferences} from '@mm-redux/constants';
+import {intl} from '@test/intl-test-helper';
 
 import {ThreadList} from './index';
 

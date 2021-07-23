@@ -4,13 +4,13 @@
 import assert from 'assert';
 
 import nock from 'nock';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import {Client4} from '@client/rest';
 import {GeneralTypes} from '@mm-redux/action_types';
 import * as Actions from '@mm-redux/actions/teams';
 import {login} from '@mm-redux/actions/users';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 import {RequestStatus} from '../constants';
 

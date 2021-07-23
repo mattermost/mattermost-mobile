@@ -3,10 +3,9 @@
 
 import assert from 'assert';
 
-import TestHelper from 'test/test_helper';
-
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import TestHelper from '@test/test_helper';
 
 import {Posts, Preferences} from '../constants';
 

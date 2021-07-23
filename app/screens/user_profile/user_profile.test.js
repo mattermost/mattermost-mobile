@@ -6,6 +6,7 @@ import React from 'react';
 import * as NavigationActions from '@actions/navigation';
 import {BotTag, GuestTag} from '@components/tag';
 import Preferences from '@mm-redux/constants/preferences';
+import {CustomStatusDuration} from '@mm-redux/types/users';
 import {shallowWithIntl} from '@test/intl-test-helper';
 
 import UserProfile from './user_profile.js';
@@ -38,6 +39,8 @@ describe('user_profile', () => {
         isMilitaryTime: false,
         isMyUser: false,
         componentId: 'component-id',
+        isCustomStatusExpired: false,
+        isCustomStatusExpirySupported: false,
     };
 
     const user = {
@@ -53,6 +56,7 @@ describe('user_profile', () => {
     const customStatus = {
         emoji: 'calendar',
         text: 'In a meeting',
+        duration: CustomStatusDuration.DONT_CLEAR,
     };
 
     const customStatusProps = {
@@ -92,6 +96,23 @@ describe('user_profile', () => {
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with custom status expiry', () => {
+        const wrapper = shallowWithIntl(
+            <UserProfile
+                {...customStatusProps}
+                customStatus={{
+                    ...customStatus,
+                    duration: CustomStatusDuration.DATE_AND_TIME,
+                    expires_at: '2200-04-13T18:09:12.451Z',
+                }}
+                isCustomStatusExpirySupported={true}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 

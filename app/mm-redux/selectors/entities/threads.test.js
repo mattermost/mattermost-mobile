@@ -3,10 +3,9 @@
 
 import assert from 'assert';
 
-import TestHelper from 'test/test_helper';
-
 import * as Selectors from '@mm-redux/selectors/entities/threads';
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import TestHelper from '@test/test_helper';
 
 describe('Selectors.Threads.getThreadOrderInCurrentTeam', () => {
     const team1 = TestHelper.fakeTeamWithId();

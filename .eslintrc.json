@@ -78,7 +78,9 @@
         },
         "pathGroupsExcludedImportTypes": ["type"]
       }
-    ]
+    ],
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error"
   },
   "overrides": [
     {

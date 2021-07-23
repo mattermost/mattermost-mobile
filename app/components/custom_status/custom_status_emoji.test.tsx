@@ -4,6 +4,7 @@
 import React from 'react';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
+import {CustomStatusDuration} from '@mm-redux/types/users';
 import * as CustomStatusSelectors from '@selectors/custom_status';
 import {renderWithRedux} from '@test/testing_library';
 
@@ -14,6 +15,7 @@ describe('components/custom_status/custom_status_emoji', () => {
         return {
             emoji: 'calendar',
             text: 'In a meeting',
+            duration: CustomStatusDuration.DONT_CLEAR,
         };
     };
     (CustomStatusSelectors.makeGetCustomStatus as jest.Mock).mockReturnValue(getCustomStatus);

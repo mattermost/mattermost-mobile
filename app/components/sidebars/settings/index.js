@@ -9,7 +9,7 @@ import {logout} from '@actions/views/user';
 import {setStatus} from '@mm-redux/actions/users';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-import {isCustomStatusEnabled, makeGetCustomStatus} from '@selectors/custom_status';
+import {isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported, makeGetCustomStatus} from '@selectors/custom_status';
 
 import SettingsSidebar from './settings_sidebar';
 
@@ -28,6 +28,8 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             isCustomStatusEnabled: customStatusEnabled,
             customStatus,
+            isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : true,
+            isCustomStatusExpirySupported: customStatusEnabled ? isCustomStatusExpirySupported(state) : false,
         };
     };
 }

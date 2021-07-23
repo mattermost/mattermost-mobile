@@ -4,6 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {CustomStatusDuration} from '@mm-redux/types/users';
 import CustomStatusModal from '@screens/custom_status/custom_status_modal';
 import {shallowWithIntl} from '@test/intl-test-helper';
 
@@ -11,6 +12,7 @@ describe('screens/custom_status_modal', () => {
     const customStatus = {
         emoji: 'calendar',
         text: 'In a meeting',
+        duration: CustomStatusDuration.DONT_CLEAR,
     };
 
     const baseProps = {

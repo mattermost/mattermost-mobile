@@ -6,6 +6,7 @@ import Autocomplete from './autocomplete';
 import BottomSheet from './bottom_sheet';
 import CameraQuickAction from './camera_quick_action';
 import ChannelsList from './channels_list';
+import DateTimePicker from './date_time_picker';
 import EditChannelInfo from './edit_channel_info';
 import FileQuickAction from './file_quick_action';
 import ImageQuickAction from './image_quick_action';
@@ -27,6 +28,7 @@ export {
     Autocomplete,
     BottomSheet,
     CameraQuickAction,
+    DateTimePicker,
     EditChannelInfo,
     FileQuickAction,
     ImageQuickAction,

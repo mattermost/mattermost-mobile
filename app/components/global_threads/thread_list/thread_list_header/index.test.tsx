@@ -3,7 +3,8 @@
 
 import {shallow} from 'enzyme';
 import React from 'react';
-import {intl} from 'test/intl-test-helper';
+
+import {intl} from '@test/intl-test-helper';
 
 import {ThreadListHeader} from './index';
 

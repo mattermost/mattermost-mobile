@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import nock from 'nock';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 import {Client4} from '@client/rest';
 import {getThread as fetchThread, getThreads as fetchThreads} from '@mm-redux/actions/threads';
 import {getThread, getThreadsInCurrentTeam} from '@mm-redux/selectors/entities/threads';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 /**
  * Returns a mock thread with 2 participants and 5 replies.
