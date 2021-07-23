@@ -8,7 +8,7 @@ import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {logout} from '@actions/remote/general';
+import {logout} from '@actions/remote/session';
 import StatusBar from '@components/status_bar';
 import ViewTypes from '@constants/view';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -17,7 +17,6 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {unsupportedServer} from '@utils/supported_server/supported_server';
 import {isSystemAdmin as isUserSystemAdmin} from '@utils/user';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 import ChannelNavBar from './channel_nav_bar';
 
@@ -31,7 +30,7 @@ import {Text, View} from 'react-native';
 const {SERVER: {CHANNEL, SYSTEM, USER}} = MM_TABLES;
 
 type WithDatabaseArgs = { database: Database }
-type WithChannelAndThemeArgs = WithDatabaseArgs & {
+type WithChannelAndUserArgs = WithDatabaseArgs & {
     currentChannelId: SystemModel;
     currentUserId: SystemModel;
 }
@@ -41,9 +40,10 @@ type ChannelProps = WithDatabaseArgs & {
     launchType: LaunchType;
     user: UserModel;
     currentUserId: SystemModel;
+    time?: number;
 };
 
-const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
+const Channel = ({channel, user, config, currentUserId, time}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
@@ -102,7 +102,7 @@ const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
                     onPress={doLogout}
                     style={styles.sectionTitle}
                 >
-                    {`Logout from ${serverUrl}`}
+                    {`Loaded in: ${time || 0}ms. Logout from ${serverUrl}`}
                 </Text>
             </View>
 
@@ -110,7 +110,7 @@ const Channel = ({channel, user, config, currentUserId}: ChannelProps) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
     },
@@ -121,7 +121,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     sectionTitle: {
         fontSize: 24,
         fontWeight: '600',
-        color: Colors.black,
+        color: theme.centerChannelColor,
     },
 }));
 
@@ -131,7 +131,7 @@ export const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) 
     config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
 }));
 
-const withChannelAndUser = withObservables(['currentChannelId'], ({currentChannelId, currentUserId, database}: WithChannelAndThemeArgs) => ({
+const withChannelAndUser = withObservables(['currentChannelId'], ({currentChannelId, currentUserId, database}: WithChannelAndUserArgs) => ({
     channel: database.collections.get(CHANNEL).findAndObserve(currentChannelId.value),
     user: database.collections.get(USER).findAndObserve(currentUserId.value),
 }));

@@ -9,7 +9,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import {sendPasswordResetEmail} from '@actions/remote/user';
+import {sendPasswordResetEmail} from '@actions/remote/session';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

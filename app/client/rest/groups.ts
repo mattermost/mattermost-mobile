@@ -6,10 +6,10 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientGroupsMix {
-    getGroups: (filterAllowReference?: boolean, page?: number, perPage?: number) => Promise<Group[]>;
+    getGroups: (filterAllowReference?: boolean, page?: number, perPage?: number, since?: number) => Promise<Group[]>;
     getGroupsByUserId: (userID: string) => Promise<Group[]>;
-    getAllGroupsAssociatedToTeam: (teamID: string, filterAllowReference?: boolean) => Promise<Group[]>;
-    getAllGroupsAssociatedToChannelsInTeam: (teamID: string, filterAllowReference?: boolean) => Promise<Group[]>;
+    getAllGroupsAssociatedToTeam: (teamID: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; tota_group_count: number}>;
+    getAllGroupsAssociatedToChannelsInTeam: (teamID: string, filterAllowReference?: boolean) => Promise<{groups: Record<string, Group[]>}>;
     getAllGroupsAssociatedToChannel: (channelID: string, filterAllowReference?: boolean) => Promise<Group[]>;
 }
 

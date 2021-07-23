@@ -9,11 +9,12 @@ import {waitFor, renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import Login from './index';
 
-jest.mock('@actions/remote/user', () => {
+jest.mock('@actions/remote/session', () => {
     return {
         login: () => {
             return {
                 data: undefined,
+                failed: true,
                 error: {
                     server_error_id: 'mfa.validate_token.authenticate.app_error',
                 },

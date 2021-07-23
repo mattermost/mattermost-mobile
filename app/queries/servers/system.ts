@@ -13,7 +13,7 @@ const {SERVER: {SYSTEM}} = MM_TABLES;
 export const queryCurrentChannelId = async (serverDatabase: Database) => {
     try {
         const currentChannelId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID) as SystemModel;
-        return currentChannelId?.value || '';
+        return (currentChannelId?.value || '') as string;
     } catch {
         return '';
     }
@@ -22,14 +22,14 @@ export const queryCurrentChannelId = async (serverDatabase: Database) => {
 export const queryCurrentUserId = async (serverDatabase: Database) => {
     try {
         const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as SystemModel;
-        return currentUserId?.value || '';
+        return (currentUserId?.value || '') as string;
     } catch {
         return '';
     }
 };
 
-export const queryCommonSystemValues = async (database: Database) => {
-    const systemRecords = (await database.collections.get(SYSTEM).query().fetch()) as SystemModel[];
+export const queryCommonSystemValues = async (serverDatabase: Database) => {
+    const systemRecords = (await serverDatabase.collections.get(SYSTEM).query().fetch()) as SystemModel[];
     let config = {};
     let license = {};
     let currentChannelId = '';
@@ -50,7 +50,7 @@ export const queryCommonSystemValues = async (database: Database) => {
                 currentUserId = systemRecord.value;
                 break;
             case SYSTEM_IDENTIFIERS.LICENSE:
-                license = systemRecord.value;
+                license = systemRecord.value as ClientLicense;
                 break;
         }
     });
@@ -59,9 +59,18 @@ export const queryCommonSystemValues = async (database: Database) => {
         currentChannelId,
         currentTeamId,
         currentUserId,
-        config,
-        license,
+        config: (config as ClientConfig),
+        license: (license as ClientLicense),
     };
+};
+
+export const queryWebSocketLastDisconnected = async (serverDatabase: Database) => {
+    try {
+        const websocketLastDisconnected = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.WEBSOCKET) as SystemModel;
+        return (parseInt(websocketLastDisconnected?.value || 0, 10) || 0);
+    } catch {
+        return 0;
+    }
 };
 
 export const prepareCommonSystemValues = (

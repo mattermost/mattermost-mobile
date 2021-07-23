@@ -3,13 +3,10 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
-import {useIntl} from 'react-intl';
 
 import {SSO as SSOEnum} from '@constants';
-import {scheduleExpiredNotification} from '@actions/remote/push_notification';
-import {ssoLogin} from '@actions/remote/user';
+import {ssoLogin} from '@actions/remote/session';
 import {resetToChannel} from '@screens/navigation';
-import {ErrorApi} from '@typings/api/client';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type {LaunchProps} from '@typings/launch';
@@ -25,7 +22,6 @@ interface SSOProps extends LaunchProps {
 }
 
 const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}: SSOProps) => {
-    const intl = useIntl();
     const managedConfig = useManagedConfig();
 
     const [loginError, setLoginError] = useState<string>('');
@@ -61,8 +57,13 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
             break;
     }
 
-    const onLoadEndError = (e: ErrorApi) => {
+    const onLoadEndError = (e: ClientErrorProps | string) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
+        if (typeof e === 'string') {
+            setLoginError(e);
+            return;
+        }
+
         let errorMessage = e.message;
         if (e.url) {
             errorMessage += `\nURL: ${e.url}`;
@@ -71,18 +72,16 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
     };
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const {error = undefined} = await ssoLogin(serverUrl!, bearerToken, csrfToken);
-        if (error) {
-            onLoadEndError(error);
-            setLoginError(error);
+        const result: LoginActionResponse = await ssoLogin(serverUrl!, bearerToken, csrfToken);
+        if (result?.error && result.failed) {
+            onLoadEndError(result.error);
             return;
         }
-        goToChannel();
+        goToChannel(result.time || 0);
     };
 
-    const goToChannel = () => {
-        scheduleExpiredNotification(serverUrl!, intl);
-        resetToChannel({extra, launchError, launchType, serverUrl});
+    const goToChannel = (time: number) => {
+        resetToChannel({extra, launchError, launchType, serverUrl, time});
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);

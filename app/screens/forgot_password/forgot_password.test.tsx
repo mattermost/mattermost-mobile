@@ -5,7 +5,7 @@ import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
-import * as UserAPICalls from '@actions/remote/user';
+import * as SessionAPICalls from '@actions/remote/session';
 import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import ForgotPassword from './index';
@@ -37,7 +37,7 @@ describe('ForgotPassword', () => {
     });
 
     test('Should show password link sent texts', async () => {
-        const spyOnResetAPICall = jest.spyOn(UserAPICalls, 'sendPasswordResetEmail');
+        const spyOnResetAPICall = jest.spyOn(SessionAPICalls, 'sendPasswordResetEmail');
         const {getByTestId} = renderWithIntl(<ForgotPassword {...baseProps}/>);
         const emailTextInput = getByTestId('forgot.password.email');
         const resetButton = getByTestId('forgot.password.button');

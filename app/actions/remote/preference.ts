@@ -4,7 +4,7 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 
-import {forceLogoutIfNecessary} from './general';
+import {forceLogoutIfNecessary} from './session';
 
 export type MyPreferencesRequest = {
     preferences?: PreferenceType[];

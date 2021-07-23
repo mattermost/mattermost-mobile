@@ -1,9 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+type SortByCreatAt = (Session | Channel | Team | Post) & {
+    create_at: number;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function emptyFunction(e?: any) {
-    // eslint-disable-line no-empty-function, @typescript-eslint/no-unused-vars
+export function emptyFunction(..._args: any[]) {
+    // do nothing
 }
 
 // Generates a RFC-4122 version 4 compliant globally unique identifier.
@@ -24,4 +28,12 @@ export const generateId = (): string => {
         return v.toString(16);
     });
     return id;
+};
+
+export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
+    if (a.create_at > b.create_at) {
+        return -1;
+    }
+
+    return 1;
 };

@@ -6,7 +6,6 @@ import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
-import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ChannelDisplayNameProps = {
@@ -33,7 +32,7 @@ const ChannelDisplayName = ({channelType, currentUserId, displayName, teammateId
         >
             {isSelfDMChannel ? (
                 <FormattedText
-                    id={t('channel_header.directchannel.you')}
+                    id={'channel_header.directchannel.you'}
                     defaultMessage={'{displayname} (you)'}
                     values={{displayname: displayName}}
                 />) : displayName

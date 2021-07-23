@@ -62,7 +62,7 @@ const ConnectedChannelTitle = ({
     const teammateRoles = teammate?.roles ?? '';
     const isGuest = channelType === General.DM_CHANNEL && isTeammateGuest(teammateRoles);
 
-    const showGuestLabel = (canHaveSubtitle || (isGuest && hasGuests) || (channelType === General.DM_CHANNEL && isGuest));
+    const showGuestLabel = (canHaveSubtitle && ((isGuest && hasGuests) || (channelType === General.DM_CHANNEL && isGuest)));
 
     return (
         <TouchableOpacity
