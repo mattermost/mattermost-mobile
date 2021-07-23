@@ -7,7 +7,12 @@ import {queryRoles} from '@queries/servers/role';
 
 import {forceLogoutIfNecessary} from './session';
 
-export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]) => {
+export type RolesRequest = {
+    error?: never;
+    roles?: Role[];
+}
+
+export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]): Promise<RolesRequest> => {
     if (!updatedRoles.length) {
         return {roles: []};
     }

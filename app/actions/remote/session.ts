@@ -119,9 +119,9 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 
     try {
-        const {error, time} = await loginEntry({serverUrl, user});
+        const {error, hasTeams, time} = await loginEntry({serverUrl, user});
         completeLogin(serverUrl, user);
-        return {error, failed: false, time};
+        return {error, failed: false, hasTeams, time};
     } catch (error) {
         return {error, failed: false, time: 0};
     }
@@ -200,9 +200,9 @@ export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken
     }
 
     try {
-        const {error, time} = await loginEntry({serverUrl, user, deviceToken});
+        const {error, hasTeams, time} = await loginEntry({serverUrl, user, deviceToken});
         completeLogin(serverUrl, user);
-        return {error, failed: false, time};
+        return {error, failed: false, hasTeams, time};
     } catch (error) {
         return {error, failed: false, time: 0};
     }

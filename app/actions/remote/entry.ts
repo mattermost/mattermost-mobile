@@ -55,15 +55,16 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
     try {
         let initialTeam: Team|undefined;
         let initialChannel: Channel|undefined;
+        let myTeams: Team[]|undefined;
 
         // Fetch in parallel server config & license / user preferences / teams / team membership / team unreads
-        const promises: any = [
+        const promises: [Promise<ConfigAndLicenseRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
             fetchConfigAndLicense(serverUrl, true),
             fetchMyPreferences(serverUrl, true),
             fetchMyTeams(serverUrl, true),
         ];
 
-        const [clData, prefData, teamData] = await Promise.all<ConfigAndLicenseRequest, MyPreferencesRequest, MyTeamsRequest>(promises);
+        const [clData, prefData, teamData] = await Promise.all(promises);
         let chData: MyChannelsRequest|undefined;
 
         // schedule local push notification if needed
@@ -82,7 +83,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
                 teamMembers.push(tm.team_id);
             });
 
-            const myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
+            myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
             initialTeam = selectDefaultTeam(myTeams, user.locale, teamOrderPreference, clData.config?.ExperimentalPrimaryTeam);
 
             if (initialTeam) {
@@ -161,7 +162,8 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
 
         deferredLoginActions(serverUrl, user, prefData, clData, teamData, chData, initialTeam, initialChannel);
 
-        return {error: undefined, time: Date.now() - dt};
+        const error = clData.error || prefData.error || teamData.error || chData?.error;
+        return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
     } catch (error) {
         const {operator} = DatabaseManager.serverDatabases[serverUrl];
         const systemModels = await prepareCommonSystemValues(operator, ({} as ClientConfig), ({} as ClientLicense), '', '', '');
