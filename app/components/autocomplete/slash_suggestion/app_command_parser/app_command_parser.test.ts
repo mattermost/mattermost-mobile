@@ -860,7 +860,7 @@ describe('AppCommandParser', () => {
             context: {
                 app_id: 'jira',
                 channel_id: 'current_channel_id',
-                location: '/command',
+                location: '/command/jira/issue/create',
                 root_id: 'root_id',
                 team_id: 'team_id',
             },
@@ -928,7 +928,7 @@ describe('AppCommandParser', () => {
                 context: {
                     app_id: 'jira',
                     channel_id: 'current_channel_id',
-                    location: '/command',
+                    location: '/command/jira/issue/create',
                     root_id: 'root_id',
                     team_id: 'team_id',
                 },

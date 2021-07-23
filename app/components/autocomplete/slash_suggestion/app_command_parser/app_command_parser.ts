@@ -775,7 +775,7 @@ export class AppCommandParser {
             return {call: null, errorMessage};
         }
 
-        const context = this.getAppContext(parsed.binding.app_id);
+        const context = this.getAppContext(parsed.binding);
         return {call: createCallRequest(call, context, {}, values, parsed.command)};
     }
 
@@ -928,10 +928,10 @@ export class AppCommandParser {
     }
 
     // getAppContext collects post/channel/team info for performing calls
-    getAppContext = (appID: string): AppContext => {
+    getAppContext = (binding: AppBinding): AppContext => {
         const context: AppContext = {
-            app_id: appID,
-            location: AppBindingLocations.COMMAND,
+            app_id: binding.app_id,
+            location: binding.location,
             root_id: this.rootPostID,
         };
 
@@ -954,7 +954,7 @@ export class AppCommandParser {
 
         const payload = createCallRequest(
             binding.call,
-            this.getAppContext(binding.app_id),
+            this.getAppContext(binding),
         );
 
         const res = await this.store.dispatch(doAppCall(payload, AppCallTypes.FORM, this.intl));
