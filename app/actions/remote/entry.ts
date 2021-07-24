@@ -138,7 +138,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
             operator,
             clData.config || ({} as ClientConfig),
             clData.license || ({} as ClientLicense),
-            user.id,
+            undefined,
             initialTeam?.id || '',
             initialChannel?.id || '',
         );
@@ -166,7 +166,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
     } catch (error) {
         const {operator} = DatabaseManager.serverDatabases[serverUrl];
-        const systemModels = await prepareCommonSystemValues(operator, ({} as ClientConfig), ({} as ClientLicense), '', '', '');
+        const systemModels = await prepareCommonSystemValues(operator, ({} as ClientConfig), ({} as ClientLicense), undefined, '', '');
         if (systemModels) {
             await operator.batchRecords(systemModels);
         }

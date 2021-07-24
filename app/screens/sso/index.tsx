@@ -77,11 +77,17 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
             onLoadEndError(result.error);
             return;
         }
-        goToChannel(result.time || 0);
+        if (!result.hasTeams && !result.error) {
+            // eslint-disable-next-line no-console
+            console.log('GO TO NO TEAMS');
+            return;
+        }
+        goToChannel(result.time || 0, result.error as never);
     };
 
-    const goToChannel = (time: number) => {
-        resetToChannel({extra, launchError, launchType, serverUrl, time});
+    const goToChannel = (time: number, error?: never) => {
+        const hasError = launchError || Boolean(error);
+        resetToChannel({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);

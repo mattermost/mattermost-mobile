@@ -25,7 +25,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
     config: Partial<ClientConfig>;
-    goToChannel: () => void;
+    goToChannel: (time: number, error?: never) => void;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -90,7 +90,12 @@ const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}
 
             setError(result.error.message);
         }
-        goToChannel();
+        if (!result.hasTeams && !result.error) {
+            // eslint-disable-next-line no-console
+            console.log('GO TO NO TEAMS');
+            return;
+        }
+        goToChannel(result.time || 0, result.error as never);
     });
 
     const getProceedView = () => {

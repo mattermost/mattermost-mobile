@@ -131,12 +131,18 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
     const signIn = async () => {
         const result: LoginActionResponse = await login(serverUrl!, {loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            await goToChannel(result.time || 0);
+            if (!result.hasTeams && !result.error) {
+                // eslint-disable-next-line no-console
+                console.log('GO TO NO TEAMS');
+                return;
+            }
+            await goToChannel(result.time || 0, result.error as never);
         }
     };
 
-    const goToChannel = async (time: number) => {
-        resetToChannel({extra, launchError, launchType, serverUrl, time});
+    const goToChannel = async (time: number, loginError?: never) => {
+        const hasError = launchError || Boolean(loginError);
+        resetToChannel({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
     const checkLoginResponse = (data: LoginActionResponse) => {

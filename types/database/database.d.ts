@@ -16,6 +16,8 @@ import type System from '@typings/database/models/servers/system';
 
 import {DatabaseType} from './enums';
 
+export type WithDatabaseArgs = { database: Database }
+
 export type CreateServerDatabaseConfig = {
   dbName: string;
   dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER;

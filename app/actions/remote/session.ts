@@ -4,7 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
-import {General} from '@constants';
+import {General, Database} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryDeviceToken} from '@queries/app/global';
@@ -112,6 +112,13 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         });
         await DatabaseManager.setActiveServerDatabase(serverUrl);
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
         const csrfToken = await getCSRFFromCookie(serverUrl);
         client.setCSRFToken(csrfToken);
     } catch (error) {
@@ -195,6 +202,13 @@ export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken
         deviceToken = await queryDeviceToken(database);
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
     } catch (e) {
         return {error: e, failed: true};
     }

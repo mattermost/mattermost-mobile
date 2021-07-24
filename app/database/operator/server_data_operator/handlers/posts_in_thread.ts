@@ -4,10 +4,11 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {Database} from '@constants';
-import {getRawRecordPairs, retrieveRecords} from '@database/operator/utils/general';
+import {getRawRecordPairs, getValidRecordsForUpdate, retrieveRecords} from '@database/operator/utils/general';
 import {transformPostInThreadRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getPostListEdges} from '@database//operator/utils/post';
 
+import type {RecordPair} from '@typings/database/database';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
 export interface PostsInThreadHandlerMix {
@@ -23,7 +24,7 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
             return [];
         }
 
-        const update: PostsInThread[] = [];
+        const update: RecordPair[] = [];
         const create: PostsInThread[] = [];
         const ids = Object.keys(postsMap);
         for await (const rootId of ids) {
@@ -36,11 +37,16 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
 
             if (chunks.length) {
                 const chunk = chunks[0];
-                update.push({
+                const newValue = {
                     id: rootId,
                     earliest: Math.min(chunk.earliest, firstPost.create_at),
                     latest: Math.max(chunk.latest, lastPost.create_at),
-                });
+                };
+                update.push(getValidRecordsForUpdate({
+                    tableName: POSTS_IN_THREAD,
+                    newValue,
+                    existingRecord: chunk,
+                }));
             } else {
                 // create chunk
                 create.push({
@@ -53,7 +59,7 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
 
         const postInThreadRecords = (await this.prepareRecords({
             createRaws: getRawRecordPairs(create),
-            updateRaws: getRawRecordPairs(update),
+            updateRaws: update,
             transformer: transformPostInThreadRecord,
             tableName: POSTS_IN_THREAD,
         })) as PostsInThreadModel[];

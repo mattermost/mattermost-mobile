@@ -12,7 +12,7 @@ type ChannelDisplayNameProps = {
     channelType: string;
     currentUserId: string;
     displayName: string;
-    teammateId: string;
+    teammateId?: string;
     theme: Theme;
 };
 

@@ -74,32 +74,47 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
 };
 
 export const prepareCommonSystemValues = (
-    operator: ServerDataOperator, config: ClientConfig, license: ClientLicense,
-    currentUserId: string, currentTeamId: string, currentChannelId: string) => {
+    operator: ServerDataOperator, config?: ClientConfig, license?: ClientLicense,
+    currentUserId?: string, currentTeamId?: string, currentChannelId?: string) => {
     try {
+        const systems: IdValue[] = [];
+        if (config !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CONFIG,
+                value: JSON.stringify(config),
+            });
+        }
+
+        if (license !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.LICENSE,
+                value: JSON.stringify(license),
+            });
+        }
+
+        if (currentUserId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: currentUserId,
+            });
+        }
+
+        if (currentTeamId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
+                value: currentTeamId,
+            });
+        }
+
+        if (currentChannelId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
+                value: currentChannelId,
+            });
+        }
+
         return operator.handleSystem({
-            systems: [
-                {
-                    id: SYSTEM_IDENTIFIERS.CONFIG,
-                    value: JSON.stringify(config),
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.LICENSE,
-                    value: JSON.stringify(license),
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    value: currentUserId,
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
-                    value: currentTeamId,
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
-                    value: currentChannelId,
-                },
-            ],
+            systems,
             prepareRecordsOnly: true,
         });
     } catch {

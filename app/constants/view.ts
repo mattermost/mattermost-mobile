@@ -131,4 +131,5 @@ export default {
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
+    INDICATOR_BAR_HEIGHT,
 };

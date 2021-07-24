@@ -1,29 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {DeviceEventEmitter, LayoutChangeEvent, Platform, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import VIEWS from '@constants/view';
-import DEVICE from '@constants/device';
-import {General} from '@constants';
-import {getUserIdFromChannelName} from '@utils/user';
+import {Device, View as ViewConstants} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelTitle from './channel_title';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type ChannelNavBar = {
     channel: ChannelModel;
-    currentUserId: string;
     onPress: () => void;
-    config: ClientConfig;
 }
 
-const ChannelNavBar = ({currentUserId, channel, onPress}: ChannelNavBar) => {
+const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -40,34 +39,29 @@ const ChannelNavBar = ({currentUserId, channel, onPress}: ChannelNavBar) => {
             height = layoutHeight;
         }
 
-        DeviceEventEmitter.emit(VIEWS.CHANNEL_NAV_BAR_CHANGED, layoutHeight);
+        DeviceEventEmitter.emit(ViewConstants.CHANNEL_NAV_BAR_CHANGED, layoutHeight);
     };
 
     switch (Platform.OS) {
         case 'android':
-            height = VIEWS.ANDROID_TOP_PORTRAIT;
-            if (DEVICE.IS_TABLET) {
-                height = VIEWS.ANDROID_TOP_LANDSCAPE;
+            height = ViewConstants.ANDROID_TOP_PORTRAIT;
+            if (Device.IS_TABLET) {
+                height = ViewConstants.ANDROID_TOP_LANDSCAPE;
             }
             break;
         case 'ios':
-            height = VIEWS.IOS_TOP_PORTRAIT - VIEWS.STATUS_BAR_HEIGHT;
-            if (DEVICE.IS_TABLET && isLandscape) {
+            height = ViewConstants.IOS_TOP_PORTRAIT - ViewConstants.STATUS_BAR_HEIGHT;
+            if (Device.IS_TABLET && isLandscape) {
                 height -= 1;
             } else if (isLandscape) {
-                height = VIEWS.IOS_TOP_LANDSCAPE;
+                height = ViewConstants.IOS_TOP_LANDSCAPE;
                 canHaveSubtitle = false;
             }
 
-            if (DEVICE.IS_IPHONE_WITH_INSETS && isLandscape) {
+            if (Device.IS_IPHONE_WITH_INSETS && isLandscape) {
                 canHaveSubtitle = false;
             }
             break;
-    }
-
-    let teammateId: string | undefined;
-    if (channel?.type === General.DM_CHANNEL) {
-        teammateId = getUserIdFromChannelName(currentUserId, channel.name);
     }
 
     return (
@@ -76,11 +70,9 @@ const ChannelNavBar = ({currentUserId, channel, onPress}: ChannelNavBar) => {
             style={[style.header, {height: height + insets.top, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}]}
         >
             <ChannelTitle
-                currentUserId={currentUserId}
                 channel={channel}
                 onPress={onPress}
                 canHaveSubtitle={canHaveSubtitle}
-                teammateId={teammateId}
             />
         </View>
     );
@@ -105,4 +97,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default ChannelNavBar;
+const withChannel = withObservables(['channelId'], ({channelId, database}: {channelId: string } & WithDatabaseArgs) => ({
+    channel: database.get(MM_TABLES.SERVER.CHANNEL).findAndObserve(channelId),
+}));
+
+export default withDatabase(withChannel(ChannelNavBar));
