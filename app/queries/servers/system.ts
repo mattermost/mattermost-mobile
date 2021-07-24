@@ -8,6 +8,14 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type SystemModel from '@typings/database/models/servers/system';
 
+type PrepareCommonSystemValuesArgs = {
+    config?: ClientConfig;
+    currentChannelId?: string;
+    currentTeamId?: string;
+    currentUserId?: string;
+    license?: ClientLicense;
+}
+
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 export const queryCurrentChannelId = async (serverDatabase: Database) => {
@@ -74,9 +82,9 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
 };
 
 export const prepareCommonSystemValues = (
-    operator: ServerDataOperator, config?: ClientConfig, license?: ClientLicense,
-    currentUserId?: string, currentTeamId?: string, currentChannelId?: string) => {
+    operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs) => {
     try {
+        const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
         if (config !== undefined) {
             systems.push({

@@ -136,11 +136,12 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
 
         const systemModels = prepareCommonSystemValues(
             operator,
-            clData.config || ({} as ClientConfig),
-            clData.license || ({} as ClientLicense),
-            undefined,
-            initialTeam?.id || '',
-            initialChannel?.id || '',
+            {
+                config: clData.config || ({} as ClientConfig),
+                license: clData.license || ({} as ClientLicense),
+                currentTeamId: initialTeam?.id || '',
+                currentChannelId: initialChannel?.id || '',
+            },
         );
         if (systemModels) {
             modelPromises.push(systemModels);
@@ -166,7 +167,12 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
     } catch (error) {
         const {operator} = DatabaseManager.serverDatabases[serverUrl];
-        const systemModels = await prepareCommonSystemValues(operator, ({} as ClientConfig), ({} as ClientLicense), undefined, '', '');
+        const systemModels = await prepareCommonSystemValues(operator, {
+            config: ({} as ClientConfig),
+            license: ({} as ClientLicense),
+            currentTeamId: '',
+            currentChannelId: '',
+        });
         if (systemModels) {
             await operator.batchRecords(systemModels);
         }

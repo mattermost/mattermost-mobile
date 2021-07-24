@@ -115,11 +115,12 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
 
         const systemModels = prepareCommonSystemValues(
             operator,
-            clData.config!,
-            clData.license!,
-            undefined,
-            initialTeam?.id,
-            initialChannel?.id,
+            {
+                config: clData.config!,
+                license: clData.license!,
+                currentTeamId: initialTeam?.id,
+                currentChannelId: initialChannel?.id,
+            },
         );
 
         if (systemModels) {
@@ -207,11 +208,9 @@ export const retryInitialChannel = async (serverUrl: string, teamId: string) => 
 
         const systemModels = prepareCommonSystemValues(
             operator,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            initialChannel?.id,
+            {
+                currentChannelId: initialChannel?.id,
+            },
         );
 
         if (systemModels) {
