@@ -11,7 +11,7 @@ import Mfa from './index';
 
 jest.mock('@actions/remote/session', () => {
     return {
-        login: jest.fn(),
+        login: jest.fn().mockResolvedValue({error: undefined, hasTeams: true}),
     };
 });
 
