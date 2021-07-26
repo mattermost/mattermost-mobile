@@ -304,7 +304,7 @@ describe('Actions.Teams', () => {
             get('/teams/unread').
             reply(200, [{team_id: team.id, msg_count: 0, mention_count: 0}]);
 
-        await Actions.joinTeam(team.invite_id, team.id)(store.dispatch, store.getState);
+        await Actions.joinTeam(team.id)(store.dispatch, store.getState);
 
         const state = store.getState();
 

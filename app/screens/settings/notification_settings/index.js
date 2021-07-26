@@ -8,7 +8,6 @@ import {updateMe} from '@mm-redux/actions/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isLandscape} from '@selectors/device';
 
 import NotificationSettings from './notification_settings';
@@ -17,8 +16,7 @@ function mapStateToProps(state) {
     const config = getConfig(state);
     const currentUser = getCurrentUser(state) || {};
     const currentUserStatus = getStatusForUserId(state, currentUser.id);
-    const serverVersion = state.entities.general.serverVersion;
-    const enableAutoResponder = isMinimumServerVersion(serverVersion, 4, 9) && config.ExperimentalEnableAutomaticReplies === 'true';
+    const enableAutoResponder = config.ExperimentalEnableAutomaticReplies === 'true';
 
     return {
         config,

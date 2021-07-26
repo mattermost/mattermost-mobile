@@ -3,11 +3,11 @@
 import {createSelector} from 'reselect';
 
 import {getCurrentChannelId, getCurrentUser, getUsers, getMyChannelMemberships, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/common';
-import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getLastPostPerChannel, getAllPosts} from '@mm-redux/selectors/entities/posts';
 import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting, getVisibleTeammate, getVisibleGroupIds, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@mm-redux/selectors/entities/roles';
-import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
+import {getCurrentTeamId, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {isCurrentUserSystemAdmin, getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {Channel, ChannelStats, ChannelMembership, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {Config} from '@mm-redux/types/config';
@@ -18,7 +18,7 @@ import {TeamMembership, Team} from '@mm-redux/types/teams';
 import {ThreadsState} from '@mm-redux/types/threads';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
-import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency, getMsgCountInChannel} from '@mm-redux/utils/channel_utils';
+import {buildDisplayableChannelListWithUnreadSection, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency, getMsgCountInChannel} from '@mm-redux/utils/channel_utils';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 import {General, Permissions} from '../../constants';
@@ -471,24 +471,31 @@ export const getUnreadsInCurrentTeam: (a: GlobalState) => {
         mentionCount,
     };
 });
-export const canManageChannelMembers: (a: GlobalState) => boolean = createSelector(getCurrentChannel, getCurrentUser, getCurrentTeamMembership, getMyCurrentChannelMembership, getConfig, getLicense, hasNewPermissions, (state: GlobalState): boolean => haveICurrentChannelPermission(state, {
-    permission: Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS,
-}), (state: GlobalState): boolean => haveICurrentChannelPermission(state, {
-    permission: Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS,
-}), (channel: Channel, user: UserProfile, teamMembership: TeamMembership, channelMembership: ChannelMembership | undefined | null, config: Config, license: any, newPermissions: boolean, managePrivateMembers: boolean, managePublicMembers: boolean): boolean => {
-    if (!channel) {
-        return false;
-    }
+export const canManageChannelMembers: (a: GlobalState) => boolean = createSelector(
+    getCurrentChannel,
+    (state: GlobalState): boolean => haveICurrentChannelPermission(state, {
+        permission: Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS,
+    }),
+    (state: GlobalState): boolean => haveICurrentChannelPermission(state, {
+        permission: Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS,
+    }),
+    (
+        channel: Channel,
+        managePrivateMembers: boolean,
+        managePublicMembers: boolean,
+    ): boolean => {
+        if (!channel) {
+            return false;
+        }
 
-    if (channel.delete_at !== 0) {
-        return false;
-    }
+        if (channel.delete_at !== 0) {
+            return false;
+        }
 
-    if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL || channel.name === General.DEFAULT_CHANNEL) {
-        return false;
-    }
+        if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL || channel.name === General.DEFAULT_CHANNEL) {
+            return false;
+        }
 
-    if (newPermissions) {
         if (channel.type === General.OPEN_CHANNEL) {
             return managePublicMembers;
         } else if (channel.type === General.PRIVATE_CHANNEL) {
@@ -496,14 +503,7 @@ export const canManageChannelMembers: (a: GlobalState) => boolean = createSelect
         }
 
         return true;
-    }
-
-    if (!channelMembership) {
-        return false;
-    }
-
-    return canManageMembersOldPermissions(channel, user, teamMembership, channelMembership, config, license);
-}); // Determine if the user has permissions to manage members in at least one channel of the current team
+    }); // Determine if the user has permissions to manage members in at least one channel of the current team
 
 export const canManageAnyChannelMembersInCurrentTeam: (a: GlobalState) => boolean = createSelector(getMyChannelMemberships, getCurrentTeamId, (state: GlobalState): GlobalState => state, (members: RelationOneToOne<Channel, ChannelMembership>, currentTeamId: string, state: GlobalState): boolean => {
     for (const channelId of Object.keys(members)) {
@@ -958,7 +958,7 @@ export const getMyFirstChannelForTeams: (a: GlobalState) => RelationOneToOne<Tea
 export const getRedirectChannelNameForTeam = (state: GlobalState, teamId: string): string => {
     const defaultChannelForTeam = getDefaultChannelForTeams(state)[teamId];
     const myFirstChannelForTeam = getMyFirstChannelForTeams(state)[teamId];
-    const canIJoinPublicChannelsInTeam = !hasNewPermissions(state) || haveITeamPermission(state, {
+    const canIJoinPublicChannelsInTeam = haveITeamPermission(state, {
         team: teamId,
         permission: Permissions.JOIN_PUBLIC_CHANNELS,
     });

@@ -18,7 +18,6 @@ import {getAssociatedGroupsForReferenceMap} from '@mm-redux/selectors/entities/g
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isLandscape} from '@selectors/device';
 import {getCurrentChannelDraft, getThreadDraft} from '@selectors/views';
 
@@ -43,7 +42,7 @@ export function mapStateToProps(state, ownProps) {
     const channelMemberCountsByGroup = selectChannelMemberCountsByGroup(state, channelId);
     let groupsWithAllowReference = new Map();
 
-    if (channel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+    if (channel) {
         useChannelMentions = haveIChannelPermission(
             state,
             {
@@ -55,7 +54,7 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
-    if (channel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
+    if (channel && license && license.IsLicensed === 'true') {
         useGroupMentions = haveIChannelPermission(
             state,
             {

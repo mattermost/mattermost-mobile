@@ -31,7 +31,6 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import EphemeralStore from '@store/ephemeral_store';
 import initialState from '@store/initial_state';
 import Store from '@store/store';
@@ -240,7 +239,7 @@ class GlobalEventHandler {
     onServerConfigChanged = (config) => {
         this.configureAnalytics(config);
 
-        if (isMinimumServerVersion(Client4.serverVersion, 5, 24) && config.ExtendSessionLengthWithActivity === 'true') {
+        if (config.ExtendSessionLengthWithActivity === 'true') {
             PushNotifications.cancelAllLocalNotifications();
         }
     };

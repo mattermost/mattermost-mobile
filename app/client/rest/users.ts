@@ -4,7 +4,7 @@
 import {analytics} from '@init/analytics';
 import {General} from '@mm-redux/constants';
 import {UserCustomStatus, UserProfile, UserStatus} from '@mm-redux/types/users';
-import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {buildQueryString} from '@mm-redux/utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -26,7 +26,7 @@ export interface ClientUsersMix {
     getProfilesInTeam: (teamId: string, page?: number, perPage?: number, sort?: string, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesNotInTeam: (teamId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesWithoutTeam: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
-    getProfilesInChannel: (channelId: string, page?: number, perPage?: number, sort?: string) => Promise<UserProfile[]>;
+    getProfilesInChannel: (channelId: string, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: () => Promise<UserProfile>;
@@ -252,16 +252,10 @@ const ClientUsers = (superclass: any) => class extends superclass {
         );
     };
 
-    getProfilesInChannel = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '') => {
+    getProfilesInChannel = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         analytics.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
-        const serverVersion = this.getServerVersion();
-        let queryStringObj;
-        if (isMinimumServerVersion(serverVersion, 4, 7)) {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
-        } else {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage};
-        }
+        const queryStringObj = {in_channel: channelId, page, per_page: perPage};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
             {method: 'get'},

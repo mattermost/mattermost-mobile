@@ -3,19 +3,16 @@
 import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics';
 import {UserTypes, TeamTypes} from '@mm-redux/action_types';
-import {getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
 import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {TeamMembership} from '@mm-redux/types/teams';
 import {UserProfile, UserStatus} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {getUserIdFromChannelName, isDirectChannel, isDirectChannelVisible, isGroupChannel, isGroupChannelVisible} from '@mm-redux/utils/channel_utils';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
 
 import {General} from '../constants';
 
-import {getAllCustomEmojis} from './emojis';
 import {logError} from './errors';
 import {getClientConfig, setServerVersion} from './general';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
@@ -112,7 +109,7 @@ export function loginById(id: string, password: string, mfaToken = ''): ActionFu
 }
 
 function completeLogin(data: UserProfile): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: UserTypes.RECEIVED_ME,
             data,
@@ -153,9 +150,6 @@ function completeLogin(data: UserProfile): ActionFunc {
 
         const serverVersion = Client4.getServerVersion();
         dispatch(setServerVersion(serverVersion));
-        if (!isMinimumServerVersion(serverVersion, 4, 7) && getConfig(getState()).EnableCustomEmoji === 'true') {
-            dispatch(getAllCustomEmojis());
-        }
 
         try {
             await Promise.all(promises);
@@ -387,13 +381,13 @@ export function getProfilesWithoutTeam(page: number, perPage: number = General.P
     };
 }
 
-export function getProfilesInChannel(channelId: string, page: number, perPage: number = General.PROFILE_CHUNK_SIZE, sort = ''): ActionFunc {
+export function getProfilesInChannel(channelId: string, page: number, perPage: number = General.PROFILE_CHUNK_SIZE): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
         let profiles;
 
         try {
-            profiles = await Client4.getProfilesInChannel(channelId, page, perPage, sort);
+            profiles = await Client4.getProfilesInChannel(channelId, page, perPage);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
@@ -915,11 +909,6 @@ export function checkForModifiedUsers() {
         const state = getState();
         const users = getUsers(state);
         const lastDisconnectAt = state.websocket.lastDisconnectAt;
-        const serverVersion = getServerVersion(state);
-
-        if (!isMinimumServerVersion(serverVersion, 5, 14)) {
-            return {data: true};
-        }
 
         await dispatch(getProfilesByIds(Object.keys(users), {since: lastDisconnectAt}));
         return {data: true};

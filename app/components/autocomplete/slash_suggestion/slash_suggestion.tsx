@@ -8,11 +8,9 @@ import {
     Platform,
 } from 'react-native';
 
-import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {AppCommandParser} from './app_command_parser/app_command_parser';
@@ -110,28 +108,24 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             }
 
             this.showBaseCommands(nextValue, nextCommands, prevProps.channelId, prevProps.rootId);
-        } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
+        } else if (this.props.appsEnabled && this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
             // If this is an app command, then hand it off to the app command parser.
-            if (this.props.appsEnabled && this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
-                this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
-            } else if (nextSuggestions === prevProps.suggestions) {
-                const args = {
-                    channel_id: prevProps.channelId,
-                    team_id: prevProps.currentTeamId,
-                    ...(prevProps.rootId && {root_id: prevProps.rootId, parent_id: prevProps.rootId}),
-                };
-                this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
-            } else {
-                const matches: AutocompleteSuggestion[] = [];
-                nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
-                    if (!this.contains(matches, '/' + suggestion.Complete)) {
-                        matches.push(suggestion);
-                    }
-                });
-                this.updateSuggestions(matches);
-            }
+            this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
+        } else if (nextSuggestions === prevProps.suggestions) {
+            const args = {
+                channel_id: prevProps.channelId,
+                team_id: prevProps.currentTeamId,
+                ...(prevProps.rootId && {root_id: prevProps.rootId, parent_id: prevProps.rootId}),
+            };
+            this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
         } else {
-            this.setActive(false);
+            const matches: AutocompleteSuggestion[] = [];
+            nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
+                if (!this.contains(matches, '/' + suggestion.Complete)) {
+                    matches.push(suggestion);
+                }
+            });
+            this.updateSuggestions(matches);
         }
     }
 
@@ -223,12 +217,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             // after the auto correct vanished
             setTimeout(() => {
                 onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
-            });
-        }
-
-        if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            this.setState({
-                active: false,
             });
         }
     };
