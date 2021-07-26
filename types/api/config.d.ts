@@ -75,6 +75,7 @@ interface ClientConfig {
     EnablePreviewFeatures: string;
     EnablePreviewModeBanner: string;
     EnablePublicLink: string;
+    EnableSVGs: string;
     EnableSaml: string;
     EnableSignInWithEmail: string;
     EnableSignInWithUsername: string;
@@ -83,7 +84,6 @@ interface ClientConfig {
     EnableSignUpWithGoogle: string;
     EnableSignUpWithOffice365: string;
     EnableSignUpWithOpenId: string;
-    EnableSVGs: string;
     EnableTesting: string;
     EnableThemeSelection: string;
     EnableTutorial: string;
@@ -104,6 +104,7 @@ interface ClientConfig {
     ExperimentalEnablePostMetadata: string;
     ExperimentalGroupUnreadChannels: string;
     ExperimentalHideTownSquareinLHS: string;
+    ExperimentalNormalizeMarkdownLinks: string;
     ExperimentalPrimaryTeam: string;
     ExperimentalTimezone: string;
     ExperimentalTownSquareIsReadOnly: string;
@@ -144,6 +145,7 @@ interface ClientConfig {
     RequireEmailVerification: string;
     RestrictDirectMessage: string;
     RunJobs: string;
+    SQLDriverName: string;
     SamlFirstNameAttributeSet: string;
     SamlLastNameAttributeSet: string;
     SamlLoginButtonBorderColor: string;
@@ -158,7 +160,6 @@ interface ClientConfig {
     ShowFullName: string;
     SiteName: string;
     SiteURL: string;
-    SQLDriverName: string;
     SupportEmail: string;
     TeammateNameDisplay: string;
     TermsOfServiceLink: string;
