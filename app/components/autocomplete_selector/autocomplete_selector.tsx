@@ -2,32 +2,31 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
+import {Text, View} from 'react-native';
 
-import {displayUsername} from '@mm-redux/utils/user_utils';
-
+import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {preventDoubleTap} from '@utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {ViewTypes} from '@constants';
-import {goToScreen} from '@actions/navigation';
 import {ActionResult} from '@mm-redux/types/actions';
 import {Channel} from '@mm-redux/types/channels';
 import {DialogOption} from '@mm-redux/types/integrations';
-import {UserProfile} from '@mm-redux/types/users';
 import {Theme} from '@mm-redux/types/preferences';
+import {UserProfile} from '@mm-redux/types/users';
+import {displayUsername} from '@mm-redux/utils/user_utils';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 
 type Props = {
     actions: {
         setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>;
-    },
+    };
     getDynamicOptions?: (term: string) => Promise<ActionResult>;
     label?: string;
     placeholder?: string;

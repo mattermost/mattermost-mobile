@@ -7,13 +7,13 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelScreen} from '@support/ui/screen';
 import {
     Channel,
     Post,
     Setup,
 } from '@support/server_api';
 import testConfig from '@support/test_config';
+import {ChannelScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 
 describe('Channel Link', () => {
@@ -45,7 +45,7 @@ describe('Channel Link', () => {
     it('MM-T2970 should be able to open channel by tapping on channel link from main channel', async () => {
         // # Post a channel link
         await goToChannel(townSquareChannel.display_name);
-        const channelLink = `${testConfig.siteUrl}/${testTeam.name}/channels/${testChannel.name}`;
+        const channelLink = `${testConfig.serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
         await postMessage(channelLink);
 
         // # Tap on the channel link
@@ -56,10 +56,10 @@ describe('Channel Link', () => {
         await expect(channelNavBarTitle).toHaveText(testChannel.display_name);
     });
 
-    xit('MM-T178 should be able to open channel by tapping on channel link from reply thread', async () => { // related issue https://mattermost.atlassian.net/browse/MM-36532
+    it('MM-T178 should be able to open channel by tapping on channel link from reply thread', async () => {
         // # Post a channel link
         await goToChannel(townSquareChannel.display_name);
-        const channelLink = `${testConfig.siteUrl}/${testTeam.name}/channels/${testChannel.name}`;
+        const channelLink = `${testConfig.serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
         await postMessage(channelLink);
 
         // # Tap on the channel link from reply thread

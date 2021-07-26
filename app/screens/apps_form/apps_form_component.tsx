@@ -1,27 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {ScrollView, Text, View} from 'react-native';
+import Button from 'react-native-button';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Button from 'react-native-button';
 
+import {dismissModal} from '@actions/navigation';
+import Markdown from '@components/markdown';
+import StatusBar from '@components/status_bar';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import StatusBar from '@components/status_bar';
-import Markdown from '@components/markdown';
-
-import {dismissModal} from '@actions/navigation';
+import {DoAppCallResult} from '@mm-types/actions/apps';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {DoAppCallResult} from 'types/actions/apps';
+
 import {GlobalStyles} from 'app/styles';
 
 import AppsFormField from './apps_form_field';
@@ -184,23 +183,34 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
     updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
-
-        if (fieldErrors &&
-            Object.keys(fieldErrors).length >= 0 &&
-            checkIfErrorsMatchElements(fieldErrors as any, elements)
-        ) {
-            hasErrors = true;
-            this.setState({fieldErrors});
-        }
-
+        const state = {} as State;
         if (formError) {
             hasErrors = true;
-            this.setState({formError});
-            if (this.scrollView?.current) {
-                this.scrollView.current.scrollTo({x: 0, y: 0});
+            state.formError = formError;
+        }
+
+        if (fieldErrors && Object.keys(fieldErrors).length >= 0) {
+            hasErrors = true;
+            if (checkIfErrorsMatchElements(fieldErrors as any, elements)) {
+                state.fieldErrors = fieldErrors;
+            } else if (!state.formError) {
+                const field = Object.keys(fieldErrors)[0];
+                state.formError = this.context.intl.formatMessage({
+                    id: 'apps.error.responses.unknown_field_error',
+                    defaultMessage: 'Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.',
+                }, {
+                    field,
+                    error: fieldErrors[field],
+                });
             }
         }
 
+        if (hasErrors) {
+            this.setState(state);
+            if (state.formError && this.scrollView?.current) {
+                this.scrollView.current.scrollTo({x: 0, y: 0});
+            }
+        }
         return hasErrors;
     }
 

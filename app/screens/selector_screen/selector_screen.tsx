@@ -7,22 +7,28 @@ import {
     Platform,
     View,
 } from 'react-native';
+import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen} from '@actions/navigation';
 import CustomList, {FLATLIST, SECTIONLIST} from '@components/custom_list';
-import UserListRow from '@components/custom_list/user_list_row';
 import ChannelListRow from '@components/custom_list/channel_list_row';
 import OptionListRow from '@components/custom_list/option_list_row';
+import UserListRow from '@components/custom_list/user_list_row';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search_bar';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
-import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
+import {ActionResult} from '@mm-redux/types/actions';
+import {Channel} from '@mm-redux/types/channels';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/preferences';
+import {UserProfile} from '@mm-redux/types/users';
 import {filterChannelsMatchingTerm} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
+import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
 import {t} from '@utils/i18n';
 import {createProfilesSections, loadingText} from '@utils/member_list';
 import {
@@ -30,13 +36,8 @@ import {
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
-import {Theme} from '@mm-redux/types/preferences';
-import {DialogOption} from '@mm-redux/types/integrations';
-import {Channel} from '@mm-redux/types/channels';
-import {ActionResult} from '@mm-redux/types/actions';
-import {UserProfile} from '@mm-redux/types/users';
+
 import SelectedOptions from './selected_options';
-import {EventSubscription, Navigation} from 'react-native-navigation';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];

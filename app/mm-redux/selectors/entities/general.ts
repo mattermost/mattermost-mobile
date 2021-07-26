@@ -1,13 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {General} from '../../constants';
+
+import {Config, FeatureFlags} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
-import {Config} from '@mm-redux/types/config';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+
+import {General} from '../../constants';
 
 export function getConfig(state: GlobalState): Partial<Config> {
     return state.entities.general.config;
+}
+
+/**
+ * Safely get value of a specific or known FeatureFlag
+ */
+export function getFeatureFlagValue(state: GlobalState, key: keyof FeatureFlags): string | undefined {
+    return getConfig(state)?.[`FeatureFlag${key}` as keyof Partial<Config>];
 }
 
 export function getLicense(state: GlobalState): any {

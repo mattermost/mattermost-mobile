@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 import {IntlProvider} from 'react-intl';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {Channel} from '@mm-redux/types/channels';
+import {UserProfile} from '@mm-redux/types/users';
 
 import SelectorScreen from './selector_screen';
-import {UserProfile} from '@mm-redux/types/users';
-import {Channel} from '@mm-redux/types/channels';
 
 const user1 = {id: 'id', username: 'username'} as UserProfile;
 const user2 = {id: 'id2', username: 'username2'} as UserProfile;

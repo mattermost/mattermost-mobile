@@ -3,10 +3,11 @@
 
 import assert from 'assert';
 
-import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
-import TestHelper from 'test/test_helper';
-import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import * as Selectors from '@mm-redux/selectors/entities/channels';
+import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import TestHelper from '@test/test_helper';
+
 import {General, Preferences} from '../../constants';
 
 const sortUsernames = (a, b) => a.localeCompare(b, General.DEFAULT_LOCALE, {numeric: true});
@@ -2981,6 +2982,12 @@ describe('Selectors.Channels.getUnreadChannelIds', () => {
                 channelsInTeam,
                 myMembers: myChannelMembers,
             },
+            general: {
+                config: {},
+            },
+            preferences: {
+                myPreferences: {},
+            },
         },
     });
     it('get unread channel ids in current team strict equal', () => {
@@ -3350,12 +3357,21 @@ describe('Selectors.Channels.getUnreads', () => {
                 teams,
                 myMembers: myTeamMembers,
             },
+            threads: {
+                count: {},
+            },
             channels: {
                 channels,
                 myMembers: myChannelMembers,
             },
             users: {
                 profiles: {},
+            },
+            general: {
+                config: {},
+            },
+            preferences: {
+                myPreferences: {},
             },
         },
     });
@@ -3467,6 +3483,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     currentUserId: 'user1',
                     profiles: {},
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3503,6 +3528,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     currentUserId: 'user1',
                     profiles: {},
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3537,6 +3571,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     profiles: {
                         user2: {delete_at: 0},
                     },
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
@@ -3573,6 +3616,15 @@ describe('Selectors.Channels.getUnreads', () => {
                         user2: {delete_at: 1},
                     },
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3605,6 +3657,15 @@ describe('Selectors.Channels.getUnreads', () => {
                 users: {
                     currentUserId: 'user1',
                     profiles: {},
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
@@ -3648,6 +3709,15 @@ describe('Selectors.Channels.getUnreads', () => {
                 users: {
                     currentUserId: 'user1',
                     profiles: {},
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };

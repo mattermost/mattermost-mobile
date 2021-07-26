@@ -4,19 +4,20 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import SelectedOption from './selected_option';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {Theme} from '@mm-redux/types/preferences';
-import {DialogOption} from '@mm-redux/types/integrations';
-import {Channel} from '@mm-redux/types/channels';
-import {UserProfile} from '@mm-redux/types/users';
 import {ViewTypes} from '@constants';
+import {Channel} from '@mm-redux/types/channels';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/preferences';
+import {UserProfile} from '@mm-redux/types/users';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import SelectedOption from './selected_option';
 
 type Props = {
-    theme: Theme,
-    selectedOptions: DialogOption[]|UserProfile[]|Channel[],
-    dataSource: string,
-    onRemove: (opt: DialogOption|UserProfile|Channel) => void,
+    theme: Theme;
+    selectedOptions: DialogOption[]|UserProfile[]|Channel[];
+    dataSource: string;
+    onRemove: (opt: DialogOption|UserProfile|Channel) => void;
 }
 
 export default function SelectedOptions(props: Props) {

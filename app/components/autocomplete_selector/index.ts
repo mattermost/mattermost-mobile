@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
+import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 
+import {setAutocompleteSelector} from '@actions/views/post';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {Action, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
-
-import {setAutocompleteSelector} from 'app/actions/views/post';
 
 import AutocompleteSelector from './autocomplete_selector';
 
@@ -20,7 +19,7 @@ function mapStateToProps(state: GlobalState) {
 }
 
 type Actions = {
-    setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>,
+    setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>;
 }
 function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {

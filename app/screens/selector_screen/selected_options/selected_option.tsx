@@ -9,18 +9,18 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {Theme} from '@mm-redux/types/preferences';
-import {DialogOption} from '@mm-redux/types/integrations';
-import {UserProfile} from '@mm-redux/types/users';
-import {Channel} from '@mm-redux/types/channels';
 import {ViewTypes} from '@constants';
+import {Channel} from '@mm-redux/types/channels';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/preferences';
+import {UserProfile} from '@mm-redux/types/users';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    theme: Theme,
-    option: DialogOption | UserProfile | Channel,
-    dataSource: string,
-    onRemove: (opt: DialogOption | UserProfile | Channel) => void,
+    theme: Theme;
+    option: DialogOption | UserProfile | Channel;
+    dataSource: string;
+    onRemove: (opt: DialogOption | UserProfile | Channel) => void;
 }
 export default function SelectedOption(props: Props) {
     const {theme, option, onRemove, dataSource} = props;
