@@ -3,7 +3,6 @@
 
 import {ShallowWrapper} from 'enzyme';
 import React from 'react';
-
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
