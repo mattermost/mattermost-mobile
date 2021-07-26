@@ -4,13 +4,13 @@
 import {createSelector} from 'reselect';
 
 import {General} from '@mm-redux/constants';
-import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getChannelByName, getChannelsInCurrentTeam, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
-import {getTeamByName} from '@mm-redux/selectors/entities/teams';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {isArchivedChannel} from '@mm-redux/utils/channel_utils';
+import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {Channel} from '@mm-redux/types/channels';
 import {GlobalState} from '@mm-redux/types/store';
+import {isArchivedChannel} from '@mm-redux/utils/channel_utils';
 
 const getOtherUserIdForDm = createSelector(
     (state: GlobalState, channel: Channel) => channel,

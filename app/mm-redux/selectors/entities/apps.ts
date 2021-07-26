@@ -3,8 +3,8 @@
 
 import {createSelector} from 'reselect';
 
-import {GlobalState} from '@mm-redux/types/store';
 import {AppBinding} from '@mm-redux/types/apps';
+import {GlobalState} from '@mm-redux/types/store';
 import {appsEnabled} from '@utils/apps';
 
 export function getAppsBindings(state: GlobalState, location?: string): AppBinding[] {

@@ -1,6 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {intlShape} from 'react-intl';
+import {Alert} from 'react-native';
+
+import {getUserByUsername, getUser, autocompleteUsers} from '@mm-redux/actions/users';
+import {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import {
+    ActionFunc,
+    DispatchFunc,
+} from '@mm-redux/types/actions';
+import Store from '@store/store';
+
+import type {ParsedCommand} from './app_command_parser';
+import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
+
 export type {
     AppCallRequest,
     AppBinding,
@@ -23,9 +37,6 @@ export type {
     DoAppCallResult,
 } from 'types/actions/apps';
 
-import type {
-    AutocompleteSuggestion,
-} from '@mm-redux/types/integrations';
 export type {AutocompleteSuggestion};
 
 export type {
@@ -36,10 +47,6 @@ export type {
     GlobalState,
 } from '@mm-redux/types/store';
 
-import {
-    ActionFunc,
-    DispatchFunc,
-} from '@mm-redux/types/actions';
 export type {
     DispatchFunc,
 };
@@ -63,7 +70,6 @@ export {makeAppBindingsSelector} from '@mm-redux/selectors/entities/apps';
 export {getPost} from '@mm-redux/selectors/entities/posts';
 export {getChannel as selectChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
 
-import {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 export {
     getCurrentTeamId,
     getCurrentTeam,
@@ -71,7 +77,6 @@ export {
 
 export {getUserByUsername as selectUserByUsername, getUser as selectUser} from '@mm-redux/selectors/entities/users';
 
-import {getUserByUsername, getUser, autocompleteUsers} from '@mm-redux/actions/users';
 export {
     getUserByUsername,
     getUser,
@@ -83,7 +88,6 @@ export {getChannelByNameAndTeamName, getChannel, autocompleteChannels} from '@mm
 export {doAppCall} from '@actions/apps';
 export {createCallRequest} from '@utils/apps';
 
-import Store from '@store/store';
 export const getStore = () => Store.redux;
 
 export const autocompleteUsersInChannel = (prefix: string, channelID: string): ActionFunc => {
@@ -101,13 +105,9 @@ export type ExtendedAutocompleteSuggestion = AutocompleteSuggestion & {
     item?: string;
 }
 
-import type {ParsedCommand} from './app_command_parser';
 export const getExecuteSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => { // eslint-disable-line @typescript-eslint/no-unused-vars
     return null;
 };
-
-import {Alert} from 'react-native';
-import {intlShape} from 'react-intl';
 
 export const displayError = (intl: typeof intlShape, body: string) => {
     const title = intl.formatMessage({

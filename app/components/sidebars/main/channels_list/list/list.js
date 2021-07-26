@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     Dimensions,
     findNodeHandle,
@@ -13,21 +14,19 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {General} from '@mm-redux/constants';
-import {debounce} from '@mm-redux/actions/helpers';
-
+import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
-
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {showModal} from '@actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -154,6 +153,12 @@ export default class List extends PureComponent {
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
             };
+        case SidebarSectionTypes.THREADS: // Used only to identity the threads, hence not translating "id: t('...')"
+            return {
+                data: [''],
+                id: 'sidebar.threads',
+                defaultMessage: '',
+            };
         default:
             return {
                 action: this.showCreateChannelOptions,
@@ -168,12 +173,14 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s) => {
+        const sections = orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
             };
         });
+
+        return sections;
     };
 
     showCreateChannelOptions = () => {
@@ -314,7 +321,12 @@ export default class List extends PureComponent {
         );
     };
 
-    renderItem = ({item}) => {
+    renderItem = ({item, section}) => {
+        if (section.id === 'sidebar.threads') {
+            return (
+                <ThreadsSidebarEntry/>
+            );
+        }
         const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
         const channelItemTestID = `${testID}.channel_item`;
 
@@ -333,6 +345,10 @@ export default class List extends PureComponent {
         const {styles} = this.props;
         const {intl} = this.context;
         const {action, defaultMessage, id} = section;
+
+        if (id === 'sidebar.threads') {
+            return null;
+        }
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 

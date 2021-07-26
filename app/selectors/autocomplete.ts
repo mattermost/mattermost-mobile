@@ -3,19 +3,18 @@
 
 import {createSelector} from 'reselect';
 
+import * as Autocomplete from '@constants/autocomplete';
 import {General} from '@mm-redux/constants';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyChannels, getOtherChannels} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {
     getCurrentUser, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
 } from '@mm-redux/selectors/entities/users';
+import {GlobalState} from '@mm-redux/types/store';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {sortByUsername} from '@mm-redux/utils/user_utils';
-
-import * as Autocomplete from 'app/constants/autocomplete';
-import {getCurrentLocale} from 'app/selectors/i18n';
-import {GlobalState} from '@mm-redux/types/store';
+import {getCurrentLocale} from '@selectors/i18n';
 
 export const getMatchTermForAtMention = (() => {
     let lastMatchTerm: string | null = null;

@@ -1,25 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     FlatList,
     Platform,
 } from 'react-native';
 
-import {analytics} from '@init/analytics';
 import {Client4} from '@client/rest';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {AutocompleteSuggestion} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import SlashSuggestionItem from '../slash_suggestion_item';
-import {AppCommandParser} from '../app_command_parser/app_command_parser';
-import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER, ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser_dependencies';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
+import {analytics} from '@init/analytics';
+import {AutocompleteSuggestion} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/preferences';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import {AppCommandParser} from '../app_command_parser/app_command_parser';
+import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER, ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser_dependencies';
+import SlashSuggestionItem from '../slash_suggestion_item';
 
 export type Props = {
     currentTeamId: string;

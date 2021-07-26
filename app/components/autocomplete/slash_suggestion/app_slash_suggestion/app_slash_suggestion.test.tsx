@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
+import {intl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {AutocompleteSuggestion} from '@mm-redux/types/integrations';
 import Store from '@store/store';
-import {intl} from 'test/intl-test-helper';
 
+import {
+    reduxTestState,
+    testBindings,
+} from '../app_command_parser/tests/app_command_parser_test_data';
 import {
     thunk,
     configureStore,
     Client4,
     AppBinding,
 } from '../app_command_parser/tests/app_command_parser_test_dependencies';
-
-import {
-    reduxTestState,
-    testBindings,
-} from '../app_command_parser/tests/app_command_parser_test_data';
 
 const mockStore = configureStore([thunk]);
 

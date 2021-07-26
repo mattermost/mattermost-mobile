@@ -5,12 +5,12 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {General} from '@mm-redux/constants';
 import CompassIcon from '@components/compass_icon';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {General} from '@mm-redux/constants';
 import {Theme} from '@mm-redux/types/preferences';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -39,16 +39,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type Props = {
-    channelId: string,
-    displayName?: string,
-    name?: string,
-    type?: string,
-    isBot: boolean,
-    isGuest: boolean,
-    onPress: (name?: string) => void,
-    theme: Theme,
-    shared: boolean,
-    testID?: string,
+    channelId: string;
+    displayName?: string;
+    name?: string;
+    type?: string;
+    isBot: boolean;
+    isGuest: boolean;
+    onPress: (name?: string) => void;
+    theme: Theme;
+    shared: boolean;
+    testID?: string;
 };
 
 const ChannelMentionItem = (props: Props) => {

@@ -3,10 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {GlobalState} from '@mm-redux/types/store';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-
+import {GlobalState} from '@mm-redux/types/store';
 import {appsEnabled} from '@utils/apps';
 
 import AppSlashSuggestion from './app_slash_suggestion';

@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, Animated, Keyboard, StyleSheet} from 'react-native';
 
+import {showModal, showModalOverCurrentContext} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import {TYPING_VISIBLE} from '@constants/post_draft';
+import PushNotifications from '@init/push_notifications';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {showModal, showModalOverCurrentContext} from '@actions/navigation';
-import {TYPING_VISIBLE} from '@constants/post_draft';
-import CompassIcon from '@components/compass_icon';
-import PushNotifications from '@init/push_notifications';
 import EphemeralStore from '@store/ephemeral_store';
 import telemetry, {PERF_MARKERS} from '@telemetry';
 import {unsupportedServer} from '@utils/supported_server';
@@ -37,6 +36,8 @@ export default class ChannelBase extends PureComponent {
         teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
+        skipMetrics: PropTypes.bool,
+        viewingGlobalThreads: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -45,6 +46,7 @@ export default class ChannelBase extends PureComponent {
 
     static defaultProps = {
         disableTermsModal: false,
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
