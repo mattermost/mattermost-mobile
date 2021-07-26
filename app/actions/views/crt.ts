@@ -5,10 +5,10 @@ import {PreferenceTypes} from '@mm-redux/action_types';
 import {General, Preferences} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCollapsedThreadsPreference} from '@mm-redux/selectors/entities/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import type {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import type {PreferenceType} from '@mm-redux/types/preferences';
-
-import EventEmitter from '@mm-redux/utils/event_emitter';
 
 export function handleCRTPreferenceChange(preferences: PreferenceType[]) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {

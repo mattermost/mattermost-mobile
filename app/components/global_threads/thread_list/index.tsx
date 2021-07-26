@@ -1,20 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {FlatList, Platform, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {FlatList, Platform, View} from 'react-native';
 
 import EmptyState from '@components/global_threads/empty_state';
 import ThreadItem from '@components/global_threads/thread_item';
 import Loading from '@components/loading';
 import {INITIAL_BATCH_TO_RENDER} from '@components/post_list/post_list_config';
 import {ViewTypes} from '@constants';
-import type {Theme} from '@mm-redux/types/preferences';
-import type {UserThread} from '@mm-redux/types/threads';
-import type {$ID} from '@mm-redux/types/utilities';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadListHeader from './thread_list_header';
+
+import type {Theme} from '@mm-redux/types/preferences';
+import type {UserThread} from '@mm-redux/types/threads';
+import type {$ID} from '@mm-redux/types/utilities';
 
 export type Props = {
     haveUnreads: boolean;

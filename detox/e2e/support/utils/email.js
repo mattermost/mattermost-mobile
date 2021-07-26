@@ -3,6 +3,7 @@
 
 import axios from 'axios';
 import jestExpect from 'expect';
+
 import testConfig from '@support/test_config';
 
 /**

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import deepFreeze from '@mm-redux/utils/deep_freeze';
 import {PostTypes, TeamTypes, ThreadTypes} from '@mm-redux/action_types';
 import threadsReducer from '@mm-redux/reducers/entities/threads';
+import deepFreeze from '@mm-redux/utils/deep_freeze';
 
 describe('threads', () => {
     test('RECEIVED_THREADS should update the state', () => {

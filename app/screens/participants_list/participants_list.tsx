@@ -6,12 +6,13 @@ import {View} from 'react-native';
 import {dismissModal} from '@actions/navigation';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanel from '@components/slide_up_panel';
-import type {UserProfile} from '@mm-redux/types/users';
-import type {Theme} from '@mm-redux/types/preferences';
-import type {$ID} from '@mm-redux/types/utilities';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ParticipantRow from './participant_row';
+
+import type {Theme} from '@mm-redux/types/preferences';
+import type {UserProfile} from '@mm-redux/types/users';
+import type {$ID} from '@mm-redux/types/utilities';
 
 type Props = {
     currentUserId: $ID<UserProfile>;

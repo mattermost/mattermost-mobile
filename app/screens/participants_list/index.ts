@@ -5,10 +5,11 @@ import {connect} from 'react-redux';
 
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, makeGetProfilesByIds} from '@mm-redux/selectors/entities/users';
-import type {GlobalState} from '@mm-redux/types/store';
-import type {UserProfile} from '@mm-redux/types/users';
 
 import ParticipantsList from './participants_list';
+
+import type {GlobalState} from '@mm-redux/types/store';
+import type {UserProfile} from '@mm-redux/types/users';
 
 interface ListProps {
     userIds: string[];

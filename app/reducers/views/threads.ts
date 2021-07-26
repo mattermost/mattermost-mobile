@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
 
-import {GenericAction} from '@mm-redux/types/actions';
 import {ViewTypes} from '@constants';
+import {GenericAction} from '@mm-redux/types/actions';
 
 const viewingGlobalThreads = (state = false, action: GenericAction) => {
     switch (action.type) {

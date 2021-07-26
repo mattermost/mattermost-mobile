@@ -6,8 +6,8 @@ import {Platform} from 'react-native';
 import {ThemeProvider} from 'react-native-elements';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import {Provider} from 'react-redux';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {Provider} from 'react-redux';
 
 import RootWrapper from '@components/root';
 import ThreadFollow from '@screens/thread/thread_follow';
@@ -62,6 +62,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'ChannelNotificationPreference':
         screen = require('@screens/channel_notification_preference').default;
+        break;
+    case 'ClearAfter':
+        screen = require('@screens/custom_status_clear_after/clear_after_modal').default;
         break;
     case 'ClockDisplaySettings':
         screen = require('@screens/settings/clock_display').default;

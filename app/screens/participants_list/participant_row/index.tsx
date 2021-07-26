@@ -9,18 +9,19 @@ import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
-import type {Theme} from '@mm-redux/types/preferences';
 import {UserProfile} from '@mm-redux/types/users';
 import {$ID} from '@mm-redux/types/utilities';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {Theme} from '@mm-redux/types/preferences';
+
 type Props = {
     currentUserId: $ID<UserProfile>;
     teammateNameDisplay: string;
-    theme: Theme,
-    user: UserProfile,
+    theme: Theme;
+    user: UserProfile;
     intl: typeof intlShape;
 }
 

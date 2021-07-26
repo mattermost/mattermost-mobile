@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {renderWithIntl} from 'test/testing_library';
+
+import {renderWithIntl} from '@test/testing_library';
 
 import FriendlyDate from './index';
 
