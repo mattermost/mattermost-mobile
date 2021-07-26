@@ -282,6 +282,68 @@ exports[`AppsForm should set match snapshot 1`] = `
         }
       }
     />
+    <View
+      style={
+        Object {
+          "marginHorizontal": 5,
+        }
+      }
+    >
+      <Button
+        containerStyle={
+          Object {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "borderColor": "#2389D7",
+            "borderRadius": 3,
+            "borderWidth": 1,
+            "marginTop": 10,
+            "padding": 15,
+          }
+        }
+        key="Value3"
+        onPress={[Function]}
+      >
+        <Text
+          style={
+            Object {
+              "color": "#2389D7",
+              "fontSize": 17,
+              "textAlign": "center",
+            }
+          }
+        >
+          Label3
+        </Text>
+      </Button>
+      <Button
+        containerStyle={
+          Object {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "borderColor": "#2389D7",
+            "borderRadius": 3,
+            "borderWidth": 1,
+            "marginTop": 10,
+            "padding": 15,
+          }
+        }
+        key="Value4"
+        onPress={[Function]}
+      >
+        <Text
+          style={
+            Object {
+              "color": "#2389D7",
+              "fontSize": 17,
+              "textAlign": "center",
+            }
+          }
+        >
+          Label4
+        </Text>
+      </Button>
+    </View>
   </ScrollView>
 </RNCSafeAreaView>
 `;

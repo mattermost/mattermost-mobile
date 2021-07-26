@@ -28,6 +28,7 @@ describe('AppsForm', () => {
             footer: 'Footer',
             header: 'Header',
             icon: 'Icon',
+            submit_buttons: 'submit_buttons1',
             fields: [
                 {
                     name: 'bool1',
@@ -57,6 +58,16 @@ describe('AppsForm', () => {
                     ],
                     value: {label: 'Label1', value: 'Value1'},
                 },
+                {
+                    name: 'submit_buttons1',
+                    type: 'static_select',
+                    options: [
+                        {label: 'Label3', value: 'Value3'},
+                        {label: 'Label4', value: 'Value4'},
+                    ],
+                    value: null,
+                },
+
             ],
         },
         theme: Preferences.THEMES.default,
@@ -85,6 +96,7 @@ describe('AppsForm', () => {
             bool3: true,
             text1: 'initial text',
             select1: {label: 'Label1', value: 'Value1'},
+            submit_buttons1: null,
         });
     });
 
@@ -117,6 +129,7 @@ describe('AppsForm', () => {
                 bool3: true,
                 text1: 'initial text',
                 select1: {label: 'Label1', value: 'Value1'},
+                submit_buttons1: null,
             },
         });
         expect(hide).toHaveBeenCalled();
