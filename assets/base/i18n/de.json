@@ -45,6 +45,7 @@
   "apps.error.responses.navigate.no_url": "Die Antwort ist vom Typ `navigate`. Die Antwort enthielt aber keine URL.",
   "apps.error.responses.unexpected_error": "Unvorhergesehenen Fehler erhalten.",
   "apps.error.responses.unexpected_type": "Antworttyp App war nicht erwartet. Antworttyp: {type}.",
+  "apps.error.responses.unknown_field_error": "Es wurde ein Fehler für ein unbekanntes Feld empfangen. Feldname: `{field}`. Fehler: `{error}`.",
   "apps.error.responses.unknown_type": "Der Typ der Antwort der App wird nicht unterstützt. Typ der Antwort: {type}.",
   "apps.error.unknown": "Ein unbekannter Fehler ist aufgetreten.",
   "apps.suggestion.dynamic.error": "Dynamischer Auswahl Fehler",
