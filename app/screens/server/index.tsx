@@ -16,7 +16,7 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
-import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
+import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
@@ -47,7 +47,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         id: 'mobile.launchError.notification',
         defaultMessage: 'Did not find a server for this notification',
     }) : undefined;
-    const [error, setError] = useState<ClientErrorWithIntl|string|undefined>(initialError);
+    const [error, setError] = useState<Partial<ClientErrorProps>|string|undefined>(initialError);
 
     const [url, setUrl] = useState<string>('');
     const styles = getStyleSheet(theme);

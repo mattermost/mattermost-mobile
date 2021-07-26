@@ -40,9 +40,6 @@ export default class PostModel extends Model {
         /** A POST can have multiple POSTS_IN_THREAD. (relationship is 1:N)*/
         [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'id'},
 
-        /** A POST can have POST_METADATA. (relationship is 1:1)*/
-        [POST_METADATA]: {type: 'has_many', foreignKey: 'id'},
-
         /** A POST can have multiple REACTION. (relationship is 1:N)*/
         [REACTION]: {type: 'has_many', foreignKey: 'post_id'},
 
@@ -102,7 +99,7 @@ export default class PostModel extends Model {
     @children(FILE) files!: FileModel[];
 
     /** metadata: All the extra data associated with this Post */
-    @children(POST_METADATA) metadata!: PostMetadataModel[];
+    @immutableRelation(POST_METADATA, 'id') metadata!: Relation<PostMetadataModel>;
 
     /** reactions: All the reactions associated with this Post */
     @children(REACTION) reactions!: ReactionModel[];

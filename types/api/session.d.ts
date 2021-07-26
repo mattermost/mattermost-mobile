@@ -3,8 +3,15 @@
 
 interface Session {
     id: string;
-    create_at: string|number;
+    create_at: number;
     device_id?: string;
-    expires_at: string|number;
+    expires_at: number;
     user_id: string;
+}
+
+interface LoginActionResponse {
+    error?: ClientErrorProps | string;
+    hasTeams?: boolean;
+    failed: boolean;
+    time?: number;
 }

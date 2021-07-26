@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Query, Relation} from '@nozbe/watermelondb';
-import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
+import {Relation} from '@nozbe/watermelondb';
+import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -42,9 +42,6 @@ export default class ChannelModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A CHANNEL is associated with only one CHANNEL_INFO (relationship is 1:1) */
-        [CHANNEL_INFO]: {type: 'has_many', foreignKey: 'channel_id'},
-
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
 
@@ -53,12 +50,6 @@ export default class ChannelModel extends Model {
 
         /** A CHANNEL can be associated with multiple GROUPS_IN_CHANNEL  (relationship is 1:N) */
         [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
-
-        /** A CHANNEL is associated with only one MY_CHANNEL (relationship is 1:1) */
-        [MY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
-
-        /** A CHANNEL is associated to only one MY_CHANNEL_SETTINGS (relationship is 1:1) */
-        [MY_CHANNEL_SETTINGS]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple POSTS_IN_CHANNEL (relationship is 1:N) */
         [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'id'},
@@ -125,11 +116,12 @@ export default class ChannelModel extends Model {
     @immutableRelation(USER, 'creator_id') creator!: Relation<UserModel>;
 
     /** info : Query returning extra information about this channel from CHANNEL_INFO table */
-    @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfoModel>;
+    // @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfoModel>;
+    @immutableRelation(CHANNEL_INFO, 'id') info!: Relation<ChannelInfoModel>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
-    @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannelModel>;
+    @immutableRelation(MY_CHANNEL, 'id') membership!: Relation<MyChannelModel>;
 
     /** settings: User specific settings/preferences for this channel */
-    @lazy settings = this.collections.get(MY_CHANNEL_SETTINGS).query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannelSettingsModel>;
+    @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
 }

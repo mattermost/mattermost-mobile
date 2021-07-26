@@ -21,12 +21,11 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 
-import ErrorText, {ClientErrorWithIntl} from '@components/error_text';
+import ErrorText from '@components/error_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import FormattedText from '@components/formatted_text';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {scheduleExpiredNotification} from '@actions/remote/push_notification';
-import {login} from '@actions/remote/user';
+import {login} from '@actions/remote/session';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -53,7 +52,7 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
     const intl = useIntl();
     const managedConfig = useManagedConfig();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<ClientErrorWithIntl | string | undefined | null>();
+    const [error, setError] = useState<Partial<ClientErrorProps> | string | undefined | null>();
 
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -130,25 +129,35 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
     });
 
     const signIn = async () => {
-        const result = await login(serverUrl!, {loginId: loginId.toLowerCase(), password, config, license});
+        const result: LoginActionResponse = await login(serverUrl!, {loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            await goToChannel();
+            if (!result.hasTeams && !result.error) {
+                // eslint-disable-next-line no-console
+                console.log('GO TO NO TEAMS');
+                return;
+            }
+            await goToChannel(result.time || 0, result.error as never);
         }
     };
 
-    const goToChannel = async () => {
-        await scheduleExpiredNotification(serverUrl!, intl);
-        resetToChannel({extra, launchError, launchType, serverUrl});
+    const goToChannel = async (time: number, loginError?: never) => {
+        const hasError = launchError || Boolean(loginError);
+        resetToChannel({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
-    const checkLoginResponse = (data: any) => {
-        if (MFA_EXPECTED_ERRORS.includes(data?.error?.server_error_id)) {
+    const checkLoginResponse = (data: LoginActionResponse) => {
+        let errorId = '';
+        if (typeof data.error === 'object' && data.error.server_error_id) {
+            errorId = data.error.server_error_id;
+        }
+
+        if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
             goToMfa();
             setIsLoading(false);
             return false;
         }
 
-        if (data?.error) {
+        if (data?.error && data.failed) {
             setIsLoading(false);
             setError(getLoginErrorMessage(data.error));
             return false;
@@ -165,11 +174,15 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
         goToScreen(screen, title, {goToChannel, loginId, password, config, license, serverUrl, theme});
     };
 
-    const getLoginErrorMessage = (loginError: any) => {
-        return (getServerErrorForLogin(loginError) || loginError);
+    const getLoginErrorMessage = (loginError: string | ClientErrorProps) => {
+        if (typeof loginError === 'string') {
+            return loginError;
+        }
+
+        return getServerErrorForLogin(loginError);
     };
 
-    const getServerErrorForLogin = (serverError: any) => {
+    const getServerErrorForLogin = (serverError?: ClientErrorProps) => {
         if (!serverError) {
             return null;
         }

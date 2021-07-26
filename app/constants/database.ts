@@ -54,6 +54,7 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     LICENSE: 'license',
+    WEBSOCKET: 'WebSocket',
 };
 
 export const GLOBAL_IDENTIFIERS = {

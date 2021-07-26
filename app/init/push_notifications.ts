@@ -147,8 +147,7 @@ class PushNotifications {
 
       if (payload?.server_url) {
           const database = DatabaseManager.serverDatabases[payload.server_url]?.database;
-          const currentChannelId = await queryCurrentChannelId(database);
-          const channelId = currentChannelId?.value;
+          const channelId = await queryCurrentChannelId(database);
 
           if (channelId && payload.channel_id !== channelId) {
               const screen = 'Notification';

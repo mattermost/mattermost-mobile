@@ -1,46 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General} from '@constants';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {isGuest as isTeammateGuest} from '@utils/user';
 import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
-import {MM_TABLES} from '@constants/database';
+import {General} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getUserIdFromChannelName, isGuest as isTeammateGuest} from '@utils/user';
 
 import ChannelDisplayName from './channel_display_name';
 import ChannelGuestLabel from './channel_guest_label';
 
-import type {Database} from '@nozbe/watermelondb';
-
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type UserModel from '@typings/database/models/servers/user';
+import type SystemModel from '@typings/database/models/servers/system';
+
+type WithChannelArgs = WithDatabaseArgs & {
+    currentUserId: SystemModel;
+    channel: ChannelModel;
+}
 
 type ChannelTitleInputProps = {
     canHaveSubtitle: boolean;
     channel: ChannelModel;
     currentUserId: string;
-    teammateId?: string;
     onPress: () => void;
 };
 
 type ChannelTitleProps = ChannelTitleInputProps & {
     channelInfo: ChannelInfoModel;
     channelSettings: MyChannelSettingsModel;
-    database: Database;
     teammate?: UserModel;
-    teammateId: string;
 };
 
-const ConnectedChannelTitle = ({
+const ChannelTitle = ({
     canHaveSubtitle,
     channel,
     channelInfo,
@@ -48,7 +50,6 @@ const ConnectedChannelTitle = ({
     currentUserId,
     onPress,
     teammate,
-    teammateId,
 }: ChannelTitleProps) => {
     const theme = useTheme();
 
@@ -57,12 +58,11 @@ const ConnectedChannelTitle = ({
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
     const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
-
     const hasGuests = channelInfo.guestCount > 0;
     const teammateRoles = teammate?.roles ?? '';
     const isGuest = channelType === General.DM_CHANNEL && isTeammateGuest(teammateRoles);
 
-    const showGuestLabel = (canHaveSubtitle || (isGuest && hasGuests) || (channelType === General.DM_CHANNEL && isGuest));
+    const showGuestLabel = (canHaveSubtitle && ((isGuest && hasGuests) || (channelType === General.DM_CHANNEL && isGuest)));
 
     return (
         <TouchableOpacity
@@ -81,7 +81,7 @@ const ConnectedChannelTitle = ({
                     channelType={channelType}
                     currentUserId={currentUserId}
                     displayName={channel.displayName}
-                    teammateId={teammateId}
+                    teammateId={teammate?.id}
                     theme={theme}
                 />
                 {isChannelShared && (
@@ -175,16 +175,21 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ChannelTitle: React.FunctionComponent<ChannelTitleInputProps> =
-    withDatabase(
-        withObservables(['channel', 'teammateId'], ({channel, teammateId, database}: { channel: ChannelModel; teammateId: string; database: Database }) => {
-            return {
-                channelInfo: database.collections.get(MM_TABLES.SERVER.CHANNEL_INFO).findAndObserve(channel.id),
-                channelSettings: database.collections.get(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS).findAndObserve(channel.id),
-                ...(teammateId && channel.displayName && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
-            };
-        },
-        )(ConnectedChannelTitle),
-    );
+const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUserId: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
+}));
 
-export default ChannelTitle;
+const enhancedChannelTitle = withObservables(['channel', 'currentUserId'], ({channel, currentUserId, database}: WithChannelArgs) => {
+    let teammateId;
+    if (channel.type === General.DM_CHANNEL && channel.displayName) {
+        teammateId = getUserIdFromChannelName(currentUserId.value, channel.name);
+    }
+
+    return {
+        channelInfo: channel.info.observe(),
+        channelSettings: channel.settings.observe(),
+        ...(teammateId && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
+    };
+});
+
+export default withDatabase(withSystemIds(enhancedChannelTitle(ChannelTitle)));

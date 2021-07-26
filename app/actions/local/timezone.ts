@@ -23,7 +23,7 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
         return {error: `No database present for ${serverUrl}`};
     }
 
-    const currentUser = await queryUserById({userId, database}) ?? null;
+    const currentUser = await queryUserById(database, userId) ?? null;
 
     if (!currentUser) {
         return null;

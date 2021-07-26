@@ -136,7 +136,6 @@ android {
         missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
         versionCode 333
         versionName "2.0.0"
-        multiDexEnabled = true
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }

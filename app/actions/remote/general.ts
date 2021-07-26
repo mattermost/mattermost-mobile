@@ -1,17 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
-import {General} from '@constants';
-import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId} from '@queries/servers/system';
 
 import type {ClientResponse} from '@mattermost/react-native-network-client';
-import type {Client4Error} from '@typings/api/client';
-
-const HTTP_UNAUTHORIZED = 401;
 
 export const doPing = async (serverUrl: string) => {
     const client = await NetworkManager.createClient(serverUrl);
@@ -49,32 +41,3 @@ export const doPing = async (serverUrl: string) => {
     return {error: undefined};
 };
 
-export const forceLogoutIfNecessary = async (serverUrl: string, err: Client4Error) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const currentUserId = await queryCurrentUserId(database);
-
-    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(serverUrl);
-    }
-
-    return {error: null};
-};
-
-export const logout = async (serverUrl: string, skipServerLogout = false) => {
-    if (!skipServerLogout) {
-        try {
-            const client = NetworkManager.getClient(serverUrl);
-            await client.logout();
-        } catch (error) {
-            // We want to log the user even if logging out from the server failed
-            // eslint-disable-next-line no-console
-            console.warn('An error ocurred loging out from the server', serverUrl, error);
-        }
-    }
-
-    DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
-};

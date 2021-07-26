@@ -5,13 +5,10 @@ import React from 'react';
 import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {ClientError} from '@utils/client_error';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-export type ClientErrorWithIntl = ClientError & {intl: {values?: Record<string, any>}}
-
 type ErrorProps = {
-    error: ClientErrorWithIntl | string;
+    error: Partial<ClientErrorProps> | string;
     testID?: string;
     textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
     theme: Theme;

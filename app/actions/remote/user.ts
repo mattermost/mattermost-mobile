@@ -1,124 +1,91 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {logError} from '@actions/remote/error';
-import {loadRolesIfNeeded} from '@actions/remote/role';
-import {fetchDataRetentionPolicy} from '@actions/remote/systems';
+import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database} from '@constants';
 import DatabaseManager from '@database/manager';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {queryDeviceToken} from '@queries/app/global';
-import {queryCommonSystemValues} from '@queries/servers/system';
-import {getCSRFFromCookie} from '@utils/security';
+import {prepareUsers} from '@queries/servers/user';
 
-import type {Client4Error} from '@typings/api/client';
-import type {LoadMeArgs, LoginArgs} from '@typings/database/database';
+import type {Client} from '@client/rest';
+import type {LoadMeArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
-import {forceLogoutIfNecessary} from './general';
+import {forceLogoutIfNecessary} from './session';
 
-// import {initAfterLogin} from './init';
-
-type LoadedUser = {
-    currentUser?: UserProfile;
-    error?: Client4Error;
+export type ProfilesPerChannelRequest = {
+    data?: ProfilesInChannelRequest[];
+    error?: never;
 }
 
-export const completeLogin = async (serverUrl: string, user: UserProfile) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
+export type ProfilesInChannelRequest = {
+    users?: UserProfile[];
+    channelId: string;
+    error?: never;
+}
 
-    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await queryCommonSystemValues(database);
-
-    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
-        return null;
-    }
-
-    // Set timezone
-    if (isTimezoneEnabled(config)) {
-        const timezone = getDeviceTimezone();
-        await autoUpdateTimezone(serverUrl, {deviceTimezone: timezone, userId: user.id});
-    }
-
-    // Data retention
-    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-        fetchDataRetentionPolicy(serverUrl);
-    }
-
-    return null;
-};
-
-export const getSessions = async (serverUrl: string, currentUserId: string) => {
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        return undefined;
-    }
-
-    try {
-        return await client.getSessions(currentUserId);
-    } catch (e) {
-        logError(e);
-        await forceLogoutIfNecessary(serverUrl, e);
-    }
-
-    return undefined;
-};
-
-export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password}: LoginArgs) => {
-    let deviceToken;
-    let user: UserProfile;
-
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return {error: 'App database not found.'};
-    }
-
-    let client;
+export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
+    let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error};
+        return {channelId, error};
     }
 
     try {
-        deviceToken = await queryDeviceToken(appDatabase);
-        user = await client.login(
-            loginId,
-            password,
-            mfaToken,
-            deviceToken,
-            ldapOnly,
-        );
+        const users = await client.getProfilesInChannel(channelId);
+        const uniqueUsers = Array.from(new Set(users));
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                const prepare = prepareUsers(operator, uniqueUsers.filter((u) => u.id !== excludeUserId));
+                if (prepare) {
+                    const models = await prepare;
+                    if (models.length) {
+                        await operator.batchRecords(models);
+                    }
+                }
+            }
+        }
 
-        await DatabaseManager.createServerDatabase({
-            config: {
-                dbName: serverUrl,
-                serverUrl,
-            },
-        });
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
-        const csrfToken = await getCSRFFromCookie(serverUrl);
-        client.setCSRFToken(csrfToken);
-    } catch (e) {
-        return {error: e};
+        return {channelId, users: uniqueUsers};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {channelId, error};
     }
+};
 
-    const result = await loadMe(serverUrl, {user, deviceToken});
+export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> => {
+    try {
+        const requests = channelIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
+        const data = await Promise.all(requests);
 
-    if (!result?.error) {
-        await completeLogin(serverUrl, user);
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                const users = new Set<UserProfile>();
+                for (const item of data) {
+                    if (item.users?.length) {
+                        item.users.forEach(users.add, users);
+                    }
+                }
+                const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
+                if (prepare) {
+                    const models = await prepare;
+                    if (models.length) {
+                        await operator.batchRecords(models);
+                    }
+                }
+            }
+        }
+
+        return {data};
+    } catch (error) {
+        return {error};
     }
-
-    // initAfterLogin({serverUrl, user, deviceToken});
-
-    return {error: undefined};
 };
 
 export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs) => {
@@ -259,74 +226,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
     return {currentUser, error: undefined};
 };
 
-export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken: string) => {
-    let deviceToken;
-
-    const database = DatabaseManager.appDatabase?.database;
-    if (!database) {
-        return {error: 'App database not found'};
-    }
-
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    client.setBearerToken(bearerToken);
-    client.setCSRFToken(csrfToken);
-
-    // Setting up active database for this SSO login flow
-    try {
-        await DatabaseManager.createServerDatabase({
-            config: {
-                dbName: serverUrl,
-                serverUrl,
-            },
-        });
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
-        deviceToken = await queryDeviceToken(database);
-    } catch (e) {
-        return {error: e};
-    }
-
-    let result;
-
-    try {
-        result = (await loadMe(serverUrl, {deviceToken}) as unknown) as LoadedUser;
-        if (!result?.error && result?.currentUser) {
-            await completeLogin(serverUrl, result.currentUser);
-        }
-    } catch (e) {
-        return {error: undefined};
-    }
-
-    return result;
-};
-
-export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    let response;
-    try {
-        response = await client.sendPasswordResetEmail(email);
-    } catch (e) {
-        return {
-            error: e,
-        };
-    }
-    return {
-        data: response.data,
-        error: undefined,
-    };
-};
-
 export const updateMe = async (serverUrl: string, user: UserModel) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -349,11 +248,13 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
         return {error: e};
     }
 
-    operator.handleUsers({prepareRecordsOnly: false, users: [data]});
+    if (data) {
+        operator.handleUsers({prepareRecordsOnly: false, users: [data]});
 
-    const updatedRoles: string[] = data.roles.split(' ');
-    if (updatedRoles.length) {
-        await loadRolesIfNeeded(serverUrl, updatedRoles);
+        const updatedRoles: string[] = data.roles.split(' ');
+        if (updatedRoles.length) {
+            await fetchRolesIfNeeded(serverUrl, updatedRoles);
+        }
     }
 
     return {data};

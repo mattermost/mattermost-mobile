@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {logError} from '@actions/remote/error';
-import {forceLogoutIfNecessary} from '@actions/remote/general';
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';

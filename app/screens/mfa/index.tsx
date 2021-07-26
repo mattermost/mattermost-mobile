@@ -18,14 +18,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import {login} from '@actions/remote/user';
+import {login} from '@actions/remote/session';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
     config: Partial<ClientConfig>;
-    goToChannel: () => void;
+    goToChannel: (time: number, error?: never) => void;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -34,6 +34,7 @@ type MFAProps = {
 }
 
 const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}: MFAProps) => {
+    const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -74,13 +75,27 @@ const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}
             return;
         }
         setIsLoading(true);
-        const result = await login(serverUrl, {loginId, password, mfaToken: token, config, license});
+        const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license});
         setIsLoading(false);
-        if (result?.error) {
-            setError(result?.error);
+        if (result?.error && result.failed) {
+            if (typeof result.error == 'string') {
+                setError(result?.error);
+                return;
+            }
+
+            if (result.error.intl) {
+                setError(intl.formatMessage({id: result.error.intl.id, defaultMessage: result.error.intl.defaultMessage}, result.error.intl.values));
+                return;
+            }
+
+            setError(result.error.message);
+        }
+        if (!result.hasTeams && !result.error) {
+            // eslint-disable-next-line no-console
+            console.log('GO TO NO TEAMS');
             return;
         }
-        goToChannel();
+        goToChannel(result.time || 0, result.error as never);
     });
 
     const getProceedView = () => {

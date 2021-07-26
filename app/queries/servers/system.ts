@@ -8,12 +8,20 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type SystemModel from '@typings/database/models/servers/system';
 
+type PrepareCommonSystemValuesArgs = {
+    config?: ClientConfig;
+    currentChannelId?: string;
+    currentTeamId?: string;
+    currentUserId?: string;
+    license?: ClientLicense;
+}
+
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 export const queryCurrentChannelId = async (serverDatabase: Database) => {
     try {
         const currentChannelId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID) as SystemModel;
-        return currentChannelId?.value || '';
+        return (currentChannelId?.value || '') as string;
     } catch {
         return '';
     }
@@ -22,14 +30,14 @@ export const queryCurrentChannelId = async (serverDatabase: Database) => {
 export const queryCurrentUserId = async (serverDatabase: Database) => {
     try {
         const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as SystemModel;
-        return currentUserId?.value || '';
+        return (currentUserId?.value || '') as string;
     } catch {
         return '';
     }
 };
 
-export const queryCommonSystemValues = async (database: Database) => {
-    const systemRecords = (await database.collections.get(SYSTEM).query().fetch()) as SystemModel[];
+export const queryCommonSystemValues = async (serverDatabase: Database) => {
+    const systemRecords = (await serverDatabase.collections.get(SYSTEM).query().fetch()) as SystemModel[];
     let config = {};
     let license = {};
     let currentChannelId = '';
@@ -50,7 +58,7 @@ export const queryCommonSystemValues = async (database: Database) => {
                 currentUserId = systemRecord.value;
                 break;
             case SYSTEM_IDENTIFIERS.LICENSE:
-                license = systemRecord.value;
+                license = systemRecord.value as ClientLicense;
                 break;
         }
     });
@@ -59,38 +67,62 @@ export const queryCommonSystemValues = async (database: Database) => {
         currentChannelId,
         currentTeamId,
         currentUserId,
-        config,
-        license,
+        config: (config as ClientConfig),
+        license: (license as ClientLicense),
     };
 };
 
-export const prepareCommonSystemValues = (
-    operator: ServerDataOperator, config: ClientConfig, license: ClientLicense,
-    currentUserId: string, currentTeamId: string, currentChannelId: string) => {
+export const queryWebSocketLastDisconnected = async (serverDatabase: Database) => {
     try {
+        const websocketLastDisconnected = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.WEBSOCKET) as SystemModel;
+        return (parseInt(websocketLastDisconnected?.value || 0, 10) || 0);
+    } catch {
+        return 0;
+    }
+};
+
+export const prepareCommonSystemValues = (
+    operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs) => {
+    try {
+        const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const systems: IdValue[] = [];
+        if (config !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CONFIG,
+                value: JSON.stringify(config),
+            });
+        }
+
+        if (license !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.LICENSE,
+                value: JSON.stringify(license),
+            });
+        }
+
+        if (currentUserId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: currentUserId,
+            });
+        }
+
+        if (currentTeamId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
+                value: currentTeamId,
+            });
+        }
+
+        if (currentChannelId !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
+                value: currentChannelId,
+            });
+        }
+
         return operator.handleSystem({
-            systems: [
-                {
-                    id: SYSTEM_IDENTIFIERS.CONFIG,
-                    value: JSON.stringify(config),
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.LICENSE,
-                    value: JSON.stringify(license),
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    value: currentUserId,
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
-                    value: currentTeamId,
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
-                    value: currentChannelId,
-                },
-            ],
+            systems,
             prepareRecordsOnly: true,
         });
     } catch {

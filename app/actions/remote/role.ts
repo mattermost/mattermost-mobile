@@ -5,7 +5,18 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryRoles} from '@queries/servers/role';
 
-export const loadRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]) => {
+import {forceLogoutIfNecessary} from './session';
+
+export type RolesRequest = {
+    error?: never;
+    roles?: Role[];
+}
+
+export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]): Promise<RolesRequest> => {
+    if (!updatedRoles.length) {
+        return {roles: []};
+    }
+
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -25,16 +36,23 @@ export const loadRolesIfNeeded = async (serverUrl: string, updatedRoles: string[
         return !roleNames.includes(newRole);
     });
 
+    if (!newRoles.length) {
+        return {roles: []};
+    }
+
     try {
         const roles = await client.getRolesByNames(newRoles);
 
-        await operator.handleRole({
-            roles,
-            prepareRecordsOnly: false,
-        });
+        if (roles.length) {
+            await operator.handleRole({
+                roles,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {roles};
     } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
-
-    return null;
 };

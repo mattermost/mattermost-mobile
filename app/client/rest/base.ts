@@ -15,8 +15,6 @@ import type {
     RequestOptions,
 } from '@mattermost/react-native-network-client';
 
-import type {ClientOptions} from '@typings/api/client';
-
 import * as ClientConstants from './constants';
 import ClientError from './error';
 

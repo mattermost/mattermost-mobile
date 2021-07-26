@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 /**
  * ChannelInfo is an extension of the information contained in the Channel table.
@@ -12,9 +12,6 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 export default class ChannelInfoModel extends Model {
     /** table (name) : ChannelInfo */
     static table: string;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations;
 
     /** guest_count : The number of guest in this channel */
     guestCount: number;

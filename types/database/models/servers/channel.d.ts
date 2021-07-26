@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -24,7 +24,7 @@ export default class ChannelModel extends Model {
     deleteAt: number;
 
     /** update_at : The timestamp to when this channel was last updated on the server */
-   updateAt!: number;
+    updateAt!: number;
 
     /** display_name : The channel display name (e.g. Town Square ) */
     displayName: string;
@@ -63,11 +63,11 @@ export default class ChannelModel extends Model {
     creator: Relation<UserModel>;
 
     /** info : Query returning extra information about this channel from the CHANNEL_INFO table */
-    info: Query<ChannelInfoModel>;
+    info: Relation<ChannelInfoModel>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
-    membership: Query<MyChannelModel>;
+    membership: Relation<MyChannelModel>;
 
     /** settings: User specific settings/preferences for this channel */
-    settings: Query<MyChannelSettingsModel>;
+    settings: Relation<MyChannelSettingsModel>;
 }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 /**
  * PostMetadata provides additional information on a POST
@@ -10,9 +10,6 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 export default class PostMetadataModel extends Model {
     /** table (name) : PostMetadata */
     static table: string;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations;
 
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
     data: PostMetadata;

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {General, Preferences} from '@constants';
+
 export function getPreferenceValue(preferences: PreferenceType[], category: string, name: string, defaultValue: unknown = '') {
     const pref = preferences.find((p) => p.category === category && p.name === name);
 
@@ -23,4 +25,16 @@ export function getPreferenceAsInt(preferences: PreferenceType[], category: stri
     }
 
     return defaultValue;
+}
+
+export function getTeammateNameDisplaySetting(preferences: PreferenceType[], config?: ClientConfig, license?: ClientLicense) {
+    const useAdminTeammateNameDisplaySetting = license?.LockTeammateNameDisplay === 'true' && config?.LockTeammateNameDisplay === 'true';
+    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '') as string;
+    if (preference && !useAdminTeammateNameDisplaySetting) {
+        return preference;
+    } else if (config?.TeammateNameDisplay) {
+        return config.TeammateNameDisplay;
+    }
+
+    return General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME;
 }

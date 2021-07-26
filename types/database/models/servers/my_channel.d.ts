@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
@@ -10,9 +10,6 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 export default class MyChannelModel extends Model {
     /** table (name) : MyChannel */
     static table: string;
-
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations;
 
     /** last_post_at : The timestamp for any last post on this channel */
     lastPostAt: number;

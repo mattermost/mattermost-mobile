@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {field, relation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -18,13 +18,6 @@ export default class MyTeamModel extends Model {
     /** table (name) : MyTeam */
     static table = MY_TEAM;
 
-    /** associations : Describes every relationship to this table. */
-    static associations: Associations = {
-
-        /** TEAM and MY_TEAM have a 1:1 relationship. */
-        [TEAM]: {type: 'belongs_to', key: 'id'},
-    };
-
     /** is_unread : Boolean flag for unread messages on team level */
     @field('is_unread') isUnread!: boolean;
 
@@ -35,5 +28,5 @@ export default class MyTeamModel extends Model {
     @field('roles') roles!: string;
 
     /** team : The relation to the TEAM, that this user belongs to  */
-    @relation(MY_TEAM, 'id') team!: Relation<TeamModel>;
+    @relation(TEAM, 'id') team!: Relation<TeamModel>;
 }

@@ -206,18 +206,18 @@ export function getLocaleFromLanguage(lang: string) {
 }
 
 export function resetMomentLocale(locale?: string) {
-    moment.locale(locale || DEFAULT_LOCALE);
+    moment.locale(locale || DEFAULT_LOCALE.split('-')[0]);
 }
 
 export function getTranslations(locale?: string) {
     return loadTranslation(locale);
 }
 
-export function getLocalizedMessage(lang: string, id: string) {
+export function getLocalizedMessage(lang: string, id: string, defaultMessage?: string) {
     const locale = getLocaleFromLanguage(lang);
     const translations = getTranslations(locale);
 
-    return translations[id];
+    return translations[id] || defaultMessage;
 }
 
 export function t(v: string): string {
