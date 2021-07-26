@@ -40,6 +40,7 @@ export default class Autocomplete extends PureComponent {
         offsetY: PropTypes.number,
         onKeyboardOffsetChanged: PropTypes.func,
         style: ViewPropTypes.style,
+        appsEnabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -185,7 +186,7 @@ export default class Autocomplete extends PureComponent {
 
     render() {
         const {atMentionCount, channelMentionCount, emojiCount, commandCount, appCommandCount, dateCount, cursorPosition, value} = this.state;
-        const {theme, isSearch, offsetY} = this.props;
+        const {theme, isSearch, offsetY, appsEnabled} = this.props;
         const style = getStyleFromTheme(theme);
         const maxListHeight = this.maxListHeight();
         const wrapperStyles = [];
@@ -219,15 +220,17 @@ export default class Autocomplete extends PureComponent {
                     ref={this.containerRef}
                     style={containerStyles}
                 >
-                    <AppSlashSuggestion
-                        {...this.props}
-                        maxListHeight={maxListHeight}
-                        onChangeText={this.onChangeText}
-                        onResultCountChange={this.handleAppCommandCountChange}
-                        value={value || ''}
-                        nestedScrollEnabled={this.props.nestedScrollEnabled}
-                    />
-                    {!appsTakeOver && (<>
+                    {appsEnabled && (
+                        <AppSlashSuggestion
+                            {...this.props}
+                            maxListHeight={maxListHeight}
+                            onChangeText={this.onChangeText}
+                            onResultCountChange={this.handleAppCommandCountChange}
+                            value={value || ''}
+                            nestedScrollEnabled={this.props.nestedScrollEnabled}
+                        />
+                    )}
+                    {(!appsTakeOver || !appsEnabled) && (<>
                         <AtMention
                             {...this.props}
                             cursorPosition={cursorPosition}

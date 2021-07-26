@@ -211,12 +211,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
-
-        if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            this.setState({
-                active: false,
-            });
-        }
     };
 
     keyExtractor = (item: Command & AutocompleteSuggestion): string => item.id || item.Suggestion;

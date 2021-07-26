@@ -67,7 +67,7 @@ export default class AppSlashSuggestion extends PureComponent<Props, State> {
     }
 
     componentDidUpdate(prevProps: Props) {
-        if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24) || !this.props.appsEnabled) {
+        if (!this.props.appsEnabled) {
             this.setActive(false);
             this.props.onResultCountChange(0);
             return;
