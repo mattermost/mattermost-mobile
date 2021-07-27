@@ -91,6 +91,7 @@
     "@babel/register": "7.14.5",
     "@react-native-community/eslint-config": "3.0.0",
     "@testing-library/react-native": "7.2.0",
+    "@types/commonmark": "0.27.5",
     "@types/jest": "26.0.24",
     "@types/react": "17.0.15",
     "@types/react-intl": "3.0.0",
