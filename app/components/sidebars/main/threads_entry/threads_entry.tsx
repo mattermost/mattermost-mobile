@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {injectIntl, intlShape} from 'react-intl';
-import {TouchableHighlight, Text, View} from 'react-native';
+import {TouchableHighlight, View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {getStyleSheet} from '@components/sidebars/main/channels_list/channel_item/channel_item';
 import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -27,10 +27,9 @@ type Props = {
     };
     currentTeamId: $ID<Team>;
     currentUserId: $ID<UserProfile>;
-    intl: typeof intlShape;
     isUnreadSelected: boolean;
     theme: Theme;
-    threadCount: ThreadsState['counts'];
+    threadCount: ThreadsState['counts'][$ID<Team>];
     viewingGlobalThreads: boolean;
 };
 
@@ -38,7 +37,6 @@ const ThreadsEntry = ({
     actions,
     currentTeamId,
     currentUserId,
-    intl,
     isUnreadSelected,
     theme,
     threadCount,
@@ -111,16 +109,11 @@ const ThreadsEntry = ({
                                 style={iconStyle}
                             />
                         </View>
-                        <Text
+                        <FormattedText
+                            id='threads'
+                            defaultMessage='Threads'
                             style={textStyle}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                        >
-                            {intl.formatMessage({
-                                id: 'threads',
-                                defaultMessage: 'Threads',
-                            })}
-                        </Text>
+                        />
                         {badge}
                     </View>
                 </View>
@@ -151,4 +144,4 @@ const getExtraStyleSheet = makeStyleFromTheme((theme: Theme) => {
     };
 });
 
-export default injectIntl(ThreadsEntry);
+export default ThreadsEntry;
