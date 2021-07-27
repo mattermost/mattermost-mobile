@@ -14,6 +14,7 @@ import ReactionPicker from '@components/reaction_picker';
 import SlideUpPanel from '@components/slide_up_panel';
 import {BOTTOM_MARGIN} from '@components/slide_up_panel/slide_up_panel';
 import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
+import {CHANNEL} from '@constants/screen';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 import {t} from '@utils/i18n';
@@ -110,8 +111,8 @@ export default class PostOptions extends PureComponent {
     }
 
     getFollowThreadOption = () => {
-        const {thread} = this.props;
-        if (!thread) {
+        const {location, thread} = this.props;
+        if (location !== CHANNEL) {
             return null;
         }
         const key = 'follow';
