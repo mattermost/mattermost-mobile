@@ -97,40 +97,46 @@ const ThreadsEntry = ({
     }, [extraStyle, style, threadCount?.total_unread_mentions, threadCount?.total_unread_threads, viewingGlobalThreads]);
 
     return (
-        <TouchableHighlight
-            underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
-            onPress={onPress}
-        >
-            <View style={[style.container, extraStyle.container]}>
-                {border}
-                <View style={itemStyle} >
-                    <View style={extraStyle.iconContainer}>
-                        <CompassIcon
-                            name='message-text-outline'
-                            style={iconStyle}
-                        />
+        <View style={extraStyle.baseContainer}>
+            <TouchableHighlight
+                underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
+                onPress={onPress}
+            >
+                <View style={[style.container, extraStyle.container]}>
+                    {border}
+                    <View style={itemStyle} >
+                        <View style={extraStyle.iconContainer}>
+                            <CompassIcon
+                                name='message-text-outline'
+                                style={iconStyle}
+                            />
+                        </View>
+                        <Text
+                            style={textStyle}
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                        >
+                            {intl.formatMessage({
+                                id: 'threads',
+                                defaultMessage: 'Threads',
+                            })}
+                        </Text>
+                        {badge}
                     </View>
-                    <Text
-                        style={textStyle}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                    >
-                        {intl.formatMessage({
-                            id: 'threads',
-                            defaultMessage: 'Threads',
-                        })}
-                    </Text>
-                    {badge}
                 </View>
-            </View>
-        </TouchableHighlight>
+            </TouchableHighlight>
+        </View>
     );
 };
 
 const getExtraStyleSheet = makeStyleFromTheme((theme: Theme) => {
     return {
-        container: {
+        baseContainer: {
             marginTop: 16,
+            marginBottom: 12,
+        },
+        container: {
+            flex: 0, // Override the existing flex: 1
         },
         iconContainer: {
             alignItems: 'center',
