@@ -52,7 +52,7 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
     if (!thread || !thread?.id) {
         if (fallbackFromPosts) {
             const post = getPost(state, threadId);
-            if (!post?.root_id) {
+            if (post && !post?.root_id) {
                 const {id, is_following, reply_count, last_reply_at, participants} = post;
                 return {
                     id,
