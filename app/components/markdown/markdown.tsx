@@ -50,12 +50,18 @@ type MarkdownProps = {
     onChannelLinkPress: (channel: ChannelModel) => void;
     onPostPress: (event: GestureResponderEvent) => void;
     postId: string;
-    textStyles: TextStyle;
+    textStyles: {
+        code: TextStyle;
+        codeBlock: TextStyle;
+        error: TextStyle;
+        link: TextStyle;
+        mention: TextStyle;
+    };
     theme: Theme;
     value: string | number;
 }
 
-class Markdown extends PureComponent<MarkdownProps, {}> {
+class Markdown extends PureComponent<MarkdownProps, null> {
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
@@ -147,8 +153,10 @@ class Markdown extends PureComponent<MarkdownProps, {}> {
         return extraProps;
     };
 
-    computeTextStyle = (baseStyle, context) => {
-        const contextStyles = context.map((type) => this.props.textStyles[type]).filter((f) => f !== undefined);
+    computeTextStyle = (baseStyle: TextStyle, context: string[]) => {
+        const {textStyles} = this.props;
+        type TextType = keyof typeof textStyles;
+        const contextStyles = context.map((type) => textStyles[type as TextType]).filter((f) => f !== undefined);
         return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
