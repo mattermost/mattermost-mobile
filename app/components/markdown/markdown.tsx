@@ -139,7 +139,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         });
     };
 
-    getExtraPropsForNode = (node) => {
+    getExtraPropsForNode = (node: any) => {
         const extraProps = {
             continue: node.continue,
             index: node.index,
@@ -153,14 +153,14 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         return extraProps;
     };
 
-    computeTextStyle = (baseStyle: TextStyle, context: string[]) => {
+    computeTextStyle = (baseStyle: any, context: any) => {
         const {textStyles} = this.props;
         type TextType = keyof typeof textStyles;
-        const contextStyles = context.map((type) => textStyles[type as TextType]).filter((f) => f !== undefined);
+        const contextStyles = context.map((type: any) => textStyles[type as TextType]).filter((f: any) => f !== undefined);
         return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
-    renderText = ({context, literal}) => {
+    renderText = ({context, literal}: any) => {
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
@@ -183,11 +183,12 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderCodeSpan = ({context, literal}) => {
-        return <Text style={this.computeTextStyle([this.props.baseTextStyle, this.props.textStyles.code], context)}>{literal}</Text>;
+    renderCodeSpan = ({context, literal}: {context: any; literal: any}) => {
+        const {baseTextStyle, textStyles: {code}} = this.props;
+        return <Text style={this.computeTextStyle([baseTextStyle, code], context)}>{literal}</Text>;
     };
 
-    renderImage = ({linkDestination, reactChildren, context, src}) => {
+    renderImage = ({linkDestination, reactChildren, context, src}: any) => {
         if (!this.props.imagesMetadata) {
             return null;
         }
@@ -221,7 +222,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderAtMention = ({context, mentionName}) => {
+    renderAtMention = ({context, mentionName}: any) => {
         if (this.props.disableAtMentions) {
             return this.renderText({context, literal: `@${mentionName}`});
         }
@@ -240,7 +241,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderChannelLink = ({context, channelName}) => {
+    renderChannelLink = ({context, channelName}: any) => {
         if (this.props.disableChannelLink) {
             return this.renderText({context, literal: `~${channelName}`});
         }
@@ -256,18 +257,11 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderEmoji = ({context, emojiName, literal}) => {
-        return (
-            <Emoji
-                emojiName={emojiName}
-                literal={literal}
-                testID='markdown_emoji'
-                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
-            />
-        );
+    renderEmoji = () => {
+        //todo: render Emoji just like on master branch
     };
 
-    renderHashtag = ({context, hashtag}) => {
+    renderHashtag = ({context, hashtag}: any) => {
         if (this.props.disableHashtags) {
             return this.renderText({context, literal: `#${hashtag}`});
         }
@@ -280,7 +274,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderParagraph = ({children, first}) => {
+    renderParagraph = ({children, first}: {children: ReactElement[]; first: boolean}) => {
         if (!children || children.length === 0) {
             return null;
         }
@@ -300,12 +294,13 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderHeading = ({children, level}) => {
+    renderHeading = ({children, level}: {children: ReactElement; level: string}) => {
+        const {blockStyles} = this.props;
         const containerStyle = [
             getStyleSheet(this.props.theme).block,
-            this.props.blockStyles[`heading${level}`],
+            blockStyles[`heading${level}`],
         ];
-        const textStyle = this.props.blockStyles[`heading${level}Text`];
+        const textStyle = blockStyles[`heading${level}Text`];
         return (
             <View style={containerStyle}>
                 <Text style={textStyle}>
@@ -315,7 +310,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderCodeBlock = (props) => {
+    renderCodeBlock = (props: any) => {
         // These sometimes include a trailing newline
         const content = props.literal.replace(/\n$/, '');
 
@@ -328,7 +323,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderBlockQuote = ({children, ...otherProps}) => {
+    renderBlockQuote = ({children, ...otherProps}: any) => {
         return (
             <MarkdownBlockQuote
                 iconStyle={this.props.blockStyles.quoteBlockIcon}
@@ -339,20 +334,20 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderList = ({children, start, tight, type}) => {
+    renderList = ({children, start, tight, type}: any) => {
         return (
             <MarkdownList
-                ordered={type !== 'bullet'}
+                isOrdered={type !== 'bullet'}
                 start={start}
-                tight={tight}
+                isTight={tight}
             >
                 {children}
             </MarkdownList>
         );
     };
 
-    renderListItem = ({children, context, ...otherProps}) => {
-        const level = context.filter((type) => type === 'list').length;
+    renderListItem = ({children, context, ...otherProps}: any) => {
+        const level = context.filter((type: string) => type === 'list').length;
 
         return (
             <MarkdownListItem
@@ -382,7 +377,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         return <Text>{'\n'}</Text>;
     };
 
-    renderHtml = (props) => {
+    renderHtml = (props: any) => {
         let rendered = this.renderText(props);
 
         if (props.isBlock) {
@@ -424,7 +419,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderEditedIndicator = ({context}) => {
+    renderEditedIndicator = ({context}: {context: any}) => {
         let spacer = '';
         if (context[0] === 'paragraph') {
             spacer = ' ';
