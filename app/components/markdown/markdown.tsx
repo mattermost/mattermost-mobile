@@ -1,18 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withTheme} from '@context/theme';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import {Parser, Node} from 'commonmark';
-import ReactRenderer from 'commonmark-react-renderer';
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
+import Renderer from 'commonmark-react-renderer';
+import React, {PureComponent, ReactElement} from 'react';
 import {GestureResponderEvent, Platform, Text, TextStyle, View} from 'react-native';
 
 import AtMention from '@components/at_mention';
 import ChannelLink from '@components/channel_link';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
+import {withTheme} from '@context/theme';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
@@ -23,19 +21,20 @@ import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 import MarkdownTable from './markdown_table';
 import MarkdownTableImage from './markdown_table_image';
-import MarkdownTableRow from './markdown_table_row';
-import MarkdownTableCell from './markdown_table_cell';
-import {
-    addListItemIndices,
-    combineTextNodes,
-    highlightMentions,
-    pullOutImages,
-} from './transform';
+import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
+import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
+import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 type MarkdownProps = {
     autolinkedUrlSchemes: string[];
     baseTextStyle: TextStyle;
-    blockStyles: object;
+    blockStyles: {
+        adjacentParagraph: object;
+        horizontalRule: object;
+        quoteBlockIcon: object;
+    };
     channelMentions: Record<string, ChannelModel>;
     disableAtChannelMentionHighlight: boolean;
     disableAtMentions: boolean;
@@ -69,7 +68,7 @@ class Markdown extends PureComponent<MarkdownProps, {}> {
     };
 
     private parser: Parser;
-    private renderer: ReactRenderer.Renderer;
+    private renderer: Renderer.Renderer;
 
     constructor(props: MarkdownProps) {
         super(props);
@@ -85,9 +84,8 @@ class Markdown extends PureComponent<MarkdownProps, {}> {
         });
     };
 
-    urlFilter = (url) => {
+    urlFilter = (url: string) => {
         const scheme = getScheme(url);
-
         return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme) !== -1;
     };
 
@@ -392,7 +390,7 @@ class Markdown extends PureComponent<MarkdownProps, {}> {
         return rendered;
     };
 
-    renderTable = ({children, numColumns}) => {
+    renderTable = ({children, numColumns}: {children: ReactElement; numColumns: number}) => {
         return (
             <MarkdownTable
                 numColumns={numColumns}
@@ -402,15 +400,15 @@ class Markdown extends PureComponent<MarkdownProps, {}> {
         );
     };
 
-    renderTableRow = (args) => {
+    renderTableRow = (args: MarkdownTableRowProps) => {
         return <MarkdownTableRow {...args}/>;
     };
 
-    renderTableCell = (args) => {
+    renderTableCell = (args: MarkdownTableCellProps) => {
         return <MarkdownTableCell {...args}/>;
     };
 
-    renderLink = ({children, href}) => {
+    renderLink = ({children, href}: {children: ReactElement; href: string}) => {
         return (
             <MarkdownLink href={href}>
                 {children}

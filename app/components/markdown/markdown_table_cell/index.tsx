@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 export const CELL_MIN_WIDTH = 96;
 export const CELL_MAX_WIDTH = 192;
 
-type MarkdownTableCellProps = {
+export type MarkdownTableCellProps = {
     align: 'left' | 'center' | 'right';
     children: ReactNode;
     isLastCell: boolean;

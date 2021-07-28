@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type MarkdownTableRowProps = {
+export type MarkdownTableRowProps = {
     isFirstRow: boolean;
     isLastRow: boolean;
     children: ReactNode;
