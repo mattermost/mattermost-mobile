@@ -8,7 +8,7 @@ import {StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 
 type MarkdownBlockQuoteProps = {
-    continueBlock: boolean;
+    continueBlock?: boolean;
     iconStyle: ViewStyle | TextStyle;
     children: ReactNode | ReactNode[];
 };
@@ -19,7 +19,7 @@ const MarkdownBlockQuote = ({children, continueBlock, iconStyle}: MarkdownBlockQ
             style={style.container}
             testID='markdown_block_quote'
         >
-            {continueBlock && (
+            {!continueBlock && (
                 <View style={style.icon}>
                     <CompassIcon
                         name='format-quote-open'
