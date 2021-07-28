@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withTheme} from '@context/theme';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import {Parser, Node} from 'commonmark';
 import ReactRenderer from 'commonmark-react-renderer';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, Text, View} from 'react-native';
+import {GestureResponderEvent, Platform, Text, TextStyle, View} from 'react-native';
 
 import AtMention from '@components/at_mention';
 import ChannelLink from '@components/channel_link';
@@ -30,35 +32,34 @@ import {
     pullOutImages,
 } from './transform';
 
-export default class Markdown extends PureComponent {
-    static propTypes = {
-        autolinkedUrlSchemes: PropTypes.array,
-        baseTextStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
-        blockStyles: PropTypes.object,
-        channelMentions: PropTypes.object,
-        imagesMetadata: PropTypes.object,
-        isEdited: PropTypes.bool,
-        isReplyPost: PropTypes.bool,
-        isSearchResult: PropTypes.bool,
-        mentionKeys: PropTypes.array,
-        minimumHashtagLength: PropTypes.number,
-        onChannelLinkPress: PropTypes.func,
-        onPostPress: PropTypes.func,
-        postId: PropTypes.string,
-        textStyles: PropTypes.object,
-        theme: PropTypes.object,
-        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-        disableHashtags: PropTypes.bool,
-        disableAtMentions: PropTypes.bool,
-        disableChannelLink: PropTypes.bool,
-        disableAtChannelMentionHighlight: PropTypes.bool,
-        disableGallery: PropTypes.bool,
-    };
+type MarkdownProps = {
+    autolinkedUrlSchemes: string[];
+    baseTextStyle: TextStyle;
+    blockStyles: object;
+    channelMentions: Record<string, ChannelModel>;
+    disableAtChannelMentionHighlight: boolean;
+    disableAtMentions: boolean;
+    disableChannelLink: boolean;
+    disableGallery: boolean;
+    disableHashtags: boolean;
+    imagesMetadata: Record<string, PostImage>;
+    isEdited: boolean;
+    isReplyPost: boolean;
+    isSearchResult: boolean;
+    mentionKeys: Array<{ key: string }>;
+    minimumHashtagLength: number;
+    onChannelLinkPress: (channel: ChannelModel) => void;
+    onPostPress: (event: GestureResponderEvent) => void;
+    postId: string;
+    textStyles: TextStyle;
+    theme: Theme;
+    value: string | number;
+}
 
+class Markdown extends PureComponent<MarkdownProps, {}> {
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
-        onLongPress: () => true,
         disableHashtags: false,
         disableAtMentions: false,
         disableChannelLink: false,
@@ -70,7 +71,7 @@ export default class Markdown extends PureComponent {
     private parser: Parser;
     private renderer: ReactRenderer.Renderer;
 
-    constructor(props) {
+    constructor(props: MarkdownProps) {
         super(props);
 
         this.parser = this.createParser();
@@ -493,3 +494,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default withTheme(Markdown);
