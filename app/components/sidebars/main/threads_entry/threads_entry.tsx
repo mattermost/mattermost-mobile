@@ -126,7 +126,7 @@ const getExtraStyleSheet = makeStyleFromTheme((theme: Theme) => {
     return {
         baseContainer: {
             marginTop: 16,
-            marginBottom: 12,
+            marginBottom: 4,
         },
         container: {
             flex: 0, // Override the existing flex: 1
