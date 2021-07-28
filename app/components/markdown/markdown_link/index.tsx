@@ -1,32 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import React, {Children, memo, ReactElement} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text} from 'react-native';
 import urlParse from 'url-parse';
 
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server_url';
-import {DeepLinkWithData} from '@typings/launch';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 import {preventDoubleTap} from '@utils/tap';
 
-type MarkdownLinkProps = {
-    config: Partial<ClientConfig>;
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
+import type {DeepLinkWithData} from '@typings/launch';
+
+type MarkdownLinkInputProps = {
     children: ReactElement;
     href: string;
 }
 
+type MarkdownLinkProps = MarkdownLinkInputProps & {
+    config: SystemModel;
+}
+
 //todo: Add observable to monitor the current team value
 
-const MarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
+const ConnectedMarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const {formatMessage} = intl;
-    const {SiteURL: siteURL = ''} = config;
+    const {SiteURL: siteURL = '', ExperimentalNormalizeMarkdownLinks} = config.value;
 
     // const currentTeamName = currentTeam.name;
 
@@ -111,7 +120,7 @@ const MarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
     //     Clipboard.setString(href);
     // };
 
-    const renderChildren = config.ExperimentalNormalizeMarkdownLinks ? parseChildren() : children;
+    const renderChildren = ExperimentalNormalizeMarkdownLinks ? parseChildren() : children;
 
     return (
         <Text
@@ -123,4 +132,7 @@ const MarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
     );
 };
 
+const MarkdownLink = withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
+    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+}))(ConnectedMarkdownLink));
 export default memo(MarkdownLink);
