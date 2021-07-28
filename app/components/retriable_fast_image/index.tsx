@@ -8,7 +8,7 @@ export const FAST_IMAGE_MAX_RETRIES = 3;
 
 type RetriableFastImageProps = FastImageProps & {
     id: string;
-    onError: () => void;
+    onError?: () => void;
     [x: string]: any;
 };
 

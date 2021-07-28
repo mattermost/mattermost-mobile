@@ -149,3 +149,35 @@ export function hexToHue(hexColor: string) {
 
     return hue;
 }
+
+function blendComponent(background: number, foreground: number, opacity: number): number {
+    return ((1 - opacity) * background) + (opacity * foreground);
+}
+
+export function blendColors(background: string, foreground: string, opacity: number): string {
+    const backgroundComponents = getComponents(background);
+    const foregroundComponents = getComponents(foreground);
+
+    const red = Math.floor(blendComponent(
+        backgroundComponents.red,
+        foregroundComponents.red,
+        opacity,
+    ));
+    const green = Math.floor(blendComponent(
+        backgroundComponents.green,
+        foregroundComponents.green,
+        opacity,
+    ));
+    const blue = Math.floor(blendComponent(
+        backgroundComponents.blue,
+        foregroundComponents.blue,
+        opacity,
+    ));
+    const alpha = blendComponent(
+        backgroundComponents.alpha,
+        foregroundComponents.alpha,
+        opacity,
+    );
+
+    return `rgba(${red},${green},${blue},${alpha})`;
+}
