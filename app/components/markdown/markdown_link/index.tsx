@@ -132,7 +132,8 @@ const ConnectedMarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
     );
 };
 
-const MarkdownLink = withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
+const MarkdownLink: React.FC<MarkdownLinkInputProps> = withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
     config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
 }))(ConnectedMarkdownLink));
+
 export default memo(MarkdownLink);

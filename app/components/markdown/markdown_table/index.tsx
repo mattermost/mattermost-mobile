@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode} from 'react';
+import React, {FC, PureComponent, ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {Dimensions, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -25,14 +25,17 @@ type MarkdownTableState = {
     maxPreviewColumns: number;
 }
 
-type MarkdownTableProps = {
+type MarkdownTableInputProps = {
     children: ReactNode;
-    intl: IntlShape;
     numColumns: number;
+}
+
+type MarkdownTableProps = MarkdownTableInputProps & {
+    intl: IntlShape;
     theme: Theme;
 }
 
-class MarkdownTable extends React.PureComponent<MarkdownTableProps, MarkdownTableState> {
+class MarkdownTableHOC extends PureComponent<MarkdownTableProps, MarkdownTableState> {
     private rowsSliced: boolean | undefined;
     private colsSliced: boolean | undefined;
 
@@ -357,4 +360,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(withTheme(MarkdownTable));
+const MarkdownTable: FC<MarkdownTableInputProps> = injectIntl(withTheme(MarkdownTableHOC));
+
+export default MarkdownTable;
