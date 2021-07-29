@@ -4,6 +4,8 @@
 import {General, Preferences} from '@constants';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
+import type UserModel from '@typings/database/models/servers/user';
+
 export function displayUsername(user?: UserProfile, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
     let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
 
@@ -71,3 +73,13 @@ export function isGuest(roles: string): boolean {
 export function isSystemAdmin(roles: string): boolean {
     return isRoleInRoles(roles, General.SYSTEM_ADMIN_ROLE);
 }
+
+export const getUsersByUsername = (users: UserModel[]) => {
+    const usersByUsername: Dictionary<UserModel> = {};
+
+    for (const user of users) {
+        usersByUsername[user.username] = user;
+    }
+
+    return usersByUsername;
+};
