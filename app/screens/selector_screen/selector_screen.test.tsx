@@ -157,7 +157,7 @@ describe('SelectorScreen', () => {
 
         let customList = wrapper.find('CustomList');
         expect(customList.props().data).toEqual([
-            {text: 'Without Query Text', value: 'without_query'},
+            {id: 'without_query', text: 'Without Query Text', value: 'without_query'},
         ]);
 
         // Search for value
@@ -176,7 +176,7 @@ describe('SelectorScreen', () => {
 
         customList = wrapper.find('CustomList');
         expect(customList.props().data).toEqual([
-            {text: 'With Query Text', value: 'with_query'},
+            {id: 'with_query', text: 'With Query Text', value: 'with_query'},
         ]);
     });
 });

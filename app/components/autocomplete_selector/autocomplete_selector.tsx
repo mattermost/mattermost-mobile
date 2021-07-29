@@ -194,6 +194,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
         const {actions, dataSource, options, placeholder, getDynamicOptions, theme} = this.props;
         const screen = 'SelectorScreen';
         const title = placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
+        const buttonName = formatMessage({id: 'mobile.forms.select.done', defaultMessage: 'Done'});
 
         actions.setAutocompleteSelector(dataSource, this.handleSelect, options, getDynamicOptions);
         let screenOptions = {};
@@ -207,7 +208,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
                     rightButtons: [{
                         id: 'submit-form',
                         showAsAction: 'always',
-                        text: 'Select',
+                        text: buttonName,
                     }],
                     rightButtonColor: theme.sidebarHeaderTextColor,
                 },

@@ -269,6 +269,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
     data={
       Array [
         Object {
+          "id": "value",
           "text": "text",
           "value": "value",
         },
