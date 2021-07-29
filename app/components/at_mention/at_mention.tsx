@@ -1,25 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withTheme} from '@context/theme';
 import {ManagedConfig} from '@mattermost/react-native-emm';
 import {withManagedConfig} from '@mattermost/react-native-emm/src/context';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
 import React from 'react';
-import {GestureResponderEvent, StyleSheet, Text, TextStyle} from 'react-native';
 import {IntlShape, injectIntl} from 'react-intl';
+import {GestureResponderEvent, StyleSheet, Text, TextStyle} from 'react-native';
 
+import UserModel from '@database/models/server/user';
+import {withTheme} from '@context/theme';
 import {MM_TABLES} from '@constants/database';
 import {showModal} from '@screens/navigation';
 import CompassIcon from '@components/compass_icon';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
-import mattermostManaged from 'app/mattermost_managed';
-
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type UserModel from '@typings/database/models/servers/user';
+import type UserModelType from '@typings/database/models/servers/user';
+import type Database from '@nozbe/watermelondb/Database';
 
 type AtMentionInputProps = {
     groupsByName: object;
@@ -35,32 +35,34 @@ type AtMentionInputProps = {
 type AtMentionProps = AtMentionInputProps & {
     intl: IntlShape;
     theme: Theme;
-    users: UserModel[];
+    users: UserModelType[];
     managedConfig: ManagedConfig;
+    database: Database;
 }
 
 type AtMentionState = {
-    user: object;
+    user: UserModelType;
 }
+
+const {SERVER: {USER}} = MM_TABLES;
 
 class ConnectedAtMention extends React.PureComponent<AtMentionProps, AtMentionState> {
     constructor(props: AtMentionProps) {
         super(props);
-        const user = this.getUserDetailsFromMentionName();
+        const user: UserModelType = this.getUserDetailsFromMentionName();
         this.state = {
             user,
         };
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.mentionName !== prevProps.mentionName || this.props.usersByUsername !== prevProps.usersByUsername) {
+    componentDidUpdate(prevProps: AtMentionProps) {
+        if (this.props.mentionName !== prevProps.mentionName) {
             this.updateUsername();
         }
     }
 
     goToUserProfile = async () => {
-        const {intl} = this.context;
-        const {theme} = this.props;
+        const {theme, intl} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
@@ -85,7 +87,7 @@ class ConnectedAtMention extends React.PureComponent<AtMentionProps, AtMentionSt
     };
 
     getUserDetailsFromMentionName() {
-        const {mentionName, users} = this.props;
+        const {mentionName, users, database} = this.props;
         const usersByUsername = getUsersByUsername(users);
         let mn = mentionName.toLowerCase();
 
@@ -103,9 +105,8 @@ class ConnectedAtMention extends React.PureComponent<AtMentionProps, AtMentionSt
             }
         }
 
-        return {
-            username: '',
-        };
+        // @ts-expect-error: The model constructor is hidden within WDB type definition
+        return new UserModel(database.get(USER), {username: ''});
     }
 
     getGroupFromMentionName() {
@@ -115,7 +116,8 @@ class ConnectedAtMention extends React.PureComponent<AtMentionProps, AtMentionSt
     }
 
     handleLongPress = async () => {
-        const config = mattermostManaged.getCachedConfig();
+        const {managedConfig} = this.props;
+        const config = managedConfig.getCachedConfig();
 
         if (config?.copyAndPasteProtection !== 'true') {
             //todo: Replace BottomSheet with Slide Up Pannel
@@ -241,7 +243,7 @@ const AtMentionHOC = injectIntl(withTheme(withManagedConfig(ConnectedAtMention))
 const AtMention = withDatabase(withObservables(['mentionName'], ({database}: WithDatabaseArgs & { mentionName: string}) => ({
 
     //fixme: is it safe to query all the users ?
-    users: database.get(MM_TABLES.SERVER.USER).query().observeWithColumns(['username']),
+    users: database.get(USER).query().observeWithColumns(['username']),
 }))(AtMentionHOC));
 
 export default AtMention;
