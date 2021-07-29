@@ -188,7 +188,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         return <Text style={this.computeTextStyle([baseTextStyle, code], context)}>{literal}</Text>;
     };
 
-    renderImage = ({linkDestination, reactChildren, context, src}: any) => {
+    renderImage = ({context, src}: {context: string[]; src: string}) => {
         if (!this.props.imagesMetadata) {
             return null;
         }
@@ -201,28 +201,15 @@ class Markdown extends PureComponent<MarkdownProps, null> {
                     imagesMetadata={this.props.imagesMetadata}
                     postId={this.props.postId}
                     source={src}
-                >
-                    {reactChildren}
-                </MarkdownTableImage>
+                />
             );
         }
 
-        return (
-            <MarkdownImage
-                disable={this.props.disableGallery}
-                errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
-                linkDestination={linkDestination}
-                imagesMetadata={this.props.imagesMetadata}
-                isReplyPost={this.props.isReplyPost}
-                postId={this.props.postId}
-                source={src}
-            >
-                {reactChildren}
-            </MarkdownImage>
-        );
+        //todo: render MarkdownImage just like on master branch
+        return null;
     };
 
-    renderAtMention = ({context, mentionName}: any) => {
+    renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
         if (this.props.disableAtMentions) {
             return this.renderText({context, literal: `@${mentionName}`});
         }
@@ -241,7 +228,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderChannelLink = ({context, channelName}: any) => {
+    renderChannelLink = ({context, channelName}: {context: string[]; channelName: string}) => {
         if (this.props.disableChannelLink) {
             return this.renderText({context, literal: `~${channelName}`});
         }
@@ -261,7 +248,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         //todo: render Emoji just like on master branch
     };
 
-    renderHashtag = ({context, hashtag}: any) => {
+    renderHashtag = ({context, hashtag}: {context: string[]; hashtag: string}) => {
         if (this.props.disableHashtags) {
             return this.renderText({context, literal: `#${hashtag}`});
         }
@@ -419,7 +406,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         );
     };
 
-    renderEditedIndicator = ({context}: {context: any}) => {
+    renderEditedIndicator = ({context}: {context: string[]}) => {
         let spacer = '';
         if (context[0] === 'paragraph') {
             spacer = ' ';
@@ -453,6 +440,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         ast = highlightMentions(ast, this.props.mentionKeys);
 
         if (this.props.isEdited) {
+            //@ts-expect-error: edited_indicator is not in the declaration file
             const editIndicatorNode = new Node('edited_indicator');
             if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
                 ast.lastChild.appendChild(editIndicatorNode);
