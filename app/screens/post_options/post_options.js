@@ -120,10 +120,18 @@ export default class PostOptions extends PureComponent {
         let message;
         if (thread?.is_following) {
             icon = 'message-minus-outline';
-            message = {id: t('threads.unfollowThread'), defaultMessage: 'Unfollow Thread'};
+            if (thread?.participants?.length) {
+                message = {id: t('threads.unfollowThread'), defaultMessage: 'Unfollow Thread'};
+            } else {
+                message = {id: t('threads.unfollowMessage'), defaultMessage: 'Unfollow Message'};
+            }
         } else {
             icon = 'message-plus-outline';
-            message = {id: t('threads.followThread'), defaultMessage: 'Follow Thread'};
+            if (thread?.participants?.length) {
+                message = {id: t('threads.followThread'), defaultMessage: 'Follow Thread'};
+            } else {
+                message = {id: t('threads.followMessage'), defaultMessage: 'Follow Message'};
+            }
         }
         const onPress = this.handleToggleFollow;
         return this.getOption(key, icon, message, onPress);
