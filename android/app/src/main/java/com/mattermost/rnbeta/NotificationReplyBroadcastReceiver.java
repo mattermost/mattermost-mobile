@@ -3,6 +3,7 @@ package com.mattermost.rnbeta;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.RemoteInput;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +11,9 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.Person;
+
 import android.util.Log;
 import java.io.IOException;
 
@@ -28,6 +32,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
+import com.wix.reactnativenotifications.core.ProxyService;
+import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
 public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     private Context mContext;
@@ -47,27 +53,14 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
-            final int notificationId = intent.getIntExtra(CustomPushNotification.NOTIFICATION_ID, -1);
-            final Bundle notification = intent.getBundleExtra(CustomPushNotification.NOTIFICATION);
+            final int notificationId = intent.getIntExtra(CustomPushNotificationHelper.NOTIFICATION_ID, -1);
+            final Bundle notification = intent.getBundleExtra(CustomPushNotificationHelper.NOTIFICATION);
             final String serverUrl = notification.getString("serverUrl");
+            final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
 
-
-            Credentials.getCredentialsForServer(reactApplicationContext, serverUrl, new ResolvePromise() {
-                @Override
-                public void resolve(@Nullable Object value) {
-                    if (value instanceof Boolean && !(Boolean)value) {
-                        return;
-                    }
-
-                    WritableMap map = (WritableMap) value;
-                    if (map != null) {
-                        String token = map.getString("password");
-                        String serverUrl = map.getString("service");
-
-                        replyToMessage(serverUrl, token, notificationId, message);
-                    }
-                }
-            });
+            if (token != null) {
+                replyToMessage(serverUrl, token, notificationId, message);
+            }
         }
     }
 
@@ -80,7 +73,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         }
 
         if (token == null || serverUrl == null) {
-            onReplyFailed(notificationManager, notificationId, channelId);
+            onReplyFailed(notificationId);
             return;
         }
 
@@ -103,17 +96,17 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.i("ReactNative", String.format("Reply FAILED exception %s", e.getMessage()));
-                onReplyFailed(notificationManager, notificationId, channelId);
+                onReplyFailed(notificationId);
             }
 
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    onReplySuccess(notificationManager, notificationId, channelId);
+                    onReplySuccess(notificationId, message);
                     Log.i("ReactNative", "Reply SUCCESS");
                 } else {
                     Log.i("ReactNative", String.format("Reply FAILED status %s BODY %s", response.code(), response.body().string()));
-                    onReplyFailed(notificationManager, notificationId, channelId);
+                    onReplyFailed(notificationId);
                 }
             }
         });
@@ -131,37 +124,31 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    protected void onReplyFailed(NotificationManager notificationManager, int notificationId, String channelId) {
-        String CHANNEL_ID = "Reply job";
-        Resources res = mContext.getResources();
-        String packageName = mContext.getPackageName();
-        int smallIconResId = res.getIdentifier("ic_notification", "mipmap", packageName);
-
-        Bundle userInfoBundle = new Bundle();
-        userInfoBundle.putString("channel_id", channelId);
-
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_LOW);
-        notificationManager.createNotificationChannel(channel);
-        Notification notification =
-                new Notification.Builder(mContext, CHANNEL_ID)
-                        .setContentTitle("Message failed to send.")
-                        .setSmallIcon(smallIconResId)
-                        .addExtras(userInfoBundle)
-                        .build();
-
-        CustomPushNotification.clearNotification(mContext, notificationId, channelId);
-        notificationManager.notify(notificationId, notification);
+    protected void onReplyFailed(int notificationId) {
+        recreateNotification(notificationId, "Message failed to send.");
     }
 
-    protected void onReplySuccess(NotificationManager notificationManager, int notificationId, String channelId) {
-        notificationManager.cancel(notificationId);
-        CustomPushNotification.clearNotification(mContext, notificationId, channelId);
+    protected void onReplySuccess(int notificationId, final CharSequence message) {
+        recreateNotification(notificationId, message);
+    }
+
+    private void recreateNotification(int notificationId, final CharSequence message) {
+        final Intent cta = new Intent(mContext, ProxyService.class);
+        final PushNotificationProps notificationProps = new PushNotificationProps(bundle);
+        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, cta, notificationProps);
+        NotificationCompat.Builder builder = CustomPushNotificationHelper.createNotificationBuilder(mContext, pendingIntent, bundle, false);
+        Notification notification =  builder.build();
+        NotificationCompat.MessagingStyle messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification);
+        assert messagingStyle != null;
+        messagingStyle.addMessage(message, System.currentTimeMillis(), (Person)null);
+        notification = builder.setStyle(messagingStyle).build();
+        notificationManager.notify(notificationId, notification);
     }
 
     private CharSequence getReplyMessage(Intent intent) {
         Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
         if (remoteInput != null) {
-            return remoteInput.getCharSequence(CustomPushNotification.KEY_TEXT_REPLY);
+            return remoteInput.getCharSequence(CustomPushNotificationHelper.KEY_TEXT_REPLY);
         }
         return null;
     }

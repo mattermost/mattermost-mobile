@@ -50,9 +50,14 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             serverUrl = extra.payload?.server_url;
             break;
         }
+        default:
+            serverUrl = await getActiveServerUrl();
+            break;
     }
 
-    serverUrl = await getActiveServerUrl();
+    if (props.launchError && !serverUrl) {
+        serverUrl = await getActiveServerUrl();
+    }
 
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
@@ -135,6 +140,7 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => 
 
 export const getLaunchPropsFromNotification = (notification: NotificationWithData): LaunchProps => {
     const {payload} = notification;
+
     const launchProps: LaunchProps = {
         launchType: LaunchType.Notification,
     };
