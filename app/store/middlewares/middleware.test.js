@@ -265,6 +265,9 @@ describe('cleanUpState', () => {
                 general: {
                     dataRetentionPolicy,
                 },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -340,6 +343,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
                 search: {
                     results: [],
@@ -723,7 +729,7 @@ describe('cleanUpPostsInChannel', () => {
     });
 });
 
-describe.only('cleanUpThreadsInTeam', () => {
+describe('cleanUpThreadsInTeam', () => {
     const threadsInTeam = {
         team1: ['thread1', 'thread2', 'thread3'],
         team2: ['thread3', 'thread4', 'thread5'],
