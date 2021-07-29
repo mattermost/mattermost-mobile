@@ -10,6 +10,7 @@ import {
     retrieveRecords,
 } from '@database/operator/utils/general';
 
+import type {WriterInterface} from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
 
 import type {
@@ -182,8 +183,8 @@ export default class BaseDataOperator {
     batchRecords = async (models: Model[]): Promise<void> => {
         try {
             if (models.length > 0) {
-                await this.database.action(async () => {
-                    await this.database.batch(...models);
+                await this.database.write(async (writer: WriterInterface) => {
+                    await writer.batch(...models);
                 });
             }
         } catch (e) {

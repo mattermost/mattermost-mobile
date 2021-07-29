@@ -5,12 +5,12 @@ import {Q} from '@nozbe/watermelondb';
 import {Platform} from 'react-native';
 
 import {MM_TABLES} from '@constants/database';
-import {DatabaseType} from '@typings/database/enums';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import DatabaseManager from './index';
 
-import type IServers from '@typings/database/models/app/servers';
+import {DatabaseType} from '@typings/database/enums';
+import type ServersModel from '@typings/database/models/app/servers';
 
 export default async () => {
     await DatabaseManager.init([]);
@@ -59,7 +59,7 @@ export default async () => {
                     'https://comm5.mattermost.com',
                     'https://comm4.mattermost.com',
                 ]),
-            )).fetch()) as IServers[];
+            )).fetch()) as ServersModel[];
         return servers;
     };
 

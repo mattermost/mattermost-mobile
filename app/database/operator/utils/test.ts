@@ -5,6 +5,8 @@ import DatabaseManager from '@database/manager';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 
+import type {WriterInterface} from '@nozbe/watermelondb/Database';
+
 import type ReactionModel from '@typings/database/models/servers/reaction';
 
 import {mockedPosts, mockedReactions} from './mock';
@@ -92,8 +94,8 @@ describe('DataOperator: Utils tests', () => {
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here
         // eslint-disable-next-line max-nested-callbacks
-        await server?.database!.action(async () => {
-            await server.database!.batch(...prepareRecords);
+        await server?.database!.write(async (writer: WriterInterface) => {
+            await writer.batch(...prepareRecords);
         });
 
         const {

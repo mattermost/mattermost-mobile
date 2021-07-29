@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import SQLiteAdapter, {MigrationEvents} from '@nozbe/watermelondb/adapters/sqlite';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -28,7 +28,6 @@ import {hashCode} from '@utils/security';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
 import {DatabaseType} from '@typings/database/enums';
-import type IServers from '@typings/database/models/app/servers';
 
 import ServerDataOperator from '../operator/server_data_operator';
 
@@ -95,7 +94,7 @@ class DatabaseManager {
               schema,
           });
 
-          const database = new Database({adapter, actionsEnabled: true, modelClasses});
+          const database = new Database({adapter, modelClasses});
           const operator = new AppDataOperator(database);
 
           this.appDatabase = {
@@ -143,7 +142,7 @@ class DatabaseManager {
                    serverUrl,
                });
 
-               const database = new Database({adapter, actionsEnabled: true, modelClasses});
+               const database = new Database({adapter, modelClasses});
                const operator = new ServerDataOperator(database);
                const serverDatabase = {database, operator};
 
@@ -186,9 +185,9 @@ class DatabaseManager {
 
           if (this.appDatabase?.database && !isServerPresent) {
               const appDatabase = this.appDatabase.database;
-              await appDatabase.action(async () => {
+              await appDatabase.write(async () => {
                   const serversCollection = appDatabase.collections.get(SERVERS);
-                  await serversCollection.create((server: IServers) => {
+                  await serversCollection.create((server: ServersModel) => {
                       server.dbPath = databaseFilePath;
                       server.displayName = displayName;
                       server.mentionCount = 0;
@@ -257,7 +256,7 @@ class DatabaseManager {
   public setActiveServerDatabase = async (serverUrl: string): Promise<void> => {
       if (this.appDatabase?.database) {
           const database = this.appDatabase?.database;
-          await database.action(async () => {
+          await database.write(async () => {
               const servers = await database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch();
               if (servers.length) {
                   servers[0].update((server: ServersModel) => {
@@ -279,7 +278,7 @@ class DatabaseManager {
           const database = this.appDatabase?.database;
           const server = await queryServer(database, serverUrl);
           if (server) {
-              database.action(async () => {
+              database.write(async () => {
                   await server.update((record) => {
                       record.lastActiveAt = 0;
                   });
@@ -302,7 +301,7 @@ class DatabaseManager {
           const database = this.appDatabase?.database;
           const server = await queryServer(database, serverUrl);
           if (server) {
-              database.action(async () => {
+              database.write(async () => {
                   await server.destroyPermanently();
               });
 
@@ -365,7 +364,7 @@ class DatabaseManager {
    * @returns {MigrationEvents}
    */
   private buildMigrationCallbacks = (dbName: string) => {
-      const migrationEvents: MigrationEvents = {
+      const migrationEvents = {
           onSuccess: () => {
               return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {
                   dbName,

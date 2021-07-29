@@ -106,7 +106,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
                 return [targetChunk];
             }
 
-            targetChunk = await this.database.action(async () => {
+            targetChunk = await this.database.write(async () => {
                 return targetChunk!.update((record) => {
                     record.earliest = Math.min(record.earliest, earliest);
                     record.latest = Math.max(record.latest, latest);
@@ -158,7 +158,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
                 return [recentChunk];
             }
 
-            recentChunk = await this.database.action(async () => {
+            recentChunk = await this.database.write(async () => {
                 return recentChunk!.update((record) => {
                     record.latest = Math.max(record.latest, latest);
                 });
