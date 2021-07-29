@@ -4,6 +4,7 @@ exports[`ChannelsList List should match snapshot 1`] = `
 <View
   onLayout={[Function]}
 >
+  <Connect(ThreadsEntry) />
   <SectionList
     contentContainerStyle={
       Object {
@@ -44,6 +45,7 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
 <View
   onLayout={[Function]}
 >
+  <Connect(ThreadsEntry) />
   <SectionList
     contentContainerStyle={
       Object {
@@ -79,6 +81,14 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
   />
   <UnreadIndicatorIOS
     onPress={[Function]}
+    style={
+      Array [
+        undefined,
+        Object {
+          "marginTop": 70,
+        },
+      ]
+    }
     theme={
       Object {
         "awayIndicator": "#ffbc42",
