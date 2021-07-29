@@ -400,8 +400,7 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const collapsedThreadsEnabled = true;
-        const {testID, styles, theme} = this.props;
+        const {collapsedThreadsEnabled, styles, testID, theme} = this.props;
         const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
