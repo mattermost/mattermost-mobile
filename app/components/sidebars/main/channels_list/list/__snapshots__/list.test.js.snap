@@ -4,7 +4,6 @@ exports[`ChannelsList List should match snapshot 1`] = `
 <View
   onLayout={[Function]}
 >
-  <Connect(ThreadsEntry) />
   <SectionList
     contentContainerStyle={
       Object {
