@@ -62,13 +62,13 @@ function ThreadListHeader({haveUnreads, intl, markAllAsRead, style, testID, view
             </View>
             <View style={style.markAllReadIconContainer}>
                 <TouchableOpacity
-                    disabled={!haveUnreads}
+                    disabled={false/*!haveUnreads*/}
                     onPress={markAllAsRead}
                     testID={`${testID}.mark_all_read`}
                 >
                     <CompassIcon
                         name='playlist-check'
-                        style={[style.markAllReadIcon, haveUnreads ? undefined : style.markAllReadIconDisabled]}
+                        style={[style.markAllReadIcon/*, haveUnreads ? undefined : style.markAllReadIconDisabled*/]}
                     />
                 </TouchableOpacity>
             </View>

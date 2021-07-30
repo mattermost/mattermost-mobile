@@ -29,7 +29,7 @@ function makeMapStateToProps() {
             myMember: getMyCurrentChannelMembership(state),
             postIds: getPostIdsForThread(state, ownProps.rootId),
             theme: getTheme(state),
-            thread: getThread(state, ownProps.rootId, true),
+            thread: collapsedThreadsEnabled ? getThread(state, ownProps.rootId, true) : null,
             threadLoadingStatus: state.requests.posts.getPostThread,
         };
     };

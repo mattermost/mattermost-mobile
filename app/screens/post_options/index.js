@@ -146,7 +146,7 @@ export function makeMapStateToProps() {
             currentUserId,
             isFlagged: isPostFlagged(post.id, myPreferences),
             theme: getTheme(state),
-            thread: isCollapsedThreadsEnabled(state) && getThread(state, post.id, true),
+            thread: isCollapsedThreadsEnabled(state) ? getThread(state, post.id, true) : null,
         };
     };
 }
