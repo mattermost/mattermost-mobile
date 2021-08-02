@@ -8,6 +8,7 @@ import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {setNavigationStackStyles} from '@utils/theme';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type {PreferenceModel, SystemModel} from '@database/models/server';
@@ -42,6 +43,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             if (teamTheme?.value) {
                 try {
                     const theme = JSON.parse(teamTheme.value) as Theme;
+                    setNavigationStackStyles(theme);
                     return theme;
                 } catch {
                     // no theme change

@@ -5,6 +5,7 @@ import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {mergeNavigationOptions} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import type {Options} from 'react-native-navigation';
 
@@ -114,6 +115,12 @@ export function setNavigatorStyles(componentId: string, theme: Theme) {
     }
 
     mergeNavigationOptions(componentId, options);
+}
+
+export function setNavigationStackStyles(theme: Theme) {
+    EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+        setNavigatorStyles(componentId, theme);
+    });
 }
 
 export function getKeyboardAppearanceFromTheme(theme: Theme) {
