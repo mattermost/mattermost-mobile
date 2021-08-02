@@ -22,11 +22,11 @@ export default class GroupModel extends Model {
     name: string;
 
     /** groupsInChannel : All the related children records from GroupsInChannel */
-    groupsInChannel: GroupsInChannelModel[];
+    groupsInChannel: Query<GroupsInChannelModel>;
 
     /** groupsInTeam : All the related children records from GroupsInTeam */
-    groupsInTeam: GroupsInTeamModel[];
+    groupsInTeam: Query<GroupsInTeamModel>;
 
     /** groupMemberships : All the related children records from GroupMembership */
-    groupMemberships: GroupMembershipModel[];
+    groupMemberships: Query<GroupMembershipModel>;
 }

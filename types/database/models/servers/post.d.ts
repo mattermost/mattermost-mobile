@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
+import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -57,19 +57,19 @@ export default class PostModel extends Model {
     props: object;
 
     /** drafts  : Every drafts associated with this Post */
-    drafts: DraftModel;
+    drafts: Query<DraftModel>;
 
     /** files: All the files associated with this Post */
-    files: FileModel[];
+    files: Query<FileModel>;
 
     /** postsInThread: Every posts associated to a thread */
-    postsInThread: PostInThreadModel[];
+    postsInThread: Query<PostInThreadModel>;
 
     /** metadata: All the extra data associated with this Post */
     metadata: Relation<PostMetadataModel>;
 
     /** reactions: All the reactions associated with this Post */
-    reactions: ReactionModel[];
+    reactions: Query<ReactionModel>;
 
     /** author: The author of this Post */
     author: Relation<UserModel>;
