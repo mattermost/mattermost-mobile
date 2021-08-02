@@ -1002,7 +1002,7 @@ export class AppCommandParser {
         return {form: callResponse.form};
     }
 
-    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
+    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         const rootID = this.rootPostID || '';
         const key = `${this.channelID}-${rootID}-${location}`;
         const form = this.forms[key];
