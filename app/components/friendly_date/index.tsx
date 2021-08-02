@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, Text, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {StyleProp, Text, ViewStyle} from 'react-native';
 
 import {DateTypes} from '@constants';
 import {isYesterday} from '@utils/datetime';

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {renderWithIntl} from 'test/testing_library';
+
+import {renderWithIntl} from '@test/testing_library';
 
 import FriendlyDate from './index';
 
@@ -44,8 +45,8 @@ describe('Friendly Date', () => {
         expect(daysAgoText.getByText('10 days ago')).toBeTruthy();
 
         // Difference is less than 30 days
-        const daysEdgeCase = new Date('2020/02/28');
-        const daysEdgeCaseTodayDate = new Date('2020/03/28');
+        const daysEdgeCase = new Date(2020, 3, 28);
+        const daysEdgeCaseTodayDate = new Date(2020, 4, 28);
         const daysEdgeCaseText = renderWithIntl(
             <FriendlyDate
                 sourceDate={daysEdgeCaseTodayDate}
@@ -54,8 +55,8 @@ describe('Friendly Date', () => {
         );
         expect(daysEdgeCaseText.getByText('1 month ago')).toBeTruthy();
 
-        const daysAgoMax = new Date('2020/03/06');
-        const daysAgoMaxTodayDate = new Date('2020/04/05');
+        const daysAgoMax = new Date(2020, 4, 6);
+        const daysAgoMaxTodayDate = new Date(2020, 5, 5);
         const daysAgoMaxText = renderWithIntl(
             <FriendlyDate
                 sourceDate={daysAgoMaxTodayDate}

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {createSelector} from 'reselect';
+
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -51,7 +52,7 @@ export function getThread(state: GlobalState, threadId: $ID<UserThread>, fallbac
     if (!thread || !thread?.id) {
         if (fallbackFromPosts) {
             const post = getPost(state, threadId);
-            if (post?.participants?.length) {
+            if (post && !post.root_id) {
                 const {id, is_following, reply_count, last_reply_at, participants} = post;
                 return {
                     id,

@@ -8,16 +8,16 @@
 // *******************************************************************
 
 import {
-    ChannelScreen,
-    PermalinkScreen,
-    SearchScreen,
-    ThreadScreen,
-} from '@support/ui/screen';
-import {
     Channel,
     Post,
     Setup,
 } from '@support/server_api';
+import {
+    ChannelScreen,
+    SearchScreen,
+    PermalinkScreen,
+    ThreadScreen,
+} from '@support/ui/screen';
 import {isIos} from '@support/utils';
 
 describe('Hashtags', () => {

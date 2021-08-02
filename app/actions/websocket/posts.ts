@@ -23,10 +23,10 @@ import {
 import {getPost as selectPost} from '@mm-redux/selectors/entities/posts';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {getViewingGlobalThreads} from '@selectors/threads';
 

@@ -7,13 +7,13 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Autocomplete} from '@support/ui/component';
-import {ChannelScreen} from '@support/ui/screen';
 import {
     Setup,
     Team,
     User,
 } from '@support/server_api';
+import {Autocomplete} from '@support/ui/component';
+import {ChannelScreen} from '@support/ui/screen';
 
 describe('Autocomplete', () => {
     const {postInput} = ChannelScreen;

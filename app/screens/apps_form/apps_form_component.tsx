@@ -1,27 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {ScrollView, Text, View} from 'react-native';
+import Button from 'react-native-button';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Button from 'react-native-button';
+import {DoAppCallResult} from 'types/actions/apps';
 
-import {AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {dismissModal} from '@actions/navigation';
+import Markdown from '@components/markdown';
+import StatusBar from '@components/status_bar';
+import {AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-
-import StatusBar from '@components/status_bar';
-import Markdown from '@components/markdown';
-
-import {dismissModal} from '@actions/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {DoAppCallResult} from 'types/actions/apps';
+
 import {GlobalStyles} from 'app/styles';
 
 import AppsFormField from './apps_form_field';
@@ -32,9 +31,7 @@ export type Props = {
     form: AppForm;
     actions: {
         submit: (submission: {
-            values: {
-                [name: string]: string;
-            };
+            values: AppFormValues;
         }) => Promise<DoAppCallResult<FormResponseData>>;
         performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<DoAppCallResult<AppLookupResponse>>;
         refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
@@ -43,18 +40,23 @@ export type Props = {
     componentId: string;
 }
 
-type State = {
-    values: {[name: string]: string};
+export type State = {
+    values: AppFormValues;
     formError: string | null;
     fieldErrors: {[name: string]: string};
     form: AppForm;
 }
 
-const initFormValues = (form: AppForm): {[name: string]: string} => {
-    const values: {[name: string]: any} = {};
+const initFormValues = (form: AppForm): AppFormValues => {
+    const values: AppFormValues = {};
     if (form && form.fields) {
         form.fields.forEach((f) => {
-            values[f.name] = f.value || null;
+            let defaultValue: AppFormValue = null;
+            if (f.type === AppFieldTypes.BOOL) {
+                defaultValue = false;
+            }
+
+            values[f.name] = f.value || defaultValue;
         });
     }
 

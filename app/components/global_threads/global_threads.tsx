@@ -5,14 +5,14 @@ import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {Alert, FlatList} from 'react-native';
 
+import ThreadList from './thread_list';
+
 import type {ActionResult} from '@mm-redux/types/actions';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {Team} from '@mm-redux/types/teams';
+import type {ThreadsState, UserThread} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';
-import type {ThreadsState, UserThread} from '@mm-redux/types/threads';
-
-import ThreadList from './thread_list';
 
 type Props = {
     actions: {
@@ -20,7 +20,7 @@ type Props = {
         handleViewingGlobalThreadsAll: () => void;
         handleViewingGlobalThreadsUnreads: () => void;
         markAllThreadsInTeamRead: (userId: $ID<UserProfile>, teamId: $ID<Team>) => void;
-    },
+    };
     allThreadIds: $ID<UserThread>[];
     intl: typeof intlShape;
     teamId: $ID<Team>;

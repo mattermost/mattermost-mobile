@@ -3,14 +3,15 @@
 
 /* eslint-disable max-nested-callbacks */
 
-import DeviceInfo from 'react-native-device-info';
-
 import assert from 'assert';
-import {REHYDRATE} from 'redux-persist';
+
 import merge from 'deepmerge';
+import DeviceInfo from 'react-native-device-info';
+import {REHYDRATE} from 'redux-persist';
 
 import {ViewTypes} from '@constants';
 import initialState from '@store/initial_state';
+
 import {
     cleanUpPostsInChannel,
     cleanUpState,
@@ -264,6 +265,9 @@ describe('cleanUpState', () => {
                 general: {
                     dataRetentionPolicy,
                 },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -339,6 +343,9 @@ describe('cleanUpState', () => {
                     },
                     postsInThread: {},
                     reactions: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
                 search: {
                     results: [],
@@ -722,7 +729,7 @@ describe('cleanUpPostsInChannel', () => {
     });
 });
 
-describe.only('cleanUpThreadsInTeam', () => {
+describe('cleanUpThreadsInTeam', () => {
     const threadsInTeam = {
         team1: ['thread1', 'thread2', 'thread3'],
         team2: ['thread3', 'thread4', 'thread5'],

@@ -2,20 +2,22 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
-import fs from 'fs';
 import assert from 'assert';
+import fs from 'fs';
+
 import nock from 'nock';
 
-import * as Actions from '@mm-redux/actions/posts';
-import {getChannelStats} from '@mm-redux/actions/channels';
-import {login} from '@mm-redux/actions/users';
-import {createCustomEmoji} from '@mm-redux/actions/emojis';
 import {Client4} from '@client/rest';
-import {Preferences, Posts, RequestStatus} from '../constants';
 import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
+import {getChannelStats} from '@mm-redux/actions/channels';
+import {createCustomEmoji} from '@mm-redux/actions/emojis';
+import * as Actions from '@mm-redux/actions/posts';
+import {login} from '@mm-redux/actions/users';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
+
+import {Preferences, Posts, RequestStatus} from '../constants';
 
 const OK_RESPONSE = {status: 'OK'};
 

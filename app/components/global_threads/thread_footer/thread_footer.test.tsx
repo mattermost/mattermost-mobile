@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import {Preferences} from '@mm-redux/constants';
-import {UserProfile} from '@mm-redux/types/users';
 import {UserThread} from '@mm-redux/types/threads';
-import {intl} from 'test/intl-test-helper';
+import {UserProfile} from '@mm-redux/types/users';
+import {intl} from '@test/intl-test-helper';
 
 import {ThreadFooter} from './thread_footer';
 

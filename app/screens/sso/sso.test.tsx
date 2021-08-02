@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import merge from 'deepmerge';
 import React from 'react';
 import {Linking} from 'react-native';
 import configureMockStore from 'redux-mock-store';
-import merge from 'deepmerge';
 
 import initialState from '@store/initial_state';
-import {renderWithReduxIntl} from 'test/testing_library';
+import {renderWithReduxIntl} from '@test/testing_library';
 
 import SSOComponent from './index';
 

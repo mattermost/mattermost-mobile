@@ -1,20 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ViewTypes} from '@constants';
-
 import {Client4} from '@client/rest';
+import {ViewTypes} from '@constants';
 import {ThreadTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getThread as getThreadSelector, getThreadTeamId} from '@mm-redux/selectors/entities/threads';
 import {ActionResult, batchActions, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
-import type {Post} from '@mm-redux/types/posts';
-import type {UserThread, UserThreadList} from '@mm-redux/types/threads';
 
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
 import {getMissingProfilesByIds} from './users';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {UserThread, UserThreadList} from '@mm-redux/types/threads';
 
 export function getThreads(userId: string, teamId: string, before = '', after = '', perPage = ViewTypes.CRT_CHUNK_SIZE, deleted = false, unread = true, since = 0) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

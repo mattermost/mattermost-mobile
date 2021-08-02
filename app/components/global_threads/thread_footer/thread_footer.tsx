@@ -2,18 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
 import {GLOBAL_THREADS, CHANNEL} from '@constants/screen';
-import type {Theme} from '@mm-redux/types/preferences';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import {$ID} from '@mm-redux/types/utilities';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 export type DispatchProps = {
     actions: {
@@ -131,18 +132,21 @@ function ThreadFooter({actions, currentUserId, intl, location, testID, theme, th
 
     // threadstarter should be the first one in the avatars list
     const participants = React.useMemo(() => {
-        let isThreadStarterFound = false;
-        const participantIds = thread.participants.flatMap((participant) => {
-            if (participant.id === threadStarter?.id) {
-                isThreadStarterFound = true;
-                return [];
+        if (thread.participants?.length) {
+            let isThreadStarterFound = false;
+            const participantIds = thread.participants.flatMap((participant) => {
+                if (participant.id === threadStarter?.id) {
+                    isThreadStarterFound = true;
+                    return [];
+                }
+                return participant.id;
+            });
+            if (isThreadStarterFound) {
+                participantIds.unshift(threadStarter?.id);
             }
-            return participant.id;
-        });
-        if (isThreadStarterFound) {
-            participantIds.unshift(threadStarter?.id);
+            return participantIds;
         }
-        return participantIds;
+        return [];
     }, [thread.participants, threadStarter]);
 
     let avatars;
