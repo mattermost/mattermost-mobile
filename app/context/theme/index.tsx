@@ -8,6 +8,7 @@ import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import EphemeralStore from '@store/ephemeral_store';
 import {setNavigationStackStyles} from '@utils/theme';
 
 import type Database from '@nozbe/watermelondb/Database';
@@ -43,6 +44,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             if (teamTheme?.value) {
                 try {
                     const theme = JSON.parse(teamTheme.value) as Theme;
+                    EphemeralStore.theme = theme;
                     requestAnimationFrame(() => {
                         setNavigationStackStyles(theme);
                     });

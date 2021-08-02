@@ -5,6 +5,7 @@ class EphemeralStore {
     allNavigationComponentIds: string[] = [];
     navigationComponentIdStack: string[] = [];
     navigationModalStack: string[] = [];
+    theme: Theme | undefined;
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
 

@@ -12,6 +12,9 @@ import EphemeralStore from '@store/ephemeral_store';
 import type {LaunchProps} from '@typings/launch';
 
 function getThemeFromState() {
+    if (EphemeralStore.theme) {
+        return EphemeralStore.theme;
+    }
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
     }

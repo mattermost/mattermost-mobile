@@ -27,6 +27,15 @@ export const queryCurrentChannelId = async (serverDatabase: Database) => {
     }
 };
 
+export const queryCurrentTeamId = async (serverDatabase: Database) => {
+    try {
+        const currentTeamId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID) as SystemModel;
+        return (currentTeamId?.value || '') as string;
+    } catch {
+        return '';
+    }
+};
+
 export const queryCurrentUserId = async (serverDatabase: Database) => {
     try {
         const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as SystemModel;
