@@ -43,7 +43,9 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             if (teamTheme?.value) {
                 try {
                     const theme = JSON.parse(teamTheme.value) as Theme;
-                    setNavigationStackStyles(theme);
+                    requestAnimationFrame(() => {
+                        setNavigationStackStyles(theme);
+                    });
                     return theme;
                 } catch {
                     // no theme change
