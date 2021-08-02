@@ -24,10 +24,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import FailedChannels from './failed_channels';
 import FailedTeams from './failed_teams';
 
-import Markdown from '@components/markdown/markdown';
+import Markdown from '@components/markdown';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import md from './md.json';
-import ProgressiveImage from '@app/components/progressive_image';
+import ProgressiveImage from '@components/progressive_image';
 import JumboEmoji from '@components/jumbo_emoji';
 
 type ChannelProps = WithDatabaseArgs & LaunchProps & {
@@ -125,6 +125,8 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                     isEdited={true}
                     baseTextStyle={{
                         color: theme.centerChannelColor,
+                        fontSize: 15,
+                        lineHeight: 20,
                     }}
                     value={md.jumbo}
                 />

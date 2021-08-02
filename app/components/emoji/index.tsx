@@ -117,7 +117,7 @@ const Emoji = (props: Props) => {
             return null;
         }
         return (
-            <View style={{flex: 1}}>
+            <View style={Platform.select({android: {flex: 1}})}>
                 <FastImage
                     key={key}
                     source={image}
@@ -138,7 +138,7 @@ const Emoji = (props: Props) => {
     const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
 
     return (
-        <View style={{flex: 1}}>
+        <View style={Platform.select({android: {flex: 1}})}>
             <FastImage
                 key={key}
                 style={[customEmojiStyle, {width, height}]}

@@ -250,12 +250,15 @@ class Markdown extends PureComponent<MarkdownProps> {
 
     renderEmoji = ({context, emojiName, literal}: {context: string[]; emojiName: string; literal: string}) => {
         let customEmojiStyle;
-        const flat = StyleSheet.flatten(this.props.baseTextStyle);
 
-        if (flat) {
-            const size = Math.abs(((flat.lineHeight || 0) - (flat.fontSize || 0))) / 2;
-            if (size > 0) {
-                customEmojiStyle = {marginRight: size, top: size};
+        if (Platform.OS === 'android') {
+            const flat = StyleSheet.flatten(this.props.baseTextStyle);
+
+            if (flat) {
+                const size = Math.abs(((flat.lineHeight || 0) - (flat.fontSize || 0))) / 2;
+                if (size > 0) {
+                    customEmojiStyle = {marginRight: size, top: size};
+                }
             }
         }
         return (

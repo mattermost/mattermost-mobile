@@ -60,7 +60,7 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
                 literal={literal}
                 testID='markdown_emoji'
                 textStyle={concatStyles(baseTextStyle, style.jumboEmoji)}
-                customEmojiStyle={{marginRight: size, top: size}}
+                customEmojiStyle={Platform.select({android: {marginRight: size, top: size}})}
             />
         );
     };
