@@ -15,8 +15,8 @@ const {
     DRAFT,
     FILE,
     GROUP,
-    GROUPS_IN_CHANNEL,
-    GROUPS_IN_TEAM,
+    GROUPS_CHANNEL,
+    GROUPS_TEAM,
     GROUP_MEMBERSHIP,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
@@ -252,8 +252,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'name', type: 'string'},
                     ],
                 },
-                [GROUPS_IN_CHANNEL]: {
-                    name: GROUPS_IN_CHANNEL,
+                [GROUPS_CHANNEL]: {
+                    name: GROUPS_CHANNEL,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
@@ -267,8 +267,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'timezone_count', type: 'number'},
                     ],
                 },
-                [GROUPS_IN_TEAM]: {
-                    name: GROUPS_IN_TEAM,
+                [GROUPS_TEAM]: {
+                    name: GROUPS_TEAM,
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},

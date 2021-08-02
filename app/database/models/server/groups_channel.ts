@@ -10,22 +10,22 @@ import {MM_TABLES} from '@constants/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type GroupModel from '@typings/database/models/servers/group';
 
-const {GROUP, GROUPS_IN_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
+const {GROUP, GROUPS_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 
 /**
- * The GroupsInChannel links the Channel model with the Group model
+ * The GroupsChannel links the Channel model with the Group model
  */
-export default class GroupsInChannelModel extends Model {
-    /** table (name) : GroupsInChannel */
-    static table = GROUPS_IN_CHANNEL;
+export default class GroupsChannelModel extends Model {
+    /** table (name) : GroupsChannel */
+    static table = GROUPS_CHANNEL;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A GROUP can be associated with multiple GROUPS_IN_CHANNEL (relationship is 1:N)  */
+        /** A GROUP can be associated with multiple GROUPS_CHANNEL (relationship is 1:N)  */
         [GROUP]: {type: 'belongs_to', key: 'group_id'},
 
-        /** A CHANNEL can be associated with multiple GROUPS_IN_CHANNEL (relationship is 1:N)  */
+        /** A CHANNEL can be associated with multiple GROUPS_CHANNEL (relationship is 1:N)  */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
