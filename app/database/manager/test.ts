@@ -7,7 +7,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 
-import type IServers from '@typings/database/models/app/servers';
+import type ServersModel from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 
@@ -73,7 +73,7 @@ describe('*** Database Manager tests ***', () => {
         await DatabaseManager.destroyServerDatabase('https://appv1.mattermost.com');
 
         const fetchServerRecords = async (serverUrl: string) => {
-            const servers = await DatabaseManager.appDatabase?.database!.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch() as IServers[];
+            const servers = await DatabaseManager.appDatabase?.database!.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch() as ServersModel[];
             return servers.length;
         };
 

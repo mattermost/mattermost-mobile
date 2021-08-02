@@ -21,7 +21,7 @@ import com.facebook.react.bridge.WritableMap;
 public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     private static NotificationPreferencesModule instance;
     private final MainApplication mApplication;
-    private NotificationPreferences mNotificationPreference;
+    private final NotificationPreferences mNotificationPreference;
 
     private NotificationPreferencesModule(MainApplication application, ReactApplicationContext reactContext) {
         super(reactContext);
@@ -108,7 +108,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getDeliveredNotifications(final Promise promise) {
-        Context context = mApplication.getApplicationContext();
+        final Context context = mApplication.getApplicationContext();
         final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         StatusBarNotification[] statusBarNotifications = notificationManager.getActiveNotifications();
         WritableArray result = Arguments.createArray();
@@ -116,9 +116,7 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
             WritableMap map = Arguments.createMap();
             Notification n = sbn.getNotification();
             Bundle bundle = n.extras;
-            int identifier = sbn.getId();
             String channelId = bundle.getString("channel_id");
-            map.putInt("identifier", identifier);
             map.putString("channel_id", channelId);
             result.pushMap(map);
         }
@@ -126,8 +124,8 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void removeDeliveredNotifications(int identifier, String channelId) {
+    public void removeDeliveredNotifications(String channelId) {
         Context context = mApplication.getApplicationContext();
-        CustomPushNotification.clearNotification(context, identifier, channelId);
+        CustomPushNotification.clearChannelNotifications(context, channelId);
     }
 }

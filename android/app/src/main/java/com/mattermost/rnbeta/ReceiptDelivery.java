@@ -26,31 +26,9 @@ public class ReceiptDelivery {
 
     public static void send(Context context, final String ackId, final String serverUrl, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
-
-        Credentials.getCredentialsForServer(reactApplicationContext, serverUrl, new ResolvePromise() {
-            @Override
-            public void resolve(@Nullable Object value) {
-                if (value instanceof Boolean && !(Boolean)value) {
-                    return;
-                }
-
-                WritableMap map = (WritableMap) value;
-                if (map != null) {
-                    String token = map.getString("password");
-                    String serverUrl = map.getString("service");
-                    if (serverUrl.isEmpty()) {
-                        String[] credentials = token.split(",[ ]*");
-                        if (credentials.length == 2) {
-                            token = credentials[0];
-                            serverUrl = credentials[1];
-                        }
-                    }
-
-                    Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
-                    execute(serverUrl, postId, token, ackId, type, isIdLoaded, promise);
-                }
-            }
-        });
+        final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
+        Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
+        execute(serverUrl, postId, token, ackId, type, isIdLoaded, promise);
     }
 
     protected static void execute(String serverUrl, String postId, String token, String ackId, String type, boolean isIdLoaded, ResolvePromise promise) {
@@ -111,6 +89,8 @@ public class ReceiptDelivery {
                     return;
                     case 401:
                     promise.reject("Receipt delivery failure", "Unauthorized");
+                    case 403:
+                    promise.reject("Receipt delivery failure", "Forbidden");
                     return;
                     case 500:
                     promise.reject("Receipt delivery failure", "StatusInternalServerError");

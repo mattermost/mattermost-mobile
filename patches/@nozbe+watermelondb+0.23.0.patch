@@ -1,29 +1,20 @@
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
-index 4b67b51..6eaa23a 100644
+index bb8f49a..1036aca 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
 +++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
-@@ -20,9 +20,16 @@ declare module '@nozbe/watermelondb/adapters/sqlite' {
- 
-   export type SQLiteQuery = [SQL, SQLiteArg[]]
- 
-+  export type MigrationEvents = {
-+    onSuccess: () => void,
-+    onStart: () => void,
-+    onError: (error: Error) => void,
-+  }
-+
+@@ -23,6 +23,7 @@ declare module '@nozbe/watermelondb/adapters/sqlite' {
    export interface SQLiteAdapterOptions {
      dbName?: string
      migrations?: SchemaMigrations
-+    migrationEvents?: MigrationEvents
++    migrationEvents?: MigrationEvents,
      schema: AppSchema
-     synchronous?: boolean
      jsi?: boolean
+   }
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-index 2217222..49a6ff7 100644
+index 802f137..640b08c 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-@@ -15,6 +15,18 @@ class Database(private val name: String, private val context: Context) {
+@@ -18,6 +18,18 @@ class Database(private val name: String, private val context: Context) {
                  if (name == ":memory:" || name.contains("mode=memory")) {
                      context.cacheDir.delete()
                      File(context.cacheDir, name).path

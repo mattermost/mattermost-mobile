@@ -1,9 +1,9 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 3b4e398..8e91f6b 100644
+index 2b30edf..2063845 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-@@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
-         reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
+@@ -61,15 +61,19 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+ 
              @Override
              public void onHostResume() {
 -                eventEmitter = new EventEmitter(reactContext);
@@ -14,6 +14,7 @@ index 3b4e398..8e91f6b 100644
 -                        navigator().getChildRegistry(),
 -                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
 -                );
+-                navigator().onHostResume();
 +                try {
 +                    eventEmitter = new EventEmitter(reactContext);
 +                    navigator().setEventEmitter(eventEmitter);
@@ -23,13 +24,14 @@ index 3b4e398..8e91f6b 100644
 +                            navigator().getChildRegistry(),
 +                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
 +                    );
++                    navigator().onHostResume();
 +                } catch (ClassCastException e) {
 +                    // The most current activity is not a NavigationActivity
 +                }
              }
          });
      }
-@@ -210,8 +214,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -217,8 +221,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -40,7 +42,7 @@ index 3b4e398..8e91f6b 100644
 +                    task.run();
 +                }
 +            } catch (ClassCastException e) {
-+                // The most current activity is not a NavigationActivity
++                // The most current activity is not a NavigationActivity)
              }
          });
      }
@@ -71,28 +73,27 @@ index 1e5751e..f921605 100644
              view.setOnHierarchyChangeListener(null);
              if (view.getParent() instanceof ViewGroup) {
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-index 815e1c6..a35a087 100644
+index 934e7e7..19169a3 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-@@ -1,5 +1,7 @@
+@@ -1,6 +1,8 @@
  #import "RNNOverlayWindow.h"
  #import "RNNReactView.h"
+ #import <React/RCTModalHostView.h>
 +#import <react-native-safe-area-context/RNCSafeAreaView.h>
 +#import <react-native-safe-area-context/RNCSafeAreaProvider.h>
  
  @implementation RNNOverlayWindow
  
-@@ -7,7 +9,9 @@
-     UIView *hitTestResult = [super hitTest:point withEvent:event];
+@@ -9,6 +11,8 @@
  
      if ([hitTestResult isKindOfClass:[UIWindow class]] ||
--        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class]) {
-+        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
+         [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
 +        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
-+        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]]) {
++        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]] ||
+         [hitTestResult isKindOfClass:[RCTModalHostView class]]) {
          return nil;
      }
- 
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
 index 2e60123..56830c8 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m

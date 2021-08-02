@@ -28,7 +28,7 @@ PODS:
     - React-jsi (= 0.64.2)
     - ReactCommon/turbomodule/core (= 0.64.2)
   - glog (0.3.5)
-  - jail-monkey (2.5.0):
+  - jail-monkey (2.6.0):
     - React-Core
   - libwebp (1.2.0):
     - libwebp/demux (= 1.2.0)
@@ -256,7 +256,7 @@ PODS:
     - React-Core
     - Starscream (~> 4.0.4)
     - SwiftyJSON (~> 5.0)
-  - react-native-notifications (3.5.0):
+  - react-native-notifications (4.1.1):
     - React-Core
   - react-native-paste-input (0.1.4):
     - React-Core
@@ -338,12 +338,12 @@ PODS:
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (7.17.1):
+  - ReactNativeNavigation (7.18.1):
     - React-Core
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 7.17.1)
-  - ReactNativeNavigation/Core (7.17.1):
+    - ReactNativeNavigation/Core (= 7.18.1)
+  - ReactNativeNavigation/Core (7.18.1):
     - React-Core
     - React-RCTImage
     - React-RCTText
@@ -353,13 +353,13 @@ PODS:
     - React-Core
   - RNCMaskedView (0.1.11):
     - React
-  - RNDeviceInfo (8.1.3):
+  - RNDeviceInfo (8.1.4):
     - React-Core
   - RNDevMenu (4.0.2):
     - React-Core
     - React-Core/DevSupport
     - React-RCTNetwork
-  - RNFastImage (8.3.6):
+  - RNFastImage (8.3.7):
     - React-Core
     - SDWebImage (~> 5.8)
     - SDWebImageWebPCoder (~> 0.6.1)
@@ -407,10 +407,10 @@ PODS:
   - RNRudderSdk (1.0.0):
     - React
     - Rudder (>= 1.0.20)
-  - RNSentry (2.6.0):
+  - RNSentry (2.6.1):
     - React-Core
-    - Sentry (= 7.0.0)
-  - RNShare (6.2.3):
+    - Sentry (= 7.1.4)
+  - RNShare (6.5.0):
     - React-Core
   - RNSVG (12.1.1):
     - React
@@ -423,9 +423,10 @@ PODS:
   - SDWebImageWebPCoder (0.6.1):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.7)
-  - Sentry (7.0.0):
-    - Sentry/Core (= 7.0.0)
-  - Sentry/Core (7.0.0)
+  - Sentry (7.1.4):
+    - Sentry/Core (= 7.1.4)
+  - Sentry/Core (7.1.4)
+  - simdjson (0.9.6-fix2)
   - Starscream (4.0.4)
   - SwiftyJSON (5.0.1)
   - Swime (3.0.6)
@@ -437,7 +438,7 @@ PODS:
     - UMCore
   - UMTaskManagerInterface (6.2.0):
     - UMCore
-  - WatermelonDB (0.22.0):
+  - WatermelonDB (0.23.0):
     - React
     - React-jsi
   - XCDYouTubeKit (2.8.2)
@@ -515,6 +516,7 @@ DEPENDENCIES:
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - "simdjson (from `../node_modules/@nozbe/simdjson`)"
   - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `1b4b93708fb63d2665625a11e57461772a65364a`)
   - Swime (= 3.0.6)
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
@@ -676,6 +678,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  simdjson:
+    :path: "../node_modules/@nozbe/simdjson"
   Starscream:
     :commit: 1b4b93708fb63d2665625a11e57461772a65364a
     :git: https://github.com/mattermost/Starscream.git
@@ -708,7 +712,7 @@ SPEC CHECKSUMS:
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
   FBReactNativeSpec: cef0cc6d50abc92e8cf52f140aa22b5371cfec0b
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
-  jail-monkey: feb2bdedc4d67312cd41a455c22661d804bba985
+  jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
   Permission-Camera: ac603073e4128e51e6ca3c39129778f05b4082fa
   Permission-PhotoLibrary: 0748c1a490fad126dfe36dbea8234dedfe59cc27
@@ -731,7 +735,7 @@ SPEC CHECKSUMS:
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-netinfo: e849fc21ca2f4128a5726c801a82fc6f4a6db50d
   react-native-network-client: 30ab97e7e6c8d6f2d2b10cc1ebad0cbf9c894c6e
-  react-native-notifications: 89a73cd2cd2648e1734fa10e3507681c9e4f14de
+  react-native-notifications: b7391a61c9a3919a8cccf6e3a4c542b419cb5ee2
   react-native-paste-input: 4d6ecc3875153212b5503b6da093277db4ace241
   react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
   react-native-video: 0bb76b6d6b77da3009611586c7dbf817b947f30e
@@ -750,13 +754,13 @@ SPEC CHECKSUMS:
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 8ccac6aadb88ce59ff1594bfbe1f579b9bb5e81a
+  ReactNativeNavigation: 88128fa06b2c349b613e1e0fd3cdff2c58c01c55
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
-  RNDeviceInfo: 8d3a29207835f972bce883723882980143270d55
+  RNDeviceInfo: 0b3e0154c1c659ea9779cb3e883e66ece92326a9
   RNDevMenu: fd325b5554b61fe7f48d9205a3877cf5ee88cd7c
-  RNFastImage: 044259b52d726b183fa401f3521b2e5a864afc0a
+  RNFastImage: a7384db75df352500261e8e8f1ac2026def26102
   RNFileViewer: 83cc066ad795b1f986791d03b56fe0ee14b6a69f
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNKeychain: f75b8c8b2f17d3b2aa1f25b4a0ac5b83d947ff8f
@@ -765,14 +769,15 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: 9c13c86454bfd54dab7505c1a054470bfecd2563
   RNRudderSdk: 9aa881c2bf754dc3b05e392340a5e3663a970f0a
-  RNSentry: a2b02b326ae4fce91ce7c57d3f7dcf8df4f72269
-  RNShare: 16c78aeb7a78d19e8f5597e405e87f90d91f8eb9
+  RNSentry: af7873b080a0beb74c020644644d247ef4771644
+  RNShare: 047d42214f875d731bde73a2b67418638af85ad9
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   Rudder: 3eae52018e1a401d3610b3f16f6210026eb327c8
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
-  Sentry: 89d26e036063b9cb9caa59b6951dd2f8277aa13b
+  Sentry: 1d3eb1a25f8c5333c88dd5603904a6d461cd9fcf
+  simdjson: 85016870cd17207312b718ef6652eb6a1cd6a2b0
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
@@ -780,11 +785,11 @@ SPEC CHECKSUMS:
   UMCore: 2f671796d7439604a1cf8ac7bbe5809cd5c50437
   UMReactNativeAdapter: 684b07b79d5fe52b496d2b50bfe31f68d7daf71a
   UMTaskManagerInterface: 2be431101b73604e64fbfffcf759336f9d8fccbb
-  WatermelonDB: 1da309a2b3fe35360e92f5a6bda2156543447955
+  WatermelonDB: 577c61fceff16e9f9103b59d14aee4850c0307b6
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: 7741358261bad1ae9b7877b2299303396085e050
+PODFILE CHECKSUM: fe7a8bc870b0f26b5cb70bccd50d5c634a7f5059
 
 COCOAPODS: 1.10.1

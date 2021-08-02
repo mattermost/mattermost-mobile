@@ -127,7 +127,7 @@ class PushNotifications {
                       this.handleInAppNotification(notification);
                   } else if (userInteraction && !payload.userInfo?.local) {
                       const props = getLaunchPropsFromNotification(notification);
-                      relaunchApp(props);
+                      relaunchApp(props, true);
                   }
                   break;
               case NOTIFICATION_TYPE.SESSION:

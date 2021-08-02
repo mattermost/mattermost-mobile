@@ -173,25 +173,21 @@ index 0d70024..b9e6c88 100644
      PushNotificationProps asProps();
  }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-index f6ac8ec..08154fc 100644
+index fe1fb94..c9e0301 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-@@ -1,5 +1,6 @@
- package com.wix.reactnativenotifications.core.notification;
- 
-+import android.app.AlarmManager;
- import android.app.Notification;
- import android.app.NotificationChannel;
- import android.app.NotificationManager;
-@@ -8,6 +9,7 @@ import android.content.Context;
+@@ -8,6 +8,10 @@ import android.content.Context;
  import android.content.Intent;
  import android.os.Build;
  import android.os.Bundle;
 +import android.util.Log;
++
++import androidx.core.app.NotificationCompat;
++import androidx.core.app.NotificationManagerCompat;
  
  import com.facebook.react.bridge.ReactContext;
  import com.wix.reactnativenotifications.core.AppLaunchHelper;
-@@ -18,7 +20,9 @@ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
+@@ -18,7 +22,9 @@ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
  import com.wix.reactnativenotifications.core.JsIOHelper;
  import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
  import com.wix.reactnativenotifications.core.ProxyService;
@@ -201,7 +197,7 @@ index f6ac8ec..08154fc 100644
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_OPENED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_BACKGROUND_EVENT_NAME;
-@@ -29,7 +33,7 @@ public class PushNotification implements IPushNotification {
+@@ -29,7 +35,7 @@ public class PushNotification implements IPushNotification {
      final protected AppLifecycleFacade mAppLifecycleFacade;
      final protected AppLaunchHelper mAppLaunchHelper;
      final protected JsIOHelper mJsIOHelper;
@@ -210,7 +206,16 @@ index f6ac8ec..08154fc 100644
      final protected AppVisibilityListener mAppVisibilityListener = new AppVisibilityListener() {
          @Override
          public void onAppVisible() {
-@@ -78,6 +82,42 @@ public class PushNotification implements IPushNotification {
+@@ -62,7 +68,7 @@ public class PushNotification implements IPushNotification {
+     }
+ 
+     @Override
+-    public void onReceived() throws InvalidNotificationException {
++    public void onReceived() {
+         if (!mAppLifecycleFacade.isAppVisible()) {
+             postNotification(null);
+             notifyReceivedBackgroundToJS();
+@@ -81,6 +87,41 @@ public class PushNotification implements IPushNotification {
          return postNotification(notificationId);
      }
  
@@ -249,24 +254,60 @@ index f6ac8ec..08154fc 100644
 +        return postNotification(notificationId);
 +    }
 +
-+
      @Override
      public PushNotificationProps asProps() {
          return mNotificationProps.copy();
-@@ -140,7 +180,9 @@ public class PushNotification implements IPushNotification {
+@@ -143,15 +184,16 @@ public class PushNotification implements IPushNotification {
      }
  
      protected Notification buildNotification(PendingIntent intent) {
 -        return getNotificationBuilder(intent).build();
-+        Notification.Builder builder = getNotificationBuilder(intent);
-+        Notification notification = builder.build();
-+        return notification;
++        NotificationCompat.Builder builder = getNotificationBuilder(intent);
++        return builder.build();
      }
  
-     protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
+-    protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
+-        final Notification.Builder notification = new Notification.Builder(mContext)
++    protected NotificationCompat.Builder getNotificationBuilder(PendingIntent intent) {
++        final NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext, DEFAULT_CHANNEL_ID)
+                 .setContentTitle(mNotificationProps.getTitle())
+                 .setContentText(mNotificationProps.getBody())
+                 .setContentIntent(intent)
+-                .setDefaults(Notification.DEFAULT_ALL)
++                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                 .setAutoCancel(true);
+ 
+         setUpIcon(notification);
+@@ -166,7 +208,7 @@ public class PushNotification implements IPushNotification {
+         return notification;
+     }
+ 
+-    private void setUpIcon(Notification.Builder notification) {
++    private void setUpIcon(NotificationCompat.Builder notification) {
+         int iconResId = getAppResourceId("notification_icon", "drawable");
+         if (iconResId != 0) {
+             notification.setSmallIcon(iconResId);
+@@ -177,7 +219,7 @@ public class PushNotification implements IPushNotification {
+         setUpIconColor(notification);
+     }
+ 
+-    private void setUpIconColor(Notification.Builder notification) {
++    private void setUpIconColor(NotificationCompat.Builder notification) {
+         int colorResID = getAppResourceId("colorAccent", "color");
+         if (colorResID != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+             int color = mContext.getResources().getColor(colorResID);
+@@ -192,7 +234,7 @@ public class PushNotification implements IPushNotification {
+     }
+ 
+     protected void postNotification(int id, Notification notification) {
+-        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
++        final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+         notificationManager.notify(id, notification);
+     }
+ 
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
 new file mode 100644
-index 0000000..58ff887
+index 0000000..5b64593
 --- /dev/null
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
 @@ -0,0 +1,27 @@
@@ -297,6 +338,7 @@ index 0000000..58ff887
 +        pushNotification.onPostScheduledRequest(notificationId);
 +    }
 +}
+\ No newline at end of file
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
 index e22cd62..48aa1cd 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
@@ -388,13 +430,13 @@ index ad7fc1a..a04ec6b 100644
      get title() {
          return this.payload.title;
 diff --git a/node_modules/react-native-notifications/lib/dist/Notifications.d.ts b/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-index 3a75bcf..10600d2 100644
+index 6e49fd4..1d94217 100644
 --- a/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
 +++ b/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-@@ -36,6 +36,10 @@ export declare class NotificationsRoot {
+@@ -37,6 +37,10 @@ export declare class NotificationsRoot {
       * cancelLocalNotification
      */
-     cancelLocalNotification(notificationId: string): void;
+     cancelLocalNotification(notificationId: number): void;
 +    /**
 +     * cancelAllLocalNotifications
 +    */
@@ -403,7 +445,7 @@ index 3a75bcf..10600d2 100644
       * removeAllDeliveredNotifications
       */
 diff --git a/node_modules/react-native-notifications/lib/dist/Notifications.js b/node_modules/react-native-notifications/lib/dist/Notifications.js
-index 15eea09..48b3d23 100644
+index 44ab53f..8000701 100644
 --- a/node_modules/react-native-notifications/lib/dist/Notifications.js
 +++ b/node_modules/react-native-notifications/lib/dist/Notifications.js
 @@ -55,6 +55,12 @@ class NotificationsRoot {
@@ -431,10 +473,10 @@ index 0e78cb5..ae90bd1 100644
 +    constructor(identifier: string, activationMode: 'background' | 'foreground' | 'authenticationRequired' | 'destructive', title: string, authenticationRequired: boolean, textInput?: NotificationTextInput);
  }
 diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
-index 0a30b5a..a45a83d 100644
+index 7452523..a093262 100644
 --- a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
 +++ b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
-@@ -58,7 +58,7 @@ - (void)getDeliveredNotifications:(RCTResponseSenderBlock)callback {
+@@ -83,7 +83,7 @@
          for (UNNotification *notification in notifications) {
              [formattedNotifications addObject:[RCTConvert UNNotificationPayload:notification]];
          }
@@ -444,10 +486,10 @@ index 0a30b5a..a45a83d 100644
  }
  
 diff --git a/node_modules/react-native-notifications/lib/src/Notifications.ts b/node_modules/react-native-notifications/lib/src/Notifications.ts
-index 8a4a51e..551fac2 100644
+index 0848f6d..ceb271d 100644
 --- a/node_modules/react-native-notifications/lib/src/Notifications.ts
 +++ b/node_modules/react-native-notifications/lib/src/Notifications.ts
-@@ -79,6 +79,13 @@ export class NotificationsRoot {
+@@ -80,6 +80,13 @@ export class NotificationsRoot {
      return this.commands.cancelLocalNotification(notificationId);
    }
  
@@ -462,7 +504,7 @@ index 8a4a51e..551fac2 100644
     * removeAllDeliveredNotifications
     */
 diff --git a/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts b/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts
-index b4218ab..38388c5 100644
+index 98fc19d..0c8ea3d 100644
 --- a/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts
 +++ b/node_modules/react-native-notifications/lib/src/NotificationsIOS.ts
 @@ -52,13 +52,6 @@ export class NotificationsIOS {
