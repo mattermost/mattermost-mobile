@@ -80,10 +80,10 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'name'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'id'});
 
         return this.handleRecords({
-            fieldName: 'name',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             transformer: transformGroupRecord,
             prepareRecordsOnly,

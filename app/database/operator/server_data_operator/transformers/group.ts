@@ -61,6 +61,8 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (group: GroupModel) => {
         group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record.id;
+        group.allowReference = raw.allow_reference;
+        group.deleteAt = raw.delete_at;
         group.name = raw.name;
         group.displayName = raw.display_name;
     };
@@ -117,8 +119,6 @@ export const transformGroupsChannelRecord = ({action, database, value}: Transfor
         groupsChannel._raw.id = isCreateAction ? groupsChannel.id : record.id;
         groupsChannel.channelId = raw.channel_id;
         groupsChannel.groupId = raw.group_id;
-        groupsChannel.memberCount = raw.member_count;
-        groupsChannel.timezoneCount = raw.timezone_count;
     };
 
     return prepareBaseRecord({

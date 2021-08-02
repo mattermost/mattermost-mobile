@@ -10,6 +10,8 @@ const {GROUP} = MM_TABLES.SERVER;
 export default tableSchema({
     name: GROUP,
     columns: [
+        {name: 'allow_reference', type: 'boolean'},
+        {name: 'delete_at', type: 'number'},
         {name: 'display_name', type: 'string'},
         {name: 'name', type: 'string'},
     ],

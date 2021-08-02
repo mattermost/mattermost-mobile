@@ -34,6 +34,12 @@ export default class GroupModel extends Model {
         [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
     };
 
+    /** allow_reference : Determins if the group can be referenced in mentions */
+    @field('allow_reference') allowReference!: boolean;
+
+    /** delete_at : When the group was deleted */
+    @field('delete_at') deleteAt!: number;
+
     /** display_name : The display name for the group */
     @field('display_name') displayName!: string;
 

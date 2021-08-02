@@ -244,10 +244,14 @@ describe('*** Test schema for SERVER database ***', () => {
                 [GROUP]: {
                     name: GROUP,
                     columns: {
+                        allow_reference: {name: 'allow_reference', type: 'boolean'},
+                        delete_at: {name: 'delete_at', type: 'number'},
                         display_name: {name: 'display_name', type: 'string'},
                         name: {name: 'name', type: 'string'},
                     },
                     columnArray: [
+                        {name: 'allow_reference', type: 'boolean'},
+                        {name: 'delete_at', type: 'number'},
                         {name: 'display_name', type: 'string'},
                         {name: 'name', type: 'string'},
                     ],

@@ -45,8 +45,8 @@ type GroupChannel = {
     create_at: number;
     delete_at: number;
     update_at: number;
-    member_count: number;
-    timezone_count: number;
+    member_count?: number;
+    timezone_count?: number;
 };
 type GroupSyncables = {
     teams: GroupTeam[];

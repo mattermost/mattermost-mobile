@@ -20,12 +20,6 @@ export default class GroupsChannelModel extends Model {
     /** group_id : The foreign key of the related GROUP model */
     groupId: string;
 
-    /** member_count : The number of members in that group */
-    memberCount: number;
-
-    /** timezone_count : The number of timezones in that group */
-    timezoneCount: number;
-
     /** channel : The related record to the parent Channel model */
     channel: Relation<ChannelModel>;
 

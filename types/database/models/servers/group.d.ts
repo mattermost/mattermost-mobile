@@ -15,6 +15,12 @@ export default class GroupModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
+    /** allow_reference : Determins if the group can be referenced in mentions */
+    allowReference: boolean;
+
+    /** delete_at : When the group was deleted */
+    deleteAt: number;
+
     /** display_name : The display name for the group */
     displayName: string;
 

@@ -41,7 +41,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
                 has_syncables: true,
                 type: '',
                 member_count: 1,
-                allow_reference: false,
+                allow_reference: true,
             },
         ];
 
@@ -52,7 +52,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'name',
+            fieldName: 'id',
             createOrUpdateRawValues: groups,
             tableName: 'Group',
             prepareRecordsOnly: false,
@@ -111,8 +111,6 @@ describe('*** Operator: Group Handlers tests ***', () => {
                 team_id: '',
                 team_type: '',
                 update_at: 0,
-                member_count: 0,
-                timezone_count: 0,
             },
         ];
 
