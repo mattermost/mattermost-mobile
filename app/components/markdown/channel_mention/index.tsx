@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server_url';
 import {t} from '@i18n';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
+import {preventDoubleTap} from '@utils/tap';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModelType from '@typings/database/models/servers/channel';
@@ -71,7 +72,7 @@ const ChannelMention = ({
     const serverUrl = useServerUrl();
     const channel = getChannelFromChannelName(channelName, channels, channelMentions, team.name);
 
-    const handlePress = useCallback(async () => {
+    const handlePress = useCallback(preventDoubleTap(async () => {
         let c = channel;
 
         if (!c?.id && c?.display_name) {
@@ -96,7 +97,7 @@ const ChannelMention = ({
             await dismissAllModals();
             await popToRoot();
         }
-    }, [channel?.display_name, channel?.id]);
+    }), [channel?.display_name, channel?.id]);
 
     if (!channel) {
         return <Text style={textStyle}>{`~${channelName}`}</Text>;
