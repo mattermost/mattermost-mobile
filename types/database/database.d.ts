@@ -177,6 +177,7 @@ export type HandleTOSArgs = PrepareOnly & {
 }
 
 export type HandleMyChannelArgs = PrepareOnly & {
+  channels: Channel[];
   myChannels: ChannelMembership[];
 };
 

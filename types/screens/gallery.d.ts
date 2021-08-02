@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {intlShape} from 'react-intl';
 import {StyleProp, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
+
+import type {IntlShape} from 'react-intl';
 
 export interface CallbackFunctionWithoutArguments {
     (): void;
@@ -45,7 +46,7 @@ export interface PrepareFileRef {
 }
 
 export interface FooterProps {
-    intl: typeof intlShape;
+    intl: IntlShape;
     file: FileInfo;
 }
 
@@ -71,7 +72,7 @@ export interface GalleryItemProps {
     file: FileInfo;
     deviceHeight: number;
     deviceWidth: number;
-    intl?: typeof intlShape;
+    intl?: IntlShape;
     isActive?: boolean;
     onDoubleTap?: CallbackFunctionWithoutArguments;
     style?: StyleProp<Animated.AnimateStyle>;

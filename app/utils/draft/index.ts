@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
-import {IntlShape} from 'react-intl';
 import {Alert, AlertButton} from 'react-native';
+
+import type {IntlShape} from 'react-intl';
 
 import {t} from '@utils/i18n';
 
@@ -14,6 +15,15 @@ export function errorBadChannel(intl: IntlShape) {
     };
 
     return alertErrorWithFallback(intl, {}, message);
+}
+
+export function permalinkBadTeam(intl: IntlShape) {
+    const message = {
+        id: t('mobile.server_link.unreachable_team.error'),
+        defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
+    };
+
+    alertErrorWithFallback(intl, {}, message);
 }
 
 export function alertErrorWithFallback(intl: IntlShape, error: any, fallback: MessageDescriptor, values?: Record<string, string>, buttons?: AlertButton[]) {

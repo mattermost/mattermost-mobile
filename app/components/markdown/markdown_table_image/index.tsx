@@ -10,10 +10,11 @@ import parseUrl from 'url-parse';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {openGallerWithMockFile} from '@utils/gallery';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
 type MarkdownTableImageProps = {
-    disable: boolean;
+    disabled?: boolean;
     imagesMetadata: Record<string, PostImage>;
     postId: string;
     serverURL?: string;
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const MarkTableImage = ({imagesMetadata, postId, serverURL, source}: MarkdownTableImageProps) => {
+const MarkTableImage = ({disabled, imagesMetadata, postId, serverURL, source}: MarkdownTableImageProps) => {
     const metadata = imagesMetadata[source];
     const fileId = useRef(generateId()).current;
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
@@ -73,7 +74,11 @@ const MarkTableImage = ({imagesMetadata, postId, serverURL, source}: MarkdownTab
     };
 
     const handlePreviewImage = useCallback(() => {
-        //todo: To implement this method similar to how it is being done on master branch
+        const file = getFileInfo() as FileInfo;
+        if (!file?.uri) {
+            return;
+        }
+        openGallerWithMockFile(file.uri, file.post_id, file.height, file.width, file.id);
     }, []);
 
     const onLoadFailed = useCallback(() => {
@@ -92,12 +97,12 @@ const MarkTableImage = ({imagesMetadata, postId, serverURL, source}: MarkdownTab
         const {height, width} = calculateDimensions(metadata.height, metadata.width, 100, 100);
         image = (
             <TouchableWithFeedback
+                disabled={disabled}
                 onPress={handlePreviewImage}
                 style={{width, height}}
             >
                 <ProgressiveImage
-
-                    // id={fileId}
+                    id={fileId}
                     defaultSource={{uri: source}}
                     onError={onLoadFailed}
                     resizeMode='contain'

@@ -1,24 +1,38 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, ReactNode} from 'react';
+import React, {ReactNode} from 'react';
 import {StyleSheet, Text, TextStyle, View} from 'react-native';
 
 type MarkdownListItemProps = {
     bulletStyle: TextStyle;
     bulletWidth: number;
     children: ReactNode | ReactNode[];
-    doContinue: boolean;
+    continue: boolean;
     index: number;
-    isOrdered: boolean;
+    ordered: boolean;
     level: number;
 }
 
-const MarkdownListItem = ({index, level, bulletWidth, bulletStyle, children, doContinue, isOrdered}: MarkdownListItemProps) => {
+const style = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    bullet: {
+        alignItems: 'flex-end',
+        marginRight: 5,
+    },
+    contents: {
+        flex: 1,
+    },
+});
+
+const MarkdownListItem = ({index, level, bulletWidth, bulletStyle, children, continue: doContinue, ordered}: MarkdownListItemProps) => {
     let bullet;
     if (doContinue) {
         bullet = '';
-    } else if (isOrdered) {
+    } else if (ordered) {
         bullet = index + '.';
     } else if (level % 2 === 0) {
         bullet = '◦';
@@ -40,18 +54,4 @@ const MarkdownListItem = ({index, level, bulletWidth, bulletStyle, children, doC
     );
 };
 
-const style = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-    },
-    bullet: {
-        alignItems: 'flex-end',
-        marginRight: 5,
-    },
-    contents: {
-        flex: 1,
-    },
-});
-
-export default memo(MarkdownListItem);
+export default MarkdownListItem;

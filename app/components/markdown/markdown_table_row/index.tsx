@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, ReactElement, ReactNode} from 'react';
+import React, {ReactElement, ReactNode} from 'react';
 import {View} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -12,6 +12,22 @@ export type MarkdownTableRowProps = {
     isLastRow: boolean;
     children: ReactNode;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        row: {
+            flex: 1,
+            flexDirection: 'row',
+        },
+        rowTopBackground: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+        },
+        rowBottomBorder: {
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderBottomWidth: 1,
+        },
+    };
+});
 
 const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowProps) => {
     const theme = useTheme();
@@ -36,20 +52,4 @@ const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowPro
     return <View style={rowStyle}>{renderChildren}</View>;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        row: {
-            flex: 1,
-            flexDirection: 'row',
-        },
-        rowTopBackground: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
-        rowBottomBorder: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
-        },
-    };
-});
-
-export default memo(MarkdownTableRow);
+export default MarkdownTableRow;

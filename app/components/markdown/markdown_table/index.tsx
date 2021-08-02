@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {FC, PureComponent, ReactNode} from 'react';
+import React, {PureComponent, ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {Dimensions, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -10,7 +10,6 @@ import CompassIcon from '@components/compass_icon';
 import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from '@components/markdown/markdown_table_cell';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import DeviceTypes from '@constants/device';
-import {withTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -35,20 +34,16 @@ type MarkdownTableProps = MarkdownTableInputProps & {
     theme: Theme;
 }
 
-class MarkdownTableHOC extends PureComponent<MarkdownTableProps, MarkdownTableState> {
+class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState> {
     private rowsSliced: boolean | undefined;
     private colsSliced: boolean | undefined;
 
-    constructor(props: MarkdownTableProps) {
-        super(props);
-
-        this.state = {
-            containerWidth: 0,
-            contentHeight: 0,
-            cellWidth: 0,
-            maxPreviewColumns: 0,
-        };
-    }
+    state = {
+        containerWidth: 0,
+        contentHeight: 0,
+        cellWidth: 0,
+        maxPreviewColumns: 0,
+    };
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.setMaxPreviewColumns);
@@ -165,6 +160,10 @@ class MarkdownTableHOC extends PureComponent<MarkdownTableProps, MarkdownTableSt
                     },
                 };
             });
+
+            if (!rows.length) {
+                return null;
+            }
 
             this.rowsSliced = prevRowLength > rows.length;
             this.colsSliced = prevColLength > React.Children.toArray(rows[0].props.children).length;
@@ -360,6 +359,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const MarkdownTable: FC<MarkdownTableInputProps> = injectIntl(withTheme(MarkdownTableHOC));
-
-export default MarkdownTable;
+export default injectIntl(MarkdownTable);

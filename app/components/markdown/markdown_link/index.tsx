@@ -1,46 +1,53 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
+import Clipboard from '@react-native-community/clipboard';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {Children, memo, ReactElement} from 'react';
+import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text} from 'react-native';
+import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
+import {of} from 'rxjs';
 import urlParse from 'url-parse';
 
+import {switchToChannelByName} from '@actions/local/channel';
+import {showPermalink} from '@actions/local/permalink';
+import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {Navigation} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server_url';
-import {dismissAllModals, popToRoot} from '@screens/navigation';
+import {dismissAllModals, popToRoot, showModalOverCurrentContext} from '@screens/navigation';
+import {errorBadChannel} from '@utils/draft';
 import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 import {preventDoubleTap} from '@utils/tap';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
-import type {DeepLinkWithData} from '@typings/launch';
+import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkWithData} from '@typings/launch';
 
-type MarkdownLinkInputProps = {
+type MarkdownLinkProps = {
     children: ReactElement;
+    experimentalNormalizeMarkdownLinks: string;
     href: string;
+    siteURL: string;
 }
 
-type MarkdownLinkProps = MarkdownLinkInputProps & {
-    config: SystemModel;
-}
+const style = StyleSheet.create({
+    bottomSheet: {
+        flex: 1,
+    },
+});
 
-//todo: Add observable to monitor the current team value
-
-const ConnectedMarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
+const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL}: MarkdownLinkProps) => {
     const intl = useIntl();
+    const managedConfig = useManagedConfig();
     const serverUrl = useServerUrl();
 
     const {formatMessage} = intl;
-    const {SiteURL: siteURL = '', ExperimentalNormalizeMarkdownLinks} = config.value;
-
-    // const currentTeamName = currentTeam.name;
 
     const handlePress = preventDoubleTap(async () => {
-        //todo:  to implement the redux actions handleSelectChannelByName and  showPermalink
         const url = normalizeProtocol(href);
 
         if (!url) {
@@ -49,14 +56,15 @@ const ConnectedMarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
 
         const match: DeepLinkWithData | null = matchDeepLink(url, serverUrl, siteURL);
 
-        if (match) {
+        if (match && match.data?.teamName) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                // await handleSelectChannelByName((match?.data as DeepLinkChannel).channelName, match?.data?.teamName, errorBadChannel, intl);
-                await dismissAllModals();
-                await popToRoot();
+                const result = await switchToChannelByName(serverUrl, (match?.data as DeepLinkChannel).channelName, match.data?.teamName, errorBadChannel, intl);
+                if (!result.error) {
+                    await dismissAllModals();
+                    await popToRoot();
+                }
             } else if (match.type === DeepLinkTypes.PERMALINK) {
-                // const teamName = match.data?.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? currentTeamName : match.data?.teamName;
-                // showPermalink(intl, teamName, (match.data as DeepLinkPermalink).postId);
+                showPermalink(serverUrl, match.data.teamName, (match.data as DeepLinkPermalink).postId, intl);
             }
         } else {
             const onError = () => {
@@ -111,16 +119,44 @@ const ConnectedMarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
         });
     };
 
-    const handleLongPress = async () => {
-        //todo: Use new slide-up-panel component to handleLinkCopy()
+    const handleLongPress = useCallback(() => {
+        if (managedConfig?.copyAndPasteProtection !== 'true') {
+            const renderContent = () => {
+                return (
+                    <View
+                        testID='at_mention.bottom_sheet'
+                        style={style.bottomSheet}
+                    >
+                        <SlideUpPanelItem
+                            icon='content-copy'
+                            onPress={() => {
+                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                Clipboard.setString(href);
+                            }}
+                            testID='at_mention.bottom_sheet.copy_url'
+                            text={intl.formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'})}
+                        />
+                        <SlideUpPanelItem
+                            destructive={true}
+                            icon='cancel'
+                            onPress={() => {
+                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                            }}
+                            testID='at_mention.bottom_sheet.cancel'
+                            text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        />
+                    </View>
+                );
+            };
 
-    };
+            showModalOverCurrentContext('BottomSheet', {
+                renderContent,
+                snapPoints: [3 * ITEM_HEIGHT, 10],
+            });
+        }
+    }, [managedConfig]);
 
-    // const handleLinkCopy = () => {
-    //     Clipboard.setString(href);
-    // };
-
-    const renderChildren = ExperimentalNormalizeMarkdownLinks ? parseChildren() : children;
+    const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 
     return (
         <Text
@@ -132,8 +168,17 @@ const ConnectedMarkdownLink = ({children, config, href}: MarkdownLinkProps) => {
     );
 };
 
-const MarkdownLink: React.FC<MarkdownLinkInputProps> = withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
+const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
     config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-}))(ConnectedMarkdownLink));
+}));
 
-export default memo(MarkdownLink);
+const withConfigValues = withObservables(['config'], ({config}: {config: SystemModel}) => {
+    const cfg: ClientConfig = config.value;
+
+    return {
+        experimentalNormalizeMarkdownLinks: of(cfg.ExperimentalNormalizeMarkdownLinks),
+        siteURL: of(cfg.SiteURL),
+    };
+});
+
+export default withDatabase(withSystemIds(withConfigValues(MarkdownLink)));

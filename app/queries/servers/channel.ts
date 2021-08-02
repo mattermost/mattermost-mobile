@@ -8,8 +8,9 @@ import {MM_TABLES} from '@constants/database';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
-const {SERVER: {CHANNEL}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL}} = MM_TABLES;
 
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
@@ -43,7 +44,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         const channelRecords = operator.handleChannel({channels, prepareRecordsOnly: true});
         const channelInfoRecords = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
         const membershipRecords = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
-        const myChannelRecords = operator.handleMyChannel({myChannels: memberships, prepareRecordsOnly: true});
+        const myChannelRecords = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
         const myChannelSettingsRecords = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
 
         return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
@@ -54,4 +55,26 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
     return database.get(CHANNEL).query(Q.where('team_id', teamId)).fetch() as Promise<ChannelModel[]>;
+};
+
+export const queryMyChannel = async (database: Database, channelId: string) => {
+    try {
+        const member = await database.get(MY_CHANNEL).find(channelId) as MyChannelModel;
+        return member;
+    } catch {
+        return undefined;
+    }
+};
+
+export const queryChannelByName = async (database: Database, channelName: string) => {
+    try {
+        const channels = await database.get(CHANNEL).query(Q.where('name', channelName)).fetch() as ChannelModel[];
+        if (channels.length) {
+            return channels[0];
+        }
+
+        return undefined;
+    } catch {
+        return undefined;
+    }
 };

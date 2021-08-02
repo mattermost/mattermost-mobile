@@ -25,7 +25,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.linkColor,
         },
         heading1: {
-            fontSize: 17,
+            fontSize: 22,
             fontWeight: '700',
             lineHeight: 25,
         },
@@ -33,7 +33,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             paddingBottom: 8,
         },
         heading2: {
-            fontSize: 17,
+            fontSize: 20,
             fontWeight: '700',
             lineHeight: 25,
         },
@@ -41,7 +41,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             paddingBottom: 8,
         },
         heading3: {
-            fontSize: 17,
+            fontSize: 19,
             fontWeight: '700',
             lineHeight: 25,
         },
@@ -49,7 +49,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             paddingBottom: 8,
         },
         heading4: {
-            fontSize: 17,
+            fontSize: 18,
             fontWeight: '700',
             lineHeight: 25,
         },
@@ -65,7 +65,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             paddingBottom: 8,
         },
         heading6: {
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: '700',
             lineHeight: 25,
         },
@@ -140,6 +140,7 @@ const languages: Record<string, string> = {
     html: 'HTML',
     java: 'Java',
     javascript: 'JavaScript',
+    js: 'JavaScript',
     json: 'JSON',
     julia: 'Julia',
     kotlin: 'Kotlin',

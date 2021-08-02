@@ -142,6 +142,25 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const channels: Channel[] = [{
+            id: 'c',
+            name: 'channel',
+            display_name: 'Channel',
+            type: 'O',
+            create_at: 1,
+            update_at: 1,
+            delete_at: 0,
+            team_id: '123',
+            header: '',
+            purpose: '',
+            last_post_at: 2,
+            creator_id: 'me',
+            total_msg_count: 20,
+            extra_update_at: 0,
+            shared: false,
+            scheme_id: null,
+            group_constrained: false,
+        }];
         const myChannels: ChannelMembership[] = [
             {
                 id: 'c',
@@ -164,6 +183,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         ];
 
         await operator.handleMyChannel({
+            channels,
             myChannels,
             prepareRecordsOnly: false,
         });

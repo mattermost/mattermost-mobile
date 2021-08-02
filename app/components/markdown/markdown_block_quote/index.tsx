@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, ReactNode} from 'react';
+import React, {ReactNode} from 'react';
 
 import {StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 
@@ -12,6 +12,19 @@ type MarkdownBlockQuoteProps = {
     iconStyle: ViewStyle | TextStyle;
     children: ReactNode | ReactNode[];
 };
+
+const style = StyleSheet.create({
+    container: {
+        alignItems: 'flex-start',
+        flexDirection: 'row',
+    },
+    childContainer: {
+        flex: 1,
+    },
+    icon: {
+        width: 23,
+    },
+});
 
 const MarkdownBlockQuote = ({children, continueBlock, iconStyle}: MarkdownBlockQuoteProps) => {
     return (
@@ -33,17 +46,4 @@ const MarkdownBlockQuote = ({children, continueBlock, iconStyle}: MarkdownBlockQ
     );
 };
 
-const style = StyleSheet.create({
-    container: {
-        alignItems: 'flex-start',
-        flexDirection: 'row',
-    },
-    childContainer: {
-        flex: 1,
-    },
-    icon: {
-        width: 23,
-    },
-});
-
-export default memo(MarkdownBlockQuote);
+export default MarkdownBlockQuote;

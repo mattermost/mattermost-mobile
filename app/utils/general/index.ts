@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
+
 type SortByCreatAt = (Session | Channel | Team | Post) & {
     create_at: number;
 }
@@ -29,6 +31,13 @@ export const generateId = (): string => {
     });
     return id;
 };
+
+export function hapticFeedback(method: HapticFeedbackTypes = 'impactLight') {
+    ReactNativeHapticFeedback.trigger(method, {
+        enableVibrateFallback: false,
+        ignoreAndroidSystemSettings: false,
+    });
+}
 
 export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
     if (a.create_at > b.create_at) {

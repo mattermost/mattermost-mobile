@@ -129,3 +129,32 @@ export const prepareCommonSystemValues = (
         return undefined;
     }
 };
+
+export const setCurrentChannelId = async (operator: ServerDataOperator, channelId: string) => {
+    try {
+        const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});
+        if (models) {
+            await operator.batchRecords(models);
+        }
+
+        return {currentChannelId: channelId};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const setCurrentTeamAndChannelId = async (operator: ServerDataOperator, teamId?: string, channelId?: string) => {
+    try {
+        const models = await prepareCommonSystemValues(operator, {
+            currentChannelId: channelId,
+            currentTeamId: teamId,
+        });
+        if (models) {
+            await operator.batchRecords(models);
+        }
+
+        return {currentChannelId: channelId};
+    } catch (error) {
+        return {error};
+    }
+};

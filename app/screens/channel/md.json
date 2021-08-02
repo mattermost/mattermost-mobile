@@ -1,0 +1,19 @@
+{
+    "test": "This is a file for testing purposes, should be deleted once is not needed",
+    "value": ":smile: :thanks: :mattermost: :nonexistent:\n\n# Can you please have a look at those 3 files ?\n![welcome image](http://www.microlife-dns.com/welcome-paper-poster-with-colorful-brush-strokes-vector-21849225.jpeg)\n\nlet's add some text here\nand a second line\n\n```js\n1. @components/markdown/markdown.tsx\n2. @components/markdown/transform.ts\n3. @components/markdown/markdown_table_image/index.tsx\n4. another one\n```\n\n> this should be a quote\nof two lines\n\n1. ~~first~~\n2. *second* with a #hashtag\n3. **third**\n\n`code span of one line`\n\n| Syntax      | Description |\n| ----------- | ----------- |\n| Header      | Title       |\n| Paragraph   | Text        |\n\n[google link](https://google.com)\n\nhttps://community.mattermost.com\n\nsome html <h3 id=\"custom-id\">My Great Heading</h3>\n\nthis is an at mention for @elias, @nonexistent and @nahumhbl. and @channel @user15.6.\n\nthis is a @groupMention.\n\n### Mentioning ~town-square and ~forth or a [direct link to the channel](http://192.168.1.6:8065/apps-team/channels/forth). Tap on them to switch channels.",
+    "channelMentions": {
+        "forth": {
+            "display_name": "forth",
+            "team_name":"apps-team"
+        }
+    },
+    "imagesMetadata": {
+        "http://www.microlife-dns.com/welcome-paper-poster-with-colorful-brush-strokes-vector-21849225.jpeg": {
+            "width": 1000,
+            "height": 412,
+            "format": "jpeg",
+            "frame_count": 0
+        }
+    },
+    "jumbo": ":fire: :mattermost: :thanks:\n:the_horns: :not:"
+}

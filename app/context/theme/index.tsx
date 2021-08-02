@@ -62,7 +62,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
 };
 
 export function withTheme<T extends WithThemeProps>(Component: ComponentType<T>): ComponentType<T> {
-    return function ServerUrlComponent(props) {
+    return function ThemeComponent(props) {
         return (
             <Consumer>
                 {(theme: Theme) => (

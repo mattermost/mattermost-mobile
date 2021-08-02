@@ -4,13 +4,15 @@
 /* eslint-disable new-cap */
 
 import React, {memo} from 'react';
-import {TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import {TouchableOpacity, TouchableWithoutFeedback, View, StyleProp, ViewStyle} from 'react-native';
+import {TouchableNativeFeedback} from 'react-native-gesture-handler';
 
 type TouchableProps = {
     testID: string;
     children: React.ReactNode | React.ReactNode[];
     underlayColor: string;
     type: 'native' | 'opacity' | 'none';
+    style?: StyleProp<ViewStyle>;
     [x: string]: any;
 }
 
@@ -21,7 +23,8 @@ const TouchableWithFeedbackAndroid = ({testID, children, underlayColor, type = '
                 <TouchableNativeFeedback
                     testID={testID}
                     {...props}
-                    background={TouchableNativeFeedback.Ripple(underlayColor || '#000', false)}
+                    style={[props.style, {flex: undefined, flexDirection: undefined, width: '100%', height: '100%'}]}
+                    background={TouchableNativeFeedback.Ripple(underlayColor || '#fff', false)}
                 >
                     <View>
                         {children}

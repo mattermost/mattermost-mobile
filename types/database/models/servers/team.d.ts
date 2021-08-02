@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
+import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -42,23 +42,23 @@ export default class TeamModel extends Model {
     allowedDomains: string;
 
     /** channels : All the channels associated with this team */
-    channels: ChannelModel[];
+    channels: Query<ChannelModel>;
 
     /** groupsInTeam : All the groups associated with this team */
-    groupsInTeam: GroupsInTeamModel[];
+    groupsInTeam: Query<GroupsInTeamModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
     myTeam: Relation<MyTeamModel>;
 
     /** slashCommands : All the slash commands associated with this team */
-    slashCommands: SlashCommandModel[];
+    slashCommands: Query<SlashCommandModel>;
 
     /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     teamChannelHistory: Relation<TeamChannelHistoryModel>;
 
     /** members : All the users associated with this team */
-    members: TeamMembershipModel[];
+    members: Query<TeamMembershipModel>;
 
     /** teamSearchHistories : All the searches performed on this team */
-    teamSearchHistories: TeamSearchHistoryModel[];
+    teamSearchHistories: Query<TeamSearchHistoryModel>;
 }

@@ -6,11 +6,9 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientEmojisMix {
-    createCustomEmoji: (emoji: CustomEmoji, imageData: any) => Promise<CustomEmoji>;
     getCustomEmoji: (id: string) => Promise<CustomEmoji>;
     getCustomEmojiByName: (name: string) => Promise<CustomEmoji>;
     getCustomEmojis: (page?: number, perPage?: number, sort?: string) => Promise<CustomEmoji[]>;
-    deleteCustomEmoji: (emojiId: string) => Promise<any>;
     getSystemEmojiImageUrl: (filename: string) => string;
     getCustomEmojiImageUrl: (id: string) => string;
     searchCustomEmoji: (term: string, options?: Record<string, any>) => Promise<CustomEmoji[]>;
@@ -18,31 +16,6 @@ export interface ClientEmojisMix {
 }
 
 const ClientEmojis = (superclass: any) => class extends superclass {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createCustomEmoji = async (emoji: CustomEmoji, imageData: any) => {
-        this.analytics.trackAPI('api_emoji_custom_add');
-
-        // FIXME: Multipart upload with client
-        // const formData = new FormData();
-        // formData.append('image', imageData);
-        // formData.append('emoji', JSON.stringify(emoji));
-        // const request: any = {
-        //     method: 'post',
-        //     body: formData,
-        // };
-
-        // if (formData.getBoundary) {
-        //     request.headers = {
-        //         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`,
-        //     };
-        // }
-
-        // return this.doFetch(
-        //     `${this.getEmojisRoute()}`,
-        //     request,
-        // );
-    };
-
     getCustomEmoji = async (id: string) => {
         return this.doFetch(
             `${this.getEmojisRoute()}/${id}`,
@@ -64,21 +37,12 @@ const ClientEmojis = (superclass: any) => class extends superclass {
         );
     };
 
-    deleteCustomEmoji = async (emojiId: string) => {
-        this.analytics.trackAPI('api_emoji_custom_delete');
-
-        return this.doFetch(
-            `${this.getEmojiRoute(emojiId)}`,
-            {method: 'delete'},
-        );
-    };
-
     getSystemEmojiImageUrl = (filename: string) => {
-        return `${this.url}/static/emoji/${filename}.png`;
+        return `${this.apiClient.baseUrl}static/emoji/${filename}.png`;
     };
 
     getCustomEmojiImageUrl = (id: string) => {
-        return `${this.getEmojiRoute(id)}/image`;
+        return `${this.apiClient.baseUrl}${this.getEmojiRoute(id)}/image`;
     };
 
     searchCustomEmoji = async (term: string, options = {}) => {

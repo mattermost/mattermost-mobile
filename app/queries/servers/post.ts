@@ -13,7 +13,7 @@ const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
 export const queryPostsInChannel = (database: Database, channelId: string): Promise<PostInChannelModel[]> => {
     try {
         return database.get(POSTS_IN_CHANNEL).query(
-            Q.where('channel_id', channelId),
+            Q.where('id', channelId),
             Q.experimentalSortBy('latest', Q.desc),
         ).fetch() as Promise<PostInChannelModel[]>;
     } catch {
@@ -21,12 +21,12 @@ export const queryPostsInChannel = (database: Database, channelId: string): Prom
     }
 };
 
-export const queryPostsChunk = (database: Database, channelId: string, earlies: number, latest: number): Promise<PostModel[]> => {
+export const queryPostsChunk = (database: Database, channelId: string, earliest: number, latest: number): Promise<PostModel[]> => {
     try {
         return database.get(POST).query(
             Q.and(
                 Q.where('channel_id', channelId),
-                Q.where('create_at', Q.between(earlies, latest)),
+                Q.where('create_at', Q.between(earliest, latest)),
                 Q.where('delete_at', Q.eq(0)),
             ),
             Q.experimentalSortBy('create_at', Q.desc),

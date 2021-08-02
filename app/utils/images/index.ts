@@ -1,21 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION, MAX_GIF_SIZE} from '@constants/image';
+import {Dimensions} from 'react-native';
 
-// isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered
-// based on the image's dimensions and frame count.
-export function isGifTooLarge(imageMetadata?: PostImage) {
-    if (imageMetadata?.format !== 'gif') {
-        // Not a gif or from an older server that doesn't count frames
-        return false;
-    }
-
-    const {frame_count: frameCount, height, width} = imageMetadata;
-
-    // Try to estimate the in-memory size of the gif to prevent the device out of memory
-    return width * height * (frameCount || 1) > MAX_GIF_SIZE;
-}
+import {Device} from '@constants';
+import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION, MAX_GIF_SIZE, VIEWPORT_IMAGE_OFFSET, VIEWPORT_IMAGE_REPLY_OFFSET} from '@constants/image';
 
 export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
@@ -55,3 +44,32 @@ export const calculateDimensions = (height: number, width: number, viewPortWidth
         width: imageWidth,
     };
 };
+
+export function getViewPortWidth(isReplyPost: boolean, permanentSidebar = false) {
+    const {width, height} = Dimensions.get('window');
+    let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
+
+    if (permanentSidebar) {
+        portraitPostWidth -= Device.TABLET_WIDTH;
+    }
+
+    if (isReplyPost) {
+        portraitPostWidth -= VIEWPORT_IMAGE_REPLY_OFFSET;
+    }
+
+    return portraitPostWidth;
+}
+
+// isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered
+// based on the image's dimensions and frame count.
+export function isGifTooLarge(imageMetadata?: PostImage) {
+    if (imageMetadata?.format !== 'gif') {
+        // Not a gif or from an older server that doesn't count frames
+        return false;
+    }
+
+    const {frame_count: frameCount, height, width} = imageMetadata;
+
+    // Try to estimate the in-memory size of the gif to prevent the device out of memory
+    return width * height * (frameCount || 1) > MAX_GIF_SIZE;
+}

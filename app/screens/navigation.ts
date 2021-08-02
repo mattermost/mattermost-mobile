@@ -52,28 +52,29 @@ export function resetToChannel(passProps = {}) {
         }],
     };
 
-    let platformStack: Layout = {stack};
-    if (Platform.OS === 'android') {
-        platformStack = {
-            sideMenu: {
-                left: {
-                    component: {
-                        id: Screens.MAIN_SIDEBAR,
-                        name: Screens.MAIN_SIDEBAR,
-                    },
-                },
-                center: {
-                    stack,
-                },
-                right: {
-                    component: {
-                        id: Screens.SETTINGS_SIDEBAR,
-                        name: Screens.SETTINGS_SIDEBAR,
-                    },
-                },
-            },
-        };
-    }
+    const platformStack: Layout = {stack};
+
+    // if (Platform.OS === 'android') {
+    //     platformStack = {
+    //         sideMenu: {
+    //             left: {
+    //                 component: {
+    //                     id: Screens.MAIN_SIDEBAR,
+    //                     name: Screens.MAIN_SIDEBAR,
+    //                 },
+    //             },
+    //             center: {
+    //                 stack,
+    //             },
+    //             right: {
+    //                 component: {
+    //                     id: Screens.SETTINGS_SIDEBAR,
+    //                     name: Screens.SETTINGS_SIDEBAR,
+    //                 },
+    //             },
+    //         },
+    //     };
+    // }
 
     Navigation.setRoot({
         root: {

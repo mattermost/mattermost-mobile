@@ -34,7 +34,7 @@ export interface ChannelHandlerMix {
   handleChannel: ({channels, prepareRecordsOnly}: HandleChannelArgs) => Promise<ChannelModel[]>;
   handleMyChannelSettings: ({settings, prepareRecordsOnly}: HandleMyChannelSettingsArgs) => Promise<MyChannelSettingsModel[]>;
   handleChannelInfo: ({channelInfos, prepareRecordsOnly}: HandleChannelInfoArgs) => Promise<ChannelInfoModel[]>;
-  handleMyChannel: ({myChannels, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
+  handleMyChannel: ({channels, myChannels, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
 }
 
 const ChannelHandler = (superclass: any) => class extends superclass {
@@ -130,12 +130,19 @@ const ChannelHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<MyChannelModel[]>}
      */
-    handleMyChannel = ({myChannels, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
+    handleMyChannel = ({channels, myChannels, prepareRecordsOnly = true}: HandleMyChannelArgs): Promise<MyChannelModel[]> => {
         if (!myChannels.length) {
             throw new DataOperatorException(
                 'An empty "myChannels" array has been passed to the handleMyChannel method',
             );
         }
+
+        myChannels.forEach((my) => {
+            const channel = channels.find((c) => c.id === my.channel_id);
+            if (channel) {
+                my.msg_count = Math.max(0, channel.total_msg_count - my.msg_count);
+            }
+        });
 
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: myChannels,

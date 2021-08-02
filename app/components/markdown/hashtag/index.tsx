@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo} from 'react';
+import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
 import {popToRoot, showSearchModal, dismissAllModals} from '@screens/navigation';
@@ -30,4 +30,4 @@ const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
     );
 };
 
-export default memo(Hashtag);
+export default Hashtag;

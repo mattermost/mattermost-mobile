@@ -4,11 +4,12 @@
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
 
+import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {fetchProfilesPerChannels} from './user';
 
@@ -17,6 +18,31 @@ export type MyChannelsRequest = {
     memberships?: ChannelMembership[];
     error?: never;
 }
+
+export const fetchChannelByName = async (serverUrl: string, teamId: string, channelName: string, fetchOnly = false) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const channel = await client.getChannelByName(teamId, channelName, true);
+
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            }
+        }
+
+        return {channel};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
 
 export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false): Promise<MyChannelsRequest> => {
     let client;
@@ -105,5 +131,121 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (operator) {
         operator.handleChannel({channels: directChannels, prepareRecordsOnly: false});
+    }
+};
+
+export const joinChannel = async (serverUrl: string, userId: string, teamId: string, channelId?: string, channelName?: string, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    let member: ChannelMembership | undefined;
+    let channel: Channel | undefined;
+    try {
+        if (channelId) {
+            member = await client.addToChannel(userId, channelId);
+            channel = await client.getChannel(channelId);
+        } else if (channelName) {
+            channel = await client.getChannelByName(teamId, channelName, true);
+            if ([General.GM_CHANNEL, General.DM_CHANNEL].includes(channel.type)) {
+                member = await client.getChannelMember(channel.id, userId);
+            } else {
+                member = await client.addToChannel(userId, channel.id);
+            }
+        }
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+
+    try {
+        if (channel && member && !fetchOnly) {
+            fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
+
+            const modelPromises: Array<Promise<Model[]>> = [];
+            const prepare = await prepareMyChannelsForTeam(operator, teamId, [channel], [member]);
+            if (prepare) {
+                modelPromises.push(...prepare);
+            }
+            if (modelPromises.length) {
+                const models = await Promise.all(modelPromises);
+                const flattenedModels = models.flat() as Model[];
+                if (flattenedModels?.length > 0) {
+                    try {
+                        await operator.batchRecords(flattenedModels);
+                    } catch {
+                        // eslint-disable-next-line no-console
+                        console.log('FAILED TO BATCH CHANNELS');
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        return {error};
+    }
+
+    return {channel, member};
+};
+
+export const markChannelAsViewed = async (serverUrl: string, channelId: string, previousChannelId = '', markOnServer = true) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await queryMyChannel(database, channelId);
+    const prevMember = await queryMyChannel(database, previousChannelId);
+    if (markOnServer) {
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+            client.viewMyChannel(channelId, prevMember?.manuallyUnread ? '' : previousChannelId).catch(() => {
+                // do nothing just adding the handler to avoid the warning
+            });
+        } catch (error) {
+            return {error};
+        }
+    }
+
+    const models = [];
+    const lastViewedAt = Date.now();
+    if (member) {
+        member.prepareUpdate((m) => {
+            m.messageCount = 0;
+            m.mentionsCount = 0;
+            m.manuallyUnread = false;
+            m.lastViewedAt = lastViewedAt;
+        });
+
+        models.push(member);
+    }
+
+    if (prevMember && !prevMember.manuallyUnread) {
+        prevMember.prepareUpdate((m) => {
+            m.messageCount = 0;
+            m.mentionsCount = 0;
+            m.manuallyUnread = false;
+            m.lastViewedAt = lastViewedAt;
+        });
+
+        models.push(prevMember);
+    }
+
+    try {
+        if (models.length) {
+            const {operator} = DatabaseManager.serverDatabases[serverUrl];
+            await operator.batchRecords(models);
+        }
+
+        return {data: true};
+    } catch (error) {
+        return {error};
     }
 };

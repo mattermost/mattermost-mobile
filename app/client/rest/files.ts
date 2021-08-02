@@ -10,7 +10,7 @@ export interface ClientFilesMix {
 
 const ClientFiles = (superclass: any) => class extends superclass {
     getFileUrl(fileId: string, timestamp: number) {
-        let url = `${this.getFileRoute(fileId)}`;
+        let url = `${this.apiClient.baseUrl}${this.getFileRoute(fileId)}`;
         if (timestamp) {
             url += `?${timestamp}`;
         }
@@ -19,7 +19,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
     }
 
     getFileThumbnailUrl(fileId: string, timestamp: number) {
-        let url = `${this.getFileRoute(fileId)}/thumbnail`;
+        let url = `${this.apiClient.baseUrl}${this.getFileRoute(fileId)}/thumbnail`;
         if (timestamp) {
             url += `?${timestamp}`;
         }
@@ -28,7 +28,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
     }
 
     getFilePreviewUrl(fileId: string, timestamp: number) {
-        let url = `${this.getFileRoute(fileId)}/preview`;
+        let url = `${this.apiClient.baseUrl}${this.getFileRoute(fileId)}/preview`;
         if (timestamp) {
             url += `?${timestamp}`;
         }

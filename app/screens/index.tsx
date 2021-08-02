@@ -60,6 +60,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'AdvancedSettings':
     //     screen = require('@screens/settings/advanced_settings').default;
     //     break;
+    case 'BottomSheet':
+        screen = require('@screens/bottom_sheet').default;
+        break;
     // case 'ChannelAddMembers':
     //     screen = require('@screens/channel_add_members').default;
     //     break;
@@ -157,9 +160,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'NotificationSettingsMobile':
     //     screen = require('@screens/settings/notification_settings_mobile').default;
     //     break;
-    // case 'OptionsModal':
-    //     screen = require('@screens/options_modal').default;
-    //     break;
     // case 'Permalink':
     //     screen = require('@screens/permalink').default;
     //     break;
@@ -220,7 +220,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withIntl(withManagedConfig(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(screen)), extraStyles)));
     }
 });
 
@@ -228,6 +228,6 @@ export function registerScreens() {
     const channelScreen = require('@screens/channel').default;
     const serverScreen = require('@screens/server').default;
 
-    Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withIntl(withServerDatabase(withManagedConfig(channelScreen)))));
+    Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 }

@@ -4,18 +4,19 @@
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {PureComponent, ReactElement} from 'react';
-import {GestureResponderEvent, Platform, Text, TextStyle, View} from 'react-native';
+import {GestureResponderEvent, Platform, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 
-import AtMention from '@components/at_mention';
-import ChannelLink from '@components/channel_link';
+import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
-import {withTheme} from '@context/theme';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
+import AtMention from './at_mention';
+import ChannelMention, {ChannelMentions} from './channel_mention';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
+import MarkdownImage from './markdown_image';
 import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
@@ -25,52 +26,45 @@ import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
 import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
-
 type MarkdownProps = {
-    autolinkedUrlSchemes: string[];
-    baseTextStyle: TextStyle;
+    autolinkedUrlSchemes?: string[];
+    baseTextStyle: StyleProp<TextStyle>;
     blockStyles: {
-        adjacentParagraph: object;
-        horizontalRule: object;
-        quoteBlockIcon: object;
+        adjacentParagraph: ViewStyle;
+        horizontalRule: ViewStyle;
+        quoteBlockIcon: TextStyle;
     };
-    channelMentions: Record<string, ChannelModel>;
-    disableAtChannelMentionHighlight: boolean;
-    disableAtMentions: boolean;
-    disableChannelLink: boolean;
-    disableGallery: boolean;
-    disableHashtags: boolean;
-    imagesMetadata: Record<string, PostImage>;
-    isEdited: boolean;
-    isReplyPost: boolean;
-    isSearchResult: boolean;
-    mentionKeys: Array<{ key: string }>;
-    minimumHashtagLength: number;
-    onChannelLinkPress: (channel: ChannelModel) => void;
-    onPostPress: (event: GestureResponderEvent) => void;
-    postId: string;
+    channelMentions?: ChannelMentions;
+    disableAtMentions?: boolean;
+    disableChannelLink?: boolean;
+    disableGallery?: boolean;
+    disableHashtags?: boolean;
+    imagesMetadata?: Record<string, PostImage>;
+    isEdited?: boolean;
+    isReplyPost?: boolean;
+    isSearchResult?: boolean;
+    mentionKeys?: UserMentionKey[];
+    minimumHashtagLength?: number;
+    onPostPress?: (event: GestureResponderEvent) => void;
+    postId?: string;
     textStyles: {
-        code: TextStyle;
-        codeBlock: TextStyle;
-        error: TextStyle;
-        link: TextStyle;
-        mention: TextStyle;
+        [key: string]: TextStyle;
     };
     theme: Theme;
     value: string | number;
 }
 
-class Markdown extends PureComponent<MarkdownProps, null> {
+class Markdown extends PureComponent<MarkdownProps> {
     static defaultProps = {
         textStyles: {},
         blockStyles: {},
         disableHashtags: false,
         disableAtMentions: false,
         disableChannelLink: false,
-        disableAtChannelMentionHighlight: false,
         disableGallery: false,
         value: '',
+        minimumHashtagLength: 3,
+        mentionKeys: [],
     };
 
     private parser: Parser;
@@ -92,55 +86,57 @@ class Markdown extends PureComponent<MarkdownProps, null> {
 
     urlFilter = (url: string) => {
         const scheme = getScheme(url);
-        return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme) !== -1;
+        return !scheme || this.props.autolinkedUrlSchemes?.indexOf(scheme) !== -1;
     };
 
     createRenderer = () => {
+        const renderers: any = {
+            text: this.renderText,
+
+            emph: Renderer.forwardChildren,
+            strong: Renderer.forwardChildren,
+            del: Renderer.forwardChildren,
+            code: this.renderCodeSpan,
+            link: this.renderLink,
+            image: this.renderImage,
+            atMention: this.renderAtMention,
+            channelLink: this.renderChannelLink,
+            emoji: this.renderEmoji,
+            hashtag: this.renderHashtag,
+
+            paragraph: this.renderParagraph,
+            heading: this.renderHeading,
+            codeBlock: this.renderCodeBlock,
+            blockQuote: this.renderBlockQuote,
+
+            list: this.renderList,
+            item: this.renderListItem,
+
+            hardBreak: this.renderHardBreak,
+            thematicBreak: this.renderThematicBreak,
+            softBreak: this.renderSoftBreak,
+
+            htmlBlock: this.renderHtml,
+            htmlInline: this.renderHtml,
+
+            table: this.renderTable,
+            table_row: this.renderTableRow,
+            table_cell: this.renderTableCell,
+
+            mention_highlight: Renderer.forwardChildren,
+
+            editedIndicator: this.renderEditedIndicator,
+        };
+
         return new Renderer({
-            renderers: {
-                text: this.renderText,
-
-                emph: Renderer.forwardChildren,
-                strong: Renderer.forwardChildren,
-                del: Renderer.forwardChildren,
-                code: this.renderCodeSpan,
-                link: this.renderLink,
-                image: this.renderImage,
-                atMention: this.renderAtMention,
-                channelLink: this.renderChannelLink,
-                emoji: this.renderEmoji,
-                hashtag: this.renderHashtag,
-
-                paragraph: this.renderParagraph,
-                heading: this.renderHeading,
-                codeBlock: this.renderCodeBlock,
-                blockQuote: this.renderBlockQuote,
-
-                list: this.renderList,
-                item: this.renderListItem,
-
-                hardBreak: this.renderHardBreak,
-                thematicBreak: this.renderThematicBreak,
-                softBreak: this.renderSoftBreak,
-
-                htmlBlock: this.renderHtml,
-                htmlInline: this.renderHtml,
-
-                table: this.renderTable,
-                table_row: this.renderTableRow,
-                table_cell: this.renderTableCell,
-
-                mention_highlight: Renderer.forwardChildren,
-
-                editedIndicator: this.renderEditedIndicator,
-            },
+            renderers,
             renderParagraphsInLists: true,
             getExtraPropsForNode: this.getExtraPropsForNode,
         });
     };
 
     getExtraPropsForNode = (node: any) => {
-        const extraProps = {
+        const extraProps: Record<string, any> = {
             continue: node.continue,
             index: node.index,
         };
@@ -153,10 +149,10 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         return extraProps;
     };
 
-    computeTextStyle = (baseStyle: any, context: any) => {
+    computeTextStyle = (baseStyle: StyleProp<TextStyle>, context: any) => {
         const {textStyles} = this.props;
         type TextType = keyof typeof textStyles;
-        const contextStyles = context.map((type: any) => textStyles[type as TextType]).filter((f: any) => f !== undefined);
+        const contextStyles: TextStyle[] = context.map((type: any) => textStyles[type as TextType]).filter((f: any) => f !== undefined);
         return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
@@ -188,7 +184,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         return <Text style={this.computeTextStyle([baseTextStyle, code], context)}>{literal}</Text>;
     };
 
-    renderImage = ({context, src}: {context: string[]; src: string}) => {
+    renderImage = ({linkDestination, context, src}: {linkDestination?: string; context: string[]; src: string}) => {
         if (!this.props.imagesMetadata) {
             return null;
         }
@@ -197,16 +193,25 @@ class Markdown extends PureComponent<MarkdownProps, null> {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
-                    disable={this.props.disableGallery}
+                    disabled={this.props.disableGallery}
                     imagesMetadata={this.props.imagesMetadata}
-                    postId={this.props.postId}
+                    postId={this.props.postId!}
                     source={src}
                 />
             );
         }
 
-        //todo: render MarkdownImage just like on master branch
-        return null;
+        return (
+            <MarkdownImage
+                disabled={this.props.disableGallery}
+                errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
+                linkDestination={linkDestination}
+                imagesMetadata={this.props.imagesMetadata}
+                isReplyPost={this.props.isReplyPost}
+                postId={this.props.postId!}
+                source={src}
+            />
+        );
     };
 
     renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
@@ -223,7 +228,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
                 isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
                 onPostPress={this.props.onPostPress}
-                mentionKeys={this.props.mentionKeys}
+                mentionKeys={this.props.mentionKeys || []}
             />
         );
     };
@@ -234,18 +239,34 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         }
 
         return (
-            <ChannelLink
+            <ChannelMention
                 linkStyle={this.props.textStyles.link}
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
-                onChannelLinkPress={this.props.onChannelLinkPress}
                 channelName={channelName}
                 channelMentions={this.props.channelMentions}
             />
         );
     };
 
-    renderEmoji = () => {
-        //todo: render Emoji just like on master branch
+    renderEmoji = ({context, emojiName, literal}: {context: string[]; emojiName: string; literal: string}) => {
+        let customEmojiStyle;
+        const flat = StyleSheet.flatten(this.props.baseTextStyle);
+
+        if (flat) {
+            const size = Math.abs(((flat.lineHeight || 0) - (flat.fontSize || 0))) / 2;
+            if (size > 0) {
+                customEmojiStyle = {marginRight: size, top: size};
+            }
+        }
+        return (
+            <Emoji
+                emojiName={emojiName}
+                literal={literal}
+                testID='markdown_emoji'
+                textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
+                customEmojiStyle={customEmojiStyle}
+            />
+        );
     };
 
     renderHashtag = ({context, hashtag}: {context: string[]; hashtag: string}) => {
@@ -282,12 +303,12 @@ class Markdown extends PureComponent<MarkdownProps, null> {
     };
 
     renderHeading = ({children, level}: {children: ReactElement; level: string}) => {
-        const {blockStyles} = this.props;
+        const {textStyles} = this.props;
         const containerStyle = [
             getStyleSheet(this.props.theme).block,
-            blockStyles[`heading${level}`],
+            textStyles[`heading${level}`],
         ];
-        const textStyle = blockStyles[`heading${level}Text`];
+        const textStyle = textStyles[`heading${level}Text`];
         return (
             <View style={containerStyle}>
                 <Text style={textStyle}>
@@ -324,9 +345,9 @@ class Markdown extends PureComponent<MarkdownProps, null> {
     renderList = ({children, start, tight, type}: any) => {
         return (
             <MarkdownList
-                isOrdered={type !== 'bullet'}
+                ordered={type !== 'bullet'}
                 start={start}
-                isTight={tight}
+                tight={tight}
             >
                 {children}
             </MarkdownList>
@@ -384,6 +405,7 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         return (
             <MarkdownTable
                 numColumns={numColumns}
+                theme={this.props.theme}
             >
                 {children}
             </MarkdownTable>
@@ -437,10 +459,11 @@ class Markdown extends PureComponent<MarkdownProps, null> {
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
         ast = pullOutImages(ast);
-        ast = highlightMentions(ast, this.props.mentionKeys);
+        if (this.props.mentionKeys) {
+            ast = highlightMentions(ast, this.props.mentionKeys);
+        }
 
         if (this.props.isEdited) {
-            //@ts-expect-error: edited_indicator is not in the declaration file
             const editIndicatorNode = new Node('edited_indicator');
             if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
                 ast.lastChild.appendChild(editIndicatorNode);
@@ -484,4 +507,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default withTheme(Markdown);
+export default Markdown;
