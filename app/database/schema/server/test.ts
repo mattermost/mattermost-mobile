@@ -112,6 +112,7 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         last_post_at: {name: 'last_post_at', type: 'number'},
                         last_viewed_at: {name: 'last_viewed_at', type: 'number'},
+                        manually_unread: {name: 'manually_unread', type: 'boolean'},
                         mentions_count: {name: 'mentions_count', type: 'number'},
                         message_count: {name: 'message_count', type: 'number'},
                         roles: {name: 'roles', type: 'string'},
@@ -119,6 +120,7 @@ describe('*** Test schema for SERVER database ***', () => {
                     columnArray: [
                         {name: 'last_post_at', type: 'number'},
                         {name: 'last_viewed_at', type: 'number'},
+                        {name: 'manually_unread', type: 'boolean'},
                         {name: 'mentions_count', type: 'number'},
                         {name: 'message_count', type: 'number'},
                         {name: 'roles', type: 'string'},

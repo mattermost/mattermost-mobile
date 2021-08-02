@@ -129,7 +129,11 @@ class GlobalEventHandler {
                 );
             }
 
-            fetchConfigAndLicense(serverUrl);
+            const fetchTimeout = setTimeout(() => {
+                // Defer the call to avoid collision with other request writting to the db
+                fetchConfigAndLicense(serverUrl);
+                clearTimeout(fetchTimeout);
+            }, 3000);
         }
     };
 

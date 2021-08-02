@@ -201,7 +201,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: myTeams, key: 'team_id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: myTeams, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'id',

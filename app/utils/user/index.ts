@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {General, Preferences} from '@constants';
+import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
-export function displayUsername(user?: UserProfile, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
+export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
     let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
 
     if (user) {
@@ -39,13 +40,24 @@ export function displayGroupMessageName(users: UserProfile[], locale?: string, t
     return names.sort(sortUsernames).join(', ');
 }
 
-export function getFullName(user: UserProfile): string {
-    if (user.first_name && user.last_name) {
-        return `${user.first_name} ${user.last_name}`;
-    } else if (user.first_name) {
-        return user.first_name;
-    } else if (user.last_name) {
-        return user.last_name;
+export function getFullName(user: UserProfile | UserModel): string {
+    let firstName: string;
+    let lastName: string;
+
+    if (user instanceof UserModel) {
+        firstName = user.firstName;
+        lastName = user.lastName;
+    } else {
+        firstName = user.first_name;
+        lastName = user.last_name;
+    }
+
+    if (firstName && lastName) {
+        return `${firstName} ${lastName}`;
+    } else if (firstName) {
+        return firstName;
+    } else if (lastName) {
+        return lastName;
     }
 
     return '';
@@ -71,3 +83,45 @@ export function isGuest(roles: string): boolean {
 export function isSystemAdmin(roles: string): boolean {
     return isRoleInRoles(roles, General.SYSTEM_ADMIN_ROLE);
 }
+
+export const getUsersByUsername = (users: UserModel[]) => {
+    const usersByUsername: Dictionary<UserModel> = {};
+
+    for (const user of users) {
+        usersByUsername[user.username] = user;
+    }
+
+    return usersByUsername;
+};
+
+export const getUserMentionKeys = (user: UserModel) => {
+    const keys: UserMentionKey[] = [];
+
+    if (!user.notifyProps) {
+        return keys;
+    }
+
+    if (user.notifyProps.mention_keys) {
+        const mentions = user.notifyProps.mention_keys.split(',').map((key) => ({key}));
+        keys.push(...mentions);
+    }
+
+    if (user.notifyProps.first_name === 'true' && user.firstName) {
+        keys.push({key: user.firstName, caseSensitive: true});
+    }
+
+    if (user.notifyProps.channel === 'true') {
+        keys.push(
+            {key: '@channel'},
+            {key: '@all'},
+            {key: '@here'},
+        );
+    }
+
+    const usernameKey = `@${user.username}`;
+    if (keys.findIndex((item) => item.key === usernameKey) === -1) {
+        keys.push({key: usernameKey});
+    }
+
+    return keys;
+};

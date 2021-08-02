@@ -3,6 +3,8 @@
 
 import {General, Preferences} from '@constants';
 
+import type PreferenceModel from '@typings/database/models/servers/preference';
+
 export function getPreferenceValue(preferences: PreferenceType[], category: string, name: string, defaultValue: unknown = '') {
     const pref = preferences.find((p) => p.category === category && p.name === name);
 
@@ -27,9 +29,9 @@ export function getPreferenceAsInt(preferences: PreferenceType[], category: stri
     return defaultValue;
 }
 
-export function getTeammateNameDisplaySetting(preferences: PreferenceType[], config?: ClientConfig, license?: ClientLicense) {
+export function getTeammateNameDisplaySetting(preferences: PreferenceType[] | PreferenceModel[], config?: ClientConfig, license?: ClientLicense) {
     const useAdminTeammateNameDisplaySetting = license?.LockTeammateNameDisplay === 'true' && config?.LockTeammateNameDisplay === 'true';
-    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '') as string;
+    const preference = getPreferenceValue(preferences as PreferenceType[], Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '') as string;
     if (preference && !useAdminTeammateNameDisplaySetting) {
         return preference;
     } else if (config?.TeammateNameDisplay) {

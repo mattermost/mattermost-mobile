@@ -17,6 +17,7 @@ export interface ClientTeamsMix {
     getTeamsForUser: (userId: string) => Promise<Team[]>;
     getMyTeamMembers: () => Promise<TeamMembership[]>;
     getMyTeamUnreads: () => Promise<TeamUnread[]>;
+    getTeamUnreads: (teamId: string) => Promise<TeamUnread>;
     getTeamMembers: (teamId: string, page?: number, perPage?: number) => Promise<TeamMembership[]>;
     getTeamMember: (teamId: string, userId: string) => Promise<TeamMembership>;
     addToTeam: (teamId: string, userId: string) => Promise<TeamMembership>;
@@ -113,6 +114,13 @@ const ClientTeams = (superclass: any) => class extends superclass {
             {method: 'get'},
         );
     };
+
+    getTeamUnreads = async (teamId: string) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/${this.getTeamRoute(teamId)}/unread`,
+            {method: 'get'},
+        );
+    }
 
     getTeamMembers = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(

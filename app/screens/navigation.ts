@@ -12,6 +12,9 @@ import EphemeralStore from '@store/ephemeral_store';
 import type {LaunchProps} from '@typings/launch';
 
 function getThemeFromState() {
+    if (EphemeralStore.theme) {
+        return EphemeralStore.theme;
+    }
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
     }
@@ -52,28 +55,29 @@ export function resetToChannel(passProps = {}) {
         }],
     };
 
-    let platformStack: Layout = {stack};
-    if (Platform.OS === 'android') {
-        platformStack = {
-            sideMenu: {
-                left: {
-                    component: {
-                        id: Screens.MAIN_SIDEBAR,
-                        name: Screens.MAIN_SIDEBAR,
-                    },
-                },
-                center: {
-                    stack,
-                },
-                right: {
-                    component: {
-                        id: Screens.SETTINGS_SIDEBAR,
-                        name: Screens.SETTINGS_SIDEBAR,
-                    },
-                },
-            },
-        };
-    }
+    const platformStack: Layout = {stack};
+
+    // if (Platform.OS === 'android') {
+    //     platformStack = {
+    //         sideMenu: {
+    //             left: {
+    //                 component: {
+    //                     id: Screens.MAIN_SIDEBAR,
+    //                     name: Screens.MAIN_SIDEBAR,
+    //                 },
+    //             },
+    //             center: {
+    //                 stack,
+    //             },
+    //             right: {
+    //                 component: {
+    //                     id: Screens.SETTINGS_SIDEBAR,
+    //                     name: Screens.SETTINGS_SIDEBAR,
+    //                 },
+    //             },
+    //         },
+    //     };
+    // }
 
     Navigation.setRoot({
         root: {

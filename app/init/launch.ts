@@ -5,8 +5,11 @@ import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {Screens} from '@constants';
+import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
+import {queryThemeForCurrentTeam} from '@queries/servers/preference';
 import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
 
@@ -62,6 +65,10 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     if (serverUrl) {
         const credentials = await getServerCredentials(serverUrl);
         if (credentials) {
+            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            if (database) {
+                EphemeralStore.theme = await queryThemeForCurrentTeam(database);
+            }
             launchToChannel({...props, serverUrl}, resetNavigation);
             return;
         }

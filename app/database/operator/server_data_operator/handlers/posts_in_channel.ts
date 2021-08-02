@@ -74,12 +74,10 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         const latest = lastPost.create_at;
 
         // Find the records in the PostsInChannel table that have a matching channel_id
-        // const chunks = (await database.collections.get(POSTS_IN_CHANNEL).query(Q.where('channel_id', channelId)).fetch()) as PostsInChannel[];
-        const chunks = (await retrieveRecords({
-            database: this.database,
-            tableName: POSTS_IN_CHANNEL,
-            condition: (Q.where('id', channelId), Q.experimentalSortBy('latest', Q.desc)),
-        })) as PostsInChannelModel[];
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('id', channelId),
+            Q.experimentalSortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
 
         // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
         if (chunks.length === 0) {

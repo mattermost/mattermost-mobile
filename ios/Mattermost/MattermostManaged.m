@@ -78,7 +78,7 @@ RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemov
       BOOL  successCode  = [fileManager removeItemAtPath:databaseDir error:&error];
       NSNumber * success= [NSNumber numberWithBool:successCode];
 
-      callback(@[error, success]);
+      callback(@[(error ?: [NSNull null]), success]);
   }
   @catch (NSException *exception) {
       NSLog(@"%@", exception.reason);

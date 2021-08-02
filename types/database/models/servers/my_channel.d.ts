@@ -17,6 +17,9 @@ export default class MyChannelModel extends Model {
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     lastViewedAt: number;
 
+    /** manually_unread : Determine if the user marked a post as unread */
+    manuallyUnread: boolean;
+
     /** mentions_count : The number of mentions on this channel */
     mentionsCount: number;
 

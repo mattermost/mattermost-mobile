@@ -3,7 +3,10 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 
+import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+
+import {queryCurrentTeamId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -24,4 +27,18 @@ export const queryPreferencesByCategoryAndName = (database: Database, category: 
         Q.where('category', category),
         Q.where('name', name),
     ).fetch() as Promise<PreferenceModel[]>;
+};
+
+export const queryThemeForCurrentTeam = async (database: Database) => {
+    const currentTeamId = await queryCurrentTeamId(database);
+    const teamTheme = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, currentTeamId);
+    if (teamTheme.length) {
+        try {
+            return JSON.parse(teamTheme[0].value) as Theme;
+        } catch {
+            return undefined;
+        }
+    }
+
+    return undefined;
 };

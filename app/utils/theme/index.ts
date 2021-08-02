@@ -5,6 +5,7 @@ import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {mergeNavigationOptions} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import type {Options} from 'react-native-navigation';
 
@@ -86,8 +87,8 @@ export function changeOpacity(oldColor: string, opacity: number): string {
     return `rgba(${red},${green},${blue},${alpha * opacity})`;
 }
 
-export function concatStyles(...styles: any) {
-    return [].concat(styles);
+export function concatStyles<T>(...styles: T[]) {
+    return ([] as T[]).concat(...styles);
 }
 
 export function setNavigatorStyles(componentId: string, theme: Theme) {
@@ -114,6 +115,12 @@ export function setNavigatorStyles(componentId: string, theme: Theme) {
     }
 
     mergeNavigationOptions(componentId, options);
+}
+
+export function setNavigationStackStyles(theme: Theme) {
+    EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+        setNavigatorStyles(componentId, theme);
+    });
 }
 
 export function getKeyboardAppearanceFromTheme(theme: Theme) {
@@ -148,4 +155,36 @@ export function hexToHue(hexColor: string) {
     }
 
     return hue;
+}
+
+function blendComponent(background: number, foreground: number, opacity: number): number {
+    return ((1 - opacity) * background) + (opacity * foreground);
+}
+
+export function blendColors(background: string, foreground: string, opacity: number): string {
+    const backgroundComponents = getComponents(background);
+    const foregroundComponents = getComponents(foreground);
+
+    const red = Math.floor(blendComponent(
+        backgroundComponents.red,
+        foregroundComponents.red,
+        opacity,
+    ));
+    const green = Math.floor(blendComponent(
+        backgroundComponents.green,
+        foregroundComponents.green,
+        opacity,
+    ));
+    const blue = Math.floor(blendComponent(
+        backgroundComponents.blue,
+        foregroundComponents.blue,
+        opacity,
+    ));
+    const alpha = blendComponent(
+        backgroundComponents.alpha,
+        foregroundComponents.alpha,
+        opacity,
+    );
+
+    return `rgba(${red},${green},${blue},${alpha})`;
 }

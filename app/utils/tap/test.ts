@@ -44,6 +44,6 @@ describe('Prevent double tap', () => {
             test();
             expect(testFunction).toHaveBeenCalledTimes(2);
             done();
-        }, 300);
+        }, 750);
     });
 });

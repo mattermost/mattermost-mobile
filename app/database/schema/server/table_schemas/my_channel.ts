@@ -12,6 +12,7 @@ export default tableSchema({
     columns: [
         {name: 'last_post_at', type: 'number'},
         {name: 'last_viewed_at', type: 'number'},
+        {name: 'manually_unread', type: 'boolean'},
         {name: 'mentions_count', type: 'number'},
         {name: 'message_count', type: 'number'},
         {name: 'roles', type: 'string'},

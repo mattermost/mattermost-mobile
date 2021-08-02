@@ -8,6 +8,8 @@ import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import EphemeralStore from '@store/ephemeral_store';
+import {setNavigationStackStyles} from '@utils/theme';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type {PreferenceModel, SystemModel} from '@database/models/server';
@@ -42,6 +44,10 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             if (teamTheme?.value) {
                 try {
                     const theme = JSON.parse(teamTheme.value) as Theme;
+                    EphemeralStore.theme = theme;
+                    requestAnimationFrame(() => {
+                        setNavigationStackStyles(theme);
+                    });
                     return theme;
                 } catch {
                     // no theme change
@@ -62,7 +68,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
 };
 
 export function withTheme<T extends WithThemeProps>(Component: ComponentType<T>): ComponentType<T> {
-    return function ServerUrlComponent(props) {
+    return function ThemeComponent(props) {
         return (
             <Consumer>
                 {(theme: Theme) => (
