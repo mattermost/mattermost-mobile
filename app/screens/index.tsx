@@ -52,7 +52,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
     case 'About':
-        screen = require('@screens/about').default;
+        screen =  withServerDatabase(require('@screens/about').default);
         break;
     // case 'AddReaction':
     //     screen = require('@screens/add_reaction').default;
@@ -220,7 +220,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(screen))), extraStyles)));
+        Navigation.registerComponent(screenName, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(screen)), extraStyles)));
     }
 });
 

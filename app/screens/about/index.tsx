@@ -506,15 +506,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const withHOC = injectIntl(withTheme(ConnectedAbout));
+export default withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
+    config: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+    license: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
+}))(injectIntl(withTheme(ConnectedAbout))));
 
-const enhanceWithObs = withObservables([], ({database, ...props}: WithDatabaseArgs) => {
-    console.log('>>>>>>>>>>>>>>> database', {database, props});
-    return {
-        config: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-        license: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
-    };
-})(withHOC);
-
-const withDatabases = withDatabase(enhanceWithObs);
-export default withDatabases;
