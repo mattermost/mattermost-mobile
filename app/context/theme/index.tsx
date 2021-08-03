@@ -40,10 +40,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     const getTheme = (): Theme => {
         if (currentTeamId.length) {
             const teamId = currentTeamId[0]?.value;
-            let teamTheme = themes.find((t) => t.name === teamId);
-            if (!teamTheme) {
-                teamTheme = themes[0];
-            }
+            const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
             if (teamTheme?.value) {
                 try {
                     const theme = JSON.parse(teamTheme.value) as Theme;
