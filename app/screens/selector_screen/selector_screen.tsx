@@ -42,7 +42,7 @@ import SelectedOptions from './selected_options';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
-type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>
+type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
 
 type Props = {
     actions: {
@@ -135,10 +135,10 @@ export default class SelectorScreen extends PureComponent<Props, State> {
 
         switch (this.props.dataSource) {
         case ViewTypes.DATA_SOURCE_USERS: {
-            const currentList = this.state.multiselectSelected as Dictionary<UserProfile>;
+            const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
             const typedItem = item as UserProfile;
-            const multiselectSelected = {...currentList};
-            if (currentList[typedItem.id]) {
+            const multiselectSelected = {...currentSelected};
+            if (currentSelected[typedItem.id]) {
                 delete multiselectSelected[typedItem.id];
             } else {
                 multiselectSelected[typedItem.id] = typedItem;
@@ -147,10 +147,10 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             return;
         }
         case ViewTypes.DATA_SOURCE_CHANNELS: {
-            const currentList = this.state.multiselectSelected as Dictionary<Channel>;
+            const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
             const typedItem = item as Channel;
-            const multiselectSelected = {...currentList};
-            if (currentList[typedItem.id]) {
+            const multiselectSelected = {...currentSelected};
+            if (currentSelected[typedItem.id]) {
                 delete multiselectSelected[typedItem.id];
             } else {
                 multiselectSelected[typedItem.id] = typedItem;
@@ -159,10 +159,10 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             return;
         }
         default: {
-            const currentList = this.state.multiselectSelected as Dictionary<DialogOption>;
+            const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
             const typedItem = item as DialogOption;
-            const multiselectSelected = {...currentList};
-            if (currentList[typedItem.value]) {
+            const multiselectSelected = {...currentSelected};
+            if (currentSelected[typedItem.value]) {
                 delete multiselectSelected[typedItem.value];
             } else {
                 multiselectSelected[typedItem.value] = typedItem;
@@ -186,25 +186,25 @@ export default class SelectorScreen extends PureComponent<Props, State> {
     handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
         switch (this.props.dataSource) {
         case ViewTypes.DATA_SOURCE_USERS: {
-            const currentList = this.state.multiselectSelected as Dictionary<UserProfile>;
+            const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
             const typedItem = item as UserProfile;
-            const multiselectSelected = {...currentList};
+            const multiselectSelected = {...currentSelected};
             delete multiselectSelected[typedItem.id];
             this.setState({multiselectSelected});
             return;
         }
         case ViewTypes.DATA_SOURCE_CHANNELS: {
-            const currentList = this.state.multiselectSelected as Dictionary<Channel>;
+            const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
             const typedItem = item as Channel;
-            const multiselectSelected = {...currentList};
+            const multiselectSelected = {...currentSelected};
             delete multiselectSelected[typedItem.id];
             this.setState({multiselectSelected});
             return;
         }
         default: {
-            const currentList = this.state.multiselectSelected as Dictionary<DialogOption>;
+            const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
             const typedItem = item as DialogOption;
-            const multiselectSelected = {...currentList};
+            const multiselectSelected = {...currentSelected};
             delete multiselectSelected[typedItem.value];
             this.setState({multiselectSelected});
         }
