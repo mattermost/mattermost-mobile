@@ -1,9 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Screens} from '@constants';
+import {ABOUT} from '@constants/screens';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {goToScreen} from '@screens/navigation';
 import React, {useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View, ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -69,12 +73,18 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
     //todo: https://mattermost.atlassian.net/browse/MM-37266
 
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
 
     const serverUrl = useServerUrl();
 
     const doLogout = () => {
         logout(serverUrl!);
+    };
+
+    const goToAbout = () => {
+        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: 'Mattermost'});
+        goToScreen(Screens.ABOUT, title);
     };
 
     const renderComponent = useMemo(() => {
@@ -98,8 +108,9 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
     const blockStyle = getMarkdownBlockStyles(theme);
     const [inViewport, setInViewport] = useState(false);
 
-    setTimeout(async () => {
+    const viewPortTimer = setTimeout(async () => {
         setInViewport(true);
+        clearTimeout(viewPortTimer);
     }, 3000);
 
     return (
@@ -154,6 +165,14 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                         style={styles.sectionTitle}
                     >
                         {`Loaded in: ${time || 0}ms. Logout from ${serverUrl}`}
+                    </Text>
+                </View>
+                <View style={styles.sectionContainer}>
+                    <Text
+                        onPress={goToAbout}
+                        style={styles.sectionTitle}
+                    >
+                        {'Navigate to About screen'}
                     </Text>
                 </View>
             </ScrollView>

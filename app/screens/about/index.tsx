@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+
 import React, {PureComponent} from 'react';
 import {IntlShape, injectIntl} from 'react-intl';
 import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
@@ -19,11 +20,14 @@ import {withTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
+
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
 type ConnectedAboutProps = {
-    config: Partial<ClientConfig>;
-    license: Partial<ClientLicense>;
+    config: SystemModel;
+    license: SystemModel;
     theme: Theme;
     intl: IntlShape;
 }
@@ -115,7 +119,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
         );
 
         let licensee;
-        if (config.BuildEnterpriseReady === 'true') {
+        if (config.value.BuildEnterpriseReady === 'true') {
             title = (
                 <FormattedText
                     id='about.teamEditiont1'
@@ -155,7 +159,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                 </View>
             );
 
-            if (license.IsLicensed === 'true') {
+            if (license.value.IsLicensed === 'true') {
                 title = (
                     <FormattedText
                         id='about.enterpriseEditione1'
@@ -172,7 +176,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                             defaultMessage='Licensed to: {company}'
                             style={style.info}
                             values={{
-                                company: license.Company,
+                                company: license.value.Company,
                             }}
                             testID='about.licensee'
                         />
@@ -182,14 +186,14 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
         }
 
         let serverVersion;
-        if (config.BuildNumber === config.Version) {
+        if (config.value.BuildNumber === config.value.Version) {
             serverVersion = (
                 <FormattedText
                     id='mobile.about.serverVersionNoBuild'
                     defaultMessage='Server Version: {version}'
                     style={style.info}
                     values={{
-                        version: config.Version,
+                        version: config.value.Version,
                     }}
                     testID='about.server_version'
                 />
@@ -201,8 +205,8 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                     defaultMessage='Server Version: {version} (Build {number})'
                     style={style.info}
                     values={{
-                        version: config.Version,
-                        number: config.BuildNumber,
+                        version: config.value.Version,
+                        number: config.value.BuildNumber,
                     }}
                     testID='about.server_version'
                 />
@@ -210,7 +214,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
         }
 
         let termsOfService;
-        if (config.TermsOfServiceLink) {
+        if (config.value.TermsOfServiceLink) {
             termsOfService = (
                 <FormattedText
                     id='mobile.tos_link'
@@ -223,7 +227,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
         }
 
         let privacyPolicy;
-        if (config.PrivacyPolicyLink) {
+        if (config.value.PrivacyPolicyLink) {
             privacyPolicy = (
                 <FormattedText
                     id='mobile.privacy_link'
@@ -270,7 +274,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                                 style={style.title}
                                 testID='about.site_name'
                             >
-                                {`${config.SiteName} `}
+                                {`${config.value.SiteName} `}
                             </Text>
                             {title}
                         </View>
@@ -291,7 +295,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                             defaultMessage='Database: {type}'
                             style={style.info}
                             values={{
-                                type: config.SQLDriverName,
+                                type: config.value.SQLDriverName,
                             }}
                             testID='about.database'
                         />
@@ -303,7 +307,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                                 defaultMessage='{site} is powered by Mattermost'
                                 style={style.footerText}
                                 values={{
-                                    site: this.props.config.SiteName,
+                                    site: config.value.SiteName,
                                 }}
                                 testID='about.powered_by'
                             />
@@ -362,7 +366,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                                     style={style.footerText}
                                     testID='about.build_hash.value'
                                 >
-                                    {config.BuildHash}
+                                    {config.value.BuildHash}
                                 </Text>
                             </View>
                             <View style={style.footerGroup}>
@@ -376,7 +380,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                                     style={style.footerText}
                                     testID='about.build_hash_enterprise.value'
                                 >
-                                    {config.BuildHashEnterprise}
+                                    {config.value.BuildHashEnterprise}
                                 </Text>
                             </View>
                         </View>
@@ -391,7 +395,7 @@ class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
                                 style={style.footerText}
                                 testID='about.build_date.value'
                             >
-                                {config.BuildDate}
+                                {config.value.BuildDate}
                             </Text>
                         </View>
                     </View>
@@ -503,9 +507,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const withHOC = injectIntl(withTheme(ConnectedAbout));
-const About = withDatabase(withObservables([], ({database}) => ({
-    config: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-    license: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
-}))(withHOC));
 
-export default About;
+const enhanceWithObs = withObservables([], ({database, ...props}: WithDatabaseArgs) => {
+    console.log('>>>>>>>>>>>>>>> database', {database, props});
+    return {
+        config: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+        license: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
+    };
+})(withHOC);
+
+const withDatabases = withDatabase(enhanceWithObs);
+export default withDatabases;

@@ -220,7 +220,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(screen)), extraStyles)));
+        Navigation.registerComponent(screenName, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(screen))), extraStyles)));
     }
 });
 
