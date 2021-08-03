@@ -1,29 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import React, {PureComponent} from 'react';
 import {IntlShape, injectIntl} from 'react-intl';
-import {
-    Alert,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import Config from '@assets/config.json';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withTheme} from '@context/theme';
-import Config from '@assets/config';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -33,6 +27,7 @@ type ConnectedAboutProps = {
     theme: Theme;
     intl: IntlShape;
 }
+
 class ConnectedAbout extends PureComponent<ConnectedAboutProps> {
     openURL = (url: string) => {
         const {intl} = this.props;
