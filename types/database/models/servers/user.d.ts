@@ -71,23 +71,23 @@ export default class UserModel extends Model {
     timezone: UserTimezone | null;
 
     /** channelsCreated : All the channels that this user created */
-    channelsCreated: ChannelModel[];
+    channelsCreated: Query<ChannelModel>;
 
     /** channels : All the channels that this user is part of  */
-    channels: ChannelMembershipModel[];
+    channels: Query<ChannelMembershipModel>;
 
     /** groups : All the groups that this user is part of  */
-    groups: GroupMembershipModel[];
+    groups: Query<GroupMembershipModel>;
 
     /** posts :  All the posts that this user has written*/
-    posts: PostModel[];
+    posts: Query<PostModel>;
 
     /** preferences : All user preferences */
-    preferences: PreferenceModel[];
+    preferences: Query<PreferenceModel>;
 
     /** reactions : All the reactions to posts that this user had */
-    reactions: ReactionModel[];
+    reactions: Query<ReactionModel>;
 
     /** teams : All the team that this user is part of  */
-    teams: TeamMembershipModel[];
+    teams: Query<TeamMembershipModel>;
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
+import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -42,19 +42,19 @@ export default class ChannelModel extends Model {
     type: string;
 
     /** members : Users belonging to this channel */
-    members: ChannelMembershipModel[];
+    members: Query<ChannelMembershipModel>;
 
     /** drafts : All drafts for this channel */
-    drafts: DraftModel[];
+    drafts: Query<DraftModel>;
 
     /** groupsInChannel : Every group contained in this channel */
-    groupsInChannel: GroupsInChannelModel[];
+    groupsInChannel: Query<GroupsInChannelModel>;
 
     /** posts : All posts made in the channel */
-    posts: PostModel[];
+    posts: Query<PostModel>;
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    postsInChannel: PostsInChannelModel[];
+    postsInChannel: Query<PostsInChannelModel>;
 
     /** team : The TEAM to which this CHANNEL belongs */
     team: Relation<TeamModel>;
