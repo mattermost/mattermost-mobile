@@ -51,6 +51,7 @@ describe('channelInfo', () => {
         isLandscape: false,
         isCustomStatusEnabled: false,
         isCustomStatusExpired: false,
+        isCustomStatusExpirySupported: false,
         actions: {
             getChannelStats: jest.fn(),
             getCustomEmojisInText: jest.fn(),

@@ -259,7 +259,7 @@ const Post = ({
         collapsedThreadsEnabled &&
         Boolean(thread) &&
         post.state !== Posts.POST_DELETED &&
-        thread?.participants?.length
+        (thread?.is_following || thread?.participants?.length)
     ) {
         footer = (
             <ThreadFooter

@@ -41,6 +41,7 @@ export default class List extends PureComponent {
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
+        collapsedThreadsEnabled: PropTypes.bool,
         favoriteChannelIds: PropTypes.array.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -152,12 +153,6 @@ export default class List extends PureComponent {
                 action: this.showCreateChannelOptions,
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
-            };
-        case SidebarSectionTypes.THREADS: // Used only to identity the threads, hence not translating "id: t('...')"
-            return {
-                data: [''],
-                id: 'sidebar.threads',
-                defaultMessage: '',
             };
         default:
             return {
@@ -321,12 +316,7 @@ export default class List extends PureComponent {
         );
     };
 
-    renderItem = ({item, section}) => {
-        if (section.id === 'sidebar.threads') {
-            return (
-                <ThreadsSidebarEntry/>
-            );
-        }
+    renderItem = ({item}) => {
         const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
         const channelItemTestID = `${testID}.channel_item`;
 
@@ -345,10 +335,6 @@ export default class List extends PureComponent {
         const {styles} = this.props;
         const {intl} = this.context;
         const {action, defaultMessage, id} = section;
-
-        if (id === 'sidebar.threads') {
-            return null;
-        }
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 
@@ -414,16 +400,23 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {testID, styles, theme} = this.props;
+        const {collapsedThreadsEnabled, styles, testID, theme} = this.props;
         const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
+        const indicatorStyle = [styles.above];
+        if (collapsedThreadsEnabled) {
+            indicatorStyle.push({marginTop: 70});
+        }
 
         return (
             <View
                 style={styles.container}
                 onLayout={this.onLayout}
             >
+                {collapsedThreadsEnabled && (
+                    <ThreadsSidebarEntry/>
+                )}
                 <SectionList
                     ref={this.setListRef}
                     sections={sections}
@@ -444,7 +437,7 @@ export default class List extends PureComponent {
                 <UnreadIndicator
                     onPress={this.scrollToTop}
                     theme={theme}
-                    style={styles.above}
+                    style={indicatorStyle}
                     visible={showIndicator}
                 />
                 }
