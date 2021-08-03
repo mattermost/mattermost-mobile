@@ -5,20 +5,17 @@ import React, {useCallback, useRef} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import Button from 'react-native-button';
 
+import {showAppForm} from '@actions/navigation';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
-import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
-
+import {Theme} from '@mm-redux/types/preferences';
+import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
-
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
-import {showAppForm} from '@actions/navigation';
-
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {getStatusColors} from '@utils/message_attachment_colors';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import ButtonBindingText from './button_binding_text';
 

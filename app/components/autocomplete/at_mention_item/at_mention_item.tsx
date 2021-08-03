@@ -128,6 +128,7 @@ const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared,
                     />
                     <Text
                         numberOfLines={1}
+                        testID='at_mention_item.text'
                     >
                         {Boolean(name.length) && (
                             <Text

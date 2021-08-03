@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {addReaction} from '@actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {THREAD} from '@constants/screen';
+import mattermostManaged from '@mattermost-managed';
 import {
     deletePost,
     flagPost,
@@ -16,19 +17,20 @@ import {
     removePost,
     setUnreadPost,
 } from '@mm-redux/actions/posts';
+import {setThreadFollow} from '@mm-redux/actions/threads';
 import {General, Permissions, Posts} from '@mm-redux/constants';
-import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {isChannelReadOnlyById, getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
+import {getMyPreferences, getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {canEditPost, isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {getDimensions} from '@selectors/device';
-import {canDeletePost} from '@selectors/permissions';
 import {selectEmojisCountFromReactions} from '@selectors/emojis';
-import mattermostManaged from 'app/mattermost_managed';
+import {canDeletePost} from '@selectors/permissions';
 
 import PostOptions from './post_options';
 
@@ -144,6 +146,7 @@ export function makeMapStateToProps() {
             currentUserId,
             isFlagged: isPostFlagged(post.id, myPreferences),
             theme: getTheme(state),
+            thread: isCollapsedThreadsEnabled(state) ? getThread(state, post.id, true) : null,
         };
     };
 }
@@ -158,6 +161,7 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
+            setThreadFollow,
             setUnreadPost,
         }, dispatch),
     };

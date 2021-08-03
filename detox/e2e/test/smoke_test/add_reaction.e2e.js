@@ -8,16 +8,16 @@
 // *******************************************************************
 
 import {
-    AddReactionScreen,
-    ChannelScreen,
-} from '@support/ui/screen';
-import {
     Channel,
     Post,
     Setup,
     Team,
     User,
 } from '@support/server_api';
+import {
+    AddReactionScreen,
+    ChannelScreen,
+} from '@support/ui/screen';
 
 describe('Add Reaction', () => {
     let testChannel;
@@ -67,8 +67,9 @@ describe('Add Reaction', () => {
         // * Verify emoji exists in recently used section
         await openPostOptionsFor(post.id, message);
         await AddReactionScreen.open();
-        await expect(element(by.text('🦊').withAncestor(by.id('RECENTLY USED')))).toExist();
-        await expect(element(by.text('🐶').withAncestor(by.id('RECENTLY USED')))).toExist();
+        await expect(element(by.text('Recent'))).toExist();
+        await expect(element(by.text('🦊'))).toExist();
+        await expect(element(by.text('🐶'))).toExist();
 
         // # Close add reaction screen
         await AddReactionScreen.close();

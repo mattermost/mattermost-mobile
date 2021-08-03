@@ -4,12 +4,12 @@
 import React, {ReactElement, useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import {NavigationTypes} from '@constants';
+import {dismissModal} from '@actions/navigation';
 import SlideUpPanel from '@components/slide_up_panel';
+import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import type {Theme} from '@mm-redux/types/preferences';
-import {dismissModal} from '@actions/navigation';
 
 type Props = {
     allowStayMiddle?: boolean;
@@ -50,8 +50,6 @@ const SlideUp = (props: Props) => {
             <SlideUpPanel
                 {...otherProps}
                 onRequestClose={onClose}
-
-                // @ts-expect-error no ref typing for JS file
                 ref={slideUpPanel}
             >
                 {children}

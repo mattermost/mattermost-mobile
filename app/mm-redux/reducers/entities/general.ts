@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
+
 import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Config} from '@mm-redux/types/config';
@@ -43,10 +44,13 @@ function credentials(state: any = {}, action: GenericAction) {
     }
 }
 
-function dataRetentionPolicy(state: any = {}, action: GenericAction) {
+function dataRetention(state: any = {}, action: GenericAction) {
     switch (action.type) {
     case GeneralTypes.RECEIVED_DATA_RETENTION_POLICY:
-        return action.data;
+        return {
+            ...state,
+            policies: action.data,
+        };
     default:
         return state;
     }
@@ -95,7 +99,7 @@ export default combineReducers({
     appState,
     credentials,
     config,
-    dataRetentionPolicy,
+    dataRetention,
     deviceToken,
     license,
     serverVersion,

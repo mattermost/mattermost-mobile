@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Config} from '@mm-redux/types/config';
+import {GlobalDataRetentionPolicy, ChannelDataRetentionPolicy, TeamDataRetentionPolicy} from '@mm-redux/types/data_retention';
 import {Role} from '@mm-redux/types/roles';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {buildQueryString} from '@mm-redux/utils/helpers';
 
+import {PER_PAGE_DEFAULT} from './constants';
 import ClientError from './error';
 
 export interface ClientGeneralMix {
@@ -15,7 +17,15 @@ export interface ClientGeneralMix {
     getClientConfigOld: () => Promise<Config>;
     getClientLicenseOld: () => Promise<any>;
     getTimezones: () => Promise<string[]>;
-    getDataRetentionPolicy: () => Promise<any>;
+    getGlobalDataRetentionPolicy: () => Promise<GlobalDataRetentionPolicy[]>;
+    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<{
+        policies: TeamDataRetentionPolicy[];
+        total_count: number;
+    }>;
+    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<{
+        policies: ChannelDataRetentionPolicy[];
+        total_count: number;
+    }>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
     getRedirectLocation: (urlParam: string) => Promise<Dictionary<string>>;
 }
@@ -72,9 +82,23 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         );
     };
 
-    getDataRetentionPolicy = () => {
+    getGlobalDataRetentionPolicy = () => {
         return this.doFetch(
             `${this.getDataRetentionRoute()}/policy`,
+            {method: 'get'},
+        );
+    };
+
+    getTeamDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/users/${userId}/data_retention/team_policies${buildQueryString({page, per_page: perPage})}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/users/${userId}/data_retention/channel_policies${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
         );
     };

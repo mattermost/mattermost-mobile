@@ -1,28 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {ScrollView, Text, View} from 'react-native';
+import Button from 'react-native-button';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Button from 'react-native-button';
+import {DoAppCallResult} from 'types/actions/apps';
 
-import {AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {dismissModal} from '@actions/navigation';
+import Markdown from '@components/markdown';
+import StatusBar from '@components/status_bar';
+import {AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/preferences';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
-import {ActionResult} from '@mm-redux/types/actions';
-
-import StatusBar from '@components/status_bar';
-import Markdown from '@components/markdown';
-
-import {dismissModal} from '@actions/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {DoAppCallResult} from 'types/actions/apps';
+
 import {GlobalStyles} from 'app/styles';
 
 import AppsFormField from './apps_form_field';
@@ -33,9 +32,7 @@ export type Props = {
     form: AppForm;
     actions: {
         submit: (submission: {
-            values: {
-                [name: string]: string;
-            };
+            values: AppFormValues;
         }) => Promise<DoAppCallResult<FormResponseData>>;
         performLookupCall: (field: AppField, values: AppFormValues, userInput: string) => Promise<DoAppCallResult<AppLookupResponse>>;
         refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
@@ -45,18 +42,23 @@ export type Props = {
     componentId: string;
 }
 
-type State = {
-    values: {[name: string]: string};
+export type State = {
+    values: AppFormValues;
     formError: string | null;
     fieldErrors: {[name: string]: string};
     form: AppForm;
 }
 
-const initFormValues = (form: AppForm): {[name: string]: string} => {
-    const values: {[name: string]: any} = {};
+const initFormValues = (form: AppForm): AppFormValues => {
+    const values: AppFormValues = {};
     if (form && form.fields) {
         form.fields.forEach((f) => {
-            values[f.name] = f.value || null;
+            let defaultValue: AppFormValue = null;
+            if (f.type === AppFieldTypes.BOOL) {
+                defaultValue = false;
+            }
+
+            values[f.name] = f.value || defaultValue;
         });
     }
 
@@ -187,23 +189,34 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
     updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
-
-        if (fieldErrors &&
-            Object.keys(fieldErrors).length >= 0 &&
-            checkIfErrorsMatchElements(fieldErrors as any, elements)
-        ) {
-            hasErrors = true;
-            this.setState({fieldErrors});
-        }
-
+        const state = {} as State;
         if (formError) {
             hasErrors = true;
-            this.setState({formError});
-            if (this.scrollView?.current) {
-                this.scrollView.current.scrollTo({x: 0, y: 0});
+            state.formError = formError;
+        }
+
+        if (fieldErrors && Object.keys(fieldErrors).length >= 0) {
+            hasErrors = true;
+            if (checkIfErrorsMatchElements(fieldErrors as any, elements)) {
+                state.fieldErrors = fieldErrors;
+            } else if (!state.formError) {
+                const field = Object.keys(fieldErrors)[0];
+                state.formError = this.context.intl.formatMessage({
+                    id: 'apps.error.responses.unknown_field_error',
+                    defaultMessage: 'Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.',
+                }, {
+                    field,
+                    error: fieldErrors[field],
+                });
             }
         }
 
+        if (hasErrors) {
+            this.setState(state);
+            if (state.formError && this.scrollView?.current) {
+                this.scrollView.current.scrollTo({x: 0, y: 0});
+            }
+        }
         return hasErrors;
     }
 

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import jestExpect from 'expect';
+
 import {capitalize, getRandomId} from '@support/utils';
 
 import client from './client';
@@ -43,8 +44,8 @@ export const apiAddUserToTeam = async (userId, teamId) => {
  * Create a team.
  * See https://api.mattermost.com/#operation/CreateTeam
  * @param {string} option.type - 'O' (default) for open, 'I' for invite only
- * @param {string} option.prefix - option to add prefix to name and display name
- * @param {Object} team - fix team object to be created
+ * @param {string} option.prefix - prefix to name and display name
+ * @param {Object} option.team - team object to be created
  * @return {Object} returns {team} on success or {error, status} on error
  */
 export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} = {}) => {

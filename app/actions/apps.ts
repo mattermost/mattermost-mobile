@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {sendEphemeralPost} from '@actions/views/post';
 import {Client4} from '@client/rest';
-
+import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
-import {Post} from '@mm-redux/types/posts';
-
-import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
-import {makeCallErrorResponse} from '@utils/apps';
-import {sendEphemeralPost} from '@actions/views/post';
 import {CommandArgs} from '@mm-redux/types/integrations';
+import {Post} from '@mm-redux/types/posts';
+import {makeCallErrorResponse} from '@utils/apps';
 
 export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, intl: any): ActionFunc {
     return async () => {

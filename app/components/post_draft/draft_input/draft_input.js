@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, ScrollView, View} from 'react-native';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Platform, ScrollView, View} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {showAppForm} from '@actions/navigation';
 import Autocomplete from '@components/autocomplete';
 import PostInput from '@components/post_draft/post_input';
 import QuickActions from '@components/post_draft/quick_actions';
@@ -23,7 +24,6 @@ import * as DraftUtils from '@utils/draft';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {showAppForm} from '@actions/navigation';
 
 const AUTOCOMPLETE_MARGIN = 20;
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
