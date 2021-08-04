@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Screens} from '@constants';
-import {ABOUT} from '@constants/screens';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {goToScreen} from '@screens/navigation';
@@ -12,27 +10,25 @@ import {Text, View, ScrollView} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {logout} from '@actions/remote/session';
+import Markdown from '@components/markdown';
+import JumboEmoji from '@components/jumbo_emoji';
+import ProgressiveImage from '@components/progressive_image';
 import ServerVersion from '@components/server_version';
 import StatusBar from '@components/status_bar';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {Screens, Database} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 
 import ChannelNavBar from './channel_nav_bar';
-
-import type SystemModel from '@typings/database/models/servers/system';
-import type {LaunchProps} from '@typings/launch';
-import type {WithDatabaseArgs} from '@typings/database/database';
-
 import FailedChannels from './failed_channels';
 import FailedTeams from './failed_teams';
-
-import Markdown from '@components/markdown';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import md from './md.json';
-import ProgressiveImage from '@components/progressive_image';
-import JumboEmoji from '@components/jumbo_emoji';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
+import type {LaunchProps} from '@typings/launch';
 
 type ChannelProps = WithDatabaseArgs & LaunchProps & {
     currentChannelId: SystemModel;
@@ -40,6 +36,7 @@ type ChannelProps = WithDatabaseArgs & LaunchProps & {
     time?: number;
 };
 
+const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
