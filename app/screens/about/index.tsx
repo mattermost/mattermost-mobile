@@ -16,6 +16,7 @@ import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -57,29 +58,29 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
         tryOpenURL(url, onError);
     };
 
-    const handleAboutTeam = () => {
+    const handleAboutTeam = preventDoubleTap(() => {
         return openURL(Config.AboutTeamURL);
-    };
+    });
 
-    const handleAboutEnterprise = () => {
+    const handleAboutEnterprise = preventDoubleTap(() => {
         return openURL(Config.AboutEnterpriseURL);
-    };
+    });
 
-    const handlePlatformNotice = () => {
+    const handlePlatformNotice = preventDoubleTap(() => {
         return openURL(Config.PlatformNoticeURL);
-    };
+    });
 
-    const handleMobileNotice = () => {
+    const handleMobileNotice = preventDoubleTap(() => {
         return openURL(Config.MobileNoticeURL);
-    };
+    });
 
-    const handleTermsOfService = () => {
+    const handleTermsOfService = preventDoubleTap(() => {
         return openURL(AboutLinks.TERMS_OF_SERVICE);
-    };
+    });
 
-    const handlePrivacyPolicy = () => {
+    const handlePrivacyPolicy = preventDoubleTap(() => {
         return openURL(AboutLinks.PRIVACY_POLICY);
-    };
+    });
 
     return (
         <SafeAreaView
