@@ -37,15 +37,17 @@ type MyTeam = {
 };
 
 type PostsInChannel = {
+    id?: string;
     channel_id: string;
     earliest: number;
     latest: number;
 };
 
 type PostsInThread = {
+    id?: string;
     earliest: number;
-    latest?: number;
-    id: string;
+    latest: number;
+    root_id: string;
 };
 
 type Metadata = {

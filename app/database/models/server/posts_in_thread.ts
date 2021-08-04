@@ -26,6 +26,9 @@ export default class PostsInThreadModel extends Model {
         [POST]: {type: 'belongs_to', key: 'id'},
     };
 
+    /** root_id: Associated root post identifier */
+    @field('root_id') rootId!: string;
+
     /** earliest : Lower bound of a timestamp range */
     @field('earliest') earliest!: number;
 

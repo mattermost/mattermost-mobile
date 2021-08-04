@@ -52,7 +52,7 @@ export default class ChannelModel extends Model {
         [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple POSTS_IN_CHANNEL (relationship is 1:N) */
-        [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'id'},
+        [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can contain multiple POST (relationship is 1:N) */
         [POST]: {type: 'has_many', foreignKey: 'channel_id'},

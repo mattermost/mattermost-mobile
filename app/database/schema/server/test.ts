@@ -138,10 +138,12 @@ describe('*** Test schema for SERVER database ***', () => {
                 [POSTS_IN_CHANNEL]: {
                     name: POSTS_IN_CHANNEL,
                     columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         earliest: {name: 'earliest', type: 'number'},
                         latest: {name: 'latest', type: 'number'},
                     },
                     columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'earliest', type: 'number'},
                         {name: 'latest', type: 'number'},
                     ],
@@ -189,10 +191,12 @@ describe('*** Test schema for SERVER database ***', () => {
                 [POSTS_IN_THREAD]: {
                     name: POSTS_IN_THREAD,
                     columns: {
+                        root_id: {name: 'root_id', type: 'string', isIndexed: true},
                         earliest: {name: 'earliest', type: 'number'},
                         latest: {name: 'latest', type: 'number'},
                     },
                     columnArray: [
+                        {name: 'root_id', type: 'string', isIndexed: true},
                         {name: 'earliest', type: 'number'},
                         {name: 'latest', type: 'number'},
                     ],

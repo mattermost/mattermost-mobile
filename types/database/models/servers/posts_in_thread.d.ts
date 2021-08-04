@@ -15,6 +15,9 @@ export default class PostsInThreadModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
+    /** root_id: Associated root post identifier */
+    rootId: string;
+
     /** earliest : Lower bound of a timestamp range */
     earliest: number;
 

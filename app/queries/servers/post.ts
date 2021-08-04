@@ -13,7 +13,7 @@ const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
 export const queryPostsInChannel = (database: Database, channelId: string): Promise<PostInChannelModel[]> => {
     try {
         return database.get(POSTS_IN_CHANNEL).query(
-            Q.where('id', channelId),
+            Q.where('channel_id', channelId),
             Q.experimentalSortBy('latest', Q.desc),
         ).fetch() as Promise<PostInChannelModel[]>;
     } catch {
