@@ -3,7 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -16,6 +16,7 @@ import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -41,7 +42,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const openURL = (url: string) => {
+    const openURL = useCallback((url: string) => {
         const onError = () => {
             Alert.alert(
                 intl.formatMessage({
@@ -56,31 +57,31 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
         };
 
         tryOpenURL(url, onError);
-    };
+    }, []);
 
-    const handleAboutTeam = preventDoubleTap(() => {
+    const handleAboutTeam = useCallback(preventDoubleTap(() => {
         return openURL(Config.AboutTeamURL);
-    });
+    }), []);
 
-    const handleAboutEnterprise = preventDoubleTap(() => {
+    const handleAboutEnterprise = useCallback(preventDoubleTap(() => {
         return openURL(Config.AboutEnterpriseURL);
-    });
+    }), []);
 
-    const handlePlatformNotice = preventDoubleTap(() => {
+    const handlePlatformNotice = useCallback(preventDoubleTap(() => {
         return openURL(Config.PlatformNoticeURL);
-    });
+    }), []);
 
-    const handleMobileNotice = preventDoubleTap(() => {
+    const handleMobileNotice = useCallback(preventDoubleTap(() => {
         return openURL(Config.MobileNoticeURL);
-    });
+    }), []);
 
-    const handleTermsOfService = preventDoubleTap(() => {
+    const handleTermsOfService = useCallback(preventDoubleTap(() => {
         return openURL(AboutLinks.TERMS_OF_SERVICE);
-    });
+    }), []);
 
-    const handlePrivacyPolicy = preventDoubleTap(() => {
+    const handlePrivacyPolicy = useCallback(preventDoubleTap(() => {
         return openURL(AboutLinks.PRIVACY_POLICY);
-    });
+    }), []);
 
     return (
         <SafeAreaView
@@ -117,7 +118,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     </View>
                     <Subtitle config={config}/>
                     <FormattedText
-                        id='mobile.about.appVersion'
+                        id={t('mobile.about.appVersion')}
                         defaultMessage='App Version: {version} (Build {number})'
                         style={style.info}
                         values={{
@@ -128,7 +129,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     />
                     <ServerVersion config={config}/>
                     <FormattedText
-                        id='mobile.about.database'
+                        id={t('mobile.about.database')}
                         defaultMessage='Database: {type}'
                         style={style.info}
                         values={{
@@ -139,7 +140,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     {license.value.IsLicensed === 'true' && (
                         <View style={style.licenseContainer}>
                             <FormattedText
-                                id='mobile.about.licensed'
+                                id={t('mobile.about.licensed')}
                                 defaultMessage='Licensed to: {company}'
                                 style={style.info}
                                 values={{
@@ -156,7 +157,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     />
                     {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
                     <FormattedText
-                        id='mobile.about.powered_by'
+                        id={t('mobile.about.powered_by')}
                         defaultMessage='{site} is powered by Mattermost'
                         style={style.footerText}
                         values={{
@@ -166,7 +167,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     />
                     }
                     <FormattedText
-                        id='mobile.about.copyright'
+                        id={t('mobile.about.copyright')}
                         defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
                         style={[style.footerText, style.copyrightText]}
                         values={{
@@ -184,13 +185,13 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     <View style={style.noticeContainer}>
                         <View style={style.footerGroup}>
                             <FormattedText
-                                id='mobile.notice_text'
+                                id={t('mobile.notice_text')}
                                 defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
                                 style={style.footerText}
                                 values={{
                                     platform: (
                                         <FormattedText
-                                            id='mobile.notice_platform_link'
+                                            id={t('mobile.notice_platform_link')}
                                             defaultMessage='server'
                                             style={style.noticeLink}
                                             onPress={handlePlatformNotice}
@@ -198,7 +199,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                                     ),
                                     mobile: (
                                         <FormattedText
-                                            id='mobile.notice_mobile_link'
+                                            id={t('mobile.notice_mobile_link')}
                                             defaultMessage='mobile apps'
                                             style={[style.noticeLink, {marginLeft: 5}]}
                                             onPress={handleMobileNotice}
@@ -212,7 +213,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     <View style={style.hashContainer}>
                         <View style={style.footerGroup}>
                             <FormattedText
-                                id='about.hash'
+                                id={t('about.hash')}
                                 defaultMessage='Build Hash:'
                                 style={style.footerTitleText}
                                 testID='about.build_hash.title'
@@ -226,7 +227,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         </View>
                         <View style={style.footerGroup}>
                             <FormattedText
-                                id='about.hashee'
+                                id={t('about.hashee')}
                                 defaultMessage='EE Build Hash:'
                                 style={style.footerTitleText}
                                 testID='about.build_hash_enterprise.title'
@@ -241,7 +242,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                     </View>
                     <View style={style.footerGroup}>
                         <FormattedText
-                            id='about.date'
+                            id={t('about.date')}
                             defaultMessage='Build Date:'
                             style={style.footerTitleText}
                             testID='about.build_date.title'

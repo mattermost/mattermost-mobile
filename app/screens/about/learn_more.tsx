@@ -28,7 +28,7 @@ const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMo
     let url = Config.TeamEditionLearnURL;
 
     if (config.value?.BuildEnterpriseReady === 'true') {
-        id = 'about.enterpriseEditionLearn';
+        id = t('about.enterpriseEditionLearn');
         defaultMessage = 'Learn more about Enterprise Edition at ';
         onPress = onHandleAboutEnterprise;
         url = Config.EELearnURL;
