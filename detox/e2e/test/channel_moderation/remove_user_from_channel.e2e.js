@@ -8,6 +8,12 @@
 // *******************************************************************
 
 import {
+    Channel,
+    Setup,
+    Team,
+    User,
+} from '@support/server_api';
+import {
     Alert,
     MainSidebar,
 } from '@support/ui/component';
@@ -16,13 +22,7 @@ import {
     ChannelMembersScreen,
     ChannelScreen,
 } from '@support/ui/screen';
-import {
-    Channel,
-    Setup,
-    Team,
-    User,
-} from '@support/server_api';
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 
 describe('Channel Moderation', () => {
     const {
@@ -76,7 +76,7 @@ describe('Channel Moderation', () => {
         const removeFromChannelDescriptionText = 'You were removed from the channel.';
         const removeFromChannelTitle = isAndroid() ? element(by.text(removeFromChannelTitleText)) : element(by.label(removeFromChannelTitleText)).atIndex(0);
         const removeFromChannelDescription = isAndroid() ? element(by.text(removeFromChannelDescriptionText)) : element(by.label(removeFromChannelDescriptionText)).atIndex(0);
-        await expect(removeFromChannelTitle).toBeVisible();
+        await waitFor(removeFromChannelTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await expect(removeFromChannelDescription).toBeVisible();
 
         // # Tap on ok button

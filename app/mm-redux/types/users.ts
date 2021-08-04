@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Channel} from './channels';
-import {Team} from './teams';
 import {PostType} from './posts';
+import {Team} from './teams';
 import {$ID, IDMappedObjects, RelationOneToMany, RelationOneToOne, Dictionary} from './utilities';
 export type UserNotifyProps = {
     auto_responder_active?: 'true' | 'false';
@@ -80,7 +80,19 @@ export type UserStatus = {
 	active_channel?: string;
 }
 
+export enum CustomStatusDuration {
+    DONT_CLEAR = '',
+    THIRTY_MINUTES = 'thirty_minutes',
+    ONE_HOUR = 'one_hour',
+    FOUR_HOURS = 'four_hours',
+    TODAY = 'today',
+    THIS_WEEK = 'this_week',
+    DATE_AND_TIME = 'date_and_time',
+}
+
 export type UserCustomStatus = {
     emoji: string;
     text: string;
+    expires_at?: string;
+    duration: CustomStatusDuration;
 }

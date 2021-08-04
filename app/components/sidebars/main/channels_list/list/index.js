@@ -5,20 +5,20 @@ import {connect} from 'react-redux';
 
 import {DeviceTypes, ViewTypes} from '@constants';
 import {General} from '@mm-redux/constants';
+import Permissions from '@mm-redux/constants/permissions';
 import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
     getOrderedChannelIds,
 } from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
+import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getTheme, getFavoritesPreferences, getSidebarPreferences} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
-import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
-import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
-import Permissions from '@mm-redux/constants/permissions';
 
 import List from './list';
 
@@ -33,6 +33,7 @@ const filterZeroUnreads = memoizeResult((sections) => {
 
 function mapStateToProps(state) {
     const config = getConfig(state);
+    const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
     const license = getLicense(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const currentTeamId = getCurrentTeamId(state);
@@ -65,6 +66,7 @@ function mapStateToProps(state) {
         canJoinPublicChannels,
         canCreatePrivateChannels,
         canCreatePublicChannels,
+        collapsedThreadsEnabled,
         favoriteChannelIds,
         theme: getTheme(state),
         unreadChannelIds,

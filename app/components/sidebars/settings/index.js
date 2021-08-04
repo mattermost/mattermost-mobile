@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {unsetCustomStatus} from '@actions/views/custom_status';
+import {logout} from '@actions/views/user';
 import {setStatus} from '@mm-redux/actions/users';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-import {isCustomStatusEnabled, makeGetCustomStatus} from '@selectors/custom_status';
-
-import {logout} from 'app/actions/views/user';
+import {isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported, makeGetCustomStatus} from '@selectors/custom_status';
 
 import SettingsSidebar from './settings_sidebar';
 
@@ -29,6 +28,8 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             isCustomStatusEnabled: customStatusEnabled,
             customStatus,
+            isCustomStatusExpired: customStatusEnabled ? isCustomStatusExpired(state, customStatus) : true,
+            isCustomStatusExpirySupported: customStatusEnabled ? isCustomStatusExpirySupported(state) : false,
         };
     };
 }

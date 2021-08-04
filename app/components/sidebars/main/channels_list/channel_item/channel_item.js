@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     TouchableHighlight,
     Text,
     View,
     Platform,
 } from 'react-native';
-import {intlShape} from 'react-intl';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
@@ -39,12 +39,14 @@ export default class ChannelItem extends PureComponent {
         theme: PropTypes.object.isRequired,
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
+        viewingGlobalThreads: PropTypes.bool,
         customStatusEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         isArchived: false,
         mentions: 0,
+        viewingGlobalThreads: false,
     };
 
     static contextTypes = {
@@ -80,6 +82,7 @@ export default class ChannelItem extends PureComponent {
             theme,
             isSearchResult,
             channel,
+            viewingGlobalThreads,
             teammateId,
         } = this.props;
 
@@ -117,7 +120,7 @@ export default class ChannelItem extends PureComponent {
         }
 
         const style = getStyleSheet(theme);
-        const isActive = channelId === currentChannelId;
+        const isActive = channelId === currentChannelId && !viewingGlobalThreads;
 
         let extraItemStyle;
         let extraTextStyle;
@@ -219,7 +222,7 @@ export default class ChannelItem extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,

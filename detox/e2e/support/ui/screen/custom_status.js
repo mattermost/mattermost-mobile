@@ -8,10 +8,12 @@ class CustomStatusScreen {
         customStatusScreen: 'custom_status.screen',
         input: 'custom_status.input',
         selectedEmojiPrefix: 'custom_status.emoji.',
+        selectedDurationPrefix: 'custom_status.duration.',
         inputClearButton: 'custom_status.input.clear.button',
         doneButton: 'custom_status.done.button',
         suggestionPrefix: 'custom_status_suggestion.',
         suggestionClearButton: 'custom_status_suggestion.clear.button',
+        clearAfterAction: 'custom_status.clear_after.action',
     }
 
     customStatusScreen = element(by.id(this.testID.customStatusScreen));
@@ -22,6 +24,11 @@ class CustomStatusScreen {
     getCustomStatusSelectedEmoji = (emoji) => {
         const emojiTestID = `${this.testID.selectedEmojiPrefix}${emoji}`;
         return element(by.id(emojiTestID));
+    }
+
+    getCustomStatusSelectedDuration = (duration) => {
+        const durationTestID = `${this.testID.selectedDurationPrefix}${duration}`;
+        return element(by.id(durationTestID));
     }
 
     getCustomStatusSuggestion = (text) => {
@@ -52,6 +59,10 @@ class CustomStatusScreen {
 
         await expect(this.input).toHaveText(text);
         await expect(this.getCustomStatusSelectedEmoji(emoji)).toBeVisible();
+    }
+
+    openClearAfterModal = async () => {
+        await element(by.id(this.testID.clearAfterAction)).tap();
     }
 
     close = async () => {

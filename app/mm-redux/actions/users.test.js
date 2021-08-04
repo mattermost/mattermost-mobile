@@ -2,19 +2,20 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import nock from 'nock';
 
-import {NavigationTypes} from '@constants';
 import {logout} from '@actions/views/user';
-import * as Actions from '@mm-redux/actions/users';
 import {Client4} from '@client/rest';
-import {RequestStatus} from '../constants';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
+import {NavigationTypes} from '@constants';
+import * as Actions from '@mm-redux/actions/users';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
 import initialState from '@store/initial_state';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
+
+import {RequestStatus} from '../constants';
 
 const OK_RESPONSE = {status: 'OK'};
 
