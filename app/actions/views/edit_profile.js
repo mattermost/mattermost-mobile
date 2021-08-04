@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ViewTypes} from '@constants';
 import {updateMe, setDefaultProfileImage} from '@mm-redux/actions/users';
-
-import {ViewTypes} from 'app/constants';
 
 export function updateUser(user, success, error) {
     return async (dispatch, getState) => {
@@ -28,6 +27,7 @@ export function setProfileImageUri(imageUri = '') {
 export function removeProfileImage(user) {
     return async (dispatch) => {
         const result = await dispatch(setDefaultProfileImage(user));
+        dispatch(setProfileImageUri());
         return result;
     };
 }

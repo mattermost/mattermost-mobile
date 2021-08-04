@@ -23,7 +23,7 @@ import {
     AppCallTypes,
     AppFieldTypes,
     getAppsBindings,
-    getChannel,
+    selectChannel,
     getCurrentTeamId,
     doAppCall,
     getStore,
@@ -38,6 +38,9 @@ import {
     getCurrentTeam,
     selectChannelByName,
     errorMessage as parserErrorMessage,
+    selectUser,
+    getUser,
+    getChannel,
 } from './app_command_parser_dependencies';
 
 export type Store = {
@@ -66,7 +69,7 @@ export const ParseState = keyMirror({
 });
 
 interface FormsCache {
-    getForm: (location: string, binding: AppBinding) => Promise<{form?: AppForm, error?: string} | undefined>;
+    getForm: (location: string, binding: AppBinding) => Promise<{form?: AppForm; error?: string} | undefined>;
 }
 
 interface Intl {
@@ -236,6 +239,7 @@ export class ParsedCommand {
             fields = this.form.fields;
         }
 
+        fields = fields.filter((f) => f.type !== AppFieldTypes.MARKDOWN && !f.readonly);
         this.state = ParseState.StartParameter;
         this.i = this.incompleteStart || 0;
         let flagEqualsUsed = false;
@@ -257,6 +261,15 @@ export class ParsedCommand {
                     // Named parameter (aka Flag). Flag1 consumes the optional second '-'.
                     this.state = ParseState.Flag1;
                     this.i++;
+                    break;
+                }
+                case '—': {
+                    // Em dash, introduced when two '-' are set in iOS. Will be considered as such.
+                    this.state = ParseState.Flag;
+                    this.i++;
+                    this.incomplete = '';
+                    this.incompleteStart = this.i;
+                    flagEqualsUsed = false;
                     break;
                 }
                 default: {
@@ -545,7 +558,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromCommand creates the form submission call
-    public composeCallFromCommand = async (command: string): Promise<{call: AppCallRequest | null, errorMessage?: string}> => {
+    public composeCallFromCommand = async (command: string): Promise<{call: AppCallRequest | null; errorMessage?: string}> => {
         let parsed = new ParsedCommand(command, this, this.intl);
 
         const commandBindings = this.getCommandBindings();
@@ -563,6 +576,8 @@ export class AppCommandParser {
             return {call: null, errorMessage: parserErrorMessage(this.intl, parsed.error, parsed.command, parsed.i)};
         }
 
+        await this.addDefaultAndReadOnlyValues(parsed);
+
         const missing = this.getMissingFields(parsed);
         if (missing.length > 0) {
             const missingStr = missing.map((f) => f.label).join(', ');
@@ -576,6 +591,62 @@ export class AppCommandParser {
         }
 
         return this.composeCallFromParsed(parsed);
+    }
+
+    private async addDefaultAndReadOnlyValues(parsed: ParsedCommand) {
+        await Promise.all(parsed.form?.fields?.map(async (f) => {
+            if (!f.value) {
+                return;
+            }
+
+            if (!f.readonly || f.name in parsed.values) {
+                return;
+            }
+
+            switch (f.type) {
+            case AppFieldTypes.TEXT:
+                parsed.values[f.name] = f.value as string;
+                break;
+            case AppFieldTypes.BOOL:
+                parsed.values[f.name] = 'true';
+                break;
+            case AppFieldTypes.USER: {
+                const userID = (f.value as AppSelectOption).value;
+                let user = selectUser(this.store.getState(), userID);
+                if (!user) {
+                    const dispatchResult = await this.store.dispatch(getUser(userID));
+                    if ('error' in dispatchResult) {
+                        // Silently fail on default value
+                        break;
+                    }
+                    user = dispatchResult.data;
+                }
+                parsed.values[f.name] = user.username;
+                break;
+            }
+            case AppFieldTypes.CHANNEL: {
+                const channelID = (f.value as AppSelectOption).label;
+                let channel = selectChannel(this.store.getState(), channelID);
+                if (!channel) {
+                    const dispatchResult = await this.store.dispatch(getChannel(channelID));
+                    if ('error' in dispatchResult) {
+                        // Silently fail on default value
+                        break;
+                    }
+                    channel = dispatchResult.data;
+                }
+                parsed.values[f.name] = channel.name;
+                break;
+            }
+            case AppFieldTypes.STATIC_SELECT:
+            case AppFieldTypes.DYNAMIC_SELECT:
+                parsed.values[f.name] = (f.value as AppSelectOption).value;
+                break;
+            case AppFieldTypes.MARKDOWN:
+
+                // Do nothing
+            }
+        }) || []);
     }
 
     // getSuggestionsBase is a synchronous function that returns results for base commands
@@ -688,7 +759,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromParsed creates the form submission call
-    composeCallFromParsed = async (parsed: ParsedCommand): Promise<{call: AppCallRequest | null, errorMessage?: string}> => {
+    composeCallFromParsed = async (parsed: ParsedCommand): Promise<{call: AppCallRequest | null; errorMessage?: string}> => {
         if (!parsed.binding) {
             return {call: null,
                 errorMessage: this.intl.formatMessage({
@@ -837,7 +908,7 @@ export class AppCommandParser {
     // getChannel gets the channel in which the user is typing the command
     getChannel = (): Channel | null => {
         const state = this.store.getState();
-        return getChannel(state, this.channelID);
+        return selectChannel(state, this.channelID);
     }
 
     setChannelContext = (channelID: string, rootPostID?: string) => {
@@ -885,7 +956,7 @@ export class AppCommandParser {
     }
 
     // fetchForm unconditionaly retrieves the form for the given binding (subcommand)
-    fetchForm = async (binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
+    fetchForm = async (binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         if (!binding.call) {
             return undefined;
         }
@@ -928,7 +999,7 @@ export class AppCommandParser {
         return {form: callResponse.form};
     }
 
-    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
+    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         const form = this.forms[location];
         if (form) {
             return {form};
@@ -1031,9 +1102,13 @@ export class AppCommandParser {
         }
 
         // There have been 0 to 2 dashes in the command prior to this call, adjust.
+        const prevCharIndex = parsed.incompleteStart - 1;
         let prefix = '--';
-        for (let i = parsed.incompleteStart - 1; i > 0 && i >= parsed.incompleteStart - 2 && parsed.command[i] === '-'; i--) {
+        for (let i = prevCharIndex; i > 0 && i >= parsed.incompleteStart - 2 && parsed.command[i] === '-'; i--) {
             prefix = prefix.substring(1);
+        }
+        if (prevCharIndex > 0 && parsed.command[prevCharIndex] === '—') {
+            prefix = '';
         }
 
         const applicable = parsed.form.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);

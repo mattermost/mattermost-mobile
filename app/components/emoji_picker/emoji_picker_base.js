@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
@@ -13,19 +14,19 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {DeviceTypes} from '@constants';
+import {compareEmojis} from '@utils/emoji_utils';
 import {emptyFunction} from '@utils/general';
 import {
     makeStyleSheetFromTheme,
     changeOpacity,
 } from '@utils/theme';
-import {compareEmojis} from '@utils/emoji_utils';
+
 import EmojiPickerRow from './emoji_picker_row';
 
 const EMOJI_SIZE = 30;

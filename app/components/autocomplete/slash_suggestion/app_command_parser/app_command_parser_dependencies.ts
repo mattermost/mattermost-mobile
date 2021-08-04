@@ -1,6 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {intlShape} from 'react-intl';
+import {Alert} from 'react-native';
+
+import keyMirror from '@mm-redux/utils/key_mirror';
+import Store from '@store/store';
+
+import type {ParsedCommand} from './app_command_parser';
+import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
+
 export type {
     AppCallRequest,
     AppBinding,
@@ -17,9 +26,6 @@ export type {
     AutocompleteChannelSelect,
 } from '@mm-redux/types/apps';
 
-import type {
-    AutocompleteSuggestion,
-} from '@mm-redux/types/integrations';
 export type {AutocompleteSuggestion};
 
 export type {
@@ -43,31 +49,26 @@ export {
 
 export {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 export {getPost} from '@mm-redux/selectors/entities/posts';
-export {getChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
+export {getChannel as selectChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';
 export {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-export {getUserByUsername as selectUserByUsername} from '@mm-redux/selectors/entities/users';
+export {getUserByUsername as selectUserByUsername, getUser as selectUser} from '@mm-redux/selectors/entities/users';
 
-export {getUserByUsername} from '@mm-redux/actions/users';
-export {getChannelByNameAndTeamName} from '@mm-redux/actions/channels';
+export {getUserByUsername, getUser} from '@mm-redux/actions/users';
+export {getChannelByNameAndTeamName, getChannel} from '@mm-redux/actions/channels';
 
 export {doAppCall} from '@actions/apps';
 export {createCallRequest} from '@utils/apps';
 
-import Store from '@store/store';
 export const getStore = () => Store.redux;
 
-import keyMirror from '@mm-redux/utils/key_mirror';
 export {keyMirror};
 
 export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
 
-import type {ParsedCommand} from './app_command_parser';
 export const getExecuteSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => { // eslint-disable-line @typescript-eslint/no-unused-vars
     return null;
 };
 
-import {Alert} from 'react-native';
-import {intlShape} from 'react-intl';
 export const displayError = (intl: typeof intlShape, body: string) => {
     const title = intl.formatMessage({
         id: 'mobile.general.error.title',

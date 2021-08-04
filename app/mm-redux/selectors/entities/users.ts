@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
+
 import {getCurrentChannelId, getCurrentUser, getCurrentUserId, getMyCurrentChannelMembership, getUsers} from '@mm-redux/selectors/entities/common';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {getDirectShowPreferences, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
-import {displayUsername, filterProfilesMatchingTerm, sortByUsername, isSystemAdmin, profileListToMap} from '@mm-redux/utils/user_utils';
 export {getCurrentUserId, getCurrentUser, getUsers};
-import {GlobalState} from '@mm-redux/types/store';
-import {UserProfile} from '@mm-redux/types/users';
-import {Reaction} from '@mm-redux/types/reactions';
-import {Team} from '@mm-redux/types/teams';
 import {Channel} from '@mm-redux/types/channels';
+import {Reaction} from '@mm-redux/types/reactions';
+import {GlobalState} from '@mm-redux/types/store';
+import {Team} from '@mm-redux/types/teams';
+import {UserProfile} from '@mm-redux/types/users';
 import {RelationOneToOne, RelationOneToMany, IDMappedObjects, UsernameMappedObjects, EmailMappedObjects, $ID, $Username, $Email, Dictionary} from '@mm-redux/types/utilities';
+import {displayUsername, filterProfilesMatchingTerm, sortByUsername, isSystemAdmin, profileListToMap} from '@mm-redux/utils/user_utils';
 type Filters = {
     role?: string;
     inactive?: boolean;
@@ -475,6 +476,27 @@ export function makeGetProfilesByIdsAndUsernames(): (a: GlobalState, b: Array<$I
                 }
             }
 
+            return userProfiles;
+        },
+    );
+}
+
+export function makeGetProfilesByIds(): (a: GlobalState, b: Array<$ID<UserProfile>>) => Array<UserProfile> {
+    return createSelector(
+        getUsers,
+        (state: GlobalState, userIds: Array<$ID<UserProfile>>) => userIds,
+        (allProfilesById: Dictionary<UserProfile>, userIds: Array<string>) => {
+            const userProfiles: UserProfile[] = [];
+
+            if (userIds && userIds.length > 0) {
+                const profilesById = userIds.
+                    filter((userId) => allProfilesById[userId]).
+                    map((userId) => allProfilesById[userId]);
+
+                if (profilesById && profilesById.length > 0) {
+                    userProfiles.push(...profilesById);
+                }
+            }
             return userProfiles;
         },
     );

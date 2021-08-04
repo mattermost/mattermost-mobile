@@ -33,12 +33,13 @@ export const apiAdminLogin = () => {
 /**
  * Create a user.
  * See https://api.mattermost.com/#operation/CreateUser
- * @param {Object} user - user object to be created
+ * @param {string} option.prefix - prefix to email and username
+ * @param {Object} option.user - user object to be created
  * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
     try {
-        const newUser = user || generateRandomUser(prefix);
+        const newUser = user || generateRandomUser({prefix});
 
         const response = await client.post(
             '/api/v4/users',
@@ -194,6 +195,26 @@ export const apiPatchUser = async (userId, userData) => {
     }
 };
 
+/**
+ * Update user active status.
+ * See https://api.mattermost.com/#operation/UpdateUserActive
+ * @param {string} userId - the user ID
+ * @param {boolean} active - use true to set the user active, false for inactive
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiUpdateUserActiveStatus = async (userId, active) => {
+    try {
+        const response = await client.put(
+            `/api/v4/users/${userId}/active`,
+            {active},
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) => {
     const randomId = getRandomId(randomIdLength);
 
@@ -220,6 +241,7 @@ export const User = {
     apiLogout,
     apiPatchMe,
     apiPatchUser,
+    apiUpdateUserActiveStatus,
     generateRandomUser,
 };
 

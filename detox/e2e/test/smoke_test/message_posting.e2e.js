@@ -9,12 +9,12 @@
 
 import moment from 'moment-timezone';
 
-import {ChannelScreen} from '@support/ui/screen';
 import {
     Channel,
     Post,
     Setup,
 } from '@support/server_api';
+import {ChannelScreen} from '@support/ui/screen';
 import {isAndroid} from '@support/utils';
 
 describe('Message Posting', () => {
@@ -94,6 +94,17 @@ describe('Message Posting', () => {
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
         const {postListPostItem} = await getPostListPostItem(post.id, '🦊');
+        await expect(postListPostItem).toBeVisible();
+    });
+
+    it('MM-T4125 should be able to post multi-line emojis', async () => {
+        // # Post multi-line emojis
+        const message = ':fire: :fire:\n:fire: :fire: :fire:\n:fire:';
+        await postMessage(message);
+
+        // * Verify message is posted
+        const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
+        const {postListPostItem} = await getPostListPostItem(post.id, '🔥 🔥\n🔥 🔥 🔥\n🔥');
         await expect(postListPostItem).toBeVisible();
     });
 

@@ -20,7 +20,7 @@ target 'Mattermost' do
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"
   pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
 
-  pod 'XCDYouTubeKit', '2.8.3'
+  pod 'XCDYouTubeKit', :git => 'https://github.com/hinge-agency/XCDYouTubeKit.git', :branch => 'fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3'
   pod 'Swime', '3.0.6'
 
 # Enables Flipper.

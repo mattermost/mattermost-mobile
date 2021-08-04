@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import Fuse from 'fuse.js';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {selectEmojisByName, selectEmojisBySection} from '@selectors/emojis';
 import initialState from '@store/initial_state';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
-import {filterEmojiSearchInput} from './emoji_picker_base';
 import EmojiPicker from './emoji_picker.ios';
+import {filterEmojiSearchInput} from './emoji_picker_base';
 
 jest.useFakeTimers();
 
@@ -72,7 +72,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
 
     test('searchEmojis should return the right values on fuse', async () => {
         const input = '1';
-        const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'rage1', 'u7121', 'u7981'];
+        const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'u7121', 'u7981'];
 
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const result = wrapper.instance().searchEmojis(input);

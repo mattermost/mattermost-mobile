@@ -11,16 +11,17 @@ import {Posts} from '@mm-redux/constants';
 import {fromAutoResponder, isFromWebhook, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
-
 import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
 import HeaderTag from './tag';
 
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
+
 type HeaderProps = {
     commentCount: number;
+    collapsedThreadsEnabled: boolean;
     displayName?: string;
     isBot: boolean;
     isGuest: boolean;
@@ -63,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Header = ({
-    commentCount, displayName, location, isBot, isGuest,
+    commentCount, collapsedThreadsEnabled, displayName, location, isBot, isGuest,
     isMilitaryTime, post, rootPostAuthor, shouldRenderReplyButton, theme, userTimezone, isCustomStatusEnabled,
 }: HeaderProps) => {
     const style = getStyleSheet(theme);
@@ -72,7 +73,7 @@ const Header = ({
     const isWebHook = isFromWebhook(post);
     const isSystemPost = isSystemMessage(post);
     const isReplyPost = Boolean(post.root_id && (!isPostEphemeral(post) || post.state === Posts.POST_DELETED));
-    const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0));
+    const showReply = !collapsedThreadsEnabled && !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0));
     const showCustomStatusEmoji = Boolean(isCustomStatusEnabled && displayName && !(isSystemPost || isBot || isAutoResponse || isWebHook));
 
     return (
@@ -95,7 +96,7 @@ const Header = ({
                             testID='post_header'
                         />
                     )}
-                    {!isSystemPost &&
+                    {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
                         isAutomation={isWebHook || isBot}

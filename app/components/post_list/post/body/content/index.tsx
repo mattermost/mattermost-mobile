@@ -5,14 +5,14 @@ import React from 'react';
 
 import {isYoutubeLink} from '@utils/url';
 
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
-
 import EmbeddedBindings from './embedded_bindings';
 import ImagePreview from './image_preview';
 import MessageAttachments from './message_attachments';
 import Opengraph from './opengraph';
 import YouTube from './youtube';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type ContentProps = {
     isReplyPost: boolean;
@@ -65,22 +65,28 @@ const Content = ({isReplyPost, post, theme}: ContentProps) => {
             />
         );
     case contentType.message_attachment:
-        return (
-            <MessageAttachments
-                attachments={post.props.attachments}
-                metadata={post.metadata}
-                postId={post.id}
-                theme={theme}
-            />
-        );
+        if (post.props.attachments?.length) {
+            return (
+                <MessageAttachments
+                    attachments={post.props.attachments}
+                    metadata={post.metadata}
+                    postId={post.id}
+                    theme={theme}
+                />
+            );
+        }
+        break;
     case contentType.app_bindings:
-        return (
-            <EmbeddedBindings
-                embeds={post.props.app_bindings}
-                postId={post.id}
-                theme={theme}
-            />
-        );
+        if (post.props.app_bindings?.length) {
+            return (
+                <EmbeddedBindings
+                    embeds={post.props.app_bindings}
+                    postId={post.id}
+                    theme={theme}
+                />
+            );
+        }
+        break;
     }
 
     return null;

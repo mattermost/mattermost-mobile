@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
+
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     Alert,
@@ -10,13 +11,12 @@ import {
     StyleSheet,
     StatusBar,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-import DeviceInfo from 'react-native-device-info';
 import AndroidOpenSettings from 'react-native-android-open-settings';
-
+import DeviceInfo from 'react-native-device-info';
 import DocumentPicker from 'react-native-document-picker';
-import ImagePicker from 'react-native-image-picker';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -153,58 +153,35 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachFileFromCamera = async (source, mediaType) => {
-        const {formatMessage} = this.context.intl;
-        const {title, text} = this.getPermissionDeniedMessage('camera', mediaType);
         const options = {
             quality: 0.8,
             videoQuality: 'high',
             noData: true,
             mediaType,
-            storageOptions: {
-                cameraRoll: true,
-                waitUntilSaved: true,
-            },
-            permissionDenied: {
-                title,
-                text,
-                reTryTitle: formatMessage({
-                    id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Settings',
-                }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
-            },
+            saveToPhotos: true,
         };
 
         const hasCameraPermission = await this.hasPhotoPermission(source, mediaType);
 
         if (hasCameraPermission) {
-            ImagePicker.launchCamera(options, (response) => {
+            launchCamera(options, async (response) => {
                 StatusBar.setHidden(false);
                 emmProvider.inBackgroundSince = null;
                 if (response.error || response.didCancel) {
                     return;
                 }
 
-                this.uploadFiles([response]);
+                const files = await this.getFilesFromResponse(response);
+                this.uploadFiles(files);
             });
         }
     };
 
     attachFileFromLibrary = async () => {
-        const {formatMessage} = this.context.intl;
-        const {title, text} = this.getPermissionDeniedMessage('photo');
         const options = {
             quality: 0.8,
-            noData: true,
-            permissionDenied: {
-                title,
-                text,
-                reTryTitle: formatMessage({
-                    id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Settings',
-                }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
-            },
+            mediaType: 'mixed',
+            includeBase64: false,
         };
 
         if (Platform.OS === 'ios') {
@@ -214,14 +191,15 @@ export default class AttachmentButton extends PureComponent {
         const hasPhotoPermission = await this.hasPhotoPermission('photo', 'photo');
 
         if (hasPhotoPermission) {
-            ImagePicker.launchImageLibrary(options, (response) => {
+            launchImageLibrary(options, async (response) => {
                 StatusBar.setHidden(false);
                 emmProvider.inBackgroundSince = null;
                 if (response.error || response.didCancel) {
                     return;
                 }
 
-                this.uploadFiles([response]);
+                const files = await this.getFilesFromResponse(response);
+                this.uploadFiles(files);
             });
         }
     };
@@ -231,30 +209,20 @@ export default class AttachmentButton extends PureComponent {
     };
 
     attachVideoFromLibraryAndroid = () => {
-        const {formatMessage} = this.context.intl;
-        const {title, text} = this.getPermissionDeniedMessage('video');
         const options = {
             videoQuality: 'high',
             mediaType: 'video',
             noData: true,
-            permissionDenied: {
-                title,
-                text,
-                reTryTitle: formatMessage({
-                    id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Settings',
-                }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
-            },
         };
 
-        ImagePicker.launchImageLibrary(options, (response) => {
+        launchImageLibrary(options, async (response) => {
             emmProvider.inBackgroundSince = null;
             if (response.error || response.didCancel) {
                 return;
             }
 
-            this.uploadFiles([response]);
+            const files = await this.getFilesFromResponse(response);
+            this.uploadFiles(files);
         });
     };
 
@@ -285,6 +253,28 @@ export default class AttachmentButton extends PureComponent {
             }
         }
     };
+
+    getFilesFromResponse = async (response) => {
+        const files = [];
+        const file = response.assets[0];
+        if (Platform.OS === 'android') {
+            // For android we need to retrieve the realPath in case the file being imported is from the cloud
+            const uri = (await ShareExtension.getFilePath(file.uri)).filePath;
+            const type = file.type || lookupMimeType(uri);
+            let fileName = file.fileName;
+            if (type.includes('video/')) {
+                fileName = uri.split('\\').pop().split('/').pop();
+            }
+
+            if (uri) {
+                files.push({...file, fileName, uri, type});
+            }
+        } else {
+            files.push(file);
+        }
+
+        return files;
+    }
 
     hasPhotoPermission = async (source, mediaType = '') => {
         if (Platform.OS === 'ios') {

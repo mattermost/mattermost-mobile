@@ -1,31 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Client4} from '@client/rest';
-import {General, Preferences} from '../constants';
+import {analytics} from '@init/analytics';
 import {ChannelTypes, PreferenceTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
-import {savePreferences, deletePreferences} from './preferences';
-import {compareNotifyProps, getChannelsIdForTeam, getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
 import {
     getChannelsNameMapInTeam,
     getMyChannelMember as getMyChannelMemberSelector,
     getRedirectChannelNameForTeam,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
-
 import {Channel, ChannelNotifyProps, ChannelMembership} from '@mm-redux/types/channels';
-
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
+import {compareNotifyProps, getChannelsIdForTeam, getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
+
+import {General, Preferences} from '../constants';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {getMissingProfilesByIds} from './users';
+import {savePreferences, deletePreferences} from './preferences';
 import {loadRolesIfNeeded} from './roles';
-import {analytics} from '@init/analytics';
+import {getMissingProfilesByIds} from './users';
 
 export function selectChannel(channelId: string) {
     return {
@@ -58,6 +56,8 @@ export function createChannel(channel: Channel, userId: string): ActionFunc {
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -108,6 +108,8 @@ export function createDirectChannel(userId: string, otherUserId: string): Action
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -185,6 +187,8 @@ export function createGroupChannel(userIds: Array<string>): ActionFunc {
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
             notify_props: {desktop: 'default', mark_unread: 'all'},
             last_update_at: created.create_at,
         };
@@ -1283,6 +1287,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: channel.team_id,
                     channelId,
                     amount: channel.total_msg_count - channelMember.msg_count,
+                    amountRoot: channel.total_msg_count_root - channelMember.msg_count_root,
                 },
             });
 
@@ -1292,6 +1297,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: channel.team_id,
                     channelId,
                     amount: channelMember.mention_count,
+                    amountRoot: channelMember.mention_count_root,
                 },
             });
         }
@@ -1310,6 +1316,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: prevChannel.team_id,
                     channelId: prevChannelId,
                     amount: prevChannel.total_msg_count - prevChannelMember.msg_count,
+                    amountRoot: prevChannel.total_msg_count_root - prevChannelMember.msg_count_root,
                 },
             });
 
@@ -1319,6 +1326,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
                     teamId: prevChannel.team_id,
                     channelId: prevChannelId,
                     amount: prevChannelMember.mention_count,
+                    amountRoot: prevChannelMember.mention_count_root,
                 },
             });
         }

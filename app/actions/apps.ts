@@ -1,22 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {sendEphemeralPost} from '@actions/views/post';
 import {Client4} from '@client/rest';
-
+import CompassIcon from '@components/compass_icon';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
+import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppForm, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
+import {CommandArgs} from '@mm-redux/types/integrations';
 import {Post} from '@mm-redux/types/posts';
-
-import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
-import {handleGotoLocation} from '@mm-redux/actions/integrations';
-import {showModal} from './navigation';
 import {Theme} from '@mm-redux/types/preferences';
-import CompassIcon from '@components/compass_icon';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeCallErrorResponse} from '@utils/apps';
-import {sendEphemeralPost} from '@actions/views/post';
-import {CommandArgs} from '@mm-redux/types/integrations';
+
+import {showModal} from './navigation';
 
 export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, intl: any): ActionFunc {
     return async (dispatch, getState) => {
@@ -88,24 +87,17 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
 const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
-    let submitButtons = [{
-        id: 'submit-form',
-        showAsAction: 'always',
-        text: 'Submit',
-    }];
-    if (form.submit_buttons) {
-        const options = form.fields.find((f) => f.name === form.submit_buttons)?.options;
-        const newButtons = options?.map((o) => {
-            return {
-                id: 'submit-form_' + o.value,
-                showAsAction: 'always',
-                text: o.label,
-            };
-        });
-        if (newButtons && newButtons.length > 0) {
-            submitButtons = newButtons;
-        }
+    let submitButtons;
+    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
+
+    if (!customSubmitButtons?.length) {
+        submitButtons = [{
+            id: 'submit-form',
+            showAsAction: 'always',
+            text: 'Submit',
+        }];
     }
+
     const options = {
         topBar: {
             leftButtons: [{

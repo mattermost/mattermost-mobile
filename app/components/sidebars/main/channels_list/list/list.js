@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     Dimensions,
     findNodeHandle,
@@ -13,21 +14,19 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {General} from '@mm-redux/constants';
-import {debounce} from '@mm-redux/actions/helpers';
-
+import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
-
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {showModal} from '@actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -42,6 +41,7 @@ export default class List extends PureComponent {
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
+        collapsedThreadsEnabled: PropTypes.bool,
         favoriteChannelIds: PropTypes.array.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         unreadChannelIds: PropTypes.array.isRequired,
@@ -168,12 +168,14 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s) => {
+        const sections = orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
             };
         });
+
+        return sections;
     };
 
     showCreateChannelOptions = () => {
@@ -260,6 +262,7 @@ export default class List extends PureComponent {
                 leftButtons: [{
                     id: 'close-dms',
                     icon: this.closeButton,
+                    testID: 'close.more_direct_messages.button',
                 }],
             },
         };
@@ -397,16 +400,23 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {testID, styles, theme} = this.props;
+        const {collapsedThreadsEnabled, styles, testID, theme} = this.props;
         const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
+        const indicatorStyle = [styles.above];
+        if (collapsedThreadsEnabled) {
+            indicatorStyle.push({marginTop: 70});
+        }
 
         return (
             <View
                 style={styles.container}
                 onLayout={this.onLayout}
             >
+                {collapsedThreadsEnabled && (
+                    <ThreadsSidebarEntry/>
+                )}
                 <SectionList
                     ref={this.setListRef}
                     sections={sections}
@@ -427,7 +437,7 @@ export default class List extends PureComponent {
                 <UnreadIndicator
                     onPress={this.scrollToTop}
                     theme={theme}
-                    style={styles.above}
+                    style={indicatorStyle}
                     visible={showIndicator}
                 />
                 }

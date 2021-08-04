@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import React, {Component} from 'react';
 import {
     StyleSheet,
     TouchableOpacity,
@@ -51,16 +51,18 @@ export default class EmojiPickerRow extends Component {
             );
         }
 
+        const name = 'short_name' in emoji ? emoji.short_name : emoji.name;
+
         return (
             <TouchableOpacity
-                key={emoji.name}
+                key={name}
                 style={style}
                 onPress={() => {
-                    this.props.onEmojiPress(emoji.name);
+                    this.props.onEmojiPress(name);
                 }}
             >
                 <Emoji
-                    emojiName={emoji.name}
+                    emojiName={name}
                     textStyle={styles.emojiText}
                     size={emojiSize}
                 />

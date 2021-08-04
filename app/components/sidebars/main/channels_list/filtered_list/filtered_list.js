@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import deepEqual from 'deep-equal';
-import React, {Component} from 'react';
+import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
+import React, {Component} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
 import {
     Keyboard,
     Platform,
@@ -11,7 +13,6 @@ import {
     Text,
     View,
 } from 'react-native';
-import {injectIntl, intlShape} from 'react-intl';
 
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from '@constants';
@@ -19,7 +20,6 @@ import {General} from '@mm-redux/constants';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {t} from '@utils/i18n';
-import memoize from 'memoize-one';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -120,7 +120,11 @@ class FilteredList extends Component {
             return channels;
         }
 
-        const text = term.toLowerCase();
+        let text = term.toLowerCase();
+        if (text.startsWith('@')) {
+            text = text.substring(1);
+        }
+
         return channels.filter((c) => {
             const fieldsToCheck = ['display_name', 'username', 'email', 'full_name', 'nickname'];
 
@@ -377,7 +381,7 @@ class FilteredList extends Component {
             <View style={styles.container}>
                 <SectionList
                     sections={dataSource}
-                    removeClippedSubviews={true}
+                    removeClippedSubviews={false}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
                     keyExtractor={this.keyExtractor}

@@ -3,18 +3,17 @@
 
 import {createSelector} from 'reselect';
 
+import * as Autocomplete from '@constants/autocomplete';
 import {General} from '@mm-redux/constants';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyChannels, getOtherChannels} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {
     getCurrentUser, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
 } from '@mm-redux/selectors/entities/users';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {sortByUsername} from '@mm-redux/utils/user_utils';
-
-import * as Autocomplete from 'app/constants/autocomplete';
-import {getCurrentLocale} from 'app/selectors/i18n';
+import {getCurrentLocale} from '@selectors/i18n';
 
 export const getMatchTermForAtMention = (() => {
     let lastMatchTerm = null;
@@ -23,7 +22,12 @@ export const getMatchTermForAtMention = (() => {
     return (value, isSearch) => {
         if (value !== lastValue || isSearch !== lastIsSearch) {
             const regex = isSearch ? Autocomplete.AT_MENTION_SEARCH_REGEX : Autocomplete.AT_MENTION_REGEX;
-            const match = value.match(regex);
+            let term = value;
+            if (term.startsWith('from: @') || term.startsWith('from:@')) {
+                term = term.replace('@', '');
+            }
+
+            const match = term.match(regex);
             lastValue = value;
             lastIsSearch = isSearch;
             if (match) {

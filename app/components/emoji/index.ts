@@ -3,14 +3,13 @@
 
 import {connect} from 'react-redux';
 
-import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import {Client4} from '@client/rest';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {GlobalState} from '@mm-redux/types/store';
-
-import {BuiltInEmojis, EmojiIndicesByAlias, Emojis} from '@utils/emojis';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {EmojiIndicesByAlias, Emojis} from '@utils/emojis';
 
 import Emoji from './emoji';
 
@@ -26,17 +25,16 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 
     let imageUrl = '';
     let unicode;
+    let assetImage = '';
     let isCustomEmoji = false;
     let displayTextOnly = false;
-    if (EmojiIndicesByAlias.has(emojiName) || BuiltInEmojis.includes(emojiName)) {
+    if (EmojiIndicesByAlias.has(emojiName)) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)!];
-        unicode = emoji.filename;
-        if (BuiltInEmojis.includes(emojiName)) {
-            if (serverUrl) {
-                imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
-            } else {
-                displayTextOnly = true;
-            }
+        if (emoji.category === 'custom') {
+            assetImage = emoji.fileName;
+            isCustomEmoji = true;
+        } else {
+            unicode = emoji.image;
         }
     } else if (customEmojis.has(emojiName) && serverUrl) {
         const emoji = customEmojis.get(emojiName);
@@ -52,6 +50,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 
     return {
         imageUrl,
+        assetImage,
         isCustomEmoji,
         displayTextOnly,
         unicode,

@@ -13,7 +13,10 @@ const state = {
             appState: false,
             credentials: {},
             config: {},
-            dataRetentionPolicy: {},
+            dataRetention: {
+                policies: {},
+                lastCleanUpAt: null,
+            },
             deviceToken: '',
             license: {},
             serverVersion: '',
@@ -46,6 +49,11 @@ const state = {
             postsInThread: {},
             selectedPostId: '',
             currentFocusedPostId: '',
+        },
+        threads: {
+            threads: {},
+            threadsInTeam: {},
+            counts: {},
         },
         preferences: {
             myPreferences: {},
@@ -143,6 +151,10 @@ const state = {
         },
         team: {
             lastTeamId: '',
+        },
+        threads: {
+            viewingGlobalThreads: false,
+            viewingGlobalThreadsUnreads: false,
         },
         thread: {
             drafts: {},
