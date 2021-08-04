@@ -111,7 +111,7 @@ export const transformGroupsTeamRecord = ({action, database, value}: Transformer
  * @returns {Promise<GroupsChannelModel>}
  */
 export const transformGroupsChannelRecord = ({action, database, value}: TransformerArgs): Promise<GroupsChannelModel> => {
-    const raw = value.raw as GroupChannel;
+    const raw = value.raw as GroupChannelRelation;
     const record = value.record as GroupsChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 

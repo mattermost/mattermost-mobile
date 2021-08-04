@@ -214,11 +214,11 @@ export type HandleTeamArgs = PrepareOnly & {
 };
 
 export type HandleGroupsChannelArgs = PrepareOnly & {
-  groupsChannels: GroupChannel[];
+  groupsChannels: GroupChannelRelation[];
 };
 
 export type HandleGroupsTeamArgs = PrepareOnly &{
-  groupsTeams: GroupTeam[];
+  groupsTeams: GroupTeamRelation[];
 };
 
 export type HandleGroupArgs = PrepareOnly & {

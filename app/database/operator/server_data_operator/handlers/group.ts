@@ -56,7 +56,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
 
         return this.handleRecords({
-            fieldName: 'user_id',
+            fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             transformer: transformGroupMembershipRecord,
             prepareRecordsOnly,
@@ -107,7 +107,8 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsTeams, key: 'group_id'});
+        const createOrUpdateRawValues = groupsTeams.filter((gt, index, self) => (
+            index === self.findIndex((item) => item.team_id === gt.team_id && item.group_id === gt.group_id)));
 
         return this.handleRecords({
             fieldName: 'group_id',
@@ -134,7 +135,8 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsChannels, key: 'channel_id'});
+        const createOrUpdateRawValues = groupsChannels.filter((gc, index, self) => (
+            index === self.findIndex((item) => item.channel_id === gc.channel_id && item.group_id === gc.group_id)));
 
         return this.handleRecords({
             fieldName: 'group_id',
