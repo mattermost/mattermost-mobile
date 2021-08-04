@@ -6,6 +6,7 @@ import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type SystemModel from '@typings/database/models/servers/system';
@@ -25,7 +26,7 @@ const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPriv
         <>
             {hasTermsOfServiceLink && (
                 <FormattedText
-                    id='mobile.tos_link'
+                    id={t('mobile.tos_link')}
                     defaultMessage='Terms of Service'
                     style={style.noticeLink}
                     onPress={onPressTOS}
@@ -39,7 +40,7 @@ const TosPrivacyContainer = ({config, onPressTOS, onPressPrivacyPolicy}: TosPriv
             )}
             {hasPrivacyPolicyLink && (
                 <FormattedText
-                    id='mobile.privacy_link'
+                    id={t('mobile.privacy_link')}
                     defaultMessage='Privacy Policy'
                     style={style.noticeLink}
                     onPress={onPressPrivacyPolicy}

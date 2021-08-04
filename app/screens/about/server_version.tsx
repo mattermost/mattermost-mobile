@@ -5,6 +5,7 @@ import React from 'react';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type SystemModel from '@typings/database/models/servers/system';
@@ -19,28 +20,27 @@ const ServerVersion = ({config}: ServerVersionProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    let id = t('mobile.about.serverVersion');
+    let defaultMessage = 'Server Version: {version} (Build {number})';
+    let values = {
+        version,
+        number: buildNumber,
+    };
+
     if (buildNumber === version) {
-        return (
-            <FormattedText
-                id='mobile.about.serverVersionNoBuild'
-                defaultMessage='Server Version: {version}'
-                style={style.info}
-                values={{
-                    version,
-                }}
-                testID='about.server_version'
-            />
-        );
+        id = 'mobile.about.serverVersionNoBuild';
+        defaultMessage = 'Server Version: {version}';
+        values = {
+            version,
+            number: undefined,
+        };
     }
     return (
         <FormattedText
-            id='mobile.about.serverVersion'
-            defaultMessage='Server Version: {version} (Build {number})'
+            id={id}
+            defaultMessage={defaultMessage}
             style={style.info}
-            values={{
-                version,
-                number: buildNumber,
-            }}
+            values={values}
             testID='about.server_version'
         />
     );

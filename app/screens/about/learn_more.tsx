@@ -7,6 +7,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import Config from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type SystemModel from '@typings/database/models/servers/system';
@@ -21,15 +22,10 @@ const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMo
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let id;
-    let defaultMessage;
-    let onPress;
-    let url;
-
-    id = 'about.teamEditionLearn';
-    defaultMessage = 'Join the Mattermost community at ';
-    onPress = onHandleAboutTeam;
-    url = Config.TeamEditionLearnURL;
+    let id = t('about.teamEditionLearn');
+    let defaultMessage = 'Join the Mattermost community at ';
+    let onPress = onHandleAboutTeam;
+    let url = Config.TeamEditionLearnURL;
 
     if (config.value?.BuildEnterpriseReady === 'true') {
         id = 'about.enterpriseEditionLearn';

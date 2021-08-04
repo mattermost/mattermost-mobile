@@ -5,6 +5,7 @@ import React from 'react';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type SystemModel from '@typings/database/models/servers/system';

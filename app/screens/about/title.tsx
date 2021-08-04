@@ -5,6 +5,7 @@ import FormattedText from '@components/formatted_text';
 import React from 'react';
 
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type SystemModel from '@typings/database/models/servers/system';
@@ -18,11 +19,8 @@ const Title = ({config, license}: TitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let id;
-    let defaultMessage;
-
-    id = t('about.teamEditiont0');
-    defaultMessage = 'Team Edition';
+    let id = t('about.teamEditiont0');
+    let defaultMessage = 'Team Edition';
 
     if (config.value.BuildEnterpriseReady === 'true') {
         id = t('about.teamEditiont1');
