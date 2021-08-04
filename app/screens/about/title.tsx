@@ -21,15 +21,15 @@ const Title = ({config, license}: TitleProps) => {
     let id;
     let defaultMessage;
 
-    id = 'about.teamEditiont0';
+    id = t('about.teamEditiont0');
     defaultMessage = 'Team Edition';
 
     if (config.value.BuildEnterpriseReady === 'true') {
-        id = 'about.teamEditiont1';
+        id = t('about.teamEditiont1');
         defaultMessage = 'Enterprise Edition';
 
         if (license.value.IsLicensed === 'true') {
-            id = 'about.enterpriseEditione1';
+            id = t('about.enterpriseEditione1');
             defaultMessage = 'Enterprise Edition';
         }
     }

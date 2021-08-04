@@ -17,11 +17,11 @@ const Subtitle = ({config}: SubtitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let id = 'about.teamEditionSt';
+    let id = t('about.teamEditionSt');
     let defaultMessage = 'All your team communication in one place, instantly searchable and accessible anywhere.';
 
     if (config.value.BuildEnterpriseReady === 'true') {
-        id = 'about.enterpriseEditionSt';
+        id = t('about.enterpriseEditionSt');
         defaultMessage = 'Modern communication from behind your firewall.';
     }
 
