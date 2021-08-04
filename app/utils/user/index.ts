@@ -5,6 +5,9 @@ import {General, Preferences} from '@constants';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
+import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
     let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
 
@@ -94,7 +97,7 @@ export const getUsersByUsername = (users: UserModel[]) => {
     return usersByUsername;
 };
 
-export const getUserMentionKeys = (user: UserModel) => {
+export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGroups: GroupMembershipModel[]) => {
     const keys: UserMentionKey[] = [];
 
     if (!user.notifyProps) {
@@ -121,6 +124,18 @@ export const getUserMentionKeys = (user: UserModel) => {
     const usernameKey = `@${user.username}`;
     if (keys.findIndex((item) => item.key === usernameKey) === -1) {
         keys.push({key: usernameKey});
+    }
+
+    if (groups.length && userGroups.length) {
+        const groupMentions = userGroups.reduce((result: Array<{key: string}>, ug: GroupMembershipModel) => {
+            const group = groups.find((g) => ug.groupId === g.id);
+            if (group) {
+                result.push({key: `@${group.name}`});
+            }
+            return result;
+        }, []);
+
+        keys.push(...groupMentions);
     }
 
     return keys;
