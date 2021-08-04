@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, ScrollView, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -18,6 +18,12 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+
+import LearnMore from './learn_more';
+import ServerVersion from './server_version';
+import Subtitle from './subtitle';
+import Title from './title';
+import TosPrivacyContainer from './tos_privacy';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -75,175 +81,6 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
         return openURL(AboutLinks.PRIVACY_POLICY);
     };
 
-    let title = (
-        <FormattedText
-            id='about.teamEditiont0'
-            defaultMessage='Team Edition'
-            style={style.title}
-            testID='about.title'
-        />
-    );
-
-    let subTitle = (
-        <FormattedText
-            id='about.teamEditionSt'
-            defaultMessage='All your team communication in one place, instantly searchable and accessible anywhere.'
-            style={style.subtitle}
-            testID='about.subtitle'
-        />
-    );
-
-    let learnMore = (
-        <View style={style.learnContainer}>
-            <FormattedText
-                id='about.teamEditionLearn'
-                defaultMessage='Join the Mattermost community at '
-                style={style.learn}
-                testID='about.learn_more'
-            />
-            <TouchableOpacity
-                onPress={handleAboutTeam}
-            >
-                <Text
-                    style={style.learnLink}
-                    testID='about.learn_more.url'
-                >
-                    {Config.TeamEditionLearnURL}
-                </Text>
-            </TouchableOpacity>
-        </View>
-    );
-
-    let licensee;
-    if (config.value.BuildEnterpriseReady === 'true') {
-        title = (
-            <FormattedText
-                id='about.teamEditiont1'
-                defaultMessage='Enterprise Edition'
-                style={style.title}
-                testID='about.title'
-            />
-        );
-
-        subTitle = (
-            <FormattedText
-                id='about.enterpriseEditionSt'
-                defaultMessage='Modern communication from behind your firewall.'
-                style={style.subtitle}
-                testID='about.subtitle'
-            />
-        );
-
-        learnMore = (
-            <View style={style.learnContainer}>
-                <FormattedText
-                    id='about.enterpriseEditionLearn'
-                    defaultMessage='Learn more about Enterprise Edition at '
-                    style={style.learn}
-                    testID='about.learn_more'
-                />
-                <TouchableOpacity
-                    onPress={handleAboutEnterprise}
-                >
-                    <Text
-                        style={style.learnLink}
-                        testID='about.learn_more.url'
-                    >
-                        {Config.EELearnURL}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        );
-
-        if (license.value.IsLicensed === 'true') {
-            title = (
-                <FormattedText
-                    id='about.enterpriseEditione1'
-                    defaultMessage='Enterprise Edition'
-                    style={style.title}
-                    testID='about.title'
-                />
-            );
-
-            licensee = (
-                <View style={style.licenseContainer}>
-                    <FormattedText
-                        id='mobile.about.licensed'
-                        defaultMessage='Licensed to: {company}'
-                        style={style.info}
-                        values={{
-                            company: license.value.Company,
-                        }}
-                        testID='about.licensee'
-                    />
-                </View>
-            );
-        }
-    }
-
-    let serverVersion;
-    if (config.value.BuildNumber === config.value.Version) {
-        serverVersion = (
-            <FormattedText
-                id='mobile.about.serverVersionNoBuild'
-                defaultMessage='Server Version: {version}'
-                style={style.info}
-                values={{
-                    version: config.value.Version,
-                }}
-                testID='about.server_version'
-            />
-        );
-    } else {
-        serverVersion = (
-            <FormattedText
-                id='mobile.about.serverVersion'
-                defaultMessage='Server Version: {version} (Build {number})'
-                style={style.info}
-                values={{
-                    version: config.value.Version,
-                    number: config.value.BuildNumber,
-                }}
-                testID='about.server_version'
-            />
-        );
-    }
-
-    let termsOfService;
-    if (config.value.TermsOfServiceLink) {
-        termsOfService = (
-            <FormattedText
-                id='mobile.tos_link'
-                defaultMessage='Terms of Service'
-                style={style.noticeLink}
-                onPress={handleTermsOfService}
-                testID='about.terms_of_service'
-            />
-        );
-    }
-
-    let privacyPolicy;
-    if (config.value.PrivacyPolicyLink) {
-        privacyPolicy = (
-            <FormattedText
-                id='mobile.privacy_link'
-                defaultMessage='Privacy Policy'
-                style={style.noticeLink}
-                onPress={handlePrivacyPolicy}
-                testID='about.privacy_policy'
-            />
-        );
-    }
-
-    let tosPrivacyHyphen;
-    if (termsOfService && privacyPolicy) {
-        tosPrivacyHyphen = (
-            <Text style={[style.footerText, style.hyphenText]}>
-                {' - '}
-            </Text>
-        );
-    }
-
     return (
         <SafeAreaView
             edges={['left', 'right']}
@@ -272,9 +109,12 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         >
                             {`${config.value.SiteName} `}
                         </Text>
-                        {title}
+                        <Title
+                            config={config}
+                            license={license}
+                        />
                     </View>
-                    {subTitle}
+                    <Subtitle config={config}/>
                     <FormattedText
                         id='mobile.about.appVersion'
                         defaultMessage='App Version: {version} (Build {number})'
@@ -285,7 +125,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         }}
                         testID='about.app_version'
                     />
-                    {serverVersion}
+                    <ServerVersion config={config}/>
                     <FormattedText
                         id='mobile.about.database'
                         defaultMessage='Database: {type}'
@@ -295,8 +135,24 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         }}
                         testID='about.database'
                     />
-                    {licensee}
-                    {learnMore}
+                    {license.value.IsLicensed === 'true' && (
+                        <View style={style.licenseContainer}>
+                            <FormattedText
+                                id='mobile.about.licensed'
+                                defaultMessage='Licensed to: {company}'
+                                style={style.info}
+                                values={{
+                                    company: license.value.Company,
+                                }}
+                                testID='about.licensee'
+                            />
+                        </View>
+                    )}
+                    <LearnMore
+                        config={config}
+                        onHandleAboutEnterprise={handleAboutEnterprise}
+                        onHandleAboutTeam={handleAboutTeam}
+                    />
                     {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
                     <FormattedText
                         id='mobile.about.powered_by'
@@ -318,9 +174,11 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         testID='about.copyright'
                     />
                     <View style={style.tosPrivacyContainer}>
-                        {termsOfService}
-                        {tosPrivacyHyphen}
-                        {privacyPolicy}
+                        <TosPrivacyContainer
+                            config={config}
+                            onPressTOS={handleTermsOfService}
+                            onPressPrivacyPolicy={handlePrivacyPolicy}
+                        />
                     </View>
                     <View style={style.noticeContainer}>
                         <View style={style.footerGroup}>
@@ -436,19 +294,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 19,
             marginBottom: 15,
         },
-        learnContainer: {
-            flex: 1,
-            flexDirection: 'column',
-            marginVertical: 20,
-        },
-        learn: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-        },
-        learnLink: {
-            color: theme.linkColor,
-            fontSize: 16,
-        },
         info: {
             color: theme.centerChannelColor,
             fontSize: 16,
@@ -488,9 +333,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 10,
         },
         copyrightText: {
-            marginBottom: 0,
-        },
-        hyphenText: {
             marginBottom: 0,
         },
         tosPrivacyContainer: {
