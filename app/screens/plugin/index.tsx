@@ -1,19 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {shallowEqual, useSelector} from 'react-redux';
-
-import type {GlobalState} from '@mm-redux/types/store';
-
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
+import {shallowEqual, useSelector} from 'react-redux';
+
+import StatusBar from '@components/status_bar';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/preferences';
-
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import type {GlobalState} from '@mm-redux/types/store';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',

@@ -9,7 +9,7 @@ import {intlShape} from 'react-intl';
 import {Alert, Text} from 'react-native';
 import urlParse from 'url-parse';
 
-import {dismissAllModals, popToRoot, goToScreen} from '@actions/navigation';
+import {dismissAllModals, popToRoot, showModal} from '@actions/navigation';
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
@@ -71,7 +71,7 @@ export default class MarkdownLink extends PureComponent {
                 break;
             }
             case DeepLinkTypes.PLUGIN:
-                goToScreen('PluginInternal', match.id, {link: url});
+                showModal('PluginInternal', match.id, {link: url});
                 break;
             }
         } else {
