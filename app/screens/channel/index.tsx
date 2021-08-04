@@ -150,6 +150,14 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                             {`Loaded in: ${time || 0}ms. Logout from ${serverUrl}`}
                         </Text>
                     </View>
+                    <View style={styles.sectionContainer}>
+                        <Text
+                            onPress={goToAbout}
+                            style={styles.sectionTitle}
+                        >
+                            {'Go to About Screen'}
+                        </Text>
+                    </View>
                 </ScrollView>
             </>
         );
