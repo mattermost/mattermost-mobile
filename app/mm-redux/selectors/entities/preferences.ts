@@ -171,12 +171,10 @@ const defaultSidebarPrefs = {
 
 export const getSidebarPreferences = reselect.createSelector(
     (state: GlobalState) => {
-        const config = getConfig(state);
-        return config.ExperimentalGroupUnreadChannels !== General.DISABLED && getBool(
+        return getBool(
             state,
             Preferences.CATEGORY_SIDEBAR_SETTINGS,
             'show_unread_section',
-            config.ExperimentalGroupUnreadChannels === General.DEFAULT_ON,
         );
     },
     (state) => {
@@ -193,6 +191,7 @@ export const getSidebarPreferences = reselect.createSelector(
             // Support unread settings for old implementation
             sidebarPrefs = {
                 ...defaultSidebarPrefs,
+
                 unreads_at_top: showUnreadSection ? 'true' : 'false',
             };
         }

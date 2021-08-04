@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
     Platform,
+    TouchableOpacity,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
@@ -13,6 +15,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen, dismissModal} from '@actions/navigation';
 import Autocomplete from '@components/autocomplete';
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -39,9 +42,11 @@ export default class EditChannelInfo extends PureComponent {
         channelURL: PropTypes.string,
         purpose: PropTypes.string,
         header: PropTypes.string,
+        type: PropTypes.string,
         onDisplayNameChange: PropTypes.func,
         onPurposeChange: PropTypes.func,
         onHeaderChange: PropTypes.func,
+        onTypeChange: PropTypes.func,
         oldDisplayName: PropTypes.string,
         oldChannelURL: PropTypes.string,
         oldHeader: PropTypes.string,
@@ -151,6 +156,11 @@ export default class EditChannelInfo extends PureComponent {
         }
     };
 
+    onTypeSelect = (type) => {
+        const {onTypeChange} = this.props;
+        onTypeChange(type);
+    };
+
     onHeaderLayout = ({nativeEvent}) => {
         this.setState({headerPosition: nativeEvent.layout.y});
     }
@@ -253,9 +263,68 @@ export default class EditChannelInfo extends PureComponent {
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
                         <View style={style.scrollView}>
-                            {!displayHeaderOnly && (
+                            {!displayHeaderOnly && this.props.onTypeChange && (
                                 <View>
                                     <View>
+                                        <FormattedText
+                                            style={style.title}
+                                            id='channel_modal.type'
+                                            defaultMessage='Type'
+                                        />
+                                    </View>
+                                    <View style={style.inputContainer}>
+                                        <TouchableOpacity
+                                            style={style.touchable}
+                                            onPress={() => {
+                                                this.onTypeSelect(General.OPEN_CHANNEL);
+                                            }}
+                                        >
+                                            <FormattedText
+                                                style={style.touchableText}
+                                                id='channel_modal.type'
+                                                defaultMessage='Public Channel'
+                                            />
+                                            {this.props.type === General.OPEN_CHANNEL &&
+                                                <CompassIcon
+                                                    style={style.touchableIcon}
+                                                    color='#166de0'
+                                                    name='check'
+                                                    size={24}
+                                                />
+                                            }
+                                        </TouchableOpacity>
+                                        <View
+                                            style={{borderBottomColor: '#ebebec',
+                                                borderBottomWidth: 1,
+                                                marginHorizontal: 15,
+                                                height: 0}}
+                                        />
+                                        <TouchableOpacity
+                                            style={style.touchable}
+                                            onPress={() => {
+                                                this.onTypeSelect(General.PRIVATE_CHANNEL);
+                                            }}
+                                        >
+                                            <FormattedText
+                                                style={style.touchableText}
+                                                id='channel_modal.type'
+                                                defaultMessage='Private Channel'
+                                            />
+                                            {this.props.type === General.PRIVATE_CHANNEL &&
+                                                <CompassIcon
+                                                    style={style.touchableIcon}
+                                                    color='#166de0'
+                                                    name='check'
+                                                    size={24}
+                                                />
+                                            }
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            )}
+                            {!displayHeaderOnly && (
+                                <View>
+                                    <View style={style.titleContainer30}>
                                         <FormattedText
                                             style={style.title}
                                             id='channel_modal.name'
@@ -449,5 +518,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         headerHelpText: {
             zIndex: -1,
         },
+        touchable: {
+            flex: 1,
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+        },
+        touchableText: {
+            flex: 1,
+            flexGrow: 1,
+            fontSize: 16,
+            lineHeight: 24,
+            color: '#3d3c40',
+            paddingVertical: 10,
+            marginLeft: 15,
+        },
+        touchableIcon: {flex: 1, padding: 10, textAlign: 'right'},
     };
 });

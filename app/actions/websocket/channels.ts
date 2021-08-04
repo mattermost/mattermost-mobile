@@ -6,6 +6,7 @@ import {loadChannelsForTeam} from '@actions/views/channel';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, TeamTypes, RoleTypes} from '@mm-redux/action_types';
+import {addChannelToInitialCategory} from '@mm-redux/actions/channel_categories';
 import {markChannelAsRead} from '@mm-redux/actions/channels';
 import {General} from '@mm-redux/constants';
 import {
@@ -22,6 +23,7 @@ import {ActionResult, DispatchFunc, GenericAction, GetStateFunc, batchActions} f
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import {getChannelByName} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {shouldShowLegacySidebar} from '@utils/categories';
 
 export function handleChannelConvertedEvent(msg: WebSocketMessage) {
     return (dispatch: DispatchFunc, getState: GetStateFunc): ActionResult => {
@@ -47,12 +49,9 @@ export function handleChannelCreatedEvent(msg: WebSocketMessage) {
         const currentTeamId = getCurrentTeamId(state);
 
         if (teamId === currentTeamId && !channels[channelId]) {
-            const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
-            if (channelActions.length) {
-                dispatch(batchActions(channelActions, 'BATCH_WS_CHANNEL_CREATED'));
-            }
+            return dispatch(fetchChannelAndAddToSidebar(msg.broadcast.channel_id, 'BATCH_WS_CHANNEL_CREATED'));
         }
-        return {data: true};
+        return {data: false};
     };
 }
 
@@ -118,11 +117,7 @@ export function handleChannelMemberUpdatedEvent(msg: WebSocketMessage) {
 
 export function handleChannelSchemeUpdatedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc): Promise<ActionResult> => {
-        const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
-        if (channelActions.length) {
-            dispatch(batchActions(channelActions, 'BATCH_WS_SCHEME_UPDATE'));
-        }
-        return {data: true};
+        return dispatch(fetchChannelAndAddToSidebar(msg.broadcast.channel_id, 'BATCH_WS_SCHEME_UPDATE'));
     };
 }
 
@@ -200,11 +195,7 @@ export function handleChannelViewedEvent(msg: WebSocketMessage) {
 
 export function handleDirectAddedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc): Promise<ActionResult> => {
-        const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
-        if (channelActions.length) {
-            dispatch(batchActions(channelActions, 'BATCH_WS_DM_ADDED'));
-        }
-        return {data: true};
+        return dispatch(fetchChannelAndAddToSidebar(msg.broadcast.channel_id, 'BATCH_WS_DM_ADDED'));
     };
 }
 
@@ -236,3 +227,23 @@ export function handleUpdateMemberRoleEvent(msg: WebSocketMessage) {
     };
 }
 
+export function fetchChannelAndAddToSidebar(channelId: string, type?: string) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
+        const channelActions = await fetchChannelAndMyMember(channelId);
+        let channel;
+
+        if (channelActions.length) {
+            channel = channelActions.find((el) => el.type === ChannelTypes.RECEIVED_CHANNEL);
+            dispatch(batchActions(channelActions, type));
+        }
+
+        const state = getState();
+
+        if (channel && !shouldShowLegacySidebar(state)) {
+            dispatch(addChannelToInitialCategory(channel.data));
+            return {data: true};
+        }
+
+        return {data: false};
+    };
+}

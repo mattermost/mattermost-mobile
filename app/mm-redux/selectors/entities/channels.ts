@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+/* eslint-disable max-lines */
+
 import {createSelector} from 'reselect';
 
 import {getCurrentChannelId, getCurrentUser, getUsers, getMyChannelMemberships, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/common';
@@ -9,6 +12,7 @@ import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting
 import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {isCurrentUserSystemAdmin, getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {ChannelCategory} from '@mm-redux/types/channel_categories';
 import {Channel, ChannelStats, ChannelMembership, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {Config} from '@mm-redux/types/config';
 import {Post} from '@mm-redux/types/posts';
@@ -18,11 +22,12 @@ import {TeamMembership, Team} from '@mm-redux/types/teams';
 import {ThreadsState} from '@mm-redux/types/threads';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
-import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency, getMsgCountInChannel} from '@mm-redux/utils/channel_utils';
-import {createIdsSelector} from '@mm-redux/utils/helpers';
+import {getMsgCountInChannel, buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency} from '@mm-redux/utils/channel_utils';
+import {createIdsSelector, memoizeResult} from '@mm-redux/utils/helpers';
 
 import {General, Permissions} from '../../constants';
 
+import {makeGetCategoriesForTeam, makeGetChannelsByCategory} from './channel_categories';
 import {getThreadCounts} from './threads';
 import {getUserIdsInChannels} from './users';
 
@@ -975,4 +980,39 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
 
 export function getChannelMemberCountsByGroup(state: GlobalState, channelId: string): ChannelMemberCountsByGroup {
     return state.entities.channels.channelMemberCountsByGroup[channelId] || {};
+}
+
+/**
+ * Channel Categories
+ */
+
+export const getCategoriesForCurrentTeam: (state: GlobalState) => ChannelCategory[] = (() => {
+    const getCategoriesForTeam = makeGetCategoriesForTeam();
+
+    return memoizeResult((state: GlobalState) => {
+        const currentTeamId = getCurrentTeamId(state);
+        return getCategoriesForTeam(state, currentTeamId);
+    });
+})();
+
+export const getChannelsByCategoryForCurrentTeam: (state: GlobalState) => RelationOneToOne<ChannelCategory, Channel[]> = (() => {
+    const getChannelsByCategory = makeGetChannelsByCategory();
+
+    return memoizeResult((state: GlobalState) => {
+        const currentTeamId = getCurrentTeamId(state);
+        return getChannelsByCategory(state, currentTeamId);
+    });
+})();
+
+// makeGetChannelsForIds returns a selector that, given an array of channel IDs, returns a list of the corresponding
+// channels. Channels are returned in the same order as the given IDs with undefined entries replacing any invalid IDs.
+// Note that memoization will fail if an array literal is passed in.
+export function makeGetChannelsForIds(): (state: GlobalState, ids: string[]) => Channel[] {
+    return createSelector(
+        getAllChannels,
+        (state: GlobalState, ids: string[]) => ids,
+        (allChannels, ids) => {
+            return ids.map((id) => allChannels[id]);
+        },
+    );
 }

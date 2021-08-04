@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import {hasNewPermissions} from '@mm-redux/selectors/entities/general';
 import {haveITeamPermission, haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {Channel, ChannelMembership, ChannelType, ChannelNotifyProps} from '@mm-redux/types/channels';
@@ -741,6 +742,17 @@ export function filterChannelsMatchingTerm(channels: Array<Channel>, term: strin
         return name.startsWith(lowercasedTerm) ||
             displayName.startsWith(lowercasedTerm);
     });
+}
+
+export function removeItem<T>(array: T[], item: T) {
+    const index = array.indexOf(item);
+    if (index === -1) {
+        return array;
+    }
+
+    const result = [...array];
+    result.splice(index, 1);
+    return result;
 }
 
 export function getMsgCountInChannel(collapsedThreadsEnabled: boolean, channel: Channel, member: ChannelMembership): number {

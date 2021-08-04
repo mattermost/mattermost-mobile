@@ -1,24 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
 import {connect} from 'react-redux';
 
 import {DeviceTypes, ViewTypes} from '@constants';
-import {General} from '@mm-redux/constants';
+import {General, Preferences} from '@mm-redux/constants';
 import Permissions from '@mm-redux/constants/permissions';
 import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
     getOrderedChannelIds,
+    getChannelsByCategoryForCurrentTeam,
+    getCategoriesForCurrentTeam,
+    getUnreadChannels,
+    getCurrentChannelId,
 } from '@mm-redux/selectors/entities/channels';
 import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
-import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled, getBool} from '@mm-redux/selectors/entities/preferences';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {shouldShowLegacySidebar} from '@utils/categories';
 
 import List from './list';
 
@@ -41,7 +45,11 @@ function mapStateToProps(state) {
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const sidebarPrefs = getSidebarPreferences(state);
     const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
+    const unreadsOnTop = getBool(state,
+        Preferences.CATEGORY_SIDEBAR_SETTINGS,
+        'show_unread_section');
     const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
+    const unreadChannels = getUnreadChannels(state, lastUnreadChannel);
     const favoriteChannelIds = getSortedFavoriteChannelIds(state);
     const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
         state,
@@ -51,6 +59,11 @@ function mapStateToProps(state) {
         true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
     ));
+
+    // Grab our categories & channels
+    const categories = getCategoriesForCurrentTeam(state);
+    const channelsByCategory = getChannelsByCategoryForCurrentTeam(state);
+    const currentChannelId = getCurrentChannelId(state);
 
     let canJoinPublicChannels = true;
     if (hasNewPermissions(state)) {
@@ -62,15 +75,23 @@ function mapStateToProps(state) {
     const canCreatePublicChannels = showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin);
     const canCreatePrivateChannels = showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin);
 
+    const showLegacySidebar = shouldShowLegacySidebar(state);
+
     return {
+        theme: getTheme(state),
         canJoinPublicChannels,
         canCreatePrivateChannels,
         canCreatePublicChannels,
         collapsedThreadsEnabled,
-        favoriteChannelIds,
-        theme: getTheme(state),
         unreadChannelIds,
+        favoriteChannelIds,
         orderedChannelIds,
+        channelsByCategory,
+        categories,
+        showLegacySidebar,
+        unreadChannels,
+        unreadsOnTop,
+        currentChannelId,
     };
 }
 

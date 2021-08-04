@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import keyMirror from '@mm-redux/utils/key_mirror';
-
 export default keyMirror({
     CHANNEL_REQUEST: null,
     CHANNEL_SUCCESS: null,
@@ -64,12 +63,20 @@ export default keyMirror({
     CHANNEL_MEMBER_ADDED: null,
     CHANNEL_MEMBER_REMOVED: null,
 
+    SET_CHANNEL_MUTED: null,
+
     INCREMENT_TOTAL_MSG_COUNT: null,
     INCREMENT_UNREAD_MSG_COUNT: null,
     DECREMENT_UNREAD_MSG_COUNT: null,
-    SET_UNREAD_MSG_COUNT: null,
     INCREMENT_UNREAD_MENTION_COUNT: null,
     DECREMENT_UNREAD_MENTION_COUNT: null,
+
+    UPDATED_CHANNEL_SCHEME: null,
+    UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: null,
+
+    RECEIVED_CHANNEL_MEMBERS_MINUS_GROUP_MEMBERS: null,
+
+    RECEIVED_CHANNEL_MODERATIONS: null,
 
     RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP: null,
 

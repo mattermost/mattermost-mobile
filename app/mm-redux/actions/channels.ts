@@ -1,14 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics';
 import {ChannelTypes, PreferenceTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import {CategoryTypes} from '@mm-redux/constants/channel_categories';
+import {getCategoryInTeamByType} from '@mm-redux/selectors/entities/channel_categories';
 import {
     getChannelsNameMapInTeam,
     getMyChannelMember as getMyChannelMemberSelector,
     getRedirectChannelNameForTeam,
     isManuallyUnread,
+    getChannel as getChannelSelector,
 } from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -19,6 +24,7 @@ import {compareNotifyProps, getChannelsIdForTeam, getChannelByName as selectChan
 
 import {General, Preferences} from '../constants';
 
+import {addChannelToCategory} from './channel_categories';
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {savePreferences, deletePreferences} from './preferences';
@@ -1413,9 +1419,12 @@ export function getMyChannelMember(channelId: string) {
     });
 }
 
-export function favoriteChannel(channelId: string): ActionFunc {
+export function favoriteChannel(channelId: string, updateCategories = true): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const {currentUserId} = getState().entities.users;
+        const state = getState();
+        const config = getConfig(state);
+        const currentUserId = getCurrentUserId(state);
+
         const preference: PreferenceType = {
             user_id: currentUserId,
             category: Preferences.CATEGORY_FAVORITE_CHANNEL,
@@ -1423,15 +1432,34 @@ export function favoriteChannel(channelId: string): ActionFunc {
             value: 'true',
         };
 
-        analytics.trackAction('action_channels_favorite');
+        if (config.EnableLegacySidebar === 'true') {
+            // The old sidebar is enabled, so favorite the channel by calling the preferences API
+            return dispatch(savePreferences(currentUserId, [preference]));
+        }
 
-        return dispatch(savePreferences(currentUserId, [preference]));
+        // The new sidebar is enabled, so favorite the channel by moving it into the current team's Favorites category
+        if (updateCategories) {
+            const channel = getChannelSelector(state, channelId);
+            const category = getCategoryInTeamByType(state, channel.team_id || getCurrentTeamId(state), CategoryTypes.FAVORITES);
+
+            if (category) {
+                await dispatch(addChannelToCategory(category.id, channelId));
+            }
+        }
+
+        return dispatch({
+            type: PreferenceTypes.RECEIVED_PREFERENCES,
+            data: [preference],
+        });
     };
 }
 
-export function unfavoriteChannel(channelId: string): ActionFunc {
+export function unfavoriteChannel(channelId: string, updateCategories = true): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const {currentUserId} = getState().entities.users;
+        const state = getState();
+        const config = getConfig(state);
+        const currentUserId = getCurrentUserId(state);
+
         const preference: PreferenceType = {
             user_id: currentUserId,
             category: Preferences.CATEGORY_FAVORITE_CHANNEL,
@@ -1439,9 +1467,29 @@ export function unfavoriteChannel(channelId: string): ActionFunc {
             value: '',
         };
 
-        analytics.trackAction('action_channels_unfavorite');
+        if (config.EnableLegacySidebar === 'true') {
+            // The old sidebar is enabled, so unfavorite the channel by calling the preferences API
+            return dispatch(deletePreferences(currentUserId, [preference]));
+        }
 
-        return deletePreferences(currentUserId, [preference])(dispatch, getState);
+        // The new sidebar is enabled, so unfavorite the channel by moving it into the current team's Channels/DMs category
+        if (updateCategories) {
+            const channel = getChannelSelector(state, channelId);
+            const category = getCategoryInTeamByType(
+                state,
+                channel.team_id || getCurrentTeamId(state),
+                channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL ? CategoryTypes.DIRECT_MESSAGES : CategoryTypes.CHANNELS,
+            );
+
+            if (category) {
+                await dispatch(addChannelToCategory(category.id, channel.id));
+            }
+        }
+
+        return dispatch({
+            type: PreferenceTypes.DELETED_PREFERENCES,
+            data: [preference],
+        });
     };
 }
 

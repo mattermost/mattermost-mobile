@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {batchActions} from 'redux-batched-actions';
 
 import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
@@ -10,6 +12,7 @@ import {ViewTypes} from '@constants';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
+import {fetchMyCategories} from '@mm-redux/actions/channel_categories';
 import {
     fetchMyChannelsAndMembers,
     getChannelByName,
@@ -38,6 +41,7 @@ import {getChannelReachable} from '@selectors/channel';
 import {getViewingGlobalThreads} from '@selectors/threads';
 import telemetry, {PERF_MARKERS} from '@telemetry';
 import {appsEnabled} from '@utils/apps';
+import {shouldShowLegacySidebar} from '@utils/categories';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 
@@ -743,6 +747,10 @@ export function loadChannelsForTeam(teamId, skipDispatch = false, isReconnect = 
                         return {error: hasChannelsLoaded ? null : err};
                     }
                 }
+            }
+
+            if (!shouldShowLegacySidebar(state)) {
+                await dispatch(fetchMyCategories(teamId));
             }
 
             if (data.channels) {

@@ -45,7 +45,14 @@ exports[`EditChannelInfo should match snapshot 1`] = `
         }
       >
         <View>
-          <View>
+          <View
+            style={
+              Object {
+                "flexDirection": "row",
+                "marginTop": 30,
+              }
+            }
+          >
             <InjectIntl(FormattedText)
               defaultMessage="Name"
               id="channel_modal.name"
