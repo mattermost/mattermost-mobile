@@ -432,7 +432,7 @@ PODS:
   - Swime (3.0.6)
   - UMAppLoader (2.2.0)
   - UMCore (7.1.1)
-  - UMReactNativeAdapter (6.3.4):
+  - UMReactNativeAdapter (6.3.5):
     - ExpoModulesCore
     - React-Core
     - UMCore
@@ -783,7 +783,7 @@ SPEC CHECKSUMS:
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   UMAppLoader: 21af63390e55c82e037fb9752d93114a80ecf16e
   UMCore: 2f671796d7439604a1cf8ac7bbe5809cd5c50437
-  UMReactNativeAdapter: 684b07b79d5fe52b496d2b50bfe31f68d7daf71a
+  UMReactNativeAdapter: f808906d586a16cebdc3844d86e1bdb8f114a873
   UMTaskManagerInterface: 2be431101b73604e64fbfffcf759336f9d8fccbb
   WatermelonDB: 577c61fceff16e9f9103b59d14aee4850c0307b6
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
