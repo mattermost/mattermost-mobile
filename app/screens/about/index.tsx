@@ -10,6 +10,7 @@ import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Config from '@assets/config.json';
+import AppVersion from '@components/app_version';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
@@ -117,15 +118,9 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         />
                     </View>
                     <Subtitle config={config}/>
-                    <FormattedText
-                        id={t('mobile.about.appVersion')}
-                        defaultMessage='App Version: {version} (Build {number})'
-                        style={style.info}
-                        values={{
-                            version: DeviceInfo.getVersion(),
-                            number: DeviceInfo.getBuildNumber(),
-                        }}
-                        testID='about.app_version'
+                    <AppVersion
+                        isWrapped={false}
+                        textStyle={style.info}
                     />
                     <ServerVersion config={config}/>
                     <FormattedText
