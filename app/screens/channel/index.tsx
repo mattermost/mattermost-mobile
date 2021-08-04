@@ -86,16 +86,65 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
             return <FailedChannels teamId={currentTeamId.value}/>;
         }
 
-        return (
-            <ChannelNavBar
-                channelId={currentChannelId.value}
-                onPress={() => null}
-            />
-        );
-    }, [currentTeamId.value, currentChannelId.value]);
+        const textStyle = getMarkdownTextStyles(theme);
+        const blockStyle = getMarkdownBlockStyles(theme);
 
-    const textStyle = getMarkdownTextStyles(theme);
-    const blockStyle = getMarkdownBlockStyles(theme);
+        return (
+            <>
+                <ChannelNavBar
+                    channelId={currentChannelId?.value}
+                    onPress={() => null}
+                />
+                <ScrollView style={{paddingHorizontal: 10, width: '100%'}}>
+                    <ProgressiveImage
+                        id='file-123'
+                        thumbnailUri='data:image/png;base64,/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APcrv4uftAfbNW1XT57Gz0C+1DUEgTVbWMS2EaFY4mO5lEajggNnJJZuDivYPh38Ytd/4Te8tteS4uvDs32aystTSS2lSa4bP7wLE25EYf3hzkEACuX+Ln7M3jjXvGmoax4f8X3EenapcK0ulmGF4owTM8rESq3BUQx4HUuSeBUfwI+BvxC0b4gWmp+Kp4ptJswZLv7dMJZ726MWFkUKm3EZJG7IJz/EAKebYepiqdLFUJqM4JpRi7J3a1mtOa1u+iv1aPppYjCqVWChBxkm9ndbe6m9mraadX0vb//Z'
+                        imageUri='http://192.168.1.6:8065/api/v4/files/9rcknudg9ig9xkz515faj374pw/preview'
+                        resizeMode='contain'
+                        onError={() => true}
+                        style={{width: 322.72727272727275, height: 132.96363636363637}}
+                        inViewPort={inViewport}
+                    />
+                    <JumboEmoji
+                        isEdited={true}
+                        baseTextStyle={{
+                            color: theme.centerChannelColor,
+                            fontSize: 15,
+                            lineHeight: 20,
+                        }}
+                        value={md.jumbo}
+                    />
+                    <Markdown
+                        value={md.value}
+                        theme={theme}
+                        textStyles={textStyle}
+                        blockStyles={blockStyle}
+                        isEdited={true}
+                        baseTextStyle={{
+                            color: theme.centerChannelColor,
+                            fontSize: 15,
+                            lineHeight: 20,
+                        }}
+                        mentionKeys={[{
+                            key: 'Elias',
+                            caseSensitive: false,
+                        }]}
+                        imagesMetadata={md.imagesMetadata}
+                        channelMentions={md.channelMentions}
+                    />
+                    <View style={styles.sectionContainer}>
+                        <Text
+                            onPress={doLogout}
+                            style={styles.sectionTitle}
+                        >
+                            {`Loaded in: ${time || 0}ms. Logout from ${serverUrl}`}
+                        </Text>
+                    </View>
+                </ScrollView>
+            </>
+        );
+    }, [currentTeamId.value, currentChannelId.value, theme]);
+
     const [inViewport, setInViewport] = useState(false);
 
     setTimeout(async () => {
@@ -111,53 +160,6 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
             <ServerVersion/>
             <StatusBar theme={theme}/>
             {renderComponent}
-            <ScrollView style={{paddingHorizontal: 10, width: '100%'}}>
-                <ProgressiveImage
-                    id='file-123'
-                    thumbnailUri='data:image/png;base64,/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APcrv4uftAfbNW1XT57Gz0C+1DUEgTVbWMS2EaFY4mO5lEajggNnJJZuDivYPh38Ytd/4Te8tteS4uvDs32aystTSS2lSa4bP7wLE25EYf3hzkEACuX+Ln7M3jjXvGmoax4f8X3EenapcK0ulmGF4owTM8rESq3BUQx4HUuSeBUfwI+BvxC0b4gWmp+Kp4ptJswZLv7dMJZ726MWFkUKm3EZJG7IJz/EAKebYepiqdLFUJqM4JpRi7J3a1mtOa1u+iv1aPppYjCqVWChBxkm9ndbe6m9mraadX0vb//Z'
-                    imageUri='http://192.168.1.6:8065/api/v4/files/9rcknudg9ig9xkz515faj374pw/preview'
-                    resizeMode='contain'
-                    onError={() => true}
-                    style={{width: 322.72727272727275, height: 132.96363636363637}}
-                    inViewPort={inViewport}
-                />
-                <JumboEmoji
-                    isEdited={true}
-                    baseTextStyle={{
-                        color: theme.centerChannelColor,
-                        fontSize: 15,
-                        lineHeight: 20,
-                    }}
-                    value={md.jumbo}
-                />
-                <Markdown
-                    value={md.value}
-                    theme={theme}
-                    textStyles={textStyle}
-                    blockStyles={blockStyle}
-                    isEdited={true}
-                    baseTextStyle={{
-                        color: theme.centerChannelColor,
-                        fontSize: 15,
-                        lineHeight: 20,
-                    }}
-                    mentionKeys={[{
-                        key: 'Elias',
-                        caseSensitive: false,
-                    }]}
-                    imagesMetadata={md.imagesMetadata}
-                    channelMentions={md.channelMentions}
-                />
-                <View style={styles.sectionContainer}>
-                    <Text
-                        onPress={doLogout}
-                        style={styles.sectionTitle}
-                    >
-                        {`Loaded in: ${time || 0}ms. Logout from ${serverUrl}`}
-                    </Text>
-                </View>
-            </ScrollView>
-
         </SafeAreaView>
     );
 };
