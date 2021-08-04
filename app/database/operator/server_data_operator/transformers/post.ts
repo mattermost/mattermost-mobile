@@ -76,7 +76,8 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (postsInThread: PostsInThreadModel) => {
-        postsInThread._raw.id = isCreateAction ? raw.id : record.id;
+        postsInThread._raw.id = isCreateAction ? (raw.id || postsInThread.id) : record.id;
+        postsInThread.rootId = raw.root_id;
         postsInThread.earliest = raw.earliest;
         postsInThread.latest = raw.latest!;
     };
@@ -193,7 +194,8 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
     const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (postsInChannel: PostsInChannelModel) => {
-        postsInChannel._raw.id = isCreateAction ? (raw.channel_id || postsInChannel.id) : record.id;
+        postsInChannel._raw.id = isCreateAction ? (raw.id || postsInChannel.id) : record.id;
+        postsInChannel.channelId = raw.channel_id;
         postsInChannel.earliest = raw.earliest;
         postsInChannel.latest = raw.latest;
     };

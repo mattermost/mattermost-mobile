@@ -15,6 +15,9 @@ export default class PostsInChannelModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
+    /** channel_id: Asociated channel identifier */
+    channelId: string;
+
     /** earliest : The earliest timestamp of the post in that channel  */
     earliest: number;
 

@@ -66,7 +66,7 @@ describe('***  POST Prepare Records Test ***', () => {
                 record: undefined,
                 raw: {
                     id: 'ps81iqbddesfby8jayz7owg4yypoo',
-                    post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                    root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
                     earliest: 1596032651748,
                     latest: 1597032651748,
                 },

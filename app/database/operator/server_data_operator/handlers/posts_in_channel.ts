@@ -75,7 +75,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
         // Find the records in the PostsInChannel table that have a matching channel_id
         const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
-            Q.where('id', channelId),
+            Q.where('channel_id', channelId),
             Q.experimentalSortBy('latest', Q.desc),
         ).fetch()) as PostsInChannelModel[];
 

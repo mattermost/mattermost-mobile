@@ -10,6 +10,7 @@ const {POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
 export default tableSchema({
     name: POSTS_IN_CHANNEL,
     columns: [
+        {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'earliest', type: 'number'},
         {name: 'latest', type: 'number'},
     ],

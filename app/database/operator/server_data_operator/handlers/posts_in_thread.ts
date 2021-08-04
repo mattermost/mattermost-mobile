@@ -32,13 +32,13 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
             const chunks = (await retrieveRecords({
                 database: this.database,
                 tableName: POSTS_IN_THREAD,
-                condition: Q.where('id', rootId),
+                condition: Q.where('root_id', rootId),
             })) as PostsInThreadModel[];
 
             if (chunks.length) {
                 const chunk = chunks[0];
                 const newValue = {
-                    id: rootId,
+                    root_id: rootId,
                     earliest: Math.min(chunk.earliest, firstPost.create_at),
                     latest: Math.max(chunk.latest, lastPost.create_at),
                 };
@@ -50,7 +50,7 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
             } else {
                 // create chunk
                 create.push({
-                    id: rootId,
+                    root_id: rootId,
                     earliest: firstPost.create_at,
                     latest: lastPost.create_at,
                 });

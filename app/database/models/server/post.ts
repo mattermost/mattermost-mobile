@@ -38,7 +38,7 @@ export default class PostModel extends Model {
         [FILE]: {type: 'has_many', foreignKey: 'post_id'},
 
         /** A POST can have multiple POSTS_IN_THREAD. (relationship is 1:N)*/
-        [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'id'},
+        [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'root_id'},
 
         /** A POST can have multiple REACTION. (relationship is 1:N)*/
         [REACTION]: {type: 'has_many', foreignKey: 'post_id'},
