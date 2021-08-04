@@ -148,7 +148,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'user_id',
+            fieldName: 'group_id',
             createOrUpdateRawValues: groupMemberships,
             tableName: 'GroupMembership',
             prepareRecordsOnly: false,
