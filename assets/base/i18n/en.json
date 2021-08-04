@@ -64,6 +64,7 @@
   "mobile.about.licensed": "Licensed to: {company}",
   "mobile.about.powered_by": "{site} is powered by Mattermost",
   "mobile.about.serverVersion": "Server Version: {version} (Build {number})",
+  "mobile.about.serverVersionNoBuild": "Server Version: {version}",
   "mobile.components.select_server_view.connect": "Connect",
   "mobile.components.select_server_view.connecting": "Connecting...",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",

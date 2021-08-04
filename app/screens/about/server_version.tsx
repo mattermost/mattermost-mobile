@@ -28,7 +28,7 @@ const ServerVersion = ({config}: ServerVersionProps) => {
     };
 
     if (buildNumber === version) {
-        id = 'mobile.about.serverVersionNoBuild';
+        id = t('mobile.about.serverVersionNoBuild');
         defaultMessage = 'Server Version: {version}';
         values = {
             version,
