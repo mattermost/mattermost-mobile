@@ -26,7 +26,7 @@ export default class PostsInChannelModel extends Model {
         [CHANNEL]: {type: 'belongs_to', key: 'id'},
     };
 
-    /** channel_id: Asociated channel identifier */
+    /** channel_id: Associated channel identifier */
     @field('channel_id') channelId!: string;
 
     /** earliest : The earliest timestamp of the post in that channel  */
