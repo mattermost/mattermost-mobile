@@ -183,7 +183,7 @@ export default class EditProfile extends PureComponent {
         if (commandType === 'Push') {
             popTopScreen(componentId);
         } else {
-            dismissModal();
+            dismissModal({componentId});
         }
     };
 
