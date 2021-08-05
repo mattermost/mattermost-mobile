@@ -185,16 +185,20 @@ const NetworkIndicator = ({
 
         return () => {
             AppState.removeEventListener('change', handleAppStateChange);
+            if (clearNotificationTimeout.current && AppState.currentState !== 'active') {
+                clearTimeout(clearNotificationTimeout.current);
+            }
         };
     }, [netinfo.isInternetReachable, channelId]);
 
     useEffect(() => {
-        clearNotificationTimeout.current = setTimeout(clearNotifications, 150);
+        if (channelId) {
+            clearNotificationTimeout.current = setTimeout(clearNotifications, 1500);
+        }
 
         return () => {
-            if (clearNotificationTimeout.current) {
+            if (clearNotificationTimeout.current && channelId) {
                 clearTimeout(clearNotificationTimeout.current);
-                clearNotificationTimeout.current = undefined;
             }
         };
     }, [channelId]);
