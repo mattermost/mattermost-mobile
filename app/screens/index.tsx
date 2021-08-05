@@ -51,9 +51,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     let screen: any|undefined;
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
-    // case 'About':
-    //     screen = require('@screens/about').default;
-    //     break;
+    case 'About':
+        screen =  withServerDatabase(require('@screens/about').default);
+        break;
     // case 'AddReaction':
     //     screen = require('@screens/add_reaction').default;
     //     break;

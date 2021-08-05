@@ -21,7 +21,7 @@ module.exports = {
             alias: {
                 '@actions': './app/actions',
                 '@app': './app/',
-                '@assets': './dist/assets',
+                '@assets': './dist/assets/',
                 '@client': './app/client',
                 '@components': './app/components',
                 '@constants': './app/constants',

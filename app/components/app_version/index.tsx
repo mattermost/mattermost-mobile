@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, TextStyle, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import {t} from '@i18n';
 import FormattedText from '@components/formatted_text';
 
 const style = StyleSheet.create({
@@ -17,19 +18,32 @@ const style = StyleSheet.create({
     },
 });
 
-const AppVersion = () => {
+type AppVersionProps = {
+    isWrapped?: boolean;
+    textStyle?: TextStyle;
+}
+
+const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
+    const appVersion = (
+        <FormattedText
+            id={t('mobile.about.appVersion')}
+            defaultMessage='App Version: {version} (Build {number})'
+            style={StyleSheet.flatten([style.version, textStyle])}
+            values={{
+                version: DeviceInfo.getVersion(),
+                number: DeviceInfo.getBuildNumber(),
+            }}
+        />
+    );
+
+    if (!isWrapped) {
+        return appVersion;
+    }
+
     return (
         <View pointerEvents='none'>
             <View style={style.info}>
-                <FormattedText
-                    id='mobile.about.appVersion'
-                    defaultMessage='App Version: {version} (Build {number})'
-                    style={style.version}
-                    values={{
-                        version: DeviceInfo.getVersion(),
-                        number: DeviceInfo.getBuildNumber(),
-                    }}
-                />
+                {appVersion}
             </View>
         </View>
     );

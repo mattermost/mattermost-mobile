@@ -19,7 +19,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {login} from '@actions/remote/session';
-import {t} from '@utils/i18n';
+import {t} from '@i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

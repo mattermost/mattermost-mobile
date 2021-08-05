@@ -26,8 +26,8 @@ import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import FormattedText from '@components/formatted_text';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {login} from '@actions/remote/session';
+import {t} from '@i18n';
 import {goToScreen, resetToChannel} from '@screens/navigation';
-import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
