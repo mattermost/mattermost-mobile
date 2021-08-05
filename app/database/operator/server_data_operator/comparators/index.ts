@@ -9,8 +9,8 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
-import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
+import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -86,11 +86,11 @@ export const isRecordGroupEqualToRaw = (record: GroupModel, raw: Group) => {
     return raw.id === record.id;
 };
 
-export const isRecordGroupsInTeamEqualToRaw = (record: GroupsInTeamModel, raw: GroupTeam) => {
+export const isRecordGroupsTeamEqualToRaw = (record: GroupsTeamModel, raw: GroupTeam) => {
     return raw.team_id === record.teamId && raw.group_id === record.groupId;
 };
 
-export const isRecordGroupsInChannelEqualToRaw = (record: GroupsInChannelModel, raw: GroupChannel) => {
+export const isRecordGroupsChannelEqualToRaw = (record: GroupsChannelModel, raw: GroupChannel) => {
     return raw.channel_id === record.channelId && raw.group_id === record.groupId;
 };
 

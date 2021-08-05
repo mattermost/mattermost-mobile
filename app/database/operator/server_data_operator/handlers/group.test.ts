@@ -5,14 +5,14 @@ import DatabaseManager from '@database/manager';
 import {
     isRecordGroupEqualToRaw,
     isRecordGroupMembershipEqualToRaw,
-    isRecordGroupsInChannelEqualToRaw,
-    isRecordGroupsInTeamEqualToRaw,
+    isRecordGroupsChannelEqualToRaw,
+    isRecordGroupsTeamEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformGroupMembershipRecord,
     transformGroupRecord,
-    transformGroupsInChannelRecord,
-    transformGroupsInTeamRecord,
+    transformGroupsChannelRecord,
+    transformGroupsTeamRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 
 import ServerDataOperator from '..';
@@ -41,7 +41,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
                 has_syncables: true,
                 type: '',
                 member_count: 1,
-                allow_reference: false,
+                allow_reference: true,
             },
         ];
 
@@ -52,7 +52,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'name',
+            fieldName: 'id',
             createOrUpdateRawValues: groups,
             tableName: 'Group',
             prepareRecordsOnly: false,
@@ -61,11 +61,11 @@ describe('*** Operator: Group Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleGroupsInTeam: should write to the GROUPS_IN_TEAM table', async () => {
+    it('=> HandleGroupsTeam: should write to the GROUPS_TEAM table', async () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const groupsInTeams = [
+        const groupsTeams = [
             {
                 team_id: 'team_899',
                 team_display_name: '',
@@ -78,27 +78,27 @@ describe('*** Operator: Group Handlers tests ***', () => {
             },
         ];
 
-        await operator.handleGroupsInTeam({
-            groupsInTeams,
+        await operator.handleGroupsTeam({
+            groupsTeams,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'group_id',
-            createOrUpdateRawValues: groupsInTeams,
-            tableName: 'GroupsInTeam',
+            createOrUpdateRawValues: groupsTeams,
+            tableName: 'GroupsTeam',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
-            transformer: transformGroupsInTeamRecord,
+            findMatchingRecordBy: isRecordGroupsTeamEqualToRaw,
+            transformer: transformGroupsTeamRecord,
         });
     });
 
-    it('=> HandleGroupsInChannel: should write to the GROUPS_IN_CHANNEL table', async () => {
+    it('=> HandleGroupsChannel: should write to the GROUPS_CHANNEL table', async () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const groupsInChannels = [
+        const groupsChannels = [
             {
                 auto_add: true,
                 channel_display_name: '',
@@ -111,24 +111,22 @@ describe('*** Operator: Group Handlers tests ***', () => {
                 team_id: '',
                 team_type: '',
                 update_at: 0,
-                member_count: 0,
-                timezone_count: 0,
             },
         ];
 
-        await operator.handleGroupsInChannel({
-            groupsInChannels,
+        await operator.handleGroupsChannel({
+            groupsChannels,
             prepareRecordsOnly: false,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'group_id',
-            createOrUpdateRawValues: groupsInChannels,
-            tableName: 'GroupsInChannel',
+            createOrUpdateRawValues: groupsChannels,
+            tableName: 'GroupsChannel',
             prepareRecordsOnly: false,
-            findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
-            transformer: transformGroupsInChannelRecord,
+            findMatchingRecordBy: isRecordGroupsChannelEqualToRaw,
+            transformer: transformGroupsChannelRecord,
         });
     });
 
@@ -150,7 +148,7 @@ describe('*** Operator: Group Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'user_id',
+            fieldName: 'group_id',
             createOrUpdateRawValues: groupMemberships,
             tableName: 'GroupMembership',
             prepareRecordsOnly: false,
