@@ -49,7 +49,7 @@ function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, mar
                 threadId={item}
             />
         );
-    }, []);
+    }, [theme]);
 
     const renderHeader = () => {
         if (!viewingUnreads && !threadIds.length) {

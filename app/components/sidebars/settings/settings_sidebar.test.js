@@ -29,6 +29,7 @@ describe('SettingsSidebar', () => {
         theme: Preferences.THEMES.default,
         isCustomStatusEnabled: false,
         isCustomStatusExpired: false,
+        isCustomStatusExpirySupported: false,
         customStatus,
     };
 

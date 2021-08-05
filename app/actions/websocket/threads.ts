@@ -25,7 +25,9 @@ export function handleThreadReadChanged(msg: WebSocketMessage) {
         if (msg.data.thread_id) {
             const state = getState();
             const thread = getThread(state, msg.data.thread_id);
-            if (thread) {
+
+            // Mark only following threads as read.
+            if (thread?.is_following) {
                 dispatch(
                     handleReadChanged(
                         msg.data.thread_id,
