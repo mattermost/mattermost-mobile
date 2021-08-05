@@ -100,18 +100,23 @@ class PushNotifications {
                 Notifications.ios.removeDeliveredNotifications(ids);
             }
 
-            if (Store.redux) {
-                const totalMentions = getBadgeCount(Store.redux.getState());
-                if (totalMentions > -1) {
-                    // replaces the badge count based on the redux store.
-                    badgeCount = totalMentions;
-                }
-            }
+            this.setBadgeCountByMentions(badgeCount);
+        }
+    }
 
-            if (Platform.OS === 'ios') {
-                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
-                Notifications.ios.setBadgeCount(badgeCount);
+    setBadgeCountByMentions = (initialBadge = 0) => {
+        let badgeCount = initialBadge;
+        if (Store.redux) {
+            const totalMentions = getBadgeCount(Store.redux.getState());
+            if (totalMentions > -1) {
+                // replaces the badge count based on the redux store.
+                badgeCount = totalMentions;
             }
+        }
+
+        if (Platform.OS === 'ios') {
+            badgeCount = badgeCount <= 0 ? 0 : badgeCount;
+            Notifications.ios.setBadgeCount(badgeCount);
         }
     }
 
@@ -167,6 +172,7 @@ class PushNotifications {
 
                     if (foreground) {
                         EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
+                        this.setBadgeCountByMentions();
                     } else if (userInteraction && !payload.userInfo?.local) {
                         dispatch(loadFromPushNotification(notification));
                         const componentId = EphemeralStore.getNavigationTopComponentId();
