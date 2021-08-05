@@ -1,4 +1,4 @@
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+﻿// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 import {Linking} from 'react-native';
@@ -8,7 +8,7 @@ import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {queryThemeForCurrentTeam} from '@queries/servers/preference';
-import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
+import {goToScreen, resetToBottomTabs, resetToChannel, resetToSelectServer} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
@@ -40,6 +40,9 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
 };
 
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
+    //fixme: [REMOVE] Hijacking navigation flow to show bottom tab bar
+    return launchToBottomTabs();
+
     let serverUrl;
     switch (props?.launchType) {
         case LaunchType.DeepLink:
@@ -75,6 +78,10 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     }
 
     launchToServer(props, resetNavigation);
+};
+
+const launchToBottomTabs = () => {
+    return resetToBottomTabs();
 };
 
 const launchToChannel = (props: LaunchProps, resetNavigation: Boolean) => {

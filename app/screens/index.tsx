@@ -230,4 +230,9 @@ export function registerScreens() {
 
     Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
+
+    //fixme: REMOVE PLACEHOLDER SCREEN **** **** ********************
+    const placeHolderScreen = require('@screens/placeholder').default;
+    Navigation.registerComponent('PLACEHOLDER', () => placeHolderScreen);
+    // **** **** ******** **** ******** **** ******** **** ******** **** ****
 }

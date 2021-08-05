@@ -131,6 +131,107 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
+export function resetToBottomTabs(passProps?: LaunchProps) {
+    const theme = getThemeFromState();
+
+    EphemeralStore.clearNavigationComponents();
+
+    Navigation.setRoot({
+        root: {
+            bottomTabs: {
+                children: [
+                    {
+                        stack: {
+                            children: [
+                                {
+                                    component: {
+                                        name: 'PLACEHOLDER',
+                                        id: '_HOME_',
+                                        passProps: {
+                                            ...passProps,
+
+                                            // theme,
+                                        },
+                                    },
+                                },
+                            ],
+                            options: {
+                                bottomTab: {
+                                    text: 'Home',
+                                },
+                            },
+                        },
+                    }, {
+                        stack: {
+                            children: [
+                                {
+                                    component: {
+                                        name: 'PLACEHOLDER',
+                                        id: '_SEARCH_',
+                                        passProps: {
+                                            ...passProps,
+
+                                            // theme,
+                                        },
+                                    },
+                                },
+                            ],
+                            options: {
+                                bottomTab: {
+                                    text: 'Search',
+                                },
+                            },
+                        },
+                    }, {
+                        stack: {
+                            children: [
+                                {
+                                    component: {
+                                        name: 'PLACEHOLDER',
+                                        id: '_MENTION_',
+                                        passProps: {
+                                            ...passProps,
+
+                                            // theme,
+                                        },
+                                    },
+                                },
+                            ],
+                            options: {
+                                bottomTab: {
+                                    text: 'Mentions',
+                                },
+                            },
+                        },
+                    },
+                    {
+                        stack: {
+                            children: [
+                                {
+                                    component: {
+                                        name: 'PLACEHOLDER',
+                                        id: '_USER_',
+                                        passProps: {
+                                            ...passProps,
+
+                                            // theme,
+                                        },
+                                    },
+                                },
+                            ],
+                            options: {
+                                bottomTab: {
+                                    text: 'User',
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    });
+}
+
 export function resetToTeams(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
