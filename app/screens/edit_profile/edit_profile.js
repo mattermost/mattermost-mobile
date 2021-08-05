@@ -179,9 +179,9 @@ export default class EditProfile extends PureComponent {
     };
 
     close = () => {
-        const {commandType} = this.props;
+        const {commandType, componentId} = this.props;
         if (commandType === 'Push') {
-            popTopScreen();
+            popTopScreen(componentId);
         } else {
             dismissModal();
         }
