@@ -4,6 +4,7 @@
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import {channelEntry} from '@actions/remote/entry';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
@@ -69,7 +70,11 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             if (database) {
                 EphemeralStore.theme = await queryThemeForCurrentTeam(database);
             }
+
+            await channelEntry({serverUrl, props});
+
             launchToChannel({...props, serverUrl}, resetNavigation);
+
             return;
         }
     }
@@ -78,8 +83,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
 };
 
 const launchToChannel = (props: LaunchProps, resetNavigation: Boolean) => {
-    // TODO: Use LaunchProps to fetch posts for channel and then load user profile, etc...
-
     const passProps = {
         skipMetrics: true,
         ...props,
