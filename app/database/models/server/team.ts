@@ -8,7 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
@@ -17,7 +17,7 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 
 const {
     CHANNEL,
-    GROUPS_IN_TEAM,
+    GROUPS_TEAM,
     TEAM,
     MY_TEAM,
     SLASH_COMMAND,
@@ -39,8 +39,8 @@ export default class TeamModel extends Model {
         /** A TEAM has a 1:N relationship with CHANNEL. A TEAM can possess multiple channels */
         [CHANNEL]: {type: 'has_many', foreignKey: 'team_id'},
 
-        /** A TEAM has a 1:N relationship with GROUPS_IN_TEAM. A TEAM can possess multiple groups */
-        [GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+        /** A TEAM has a 1:N relationship with GROUPS_TEAM. A TEAM can possess multiple groups */
+        [GROUPS_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with SLASH_COMMAND. A TEAM can possess multiple slash commands */
         [SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
@@ -82,8 +82,8 @@ export default class TeamModel extends Model {
     /** channels : All the channels associated with this team */
     @children(CHANNEL) channels!: ChannelModel[];
 
-    /** groupsInTeam : All the groups associated with this team */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeamModel[];
+    /** groupsTeam : All the groups associated with this team */
+    @children(GROUPS_TEAM) groupsTeam!: GroupsTeamModel[];
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of. */
     @immutableRelation(MY_TEAM, 'id') myTeam!: Relation<MyTeamModel>;

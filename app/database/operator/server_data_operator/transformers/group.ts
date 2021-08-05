@@ -8,13 +8,13 @@ import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
-import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
+import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 
 const {
     GROUP,
-    GROUPS_IN_CHANNEL,
-    GROUPS_IN_TEAM,
+    GROUPS_CHANNEL,
+    GROUPS_TEAM,
     GROUP_MEMBERSHIP,
 } = MM_TABLES.SERVER;
 
@@ -61,6 +61,8 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (group: GroupModel) => {
         group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record.id;
+        group.allowReference = raw.allow_reference;
+        group.deleteAt = raw.delete_at;
         group.name = raw.name;
         group.displayName = raw.display_name;
     };
@@ -75,57 +77,55 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
 };
 
 /**
- * transformGroupsInTeamRecord: Prepares a record of the SERVER database 'GroupsInTeam' table for update or create actions.
+ * transformGroupsTeamRecord: Prepares a record of the SERVER database 'GroupsTeam' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<GroupsInTeamModel>}
+ * @returns {Promise<GroupsTeamModel>}
  */
-export const transformGroupsInTeamRecord = ({action, database, value}: TransformerArgs): Promise<GroupsInTeamModel> => {
+export const transformGroupsTeamRecord = ({action, database, value}: TransformerArgs): Promise<GroupsTeamModel> => {
     const raw = value.raw as GroupTeam;
-    const record = value.record as GroupsInTeamModel;
+    const record = value.record as GroupsTeamModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (groupsInTeam: GroupsInTeamModel) => {
-        groupsInTeam._raw.id = isCreateAction ? groupsInTeam.id : record.id;
-        groupsInTeam.teamId = raw.team_id;
-        groupsInTeam.groupId = raw.group_id;
+    const fieldsMapper = (groupsTeam: GroupsTeamModel) => {
+        groupsTeam._raw.id = isCreateAction ? groupsTeam.id : record.id;
+        groupsTeam.teamId = raw.team_id;
+        groupsTeam.groupId = raw.group_id;
     };
 
     return prepareBaseRecord({
         action,
         database,
-        tableName: GROUPS_IN_TEAM,
+        tableName: GROUPS_TEAM,
         value,
         fieldsMapper,
-    }) as Promise<GroupsInTeamModel>;
+    }) as Promise<GroupsTeamModel>;
 };
 
 /**
- * transformGroupsInChannelRecord: Prepares a record of the SERVER database 'GroupsInChannel' table for update or create actions.
+ * transformGroupsChannelRecord: Prepares a record of the SERVER database 'GroupsChannel' table for update or create actions.
  * @param {DataFactory} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<GroupsInChannelModel>}
+ * @returns {Promise<GroupsChannelModel>}
  */
-export const transformGroupsInChannelRecord = ({action, database, value}: TransformerArgs): Promise<GroupsInChannelModel> => {
-    const raw = value.raw as GroupChannel;
-    const record = value.record as GroupsInChannelModel;
+export const transformGroupsChannelRecord = ({action, database, value}: TransformerArgs): Promise<GroupsChannelModel> => {
+    const raw = value.raw as GroupChannelRelation;
+    const record = value.record as GroupsChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
-    const fieldsMapper = (groupsInChannel: GroupsInChannelModel) => {
-        groupsInChannel._raw.id = isCreateAction ? groupsInChannel.id : record.id;
-        groupsInChannel.channelId = raw.channel_id;
-        groupsInChannel.groupId = raw.group_id;
-        groupsInChannel.memberCount = raw.member_count;
-        groupsInChannel.timezoneCount = raw.timezone_count;
+    const fieldsMapper = (groupsChannel: GroupsChannelModel) => {
+        groupsChannel._raw.id = isCreateAction ? groupsChannel.id : record.id;
+        groupsChannel.channelId = raw.channel_id;
+        groupsChannel.groupId = raw.group_id;
     };
 
     return prepareBaseRecord({
         action,
         database,
-        tableName: GROUPS_IN_CHANNEL,
+        tableName: GROUPS_CHANNEL,
         value,
         fieldsMapper,
-    }) as Promise<GroupsInChannelModel>;
+    }) as Promise<GroupsChannelModel>;
 };

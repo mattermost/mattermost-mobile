@@ -29,6 +29,16 @@ type GroupMembership = {
     group_id: string;
 };
 
+type GroupChannelRelation = {
+    channel_id: string;
+    group_id: string;
+}
+
+type GroupTeamRelation = {
+    group_id: string;
+    team_id: string;
+}
+
 type MyTeam = {
     id: string;
     roles: string;

@@ -6,35 +6,35 @@ import DataOperatorException from '@database/exceptions/data_operator_exception'
 import {
     isRecordGroupEqualToRaw,
     isRecordGroupMembershipEqualToRaw,
-    isRecordGroupsInChannelEqualToRaw,
-    isRecordGroupsInTeamEqualToRaw,
+    isRecordGroupsChannelEqualToRaw,
+    isRecordGroupsTeamEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformGroupMembershipRecord,
     transformGroupRecord,
-    transformGroupsInChannelRecord,
-    transformGroupsInTeamRecord,
+    transformGroupsChannelRecord,
+    transformGroupsTeamRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
-import type {HandleGroupArgs, HandleGroupMembershipArgs, HandleGroupsInChannelArgs, HandleGroupsInTeamArgs} from '@typings/database/database';
+import type {HandleGroupArgs, HandleGroupMembershipArgs, HandleGroupsChannelArgs, HandleGroupsTeamArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
-import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
+import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 
 const {
     GROUP,
-    GROUPS_IN_CHANNEL,
-    GROUPS_IN_TEAM,
+    GROUPS_CHANNEL,
+    GROUPS_TEAM,
     GROUP_MEMBERSHIP,
 } = MM_TABLES.SERVER;
 
 export interface GroupHandlerMix {
     handleGroupMembership: ({groupMemberships, prepareRecordsOnly}: HandleGroupMembershipArgs) => Promise<GroupMembershipModel[]>;
     handleGroup: ({groups, prepareRecordsOnly}: HandleGroupArgs) => Promise<GroupModel[]>;
-    handleGroupsInTeam: ({groupsInTeams, prepareRecordsOnly}: HandleGroupsInTeamArgs) => Promise<GroupsInTeamModel[]>;
-    handleGroupsInChannel: ({groupsInChannels, prepareRecordsOnly}: HandleGroupsInChannelArgs) => Promise<GroupsInChannelModel[]>;
+    handleGroupsTeam: ({groupsTeams, prepareRecordsOnly}: HandleGroupsTeamArgs) => Promise<GroupsTeamModel[]>;
+    handleGroupsChannel: ({groupsChannels, prepareRecordsOnly}: HandleGroupsChannelArgs) => Promise<GroupsChannelModel[]>;
 }
 
 const GroupHandler = (superclass: any) => class extends superclass {
@@ -56,7 +56,7 @@ const GroupHandler = (superclass: any) => class extends superclass {
         const createOrUpdateRawValues = getUniqueRawsBy({raws: groupMemberships, key: 'group_id'});
 
         return this.handleRecords({
-            fieldName: 'user_id',
+            fieldName: 'group_id',
             findMatchingRecordBy: isRecordGroupMembershipEqualToRaw,
             transformer: transformGroupMembershipRecord,
             prepareRecordsOnly,
@@ -80,10 +80,10 @@ const GroupHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'name'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: groups, key: 'id'});
 
         return this.handleRecords({
-            fieldName: 'name',
+            fieldName: 'id',
             findMatchingRecordBy: isRecordGroupEqualToRaw,
             transformer: transformGroupRecord,
             prepareRecordsOnly,
@@ -93,56 +93,58 @@ const GroupHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handleGroupsInTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_TEAM table from the 'Server' schema
-     * @param {HandleGroupsInTeamArgs} groupsInTeamsArgs
-     * @param {RawGroupsInTeam[]} groupsInTeamsArgs.groupsInTeams
-     * @param {boolean} groupsInTeamsArgs.prepareRecordsOnly
+     * handleGroupsTeam: Handler responsible for the Create/Update operations occurring on the GROUPS_TEAM table from the 'Server' schema
+     * @param {HandleGroupsTeamArgs} groupsTeamsArgs
+     * @param {GroupsTeam[]} groupsTeamsArgs.groupsTeams
+     * @param {boolean} groupsTeamsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<GroupsInTeamModel[]>}
+     * @returns {Promise<GroupsTeamModel[]>}
      */
-    handleGroupsInTeam = ({groupsInTeams, prepareRecordsOnly = true}: HandleGroupsInTeamArgs): Promise<GroupsInTeamModel[]> => {
-        if (!groupsInTeams.length) {
+    handleGroupsTeam = ({groupsTeams, prepareRecordsOnly = true}: HandleGroupsTeamArgs): Promise<GroupsTeamModel[]> => {
+        if (!groupsTeams.length) {
             throw new DataOperatorException(
-                'An empty "groups" array has been passed to the handleGroupsInTeam method',
+                'An empty "groups" array has been passed to the handleGroupsTeam method',
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInTeams, key: 'group_id'});
+        const createOrUpdateRawValues = groupsTeams.filter((gt, index, self) => (
+            index === self.findIndex((item) => item.team_id === gt.team_id && item.group_id === gt.group_id)));
 
         return this.handleRecords({
             fieldName: 'group_id',
-            findMatchingRecordBy: isRecordGroupsInTeamEqualToRaw,
-            transformer: transformGroupsInTeamRecord,
+            findMatchingRecordBy: isRecordGroupsTeamEqualToRaw,
+            transformer: transformGroupsTeamRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
-            tableName: GROUPS_IN_TEAM,
+            tableName: GROUPS_TEAM,
         });
     };
 
     /**
-     * handleGroupsInChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_IN_CHANNEL table from the 'Server' schema
-     * @param {HandleGroupsInChannelArgs} groupsInChannelsArgs
-     * @param {RawGroupsInChannel[]} groupsInChannelsArgs.groupsInChannels
-     * @param {boolean} groupsInChannelsArgs.prepareRecordsOnly
+     * handleGroupsChannel: Handler responsible for the Create/Update operations occurring on the GROUPS_CHANNEL table from the 'Server' schema
+     * @param {HandleGroupsChannelArgs} groupsChannelsArgs
+     * @param {GroupsChannel[]} groupsChannelsArgs.groupsChannels
+     * @param {boolean} groupsChannelsArgs.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<GroupsInChannelModel[]>}
+     * @returns {Promise<GroupsChannelModel[]>}
      */
-    handleGroupsInChannel = ({groupsInChannels, prepareRecordsOnly = true}: HandleGroupsInChannelArgs): Promise<GroupsInChannelModel[]> => {
-        if (!groupsInChannels.length) {
+    handleGroupsChannel = ({groupsChannels, prepareRecordsOnly = true}: HandleGroupsChannelArgs): Promise<GroupsChannelModel[]> => {
+        if (!groupsChannels.length) {
             throw new DataOperatorException(
-                'An empty "groups" array has been passed to the handleGroupsInTeam method',
+                'An empty "groups" array has been passed to the handleGroupsTeam method',
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: groupsInChannels, key: 'channel_id'});
+        const createOrUpdateRawValues = groupsChannels.filter((gc, index, self) => (
+            index === self.findIndex((item) => item.channel_id === gc.channel_id && item.group_id === gc.group_id)));
 
         return this.handleRecords({
             fieldName: 'group_id',
-            findMatchingRecordBy: isRecordGroupsInChannelEqualToRaw,
-            transformer: transformGroupsInChannelRecord,
+            findMatchingRecordBy: isRecordGroupsChannelEqualToRaw,
+            transformer: transformGroupsChannelRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
-            tableName: GROUPS_IN_CHANNEL,
+            tableName: GROUPS_CHANNEL,
         });
     };
 };

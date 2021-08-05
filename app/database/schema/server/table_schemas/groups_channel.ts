@@ -5,10 +5,10 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-const {GROUPS_IN_CHANNEL} = MM_TABLES.SERVER;
+const {GROUPS_CHANNEL} = MM_TABLES.SERVER;
 
 export default tableSchema({
-    name: GROUPS_IN_CHANNEL,
+    name: GROUPS_CHANNEL,
     columns: [
         {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'group_id', type: 'string', isIndexed: true},

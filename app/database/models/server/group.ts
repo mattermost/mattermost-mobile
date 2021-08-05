@@ -7,10 +7,10 @@ import {children, field} from '@nozbe/watermelondb/decorators';
 import {MM_TABLES} from '@constants/database';
 
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type GroupsInChannelModel from '@typings/database/models/servers/groups_in_channel';
-import type GroupsInTeamModel from '@typings/database/models/servers/groups_in_team';
+import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
+import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 
-const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
+const {GROUP, GROUPS_CHANNEL, GROUPS_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
 
 /**
  * The Group model unifies/assembles users, teams and channels based on a common ground.  For example, a group can be
@@ -24,15 +24,21 @@ export default class GroupModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** A GROUP has a 1:N relationship with GROUPS_IN_CHANNEL */
-        [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'group_id'},
+        /** A GROUP has a 1:N relationship with GROUPS_CHANNEL */
+        [GROUPS_CHANNEL]: {type: 'has_many', foreignKey: 'group_id'},
 
-        /** A GROUP has a 1:N relationship with GROUPS_IN_TEAM */
-        [GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'group_id'},
+        /** A GROUP has a 1:N relationship with GROUPS_TEAM */
+        [GROUPS_TEAM]: {type: 'has_many', foreignKey: 'group_id'},
 
         /** A GROUP has a 1:N relationship with GROUP_MEMBERSHIP */
         [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
     };
+
+    /** allow_reference : Determins if the group can be referenced in mentions */
+    @field('allow_reference') allowReference!: boolean;
+
+    /** delete_at : When the group was deleted */
+    @field('delete_at') deleteAt!: number;
 
     /** display_name : The display name for the group */
     @field('display_name') displayName!: string;
@@ -40,11 +46,11 @@ export default class GroupModel extends Model {
     /** name : The name of the group */
     @field('name') name!: string;
 
-    /** groupsInChannel : All the related children records from GroupsInChannel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannelModel[];
+    /** groupsChannel : All the related children records from GroupsChannel */
+    @children(GROUPS_CHANNEL) groupsChannel!: GroupsChannelModel[];
 
-    /** groupsInTeam : All the related children records from GroupsInTeam */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeamModel[];
+    /** groupsTeam : All the related children records from GroupsTeam */
+    @children(GROUPS_TEAM) groupsTeam!: GroupsTeamModel[];
 
     /** groupMemberships : All the related children records from GroupMembership */
     @children(GROUP_MEMBERSHIP) groupMemberships!: GroupMembershipModel[];
