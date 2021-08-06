@@ -484,6 +484,7 @@ export default class DraftInput extends PureComponent {
                         <View style={style.actionsContainer}>
                             <QuickActions
                                 testID={quickActionsTestID}
+                                screenId={screenId}
                                 ref={this.quickActions}
                                 fileCount={files.length}
                                 inputEventType={valueEvent}
