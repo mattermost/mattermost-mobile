@@ -80,7 +80,10 @@ public class CustomPushNotificationHelper {
                     .setName(senderName);
 
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, senderId))));
+                Bitmap avatar = userAvatar(context, senderId);
+                if (avatar != null) {
+                    sender.setIcon(IconCompat.createWithBitmap(avatar));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -242,7 +245,10 @@ public class CustomPushNotificationHelper {
                     .setName("Me");
 
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, "me"))));
+                Bitmap avatar = userAvatar(context, "me");
+                if (avatar != null) {
+                    sender.setIcon(IconCompat.createWithBitmap(avatar));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -393,7 +399,10 @@ public class CustomPushNotificationHelper {
         if (channelName.equals(senderName)) {
             try {
                 String senderId = bundle.getString("sender_id");
-                notification.setLargeIcon(userAvatar(context, senderId));
+                Bitmap avatar = userAvatar(context, senderId);
+                if (avatar != null) {
+                    notification.setLargeIcon(avatar);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
