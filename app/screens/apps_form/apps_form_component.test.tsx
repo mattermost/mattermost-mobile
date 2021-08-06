@@ -15,6 +15,7 @@ describe('AppsForm', () => {
             performLookupCall: jest.fn(),
             refreshOnSelect: jest.fn(),
             submit: jest.fn(),
+            handleGotoLocation: jest.fn(),
         },
         call: {
             context: {

@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData, AppLookupResponse} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {DoAppCall, DoAppCallResult, PostEphemeralCallResponseForContext} from '@mm-types/actions/apps';
@@ -18,6 +19,7 @@ export type Props = {
     actions: {
         doAppCall: DoAppCall<any>;
         postEphemeralCallResponseForContext: PostEphemeralCallResponseForContext;
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     };
     theme: Theme;
     componentId: string;
@@ -233,6 +235,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
                     submit: this.handleSubmit,
                     performLookupCall: this.performLookupCall,
                     refreshOnSelect: this.refreshOnSelect,
+                    handleGotoLocation: this.props.actions.handleGotoLocation,
                 }}
                 theme={this.props.theme}
                 componentId={this.props.componentId}
