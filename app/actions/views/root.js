@@ -6,10 +6,10 @@ import {batchActions} from 'redux-batched-actions';
 import {Client4} from '@client/rest';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
-import {fetchMyChannelsAndMembers, getChannelAndMyMember} from '@mm-redux/actions/channels';
+import {getChannelAndMyMember} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
-import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
+import {getMyTeams, getMyTeamMembers, getMyTeamUnreads} from '@mm-redux/actions/teams';
 import {General} from '@mm-redux/constants';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -17,7 +17,7 @@ import {getViewingGlobalThreads} from '@selectors/threads';
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
 
-import {markAsViewedAndReadBatch} from './channel';
+import {loadChannelsForTeam, markAsViewedAndReadBatch} from './channel';
 import {handleNotViewingGlobalThreadsScreen} from './threads';
 
 export function startDataCleanup() {
@@ -64,12 +64,11 @@ export function loadConfigAndLicense() {
     };
 }
 
-export function loadFromPushNotification(notification) {
+export function loadFromPushNotification(notification, isInitialNotification) {
     return async (dispatch, getState) => {
         const state = getState();
         const {payload} = notification;
         const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
-        const {channels} = state.entities.channels;
 
         let channelId = '';
         let teamId = currentTeamId;
@@ -88,8 +87,9 @@ export function loadFromPushNotification(notification) {
             loading.push(dispatch(getMyTeamMembers()));
         }
 
-        if (channelId && !channels[channelId]) {
-            loading.push(dispatch(fetchMyChannelsAndMembers(teamId)));
+        if (isInitialNotification) {
+            loading.push(dispatch(getMyTeamUnreads()));
+            loading.push(dispatch(loadChannelsForTeam(teamId)));
         }
 
         if (loading.length > 0) {
@@ -105,10 +105,18 @@ export function loadFromPushNotification(notification) {
 export function handleSelectTeamAndChannel(teamId, channelId) {
     return async (dispatch, getState) => {
         const dt = Date.now();
-        await dispatch(getChannelAndMyMember(channelId));
+        let state = getState();
+        let {channels, myMembers} = state.entities.channels;
 
-        const state = getState();
-        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        if (channelId && (!channels[channelId] || !myMembers[channelId])) {
+            await dispatch(getChannelAndMyMember(channelId));
+            state = getState();
+        }
+
+        channels = state.entities.channels.channels;
+        myMembers = state.entities.channels.myMembers;
+
+        const {currentChannelId} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
         const channel = channels[channelId];
         const member = myMembers[channelId];
