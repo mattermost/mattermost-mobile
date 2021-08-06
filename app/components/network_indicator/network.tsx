@@ -174,10 +174,10 @@ const NetworkIndicator = ({
             handleWebSocket(active);
 
             if (active) {
-                // Clear the notifications for the current channel after one second
+                // Clear the notifications for the current channel after two seconds
                 // this is done so we can cancel it in case the app is brought to the
                 // foreground by tapping a notification from another channel
-                clearNotificationTimeout.current = setTimeout(clearNotifications, 1000);
+                clearNotificationTimeout.current = setTimeout(clearNotifications, 2000);
             }
         });
 
@@ -185,14 +185,22 @@ const NetworkIndicator = ({
 
         return () => {
             AppState.removeEventListener('change', handleAppStateChange);
+            if (clearNotificationTimeout.current && AppState.currentState !== 'active') {
+                clearTimeout(clearNotificationTimeout.current);
+            }
         };
-    }, [netinfo.isInternetReachable]);
+    }, [netinfo.isInternetReachable, channelId]);
 
     useEffect(() => {
-        if (clearNotificationTimeout.current) {
-            clearTimeout(clearNotificationTimeout.current);
-            clearNotificationTimeout.current = undefined;
+        if (channelId) {
+            clearNotificationTimeout.current = setTimeout(clearNotifications, 1500);
         }
+
+        return () => {
+            if (clearNotificationTimeout.current && channelId) {
+                clearTimeout(clearNotificationTimeout.current);
+            }
+        };
     }, [channelId]);
 
     useEffect(() => {
