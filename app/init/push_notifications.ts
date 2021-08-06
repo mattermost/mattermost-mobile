@@ -149,13 +149,13 @@ class PushNotifications {
             const interval = setInterval(() => {
                 if (Store.redux) {
                     clearInterval(interval);
-                    this.handleNotification(notification);
+                    this.handleNotification(notification, true);
                 }
             }, 500);
         }
     }
 
-    handleNotification = (notification: NotificationWithData) => {
+    handleNotification = (notification: NotificationWithData, isInitialNotification = false) => {
         const {payload, foreground, userInteraction} = notification;
 
         if (Store.redux && payload) {
@@ -174,7 +174,7 @@ class PushNotifications {
                         EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
                         this.setBadgeCountByMentions();
                     } else if (userInteraction && !payload.userInfo?.local) {
-                        dispatch(loadFromPushNotification(notification));
+                        dispatch(loadFromPushNotification(notification, isInitialNotification));
                         const componentId = EphemeralStore.getNavigationTopComponentId();
                         if (componentId) {
                             EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
