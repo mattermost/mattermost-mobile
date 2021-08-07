@@ -26,18 +26,27 @@
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"
                    android:resource="@xml/app_restrictions" />
-      <activity
+
+      <!-- Add this SplashActivity -->
+       <activity
+         android:name=".SplashActivity"
+         android:theme="@style/SplashTheme"
+         android:label="@string/app_name">
+         <intent-filter>
+             <action android:name="android.intent.action.MAIN" />
+             <category android:name="android.intent.category.LAUNCHER" />
+             <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+         </intent-filter>
+       </activity>
+
+       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
         android:windowSoftInputMode="adjustResize"
-        android:launchMode="singleTask"
-        android:taskAffinity="">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-            <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
-        </intent-filter>
+        android:taskAffinity=""
+        android:exported="true">
+
         <intent-filter>
           <action android:name="android.intent.action.VIEW" />
           <category android:name="android.intent.category.DEFAULT" />
@@ -51,6 +60,7 @@
           <data android:scheme="mmauthbeta" />
         </intent-filter>
       </activity>
+
       <service android:name=".NotificationDismissService"
                 android:enabled="true"
                 android:exported="false" />
