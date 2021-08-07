@@ -16,6 +16,11 @@ import type UserModel from '@typings/database/models/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
+export type MyUserRequest = {
+    user?: UserProfile;
+    error?: never;
+}
+
 export type ProfilesPerChannelRequest = {
     data?: ProfilesInChannelRequest[];
     error?: never;
@@ -25,6 +30,31 @@ export type ProfilesInChannelRequest = {
     users?: UserProfile[];
     channelId: string;
     error?: never;
+}
+
+export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const user = await client.getMe();
+
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                operator.handleUsers({users: [user], prepareRecordsOnly: false});
+            }
+        }
+
+        return {user};
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
 }
 
 export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {

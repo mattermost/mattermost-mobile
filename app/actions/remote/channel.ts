@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type ClientError from '@client/rest/error';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -16,7 +17,7 @@ import {fetchProfilesPerChannels} from './user';
 export type MyChannelsRequest = {
     channels?: Channel[];
     memberships?: ChannelMembership[];
-    error?: never;
+    error?: ClientError | never;
 }
 
 export const fetchChannelByName = async (serverUrl: string, teamId: string, channelName: string, fetchOnly = false) => {

@@ -3,6 +3,7 @@
 
 import {Model} from '@nozbe/watermelondb';
 
+import type ClientError from '@client/rest/error';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryWebSocketLastDisconnected} from '@queries/servers/system';
@@ -19,7 +20,7 @@ export type MyTeamsRequest = {
     teams?: Team[];
     memberships?: TeamMembership[];
     unreads?: TeamUnread[];
-    error?: never;
+    error?: ClientError | never;
 }
 
 export const addUserToTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {

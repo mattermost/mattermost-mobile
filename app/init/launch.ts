@@ -4,7 +4,7 @@
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
-import {channelEntry} from '@actions/remote/entry';
+import {appEntry} from '@actions/remote/entry';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
@@ -71,8 +71,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 EphemeralStore.theme = await queryThemeForCurrentTeam(database);
             }
 
-            await channelEntry({serverUrl, props});
-
             launchToChannel({...props, serverUrl}, resetNavigation);
 
             return;
@@ -83,6 +81,20 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
 };
 
 const launchToChannel = (props: LaunchProps, resetNavigation: Boolean) => {
+    switch (props.launchType) {
+        case LaunchType.DeepLink:
+            // TODO:
+            // deepLinkEntry({props.serverUrl, props.extra});
+            break;
+        case LaunchType.Notification: {
+            // TODO:
+            // pushNotificationEntry({props.serverUrl, props.extra})
+            break;
+        }
+        default:
+            appEntry(props.serverUrl!);
+    }
+
     const passProps = {
         skipMetrics: true,
         ...props,

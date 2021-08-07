@@ -88,3 +88,12 @@ export const queryTeamByName = async (database: Database, teamName: string): Pro
         return undefined;
     }
 };
+
+export const queryMyTeams = async (database: Database): Promise<MyTeamModel[]|undefined> => {
+    try {
+        const teams = (await database.get(MY_TEAM).query().fetch()) as MyTeamModel[];
+        return teams;
+    } catch {
+        return undefined;
+    }
+}
