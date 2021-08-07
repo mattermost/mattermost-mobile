@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {View, Text, TouchableHighlight} from 'react-native';
+import {Keyboard, Text, TouchableHighlight, View} from 'react-native';
 
-import {goToScreen} from '@actions/navigation';
+import {goToScreen, showModalOverCurrentContext} from '@actions/navigation';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
 import {GLOBAL_THREADS, THREAD} from '@constants/screen';
@@ -75,6 +75,17 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
         goToScreen(THREAD, '', passProps);
     };
 
+    const showThreadOptions = () => {
+        const screen = 'GlobalThreadOptions';
+        const passProps = {
+            thread,
+        };
+        Keyboard.dismiss();
+        requestAnimationFrame(() => {
+            showModalOverCurrentContext(screen, passProps);
+        });
+    };
+
     const testIDPrefix = `${testID}.${postItem?.id}`;
 
     const needBadge = thread.unread_mentions || thread.unread_replies;
@@ -134,6 +145,7 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
     return (
         <TouchableHighlight
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+            onLongPress={showThreadOptions}
             onPress={showThread}
             testID={`${testIDPrefix}.item`}
         >
