@@ -29,6 +29,8 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
         }
 
         if (userThreadList) {
+            const currentUserId = getCurrentUserId(getState());
+
             const data = {
                 threads: [] as UserThread[],
                 participants: [] as UserThread['participants'],
@@ -43,10 +45,15 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                     is_following: true,
                 });
 
-                // participants, participantIds
+                // data.participantIds - Get Missing Profiles
+                // data.participants - Received Profile List
                 thread.participants?.forEach((participant) => {
                     data.participantIds.push(participant.id);
-                    data.participants.push(participant);
+
+                    // Exclude current user
+                    if (participant.id !== currentUserId) {
+                        data.participants.push(participant);
+                    }
                 });
 
                 // posts

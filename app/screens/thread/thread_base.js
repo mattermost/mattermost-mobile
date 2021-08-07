@@ -67,9 +67,9 @@ export default class ThreadBase extends PureComponent {
                 },
                 rightButtons: [
                     {
-                        id: '1',
+                        id: thread?.id,
                         component: {
-                            id: 'ThreadFollow',
+                            id: 'ThreadFollow' + thread?.id,
                             name: 'ThreadFollow',
                             passProps: {
                                 active: thread?.is_following,
