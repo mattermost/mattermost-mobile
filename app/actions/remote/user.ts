@@ -55,7 +55,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
-}
+};
 
 export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
     let client: Client;

@@ -96,4 +96,4 @@ export const queryMyTeams = async (database: Database): Promise<MyTeamModel[]|un
     } catch {
         return undefined;
     }
-}
+};
