@@ -4,6 +4,7 @@
 import {Database, Model} from '@nozbe/watermelondb';
 
 import {scheduleExpiredNotification} from '@actions/local/push_notification';
+import ServerDataOperator from '@app/database/operator/server_data_operator';
 import type {Client} from '@client/rest';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -78,57 +79,7 @@ const handleSwitchTeams = async (database: Database, serverUrl: string, teams: T
     return {newTeamId, newChannelData, teamIdsToRemove};
 };
 
-export const appEntry = async (serverUrl: string) => {
-    const dt = Date.now();
-
-    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let currentTeamId = await queryCurrentTeamId(database);
-    const lastDisconnected = await queryWebSocketLastDisconnected(database);
-    const includeDeletedChannels = true;
-    const fetchOnly = true;
-
-    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences
-    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
-        fetchMyTeams(serverUrl, fetchOnly),
-        fetchMyChannelsForTeam(serverUrl, currentTeamId, includeDeletedChannels, lastDisconnected, fetchOnly),
-        fetchMyPreferences(serverUrl, fetchOnly),
-        fetchMe(serverUrl),
-    ];
-
-    const resolved = await Promise.all(promises);
-    const teamData = resolved[0];
-    let chData = resolved[1];
-    const prefData = resolved[2];
-    const meData = resolved[3];
-
-    if (teamData.teams?.length === 0) {
-        // User is no longer a member of any teams
-        // TODO: Handle deletion of all teams (and related data) for this server
-        return {time: Date.now() - dt};
-    }
-
-    let removeTeamIds = [];
-    if (chData.error?.status_code === 403) {
-        // User is no longer a member of the current team
-        removeTeamIds.push(currentTeamId);
-
-        const {newTeamId, newChannelData, teamIdsToRemove} = await handleSwitchTeams(database, serverUrl, teamData.teams, prefData, meData, includeDeletedChannels, lastDisconnected, fetchOnly);
-        if (newTeamId) {
-            setCurrentTeamAndChannelId(operator, newTeamId);
-            currentTeamId = newTeamId;
-        }
-
-        if (newChannelData) {
-            chData = newChannelData;
-        }
-
-        removeTeamIds = removeTeamIds.concat(teamIdsToRemove);
-    }
-
+const handleRoles = async (serverUrl: string, teamData: MyTeamsRequest, chData: MyChannelsRequest, meData: MyUserRequest) => {
     const rolesToFetch = new Set<string>(meData.user?.roles.split(' ') || []);
 
     if (!teamData.error) {
@@ -155,37 +106,107 @@ export const appEntry = async (serverUrl: string) => {
     }
 
     fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch));
+};
 
+const prepareModels = async (
+    operator: ServerDataOperator,
+    initialTeamId: string | undefined,
+    removeTeamIds: string[],
+    teamData: MyTeamsRequest | undefined,
+    chData: MyChannelsRequest | undefined,
+    prefData: MyPreferencesRequest | undefined,
+    meData: MyUserRequest | undefined): Promise<Array<Promise<Model[]>>> => {
     const modelPromises: Array<Promise<Model[]>> = [];
 
-    if (prefData.preferences) {
-        const prefModel = prepareMyPreferences(operator, prefData.preferences!);
-        if (prefModel) {
-            modelPromises.push(prefModel);
-        }
+    if (removeTeamIds?.length) {
+        // TODO: prepare delete teams and team associated data
     }
 
-    if (teamData.teams) {
+    if (teamData?.teams) {
         const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!, teamData.unreads!);
         if (teamModels) {
             modelPromises.push(...teamModels);
         }
     }
 
-    if (chData?.channels?.length) {
-        const channelModels = await prepareMyChannelsForTeam(operator, currentTeamId, chData.channels, chData.memberships!);
+    if (initialTeamId && chData?.channels?.length) {
+        const channelModels = await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships!);
         if (channelModels) {
             modelPromises.push(...channelModels);
         }
     }
 
-    if (meData.user) {
+    if (prefData?.preferences) {
+        const prefModel = prepareMyPreferences(operator, prefData.preferences!);
+        if (prefModel) {
+            modelPromises.push(prefModel);
+        }
+    }
+
+    if (meData?.user) {
         const userModels = prepareUsers(operator, [meData.user]);
         if (userModels) {
             modelPromises.push(userModels);
         }
     }
 
+    return modelPromises;
+};
+
+export const appEntry = async (serverUrl: string) => {
+    const dt = Date.now();
+
+    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let initialTeamId = await queryCurrentTeamId(database);
+    const lastDisconnected = await queryWebSocketLastDisconnected(database);
+    const includeDeletedChannels = true;
+    const fetchOnly = true;
+
+    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences / user
+    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
+        fetchMyTeams(serverUrl, fetchOnly),
+        fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly),
+        fetchMyPreferences(serverUrl, fetchOnly),
+        fetchMe(serverUrl),
+    ];
+
+    const resolved = await Promise.all(promises);
+    const [teamData, _, prefData, meData] = resolved; // eslint-disable-line @typescript-eslint/no-unused-vars
+    let chData = resolved[1];
+
+    if (teamData.teams?.length === 0) {
+        // User is no longer a member of any teams
+        // TODO: Handle deletion of all teams (and related data) for this server
+        return {time: Date.now() - dt};
+    }
+
+    let removeTeamIds: string[] = [];
+    if (chData.error?.status_code === 403) {
+        // User is no longer a member of the current team
+        removeTeamIds.push(initialTeamId);
+
+        const {newTeamId, newChannelData, teamIdsToRemove} = await handleSwitchTeams(database, serverUrl, teamData.teams, prefData, meData, includeDeletedChannels, lastDisconnected, fetchOnly);
+        if (newTeamId) {
+            // Immediately set the new team as the current team in the database so that the UI
+            // renders the correct team.
+            setCurrentTeamAndChannelId(operator, newTeamId);
+            initialTeamId = newTeamId;
+        }
+
+        if (newChannelData) {
+            chData = newChannelData;
+        }
+
+        removeTeamIds = removeTeamIds.concat(teamIdsToRemove);
+    }
+
+    handleRoles(serverUrl, teamData, chData, meData);
+
+    const modelPromises = await prepareModels(operator, initialTeamId, removeTeamIds, teamData, chData, prefData, meData);
     const models = await Promise.all(modelPromises);
     if (models.length) {
         await operator.batchRecords(models.flat() as Model[]);
@@ -193,7 +214,7 @@ export const appEntry = async (serverUrl: string) => {
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
     const {config, license} = await queryCommonSystemValues(database);
-    deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, currentTeamId);
+    deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     const error = teamData.error || chData.error || prefData.error || meData.error;
     return {error, time: Date.now() - dt};
@@ -201,7 +222,7 @@ export const appEntry = async (serverUrl: string) => {
 
 const deferredAppEntryActions = async (
     serverUrl: string, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined, config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest,
-    chData: MyChannelsRequest, currentTeamId: string) => {
+    chData: MyChannelsRequest, initialTeamId: string) => {
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
@@ -222,13 +243,13 @@ const deferredAppEntryActions = async (
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
-        fetchTeamsChannelsAndUnreadPosts(serverUrl, teamData.teams, teamData.memberships, currentTeamId);
+        fetchTeamsChannelsAndUnreadPosts(serverUrl, teamData.teams, teamData.memberships, initialTeamId);
     }
 };
 
 export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs) => {
     const dt = Date.now();
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
@@ -306,29 +327,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
             }
         }
 
-        const modelPromises: Array<Promise<Model[]>> = [];
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
-
-        if (prefData.preferences) {
-            const prefModel = prepareMyPreferences(operator, prefData.preferences!);
-            if (prefModel) {
-                modelPromises.push(prefModel);
-            }
-        }
-
-        if (teamData.teams) {
-            const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!, teamData.unreads!);
-            if (teamModels) {
-                modelPromises.push(...teamModels);
-            }
-        }
-
-        if (chData?.channels?.length) {
-            const channelModels = await prepareMyChannelsForTeam(operator, initialTeam!.id, chData.channels, chData.memberships!);
-            if (channelModels) {
-                modelPromises.push(...channelModels);
-            }
-        }
+        const modelPromises = await prepareModels(operator, initialTeam?.id, [], teamData, chData, prefData, undefined);
 
         const systemModels = prepareCommonSystemValues(
             operator,
@@ -362,7 +361,6 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         const error = clData.error || prefData.error || teamData.error || chData?.error;
         return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
     } catch (error) {
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
         const systemModels = await prepareCommonSystemValues(operator, {
             config: ({} as ClientConfig),
             license: ({} as ClientLicense),
