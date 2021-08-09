@@ -70,6 +70,11 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                         ...userThreadList,
                         threads: data.threads,
                         team_id: teamId,
+                        removeOldThreads:
+                            !before && !after && // When loading on mount
+                            perPage >= ViewTypes.CRT_CHUNK_SIZE && // Exclude on load where we get 5 threads
+                            !since && // Exclude reconnect
+                            !unread, // Exclude when user is loading unreads or on switching to "All your threads" it will take time to fetch from server
                     },
                 },
             ];
