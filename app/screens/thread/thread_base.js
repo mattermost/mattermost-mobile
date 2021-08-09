@@ -52,6 +52,9 @@ export default class ThreadBase extends PureComponent {
         const options = {};
 
         if (props.collapsedThreadsEnabled) {
+            // Without unique id, it breaks navigation from permalink view.
+            this.threadFollowId = Math.floor(Math.random() * 0x10000000000).toString(16);
+
             let titleText;
             if (channelType === General.DM_CHANNEL) {
                 titleText = formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
@@ -67,9 +70,9 @@ export default class ThreadBase extends PureComponent {
                 },
                 rightButtons: [
                     {
-                        id: thread?.id,
+                        id: 1,
                         component: {
-                            id: 'ThreadFollow' + thread?.id,
+                            id: this.threadFollowId,
                             name: 'ThreadFollow',
                             passProps: {
                                 active: thread?.is_following,
@@ -129,7 +132,7 @@ export default class ThreadBase extends PureComponent {
         }
 
         if (this.props.thread?.is_following !== nextProps.thread?.is_following) {
-            Navigation.updateProps('ThreadFollow', {active: nextProps.thread?.is_following});
+            Navigation.updateProps(this.threadFollowId, {active: nextProps.thread?.is_following});
         }
     }
 
@@ -148,6 +151,7 @@ export default class ThreadBase extends PureComponent {
         if (
             this.props.collapsedThreadsEnabled &&
             this.props.thread &&
+            this.props.thread.is_following &&
             (
                 hasNewPost ||
                 this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
