@@ -37,7 +37,7 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
 
     const listRef = React.useRef<FlatList>(null);
 
-    const [isLoading, setIsLoading] = React.useState<boolean>();
+    const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
     const scrollToTop = () => {
         listRef.current?.scrollToOffset({offset: 0});
