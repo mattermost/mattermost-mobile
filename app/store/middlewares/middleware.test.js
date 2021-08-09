@@ -10,6 +10,7 @@ import DeviceInfo from 'react-native-device-info';
 import {REHYDRATE} from 'redux-persist';
 
 import {ViewTypes} from '@constants';
+import {Posts} from '@mm-redux/constants';
 import initialState from '@store/initial_state';
 
 import {
@@ -19,7 +20,6 @@ import {
     getAllFromPostsInChannel,
 } from './helpers';
 import messageRetention from './message_retention';
-import { Posts } from '@mm-redux/constants';
 
 describe('messageRetention', () => {
     describe('should chain the same incoming action type', () => {
@@ -744,7 +744,7 @@ describe('cleanUpThreadsInTeam', () => {
         thread4: {},
         thread5: {},
         thread6: {},
-        thread7: {state: Posts.POST_DELETED}
+        thread7: {state: Posts.POST_DELETED},
     };
     const threads = {
         thread1: {id: 'thread1', last_reply_at: 100},
