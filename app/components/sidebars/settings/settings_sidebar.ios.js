@@ -27,6 +27,8 @@ export default class SettingsDrawer extends SettingsSidebarBase {
         this.state = {
             deviceWidth: Dimensions.get('window').width,
             openDrawerOffset: DRAWER_INITIAL_OFFSET,
+            showStatus: true,
+            showRetryMessage: false,
         };
     }
 
