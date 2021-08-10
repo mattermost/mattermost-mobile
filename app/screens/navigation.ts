@@ -136,97 +136,118 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
 
     EphemeralStore.clearNavigationComponents();
 
+    const homeStack = {
+        stack: {
+            id: 'tab_home_stack',
+            children: [
+                {
+                    component: {
+                        name: 'PLACEHOLDER',
+                        id: 'TAB_HOME_',
+                        passProps: {
+                            ...passProps,
+
+                            // theme,
+                        },
+                    },
+                },
+            ],
+            options: {
+                bottomTab: {
+                    text: 'Home',
+                },
+            },
+        },
+    };
+
+    const searchStack = {
+        stack: {
+            id: 'tab_search_stack',
+            children: [
+                {
+                    component: {
+                        name: 'PLACEHOLDER',
+                        id: 'TAB_SEARCH_',
+                        passProps: {
+                            ...passProps,
+
+                            // theme,
+                        },
+                    },
+                },
+            ],
+            options: {
+                bottomTab: {
+                    text: 'Search',
+                },
+            },
+        },
+    };
+
+    const mentionStack = {
+        stack: {
+            id: 'tab_mention_stack',
+            children: [
+                {
+                    component: {
+                        name: 'PLACEHOLDER',
+                        id: 'TAB_MENTION_',
+                        passProps: {
+                            ...passProps,
+
+                            // theme,
+                        },
+                    },
+                },
+            ],
+            options: {
+                bottomTab: {
+                    text: 'Mentions',
+                },
+            },
+        },
+    };
+
+    const userProfileStack = {
+        stack: {
+            id: 'tab_user_stack',
+            children: [
+                {
+                    component: {
+                        name: 'PLACEHOLDER',
+                        id: 'TAB_USER_',
+                        passProps: {
+                            ...passProps,
+
+                            // theme,
+                        },
+                    },
+                },
+            ],
+            options: {
+                bottomTab: {
+                    text: 'User',
+                },
+            },
+        },
+    };
+
     Navigation.setRoot({
         root: {
             bottomTabs: {
                 children: [
-                    {
-                        stack: {
-                            children: [
-                                {
-                                    component: {
-                                        name: 'PLACEHOLDER',
-                                        id: '_HOME_',
-                                        passProps: {
-                                            ...passProps,
-
-                                            // theme,
-                                        },
-                                    },
-                                },
-                            ],
-                            options: {
-                                bottomTab: {
-                                    text: 'Home',
-                                },
-                            },
-                        },
-                    }, {
-                        stack: {
-                            children: [
-                                {
-                                    component: {
-                                        name: 'PLACEHOLDER',
-                                        id: '_SEARCH_',
-                                        passProps: {
-                                            ...passProps,
-
-                                            // theme,
-                                        },
-                                    },
-                                },
-                            ],
-                            options: {
-                                bottomTab: {
-                                    text: 'Search',
-                                },
-                            },
-                        },
-                    }, {
-                        stack: {
-                            children: [
-                                {
-                                    component: {
-                                        name: 'PLACEHOLDER',
-                                        id: '_MENTION_',
-                                        passProps: {
-                                            ...passProps,
-
-                                            // theme,
-                                        },
-                                    },
-                                },
-                            ],
-                            options: {
-                                bottomTab: {
-                                    text: 'Mentions',
-                                },
-                            },
-                        },
-                    },
-                    {
-                        stack: {
-                            children: [
-                                {
-                                    component: {
-                                        name: 'PLACEHOLDER',
-                                        id: '_USER_',
-                                        passProps: {
-                                            ...passProps,
-
-                                            // theme,
-                                        },
-                                    },
-                                },
-                            ],
-                            options: {
-                                bottomTab: {
-                                    text: 'User',
-                                },
-                            },
-                        },
-                    },
+                    homeStack,
+                    searchStack,
+                    mentionStack,
+                    userProfileStack,
                 ],
+                options: {
+                    bottomTabs: {
+                        currentTabIndex: 0,
+                        visible: false,
+                        tabsAttachMode: 'onSwitchToTab',
+                    },
+                },
             },
         },
     });

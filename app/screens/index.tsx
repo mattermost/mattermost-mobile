@@ -217,6 +217,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
+        case 'Placeholder2':
+        screen = require('@screens/tabs/placeholder2').default;
+        break;
     }
 
     if (screen) {
@@ -232,7 +235,7 @@ export function registerScreens() {
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 
     //fixme: REMOVE PLACEHOLDER SCREEN **** **** ********************
-    const placeHolderScreen = require('@screens/placeholder').default;
-    Navigation.registerComponent('PLACEHOLDER', () => placeHolderScreen);
+    const placeHolderScreen = require('@screens/tabs/placeholder').default;
+    Navigation.registerComponent('PLACEHOLDER', () => withGestures(placeHolderScreen, undefined));
     // **** **** ******** **** ******** **** ******** **** ******** **** ****
 }
