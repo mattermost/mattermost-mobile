@@ -32,51 +32,115 @@ type AfterLoginArgs = {
     deviceToken?: string;
 }
 
-const handleSwitchTeams = async (database: Database, serverUrl: string, teams: Team[] | undefined, prefData: MyPreferencesRequest, meData: MyUserRequest, includeDeleted = true, since = 0, fetchOnly = false) => {
-    let teamIds: string[] = [];
+type AppEntryData = {
+    initialTeamId: string;
+    teamData: MyTeamsRequest;
+    chData: MyChannelsRequest;
+    prefData: MyPreferencesRequest;
+    meData: MyUserRequest;
+    removeTeamIds: string[];
+}
+
+const fetchAppEntryData = async (database: Database, serverUrl: string, initialTeamId: string): Promise<AppEntryData> => {
+    const lastDisconnected = await queryWebSocketLastDisconnected(database);
+    const includeDeletedChannels = true;
+    const fetchOnly = true;
+
+    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences / user
+    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
+        fetchMyTeams(serverUrl, fetchOnly),
+        fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly),
+        fetchMyPreferences(serverUrl, fetchOnly),
+        fetchMe(serverUrl),
+    ];
+
+    const resolved = await Promise.all(promises);
+    const [teamData, chData, prefData, meData] = resolved; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+    const removeTeamIds: string[] = [];
+
+    if (teamData.teams?.length === 0) {
+        // User is no longer a member of any team
+        const allTeams = await queryMyTeams(database);
+        allTeams?.forEach((team) => removeTeamIds.push(team.id), removeTeamIds);
+
+        return {
+            initialTeamId: '',
+            teamData,
+            chData,
+            prefData,
+            meData,
+            removeTeamIds,
+        };
+    }
+
+    if (chData.error?.status_code === 403) {
+        // User is no longer a member of the current team
+        removeTeamIds.push(initialTeamId);
+
+        const availableTeamIds = await getAvailableTeamIds(database, teamData.teams, prefData.preferences, meData.user?.locale, initialTeamId);
+        const switchedTeamData = await switchTeams(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, lastDisconnected, fetchOnly);
+
+        return {
+            teamData,
+            chData,
+            prefData,
+            meData,
+            ...switchedTeamData,
+        };
+    }
+
+    return {initialTeamId, teamData, chData, prefData, meData, removeTeamIds};
+};
+
+const getAvailableTeamIds = async (database: Database, teams: Team[] | undefined, preferences: PreferenceType[] | undefined, locale: string | undefined, excludeTeamId: string): Promise<string[]> => {
+    let availableTeamIds: string[] = [];
 
     if (teams) {
         let teamOrderPreference;
-        if (prefData.preferences) {
-            teamOrderPreference = getPreferenceValue(prefData.preferences, Preferences.TEAMS_ORDER, '', '') as string;
+        if (preferences) {
+            teamOrderPreference = getPreferenceValue(preferences, Preferences.TEAMS_ORDER, '', '') as string;
         } else {
-            const preferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '');
-            teamOrderPreference = preferences[0].value;
+            const dbPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '');
+            teamOrderPreference = dbPreferences[0].value;
         }
 
-        let locale = meData.user?.locale;
-        if (!locale) {
-            const user = await queryCurrentUser(database);
-            locale = user!.locale;
-        }
-
+        const userLocale = locale || (await queryCurrentUser(database))?.locale;
         const {config} = await queryCommonSystemValues(database);
 
-        const defaultTeam = selectDefaultTeam(teams, locale, teamOrderPreference, config.ExperimentalPrimaryTeam);
+        const defaultTeam = selectDefaultTeam(teams, userLocale, teamOrderPreference, config.ExperimentalPrimaryTeam);
 
-        teamIds = [defaultTeam!.id];
+        availableTeamIds = [defaultTeam!.id];
     } else {
         const dbTeams = await queryMyTeams(database);
         if (dbTeams) {
-            teamIds = dbTeams.map((team) => team.id);
+            availableTeamIds = dbTeams.map((team) => team.id);
         }
     }
 
-    let newTeamId;
-    let newChannelData;
-    const teamIdsToRemove: string[] = [];
-    for (const teamId of teamIds) {
+    return availableTeamIds.filter((id) => id !== excludeTeamId);
+};
+
+const switchTeams = async (serverUrl: string, availableTeamIds: string[], removeTeamIds: string[], includeDeleted = true, since = 0, fetchOnly = false) => {
+    let initialTeamId = '';
+    let chData;
+
+    for (const teamId of availableTeamIds) {
         // eslint-disable-next-line no-await-in-loop
-        newChannelData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly);
-        if (newChannelData.error?.status_code === 403) {
-            teamIdsToRemove.push(teamId);
+        chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly);
+        if (chData.error?.status_code === 403) {
+            removeTeamIds.push(teamId);
         } else {
-            newTeamId = teamId;
+            initialTeamId = teamId;
             break;
         }
     }
 
-    return {newTeamId, newChannelData, teamIdsToRemove};
+    if (chData) {
+        return {initialTeamId, chData, removeTeamIds};
+    }
+
+    return {initialTeamId, removeTeamIds};
 };
 
 const handleRoles = async (serverUrl: string, teamData: MyTeamsRequest, chData: MyChannelsRequest, meData: MyUserRequest) => {
@@ -161,47 +225,17 @@ export const appEntry = async (serverUrl: string) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    let initialTeamId = await queryCurrentTeamId(database);
-    const lastDisconnected = await queryWebSocketLastDisconnected(database);
-    const includeDeletedChannels = true;
-    const fetchOnly = true;
+    const currentTeamId = await queryCurrentTeamId(database);
+    const fetchedData = await fetchAppEntryData(database, serverUrl, currentTeamId);
 
-    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences / user
-    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
-        fetchMyTeams(serverUrl, fetchOnly),
-        fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly),
-        fetchMyPreferences(serverUrl, fetchOnly),
-        fetchMe(serverUrl),
-    ];
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds} = fetchedData;
 
-    const resolved = await Promise.all(promises);
-    const [teamData, _, prefData, meData] = resolved; // eslint-disable-line @typescript-eslint/no-unused-vars
-    let chData = resolved[1];
-
-    if (teamData.teams?.length === 0) {
-        // User is no longer a member of any teams
-        // TODO: Handle deletion of all teams (and related data) for this server
-        return {time: Date.now() - dt};
-    }
-
-    let removeTeamIds: string[] = [];
-    if (chData.error?.status_code === 403) {
-        // User is no longer a member of the current team
-        removeTeamIds.push(initialTeamId);
-
-        const {newTeamId, newChannelData, teamIdsToRemove} = await handleSwitchTeams(database, serverUrl, teamData.teams, prefData, meData, includeDeletedChannels, lastDisconnected, fetchOnly);
-        if (newTeamId) {
-            // Immediately set the new team as the current team in the database so that the UI
-            // renders the correct team.
-            setCurrentTeamAndChannelId(operator, newTeamId);
-            initialTeamId = newTeamId;
-        }
-
-        if (newChannelData) {
-            chData = newChannelData;
-        }
-
-        removeTeamIds = removeTeamIds.concat(teamIdsToRemove);
+    if (initialTeamId !== currentTeamId) {
+        // Immediately set the new team as the current team in the database so that the UI
+        // renders the correct team.
+        // TODO: No need for initial channel once tab navigation for v2 UI is added.
+        const initialChannel = selectDefaultChannelForTeam(fetchedData.chData!.channels!, fetchedData.chData!.memberships!, initialTeamId, [], fetchedData.meData.user!.locale);
+        setCurrentTeamAndChannelId(operator, initialTeamId, initialChannel?.id);
     }
 
     handleRoles(serverUrl, teamData, chData, meData);
