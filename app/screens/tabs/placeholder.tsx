@@ -1,33 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Platform, Text, View} from 'react-native';
-import {
-    NavigationComponentProps,
-    NavigationFunctionComponent,
-} from 'react-native-navigation';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-    runOnJS,
-} from 'react-native-reanimated';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming, runOnJS} from 'react-native-reanimated';
 import {goToScreen, showModal} from '@screens/navigation';
 
 import BottomTabBar from './bottom_tab_bar';
 
-interface PlaceholderProps extends NavigationComponentProps {
-    componentId: string;
-}
-
-const Placeholder: NavigationFunctionComponent = (props: PlaceholderProps) => {
-    let backgroundColor;
+const Placeholder = (props: any) => {
+    let backgroundColor: string;
     const {componentId} = props;
-    // eslint-disable-next-line no-console
-    console.log(`>>> ${componentId}  MOUNTED on ${Platform.OS} <<<`, {
-        props,
-    });
+
+    const [isFocused, setIsFocused] = useState(true);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                // eslint-disable-next-line no-console
+                console.log('componentDidAppear', `>>> ${componentId} on ${Platform.OS} <<<`);
+                setIsFocused(true);
+            },
+            componentDidDisappear: () => {
+                // eslint-disable-next-line no-console
+                console.log('componentDidDisappear', `>>> ${componentId} on ${Platform.OS} <<<`);
+                setIsFocused(false);
+            },
+        };
+
+        // Register the listener to all events related to our component
+        const unsubscribe = Navigation.events().registerComponentListener(listener, props.componentId);
+        return () => {
+            // unregister the listener during cleanup
+            unsubscribe.remove();
+        };
+    }, []);
 
     switch (componentId) {
         case 'TAB_HOME_': {
@@ -99,29 +107,38 @@ const Placeholder: NavigationFunctionComponent = (props: PlaceholderProps) => {
         );
     };
 
-    return [
-        <View
-            testID='placeholder.screen'
-            key='placeholder.screen'
-            style={{
-                backgroundColor,
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        >
-            <Text
-                style={{color: 'white', fontSize: 30}}
-            >{` ${componentId} Screen `}</Text>
-            {componentId === 'TAB_HOME_' && renderOnHomeOnly()}
-        </View>,
-        <Animated.View
-            key='bottom.tabbar'
-            style={animatedTabbarStyle}
-        >
-            <BottomTabBar/>
-        </Animated.View>,
-    ];
+    const renderBody = () => {
+        if (componentId !== 'TAB_HOME_' && !isFocused) {
+            console.log('returning null for', `>>> ${componentId} on ${Platform.OS} <<<`);
+            return null;
+        }
+
+        return [
+            <View
+                testID='placeholder.screen'
+                key='placeholder.screen'
+                style={{
+                    backgroundColor,
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Text
+                    style={{color: 'white', fontSize: 30}}
+                >{` ${componentId} Screen `}</Text>
+                {componentId === 'TAB_HOME_' && renderOnHomeOnly()}
+            </View>,
+            <Animated.View
+                key='bottom.tabbar'
+                style={animatedTabbarStyle}
+            >
+                <BottomTabBar/>
+            </Animated.View>,
+        ];
+    };
+
+    return renderBody();
 };
 
 Placeholder.options = {
