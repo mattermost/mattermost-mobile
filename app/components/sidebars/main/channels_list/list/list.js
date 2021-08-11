@@ -406,7 +406,7 @@ export default class List extends PureComponent {
         const paddingBottom = this.listContentPadding();
         const indicatorStyle = [styles.above];
         if (collapsedThreadsEnabled) {
-            indicatorStyle.push({marginTop: 70});
+            indicatorStyle.push({marginTop: 64});
         }
 
         return (
