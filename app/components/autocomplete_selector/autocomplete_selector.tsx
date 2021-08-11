@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Text, View, Platform} from 'react-native';
 
 import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -188,7 +188,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     };
 
     goToSelectorScreen = preventDoubleTap(async () => {
-        const closeButton = await CompassIcon.getImageSource('close', 24, this.props.theme.sidebarHeaderTextColor);
+        const closeButton = await CompassIcon.getImageSource('arrow-left', 24, this.props.theme.sidebarHeaderTextColor);
 
         const {formatMessage} = this.context.intl;
         const {actions, dataSource, options, placeholder, getDynamicOptions, theme} = this.props;
@@ -234,6 +234,8 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
+
+        const chevron = Platform.select({ios: 'chevron-right', android: 'chevron-down'}) || 'chevron-down';
 
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
@@ -324,7 +326,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
                             {text}
                         </Text>
                         <CompassIcon
-                            name='chevron-down'
+                            name={chevron}
                             color={changeOpacity(theme.centerChannelColor, 0.5)}
                             style={style.icon}
                         />
@@ -372,8 +374,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         icon: {
             position: 'absolute',
-            top: 13,
+            top: 6,
             right: 12,
+            fontSize: 28,
         },
         labelContainer: {
             flexDirection: 'row',

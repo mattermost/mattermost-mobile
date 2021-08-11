@@ -413,6 +413,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            height: '100%',
         },
         errorContainer: {
             marginTop: 15,
