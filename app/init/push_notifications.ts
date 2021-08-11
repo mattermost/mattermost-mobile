@@ -189,11 +189,8 @@ class PushNotifications {
                         await dismissAllModals();
                         await popToRoot();
 
-                        if (componentId !== 'SelectServer' && isCollapsedThreadsEnabled(getState())) {
-                            const rootId = notification.payload?.root_id || '';
-                            if (rootId !== '') {
-                                EventEmitter.emit('goToThread', {id: rootId});
-                            }
+                        if (componentId !== 'SelectServer' && isCollapsedThreadsEnabled(getState()) && notification.payload?.root_id) {
+                            EventEmitter.emit('goToThread', {id: notification.payload?.root_id});
                         }
                     }
                     break;
