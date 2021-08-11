@@ -14,8 +14,9 @@ import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, prepareMyTeams, queryMyTeams} from '@queries/servers/team';
+import {addChannelToTeamHistory, prepareMyTeams, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {prepareUsers, queryCurrentUser} from '@queries/servers/user';
+import type TeamModel from '@typings/database/models/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
@@ -61,8 +62,8 @@ const fetchAppEntryData = async (database: Database, serverUrl: string, initialT
 
     if (teamData.teams?.length === 0) {
         // User is no longer a member of any team
-        const allTeams = await queryMyTeams(database);
-        allTeams?.forEach((team) => removeTeamIds.push(team.id), removeTeamIds);
+        const myTeams = await queryMyTeams(database);
+        myTeams?.forEach((myTeam) => removeTeamIds.push(myTeam.id), removeTeamIds);
 
         return {
             initialTeamId: '',
@@ -175,16 +176,16 @@ const handleRoles = async (serverUrl: string, teamData: MyTeamsRequest, chData: 
 const prepareModels = async (
     operator: ServerDataOperator,
     initialTeamId: string | undefined,
-    removeTeamIds: string[],
+    removeTeams: TeamModel[] | undefined,
     teamData: MyTeamsRequest | undefined,
     chData: MyChannelsRequest | undefined,
     prefData: MyPreferencesRequest | undefined,
     meData: MyUserRequest | undefined): Promise<Array<Promise<Model[]>>> => {
     const modelPromises: Array<Promise<Model[]>> = [];
 
-    if (removeTeamIds?.length) {
-        // TODO: prepare delete teams and team associated data
-    }
+    removeTeams?.forEach((team) => {
+        modelPromises.push(team.prepareDestroyPermanentlyWithAssociations());
+    });
 
     if (teamData?.teams) {
         const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!, teamData.unreads!);
@@ -240,7 +241,8 @@ export const appEntry = async (serverUrl: string) => {
 
     handleRoles(serverUrl, teamData, chData, meData);
 
-    const modelPromises = await prepareModels(operator, initialTeamId, removeTeamIds, teamData, chData, prefData, meData);
+    const removeTeams = await queryTeamsById(database, removeTeamIds);
+    const modelPromises = await prepareModels(operator, initialTeamId, removeTeams, teamData, chData, prefData, meData);
     const models = await Promise.all(modelPromises);
     if (models.length) {
         await operator.batchRecords(models.flat() as Model[]);

@@ -99,4 +99,30 @@ export default class TeamModel extends Model {
 
     /** teamSearchHistories : All the searches performed on this team */
     @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistoryModel[];
+
+    async prepareDestroyPermanentlyWithAssociations(): Promise<Model[]> {
+        const prepareDeleteRecord = (record: Model) => record.prepareDestroyPermanently();
+
+        const deleteRecords: Model[] = [
+            this.prepareDestroyPermanently(),
+            ...this.members.map(prepareDeleteRecord),
+            ...this.groupsInTeam.map(prepareDeleteRecord),
+            ...this.slashCommands.map(prepareDeleteRecord),
+            ...this.teamSearchHistories.map(prepareDeleteRecord),
+        ];
+
+        this.channels.forEach(async (channel) => {
+            const deleteChannel = await channel.prepareDestroyPermanentlyWithAssociations();
+            deleteRecords.push(...deleteChannel);
+        });
+
+        [this.myTeam, this.teamChannelHistory].forEach(async (relation) => {
+            const record = await relation.fetch();
+            if (record) {
+                deleteRecords.push(record.prepareDestroyPermanently());
+            }
+        });
+
+        return deleteRecords;
+    }
 }

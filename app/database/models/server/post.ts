@@ -109,4 +109,31 @@ export default class PostModel extends Model {
 
     /** channel: The channel which is presenting this Post */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+
+    async prepareDestroyPermanentlyWithAssociations(): Promise<Model[]> {
+        const prepareDeleteRecord = (record: Model) => record.prepareDestroyPermanently();
+
+        const deleteRecords: Model[] = [
+            this.prepareDestroyPermanently(),
+            ...this.files.map(prepareDeleteRecord),
+            ...this.reactions.map(prepareDeleteRecord),
+        ];
+
+        const postsInThread = await this.postsInThread.fetch();
+        if (postsInThread) {
+            deleteRecords.push(...postsInThread.map(prepareDeleteRecord));
+        }
+
+        const drafts = await this.draft.fetch();
+        if (drafts) {
+            deleteRecords.push(...drafts.map(prepareDeleteRecord));
+        }
+
+        const metadata = await this.metadata.fetch();
+        if (metadata) {
+            deleteRecords.push(metadata.prepareDestroyPermanently());
+        }
+
+        return deleteRecords;
+    }
 }

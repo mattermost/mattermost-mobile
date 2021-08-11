@@ -124,4 +124,30 @@ export default class ChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
+
+    async prepareDestroyPermanentlyWithAssociations(): Promise<Model[]> {
+        const prepareDeleteRecord = (record: Model) => record.prepareDestroyPermanently();
+
+        const deleteRecords: Model[] = [
+            this.prepareDestroyPermanently(),
+            ...this.members.map(prepareDeleteRecord),
+            ...this.drafts.map(prepareDeleteRecord),
+            ...this.groupsInChannel.map(prepareDeleteRecord),
+            ...this.postsInChannel.map(prepareDeleteRecord),
+        ];
+
+        this.posts.forEach(async (post) => {
+            const deletePost = await post.prepareDestroyPermanentlyWithAssociations();
+            deleteRecords.push(...deletePost);
+        });
+
+        [this.membership, this.info, this.settings].forEach(async (relation) => {
+            const record = await relation.fetch();
+            if (record) {
+                deleteRecords.push(record.prepareDestroyPermanently());
+            }
+        });
+
+        return deleteRecords;
+    }
 }

@@ -61,4 +61,6 @@ export default class TeamModel extends Model {
 
     /** teamSearchHistories : All the searches performed on this team */
     teamSearchHistories: Query<TeamSearchHistoryModel>;
+
+    prepareDestroyPermanentlyWithAssociations(): Promise<Model[]>
 }

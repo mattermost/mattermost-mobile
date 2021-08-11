@@ -76,6 +76,15 @@ export const queryTeamById = async (database: Database, teamId: string): Promise
     }
 };
 
+export const queryTeamsById = async (database: Database, teamIds: string[]): Promise<TeamModel[]|undefined> => {
+    try {
+        const teams = (await database.get(TEAM).query(Q.where('id', Q.oneOf(teamIds))).fetch()) as TeamModel[];
+        return teams;
+    } catch {
+        return undefined;
+    }
+};
+
 export const queryTeamByName = async (database: Database, teamName: string): Promise<TeamModel|undefined> => {
     try {
         const team = (await database.get(TEAM).query(Q.where('name', teamName)).fetch()) as TeamModel[];

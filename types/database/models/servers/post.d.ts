@@ -76,4 +76,6 @@ export default class PostModel extends Model {
 
     /** channel: The channel which is presenting this Post */
     channel: Relation<ChannelModel>;
+
+    prepareDestroyPermanentlyWithAssociations(): Promise<Model[]>
 }
