@@ -84,7 +84,7 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
       Array [
         undefined,
         Object {
-          "marginTop": 70,
+          "marginTop": 64,
         },
       ]
     }
