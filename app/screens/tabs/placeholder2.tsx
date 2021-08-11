@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 
 const Placeholder2 = (props: any) => {
-    const {componentId} = props;
+    const {componentId, as} = props;
+
     // eslint-disable-next-line no-console
-    console.log(`>>>>>>>>>>>>>>> Placeholder2 ${componentId}  MOUNTED <<<<<<<<<<<<<<<`, {props});
+    console.log(`>>>>>>>>>>>>>>> ${componentId}  MOUNTED as ${as} on ${Platform.OS} <<<<<<<<<<<<<<<`, {props});
 
     return [
         <View

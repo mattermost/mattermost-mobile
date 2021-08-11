@@ -36,7 +36,6 @@ const BottomTabBar = (props: BottomTabBarProps) => {
                     underlayColor={'white'}
                     disabled={false}
                     onPress={() => {
-                        console.log('>>> pressing home tab ');
                         return Navigation.mergeOptions('tab_home_stack', {
                             bottomTabs: {currentTabIndex: 0},
                         });
@@ -52,7 +51,6 @@ const BottomTabBar = (props: BottomTabBarProps) => {
                     disabled={false}
                     onLongPress={() => null}
                     onPress={() => {
-                        console.log('>>> pressing search tab ');
                         return Navigation.mergeOptions('tab_search_stack', {
                             bottomTabs: {currentTabIndex: 1},
                         });
@@ -68,7 +66,6 @@ const BottomTabBar = (props: BottomTabBarProps) => {
                     underlayColor={'white'}
                     onLongPress={() => null}
                     onPress={() => {
-                        console.log('>>> pressing mention tab ');
                         return Navigation.mergeOptions('tab_mention_stack', {
                             bottomTabs: {currentTabIndex: 2},
                         });
@@ -84,7 +81,6 @@ const BottomTabBar = (props: BottomTabBarProps) => {
                     onLongPress={() => null}
                     underlayColor={'white'}
                     onPress={() => {
-                        console.log('>>> pressing user tab ');
                         return Navigation.mergeOptions('tab_user_stack', {
                             bottomTabs: {currentTabIndex: 3},
                         });
