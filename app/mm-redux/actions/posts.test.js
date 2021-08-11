@@ -38,12 +38,14 @@ describe('Actions.Posts', () => {
     it('createPost', async () => {
         const channelId = TestHelper.basicChannel.id;
         const post = TestHelper.fakePost(channelId);
+        const createPost = jest.spyOn(Client4, 'createPost');
 
         nock(Client4.getBaseRoute()).
             post('/posts').
             reply(201, {...post, id: TestHelper.generateId()});
 
         await Actions.createPost(post)(store.dispatch, store.getState);
+        expect(createPost).toHaveBeenCalledWith(expect.objectContaining({id: ''}));
 
         const state = store.getState();
         const createRequest = state.requests.posts.createPost;

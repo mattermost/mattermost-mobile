@@ -112,13 +112,13 @@ export default class PostOptions extends PureComponent {
 
     getFollowThreadOption = () => {
         const {location, thread} = this.props;
-        if (location !== CHANNEL) {
+        if (location !== CHANNEL || !thread) {
             return null;
         }
         const key = 'follow';
         let icon;
         let message;
-        if (thread?.is_following) {
+        if (thread.is_following) {
             icon = 'message-minus-outline';
             if (thread?.participants?.length) {
                 message = {id: t('threads.unfollowThread'), defaultMessage: 'Unfollow Thread'};
