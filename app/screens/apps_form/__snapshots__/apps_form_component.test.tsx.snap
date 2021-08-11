@@ -5,6 +5,7 @@ exports[`AppsForm should set match snapshot 1`] = `
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.03)",
+      "height": "100%",
     }
   }
   testID="interactive_dialog.screen"
