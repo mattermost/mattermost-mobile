@@ -23,6 +23,7 @@ import {NavigationTypes, ViewTypes} from '@constants';
 import {getLocalizedMessage} from '@i18n';
 import {setDeviceToken} from '@mm-redux/actions/general';
 import {General} from '@mm-redux/constants';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getCurrentLocale} from '@selectors/i18n';
 import {getBadgeCount} from '@selectors/views';
@@ -31,7 +32,7 @@ import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import {t} from '@utils/i18n';
 
-import type {DispatchFunc} from '@mm-redux/types/actions';
+import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
@@ -155,11 +156,12 @@ class PushNotifications {
         }
     }
 
-    handleNotification = (notification: NotificationWithData, isInitialNotification = false) => {
+    handleNotification = async (notification: NotificationWithData, isInitialNotification = false) => {
         const {payload, foreground, userInteraction} = notification;
 
         if (Store.redux && payload) {
             const dispatch = Store.redux.dispatch as DispatchFunc;
+            const getState = Store.redux.getState as GetStateFunc;
 
             waitForHydration(Store.redux, async () => {
                 switch (payload.type) {
@@ -174,14 +176,24 @@ class PushNotifications {
                         EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
                         this.setBadgeCountByMentions();
                     } else if (userInteraction && !payload.userInfo?.local) {
-                        dispatch(loadFromPushNotification(notification, isInitialNotification));
-                        const componentId = EphemeralStore.getNavigationTopComponentId();
-                        if (componentId) {
-                            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-                            EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+                        await dispatch(loadFromPushNotification(notification, isInitialNotification));
 
-                            await dismissAllModals();
-                            await popToRoot();
+                        let componentId = EphemeralStore.getNavigationTopComponentId();
+                        while (!componentId) {
+                            componentId = EphemeralStore.getNavigationTopComponentId();
+                        }
+
+                        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+                        EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+
+                        await dismissAllModals();
+                        await popToRoot();
+
+                        if (componentId !== 'SelectServer' && isCollapsedThreadsEnabled(getState())) {
+                            const rootId = notification.payload?.root_id || '';
+                            if (rootId !== '') {
+                                EventEmitter.emit('goToThread', {id: rootId});
+                            }
                         }
                     }
                     break;

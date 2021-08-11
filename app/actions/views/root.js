@@ -8,10 +8,9 @@ import {NavigationTypes, ViewTypes} from '@constants';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {getChannelAndMyMember} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
-import {receivedNewPost, getPost as fetchPost} from '@mm-redux/actions/posts';
+import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, getMyTeamUnreads} from '@mm-redux/actions/teams';
 import {General} from '@mm-redux/constants';
-import {getPost} from '@mm-redux/selectors/entities/posts';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getViewingGlobalThreads} from '@selectors/threads';
@@ -70,17 +69,14 @@ export function loadFromPushNotification(notification, isInitialNotification) {
         const state = getState();
         const {payload} = notification;
         const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
-        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
 
         let channelId = '';
         let teamId = currentTeamId;
-        let postId;
         if (payload) {
             channelId = payload.channel_id;
 
             // when the notification does not have a team id is because its from a DM or GM
             teamId = payload.team_id || currentTeamId;
-            postId = payload.post_id;
         }
 
         // load any missing data
@@ -101,15 +97,6 @@ export function loadFromPushNotification(notification, isInitialNotification) {
         }
 
         dispatch(handleSelectTeamAndChannel(teamId, channelId));
-
-        if (collapsedThreadsEnabled) {
-            await dispatch(fetchPost(postId));
-            const post = getPost(getState(), postId);
-
-            if (post?.root_id !== '') {
-                EventEmitter.emit('goToThread', post);
-            }
-        }
 
         return {data: true};
     };

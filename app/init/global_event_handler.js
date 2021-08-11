@@ -28,6 +28,8 @@ import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {isPostSelected} from '@mm-redux/selectors/entities/posts';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -334,7 +336,10 @@ class GlobalEventHandler {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
-        if (payload?.channel_id !== currentChannelId) {
+        if (
+            payload?.channel_id !== currentChannelId ||
+            (payload?.root_id !== '' && isCollapsedThreadsEnabled(state) && !isPostSelected(payload?.root_id))
+        ) {
             const screen = 'Notification';
             const passProps = {
                 notification,
