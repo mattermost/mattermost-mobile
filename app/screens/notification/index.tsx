@@ -102,10 +102,10 @@ const Notification = ({componentId, notification}: NotificationProps) => {
             if (componentId === screen && tapped.current) {
                 await dismissAllModals();
                 await popToRoot();
-            }
 
-            if (notification.payload?.root_id && collapsedThreadsEnabled) {
-                EventEmitter.emit('goToThread', {id: notification.payload?.root_id});
+                if (notification.payload?.root_id && collapsedThreadsEnabled) {
+                    EventEmitter.emit('goToThread', {id: notification.payload?.root_id});
+                }
             }
         });
 
