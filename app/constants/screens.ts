@@ -5,6 +5,7 @@ export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const CHANNEL = 'Channel';
+export const CHANNEL_LIST = 'ChannelList';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const HOME = 'Home';
 export const LOGIN = 'Login';
@@ -24,6 +25,7 @@ export default {
     ACCOUNT,
     BOTTOM_SHEET,
     CHANNEL,
+    CHANNEL_LIST,
     FORGOT_PASSWORD,
     HOME,
     LOGIN,

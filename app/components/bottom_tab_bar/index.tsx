@@ -4,9 +4,10 @@
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {TabBarStacks} from '@constants/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import React from 'react';
+import React, {forwardRef, useImperativeHandle, useRef} from 'react';
 import {Text, useWindowDimensions, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 //todo: pass a config object and map through array to create tab buttons
 
@@ -14,16 +15,47 @@ type BottomTabBarProps = {
     theme: Theme;
 };
 
-const BottomTabBar = ({theme}: BottomTabBarProps) => {
+const BottomTabBar = forwardRef((props: BottomTabBarProps, ref) => {
     const dimensions = useWindowDimensions();
+    const hideFlag = useRef<boolean>(false);
+    const tabRef = useRef();
+
+    const animatedValue = useSharedValue(0);
+
+    const animatedTabbarStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                {
+                    translateY: withTiming(
+                        animatedValue.value,
+                        {duration: 250},
+                    ),
+                },
+            ],
+        };
+    }, []);
+
+    useImperativeHandle(ref, () => ({
+        animate: () => {
+            animatedValue.value = hideFlag?.current ? 0 : 150;
+            hideFlag.current = !hideFlag.current;
+        },
+    }));
+
     const tabWidth = dimensions.width / 4;
-    const styles = getStyleSheet(theme);
+    const styles = getStyleSheet(props.theme);
     const buttonStyle = [styles.buttonStyle, {width: tabWidth}];
     const centerContent = {justifyContent: 'center', alignItems: 'center'};
 
     return (
-        <View style={[styles.container, styles.shadow]}>
-            <View style={buttonStyle}>
+        <Animated.View
+            style={[styles.container, styles.shadow, animatedTabbarStyle]}
+            ref={tabRef}
+        >
+            <View
+                style={buttonStyle}
+
+            >
                 <TouchableWithFeedback
                     underlayColor={'white'}
                     disabled={false}
@@ -82,15 +114,14 @@ const BottomTabBar = ({theme}: BottomTabBarProps) => {
                     <Text>{'Account'}</Text>
                 </TouchableWithFeedback>
             </View>
-        </View>
+        </Animated.View>
     );
-};
+});
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         width: '100%',
         height: 84,
-
         // backgroundColor: theme.centerChannelBg,
         flexDirection: 'row',
         justifyContent: 'space-around',

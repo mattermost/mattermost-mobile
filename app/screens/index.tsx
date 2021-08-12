@@ -217,8 +217,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
-        case Screens.CHANNEL:
-            screen = require('@screens/channel_v2').default;
+        case Screens.CHANNEL_LIST:
+            screen = require('@screens/channel_list').default;
             break;
 
         case Screens.MODAL:

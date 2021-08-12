@@ -154,6 +154,26 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
                 topBar: {
                     visible: false,
                 },
+                animations: {
+                    push: {
+                        content: {
+                            translationX: {
+                                from: require('react-native').Dimensions.get('window').width,
+                                to: 0,
+                                duration: 300,
+                            },
+                        },
+                    },
+                    pop: {
+                        content: {
+                            translationX: {
+                                to: require('react-native').Dimensions.get('window').width,
+                                from: 0,
+                                duration: 300,
+                            },
+                        },
+                    },
+                },
             },
         },
     };
