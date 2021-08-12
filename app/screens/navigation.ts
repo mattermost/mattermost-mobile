@@ -5,10 +5,9 @@ import {Appearance, DeviceEventEmitter, Keyboard, Platform} from 'react-native';
 import {Layout, Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {Navigation as NavigationConstants, Preferences, Screens} from '@constants';
-
+import {Preferences, Screens} from '@constants';
+import NavigationConstants, {TabBarStacks} from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-
 import type {LaunchProps} from '@typings/launch';
 
 function getThemeFromState() {
@@ -138,97 +137,73 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
 
     const homeStack = {
         stack: {
-            id: 'tab_home_stack',
+            id: TabBarStacks.TAB_HOME,
             children: [
                 {
                     component: {
-                        name: 'PLACEHOLDER',
-                        id: 'TAB_HOME_',
+                        name: Screens.HOME,
+                        id: 'HOME',
                         passProps: {
                             ...passProps,
-
-                            // theme,
+                            theme,
                         },
                     },
                 },
             ],
-            options: {
-                bottomTab: {
-                    text: 'Home',
-                },
-            },
         },
     };
 
     const searchStack = {
         stack: {
-            id: 'tab_search_stack',
+            id: TabBarStacks.TAB_SEARCH,
             children: [
                 {
                     component: {
-                        name: 'PLACEHOLDER',
-                        id: 'TAB_SEARCH_',
+                        name: Screens.SEARCH,
+                        id: 'SEARCH',
                         passProps: {
                             ...passProps,
-
-                            // theme,
+                            theme,
                         },
                     },
                 },
             ],
-            options: {
-                bottomTab: {
-                    text: 'Search',
-                },
-            },
         },
     };
 
     const mentionStack = {
         stack: {
-            id: 'tab_mention_stack',
+            id: TabBarStacks.TAB_MENTION,
             children: [
                 {
                     component: {
-                        name: 'PLACEHOLDER',
-                        id: 'TAB_MENTION_',
+                        name: Screens.MENTION,
+                        id: 'MENTION',
                         passProps: {
                             ...passProps,
-
-                            // theme,
+                            theme,
                         },
                     },
                 },
             ],
-            options: {
-                bottomTab: {
-                    text: 'Mentions',
-                },
-            },
         },
     };
 
-    const userProfileStack = {
+    const accountStack = {
         stack: {
-            id: 'tab_user_stack',
+            id: TabBarStacks.TAB_ACCOUNT,
             children: [
                 {
                     component: {
-                        name: 'PLACEHOLDER',
-                        id: 'TAB_USER_',
+                        name: Screens.ACCOUNT,
+                        id: 'ACCOUNT',
                         passProps: {
                             ...passProps,
-
-                            // theme,
+                            theme,
                         },
                     },
                 },
             ],
-            options: {
-                bottomTab: {
-                    text: 'User',
-                },
-            },
         },
     };
 
@@ -239,7 +214,7 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
                     homeStack,
                     searchStack,
                     mentionStack,
-                    userProfileStack,
+                    accountStack,
                 ],
                 options: {
                     bottomTabs: {

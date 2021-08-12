@@ -16,4 +16,11 @@ const Navigation = keyMirror({
     BLUR_POST_DRAFT: null,
 });
 
+export const TabBarStacks = keyMirror({
+    TAB_HOME: null,
+    TAB_SEARCH: null,
+    TAB_MENTION: null,
+    TAB_ACCOUNT: null,
+});
+
 export default Navigation;
