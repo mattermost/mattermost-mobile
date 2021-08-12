@@ -188,7 +188,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     };
 
     goToSelectorScreen = preventDoubleTap(async () => {
-        const closeButton = await CompassIcon.getImageSource('arrow-left', 24, this.props.theme.sidebarHeaderTextColor);
+        const closeButton = await CompassIcon.getImageSource(Platform.select({ios: 'chevron-left', default: 'arrow-left'}), 24, this.props.theme.sidebarHeaderTextColor);
 
         const {formatMessage} = this.context.intl;
         const {actions, dataSource, options, placeholder, getDynamicOptions, theme} = this.props;
@@ -210,6 +210,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
                         showAsAction: 'always',
                         text: buttonName,
                     }],
+                    leftButtonColor: theme.sidebarHeaderTextColor,
                     rightButtonColor: theme.sidebarHeaderTextColor,
                 },
             };
@@ -235,7 +236,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
 
-        const chevron = Platform.select({ios: 'chevron-right', android: 'chevron-down'}) || 'chevron-down';
+        const chevron = Platform.select({ios: 'chevron-right', default: 'chevron-down'});
 
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
@@ -327,7 +328,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
                         </Text>
                         <CompassIcon
                             name={chevron}
-                            color={changeOpacity(theme.centerChannelColor, 0.5)}
+                            color={changeOpacity(theme.centerChannelColor, 0.32)}
                             style={style.icon}
                         />
                     </View>

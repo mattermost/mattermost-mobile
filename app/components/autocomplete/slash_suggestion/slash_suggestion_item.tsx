@@ -154,13 +154,15 @@ const SlashSuggestionItem = (props: Props) => {
                 </View>
                 <View style={style.suggestionContainer}>
                     <Text style={style.suggestionName}>{`${suggestionText}`}</Text>
-                    <Text
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        style={style.suggestionDescription}
-                    >
-                        {description}
-                    </Text>
+                    {Boolean(description) &&
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={style.suggestionDescription}
+                        >
+                            {description}
+                        </Text>
+                    }
                 </View>
             </View>
         </TouchableWithFeedback>

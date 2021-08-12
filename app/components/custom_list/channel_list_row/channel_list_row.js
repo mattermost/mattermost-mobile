@@ -107,7 +107,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         outerContainer: {
             flex: 1,
             flexDirection: 'row',
-            marginHorizontal: 10,
+            paddingHorizontal: 15,
             overflow: 'hidden',
         },
         purpose: {
