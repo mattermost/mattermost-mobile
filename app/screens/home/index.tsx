@@ -3,17 +3,17 @@
 
 import React, {useEffect} from 'react';
 import {Platform, Text, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {Navigation, NavigationComponentProps} from 'react-native-navigation';
 
 import BottomTabBar from '@components/bottom_tab_bar';
-import {useTheme} from '@context/theme';
 import {goToScreen, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-const Home = (props: any) => {
-    const {componentId} = props;
+type HomeProps = NavigationComponentProps & {
+    theme: Theme;
+}
 
-    const theme = useTheme();
+const Home = ({componentId, theme}: HomeProps) => {
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
@@ -28,7 +28,7 @@ const Home = (props: any) => {
             },
         };
 
-        const unsubscribe = Navigation.events().registerComponentListener(listener, props.componentId);
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
         return () => {
             unsubscribe.remove();
         };
@@ -41,20 +41,21 @@ const Home = (props: any) => {
         >
             <View
                 key='home.body.screen'
+                style={styles.body}
             >
                 <Text style={styles.screenTitle}>{` ${componentId} `}</Text>
                 <View style={styles.textContainer}>
                     <Text
                         style={{marginBottom: 15}}
                         onPress={() => {
-                            return showModal('Channel', 'modal', {as: 'modal'});
+                            return showModal('Modal', 'modal', {theme});
                         }}
                     >
                         {'Open Modal'}
                     </Text>
                     <Text
                         onPress={() => {
-                            return goToScreen('Channel', 'Channel', {as: 'screen'});
+                            return goToScreen('Channel', 'Channel', {theme});
                         }}
                     >
                         {'Go to another screen'}
@@ -77,15 +78,19 @@ Home.options = {
     },
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         flex: 1,
+    },
+    body: {
+        flex: 1,
+        backgroundColor: '#145DBF',
         justifyContent: 'center',
-        backgroundColor: theme.centerChannelBg,
     },
     tabContainer: {
         position: 'absolute',
         bottom: 0,
+        backgroundColor: '#FFFFFF',
     },
     textContainer: {
         marginTop: 30,

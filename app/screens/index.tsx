@@ -51,7 +51,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     let screen: any|undefined;
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
-    case 'About':
+        case Screens.ABOUT:
         screen =  withServerDatabase(require('@screens/about').default);
         break;
     // case 'AddReaction':
@@ -60,7 +60,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'AdvancedSettings':
     //     screen = require('@screens/settings/advanced_settings').default;
     //     break;
-    case 'BottomSheet':
+        case Screens.BOTTOM_SHEET:
         screen = require('@screens/bottom_sheet').default;
         break;
     // case 'ChannelAddMembers':
@@ -108,7 +108,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'FlaggedPosts':
     //     screen = require('@screens/flagged_posts').default;
     //     break;
-    case 'ForgotPassword':
+    case Screens.FORGOT_PASSWORD:
         screen = require('@screens/forgot_password').default;
         break;
     // case 'Gallery':
@@ -117,10 +117,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'InteractiveDialog':
     //     screen = require('@screens/interactive_dialog').default;
     //     break;
-    case 'Login':
+    case Screens.LOGIN:
         screen = require('@screens/login').default;
         break;
-    case 'LoginOptions':
+    case Screens.LOGIN_OPTIONS:
         screen = require('@screens/login_options').default;
         break;
     // case 'LongPost':
@@ -129,7 +129,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'MainSidebar':
     //     screen = require('app/components/sidebars/main').default;
     //     break;
-    case 'MFA':
+    case Screens.MFA:
         screen = require('@screens/mfa').default;
         break;
     // case 'MoreChannels':
@@ -196,9 +196,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'SidebarSettings':
     //     screen = require('@screens/settings/sidebar').default;
     //     break;
-    case 'SSO':
-        screen = require('@screens/sso').default;
-        break;
+        case Screens.SSO:
+            screen = require('@screens/sso').default;
+            break;
     // case 'Table':
     //     screen = require('@screens/table').default;
     //     break;
@@ -217,9 +217,13 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
-        case 'Placeholder2':
-        screen = require('@screens/tabs/placeholder2').default;
-        break;
+        case Screens.CHANNEL:
+            screen = require('@screens/channel_v2').default;
+            break;
+
+        case Screens.MODAL:
+            screen = require('@screens/modal').default;
+            break;
     }
 
     if (screen) {
@@ -228,14 +232,19 @@ Navigation.setLazyComponentRegistrator((screenName) => {
 });
 
 export function registerScreens() {
-    const channelScreen = require('@screens/channel').default;
+    // const channelScreen = require('@screens/channel').default;
     const serverScreen = require('@screens/server').default;
 
-    Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
+    // Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 
-    //fixme: REMOVE PLACEHOLDER SCREEN **** **** ********************
-    const placeHolderScreen = require('@screens/tabs/placeholder').default;
-    Navigation.registerComponent('PLACEHOLDER', () => withGestures(placeHolderScreen, undefined));
-    // **** **** ******** **** ******** **** ******** **** ******** **** ****
+    const homeScreen = require('@screens/home').default;
+    const searchScreen = require('@screens/search').default;
+    const mentionScreen = require('@screens/mention').default;
+    const accountScreen = require('@screens/account').default;
+
+    Navigation.registerComponent(Screens.HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
+    Navigation.registerComponent(Screens.SEARCH, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(searchScreen))), undefined)));
+    Navigation.registerComponent(Screens.MENTION, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(mentionScreen))), undefined)));
+    Navigation.registerComponent(Screens.ACCOUNT, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(accountScreen))), undefined)));
 }

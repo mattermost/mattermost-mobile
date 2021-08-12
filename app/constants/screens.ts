@@ -12,6 +12,7 @@ export const LOGIN_OPTIONS = 'LoginOptions';
 export const MAIN_SIDEBAR = 'MainSidebar';
 export const MENTION = 'Mention';
 export const MFA = 'MFA';
+export const MODAL = 'Modal';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
@@ -30,6 +31,7 @@ export default {
     MAIN_SIDEBAR,
     MENTION,
     MFA,
+    MODAL,
     SEARCH,
     SERVER,
     SETTINGS_SIDEBAR,

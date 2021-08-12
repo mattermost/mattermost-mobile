@@ -7,7 +7,10 @@ class EphemeralStore {
     navigationModalStack: string[] = [];
     theme: Theme | undefined;
 
-    getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
+    getNavigationTopComponentId = () => {
+        console.log('>>>>>>>>>>>>>>> nav stack in store ', this.navigationComponentIdStack);
+        return this.navigationComponentIdStack[0];
+    }
 
     clearNavigationComponents = () => {
         this.navigationComponentIdStack = [];

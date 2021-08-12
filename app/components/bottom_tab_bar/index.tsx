@@ -22,7 +22,7 @@ const BottomTabBar = ({theme}: BottomTabBarProps) => {
     const centerContent = {justifyContent: 'center', alignItems: 'center'};
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, styles.shadow]}>
             <View style={buttonStyle}>
                 <TouchableWithFeedback
                     underlayColor={'white'}
@@ -90,12 +90,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         width: '100%',
         height: 84,
-        backgroundColor: theme.centerChannelBg,
+
+        // backgroundColor: theme.centerChannelBg,
         flexDirection: 'row',
         justifyContent: 'space-around',
     },
     buttonStyle: {
         height: 84,
+    },
+    shadow: {
+        shadowColor: '#000',
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+        shadowOffset: {
+            width: 0,
+            height: 8,
+        },
     },
 }));
 

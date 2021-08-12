@@ -150,6 +150,11 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
                     },
                 },
             ],
+            options: {
+                topBar: {
+                    visible: false,
+                },
+            },
         },
     };
 
@@ -168,6 +173,11 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
                     },
                 },
             ],
+            options: {
+                topBar: {
+                    visible: false,
+                },
+            },
         },
     };
 
@@ -186,6 +196,11 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
                     },
                 },
             ],
+            options: {
+                topBar: {
+                    visible: false,
+                },
+            },
         },
     };
 
@@ -204,6 +219,11 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
                     },
                 },
             ],
+            options: {
+                topBar: {
+                    visible: false,
+                },
+            },
         },
     };
 

@@ -14,7 +14,7 @@ type SearchProps = NavigationComponentProps & {
 
 const Search = ({componentId, theme}: SearchProps) => {
     const styles = getStyleSheet(theme);
-    const [isFocused, setIsFocused] = useState<boolean>(false);
+    const [isFocused, setIsFocused] = useState<boolean>(true);
 
     useEffect(() => {
         const listener = {
@@ -58,11 +58,11 @@ Search.options = {
     },
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         flex: 1,
         justifyContent: 'center',
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: '#FFFFFF',
     },
     tabContainer: {
         position: 'absolute',
