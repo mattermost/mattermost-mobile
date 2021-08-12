@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 
 import {doAppCall, postEphemeralCallResponseForChannel} from '@actions/apps';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
@@ -39,6 +40,7 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
             postEphemeralCallResponseForChannel,
+            handleGotoLocation,
         }, dispatch),
     };
 }

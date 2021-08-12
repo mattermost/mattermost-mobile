@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 
 import {doAppCall, postEphemeralCallResponseForContext} from '@actions/apps';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
@@ -28,6 +29,7 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
         actions: bindActionCreators<ActionCreatorsMapObject<ActionFunc>, Actions>({
             doAppCall,
             postEphemeralCallResponseForContext,
+            handleGotoLocation,
         }, dispatch),
     };
 }

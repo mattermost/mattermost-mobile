@@ -16,6 +16,7 @@ describe('QuickActions', () => {
         fileCount: 1,
         inputEventType: 'input-event-type',
         maxFileSize: 10,
+        screenId: 'Channel',
         theme: Preferences.THEMES.default,
     };
 
