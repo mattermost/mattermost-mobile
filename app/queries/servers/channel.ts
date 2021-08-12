@@ -116,3 +116,12 @@ export const queryChannelByName = async (database: Database, channelName: string
         return undefined;
     }
 };
+
+export const queryChannelsById = async (database: Database, channelIds: string[]): Promise<ChannelModel[]|undefined> => {
+    try {
+        const channels = (await database.get(CHANNEL).query(Q.where('id', Q.oneOf(channelIds))).fetch()) as ChannelModel[];
+        return channels;
+    } catch {
+        return undefined;
+    }
+};
