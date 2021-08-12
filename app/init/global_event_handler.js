@@ -338,7 +338,7 @@ class GlobalEventHandler {
 
         if (
             payload?.channel_id !== currentChannelId ||
-            (payload?.root_id && isCollapsedThreadsEnabled(state) && !isPostSelected(payload?.root_id))
+            (payload?.root_id && isCollapsedThreadsEnabled(state) && !isPostSelected(state, payload?.root_id))
         ) {
             const screen = 'Notification';
             const passProps = {
