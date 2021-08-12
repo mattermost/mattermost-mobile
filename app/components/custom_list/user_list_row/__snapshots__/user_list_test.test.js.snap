@@ -6,8 +6,8 @@ exports[`UserListRow should match snapshot 1`] = `
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginHorizontal": 10,
       "overflow": "hidden",
+      "paddingHorizontal": 15,
     }
   }
 >
@@ -142,8 +142,8 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginHorizontal": 10,
       "overflow": "hidden",
+      "paddingHorizontal": 15,
     }
   }
 >
@@ -278,8 +278,8 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginHorizontal": 10,
       "overflow": "hidden",
+      "paddingHorizontal": 15,
     }
   }
 >
@@ -427,8 +427,8 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginHorizontal": 10,
       "overflow": "hidden",
+      "paddingHorizontal": 15,
     }
   }
 >
@@ -563,8 +563,8 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
     Object {
       "flex": 1,
       "flexDirection": "row",
-      "marginHorizontal": 10,
       "overflow": "hidden",
+      "paddingHorizontal": 15,
     }
   }
 >
