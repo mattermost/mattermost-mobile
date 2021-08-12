@@ -14,7 +14,7 @@ import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, prepareMyTeams, queryMyTeams, queryTeamsById} from '@queries/servers/team';
+import {addChannelToTeamHistory, deleteMyTeams, prepareMyTeams, prepareDeleteTeam, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {prepareUsers, queryCurrentUser} from '@queries/servers/user';
 import type TeamModel from '@typings/database/models/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
@@ -75,7 +75,8 @@ const fetchAppEntryData = async (database: Database, serverUrl: string, initialT
         };
     }
 
-    if (chData.error?.status_code === 403) {
+    const inTeam = teamData.teams?.find((t) => t.id === initialTeamId);
+    if (!inTeam || chData.error?.status_code === 403) {
         // User is no longer a member of the current team
         removeTeamIds.push(initialTeamId);
 
@@ -183,9 +184,12 @@ const prepareModels = async (
     meData: MyUserRequest | undefined): Promise<Array<Promise<Model[]>>> => {
     const modelPromises: Array<Promise<Model[]>> = [];
 
-    removeTeams?.forEach((team) => {
-        modelPromises.push(team.prepareDestroyPermanentlyWithAssociations());
-    });
+    if (removeTeams?.length) {
+        for (const team of removeTeams) {
+            const deleteModels = prepareDeleteTeam(team);
+            modelPromises.push(deleteModels);
+        }
+    }
 
     if (teamData?.teams) {
         const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!, teamData.unreads!);
@@ -239,9 +243,14 @@ export const appEntry = async (serverUrl: string) => {
         setCurrentTeamAndChannelId(operator, initialTeamId, initialChannel?.id);
     }
 
+    const removeTeams = await queryTeamsById(database, removeTeamIds);
+    if (removeTeams) {
+        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+        await deleteMyTeams(operator, removeTeams);
+    }
+
     handleRoles(serverUrl, teamData, chData, meData);
 
-    const removeTeams = await queryTeamsById(database, removeTeamIds);
     const modelPromises = await prepareModels(operator, initialTeamId, removeTeams, teamData, chData, prefData, meData);
     const models = await Promise.all(modelPromises);
     if (models.length) {
@@ -363,7 +372,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
             }
         }
 
-        const modelPromises = await prepareModels(operator, initialTeam?.id, [], teamData, chData, prefData, undefined);
+        const modelPromises = await prepareModels(operator, initialTeam?.id, undefined, teamData, chData, prefData, undefined);
 
         const systemModels = prepareCommonSystemValues(
             operator,
