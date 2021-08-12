@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {IntlShape} from 'react-intl';
+import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity} from '@mm-redux/utils/theme_utils';
@@ -14,7 +14,7 @@ type Props = {
     active: boolean;
     intl: typeof IntlShape;
     onPress: () => void;
-    theme: Theme
+    theme: Theme;
 };
 
 function ThreadFollow({active, intl, onPress, theme}: Props) {

@@ -12,11 +12,11 @@ import {
     shouldHideDefaultChannel,
 } from '@mm-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {getViewingGlobalThreads} from '@selectors/threads';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getMsgCountInChannel, getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {isCustomStatusEnabled} from '@selectors/custom_status';
+import {getViewingGlobalThreads} from '@selectors/threads';
 import {getDraftForChannel} from '@selectors/views';
 import {isGuest as isGuestUser} from '@utils/users';
 

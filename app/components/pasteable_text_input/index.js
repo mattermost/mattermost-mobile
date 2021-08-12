@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {NativeEventEmitter, NativeModules, Platform, TextInput} from 'react-native';
 
 import {PASTE_FILES} from '@constants/post_draft';
@@ -15,6 +15,7 @@ export class PasteableTextInput extends React.PureComponent {
     static propTypes = {
         ...TextInput.PropTypes,
         forwardRef: PropTypes.any,
+        screenId: PropTypes.string.isRequired,
     }
 
     componentDidMount() {
@@ -49,7 +50,7 @@ export class PasteableTextInput extends React.PureComponent {
             data = event;
         }
 
-        EventEmitter.emit(PASTE_FILES, error, data);
+        EventEmitter.emit(PASTE_FILES, error, data, this.props.screenId);
     }
 
     render() {

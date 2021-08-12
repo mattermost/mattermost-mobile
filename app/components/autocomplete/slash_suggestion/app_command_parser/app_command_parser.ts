@@ -69,7 +69,7 @@ export const ParseState = keyMirror({
 });
 
 interface FormsCache {
-    getForm: (location: string, binding: AppBinding) => Promise<{form?: AppForm, error?: string} | undefined>;
+    getForm: (location: string, binding: AppBinding) => Promise<{form?: AppForm; error?: string} | undefined>;
 }
 
 interface Intl {
@@ -261,6 +261,15 @@ export class ParsedCommand {
                     // Named parameter (aka Flag). Flag1 consumes the optional second '-'.
                     this.state = ParseState.Flag1;
                     this.i++;
+                    break;
+                }
+                case '—': {
+                    // Em dash, introduced when two '-' are set in iOS. Will be considered as such.
+                    this.state = ParseState.Flag;
+                    this.i++;
+                    this.incomplete = '';
+                    this.incompleteStart = this.i;
+                    flagEqualsUsed = false;
                     break;
                 }
                 default: {
@@ -549,7 +558,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromCommand creates the form submission call
-    public composeCallFromCommand = async (command: string): Promise<{call: AppCallRequest | null, errorMessage?: string}> => {
+    public composeCallFromCommand = async (command: string): Promise<{call: AppCallRequest | null; errorMessage?: string}> => {
         let parsed = new ParsedCommand(command, this, this.intl);
 
         const commandBindings = this.getCommandBindings();
@@ -750,7 +759,7 @@ export class AppCommandParser {
     }
 
     // composeCallFromParsed creates the form submission call
-    composeCallFromParsed = async (parsed: ParsedCommand): Promise<{call: AppCallRequest | null, errorMessage?: string}> => {
+    composeCallFromParsed = async (parsed: ParsedCommand): Promise<{call: AppCallRequest | null; errorMessage?: string}> => {
         if (!parsed.binding) {
             return {call: null,
                 errorMessage: this.intl.formatMessage({
@@ -947,7 +956,7 @@ export class AppCommandParser {
     }
 
     // fetchForm unconditionaly retrieves the form for the given binding (subcommand)
-    fetchForm = async (binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
+    fetchForm = async (binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         if (!binding.call) {
             return undefined;
         }
@@ -990,7 +999,7 @@ export class AppCommandParser {
         return {form: callResponse.form};
     }
 
-    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm, error?: string} | undefined> => {
+    getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         const form = this.forms[location];
         if (form) {
             return {form};
@@ -1093,9 +1102,13 @@ export class AppCommandParser {
         }
 
         // There have been 0 to 2 dashes in the command prior to this call, adjust.
+        const prevCharIndex = parsed.incompleteStart - 1;
         let prefix = '--';
-        for (let i = parsed.incompleteStart - 1; i > 0 && i >= parsed.incompleteStart - 2 && parsed.command[i] === '-'; i--) {
+        for (let i = prevCharIndex; i > 0 && i >= parsed.incompleteStart - 2 && parsed.command[i] === '-'; i--) {
             prefix = prefix.substring(1);
+        }
+        if (prevCharIndex > 0 && parsed.command[prevCharIndex] === '—') {
+            prefix = '';
         }
 
         const applicable = parsed.form.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);

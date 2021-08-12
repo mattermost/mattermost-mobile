@@ -4,11 +4,11 @@
 import {loadChannelsForTeam, setChannelRetryFailed} from '@actions/views/channel';
 import {getPostsSince} from '@actions/views/post';
 import {loadMe} from '@actions/views/user';
+import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
-import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
-import {Client4} from '@client/rest';
 import {getThreads} from '@mm-redux/actions/threads';
+import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
@@ -24,8 +24,10 @@ import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
+import {handleRefreshAppsBindings} from './apps';
 import {
     handleChannelConvertedEvent,
     handleChannelCreatedEvent,
@@ -48,8 +50,6 @@ import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} fr
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
-import {getChannelSinceValue} from '@utils/channels';
-import {handleRefreshAppsBindings} from './apps';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

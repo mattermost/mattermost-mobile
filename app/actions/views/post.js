@@ -3,6 +3,8 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {Client4} from '@client/rest';
+import {ViewTypes} from '@constants';
 import {UserTypes} from '@mm-redux/action_types';
 import {
     doPostAction,
@@ -15,17 +17,14 @@ import {
     receivedPostsSince,
     receivedPostsInThread,
 } from '@mm-redux/actions/posts';
-import {Client4} from '@client/rest';
 import {Posts} from '@mm-redux/constants';
-import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {removeUserFromList} from '@mm-redux/utils/user_utils';
 import {isUnreadChannel, isArchivedChannel} from '@mm-redux/utils/channel_utils';
-
-import {ViewTypes} from '@constants';
-import {generateId} from '@utils/file';
+import {removeUserFromList} from '@mm-redux/utils/user_utils';
 import {getChannelSinceValue} from '@utils/channels';
+import {generateId} from '@utils/file';
 
 import {getEmojisInPosts} from './emoji';
 

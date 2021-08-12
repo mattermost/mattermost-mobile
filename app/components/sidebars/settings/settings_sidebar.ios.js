@@ -5,11 +5,10 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {Dimensions, Keyboard, View} from 'react-native';
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
 import SafeAreaView from '@components/safe_area_view';
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from '@components/sidebars/drawer_layout/index.tsx';
 import {DeviceTypes, NavigationTypes} from '@constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -28,6 +27,8 @@ export default class SettingsDrawer extends SettingsSidebarBase {
         this.state = {
             deviceWidth: Dimensions.get('window').width,
             openDrawerOffset: DRAWER_INITIAL_OFFSET,
+            showStatus: true,
+            showRetryMessage: false,
         };
     }
 

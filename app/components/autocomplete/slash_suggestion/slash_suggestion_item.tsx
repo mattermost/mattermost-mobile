@@ -1,17 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import base64 from 'base-64';
 import React from 'react';
 import {Image, Text, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-
-import {Theme} from '@mm-redux/types/preferences';
+import {SvgXml} from 'react-native-svg';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import FastImage from 'react-native-fast-image';
-import {SvgXml} from 'react-native-svg';
-import base64 from 'base-64';
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
 const bangIcon = require('@assets/images/autocomplete/slash_command_error.png');

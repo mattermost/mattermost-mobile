@@ -5,20 +5,19 @@ import React from 'react';
 import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
-import AnnouncementBanner from 'app/components/announcement_banner';
+import AnnouncementBanner from '@components/announcement_banner';
 import GlobalThreadsList from '@components/global_threads';
-import KeyboardLayout from '@components/layout/keyboard_layout';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
+import KeyboardLayout from '@components/layout/keyboard_layout';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
-import EphemeralStore from '@store/ephemeral_store';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import ChannelNavBar from './channel_nav_bar';
-import ChannelPostList from './channel_post_list';
+import EphemeralStore from '@store/ephemeral_store';
 
 import ChannelBase from './channel_base';
+import ChannelNavBar from './channel_nav_bar';
+import ChannelPostList from './channel_post_list';
 
 let backPressedCount = 0;
 

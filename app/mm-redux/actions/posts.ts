@@ -3,30 +3,36 @@
 /* eslint-disable max-lines */
 
 import {Client4} from '@client/rest';
-import {General, Preferences, Posts} from '@mm-redux/constants';
 import {WebsocketEvents} from '@constants';
 import {THREAD} from '@constants/screen';
-import {handleFollowChanged, updateThreadRead} from '@mm-redux/actions/threads';
+import {analytics} from '@init/analytics';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
-
+import {handleFollowChanged, updateThreadRead} from '@mm-redux/actions/threads';
+import {General, Preferences, Posts} from '@mm-redux/constants';
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
 import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import * as Selectors from '@mm-redux/selectors/entities/posts';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getThreadTeamId} from '@mm-redux/selectors/entities/threads';
 import {getCurrentUserId, getUsersByUsername} from '@mm-redux/selectors/entities/users';
-
+import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@mm-redux/types/actions';
+import {ChannelUnread} from '@mm-redux/types/channels';
+import {CustomEmoji} from '@mm-redux/types/emojis';
+import {Post} from '@mm-redux/types/posts';
+import {Reaction} from '@mm-redux/types/reactions';
+import {GlobalState} from '@mm-redux/types/store';
+import {UserProfile} from '@mm-redux/types/users';
+import {Dictionary} from '@mm-redux/types/utilities';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
-import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
+import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
-import {analytics} from '@init/analytics';
-
 import {
     deletePreferences,
     makeDirectChannelVisibleIfNecessary,
@@ -34,15 +40,6 @@ import {
     savePreferences,
 } from './preferences';
 import {getProfilesByIds, getProfilesByUsernames, getStatusesByIds} from './users';
-import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@mm-redux/types/actions';
-import {ChannelUnread} from '@mm-redux/types/channels';
-import {GlobalState} from '@mm-redux/types/store';
-import {Post} from '@mm-redux/types/posts';
-import {Reaction} from '@mm-redux/types/reactions';
-import {UserProfile} from '@mm-redux/types/users';
-import {Dictionary} from '@mm-redux/types/utilities';
-import {CustomEmoji} from '@mm-redux/types/emojis';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.
@@ -185,6 +182,7 @@ export function createPost(post: Post, files: any[] = []) {
 
         let newPost = {
             ...post,
+            id: '',
             pending_post_id: pendingPostId,
             create_at: timestamp,
             update_at: timestamp,
