@@ -268,7 +268,7 @@ export const appEntry = async (serverUrl: string) => {
 
     let removeTeams;
     if (removeTeamIds?.length) {
-         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
         removeTeams = await queryTeamsById(database, removeTeamIds);
         await deleteMyTeams(operator, removeTeams!);
     }
