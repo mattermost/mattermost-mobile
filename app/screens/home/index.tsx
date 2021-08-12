@@ -36,7 +36,7 @@ const Home = ({componentId, theme}: HomeProps) => {
         <SafeAreaView
             style={styles.flex}
             mode='margin'
-            edges={['left', 'right', 'bottom']}
+            edges={['left', 'right', 'top']}
             key='home.safearea'
         >
             <View
