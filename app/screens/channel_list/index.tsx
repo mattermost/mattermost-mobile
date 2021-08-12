@@ -23,7 +23,7 @@ const ChannelList = ({theme}: ChannelProps) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         flex: 1,
         justifyContent: 'center',

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Screens} from '@constants';
 import React, {useEffect, useRef} from 'react';
-import {Platform, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 import {Navigation, NavigationComponentProps} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -19,34 +20,16 @@ const Home = ({componentId, theme}: HomeProps) => {
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                // eslint-disable-next-line no-console
-                console.log('componentDidAppear', `>>> ${componentId} on ${Platform.OS} <<<`);
-
+        const screenPoppedListener = Navigation.events().registerScreenPoppedListener(({componentId: screenId}) => {
+            if (screenId === Screens.CHANNEL_LIST) {
                 // @ts-expect-error: animate() exists on the BottomTabBar component
                 tabRef?.current?.animate();
-            },
-            componentDidDisappear: () => {
-                // eslint-disable-next-line no-console
-                console.log('componentDidDisappear', `>>> ${componentId} on ${Platform.OS} <<<`);
-            },
-        };
-
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-        return () => {
-            unsubscribe.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        // Subscribe
-        const commandListener = Navigation.events().registerCommandListener((name, params) => {
-            console.log('>>>>>>>>>>>>>>> name, params', name, params);
+            }
         });
 
-        // Unsubscribe
-        commandListener.remove();
+        return () => {
+            screenPoppedListener.remove();
+        };
     }, []);
 
     return [

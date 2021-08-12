@@ -122,7 +122,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         width: '100%',
         height: 84,
-        // backgroundColor: theme.centerChannelBg,
         flexDirection: 'row',
         justifyContent: 'space-around',
     },
