@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {TabBarStacks} from '@constants/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import React, {forwardRef, useImperativeHandle, useRef} from 'react';
 import {Text, useWindowDimensions, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {TabBarHeight, TabBarStacks} from '@constants/navigation';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 //todo: pass a config object and map through array to create tab buttons
 
@@ -18,7 +19,7 @@ type BottomTabBarProps = {
 const BottomTabBar = forwardRef((props: BottomTabBarProps, ref) => {
     const dimensions = useWindowDimensions();
     const hideFlag = useRef<boolean>(false);
-    const tabRef = useRef();
+    const tabRef = useRef<Animated.View>();
 
     const animatedValue = useSharedValue(0);
 
@@ -126,7 +127,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
         justifyContent: 'space-around',
     },
     buttonStyle: {
-        height: 84,
+        height: TabBarHeight,
     },
     shadow: {
         shadowColor: '#000',

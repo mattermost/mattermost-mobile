@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Screens} from '@constants';
 import React, {useEffect, useRef} from 'react';
 import {Text, View} from 'react-native';
 import {Navigation, NavigationComponentProps} from 'react-native-navigation';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import BottomTabBar from '@components/bottom_tab_bar';
+import Container from '@components/container';
+import {Screens} from '@constants';
 import {goToScreen, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -32,13 +32,8 @@ const Home = ({componentId, theme}: HomeProps) => {
         };
     }, []);
 
-    return [
-        <SafeAreaView
-            style={styles.flex}
-            mode='margin'
-            edges={['left', 'right', 'top']}
-            key='home.safearea'
-        >
+    const renderScreenContent = () => {
+        return (
             <View
                 style={styles.container}
                 testID='home.screen'
@@ -75,7 +70,16 @@ const Home = ({componentId, theme}: HomeProps) => {
                     </View>
                 </View>
             </View>
-        </SafeAreaView>,
+        );
+    };
+
+    return [
+        <Container
+            componentId={componentId}
+            renderChildren={renderScreenContent}
+            key='home.screen'
+            unmountOnBlur={false}
+        />,
         <View
             key='bottom.tabbar'
             style={styles.tabContainer}

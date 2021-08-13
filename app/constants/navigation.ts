@@ -23,4 +23,6 @@ export const TabBarStacks = keyMirror({
     TAB_ACCOUNT: null,
 });
 
+export const TabBarHeight = 84;
+
 export default Navigation;

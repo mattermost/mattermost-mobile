@@ -238,10 +238,10 @@ export function registerScreens() {
     // Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
 
-    const homeScreen = require('@screens/home').default;
-    const searchScreen = require('@screens/search').default;
-    const mentionScreen = require('@screens/mention').default;
-    const accountScreen = require('@screens/account').default;
+    const homeScreen = require('@screens/tab_home').default;
+    const searchScreen = require('@screens/tab_search').default;
+    const mentionScreen = require('@screens/tab_mention').default;
+    const accountScreen = require('@screens/tab_account').default;
 
     Navigation.registerComponent(Screens.HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
     Navigation.registerComponent(Screens.SEARCH, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(searchScreen))), undefined)));
