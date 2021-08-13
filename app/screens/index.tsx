@@ -243,8 +243,8 @@ export function registerScreens() {
     const mentionScreen = require('@screens/tab_mention').default;
     const accountScreen = require('@screens/tab_account').default;
 
-    Navigation.registerComponent(Screens.HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
-    Navigation.registerComponent(Screens.SEARCH, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(searchScreen))), undefined)));
-    Navigation.registerComponent(Screens.MENTION, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(mentionScreen))), undefined)));
-    Navigation.registerComponent(Screens.ACCOUNT, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(accountScreen))), undefined)));
+    Navigation.registerComponent(Screens.TAB_HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
+    Navigation.registerComponent(Screens.TAB_SEARCH, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(searchScreen))), undefined)));
+    Navigation.registerComponent(Screens.TAB_MENTION, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(mentionScreen))), undefined)));
+    Navigation.registerComponent(Screens.TAB_ACCOUNT, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(accountScreen))), undefined)));
 }

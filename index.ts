@@ -82,7 +82,7 @@ function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
 }
 
 function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
-    if (componentId !== Screens.CHANNEL) {
+    if (componentId !== Screens.TAB_HOME) {
         EphemeralStore.removeNavigationComponentId(componentId);
     }
 

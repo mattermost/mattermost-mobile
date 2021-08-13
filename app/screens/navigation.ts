@@ -141,8 +141,8 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
             children: [
                 {
                     component: {
-                        name: Screens.HOME,
-                        id: 'HOME',
+                        name: Screens.TAB_HOME,
+                        id: Screens.TAB_HOME,
                         passProps: {
                             ...passProps,
                             theme,
@@ -184,8 +184,8 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
             children: [
                 {
                     component: {
-                        name: Screens.SEARCH,
-                        id: 'SEARCH',
+                        name: Screens.TAB_SEARCH,
+                        id: Screens.TAB_SEARCH,
                         passProps: {
                             ...passProps,
                             theme,
@@ -207,8 +207,8 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
             children: [
                 {
                     component: {
-                        name: Screens.MENTION,
-                        id: 'MENTION',
+                        name: Screens.TAB_MENTION,
+                        id: Screens.TAB_MENTION,
                         passProps: {
                             ...passProps,
                             theme,
@@ -230,8 +230,8 @@ export function resetToBottomTabs(passProps?: LaunchProps) {
             children: [
                 {
                     component: {
-                        name: Screens.ACCOUNT,
-                        id: 'ACCOUNT',
+                        name: Screens.TAB_ACCOUNT,
+                        id: Screens.TAB_ACCOUNT,
                         passProps: {
                             ...passProps,
                             theme,

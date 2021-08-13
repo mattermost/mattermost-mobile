@@ -29,7 +29,9 @@ const BottomTabBar = forwardRef((props: BottomTabBarProps, ref) => {
                 {
                     translateY: withTiming(
                         animatedValue.value,
-                        {duration: 250},
+                        {
+                            duration: 250,
+                        },
                     ),
                 },
             ],
@@ -38,7 +40,7 @@ const BottomTabBar = forwardRef((props: BottomTabBarProps, ref) => {
 
     useImperativeHandle(ref, () => ({
         animate: () => {
-            animatedValue.value = hideFlag?.current ? 0 : 150;
+            animatedValue.value = hideFlag?.current ? 0 : TabBarHeight;
             hideFlag.current = !hideFlag.current;
         },
     }));
