@@ -8,6 +8,7 @@ import {Navigation, NavigationComponentProps} from 'react-native-navigation';
 import BottomTabBar from '@components/bottom_tab_bar';
 import Container from '@components/container';
 import {Screens} from '@constants';
+import {TabBarStacks} from '@constants/navigation';
 import {goToScreen, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -61,7 +62,7 @@ const Home = ({componentId, theme}: HomeProps) => {
                                 onPress={() => {
                                     // @ts-expect-error: animate() exists on the BottomTabBar component
                                     tabRef?.current?.animate();
-                                    return goToScreen('ChannelList', 'Channel', {theme});
+                                    return goToScreen('ChannelList', 'Channel', {theme}, undefined, TabBarStacks.TAB_HOME);
                                 }}
                             >
                                 {'Go to another screen'}

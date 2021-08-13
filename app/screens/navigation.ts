@@ -311,9 +311,9 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
     });
 }
 
-export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
+export function goToScreen(name: string, title: string, passProps = {}, options = {}, stackId?: string) {
     const theme = getThemeFromState();
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = stackId ?? EphemeralStore.getNavigationTopComponentId();
     const defaultOptions = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
