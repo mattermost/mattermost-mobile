@@ -19,7 +19,7 @@ import {ThreadsState} from '@mm-redux/types/threads';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
 import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency, getMsgCountInChannel} from '@mm-redux/utils/channel_utils';
-import {createIdsSelector} from '@mm-redux/utils/helpers';
+import {createIdsSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {General, Permissions} from '../../constants';
 
@@ -176,7 +176,8 @@ export function isChannelReadOnlyById(state: GlobalState, channelId: string): bo
 }
 
 export function isChannelReadOnly(state: GlobalState, channel: Channel): boolean {
-    return channel && channel.name === General.DEFAULT_CHANNEL && !isCurrentUserSystemAdmin(state) && getConfig(state).ExperimentalTownSquareIsReadOnly === 'true';
+    const {serverVersion} = state.entities.general;
+    return channel && channel.name === General.DEFAULT_CHANNEL && !isCurrentUserSystemAdmin(state) && (getConfig(state).ExperimentalTownSquareIsReadOnly === 'true' && !isMinimumServerVersion(serverVersion, 6));
 }
 
 export function shouldHideDefaultChannel(state: GlobalState, channel: Channel): boolean {
@@ -471,39 +472,46 @@ export const getUnreadsInCurrentTeam: (a: GlobalState) => {
         mentionCount,
     };
 });
-export const canManageChannelMembers: (a: GlobalState) => boolean = createSelector(getCurrentChannel, getCurrentUser, getCurrentTeamMembership, getMyCurrentChannelMembership, getConfig, getLicense, hasNewPermissions, (state: GlobalState): boolean => haveICurrentChannelPermission(state, {
-    permission: Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS,
-}), (state: GlobalState): boolean => haveICurrentChannelPermission(state, {
-    permission: Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS,
-}), (channel: Channel, user: UserProfile, teamMembership: TeamMembership, channelMembership: ChannelMembership | undefined | null, config: Config, license: any, newPermissions: boolean, managePrivateMembers: boolean, managePublicMembers: boolean): boolean => {
-    if (!channel) {
-        return false;
-    }
-
-    if (channel.delete_at !== 0) {
-        return false;
-    }
-
-    if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL || channel.name === General.DEFAULT_CHANNEL) {
-        return false;
-    }
-
-    if (newPermissions) {
-        if (channel.type === General.OPEN_CHANNEL) {
-            return managePublicMembers;
-        } else if (channel.type === General.PRIVATE_CHANNEL) {
-            return managePrivateMembers;
+export const canManageChannelMembers: (a: GlobalState) => boolean = createSelector(
+    getCurrentChannel,
+    getCurrentUser,
+    getCurrentTeamMembership,
+    getMyCurrentChannelMembership,
+    getConfig,
+    getLicense,
+    hasNewPermissions,
+    (state: GlobalState): boolean => haveICurrentChannelPermission(state, {permission: Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS}),
+    (state: GlobalState): boolean => haveICurrentChannelPermission(state, {permission: Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS}),
+    (state: GlobalState): string => state.entities.general.serverVersion,
+    (channel: Channel, user: UserProfile, teamMembership: TeamMembership, channelMembership: ChannelMembership | undefined | null, config: Config, license: any, newPermissions: boolean, managePrivateMembers: boolean, managePublicMembers: boolean, serverVersion: string): boolean => {
+        if (!channel) {
+            return false;
         }
 
-        return true;
-    }
+        if (channel.delete_at !== 0) {
+            return false;
+        }
 
-    if (!channelMembership) {
-        return false;
-    }
+        if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL || channel.name === General.DEFAULT_CHANNEL) {
+            return false;
+        }
 
-    return canManageMembersOldPermissions(channel, user, teamMembership, channelMembership, config, license);
-}); // Determine if the user has permissions to manage members in at least one channel of the current team
+        if (newPermissions) {
+            if (channel.type === General.OPEN_CHANNEL) {
+                return managePublicMembers;
+            } else if (channel.type === General.PRIVATE_CHANNEL) {
+                return managePrivateMembers;
+            }
+
+            return true;
+        }
+
+        if (!channelMembership) {
+            return false;
+        }
+
+        return canManageMembersOldPermissions(channel, user, teamMembership, channelMembership, config, license, serverVersion);
+    }); // Determine if the user has permissions to manage members in at least one channel of the current team
 
 export const canManageAnyChannelMembersInCurrentTeam: (a: GlobalState) => boolean = createSelector(getMyChannelMemberships, getCurrentTeamId, (state: GlobalState): GlobalState => state, (members: RelationOneToOne<Channel, ChannelMembership>, currentTeamId: string, state: GlobalState): boolean => {
     for (const channelId of Object.keys(members)) {
@@ -713,9 +721,9 @@ export const getPrivateChannelIds: (e: GlobalState, d: Channel, c: boolean, b: b
 
 export const getSortedPrivateChannelIds: (e: GlobalState, d: Channel | null, c: boolean, b: boolean, a: SortingType) => Array<string> = createIdsSelector(getUnreadChannelIds, getFavoritesPreferences, (state: GlobalState, lastUnreadChannel: Channel, unreadsAtTop: boolean, favoritesAtTop: boolean, sorting: SortingType = 'alpha') => getPrivateChannelIds(state, lastUnreadChannel, unreadsAtTop, favoritesAtTop, sorting), (state, lastUnreadChannel, unreadsAtTop = true) => unreadsAtTop, (state, lastUnreadChannel, unreadsAtTop, favoritesAtTop = true) => favoritesAtTop, filterChannels); // Direct Messages
 
-export const getDirectChannels: (a: GlobalState) => Array<Channel> = createSelector(getCurrentUser, getUsers, getUserIdsInChannels, getAllChannels, getVisibleTeammate, getVisibleGroupIds, getTeammateNameDisplaySetting, getConfig, getMyPreferences, getLastPostPerChannel, getCurrentChannelId, (currentUser: UserProfile, profiles: IDMappedObjects<UserProfile>, userIdsInChannels: any, channels: IDMappedObjects<Channel>, teammates: Array<string>, groupIds: Array<string>, settings, config, preferences: {
+export const getDirectChannels: (a: GlobalState) => Array<Channel> = createSelector(getCurrentUser, getUsers, getUserIdsInChannels, getAllChannels, getVisibleTeammate, getVisibleGroupIds, getTeammateNameDisplaySetting, getConfig, getMyPreferences, getLastPostPerChannel, getCurrentChannelId, (state: GlobalState) => state.entities.general.serverVersion, (currentUser: UserProfile, profiles: IDMappedObjects<UserProfile>, userIdsInChannels: any, channels: IDMappedObjects<Channel>, teammates: Array<string>, groupIds: Array<string>, settings, config, preferences: {
     [x: string]: PreferenceType;
-}, lastPosts: RelationOneToOne<Channel, Post>, currentChannelId: string): Array<Channel> => {
+}, lastPosts: RelationOneToOne<Channel, Post>, currentChannelId: string, serverVersion: string): Array<Channel> => {
     if (!currentUser) {
         return [];
     }
@@ -730,7 +738,7 @@ export const getDirectChannels: (a: GlobalState) => Array<Channel> = createSelec
             const lastPost = lastPosts[channel.id];
             const otherUser = profiles[getUserIdFromChannelName(currentUser.id, channel.name)];
 
-            if (!isAutoClosed(config, preferences, channel, lastPost ? lastPost.create_at : 0, otherUser ? otherUser.delete_at : 0, currentChannelId)) {
+            if (!isAutoClosed(config, preferences, channel, lastPost ? lastPost.create_at : 0, otherUser ? otherUser.delete_at : 0, currentChannelId, undefined, serverVersion)) {
                 result.push(channel.id);
             }
         }
@@ -742,7 +750,7 @@ export const getDirectChannels: (a: GlobalState) => Array<Channel> = createSelec
 
         if (channel && (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL)) {
             const lastPost = lastPosts[channel.id];
-            return !isAutoClosed(config, preferences, channels[id], lastPost ? lastPost.create_at : 0, 0, currentChannelId);
+            return !isAutoClosed(config, preferences, channels[id], lastPost ? lastPost.create_at : 0, 0, currentChannelId, undefined, serverVersion);
         }
 
         return false;

@@ -13,6 +13,7 @@ import {RelationOneToOne, IDMappedObjects} from '@mm-redux/types/utilities';
 
 import {General, Preferences, Permissions, Users} from '../constants';
 
+import {isMinimumServerVersion} from './helpers';
 import {getPreferenceKey, getPreferencesByCategory} from './preference_utils';
 import {displayUsername} from './user_utils';
 
@@ -145,6 +146,7 @@ export function isAutoClosed(
     channelArchiveTime: number,
     currentChannelId = '',
     now = Date.now(),
+    serverVersion = '',
 ): boolean {
     const cutoff = now - (7 * 24 * 60 * 60 * 1000);
     const viewTimePref = myPreferences[`${Preferences.CATEGORY_CHANNEL_APPROXIMATE_VIEW_TIME}--${channel.id}`];
@@ -163,7 +165,7 @@ export function isAutoClosed(
         return true;
     }
 
-    if (config.CloseUnusedDirectMessages !== 'true' || isFavoriteChannel(myPreferences, channel.id)) {
+    if ((config.CloseUnusedDirectMessages !== 'true' && !isMinimumServerVersion(serverVersion, 6)) || isFavoriteChannel(myPreferences, channel.id)) {
         return false;
     }
 
@@ -197,6 +199,7 @@ export function isDirectChannelVisible(
     isUnread?: boolean,
     currentChannelId = '',
     now?: number,
+    serverVersion?: string,
 ): boolean {
     const otherUser = typeof otherUserOrOtherUserId === 'object' ? otherUserOrOtherUserId : null;
     const otherUserId = typeof otherUserOrOtherUserId === 'object' ? otherUserOrOtherUserId.id : otherUserOrOtherUserId;
@@ -214,6 +217,7 @@ export function isDirectChannelVisible(
         otherUser ? otherUser.delete_at : 0,
         currentChannelId,
         now,
+        serverVersion,
     );
 }
 
@@ -230,6 +234,7 @@ export function isGroupChannelVisible(
     lastPost?: Post,
     isUnread?: boolean,
     now?: number,
+    serverVersion?: string,
 ): boolean {
     const gm = myPreferences[`${Preferences.CATEGORY_GROUP_CHANNEL_SHOW}--${channel.id}`];
 
@@ -245,6 +250,7 @@ export function isGroupChannelVisible(
         0,
         '',
         now,
+        serverVersion,
     );
 }
 
@@ -300,17 +306,19 @@ export function showCreateOption(state: GlobalState, config: any, license: any, 
         return true;
     }
 
+    const {serverVersion} = state.entities.general;
+
     // Backwards compatibility with pre-advanced permissions config settings.
     if (channelType === General.OPEN_CHANNEL) {
-        if (config.RestrictPublicChannelCreation === General.SYSTEM_ADMIN_ROLE && !isSystemAdmin) {
+        if (config.RestrictPublicChannelCreation === General.SYSTEM_ADMIN_ROLE && !isSystemAdmin && !isMinimumServerVersion(serverVersion, 6)) {
             return false;
-        } else if (config.RestrictPublicChannelCreation === General.TEAM_ADMIN_ROLE && !isAdmin) {
+        } else if (config.RestrictPublicChannelCreation === General.TEAM_ADMIN_ROLE && !isAdmin && !isMinimumServerVersion(serverVersion, 6)) {
             return false;
         }
     } else if (channelType === General.PRIVATE_CHANNEL) {
-        if (config.RestrictPrivateChannelCreation === General.SYSTEM_ADMIN_ROLE && !isSystemAdmin) {
+        if (config.RestrictPrivateChannelCreation === General.SYSTEM_ADMIN_ROLE && !isSystemAdmin && !isMinimumServerVersion(serverVersion, 6)) {
             return false;
-        } else if (config.RestrictPrivateChannelCreation === General.TEAM_ADMIN_ROLE && !isAdmin) {
+        } else if (config.RestrictPrivateChannelCreation === General.TEAM_ADMIN_ROLE && !isAdmin && !isMinimumServerVersion(serverVersion, 6)) {
             return false;
         }
     }
@@ -332,7 +340,13 @@ export function showManagementOptions(state: GlobalState, config: any, license: 
         return true;
     }
 
+    const {serverVersion} = state.entities.general;
+
     // Backwards compatibility with pre-advanced permissions config settings.
+    if (!isMinimumServerVersion(serverVersion, 6)) {
+        return true;
+    }
+
     if (channel.type === General.OPEN_CHANNEL) {
         if (config.RestrictPublicChannelManagement === General.SYSTEM_ADMIN_ROLE && !isSystemAdmin) {
             return false;
@@ -368,7 +382,9 @@ export function showDeleteOption(state: GlobalState, config: any, license: any, 
         return true;
     }
 
-    if (license.IsLicensed !== 'true') {
+    const {serverVersion} = state.entities.general;
+
+    if (license.IsLicensed !== 'true' || !isMinimumServerVersion(serverVersion, 6)) {
         return true;
     }
 
@@ -400,7 +416,7 @@ export function showDeleteOption(state: GlobalState, config: any, license: any, 
 
 // Backwards compatibility with pre-advanced permissions config settings.
 
-export function canManageMembersOldPermissions(channel: Channel, user: UserProfile, teamMember: TeamMembership, channelMember: ChannelMembership, config: any, license: any): boolean {
+export function canManageMembersOldPermissions(channel: Channel, user: UserProfile, teamMember: TeamMembership, channelMember: ChannelMembership, config: any, license: any, serverVersion: string): boolean {
     if (channel.type === General.DM_CHANNEL ||
         channel.type === General.GM_CHANNEL ||
         channel.name === General.DEFAULT_CHANNEL) {
@@ -411,7 +427,7 @@ export function canManageMembersOldPermissions(channel: Channel, user: UserProfi
         return true;
     }
 
-    if (channel.type === General.PRIVATE_CHANNEL) {
+    if (channel.type === General.PRIVATE_CHANNEL && !isMinimumServerVersion(serverVersion, 6)) {
         const isSystemAdmin = user.roles.includes(General.SYSTEM_ADMIN_ROLE);
         if (config.RestrictPrivateChannelManageMembers === General.PERMISSIONS_SYSTEM_ADMIN && !isSystemAdmin) {
             return false;

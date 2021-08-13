@@ -380,6 +380,7 @@
     }
     
     NSDictionary *config = [self getConfig];
+    // TODO: Update CloseUnusedDirectMessages boolean check for MM-37781
     if (![[config objectForKey:@"CloseUnusedDirectMessages"] isEqualToString:@"true"] || [self isFavoriteChannel:channelId]) {
         return NO;
     }

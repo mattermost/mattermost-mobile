@@ -60,14 +60,13 @@ export function canDeletePost(state: GlobalState, config: any, license: any, tea
     }
 
     const isOwner = isPostOwner(userId, post);
+    const {serverVersion} = state.entities.general;
 
     if (hasNewPermissions(state)) {
         let permissions = [];
         if (isOwner) {
             permissions = [Permissions.DELETE_POST];
         } else {
-            const {serverVersion} = state.entities.general;
-
             // prior to v5.27, the server used to require delete_own_posts and
             // delete_others_posts permissions to be able to delete a post by a
             // different author.
@@ -78,9 +77,13 @@ export function canDeletePost(state: GlobalState, config: any, license: any, tea
 
     // Backwards compatibility with pre-advanced permissions config settings.
     if (license.IsLicensed === 'true') {
-        return (config.RestrictPostDelete === General.PERMISSIONS_ALL && (isOwner || isAdmin)) ||
+        if (!isMinimumServerVersion(serverVersion, 6, 0, 0)) {
+            return false;
+        }
+        return ((config.RestrictPostDelete === General.PERMISSIONS_ALL && (isOwner || isAdmin)) ||
             (config.RestrictPostDelete === General.PERMISSIONS_TEAM_ADMIN && isAdmin) ||
-            (config.RestrictPostDelete === General.PERMISSIONS_SYSTEM_ADMIN && isSystemAdmin);
+            (config.RestrictPostDelete === General.PERMISSIONS_SYSTEM_ADMIN && isSystemAdmin)
+        );
     }
     return isOwner || isAdmin;
 }
@@ -92,14 +95,13 @@ export function canEditPost(state: GlobalState, config: any, license: any, teamI
 
     const isOwner = isPostOwner(userId, post);
     let canEdit = true;
+    const {serverVersion} = state.entities.general;
 
     if (hasNewPermissions(state)) {
         let permissions = [];
         if (isOwner) {
             permissions = [Permissions.EDIT_POST];
         } else {
-            const {serverVersion} = state.entities.general;
-
             // prior to v5.26, the server used to require edit_own_posts and
             // edit_others_posts permissions to be able to edit a post by a
             // different author.
@@ -114,7 +116,7 @@ export function canEditPost(state: GlobalState, config: any, license: any, teamI
         }
     } else {
         // Backwards compatibility with pre-advanced permissions config settings.
-        canEdit = isOwner && config.AllowEditPost !== 'never';
+        canEdit = isOwner && (config.AllowEditPost !== 'never' && !isMinimumServerVersion(serverVersion, 6));
         if (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT) {
             const timeLeft = (post.create_at + (config.PostEditTimeLimit * 1000)) - Date.now();
             if (timeLeft <= 0) {
