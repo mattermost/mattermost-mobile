@@ -193,7 +193,9 @@ const NetworkIndicator = ({
 
     useEffect(() => {
         if (channelId) {
-            clearNotificationTimeout.current = setTimeout(clearNotifications, 1500);
+            clearNotificationTimeout.current = setTimeout(() => {
+                PushNotifications.clearChannelNotifications(channelId);
+            }, 1500);
         }
 
         return () => {
