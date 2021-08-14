@@ -67,6 +67,15 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         this.setState({newPush: value});
     };
 
+    onMobilePushThreadChanged = (value) => {
+        let pushThreads = 'mention';
+        if (value) {
+            pushThreads = 'all';
+        }
+
+        this.setMobilePushThreads(pushThreads, this.saveNotificationProps);
+    };
+
     onMobilePushStatusChanged = (value) => {
         this.setState({newPushStatus: value});
     };
@@ -611,6 +620,34 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         );
     }
 
+    renderMobilePushThreadsSection(style) {
+        const {theme} = this.props;
+
+        return (
+            <View>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings.push_threads.title'
+                            defaultMessage='Thread reply notifications'
+                        />
+                    )}
+                    description={(
+                        <FormattedText
+                            id='mobile.notification_settings.push_threads.description'
+                            defaultMessage={'Notify me about all replies to threads I\'m following'}
+                        />
+                    )}
+                    action={this.onMobilePushThreadChanged}
+                    actionType='toggle'
+                    selected={this.state.push_threads === 'all'}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
+        );
+    }
+
     renderNotificationOptions(style) {
         if (Platform.Version >= 26) {
             return null;
@@ -645,6 +682,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
+            push_threads: pushThreads,
         } = this.state;
 
         const {currentUser} = this.props;
@@ -658,6 +696,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
+            push_threads: pushThreads,
             user_id: currentUser.id,
         };
 
@@ -737,7 +776,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isCollapsedThreadsEnabled} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -753,6 +792,9 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 >
                     {this.renderMobilePushSection()}
                     <View style={style.separator}/>
+                    {isCollapsedThreadsEnabled && this.state.push === 'mention' && (
+                        this.renderMobilePushThreadsSection(style)
+                    )}
                     {this.renderMobilePushStatusSection(style)}
                     {this.renderNotificationOptions(style)}
                     {this.renderMobileTestSection(style)}

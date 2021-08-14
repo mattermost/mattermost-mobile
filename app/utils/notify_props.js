@@ -15,6 +15,7 @@ export function getNotificationProps(user) {
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
+        push_threads: 'any',
     };
 
     if (!user || !user.first_name) {

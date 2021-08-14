@@ -147,3 +147,151 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
   </View>
 </Modal>
 `;
+
+exports[`NotificationSettingsEmailAndroid should match snapshot on CRT ON 1`] = `
+<sectionItem
+  action={[Function]}
+  actionType="default"
+  description={
+    <InjectIntl(FormattedText)
+      defaultMessage="Immediately"
+      id="user.settings.notifications.email.immediately"
+    />
+  }
+  label={
+    <InjectIntl(FormattedText)
+      defaultMessage="Send email notifications"
+      id="user.settings.notifications.email.send"
+    />
+  }
+  testID="notification_settings_email.send.action"
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
+`;
+
+exports[`NotificationSettingsEmailAndroid should match snapshot on CRT ON 2`] = `
+<Modal
+  animationType="slide"
+  hardwareAccelerated={false}
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={false}
+>
+  <View
+    testID="notification_settings_email.send.modal"
+  >
+    <View
+      style={Object {}}
+    >
+      <View
+        style={Object {}}
+      >
+        <View
+          style={Object {}}
+        >
+          <InjectIntl(FormattedText)
+            defaultMessage="Send email notifications"
+            id="user.settings.notifications.email.send"
+            style={Object {}}
+          />
+        </View>
+        <RadioButtonGroup
+          name="emailSettings"
+          onSelect={[Function]}
+          options={
+            Array [
+              Object {
+                "checked": true,
+                "label": "Immediately",
+                "testID": "notification_settings_email.immediately.action",
+                "value": "30",
+              },
+              Object {
+                "checked": false,
+                "label": "Never",
+                "testID": "notification_settings_email.never.action",
+                "value": "0",
+              },
+            ]
+          }
+        />
+        <InjectIntl(FormattedText)
+          defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
+          id="user.settings.notifications.emailInfo"
+          style={Object {}}
+        />
+      </View>
+      <View
+        style={Object {}}
+      >
+        <View
+          style={Object {}}
+        />
+        <View
+          style={Object {}}
+        >
+          <ForwardRef
+            onPress={[Function]}
+            style={Object {}}
+            testID="notification_settings_email.send_modal_cancel.button"
+          >
+            <InjectIntl(FormattedText)
+              defaultMessage="CANCEL"
+              id="mobile.notification_settings.modal_cancel"
+              style={Object {}}
+            />
+          </ForwardRef>
+          <View>
+            <View
+              style={
+                Object {
+                  "marginRight": 10,
+                }
+              }
+            />
+            <ForwardRef
+              onPress={[Function]}
+              style={Object {}}
+              testID="notification_settings_email.send_modal_save.button"
+            >
+              <InjectIntl(FormattedText)
+                defaultMessage="SAVE"
+                id="mobile.notification_settings.modal_save"
+                style={Object {}}
+              />
+            </ForwardRef>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</Modal>
+`;

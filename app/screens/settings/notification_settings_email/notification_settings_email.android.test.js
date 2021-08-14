@@ -14,6 +14,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         currentUser: {id: 'current_user_id'},
         notifyProps: {
             email: 'true',
+            email_threads: 'all',
         },
         emailInterval: '30',
         enableEmailBatching: false,
@@ -24,11 +25,40 @@ describe('NotificationSettingsEmailAndroid', () => {
         sendEmailNotifications: true,
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isCollapsedThreadsEnabled: false,
     };
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <NotificationSettingsEmailAndroid {...baseProps}/>,
+        );
+
+        const style = {
+            divider: {},
+            modal: {},
+            modalBody: {},
+            modalTitleContainer: {},
+            modalTitle: {},
+            modalOptionDisabled: {},
+            modalHelpText: {},
+            modalFooter: {},
+            modalFooterContainer: {},
+            modalFooterOptionContainer: {},
+            modalFooterOption: {},
+        };
+
+        expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
+        expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
+    });
+
+    test('should match snapshot on CRT ON', () => {
+        const props = {
+            ...baseProps,
+            isCollapsedThreadsEnabled: true,
+        };
+
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsEmailAndroid {...props}/>,
         );
 
         const style = {
