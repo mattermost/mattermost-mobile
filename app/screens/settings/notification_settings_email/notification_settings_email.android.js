@@ -112,13 +112,13 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 <SectionItem
                     label={(
                         <FormattedText
-                            id='user.settings.notifications.push_threads.title'
+                            id='user.settings.notifications.email_threads.title'
                             defaultMessage='Thread reply notifications'
                         />
                     )}
                     description={(
                         <FormattedText
-                            id='user.settings.notifications.push_threads.description'
+                            id='user.settings.notifications.email_threads.description'
                             defaultMessage={'Notify me about all replies to threads I\'m following'}
                         />
                     )}
