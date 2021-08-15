@@ -156,13 +156,13 @@ exports[`NotificationSettingsEmailAndroid should match snapshot, renderEmailThre
     description={
       <InjectIntl(FormattedText)
         defaultMessage="Notify me about all replies to threads I'm following"
-        id="mobile.notification_settings.push_threads.description"
+        id="user.settings.notifications.email_threads.description"
       />
     }
     label={
       <InjectIntl(FormattedText)
         defaultMessage="Thread reply notifications"
-        id="mobile.notification_settings.push_threads.title"
+        id="user.settings.notifications.email_threads.title"
       />
     }
     selected={true}
