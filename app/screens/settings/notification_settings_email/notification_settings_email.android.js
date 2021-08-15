@@ -104,7 +104,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
         );
     }
 
-    renderMobileEmailThreadsSection(style) {
+    renderEmailThreadsSection(style) {
         const {theme} = this.props;
 
         return (
@@ -280,7 +280,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                     {this.renderEmailSection()}
                     <View style={style.separator}/>
                     {isCollapsedThreadsEnabled && notifyProps.email === 'true' && (
-                        this.renderMobileEmailThreadsSection(style)
+                        this.renderEmailThreadsSection(style)
                     )}
                     {this.renderEmailNotificationsModal(style)}
                 </ScrollView>

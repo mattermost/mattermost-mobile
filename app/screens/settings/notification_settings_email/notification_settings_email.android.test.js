@@ -51,7 +51,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
     });
 
-    test('should match snapshot on CRT ON', () => {
+    test('should match snapshot, renderEmailThreadsSection', () => {
         const props = {
             ...baseProps,
             isCollapsedThreadsEnabled: true,
@@ -75,8 +75,7 @@ describe('NotificationSettingsEmailAndroid', () => {
             modalFooterOption: {},
         };
 
-        expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
-        expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
+        expect(wrapper.instance().renderEmailThreadsSection(style)).toMatchSnapshot();
     });
 
     test('should match state on setEmailInterval', () => {
