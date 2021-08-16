@@ -270,9 +270,7 @@ export const appEntry = async (serverUrl: string) => {
     if (initialTeamId !== currentTeamId) {
         // Immediately set the new team as the current team in the database so that the UI
         // renders the correct team.
-        // TODO: No need for initial channel once tab navigation for v2 UI is added.
-        const initialChannel = selectDefaultChannelForTeam(fetchedData.chData!.channels!, fetchedData.chData!.memberships!, initialTeamId, [], fetchedData.meData.user!.locale);
-        setCurrentTeamAndChannelId(operator, initialTeamId, initialChannel?.id);
+        setCurrentTeamAndChannelId(operator, initialTeamId, '');
     }
 
     let removeTeams;
