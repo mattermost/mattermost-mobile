@@ -1,0 +1,278 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ThreadOptions should match snapshot, showing all possible options 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+  testID="global_threads.item.options"
+>
+  <Connect(SlideUpPanel)
+    allowStayMiddle={false}
+    initialPosition={400}
+    marginFromTop={200}
+    onRequestClose={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="THREAD ACTIONS"
+      id="global_threads.options.title"
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.65)",
+          "fontSize": 12,
+          "paddingBottom": 8,
+          "paddingLeft": 16,
+          "paddingTop": 16,
+        }
+      }
+    />
+    <ThreadOption
+      destructive={false}
+      icon="reply-outline"
+      onPress={[Function]}
+      testID="global_threads.options.reply.action"
+      text="Reply"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <ThreadOption
+      destructive={false}
+      icon="message-minus-outline"
+      onPress={[Function]}
+      testID="global_threads.options.unfollow.action"
+      text="Unfollow Thread"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <ThreadOption
+      destructive={false}
+      icon="globe"
+      onPress={[Function]}
+      testID="global_threads.options.open_in_channel.action"
+      text="Open in Channel"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <ThreadOption
+      destructive={false}
+      icon="mark-as-unread"
+      onPress={[Function]}
+      testID="global_threads.options.mark_as_read.action"
+      text="Mark as Read"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <ThreadOption
+      destructive={false}
+      icon="bookmark-outline"
+      onPress={[Function]}
+      testID="global_threads.options.unflag.action"
+      text="Unsave"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <ThreadOption
+      destructive={false}
+      icon="link-variant"
+      onPress={[Function]}
+      testID="global_threads.options.permalink.action"
+      text="Copy Link"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+  </Connect(SlideUpPanel)>
+</View>
+`;

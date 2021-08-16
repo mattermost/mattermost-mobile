@@ -2,38 +2,53 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
+import {bindActionCreators, Dispatch} from 'redux';
 
-// import {bindActionCreators} from 'redux';
-
-import {/*getMyPreferences, */getTheme} from '@mm-redux/selectors/entities/preferences';
-// import {isPostFlagged} from '@mm-redux/utils/post_utils';
+import {showPermalink} from '@actions/views/permalink';
+import {
+    flagPost,
+    setUnreadPost,
+    unflagPost,
+} from '@mm-redux/actions/posts';
+import {setThreadFollow, updateThreadRead} from '@mm-redux/actions/threads';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getPost} from '@mm-redux/selectors/entities/posts';
+import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentTeam, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
+import {isPostFlagged} from '@mm-redux/utils/post_utils';
 import {getDimensions} from '@selectors/device';
 
-import ThreadOptions, {} from './thread_options';
+import ThreadOptions, {OwnProps} from './thread_options';
 
 import type {GlobalState} from '@mm-redux/types/store';
 
-// import type {DispatchFunc} from '@mm-redux/types/actions';
-
 export function makeMapStateToProps() {
-    return (state: GlobalState/*, ownProps*/) => {
-        // const myPreferences = getMyPreferences(state);
+    return (state: GlobalState, ownProps: OwnProps) => {
+        const myPreferences = getMyPreferences(state);
         return {
             ...getDimensions(state),
-
-            // isFlagged: isPostFlagged(post.id, myPreferences),
+            currentTeamName: getCurrentTeam(state)?.name,
+            currentTeamUrl: getCurrentTeamUrl(state),
+            currentUserId: getCurrentUserId(state),
+            isFlagged: isPostFlagged(ownProps.rootId, myPreferences),
+            post: getPost(state, ownProps.rootId),
             theme: getTheme(state),
+            thread: getThread(state, ownProps.rootId),
         };
     };
 }
 
-function mapDispatchToProps(/*dispatch: DispatchFunc*/) {
+function mapDispatchToProps(dispatch: Dispatch) {
     return {
-
-        // actions: bindActionCreators({
-
-        //     //
-        // }, dispatch),
+        actions: bindActionCreators({
+            flagPost,
+            setThreadFollow,
+            setUnreadPost,
+            showPermalink,
+            unflagPost,
+            updateThreadRead,
+        }, dispatch),
     };
 }
 

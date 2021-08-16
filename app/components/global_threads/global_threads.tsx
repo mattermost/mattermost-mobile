@@ -5,9 +5,14 @@ import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {Alert, FlatList} from 'react-native';
 
+import {goToScreen} from '@actions/navigation';
+import {THREAD} from '@constants/screen';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import ThreadList from './thread_list';
 
 import type {ActionResult} from '@mm-redux/types/actions';
+import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/preferences';
 import type {Team} from '@mm-redux/types/teams';
 import type {ThreadsState, UserThread} from '@mm-redux/types/threads';
@@ -16,10 +21,12 @@ import type {$ID} from '@mm-redux/types/utilities';
 
 type Props = {
     actions: {
+        getPostThread: (postId: string) => void;
         getThreads: (userId: $ID<UserProfile>, teamId: $ID<Team>, before?: $ID<UserThread>, after?: $ID<UserThread>, perPage?: number, deleted?: boolean, unread?: boolean) => Promise<ActionResult>;
         handleViewingGlobalThreadsAll: () => void;
         handleViewingGlobalThreadsUnreads: () => void;
         markAllThreadsInTeamRead: (userId: $ID<UserProfile>, teamId: $ID<Team>) => void;
+        selectPost: (postId: string) => void;
     };
     allThreadIds: $ID<UserThread>[];
     intl: typeof intlShape;
@@ -119,6 +126,23 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
             }],
         );
     };
+
+    const goToThread = React.useCallback((post: Post) => {
+        actions.getPostThread(post.id);
+        actions.selectPost(post.id);
+        const passProps = {
+            channelId: post.channel_id,
+            rootId: post.id,
+        };
+        goToScreen(THREAD, '', passProps);
+    }, []);
+
+    React.useEffect(() => {
+        EventEmitter.on('goToThread', goToThread);
+        return () => {
+            EventEmitter.off('goToThread', goToThread);
+        };
+    }, []);
 
     return (
         <ThreadList

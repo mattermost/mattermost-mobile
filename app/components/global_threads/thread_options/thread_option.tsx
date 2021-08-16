@@ -24,12 +24,10 @@ type Props = {
     theme: Theme;
 };
 
-function ThreadOption({destructive, icon, testID, text, theme}: Props) {
-    const handleOnPress = React.useCallback(preventDoubleTap(() => {
-        this.props.onPress();
-    }, 500), []);
-
+function ThreadOption({destructive, icon, onPress, testID, text, theme}: Props) {
     const style = getStyleSheet(theme);
+
+    const handleOnPress = React.useCallback(preventDoubleTap(onPress, 500), []);
 
     let Touchable: React.ElementType;
     if (Platform.OS === 'android') {
@@ -38,17 +36,17 @@ function ThreadOption({destructive, icon, testID, text, theme}: Props) {
         Touchable = TouchableHighlight;
     }
 
-    // const touchableProps = Platform.select({
-    //     ios: {
-    //         underlayColor: 'rgba(0, 0, 0, 0.1)',
-    //     },
-    //     android: {
-    //         background: TouchableNativeFeedback.Ripple( //eslint-disable-line new-cap
-    //             'rgba(0, 0, 0, 0.1)',
-    //             false,
-    //         ),
-    //     },
-    // });
+    const touchableProps = Platform.select({
+        ios: {
+            underlayColor: 'rgba(0, 0, 0, 0.1)',
+        },
+        android: {
+            background: TouchableNativeFeedback.Ripple( //eslint-disable-line new-cap
+                'rgba(0, 0, 0, 0.1)',
+                false,
+            ),
+        },
+    });
 
     return (
         <View
@@ -57,9 +55,8 @@ function ThreadOption({destructive, icon, testID, text, theme}: Props) {
         >
             <Touchable
                 onPress={handleOnPress}
-
-                // {...touchableProps}
-                // style={style.row}
+                {...touchableProps}
+                style={style.row}
             >
                 <View style={style.row}>
                     <View style={style.iconContainer}>
@@ -88,9 +85,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             height: 51,
             width: '100%',
-        },
-        destructive: {
-            color: '#D0021B',
         },
         row: {
             flex: 1,
@@ -124,8 +118,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         footer: {
             marginHorizontal: 17,
-            borderBottomWidth: 0.5,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };
 });
