@@ -59,7 +59,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Relation<Model>[] = [channel.membership, channel.info, channel.settings];
+    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings];
     for await (const relation of relations) {
         try {
             const model = await relation.fetch();
@@ -71,7 +71,7 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
         }
     }
 
-    const associatedChildren: Query<any>[] = [
+    const associatedChildren: Array<Query<any>> = [
         channel.members,
         channel.drafts,
         channel.groupsChannel,

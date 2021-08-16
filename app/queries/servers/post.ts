@@ -12,7 +12,7 @@ const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
-    const relations: (Relation<Model> | Query<Model>)[] = [post.drafts, post.postsInThread];
+    const relations: Array<Relation<Model> | Query<Model>> = [post.drafts, post.postsInThread];
     for await (const relation of relations) {
         try {
             const model = await relation.fetch();
@@ -28,7 +28,7 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
         }
     }
 
-    const associatedChildren: Query<any>[] = [post.files, post.reactions];
+    const associatedChildren: Array<Query<any>> = [post.files, post.reactions];
     for await (const children of associatedChildren) {
         const models = await children.fetch() as Model[];
         models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));

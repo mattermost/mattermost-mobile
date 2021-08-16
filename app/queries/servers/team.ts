@@ -74,7 +74,7 @@ export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamMod
 export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
     const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
-    const relations: Relation<Model>[] = [team.myTeam, team.teamChannelHistory];
+    const relations: Array<Relation<Model>> = [team.myTeam, team.teamChannelHistory];
     for await (const relation of relations) {
         try {
             const model = await relation.fetch();
@@ -86,7 +86,7 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         }
     }
 
-    const associatedChildren: Query<any>[] = [
+    const associatedChildren: Array<Query<any>> = [
         team.members,
         team.groupsTeam,
         team.slashCommands,
