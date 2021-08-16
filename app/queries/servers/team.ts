@@ -88,7 +88,7 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
 
     const childrenWithoutAssociations: Query<any>[] = [
         team.members,
-        team.groupsInTeam,
+        team.groupsTeam,
         team.slashCommands,
         team.teamSearchHistories,
     ];

@@ -74,7 +74,7 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
     const childrenWithoutAssociations: Query<any>[] = [
         channel.members,
         channel.drafts,
-        channel.groupsInChannel,
+        channel.groupsChannel,
         channel.postsInChannel,
     ];
     for await (const children of childrenWithoutAssociations) {
