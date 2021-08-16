@@ -293,6 +293,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           placeholder="Write to "
           placeholderTextColor="rgba(61,60,64,0.5)"
           rejectResponderTermination={true}
+          screenId="NavigationScreen1"
           style={
             Object {
               "color": "#3d3c40",

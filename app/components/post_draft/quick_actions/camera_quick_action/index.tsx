@@ -39,7 +39,9 @@ const CameraQuickAction = ({disabled, fileCount, intl, maxFileCount, onUploadFil
                     return;
                 }
 
-                onUploadFiles(response.assets);
+                if (response.assets) {
+                    onUploadFiles(response.assets);
+                }
             });
         }
     };

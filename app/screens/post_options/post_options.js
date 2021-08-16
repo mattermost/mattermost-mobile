@@ -112,7 +112,7 @@ export default class PostOptions extends PureComponent {
 
     getFollowThreadOption = () => {
         const {location, thread} = this.props;
-        if (location !== CHANNEL) {
+        if (location !== CHANNEL || !thread) {
             return null;
         }
         const key = 'follow';

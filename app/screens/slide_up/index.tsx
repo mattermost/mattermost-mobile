@@ -50,8 +50,6 @@ const SlideUp = (props: Props) => {
             <SlideUpPanel
                 {...otherProps}
                 onRequestClose={onClose}
-
-                // @ts-expect-error no ref typing for JS file
                 ref={slideUpPanel}
             >
                 {children}

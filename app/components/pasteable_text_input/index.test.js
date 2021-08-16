@@ -18,7 +18,10 @@ describe('PasteableTextInput', () => {
         const onPaste = jest.fn();
         const text = 'My Text';
         const component = shallow(
-            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>,
+            <PasteableTextInput
+                onPaste={onPaste}
+                screenId='Channel'
+            >{text}</PasteableTextInput>,
         );
         expect(component).toMatchSnapshot();
     });
@@ -27,17 +30,17 @@ describe('PasteableTextInput', () => {
         const event = {someData: 'data'};
         const text = 'My Text';
         shallow(
-            <PasteableTextInput>{text}</PasteableTextInput>,
+            <PasteableTextInput screenId='Channel'>{text}</PasteableTextInput>,
         );
         nativeEventEmitter.emit('onPaste', event);
-        expect(emit).toHaveBeenCalledWith(PASTE_FILES, null, event);
+        expect(emit).toHaveBeenCalledWith(PASTE_FILES, null, event, 'Channel');
     });
 
     test('should remove onPaste listener when unmount', () => {
         const mockRemove = jest.fn();
         const text = 'My Text';
         const component = shallow(
-            <PasteableTextInput>{text}</PasteableTextInput>,
+            <PasteableTextInput screenId='Channel'>{text}</PasteableTextInput>,
         );
 
         component.instance().subscription.remove = mockRemove;
@@ -46,9 +49,9 @@ describe('PasteableTextInput', () => {
     });
 
     test('should emit PASTE_FILES event only for last subscription', () => {
-        const component1 = shallow(<PasteableTextInput/>);
+        const component1 = shallow(<PasteableTextInput screenId='Channel'/>);
         const instance1 = component1.instance();
-        const component2 = shallow(<PasteableTextInput/>);
+        const component2 = shallow(<PasteableTextInput screenId='Thread'/>);
         const instance2 = component2.instance();
 
         instance1.onPaste();
