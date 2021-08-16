@@ -86,13 +86,13 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         }
     }
 
-    const childrenWithoutAssociations: Query<any>[] = [
+    const associatedChildren: Query<any>[] = [
         team.members,
         team.groupsTeam,
         team.slashCommands,
         team.teamSearchHistories,
     ];
-    for await (const children of childrenWithoutAssociations) {
+    for await (const children of associatedChildren) {
         const models = await children.fetch() as Model[];
         models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }

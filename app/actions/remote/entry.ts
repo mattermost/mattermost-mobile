@@ -5,8 +5,6 @@ import {Database, Model} from '@nozbe/watermelondb';
 
 import {scheduleExpiredNotification} from '@actions/local/push_notification';
 import ServerDataOperator from '@app/database/operator/server_data_operator';
-import type {Client} from '@client/rest';
-import type ClientError from '@client/rest/error';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -17,8 +15,6 @@ import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/
 import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, deleteMyTeams, prepareMyTeams, prepareDeleteTeam, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {prepareUsers, queryCurrentUser} from '@queries/servers/user';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type TeamModel from '@typings/database/models/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
@@ -29,6 +25,11 @@ import {fetchRolesIfNeeded} from './role';
 import {ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
 import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from './team';
 import {fetchMe, MyUserRequest} from './user';
+
+import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type TeamModel from '@typings/database/models/servers/team';
 
 type AfterLoginArgs = {
     serverUrl: string;
@@ -97,12 +98,12 @@ const fetchAppEntryData = async (database: Database, serverUrl: string, initialT
         // User is no longer a member of the current team
         const removeTeamIds = [initialTeamId];
 
-        const availableTeamIds = await getAvailableTeamIds(database, teamData.teams, prefData.preferences, meData.user?.locale, initialTeamId);
-        const switchedTeamData = await switchTeams(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, lastDisconnected, fetchOnly);
+        const availableTeamIds = await getAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
+        const alternateTeamData = await getAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, lastDisconnected, fetchOnly);
 
         data = {
             ...data,
-            ...switchedTeamData,
+            ...alternateTeamData,
         };
     }
 
@@ -126,7 +127,7 @@ const fetchAppEntryData = async (database: Database, serverUrl: string, initialT
     return data;
 };
 
-const getAvailableTeamIds = async (database: Database, teams: Team[] | undefined, preferences: PreferenceType[] | undefined, locale: string | undefined, excludeTeamId: string): Promise<string[]> => {
+const getAvailableTeamIds = async (database: Database, excludeTeamId: string, teams?: Team[], preferences?: PreferenceType[], locale?: string): Promise<string[]> => {
     let availableTeamIds: string[] = [];
 
     if (teams) {
@@ -154,7 +155,7 @@ const getAvailableTeamIds = async (database: Database, teams: Team[] | undefined
     return availableTeamIds.filter((id) => id !== excludeTeamId);
 };
 
-const switchTeams = async (serverUrl: string, availableTeamIds: string[], removeTeamIds: string[], includeDeleted = true, since = 0, fetchOnly = false) => {
+const getAlternateTeamData = async (serverUrl: string, availableTeamIds: string[], removeTeamIds: string[], includeDeleted = true, since = 0, fetchOnly = false) => {
     let initialTeamId = '';
     let chData;
 
