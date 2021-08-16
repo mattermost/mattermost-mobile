@@ -842,7 +842,7 @@ const hasChannelsChanged = (channels: {type: string;name: string;items: string[]
     return false;
 };
 
-export const getOrderedChannelIds = (state: GlobalState, lastUnreadChannel: Channel|null, grouping: 'by_type' | 'none', sorting: SortingType, unreadsAtTop: boolean, favoritesAtTop: boolean, collapsedThreadsEnabled: boolean) => {
+export const getOrderedChannelIds = (state: GlobalState, lastUnreadChannel: Channel|null, grouping: 'by_type' | 'none', sorting: SortingType, unreadsAtTop: boolean, favoritesAtTop: boolean) => {
     const channels: {type: string;name: string;items: string[]}[] = [];
 
     if (grouping === 'by_type') {
@@ -892,14 +892,6 @@ export const getOrderedChannelIds = (state: GlobalState, lastUnreadChannel: Chan
             name: 'UNREADS',
             items: getSortedUnreadChannelIds(state, lastUnreadChannel, unreadsAtTop, favoritesAtTop, sorting),
         });
-    }
-
-    if (collapsedThreadsEnabled) {
-        channels.unshift(({
-            type: 'threads',
-            name: 'THREADS',
-            items: [''],
-        }));
     }
 
     if (hasChannelsChanged(channels)) {

@@ -15,6 +15,7 @@ export class PasteableTextInput extends React.PureComponent {
     static propTypes = {
         ...TextInput.PropTypes,
         forwardRef: PropTypes.any,
+        screenId: PropTypes.string.isRequired,
     }
 
     componentDidMount() {
@@ -49,7 +50,7 @@ export class PasteableTextInput extends React.PureComponent {
             data = event;
         }
 
-        EventEmitter.emit(PASTE_FILES, error, data);
+        EventEmitter.emit(PASTE_FILES, error, data, this.props.screenId);
     }
 
     render() {

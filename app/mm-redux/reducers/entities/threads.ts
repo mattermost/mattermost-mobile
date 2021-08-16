@@ -106,7 +106,8 @@ export const threadsReducer = (state: ThreadsState['threads'] = {}, action: Gene
 export const threadsInTeamReducer = (state: ThreadsState['threadsInTeam'] = {}, action: GenericAction) => {
     switch (action.type) {
     case ThreadTypes.RECEIVED_THREADS: {
-        const nextSet = new Set(state[action.data.team_id]);
+        const threads = action.data.removeOldThreads ? [] : state[action.data.team_id];
+        const nextSet = new Set(threads);
 
         action.data.threads.forEach((thread: UserThread) => {
             nextSet.add(thread.id);

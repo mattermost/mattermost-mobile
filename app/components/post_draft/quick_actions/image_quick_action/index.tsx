@@ -42,7 +42,7 @@ const ImageQuickAction = ({disabled, fileCount = 0, intl, maxFileCount = MAX_FIL
         if (hasPermission) {
             launchImageLibrary(options, async (response) => {
                 StatusBar.setHidden(false);
-                if (response.errorCode || response.didCancel) {
+                if (response.errorCode || response.didCancel || !response.assets) {
                     return;
                 }
 

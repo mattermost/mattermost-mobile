@@ -184,7 +184,6 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
 
             return (
                 <AutocompleteSelector
-                    id={name}
                     label={displayName}
                     dataSource={dataSource}
                     options={options}

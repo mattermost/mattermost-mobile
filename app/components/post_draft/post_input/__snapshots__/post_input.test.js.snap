@@ -13,6 +13,7 @@ exports[`PostInput should match, full snapshot 1`] = `
   onSelectionChange={[Function]}
   placeholder="Write to Test Channel"
   placeholderTextColor="rgba(61,60,64,0.5)"
+  screenId="Channel"
   style={
     Object {
       "color": "#3d3c40",
