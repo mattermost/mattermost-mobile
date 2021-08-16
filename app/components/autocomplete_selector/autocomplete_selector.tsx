@@ -188,7 +188,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     };
 
     goToSelectorScreen = preventDoubleTap(async () => {
-        const closeButton = await CompassIcon.getImageSource(Platform.select({ios: 'chevron-left', default: 'arrow-left'}), 24, this.props.theme.sidebarHeaderTextColor);
+        const closeButton = await CompassIcon.getImageSource(Platform.select({ios: 'arrow-back-ios', default: 'arrow-left'}), 24, this.props.theme.sidebarHeaderTextColor);
 
         const {formatMessage} = this.context.intl;
         const {actions, dataSource, options, placeholder, getDynamicOptions, theme} = this.props;
