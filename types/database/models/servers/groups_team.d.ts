@@ -5,10 +5,10 @@ import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
- * The GroupsInTeam links the Team model with the Group model
+ * The GroupsTeam links the Team model with the Group model
  */
-export default class GroupsInTeamModel extends Model {
-    /** table (name) : GroupsInTeam */
+export default class GroupsTeamModel extends Model {
+    /** table (name) : GroupsTeam */
     static table: string;
 
     /** associations : Describes every relationship to this table. */

@@ -6,7 +6,7 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
-import {t} from '@utils/i18n';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ChannelGuestLabelProps = {

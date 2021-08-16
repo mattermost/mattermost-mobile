@@ -4,8 +4,8 @@
 import {
     transformGroupMembershipRecord,
     transformGroupRecord,
-    transformGroupsInChannelRecord,
-    transformGroupsInTeamRecord,
+    transformGroupsChannelRecord,
+    transformGroupsTeamRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
@@ -43,13 +43,13 @@ describe('*** GROUP Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.modelClass.name).toBe('GroupModel');
     });
 
-    it('=> transformGroupsInTeamRecord: should return an array of type GroupsInTeam', async () => {
+    it('=> transformGroupsTeamRecord: should return an array of type GroupsTeam', async () => {
         expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const preparedRecords = await transformGroupsInTeamRecord({
+        const preparedRecords = await transformGroupsTeamRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -68,16 +68,16 @@ describe('*** GROUP Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInTeamModel');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsTeamModel');
     });
 
-    it('=> transformGroupsInChannelRecord: should return an array of type GroupsInChannel', async () => {
+    it('=> transformGroupsChannelRecord: should return an array of type GroupsChannel', async () => {
         expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'group_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const preparedRecords = await transformGroupsInChannelRecord({
+        const preparedRecords = await transformGroupsChannelRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -99,7 +99,7 @@ describe('*** GROUP Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsInChannelModel');
+        expect(preparedRecords!.collection.modelClass.name).toBe('GroupsChannelModel');
     });
 
     it('=> transformGroupMembershipRecord: should return an array of type GroupMembership', async () => {

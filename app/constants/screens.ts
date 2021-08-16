@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export const ABOUT = 'About';
 export const CHANNEL = 'Channel';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const LOGIN = 'Login';
@@ -13,6 +14,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 
 export default {
+    ABOUT,
     CHANNEL,
     FORGOT_PASSWORD,
     LOGIN,

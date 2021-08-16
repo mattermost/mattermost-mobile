@@ -21,6 +21,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
+import {fetchGroupsForTeam} from './group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {MyPreferencesRequest, fetchMyPreferences} from './preference';
 import {fetchRolesIfNeeded} from './role';
@@ -471,9 +472,9 @@ const deferredLoginActions = async (
     }
 
     // defer groups for team
-    // if (initialTeam) {
-    //     await fetchGroupsForTeam(serverUrl, initialTeam.id);
-    // }
+    if (initialTeam) {
+        await fetchGroupsForTeam(serverUrl, initialTeam.id);
+    }
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {

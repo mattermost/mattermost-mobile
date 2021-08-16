@@ -6,7 +6,7 @@ import {Alert, AlertButton} from 'react-native';
 
 import type {IntlShape} from 'react-intl';
 
-import {t} from '@utils/i18n';
+import {t} from '@i18n';
 
 export function errorBadChannel(intl: IntlShape) {
     const message = {

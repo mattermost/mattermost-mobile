@@ -10,22 +10,22 @@ import {MM_TABLES} from '@constants/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type TeamModel from '@typings/database/models/servers/team';
 
-const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
+const {GROUP, GROUPS_TEAM, TEAM} = MM_TABLES.SERVER;
 
 /**
- * The GroupsInTeam links the Team model with the Group model
+ * The GroupsTeam links the Team model with the Group model
  */
-export default class GroupsInTeamModel extends Model {
-    /** table (name) : GroupsInTeam */
-    static table = GROUPS_IN_TEAM;
+export default class GroupsTeamModel extends Model {
+    /** table (name) : GroupsTeam */
+    static table = GROUPS_TEAM;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
 
-        /** GroupsInTeam can belong to only one Group */
+        /** GroupsTeam can belong to only one Group */
         [GROUP]: {type: 'belongs_to', key: 'group_id'},
 
-        /** GroupsInTeam can belong to only one Team */
+        /** GroupsTeam can belong to only one Team */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 

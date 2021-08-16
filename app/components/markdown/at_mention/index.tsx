@@ -22,17 +22,21 @@ import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
+    currentUserId: SystemModel;
     database: Database;
-    groupsByName?: Record<string, Group>;
+    groups: GroupModel[];
     isSearchResult?: boolean;
     mentionKeys: Array<{key: string }>;
     mentionName: string;
     mentionStyle: TextStyle;
+    myGroups: GroupMembershipModel[];
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle: StyleProp<TextStyle>;
@@ -46,7 +50,7 @@ type AtMentionArgs = {
     mentionName: string;
 }
 
-const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
     bottomSheet: {
@@ -55,12 +59,14 @@ const style = StyleSheet.create({
 });
 
 const AtMention = ({
+    currentUserId,
     database,
-    groupsByName,
+    groups,
     isSearchResult,
     mentionName,
     mentionKeys,
     mentionStyle,
+    myGroups,
     onPostPress,
     teammateNameDisplay,
     textStyle,
@@ -90,15 +96,19 @@ const AtMention = ({
         return new UserModel(database.get(USER), {username: ''});
     }, [users, mentionName]);
     const userMentionKeys = useMemo(() => {
+        if (user.id !== currentUserId.value) {
+            return [];
+        }
+
         if (mentionKeys) {
             return mentionKeys;
         }
-        return getUserMentionKeys(user);
-    }, [user, mentionKeys]);
+        return getUserMentionKeys(user, groups, myGroups);
+    }, [currentUserId.value, groups, mentionKeys, myGroups, user]);
 
     const getGroupFromMentionName = () => {
         const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
-        return groupsByName?.[mentionNameTrimmed];
+        return groups.find((g) => g.name === mentionNameTrimmed);
     };
 
     const goToUserProfile = useCallback(() => {
@@ -190,9 +200,8 @@ const AtMention = ({
         isMention = true;
         canPress = true;
     } else {
-        // TODO: Add group functionality
         const group = getGroupFromMentionName();
-        if (group?.allow_reference) {
+        if (group?.allowReference) {
             highlighted = userMentionKeys.some((item) => item.key === `@${group.name}`);
             isMention = true;
             mention = group.name;
@@ -249,9 +258,10 @@ const AtMention = ({
 };
 
 const withPreferences = withObservables([], ({database}: WithDatabaseArgs) => ({
-    preferences: database.get(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe(),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+    currentUserId: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
     license: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
+    preferences: database.get(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe(),
 }));
 
 const withAtMention = withObservables(['mentionName', 'preferences', 'config', 'license'], ({database, mentionName, preferences, config, license}: WithDatabaseArgs & AtMentionArgs) => {
@@ -263,6 +273,8 @@ const withAtMention = withObservables(['mentionName', 'preferences', 'config', '
     const teammateNameDisplay = of(getTeammateNameDisplaySetting(preferences, config.value, license.value));
 
     return {
+        groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
+        myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
         teammateNameDisplay,
         users: database.get(USER).query(
             Q.where('username', Q.like(
