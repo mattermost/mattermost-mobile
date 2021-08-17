@@ -4,18 +4,18 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getDimensions} from '@selectors/device';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {GlobalState} from '@mm-redux/types/store';
 import {appsEnabled} from '@utils/apps';
 
-import Autocomplete from './autocomplete';
+import AppSlashSuggestion from './app_slash_suggestion';
 
-function mapStateToProps(state) {
-    const {deviceHeight} = getDimensions(state);
+function mapStateToProps(state: GlobalState) {
     return {
-        deviceHeight,
+        currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
         appsEnabled: appsEnabled(state),
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(Autocomplete);
+export default connect(mapStateToProps)(AppSlashSuggestion);
