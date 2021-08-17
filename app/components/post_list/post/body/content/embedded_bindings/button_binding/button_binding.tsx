@@ -5,7 +5,9 @@ import React, {useCallback, useRef} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import Button from 'react-native-button';
 
+import {showAppForm} from '@actions/navigation';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
@@ -23,6 +25,7 @@ type Props = {
     intl: typeof intlShape;
     post: Post;
     postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
+    handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     teamID: string;
     theme: Theme;
 }
@@ -50,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseForPost, teamID, theme}: Props) => {
+const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseForPost, teamID, theme, handleGotoLocation}: Props) => {
     const pressed = useRef(false);
     const style = getStyleSheet(theme);
 
@@ -97,7 +100,10 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
+            handleGotoLocation(callResp.navigate_to_url!, intl);
+            return;
         case AppCallResponseTypes.FORM:
+            showAppForm(callResp.form, call, theme);
             return;
         default: {
             const errorMessage = intl.formatMessage({
@@ -109,7 +115,7 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             postEphemeralCallResponseForPost(callResp, errorMessage, post);
         }
         }
-    }), []);
+    }), [theme]);
 
     return (
         <Button

@@ -3,22 +3,15 @@
 
 import {sendEphemeralPost} from '@actions/views/post';
 import {Client4} from '@client/rest';
-import CompassIcon from '@components/compass_icon';
-import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
-import {AppCallResponse, AppForm, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
+import {AppCallResponse, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
 import {CommandArgs} from '@mm-redux/types/integrations';
 import {Post} from '@mm-redux/types/posts';
-import {Theme} from '@mm-redux/types/preferences';
-import EphemeralStore from '@store/ephemeral_store';
 import {makeCallErrorResponse} from '@utils/apps';
 
-import {showModal} from './navigation';
-
 export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, intl: any): ActionFunc {
-    return async (dispatch, getState) => {
+    return async () => {
         try {
             const res = await Client4.executeAppCall(call, type) as AppCallResponse<Res>;
             const responseType = res.type || AppCallResponseTypes.OK;
@@ -35,11 +28,6 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                         defaultMessage: 'Response type is `form`, but no form was included in response.',
                     });
                     return {error: makeCallErrorResponse(errMsg)};
-                }
-
-                const screen = EphemeralStore.getNavigationTopComponentId();
-                if (type === AppCallTypes.SUBMIT && screen !== 'AppForm') {
-                    showAppForm(res.form, call, getTheme(getState()));
                 }
 
                 return {data: res};
@@ -61,8 +49,6 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                     return {error: makeCallErrorResponse(errMsg)};
                 }
 
-                dispatch(handleGotoLocation(res.navigate_to_url, intl));
-
                 return {data: res};
             default: {
                 const errMsg = intl.formatMessage({
@@ -83,34 +69,6 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
         }
     };
 }
-
-const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
-    const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-
-    let submitButtons;
-    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
-
-    if (!customSubmitButtons?.length) {
-        submitButtons = [{
-            id: 'submit-form',
-            showAsAction: 'always',
-            text: 'Submit',
-        }];
-    }
-
-    const options = {
-        topBar: {
-            leftButtons: [{
-                id: 'close-dialog',
-                icon: closeButton,
-            }],
-            rightButtons: submitButtons,
-        },
-    };
-
-    const passProps = {form, call};
-    showModal('AppForm', form.title, passProps, options);
-};
 
 export function postEphemeralCallResponseForPost(response: AppCallResponse, message: string, post: Post): ActionFunc {
     return (dispatch: DispatchFunc) => {

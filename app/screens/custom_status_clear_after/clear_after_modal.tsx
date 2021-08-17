@@ -155,6 +155,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                             theme={theme}
                             separator={false}
                             isSelected={duration === DATE_AND_TIME && expiresAt === ''}
+                            expiryTime={expiresAt}
                             showExpiryTime={showExpiryTime}
                             showDateTimePicker={duration === DATE_AND_TIME}
                         />

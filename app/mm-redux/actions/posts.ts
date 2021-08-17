@@ -182,6 +182,7 @@ export function createPost(post: Post, files: any[] = []) {
 
         let newPost = {
             ...post,
+            id: '',
             pending_post_id: pendingPostId,
             create_at: timestamp,
             update_at: timestamp,

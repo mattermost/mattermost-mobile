@@ -119,8 +119,9 @@ public class CustomPushNotification extends PushNotification {
         switch (type) {
             case PUSH_TYPE_MESSAGE:
             case PUSH_TYPE_SESSION:
-                boolean createSummary = type.equals(PUSH_TYPE_MESSAGE);
                 if (!mAppLifecycleFacade.isAppVisible()) {
+                    boolean createSummary = type.equals(PUSH_TYPE_MESSAGE);
+
                     if (type.equals(PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
                             Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
@@ -145,8 +146,6 @@ public class CustomPushNotification extends PushNotification {
                     }
 
                     buildNotification(notificationId, createSummary);
-                } else {
-                    notifyReceivedToJS();
                 }
                 break;
             case PUSH_TYPE_CLEAR:

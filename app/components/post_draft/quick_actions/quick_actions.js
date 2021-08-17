@@ -16,6 +16,7 @@ import InputAction from './input_quick_action';
 export default class QuickActions extends PureComponent {
     static propTypes = {
         testID: PropTypes.string,
+        screenId: PropTypes.string.isRequired,
         canUploadFiles: PropTypes.bool,
         fileCount: PropTypes.number,
         inputEventType: PropTypes.string.isRequired,
@@ -59,8 +60,8 @@ export default class QuickActions extends PureComponent {
         this.props.onTextChange(newValue);
     }
 
-    handleUploadFiles(files) {
-        EventEmitter.emit(UPLOAD_FILES, files);
+    handleUploadFiles = (files) => {
+        EventEmitter.emit(UPLOAD_FILES, files, this.props.screenId);
     }
 
     render() {

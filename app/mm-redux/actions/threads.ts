@@ -29,6 +29,8 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
         }
 
         if (userThreadList) {
+            const currentUserId = getCurrentUserId(getState());
+
             const data = {
                 threads: [] as UserThread[],
                 participants: [] as UserThread['participants'],
@@ -43,10 +45,15 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                     is_following: true,
                 });
 
-                // participants, participantIds
+                // data.participantIds - Get Missing Profiles
+                // data.participants - Received Profile List
                 thread.participants?.forEach((participant) => {
                     data.participantIds.push(participant.id);
-                    data.participants.push(participant);
+
+                    // Exclude current user
+                    if (participant.id !== currentUserId) {
+                        data.participants.push(participant);
+                    }
                 });
 
                 // posts
@@ -63,6 +70,11 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                         ...userThreadList,
                         threads: data.threads,
                         team_id: teamId,
+                        removeOldThreads:
+                            !before && !after && // When loading on mount
+                            perPage >= ViewTypes.CRT_CHUNK_SIZE && // Exclude on load where we get 5 threads
+                            !since && // Exclude reconnect
+                            !unread, // Exclude when user is loading unreads or on switching to "All your threads" it will take time to fetch from server
                     },
                 },
             ];

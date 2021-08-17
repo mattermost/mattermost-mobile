@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Posts} from '@mm-redux/constants';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 
 export function getLastChannelForTeam(payload) {
@@ -104,7 +105,7 @@ export function cleanUpState(payload, keepCurrent = false) {
     // Keep the last 60 threads in each team
     nextEntities.threads = {
         ...nextEntities.threads,
-        ...cleanUpThreadsInTeam(payload.entities.threads?.threads, payload.entities.threads?.threadsInTeam, keepCurrent ? lastTeamId : ''),
+        ...cleanUpThreadsInTeam(payload.entities.posts?.posts, payload.entities.threads?.threads, payload.entities.threads?.threadsInTeam, keepCurrent ? lastTeamId : ''),
     };
     postIdsToKeep.push(...getAllFromThreadsInTeam(nextEntities.threads?.threadsInTeam));
 
@@ -274,7 +275,7 @@ export function cleanUpPostsInChannel(postsInChannel, lastChannelForTeam, curren
     return nextPostsInChannel;
 }
 
-export function cleanUpThreadsInTeam(threads, threadsInTeam, currentTeamId, threadsCountPerTeam = 60) {
+export function cleanUpThreadsInTeam(posts, threads, threadsInTeam, currentTeamId, threadsCountPerTeam = 60) {
     const newThreads = {};
     const newThreadsInTeam = {};
     if (threads && threadsInTeam) {
@@ -292,7 +293,8 @@ export function cleanUpThreadsInTeam(threads, threadsInTeam, currentTeamId, thre
             newThreadsInTeam[teamId] = [];
             const retainedThreads = currentTeamId === teamId ? mappedThreads : mappedThreads.slice(0, threadsCountPerTeam);
             retainedThreads.forEach((thread) => {
-                if (thread) {
+                const post = posts?.[thread.id];
+                if (post && post.state !== Posts.POST_DELETED) {
                     newThreadsInTeam[teamId].push(thread.id);
                     newThreads[thread.id] = thread;
                 }
