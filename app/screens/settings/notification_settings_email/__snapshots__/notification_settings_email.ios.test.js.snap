@@ -138,10 +138,10 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
 
 exports[`NotificationSettingsEmailIos should match snapshot, renderEmailThreadsSection 1`] = `
 <section
-  footerDefaultMessage="When enabled, any reply to a thread you're following will send an email notification"
+  footerDefaultMessage="When enabled, any reply to a thread you're following will send an email notification."
   footerId="user.settings.notifications.email_threads.info"
   headerDefaultMessage="THREAD REPLY NOTIFICATIONS"
-  headerId="mobile.notification_settings.push_threads.title"
+  headerId="user.settings.notifications.email_threads.title"
   theme={
     Object {
       "awayIndicator": "#ffbc42",
@@ -179,7 +179,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailThreadsS
     label={
       <InjectIntl(FormattedText)
         defaultMessage="Notify me about all replies to threads I'm following"
-        id="mobile.notification_settings.push_threads.description"
+        id="user.settings.notifications.email_threads.description"
       />
     }
     selected={true}

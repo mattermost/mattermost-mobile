@@ -12,10 +12,11 @@ export function getNotificationProps(user) {
         desktop: 'all',
         desktop_sound: 'true',
         email: 'true',
+        email_threads: 'all',
         mention_keys: user ? `${user.username},@${user.username}` : '',
         push: 'mention',
         push_status: 'online',
-        push_threads: 'any',
+        push_threads: 'all',
     };
 
     if (!user || !user.first_name) {
