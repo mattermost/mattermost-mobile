@@ -662,3 +662,12 @@ export function isPostSelected(state: GlobalState, id: $ID<Post>) {
 
     return state.entities.posts.selectedPostId === id;
 }
+
+export function getSelectedPost(state: GlobalState): Post | null {
+    const selectedPostId = state.entities.posts.selectedPostId;
+    if (selectedPostId) {
+        return getPost(state, selectedPostId);
+    }
+
+    return null;
+}

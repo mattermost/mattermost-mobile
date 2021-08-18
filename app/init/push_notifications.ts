@@ -176,22 +176,21 @@ class PushNotifications {
                         EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
                         this.setBadgeCountByMentions();
                     } else if (userInteraction && !payload.userInfo?.local) {
-                        await dispatch(loadFromPushNotification(notification, isInitialNotification));
+                        dispatch(loadFromPushNotification(notification, isInitialNotification));
+                        const componentId = EphemeralStore.getNavigationTopComponentId();
+                        if (componentId) {
+                            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+                            EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
 
-                        let componentId = EphemeralStore.getNavigationTopComponentId();
-                        while (!componentId) {
-                            componentId = EphemeralStore.getNavigationTopComponentId();
-                        }
+                            await dismissAllModals();
+                            await popToRoot();
 
-                        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-                        EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
-
-                        await dismissAllModals();
-                        await popToRoot();
-
-                        const {root_id: rootId, channel_id: channelId} = notification.payload || {};
-                        if (componentId !== 'SelectServer' && isCollapsedThreadsEnabled(getState()) && rootId) {
-                            EventEmitter.emit('goToThread', {id: rootId, channel_id: channelId});
+                            if (!isInitialNotification) {
+                                const {root_id: rootId, channel_id: channelId} = notification.payload || {};
+                                if (rootId && isCollapsedThreadsEnabled(getState())) {
+                                    EventEmitter.emit('goToThread', {id: rootId, channel_id: channelId});
+                                }
+                            }
                         }
                     }
                     break;

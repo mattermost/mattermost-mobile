@@ -8,7 +8,7 @@ import {NavigationTypes, ViewTypes} from '@constants';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {getChannelAndMyMember} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
-import {receivedNewPost} from '@mm-redux/actions/posts';
+import {receivedNewPost, selectPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers, getMyTeamUnreads} from '@mm-redux/actions/teams';
 import {General} from '@mm-redux/constants';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
@@ -98,6 +98,10 @@ export function loadFromPushNotification(notification, isInitialNotification) {
 
         dispatch(handleSelectTeamAndChannel(teamId, channelId));
 
+        const {root_id: rootId} = notification.payload || {};
+        if (isCollapsedThreadsEnabled(state) && rootId) {
+            dispatch(selectPost(rootId));
+        }
         return {data: true};
     };
 }

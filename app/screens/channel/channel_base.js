@@ -37,6 +37,10 @@ export default class ChannelBase extends PureComponent {
         showTermsOfService: PropTypes.bool,
         skipMetrics: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
+        selectedPost: PropTypes.shape({
+            id: PropTypes.string,
+            channel_id: PropTypes.string,
+        }),
     };
 
     static contextTypes = {
@@ -195,6 +199,9 @@ export default class ChannelBase extends PureComponent {
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
         if (EphemeralStore.getStartFromNotification()) {
+            if (this.props.selectedPost) {
+                EventEmitter.emit('goToThread', this.props.selectedPost);
+            }
             // eslint-disable-next-line no-console
             console.log('Switch to channel from a push notification');
             EphemeralStore.setStartFromNotification(false);
