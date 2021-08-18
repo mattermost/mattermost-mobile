@@ -162,7 +162,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot, renderEmailThre
     label={
       <InjectIntl(FormattedText)
         defaultMessage="Thread reply notifications"
-        id="user.settings.notifications.email_threads.title"
+        id="user.settings.notifications.email_threads.title_android"
       />
     }
     selected={true}
