@@ -103,8 +103,9 @@ const Notification = ({componentId, notification}: NotificationProps) => {
                 await dismissAllModals();
                 await popToRoot();
 
-                if (notification.payload?.root_id && collapsedThreadsEnabled) {
-                    EventEmitter.emit('goToThread', {id: notification.payload?.root_id});
+                const {root_id: rootId, channel_id: channelId} = notification.payload || {};
+                if (rootId && collapsedThreadsEnabled) {
+                    EventEmitter.emit('goToThread', {id: rootId, channel_id: channelId});
                 }
             }
         });

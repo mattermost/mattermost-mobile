@@ -628,7 +628,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 <SectionItem
                     label={(
                         <FormattedText
-                            id='mobile.notification_settings.push_threads.title'
+                            id='mobile.notification_settings.push_threads.title_android'
                             defaultMessage='Thread reply notifications'
                         />
                     )}

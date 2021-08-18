@@ -156,7 +156,7 @@ class PushNotifications {
         }
     }
 
-    handleNotification = async (notification: NotificationWithData, isInitialNotification = false) => {
+    handleNotification = (notification: NotificationWithData, isInitialNotification = false) => {
         const {payload, foreground, userInteraction} = notification;
 
         if (Store.redux && payload) {
@@ -189,8 +189,9 @@ class PushNotifications {
                         await dismissAllModals();
                         await popToRoot();
 
-                        if (componentId !== 'SelectServer' && isCollapsedThreadsEnabled(getState()) && notification.payload?.root_id) {
-                            EventEmitter.emit('goToThread', {id: notification.payload?.root_id});
+                        const {root_id: rootId, channel_id: channelId} = notification.payload || {};
+                        if (componentId !== 'SelectServer' && isCollapsedThreadsEnabled(getState()) && rootId) {
+                            EventEmitter.emit('goToThread', {id: rootId, channel_id: channelId});
                         }
                     }
                     break;

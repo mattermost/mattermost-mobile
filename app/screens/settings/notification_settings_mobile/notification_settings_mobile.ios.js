@@ -104,7 +104,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
             <Section
                 headerId={t('mobile.notification_settings.push_threads.title')}
                 headerDefaultMessage='THREAD REPLY NOTIFICATIONS'
-                footerId={t('user.settings.notifications.push_threads.info')}
+                footerId={t('mobile.notification_settings.push_threads.info')}
                 footerDefaultMessage={'When enabled, any reply to a thread you\'re following will send a mobile push notification'}
                 theme={theme}
             >
