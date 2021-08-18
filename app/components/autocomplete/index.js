@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getDimensions} from '@selectors/device';
+import {appsEnabled} from '@utils/apps';
 
 import Autocomplete from './autocomplete';
 
@@ -13,6 +14,7 @@ function mapStateToProps(state) {
     return {
         deviceHeight,
         theme: getTheme(state),
+        appsEnabled: appsEnabled(state),
     };
 }
 

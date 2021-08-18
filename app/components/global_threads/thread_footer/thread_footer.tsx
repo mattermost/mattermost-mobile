@@ -132,18 +132,21 @@ function ThreadFooter({actions, currentUserId, intl, location, testID, theme, th
 
     // threadstarter should be the first one in the avatars list
     const participants = React.useMemo(() => {
-        let isThreadStarterFound = false;
-        const participantIds = thread.participants.flatMap((participant) => {
-            if (participant.id === threadStarter?.id) {
-                isThreadStarterFound = true;
-                return [];
+        if (thread.participants?.length) {
+            let isThreadStarterFound = false;
+            const participantIds = thread.participants.flatMap((participant) => {
+                if (participant.id === threadStarter?.id) {
+                    isThreadStarterFound = true;
+                    return [];
+                }
+                return participant.id;
+            });
+            if (isThreadStarterFound) {
+                participantIds.unshift(threadStarter?.id);
             }
-            return participant.id;
-        });
-        if (isThreadStarterFound) {
-            participantIds.unshift(threadStarter?.id);
+            return participantIds;
         }
-        return participantIds;
+        return [];
     }, [thread.participants, threadStarter]);
 
     let avatars;

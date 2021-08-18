@@ -4,8 +4,10 @@
 import {connect} from 'react-redux';
 
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 import MenuBinding from './menu_binding';
@@ -23,6 +25,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     const channel = getChannel(state, post.channel_id);
 
     return {
+        theme: getTheme(state),
         post,
         teamID: channel?.team_id || getCurrentTeamId(state),
     };
@@ -31,6 +34,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
 const mapDispatchToProps = {
     doAppCall,
     postEphemeralCallResponseForPost,
+    handleGotoLocation,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuBinding);

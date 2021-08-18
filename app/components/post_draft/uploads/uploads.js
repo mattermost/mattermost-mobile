@@ -19,7 +19,6 @@ import FormattedText from '@components/formatted_text';
 import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
-import EphemeralStore from '@store/ephemeral_store';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -159,8 +158,8 @@ export default class Uploads extends PureComponent {
         }
     };
 
-    handlePasteFiles = (error, files) => {
-        if (this.props.screenId !== EphemeralStore.getNavigationTopComponentId()) {
+    handlePasteFiles = (error, files, screenId) => {
+        if (screenId !== this.props.screenId) {
             return;
         }
 
@@ -188,7 +187,7 @@ export default class Uploads extends PureComponent {
             return;
         }
 
-        this.handleUploadFiles(files);
+        this.handleUploadFiles(files, screenId);
     };
 
     handleUploadDisabled = () => {
@@ -206,8 +205,8 @@ export default class Uploads extends PureComponent {
         }
     };
 
-    handleUploadFiles = async (files) => {
-        if (this.props.screenId !== EphemeralStore.getNavigationTopComponentId()) {
+    handleUploadFiles = async (files, screenId) => {
+        if (screenId !== this.props.screenId) {
             return;
         }
 

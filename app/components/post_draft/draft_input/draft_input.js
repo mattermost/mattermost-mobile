@@ -8,6 +8,7 @@ import {Platform, ScrollView, View} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {showAppForm} from '@actions/navigation';
 import Autocomplete from '@components/autocomplete';
 import PostInput from '@components/post_draft/post_input';
 import QuickActions from '@components/post_draft/quick_actions';
@@ -294,7 +295,7 @@ export default class DraftInput extends PureComponent {
 
     sendCommand = async (msg) => {
         const {intl} = this.context;
-        const {channelId, executeCommand, rootId, userIsOutOfOffice} = this.props;
+        const {channelId, executeCommand, rootId, userIsOutOfOffice, theme} = this.props;
 
         const status = DraftUtils.getStatusFromSlashCommand(msg);
         if (userIsOutOfOffice && DraftUtils.isStatusSlashCommand(status)) {
@@ -310,6 +311,10 @@ export default class DraftInput extends PureComponent {
             this.setInputValue(msg);
             DraftUtils.alertSlashCommandFailed(intl.formatMessage, error.message);
             return;
+        }
+
+        if (data.form) {
+            showAppForm(data.form, data.call, theme);
         }
 
         this.setInputValue('');
@@ -484,6 +489,7 @@ export default class DraftInput extends PureComponent {
                         <View style={style.actionsContainer}>
                             <QuickActions
                                 testID={quickActionsTestID}
+                                screenId={screenId}
                                 ref={this.quickActions}
                                 fileCount={files.length}
                                 inputEventType={valueEvent}

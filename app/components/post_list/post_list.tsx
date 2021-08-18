@@ -311,10 +311,20 @@ const PostList = ({
     }, [deepLinkURL]);
 
     useLayoutEffect(() => {
+        let scrollFrame: number;
         if (postIds.length && channelId !== prevChannelId.current) {
             telemetry.end([PERF_MARKERS.CHANNEL_RENDER]);
             prevChannelId.current = channelId;
+            scrollFrame = requestAnimationFrame(() => {
+                flatListRef.current?.scrollToOffset({animated: true, offset: 0});
+            });
         }
+
+        return () => {
+            if (scrollFrame) {
+                cancelAnimationFrame(scrollFrame);
+            }
+        };
     }, [channelId, postIds]);
 
     useLayoutEffect(() => {
