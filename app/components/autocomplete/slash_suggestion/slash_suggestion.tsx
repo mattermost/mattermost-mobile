@@ -64,7 +64,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
 
     constructor(props: Props, context: any) {
         super(props);
-        this.appCommandParser = new AppCommandParser(null, context.intl, props.channelId, props.rootId);
+        this.appCommandParser = new AppCommandParser(null, context.intl, props.channelId, props.currentTeamId, props.rootId);
     }
 
     setActive(active: boolean) {
@@ -107,17 +107,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 this.setLastCommandRequest(Date.now());
             }
 
-            this.showBaseCommands(nextValue, nextCommands, prevProps.channelId, prevProps.rootId);
-        } else if (this.props.appsEnabled && this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
-            // If this is an app command, then hand it off to the app command parser.
-            this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
-        } else if (nextSuggestions === prevProps.suggestions) {
-            const args = {
-                channel_id: prevProps.channelId,
-                team_id: prevProps.currentTeamId,
-                ...(prevProps.rootId && {root_id: prevProps.rootId, parent_id: prevProps.rootId}),
-            };
-            this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
+            this.showBaseCommands(nextValue, nextCommands, this.props.channelId, this.props.currentTeamId, this.props.rootId);
         } else {
             const matches: AutocompleteSuggestion[] = [];
             nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
@@ -129,11 +119,11 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         }
     }
 
-    showBaseCommands = (text: string, commands: Command[], channelID: string, rootID?: string) => {
+    showBaseCommands = (text: string, commands: Command[], channelID: string, teamID = '', rootID?: string) => {
         let matches: AutocompleteSuggestion[] = [];
 
         if (this.props.appsEnabled) {
-            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, rootID);
+            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, teamID, rootID);
             matches = matches.concat(appCommands);
         }
 
@@ -149,19 +139,8 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         this.updateSuggestions(matches);
     }
 
-    isAppCommand = (pretext: string, channelID: string, rootID?: string) => {
-        this.appCommandParser.setChannelContext(channelID, rootID);
-        return this.appCommandParser.isAppCommand(pretext);
-    }
-
-    fetchAndShowAppCommandSuggestions = async (pretext: string, channelID: string, rootID?: string) => {
-        this.appCommandParser.setChannelContext(channelID, rootID);
-        const suggestions = await this.appCommandParser.getSuggestions(pretext);
-        this.updateSuggestions(suggestions);
-    }
-
-    getAppBaseCommandSuggestions = (pretext: string, channelID: string, rootID?: string): AutocompleteSuggestion[] => {
-        this.appCommandParser.setChannelContext(channelID, rootID);
+    getAppBaseCommandSuggestions = (pretext: string, channelID: string, teamID = '', rootID?: string): AutocompleteSuggestion[] => {
+        this.appCommandParser.setChannelContext(channelID, teamID, rootID);
         const suggestions = this.appCommandParser.getSuggestionsBase(pretext);
         return suggestions;
     }

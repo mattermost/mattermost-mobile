@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {COMMAND_SUGGESTION_ERROR} from '@mm-redux/constants/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -105,7 +106,7 @@ const SlashSuggestionItem = (props: Props) => {
             source={slashIcon}
         />
     );
-    if (props.icon === 'error') {
+    if (props.icon === COMMAND_SUGGESTION_ERROR) {
         image = (
             <Image
                 style={style.iconColor}

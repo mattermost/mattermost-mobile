@@ -43,7 +43,6 @@ function mapStateToProps(state) {
         sidebarPrefs.sorting,
         true, // The mobile app should always display the Unreads section regardless of user settings (MM-13420)
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
-        collapsedThreadsEnabled,
     ));
 
     const canJoinPublicChannels = haveITeamPermission(state, {

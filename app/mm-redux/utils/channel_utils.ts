@@ -43,7 +43,10 @@ export function buildDisplayableChannelListWithUnreadSection(usersState: UsersSt
     const missingDirectChannels = createMissingDirectChannels(currentUserId, myChannels, myPreferences);
     const channels = buildChannels(usersState, myChannels, missingDirectChannels, teammateNameDisplay, locale);
     const unreadChannels = [...buildChannelsWithMentions(channels, myMembers, locale), ...buildUnreadChannels(channels, myMembers, locale)];
-    const notUnreadChannels = channels.filter((channel: Channel) => !isUnreadChannel(myMembers, channel, collapsedThreadsEnabled));
+
+    // collapsedThreadsEnabled is set to "false" as we are filtering not just based on root posts
+    const notUnreadChannels = channels.filter((channel: Channel) => !isUnreadChannel(myMembers, channel, false));
+
     const favoriteChannels = buildFavoriteChannels(notUnreadChannels, myPreferences, locale);
     const notFavoriteChannels = buildNotFavoriteChannels(notUnreadChannels, myPreferences);
     const directAndGroupChannels = buildDirectAndGroupChannels(notFavoriteChannels, myMembers, config, myPreferences, currentUserId, profiles, lastPosts, collapsedThreadsEnabled);
