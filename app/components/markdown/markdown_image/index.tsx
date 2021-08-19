@@ -206,6 +206,7 @@ const MarkdownImage = ({
             <TouchableWithFeedback
                 onPress={handleLinkPress}
                 onLongPress={handleLinkLongPress}
+                style={{width, height}}
             >
                 {image}
             </TouchableWithFeedback>

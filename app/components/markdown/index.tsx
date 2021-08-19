@@ -4,7 +4,7 @@
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {PureComponent, ReactElement} from 'react';
-import {GestureResponderEvent, Platform, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
@@ -26,14 +26,12 @@ import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
 import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
 
+import type {MarkdownBlockStyles, MarkdownTextStyles, UserMentionKey} from '@typings/global/markdown';
+
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
-    blockStyles: {
-        adjacentParagraph: ViewStyle;
-        horizontalRule: ViewStyle;
-        quoteBlockIcon: TextStyle;
-    };
+    blockStyles: MarkdownBlockStyles;
     channelMentions?: ChannelMentions;
     disableAtMentions?: boolean;
     disableChannelLink?: boolean;
@@ -47,9 +45,7 @@ type MarkdownProps = {
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
     postId?: string;
-    textStyles: {
-        [key: string]: TextStyle;
-    };
+    textStyles: MarkdownTextStyles;
     theme: Theme;
     value: string | number;
 }
@@ -249,25 +245,12 @@ class Markdown extends PureComponent<MarkdownProps> {
     };
 
     renderEmoji = ({context, emojiName, literal}: {context: string[]; emojiName: string; literal: string}) => {
-        let customEmojiStyle;
-
-        if (Platform.OS === 'android') {
-            const flat = StyleSheet.flatten(this.props.baseTextStyle);
-
-            if (flat) {
-                const size = Math.abs(((flat.lineHeight || 0) - (flat.fontSize || 0))) / 2;
-                if (size > 0) {
-                    customEmojiStyle = {marginRight: size, top: size};
-                }
-            }
-        }
         return (
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
                 testID='markdown_emoji'
                 textStyle={this.computeTextStyle(this.props.baseTextStyle, context)}
-                customEmojiStyle={customEmojiStyle}
             />
         );
     };
@@ -469,7 +452,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
             if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
-                ast.lastChild.appendChild(editIndicatorNode);
+                ast.appendChild(editIndicatorNode);
             } else {
                 const node = new Node('paragraph');
                 node.appendChild(editIndicatorNode);
