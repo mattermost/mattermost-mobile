@@ -108,6 +108,13 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             }
 
             this.showBaseCommands(nextValue, nextCommands, this.props.channelId, this.props.currentTeamId, this.props.rootId);
+        } else if (nextSuggestions === prevProps.suggestions) {
+            const args = {
+                channel_id: prevProps.channelId,
+                team_id: prevProps.currentTeamId,
+                ...(prevProps.rootId && {root_id: prevProps.rootId}),
+            };
+            this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
         } else {
             const matches: AutocompleteSuggestion[] = [];
             nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
