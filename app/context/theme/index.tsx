@@ -26,14 +26,14 @@ type WithThemeProps = {
 
 const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
-function getDefaultThemeByAppearance(): Theme {
+export function getDefaultThemeByAppearance(): Theme {
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.windows10;
     }
     return Preferences.THEMES.default;
 }
 
-const ThemeContext = createContext(getDefaultThemeByAppearance());
+export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
 
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
