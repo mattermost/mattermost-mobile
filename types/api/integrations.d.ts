@@ -85,3 +85,31 @@ type InteractiveDialogConfig = {
         state: string;
     };
 };
+
+type PostAction = {
+    id?: string;
+    type?: string;
+    name?: string;
+    disabled?: boolean;
+    style?: string;
+    data_source?: string;
+    options?: PostActionOption[];
+    default_option?: string;
+    integration?: PostActionIntegration;
+    cookie?: string;
+};
+
+type PostActionOption = {
+    text: string;
+    value: string;
+};
+
+type PostActionIntegration = {
+    url?: string;
+    context?: Record<string, any>;
+}
+
+type PostActionResponse = {
+    status: string;
+    trigger_id: string;
+};

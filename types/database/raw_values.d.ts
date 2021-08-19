@@ -67,7 +67,7 @@ type Metadata = {
 
 type ReactionsPerPost = {
     post_id: string;
-    reactions: Reactions[];
+    reactions: Reaction[];
 }
 
 type IdValue = {

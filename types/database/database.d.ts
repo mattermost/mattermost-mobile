@@ -79,11 +79,6 @@ export type HandleFilesArgs = {
   prepareRecordsOnly: boolean;
 };
 
-export type HandlePostMetadataArgs = {
-  metadatas: Metadata[];
-  prepareRecordsOnly: boolean;
-};
-
 export type HandlePostsArgs = {
   actionType: string;
   order: string[];
@@ -239,6 +234,7 @@ export type HandleTeamMembershipArgs = PrepareOnly & {
 
 export type HandlePreferencesArgs = PrepareOnly & {
   preferences: PreferenceType[];
+  sync?: boolean;
 };
 
 export type HandleUsersArgs = PrepareOnly & {
