@@ -22,7 +22,7 @@ export interface ClientPostsMix {
     markPostAsUnread: (userId: string, postId: string) => Promise<any>;
     pinPost: (postId: string) => Promise<any>;
     unpinPost: (postId: string) => Promise<any>;
-    addReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
+    addReaction: (userId: string, postId: string, emojiName: string) => Promise<Reaction>;
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
     searchPostsWithParams: (teamId: string, params: any) => Promise<any>;
