@@ -17,7 +17,7 @@ import {schema as appSchema} from '@app/database/schema/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
     GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-    PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     TermsOfServiceModel, UserModel,
 } from '@database/models/server';
@@ -52,7 +52,7 @@ class DatabaseManager {
         this.serverModels = [
             ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
             GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-            PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             TermsOfServiceModel, UserModel,
         ];

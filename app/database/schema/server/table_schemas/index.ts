@@ -16,7 +16,6 @@ export {default as MyChannelSettingsSchema} from './my_channel_settings';
 export {default as MyTeamSchema} from './my_team';
 export {default as PostsInChannelSchema} from './posts_in_channel';
 export {default as PostInThreadSchema} from './posts_in_thread';
-export {default as PostMetadataSchema} from './post_metadata';
 export {default as PostSchema} from './post';
 export {default as PreferenceSchema} from './preference';
 export {default as ReactionSchema} from './reaction';

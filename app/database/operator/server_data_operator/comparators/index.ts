@@ -15,7 +15,6 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
-import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
@@ -131,9 +130,5 @@ export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: Channel
 };
 
 export const isRecordFileEqualToRaw = (record: FileModel, raw: FileInfo) => {
-    return raw.id === record.id;
-};
-
-export const isRecordMetadataEqualToRaw = (record: PostMetadataModel, raw: Metadata) => {
     return raw.id === record.id;
 };
