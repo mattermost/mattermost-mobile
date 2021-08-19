@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {logError} from '@actions/remote/error';
+import {Q} from '@nozbe/watermelondb';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
-import {Database} from '@constants';
+import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
+import {debounce} from '@helpers/api/general';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {prepareUsers} from '@queries/servers/user';
+import {prepareUsers, queryUsersById} from '@queries/servers/user';
+import {queryCurrentUserId} from '@queries/servers/system';
 
 import type {Client} from '@client/rest';
 import type {LoadMeArgs} from '@typings/database/database';
@@ -244,7 +246,7 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
     try {
         data = await client.patchMe(user._raw);
     } catch (e) {
-        logError(e);
+        forceLogoutIfNecessary(serverUrl, e);
         return {error: e};
     }
 
@@ -258,4 +260,86 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
     }
 
     return {data};
+};
+
+let ids: string[] = [];
+const debouncedFetchStatusesByIds = debounce((serverUrl: string) => {
+    fetchStatusByIds(serverUrl, [...new Set(ids)]);
+}, 200, false, () => {
+    ids = [];
+});
+
+export const fetchStatusInBatch = (serverUrl: string, id: string) => {
+    ids = [...ids, id];
+    return debouncedFetchStatusesByIds.apply(null, [serverUrl]);
+};
+
+export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+    if (!userIds.length) {
+        return [];
+    }
+
+    try {
+        const statuses = await client.getStatusesByIds(userIds);
+
+        if (!fetchOnly && DatabaseManager.serverDatabases[serverUrl]) {
+            const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
+            if (operator) {
+                const users = await database.get(Database.MM_TABLES.SERVER.USER).query(Q.where('id', Q.oneOf(userIds))).fetch() as UserModel[];
+                for (const user of users) {
+                    const status = statuses.find((s) => s.user_id === user.id);
+                    user.prepareSatus(status?.status || General.OFFLINE);
+                }
+
+                await operator.batchRecords(users);
+            }
+        }
+
+        return {statuses};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+    if (!userIds.length) {
+        return [];
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const exisingUsers = await queryUsersById(operator.database, userIds);
+        const usersToLoad = userIds.filter((id) => (id !== currentUserId && !exisingUsers.find((u) => u.id === id)));
+        const users = await client.getProfilesByIds([...new Set(usersToLoad)]);
+
+        if (!fetchOnly) {
+            await operator.handleUsers({
+                users,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
 };
