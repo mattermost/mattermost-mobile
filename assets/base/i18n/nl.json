@@ -361,6 +361,7 @@
   "mobile.gallery.title": "{index} van {total}",
   "mobile.general.error.title": "Fout",
   "mobile.help.title": "Help",
+  "mobile.interactive_dialog.defaultSubmit": "Verzenden",
   "mobile.intro_messages.DM": "Dit is de start van jouw privé-berichten geschiedenis met {teammate}. Privé-berichten en bestanden die hier gedeeld worden zijn niet zichtbaar voor anderen.",
   "mobile.intro_messages.default_message": "Dit is de eerste kanaal dat teamgenoten zien wanneer ze zich aanmelden - gebruiken voor het posten van updates die iedereen moet weten.",
   "mobile.intro_messages.default_welcome": "Welkom aan {name}!",
