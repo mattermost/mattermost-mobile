@@ -54,7 +54,7 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
-    if (channel && license && license.IsLicensed === 'true') {
+    if (channel && license?.IsLicensed === 'true') {
         useGroupMentions = haveIChannelPermission(
             state,
             {
