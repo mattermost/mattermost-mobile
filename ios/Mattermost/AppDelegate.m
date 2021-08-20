@@ -9,7 +9,7 @@
 #import <UMReactNativeAdapter/UMModuleRegistryAdapter.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UploadAttachments/UploadAttachments-Swift.h>
-#import <DatabaseHelper/DatabaseHelper-Swift.h>
+#import <Gekidou/Gekidou-Swift.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNHWKeyboardEvent.h>
 
@@ -95,7 +95,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   
   NSString* serverUrl = [userInfo objectForKey:@"server_url"];
   if (serverUrl == nil) {
-    NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+    NSString* onlyServerUrl = [[Database default] getOnlyServerUrlObjc];
     if ([onlyServerUrl length] > 0) {
       serverUrl = onlyServerUrl;
     }

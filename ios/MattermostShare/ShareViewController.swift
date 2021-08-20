@@ -2,7 +2,7 @@ import UIKit
 import Social
 import MobileCoreServices
 import UploadAttachments
-import DatabaseHelper
+import Gekidou
 import LocalAuthentication
 
 extension Bundle {
@@ -40,7 +40,7 @@ class ShareViewController: SLComposeServiceViewController {
     // TODO: If we don't have a single server then we'll need the user to
     // select the server from a dropdown. Once the server is selected we
     // can fetch its token.
-    serverUrl = try? DatabaseHelper.default.getOnlyServerUrl()
+    serverUrl = try? Database.default.getOnlyServerUrl()
     sessionToken = serverUrl != nil ? store.getTokenForServerUrl(serverUrl) : nil
   
     maxMessageSize = Int(store.getMaxPostSize())

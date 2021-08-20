@@ -1,4 +1,4 @@
-import DatabaseHelper
+import Gekidou
 import UserNotifications
 import UploadAttachments
 
@@ -64,7 +64,7 @@ class NotificationService: UNNotificationServiceExtension {
       let idLoaded = (bestAttemptContent.userInfo["id_loaded"] ?? false) as! Bool
       var serverUrl = (bestAttemptContent.userInfo["server_url"]) as! String?
       if (serverUrl == nil) {
-        serverUrl = try? DatabaseHelper.default.getOnlyServerUrl()
+        serverUrl = try? Database.default.getOnlyServerUrl()
       }
 
       fetchReceipt(

@@ -19,6 +19,9 @@
 		49415297267A91300039D64E /* libDatabaseHelper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49415294267A911C0039D64E /* libDatabaseHelper.a */; };
 		4953BF602368AE8600593328 /* SwimeProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4953BF5F2368AE8600593328 /* SwimeProxy.swift */; };
 		49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
+		49FFC24926D0342200A8CCD7 /* libGekidou.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49FFC23526D01F0100A8CCD7 /* libGekidou.a */; };
+		49FFC24C26D0343C00A8CCD7 /* libGekidou.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49FFC23526D01F0100A8CCD7 /* libGekidou.a */; };
+		49FFC25126D0381800A8CCD7 /* libGekidou.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 49FFC23526D01F0100A8CCD7 /* libGekidou.a */; };
 		531BEBC72513E93C00BC05B1 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
 		536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */; };
 		55C6561DDBBA45929D88B6D1 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */; };
@@ -59,6 +62,34 @@
 			proxyType = 2;
 			remoteGlobalIDString = 49415253267955890039D64E;
 			remoteInfo = DatabaseHelper;
+		};
+		49FFC23426D01F0100A8CCD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 49FFC22626D01F0000A8CCD7;
+			remoteInfo = Gekidou;
+		};
+		49FFC24A26D0342C00A8CCD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49FFC22526D01F0000A8CCD7;
+			remoteInfo = Gekidou;
+		};
+		49FFC24D26D0344200A8CCD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49FFC22526D01F0000A8CCD7;
+			remoteInfo = Gekidou;
+		};
+		49FFC24F26D0345000A8CCD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 49FFC22526D01F0000A8CCD7;
+			remoteInfo = Gekidou;
 		};
 		7F240A21220D3A2300637665 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -179,6 +210,7 @@
 		499F7B3F235513F600E7AF6E /* libXCDYouTubeKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libXCDYouTubeKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		499F7B412355141200E7AF6E /* libYoutubePlayer-in-WKWebView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libYoutubePlayer-in-WKWebView.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49B4BF51230C83D2006E919E /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
+		49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Gekidou.xcodeproj; path = Gekidou/Gekidou.xcodeproj; sourceTree = "<group>"; };
 		531BEBC52513E93C00BC05B1 /* compass-icons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "compass-icons.ttf"; path = "../assets/fonts/compass-icons.ttf"; sourceTree = "<group>"; };
 		536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "RNNotificationEventHandler+HandleReplyAction.m"; path = "Mattermost/RNNotificationEventHandler+HandleReplyAction.m"; sourceTree = "<group>"; };
 		536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RNNotificationEventHandler+HandleReplyAction.h"; path = "Mattermost/RNNotificationEventHandler+HandleReplyAction.h"; sourceTree = "<group>"; };
@@ -251,6 +283,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49FFC24926D0342200A8CCD7 /* libGekidou.a in Frameworks */,
 				49415295267A91230039D64E /* libDatabaseHelper.a in Frameworks */,
 				49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */,
 				6C9B1EFD6561083917AF06CF /* libPods-Mattermost.a in Frameworks */,
@@ -261,6 +294,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49FFC24C26D0343C00A8CCD7 /* libGekidou.a in Frameworks */,
 				49415296267A91290039D64E /* libDatabaseHelper.a in Frameworks */,
 				7FABE0562213884700D0F595 /* libUploadAttachments.a in Frameworks */,
 			);
@@ -270,6 +304,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49FFC25126D0381800A8CCD7 /* libGekidou.a in Frameworks */,
 				49415297267A91300039D64E /* libDatabaseHelper.a in Frameworks */,
 				7F581F78221EEA7C0099E66B /* libUploadAttachments.a in Frameworks */,
 			);
@@ -378,6 +413,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		49FFC23126D01F0000A8CCD7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				49FFC23526D01F0100A8CCD7 /* libGekidou.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		4B992D7BAAEDF8759DB525B5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -454,6 +497,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */,
 				4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */,
 				7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */,
 			);
@@ -511,6 +555,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				49FFC24B26D0342C00A8CCD7 /* PBXTargetDependency */,
 				7FE6E442267C014600C99C18 /* PBXTargetDependency */,
 				7FAB45BA222DD0E300EBFFC8 /* PBXTargetDependency */,
 				7F240A22220D3A2300637665 /* PBXTargetDependency */,
@@ -532,6 +577,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				49FFC24E26D0344200A8CCD7 /* PBXTargetDependency */,
 				7FE6E445267C014E00C99C18 /* PBXTargetDependency */,
 				7FAB4571222DD0DA00EBFFC8 /* PBXTargetDependency */,
 			);
@@ -551,6 +597,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				49FFC25026D0345000A8CCD7 /* PBXTargetDependency */,
 				7FE6E447267C015400C99C18 /* PBXTargetDependency */,
 				7FE5F962227739E600FEFFE1 /* PBXTargetDependency */,
 			);
@@ -631,6 +678,10 @@
 					ProjectRef = 4941528F267A911C0039D64E /* DatabaseHelper.xcodeproj */;
 				},
 				{
+					ProductGroup = 49FFC23126D01F0000A8CCD7 /* Products */;
+					ProjectRef = 49FFC23026D01F0000A8CCD7 /* Gekidou.xcodeproj */;
+				},
+				{
 					ProductGroup = 7FABE04122137F2900D0F595 /* Products */;
 					ProjectRef = 7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */;
 				},
@@ -650,6 +701,13 @@
 			fileType = archive.ar;
 			path = libDatabaseHelper.a;
 			remoteRef = 49415293267A911C0039D64E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		49FFC23526D01F0100A8CCD7 /* libGekidou.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libGekidou.a;
+			remoteRef = 49FFC23426D01F0100A8CCD7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		7FABE04522137F2A00D0F595 /* libUploadAttachments.a */ = {
@@ -849,6 +907,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		49FFC24B26D0342C00A8CCD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Gekidou;
+			targetProxy = 49FFC24A26D0342C00A8CCD7 /* PBXContainerItemProxy */;
+		};
+		49FFC24E26D0344200A8CCD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Gekidou;
+			targetProxy = 49FFC24D26D0344200A8CCD7 /* PBXContainerItemProxy */;
+		};
+		49FFC25026D0345000A8CCD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Gekidou;
+			targetProxy = 49FFC24F26D0345000A8CCD7 /* PBXContainerItemProxy */;
+		};
 		7F240A22220D3A2300637665 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7F240A18220D3A2300637665 /* MattermostShare */;
@@ -921,6 +994,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/DatabaseHelper/DatabaseHelper",
 					"$(SRCROOT)/UploadAttachments/UploadAttachments",
+					"$(SRCROOT)/Gekidou/Gekidou",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
@@ -964,6 +1038,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/DatabaseHelper/DatabaseHelper",
 					"$(SRCROOT)/UploadAttachments/UploadAttachments",
+					"$(SRCROOT)/Gekidou/Gekidou",
 				);
 				INFOPLIST_FILE = Mattermost/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
