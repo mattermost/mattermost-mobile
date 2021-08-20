@@ -361,6 +361,7 @@
   "mobile.gallery.title": "{index} / {total}",
   "mobile.general.error.title": "エラー",
   "mobile.help.title": "ヘルプ",
+  "mobile.interactive_dialog.defaultSubmit": "送信する",
   "mobile.intro_messages.DM": "{teammate}とのダイレクトメッセージの履歴の最初です。ダイレクトメッセージとそこで共有されているファイルは、この領域の外のユーザーからは見ることができません。",
   "mobile.intro_messages.default_message": "ここはチームメイトが利用登録した際に最初に見るチャンネルです - みんなが知るべき情報を投稿してください。",
   "mobile.intro_messages.default_welcome": "{name}へようこそ!",
