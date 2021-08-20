@@ -361,6 +361,7 @@
   "mobile.gallery.title": "{index} av {total}",
   "mobile.general.error.title": "Fel",
   "mobile.help.title": "Hjälp",
+  "mobile.interactive_dialog.defaultSubmit": "Skicka in",
   "mobile.intro_messages.DM": "Detta är starten på alla direktmeddelanden med {teammate}. De direktmeddelanden och delade filer som finns här visas inte för användare utanför den här ytan.",
   "mobile.intro_messages.default_message": "Detta är det första kanal som teammedlemmar ser när de skapat konto - använd den för att informera om det som alla behöver veta.",
   "mobile.intro_messages.default_welcome": "Välkommen till {name}!",
