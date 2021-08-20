@@ -361,6 +361,7 @@
   "mobile.gallery.title": "{index} от {total}",
   "mobile.general.error.title": "Грешка",
   "mobile.help.title": "Помощ",
+  "mobile.interactive_dialog.defaultSubmit": "Изпрати",
   "mobile.intro_messages.DM": "Това е началото на историята на вашите директни съобщения с {teammate}. Директните съобщения и файлове, споделени тук, не се показват на хора извън тази общност.",
   "mobile.intro_messages.default_message": "Това е първият канал, който членовете виждат, когато се регистрират - използвайте го за публикуване на новости, които всеки трябва да знае.",
   "mobile.intro_messages.default_welcome": "Добре дошли в {name}!",
