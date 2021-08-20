@@ -39,6 +39,7 @@ export default class PostInput extends PureComponent {
         isLandscape: PropTypes.bool,
         maxMessageLength: PropTypes.number,
         rootId: PropTypes.string,
+        screenId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         updateInitialValue: PropTypes.func.isRequired,
         userTyping: PropTypes.func.isRequired,
@@ -273,7 +274,7 @@ export default class PostInput extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {testID, channelDisplayName, isLandscape, theme} = this.props;
+        const {testID, channelDisplayName, screenId, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
         let maxHeight = DEVICE.POST_INPUT_MAX_HEIGHT;
@@ -300,6 +301,7 @@ export default class PostInput extends PureComponent {
                 textContentType='none'
                 autoCompleteType='off'
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                screenId={screenId}
             />
         );
     }

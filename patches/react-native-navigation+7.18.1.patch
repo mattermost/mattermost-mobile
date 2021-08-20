@@ -1,8 +1,26 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 2b30edf..2063845 100644
+index 2b30edf..5d01be0 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-@@ -61,15 +61,19 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -33,6 +33,8 @@ import androidx.annotation.Nullable;
+ 
+ import static com.reactnativenavigation.utils.UiUtils.pxToDp;
+ 
++import android.app.Activity;
++
+ public class NavigationModule extends ReactContextBaseJavaModule {
+     private static final String NAME = "RNNBridgeModule";
+ 
+@@ -56,20 +58,30 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+             @Override
+             public void onHostPause() {
+                 super.onHostPause();
+-                navigator().onHostPause();
++                Navigator navigator = navigator();
++                if (navigator != null) {
++                    navigator().onHostPause();
++                }
+             }
  
              @Override
              public void onHostResume() {
@@ -17,21 +35,37 @@ index 2b30edf..2063845 100644
 -                navigator().onHostResume();
 +                try {
 +                    eventEmitter = new EventEmitter(reactContext);
-+                    navigator().setEventEmitter(eventEmitter);
-+                    layoutFactory.init(
-+                            activity(),
-+                            eventEmitter,
-+                            navigator().getChildRegistry(),
-+                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
-+                    );
-+                    navigator().onHostResume();
++                    Navigator navigator = navigator();
++                    if (navigator != null) {
++                        navigator().setEventEmitter(eventEmitter);
++                        layoutFactory.init(
++                                activity(),
++                                eventEmitter,
++                                navigator().getChildRegistry(),
++                                ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                        );
++                        navigator().onHostResume();
++                    }
 +                } catch (ClassCastException e) {
 +                    // The most current activity is not a NavigationActivity
 +                }
              }
          });
      }
-@@ -217,8 +221,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -206,7 +218,11 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+     }
+ 
+     private Navigator navigator() {
+-        return activity().getNavigator();
++        if (activity() instanceof NavigationActivity) {
++            NavigationActivity activity = (NavigationActivity) activity();
++            return activity.getNavigator();
++        }
++        return null;
+     }
+ 
+     private Options parse(@Nullable ReadableMap mergeOptions) {
+@@ -217,21 +233,26 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -45,6 +79,25 @@ index 2b30edf..2063845 100644
 +                // The most current activity is not a NavigationActivity)
              }
          });
+     }
+ 
+-    protected NavigationActivity activity() {
+-        return (NavigationActivity) getCurrentActivity();
++    protected Activity activity() {
++        return getCurrentActivity();
+     }
+ 
+     @Override
+     public void onCatalystInstanceDestroy() {
+-        final NavigationActivity navigationActivity = activity();
+-        if (navigationActivity != null) {
+-            navigationActivity.onCatalystInstanceDestroy();
++        final Activity navigationActivity = activity();
++        if (navigationActivity != null && navigationActivity instanceof NavigationActivity) {
++            NavigationActivity activity = (NavigationActivity)navigationActivity;
++            activity.onCatalystInstanceDestroy();
+         }
+         super.onCatalystInstanceDestroy();
      }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
 index 1e5751e..f921605 100644
