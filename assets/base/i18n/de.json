@@ -361,6 +361,7 @@
   "mobile.gallery.title": "{index} von {total}",
   "mobile.general.error.title": "Fehler",
   "mobile.help.title": "Hilfe",
+  "mobile.interactive_dialog.defaultSubmit": "Absenden",
   "mobile.intro_messages.DM": "Dies ist der Start der Privatnachrichtenverlaufs mit {teammate}. Privatnachrichten und hier geteilte Dateien sind für Personen außerhalb dieses Bereichs nicht sichtbar.",
   "mobile.intro_messages.default_message": "Dies ist der Kanal, den Teammitglieder sehen, wenn sie sich anmelden - benutzen Sie ihn zum Veröffentlichen von Aktualisierungen, die jeder kennen muss.",
   "mobile.intro_messages.default_welcome": "Willkommen bei {name}!",
