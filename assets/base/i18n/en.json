@@ -428,6 +428,7 @@
   "mobile.notification_settings.email": "Email",
   "mobile.notification_settings.email_title": "Email Notifications",
   "mobile.notification_settings.email.send": "SEND EMAIL NOTIFICATIONS",
+  "mobile.notification_settings.mentions": "Mentions",
   "mobile.notification_settings.mentions_replies": "Mentions and Replies",
   "mobile.notification_settings.mentions.channelWide": "Channel-wide mentions",
   "mobile.notification_settings.mentions.reply_title": "Send Reply notifications for",

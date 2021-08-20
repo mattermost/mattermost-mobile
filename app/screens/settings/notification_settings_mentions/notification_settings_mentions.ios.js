@@ -200,7 +200,9 @@ class NotificationSettingsMentionsIos extends NotificationSettingsMentionsBase {
                     alwaysBounceVertical={false}
                 >
                     {this.renderMentionSection(style)}
-                    {this.renderReplySection(style)}
+                    {!this.props.isCollapsedThreadsEnabled && (
+                        this.renderReplySection(style)
+                    )}
                 </ScrollView>
             </SafeAreaView>
         );
