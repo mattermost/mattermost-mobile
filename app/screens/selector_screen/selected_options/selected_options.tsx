@@ -2,16 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {View, ScrollView} from 'react-native';
 
 import {ViewTypes} from '@constants';
-import {Channel} from '@mm-redux/types/channels';
-import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
-import {UserProfile} from '@mm-redux/types/users';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedOption from './selected_option';
+
+import type {Channel} from '@mm-redux/types/channels';
+import type {DialogOption} from '@mm-redux/types/integrations';
+import type {Theme} from '@mm-redux/types/preferences';
+import type {UserProfile} from '@mm-redux/types/users';
 
 type Props = {
     theme: Theme;
@@ -55,31 +56,29 @@ export default function SelectedOptions(props: Props) {
     const style = getStyleFromTheme(theme);
 
     return (
-        <View style={style.container}>
-            <View style={style.users}>
+        <ScrollView
+            style={style.container}
+            contentContainerStyle={style.scrollViewContent}
+        >
+            <View style={style.users} >
                 {options}
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     return {
         container: {
             marginLeft: 5,
             marginBottom: 5,
+            maxHeight: 100,
+            flexGrow: 0,
         },
         users: {
             alignItems: 'flex-start',
             flexDirection: 'row',
             flexWrap: 'wrap',
-        },
-        message: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 12,
-            marginRight: 5,
-            marginTop: 10,
-            marginBottom: 2,
         },
     };
 });

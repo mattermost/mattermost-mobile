@@ -6,10 +6,11 @@ import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 
 import {setAutocompleteSelector} from '@actions/views/post';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {Action, ActionResult, GenericAction} from '@mm-redux/types/actions';
-import {GlobalState} from '@mm-redux/types/store';
 
 import AutocompleteSelector from './autocomplete_selector';
+
+import type {Action, ActionResult, GenericAction} from '@mm-redux/types/actions';
+import type {GlobalState} from '@mm-redux/types/store';
 
 function mapStateToProps(state: GlobalState) {
     return {
