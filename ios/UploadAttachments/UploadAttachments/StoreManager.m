@@ -1,6 +1,6 @@
 #import "StoreManager.h"
 #import "MMMConstants.h"
-#import <DatabaseHelper/DatabaseHelper-Swift.h>
+#import <Gekidou/Gekidou-Swift.h>
 
 @implementation StoreManager
 +(instancetype)shared {
@@ -153,7 +153,7 @@
     
     NSString *serverUrl = url;
     if (serverUrl == nil) {
-      NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
+      NSString* onlyServerUrl = [[Database default] getOnlyServerUrlObjc];
       if ([onlyServerUrl length] > 0) {
         serverUrl = onlyServerUrl;
       }
