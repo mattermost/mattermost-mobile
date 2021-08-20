@@ -38,8 +38,8 @@ export default class ChannelBase extends PureComponent {
         skipMetrics: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
         selectedPost: PropTypes.shape({
-            id: PropTypes.string,
-            channel_id: PropTypes.string,
+            id: PropTypes.string.isRequired,
+            channel_id: PropTypes.string.isRequired,
         }),
     };
 
