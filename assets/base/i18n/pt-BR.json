@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Erro ao preparar solicitação de pesquisa: {errorMessage}",
   "apps.error.parser": "Erro de análise: {error}",
   "apps.error.parser.empty_value": "valores vazios não são permitidos",
-  "apps.error.parser.missing_binding": "Faltando ligações de comando.",
   "apps.error.parser.missing_call": "Faltando chamada de ligação.",
   "apps.error.parser.missing_field_value": "Falta o valor do campo.",
   "apps.error.parser.missing_quote": "Aspas duplas correspondentes são esperadas antes do final da entrada.",

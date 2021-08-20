@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "准备查询请求时出错：{errorMessage}",
   "apps.error.parser": "解析错误：{error}",
   "apps.error.parser.empty_value": "不允许空值",
-  "apps.error.parser.missing_binding": "缺少命令绑定。",
   "apps.error.parser.missing_call": "缺少绑定调用。",
   "apps.error.parser.missing_field_value": "字段值丢失。",
   "apps.error.parser.missing_quote": "预期在输入结束之前有匹配的双引号。",

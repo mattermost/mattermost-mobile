@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Une erreur s'est produite lors de la préparation de la requête de recherche : {errorMessage}",
   "apps.error.parser": "Erreur d'interprétation : {error}",
   "apps.error.parser.empty_value": "les valeurs vides ne sont pas autorisées",
-  "apps.error.parser.missing_binding": "Liens de commande manquants.",
   "apps.error.parser.missing_call": "Appel de lien manquant.",
   "apps.error.parser.missing_field_value": "La valeur du champ est manquante.",
   "apps.error.parser.missing_quote": "Les doubles guillemets doivent être fermés avant la fin du champ de saisie.",

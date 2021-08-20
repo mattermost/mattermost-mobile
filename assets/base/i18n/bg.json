@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Грешка при подготовка на заявката за търсене: {errorMessage}",
   "apps.error.parser": "Грешка при анализа: {error}",
   "apps.error.parser.empty_value": "празни стойности не са разрешени",
-  "apps.error.parser.missing_binding": "Липсва свързване към команда.",
   "apps.error.parser.missing_call": "Липсва свързване към повикване.",
   "apps.error.parser.missing_field_value": "Липсва стойност на полето.",
   "apps.error.parser.missing_quote": "Очаква се съответстващи кавички преди края на въвеждането.",

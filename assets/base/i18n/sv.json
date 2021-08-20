@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Fel vid förberedelse av sökningsförfrågan: {errorMessage}",
   "apps.error.parser": "Fel vi tolkning: {error}",
   "apps.error.parser.empty_value": "tomma värden är inte tillåtet",
-  "apps.error.parser.missing_binding": "Saknar command bindings.",
   "apps.error.parser.missing_call": "Saknar bindningsanrop.",
   "apps.error.parser.missing_field_value": "Fältvärde saknas.",
   "apps.error.parser.missing_quote": "Förväntade ett matchande dubbelt citattecken i slutet av inmatningen.",

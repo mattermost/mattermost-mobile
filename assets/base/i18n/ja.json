@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "調査リクエスト準備エラーです: {errorMessage}",
   "apps.error.parser": "解析エラー: {error}",
   "apps.error.parser.empty_value": "値を指定してください",
-  "apps.error.parser.missing_binding": "不明なコマンドです。",
   "apps.error.parser.missing_call": "不明なbinding callです。",
   "apps.error.parser.missing_field_value": "フィールド値が存在しません。",
   "apps.error.parser.missing_quote": "入力の最後に二重引用符が必要です。",

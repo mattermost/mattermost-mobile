@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Arama isteği hazırlanırken sorun çıktı: {errorMessage}",
   "apps.error.parser": "İşleme sorunu: {error}",
   "apps.error.parser.empty_value": "boş bırakılamaz",
-  "apps.error.parser.missing_binding": "Komut bağlantıları eksik.",
   "apps.error.parser.missing_call": "İlgili çağrı eksik.",
   "apps.error.parser.missing_field_value": "Alan değeri eksik.",
   "apps.error.parser.missing_quote": "Girişin sonundan önce bir çift tırnak olmalı.",

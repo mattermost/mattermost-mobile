@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Fehler beim Vorbereiten der Suchabfrage: {errorMessage}",
   "apps.error.parser": "Parsing-Fehler: {error}",
   "apps.error.parser.empty_value": "leere Werte sind nicht erlaubt",
-  "apps.error.parser.missing_binding": "Fehlende Befehlsverknüpfungen.",
   "apps.error.parser.missing_call": "Fehlender Verknüpfungsaufruf.",
   "apps.error.parser.missing_field_value": "Feldwert fehlt.",
   "apps.error.parser.missing_quote": "Es fehlt ein schließendes doppeltes Anführungszeichen.",

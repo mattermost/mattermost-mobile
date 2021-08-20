@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Hiba a keresési kérelem előkészítése során: {errorMessage}",
   "apps.error.parser": "Feldolgozási hiba: {error}",
   "apps.error.parser.empty_value": "üres értékek nem megengedettek",
-  "apps.error.parser.missing_binding": "Hiányzó parancs összekötők.",
   "apps.error.parser.missing_call": "Hiányzó összekötő hívás.",
   "apps.error.parser.missing_field_value": "Mező értéke hiányzik.",
   "apps.error.parser.missing_quote": "Egyező idézőjel elvárt a bemenet vége előtt.",
