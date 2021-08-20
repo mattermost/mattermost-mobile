@@ -15,7 +15,7 @@ import AppDatabaseMigrations from '@database/migration/app';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {schema as appSchema} from '@database/schema/app';
 import ServerDatabaseMigrations from '@database/migration/server';
-import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, ChannelPostsResponseModel, CustomEmojiModel, DraftModel, FileModel,
     GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
@@ -44,7 +44,7 @@ class DatabaseManager {
   constructor() {
       this.appModels = [InfoModel, GlobalModel, ServersModel];
       this.serverModels = [
-          ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+          ChannelModel, ChannelInfoModel, ChannelMembershipModel, ChannelPostsResponseModel, CustomEmojiModel, DraftModel, FileModel,
           GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
           PostModel, PostMetadataModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
           SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,

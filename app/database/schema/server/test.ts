@@ -11,6 +11,7 @@ const {
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
+    CHANNEL_POSTS_RESPONSE,
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
@@ -98,6 +99,17 @@ describe('*** Test schema for SERVER database ***', () => {
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [CHANNEL_POSTS_RESPONSE]: {
+                    name: CHANNEL_POSTS_RESPONSE,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        response: {name: 'response', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'response', type: 'string'},
                     ],
                 },
                 [CUSTOM_EMOJI]: {

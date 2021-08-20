@@ -3,6 +3,7 @@
 
 export {default as ChannelInfoSchema} from './channel_info';
 export {default as ChannelMembershipSchema} from './channel_membership';
+export {default as ChannelPostsResponseSchema} from './channel_posts_response';
 export {default as ChannelSchema} from './channel';
 export {default as CustomEmojiSchema} from './custom_emoji';
 export {default as DraftSchema} from './draft';

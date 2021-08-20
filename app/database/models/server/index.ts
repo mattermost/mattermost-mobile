@@ -3,6 +3,7 @@
 
 export {default as ChannelInfoModel} from './channel_info';
 export {default as ChannelMembershipModel} from './channel_membership';
+export {default as ChannelPostsResponseModel} from './channel_posts_response';
 export {default as ChannelModel} from './channel';
 export {default as CustomEmojiModel} from './custom_emoji';
 export {default as DraftModel} from './draft';

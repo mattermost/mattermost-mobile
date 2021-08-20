@@ -13,6 +13,7 @@ export const MM_TABLES = {
         CHANNEL: 'Channel',
         CHANNEL_INFO: 'ChannelInfo',
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
+        CHANNEL_POSTS_RESPONSE: 'ChannelPostsResponse',
         CUSTOM_EMOJI: 'CustomEmoji',
         DRAFT: 'Draft',
         FILE: 'File',

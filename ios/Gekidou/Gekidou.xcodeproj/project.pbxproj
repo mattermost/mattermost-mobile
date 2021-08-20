@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		49FFC23726D01F4600A8CCD7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FFC23626D01F4600A8CCD7 /* Network.swift */; };
 		49FFC23926D01F5400A8CCD7 /* Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FFC23826D01F5400A8CCD7 /* Database.swift */; };
+		49FFC25326D04C1800A8CCD7 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FFC25226D04C1800A8CCD7 /* Keychain.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +29,7 @@
 		49FFC23626D01F4600A8CCD7 /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 		49FFC23826D01F5400A8CCD7 /* Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Database.swift; sourceTree = "<group>"; };
 		49FFC24726D033A000A8CCD7 /* Gekidou-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gekidou-Bridging-Header.h"; sourceTree = "<group>"; };
+		49FFC25226D04C1800A8CCD7 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				49FFC23626D01F4600A8CCD7 /* Network.swift */,
 				49FFC23826D01F5400A8CCD7 /* Database.swift */,
 				49FFC24726D033A000A8CCD7 /* Gekidou-Bridging-Header.h */,
+				49FFC25226D04C1800A8CCD7 /* Keychain.swift */,
 			);
 			path = Gekidou;
 			sourceTree = "<group>";
@@ -148,6 +151,7 @@
 			files = (
 				49FFC23926D01F5400A8CCD7 /* Database.swift in Sources */,
 				49FFC23726D01F4600A8CCD7 /* Network.swift in Sources */,
+				49FFC25326D04C1800A8CCD7 /* Keychain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
