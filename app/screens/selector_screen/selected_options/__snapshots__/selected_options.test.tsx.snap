@@ -1,11 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SelectedOptions should match snapshot 1`] = `
-<View
+<ScrollView
   style={
     Object {
+      "flexGrow": 0,
       "marginBottom": 5,
       "marginLeft": 5,
+      "maxHeight": 100,
     }
   }
 >
@@ -136,5 +138,5 @@ exports[`SelectedOptions should match snapshot 1`] = `
       }
     />
   </View>
-</View>
+</ScrollView>
 `;
