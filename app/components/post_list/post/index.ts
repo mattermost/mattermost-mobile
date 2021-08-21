@@ -26,17 +26,12 @@ import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
 const {SERVER: {CUSTOM_EMOJI, POST, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
-type PropsInput = {
-    nextPostId?: string | null;
-    previousPostId?: string | null;
-}
-
-type SystemInput = WithDatabaseArgs & {
+type PropsInput = WithDatabaseArgs & {
     featureFlagAppsEnabled?: string;
     currentUser: UserModel;
-    nextPost: PostModel | null;
+    nextPost: PostModel | undefined;
     post: PostModel;
-    previousPost: PostModel | null;
+    previousPost: PostModel | undefined;
 }
 
 async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
@@ -75,18 +70,16 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
 
     return false;
 }
-const withSystem = withObservables(['previousPostId', 'nextPostId'], ({database, nextPostId, previousPostId}: WithDatabaseArgs & PropsInput) => ({
+const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
     featureFlagAppsEnabled: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value.FeatureFlagAppsEnabled))),
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId: SystemModel) => database.get(USER).findAndObserve(currentUserId.value)),
     ),
-    previousPost: previousPostId ? database.get(POST).findAndObserve(previousPostId) : of$(null),
-    nextPost: nextPostId ? database.get(POST).findAndObserve(nextPostId) : of$(null),
 }));
 
 const withPost = withObservables(
     ['currentUser', 'post', 'previousPost', 'nextPost'],
-    ({featureFlagAppsEnabled, currentUser, database, post, previousPost, nextPost}: SystemInput) => {
+    ({featureFlagAppsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
         let isFirstReply = of$(true);
         let isJumboEmoji = of$(false);
         let isLastReply = of$(true);
@@ -94,7 +87,9 @@ const withPost = withObservables(
         const isOwner = currentUser.id === post.userId;
         const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
         const isConsecutivePost = post.author.observe().pipe(switchMap(
-            (user: UserModel) => of$(Boolean(post && previousPost && !user.isBot && post.rootId && areConsecutivePosts(post, previousPost))),
+            (user: UserModel) => {
+                return of$(Boolean(post && previousPost && !user.isBot && post.rootId && areConsecutivePosts(post, previousPost)));
+            },
         ));
         const isEphemeral = of$(isPostEphemeral(post));
         const isFlagged = database.get(PREFERENCE).query(

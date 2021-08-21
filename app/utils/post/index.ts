@@ -18,11 +18,11 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
         const prevPostFromWebhook = Boolean(previousPost?.props?.from_webhook); // eslint-disable-line camelcase
         const isFromSameUser = previousPost.userId === post.userId;
         const isNotSystemMessage = !isSystemMessage(post) && !isSystemMessage(previousPost);
-        const isInTimeframe = post.createAt - previousPost.createAt <= Post.POST_COLLAPSE_TIMEOUT;
+        const isInTimeframe = (post.createAt - previousPost.createAt) <= Post.POST_COLLAPSE_TIMEOUT;
         const isSameThread = (previousPost.rootId === post.rootId || previousPost.id === post.rootId);
 
         // Were the last post and this post made by the same user within some time?
-        consecutive = previousPost && isFromSameUser && isInTimeframe && !postFromWebhook &&
+        consecutive = previousPost && (isFromSameUser || isInTimeframe) && !postFromWebhook &&
         !prevPostFromWebhook && isNotSystemMessage && isSameThread;
     }
     return consecutive;

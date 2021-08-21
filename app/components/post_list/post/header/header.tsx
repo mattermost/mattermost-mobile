@@ -123,7 +123,7 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {showReply &&
+                    {showReply && commentCount > 0 &&
                     <HeaderReply
                         commentCount={commentCount}
                         location={location}
