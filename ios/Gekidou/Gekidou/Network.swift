@@ -11,7 +11,23 @@ typealias ResponseHandler = (_ response: URLResponse?, _ data: Data?, _ error: E
 
 public class Network: NSObject {
     internal let POST_CHUNK_SIZE = 60
-    internal lazy var session = URLSession.init(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+    internal var session: URLSession?
+    
+    override init() {
+        super.init()
+        
+        let config = URLSessionConfiguration.default
+        config.httpAdditionalHeaders = ["X-Requested-With": "XMLHttpRequest"]
+        config.allowsCellularAccess = true
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 30
+        config.httpMaximumConnectionsPerHost = 10
+        if #available(iOS 11.0, *) {
+            config.waitsForConnectivity = false
+        }
+        
+        self.session = URLSession.init(configuration: config, delegate: self, delegateQueue: nil)
+    }
     
     @objc public static let `default` = Network()
     
@@ -41,7 +57,7 @@ public class Network: NSObject {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let task = session.dataTask(with: request as URLRequest) { data, response, error in
+        let task = session!.dataTask(with: request as URLRequest) { data, response, error in
             completionHandler(response, data, error)
         }
         
