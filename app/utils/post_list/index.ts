@@ -22,6 +22,26 @@ const joinLeavePostTypes = [
     Post.POST_TYPES.COMBINED_USER_ACTIVITY,
 ];
 
+const postTypePriority = {
+    [Post.POST_TYPES.JOIN_TEAM]: 0,
+    [Post.POST_TYPES.ADD_TO_TEAM]: 1,
+    [Post.POST_TYPES.LEAVE_TEAM]: 2,
+    [Post.POST_TYPES.REMOVE_FROM_TEAM]: 3,
+    [Post.POST_TYPES.JOIN_CHANNEL]: 4,
+    [Post.POST_TYPES.ADD_TO_CHANNEL]: 5,
+    [Post.POST_TYPES.LEAVE_CHANNEL]: 6,
+    [Post.POST_TYPES.REMOVE_FROM_CHANNEL]: 7,
+    [Post.POST_TYPES.PURPOSE_CHANGE]: 8,
+    [Post.POST_TYPES.HEADER_CHANGE]: 9,
+    [Post.POST_TYPES.JOIN_LEAVE]: 10,
+    [Post.POST_TYPES.DISPLAYNAME_CHANGE]: 11,
+    [Post.POST_TYPES.CONVERT_CHANNEL]: 12,
+    [Post.POST_TYPES.CHANNEL_DELETED]: 13,
+    [Post.POST_TYPES.CHANNEL_UNARCHIVED]: 14,
+    [Post.POST_TYPES.ADD_REMOVE]: 15,
+    [Post.POST_TYPES.EPHEMERAL]: 16,
+};
+
 export const COMBINED_USER_ACTIVITY = 'user-activity-';
 export const DATE_LINE = 'date-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
@@ -72,6 +92,60 @@ function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
     }
 
     return out;
+}
+
+function comparePostTypes(a: typeof postTypePriority, b: typeof postTypePriority) {
+    return postTypePriority[a.postType] - postTypePriority[b.postType];
+}
+
+function extractUserActivityData(userActivities: any) {
+    const messageData: any[] = [];
+    const allUserIds: string[] = [];
+    const allUsernames: string[] = [];
+    Object.entries(userActivities).forEach(([postType, values]: [string, any]) => {
+        if (
+            postType === Post.POST_TYPES.ADD_TO_TEAM ||
+            postType === Post.POST_TYPES.ADD_TO_CHANNEL ||
+            postType === Post.POST_TYPES.REMOVE_FROM_CHANNEL
+        ) {
+            Object.keys(values).map((key) => [key, values[key]]).forEach(([actorId, users]) => {
+                if (Array.isArray(users)) {
+                    throw new Error('Invalid Post activity data');
+                }
+                const {ids, usernames} = users;
+                messageData.push({postType, userIds: [...usernames, ...ids], actorId});
+                if (ids.length > 0) {
+                    allUserIds.push(...ids);
+                }
+
+                if (usernames.length > 0) {
+                    allUsernames.push(...usernames);
+                }
+                allUserIds.push(actorId);
+            });
+        } else {
+            if (!Array.isArray(values)) {
+                throw new Error('Invalid Post activity data');
+            }
+            messageData.push({postType, userIds: values});
+            allUserIds.push(...values);
+        }
+    });
+
+    messageData.sort(comparePostTypes);
+
+    function reduceUsers(acc: string[], curr: string) {
+        if (!acc.includes(curr)) {
+            acc.push(curr);
+        }
+        return acc;
+    }
+
+    return {
+        allUserIds: allUserIds.reduce(reduceUsers, []),
+        allUsernames: allUsernames.reduce(reduceUsers, []),
+        messageData,
+    };
 }
 
 function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): boolean {
@@ -159,8 +233,115 @@ function selectOrderedPosts(
     return out.reverse();
 }
 
+function combineUserActivitySystemPost(systemPosts: PostModel[]) {
+    const userActivities = systemPosts.reduce((acc: any, post: PostModel) => {
+        const postType = post.type;
+        let userActivityProps = acc;
+        const combinedPostType = userActivityProps[postType as string];
+
+        if (
+            postType === Post.POST_TYPES.ADD_TO_TEAM ||
+            postType === Post.POST_TYPES.ADD_TO_CHANNEL ||
+            postType === Post.POST_TYPES.REMOVE_FROM_CHANNEL
+        ) {
+            const userId = post.props.addedUserId || post.props.removedUserId;
+            const username = post.props.addedUsername || post.props.removedUsername;
+            if (combinedPostType) {
+                if (Array.isArray(combinedPostType[post.userId])) {
+                    throw new Error('Invalid Post activity data');
+                }
+                const users = combinedPostType[post.userId] || {ids: [], usernames: []};
+                if (userId) {
+                    if (!users.ids.includes(userId)) {
+                        users.ids.push(userId);
+                    }
+                } else if (username && !users.usernames.includes(username)) {
+                    users.usernames.push(username);
+                }
+                combinedPostType[post.userId] = users;
+            } else {
+                const users = {
+                    ids: [] as string[],
+                    usernames: [] as string[],
+                };
+
+                if (userId) {
+                    users.ids.push(userId);
+                } else if (username) {
+                    users.usernames.push(username);
+                }
+                userActivityProps[postType] = {
+                    [post.userId]: users,
+                };
+            }
+        } else {
+            const propsUserId = post.userId;
+
+            if (combinedPostType) {
+                if (!Array.isArray(combinedPostType)) {
+                    throw new Error('Invalid Post activity data');
+                }
+                if (!combinedPostType.includes(propsUserId)) {
+                    userActivityProps[postType] = [...combinedPostType, propsUserId];
+                }
+            } else {
+                userActivityProps = {...userActivityProps, [postType]: [propsUserId]};
+            }
+        }
+
+        return userActivityProps;
+    }, {});
+
+    return extractUserActivityData(userActivities);
+}
+
+export function generateCombinedPost(combinedId: string, systemPosts: PostModel[]): Post {
+    // All posts should be in the same chann
+    const channelId = systemPosts[0].channelId;
+
+    // Assume that the last post is the oldest one
+    const createAt = systemPosts[systemPosts.length - 1].createAt;
+
+    const messages = systemPosts.map((post) => post.message);
+    const message = messages.join('\n');
+
+    return {
+        id: combinedId,
+        root_id: '',
+        original_id: '',
+        channel_id: channelId,
+        create_at: createAt,
+        delete_at: 0,
+        edit_at: 0,
+        update_at: 0,
+        is_pinned: false,
+        message,
+        hashtags: '',
+        pending_post_id: '',
+        reply_count: 0,
+        props: {
+            messages,
+            user_activity: combineUserActivitySystemPost(systemPosts),
+            user_activity_posts: systemPosts,
+            system_post_ids: systemPosts.map((post) => post.id),
+        },
+        type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType,
+        user_id: '',
+        metadata: {},
+        participants: null,
+    };
+}
+
 export function getDateForDateLine(item: string) {
     return parseInt(item.substring(DATE_LINE.length), 10);
+}
+
+export function getPostIdsForCombinedUserActivityPost(item: string) {
+    return item.substring(COMBINED_USER_ACTIVITY.length).split('_');
+}
+
+export function isCombinedUserActivityPost(item: string) {
+    return (/^user-activity-(?:[^_]+_)*[^_]+$/).test(item);
 }
 
 export function isDateLine(item: string) {

@@ -5,13 +5,13 @@ import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
+import {fetchMissinProfilesByIds, fetchMissinProfilesByUsernames} from '@actions/remote/user';
 import Markdown from '@components/markdown';
 import SystemAvatar from '@app/components/system_avatar';
 import SystemHeader from '@app/components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Post as PostConstants} from '@constants';
-
-// import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server_url';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
@@ -35,8 +35,8 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         baseText: {
-            color: theme.centerChannelColor,
-            opacity: 0.6,
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 15,
         },
         body: {
             flex: 1,
@@ -51,46 +51,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
             marginRight: 12,
         },
-        displayName: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            fontWeight: '600',
-            flexGrow: 1,
-            paddingVertical: 2,
-        },
-        displayNameContainer: {
-            maxWidth: '60%',
-            marginRight: 5,
-            marginBottom: 3,
-        },
-        header: {
-            flex: 1,
-            flexDirection: 'row',
-            marginTop: 10,
-        },
-        profilePictureContainer: {
-            marginBottom: 5,
-            marginLeft: 12,
-            marginRight: 13,
-            marginTop: 10,
-        },
-        time: {
-            color: theme.centerChannelColor,
-            fontSize: 12,
-            marginTop: 5,
-            opacity: 0.5,
-            flex: 1,
-        },
     };
 });
 
 const CombinedUserActivity = ({
     canDelete, currentUserId, currentUsername,
-    post, showJoinLeave, testID, theme, usernamesById, style,
+    post, showJoinLeave, testID, theme, usernamesById = {}, style,
 }: Props) => {
     const intl = useIntl();
-
-    // const serverUrl = useServerUrl();
+    const serverUrl = useServerUrl();
     const itemTestID = `${testID}.${post.id}`;
     const textStyles = getMarkdownTextStyles(theme);
     const {allUserIds, allUsernames, messageData} = post.props.user_activity;
@@ -100,11 +69,11 @@ const CombinedUserActivity = ({
 
     const loadUserProfiles = () => {
         if (allUserIds.length) {
-            // getMissingProfilesByIds(serverUrl, allUserIds);
+            fetchMissinProfilesByIds(serverUrl, allUserIds);
         }
 
         if (allUsernames.length) {
-            // getMissingProfilesByUsernames(serverUrl, allUsernames);
+            fetchMissinProfilesByUsernames(serverUrl, allUsernames);
         }
     };
 

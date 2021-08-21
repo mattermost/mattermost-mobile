@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {prepareUsers, queryUsersById} from '@queries/servers/user';
+import {prepareUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 import {queryCurrentUserId} from '@queries/servers/system';
 
 import type {Client} from '@client/rest';
@@ -282,7 +282,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
         return {error};
     }
     if (!userIds.length) {
-        return [];
+        return {statuses: []};
     }
 
     try {
@@ -316,7 +316,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         return {error};
     }
     if (!userIds.length) {
-        return [];
+        return {users: []};
     }
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -337,6 +337,80 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
             });
         }
 
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchUsersByUsernames = async (serverUrl: string, usernames: string[], fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+    if (!usernames.length) {
+        return {users: []};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentUser = await queryCurrentUser(operator.database);
+        const exisingUsers = await queryUsersByUsername(operator.database, usernames);
+        const usersToLoad = usernames.filter((username) => (username !== currentUser?.username && !exisingUsers.find((u) => u.username === username)));
+        const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
+
+        if (!fetchOnly) {
+            await operator.handleUsers({
+                users,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchMissinProfilesByIds = async (serverUrl: string, userIds: string[]) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const {users} = await fetchUsersByIds(serverUrl, userIds);
+        if (users) {
+            const statusToLoad = users.map((u) => u.id);
+            fetchStatusByIds(serverUrl, statusToLoad);
+        }
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchMissinProfilesByUsernames = async (serverUrl: string, usernames: string[]) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const {users} = await fetchUsersByUsernames(serverUrl, usernames);
+        if (users) {
+            const statusToLoad = users.map((u) => u.id);
+            fetchStatusByIds(serverUrl, statusToLoad);
+        }
         return {users};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);

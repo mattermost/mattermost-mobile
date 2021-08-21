@@ -46,6 +46,15 @@ export const queryUsersById = async (database: Database, userIds: string[]): Pro
     }
 };
 
+export const queryUsersByUsername = async (database: Database, usernames: string[]): Promise<UserModel[]> => {
+    try {
+        const userRecords = (await database.get(MM_TABLES.SERVER.USER).query(Q.where('username', Q.oneOf(usernames))).fetch()) as UserModel[];
+        return userRecords;
+    } catch {
+        return Promise.resolve([] as UserModel[]);
+    }
+};
+
 export const prepareUsers = (operator: ServerDataOperator, users: UserProfile[]) => {
     try {
         if (users.length) {
