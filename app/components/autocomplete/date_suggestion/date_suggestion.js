@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment from 'moment-timezone';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -36,6 +37,8 @@ export default class DateSuggestion extends PureComponent {
 
         this.state = {
             mentionComplete: false,
+            initialVisibleMonth: (new Date()).toISOString(),
+            futureScrollRange: 0,
             active: false,
             sections: [],
         };
@@ -98,7 +101,11 @@ export default class DateSuggestion extends PureComponent {
 
         onChangeText(completedDraft, true);
         this.props.onResultCountChange(1);
-        this.setState({mentionComplete: true});
+
+        const initialVisibleMonth = (new Date(day.dateString)).toISOString();
+        const futureScrollRange = moment().diff(moment(day.dateString), 'month');
+
+        this.setState({mentionComplete: true, initialVisibleMonth, futureScrollRange});
     };
 
     resetComponent() {
@@ -158,10 +165,10 @@ export default class DateSuggestion extends PureComponent {
                 {Boolean(calendarWidth) &&
                 <CalendarList
                     testID='autocomplete.date_suggestion'
-                    current={currentDate}
+                    current={this.state.initialVisibleMonth}
                     maxDate={currentDate}
                     pastScrollRange={24}
-                    futureScrollRange={0}
+                    futureScrollRange={this.state.futureScrollRange}
                     scrollingEnabled={true}
                     calendarWidth={calendarWidth}
                     pagingEnabled={true}
