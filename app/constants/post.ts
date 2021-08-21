@@ -35,4 +35,14 @@ export const PostTypes: Record<string, string> = {
 export default {
     POST_COLLAPSE_TIMEOUT: 1000 * 60 * 5,
     POST_TYPES: PostTypes,
+    USER_ACTIVITY_POST_TYPES: [
+        PostTypes.ADD_TO_CHANNEL,
+        PostTypes.JOIN_CHANNEL,
+        PostTypes.LEAVE_CHANNEL,
+        PostTypes.REMOVE_FROM_CHANNEL,
+        PostTypes.ADD_TO_TEAM,
+        PostTypes.JOIN_TEAM,
+        PostTypes.LEAVE_TEAM,
+        PostTypes.REMOVE_FROM_TEAM,
+    ],
 };
