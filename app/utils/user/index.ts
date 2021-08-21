@@ -144,21 +144,25 @@ export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGr
 };
 
 export const getUserTimezone = (user: UserModel) => {
-    if (!user.timezone) {
+    return getTimezone(user.timezone);
+};
+
+export const getTimezone = (timezone: UserTimezone | null) => {
+    if (!timezone) {
         return '';
     }
 
-    const {useAutomaticTimezone} = user.timezone;
+    const {useAutomaticTimezone} = timezone;
     let useAutomatic = useAutomaticTimezone;
     if (typeof useAutomaticTimezone === 'string') {
         useAutomatic = useAutomaticTimezone === 'true';
     }
 
     if (useAutomatic) {
-        return user.timezone.automaticTimezone;
+        return timezone.automaticTimezone;
     }
 
-    return user.timezone.manualTimezone;
+    return timezone.manualTimezone;
 };
 
 export const getUserCustomStatus = (user: UserModel) => {
