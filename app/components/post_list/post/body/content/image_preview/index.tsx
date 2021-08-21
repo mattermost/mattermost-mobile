@@ -10,7 +10,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getRedirectLocation} from '@actions/remote/general';
-import FileIcon from '@components/post/body/files/file_icon';
+import FileIcon from '@app/components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
