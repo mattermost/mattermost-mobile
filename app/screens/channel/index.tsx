@@ -10,6 +10,7 @@ import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {logout} from '@actions/remote/session';
+import PostList from '@components/post_list';
 import ServerVersion from '@components/server_version';
 import StatusBar from '@components/status_bar';
 import {Screens, Database} from '@constants';
@@ -20,7 +21,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import ChannelNavBar from './channel_nav_bar';
 import FailedChannels from './failed_channels';
 import FailedTeams from './failed_teams';
-import Posts from './temp_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -95,7 +95,10 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                     channelId={currentChannelId?.value}
                     onPress={() => null}
                 />
-                <Posts channelId={currentChannelId?.value}/>
+                <PostList
+                    channelId={currentChannelId?.value}
+                    testID='channel.post_list'
+                />
                 <View style={styles.sectionContainer}>
                     <Text
                         onPress={doLogout}
