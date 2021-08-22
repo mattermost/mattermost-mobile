@@ -34,6 +34,7 @@ type MarkdownProps = {
     blockStyles: MarkdownBlockStyles;
     channelMentions?: ChannelMentions;
     disableAtMentions?: boolean;
+    disableAtChannelMentionHighlight?: boolean;
     disableChannelLink?: boolean;
     disableGallery?: boolean;
     disableHashtags?: boolean;
@@ -56,6 +57,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         blockStyles: {},
         disableHashtags: false,
         disableAtMentions: false,
+        disableAtChannelMentionHighlight: false,
         disableChannelLink: false,
         disableGallery: false,
         value: '',
@@ -219,6 +221,7 @@ class Markdown extends PureComponent<MarkdownProps> {
 
         return (
             <AtMention
+                disableAtChannelMentionHighlight={this.props.disableAtChannelMentionHighlight}
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={this.props.isSearchResult}

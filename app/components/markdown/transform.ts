@@ -138,7 +138,7 @@ export function highlightMentions(ast: Node, mentionKeys: UserMentionKey[]) {
             const matches = mentionKeys.some((mention) => {
                 const mentionName = '@' + node.mentionName;
                 const flags = mention.caseSensitive ? '' : 'i';
-                const pattern = new RegExp(`${escapeRegex(mention.key)}\\.?`, flags);
+                const pattern = new RegExp(`@${escapeRegex(mention.key.replace('@', ''))}\\.?\\b`, flags);
 
                 return pattern.test(mentionName);
             });

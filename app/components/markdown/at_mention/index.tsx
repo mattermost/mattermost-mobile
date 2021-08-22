@@ -31,6 +31,7 @@ import type UserModelType from '@typings/database/models/servers/user';
 type AtMentionProps = {
     currentUserId: string;
     database: Database;
+    disableAtChannelMentionHighlight?: boolean;
     groups: GroupModel[];
     isSearchResult?: boolean;
     mentionKeys?: Array<{key: string }>;
@@ -62,6 +63,7 @@ const style = StyleSheet.create({
 const AtMention = ({
     currentUserId,
     database,
+    disableAtChannelMentionHighlight,
     groups,
     isSearchResult,
     mentionName,
@@ -211,7 +213,7 @@ const AtMention = ({
             const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
             const mentionMatch = pattern.exec(mentionName);
 
-            if (mentionMatch) {
+            if (mentionMatch && !disableAtChannelMentionHighlight) {
                 mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                 suffix = mentionName.replace(mention, '');
                 isMention = true;
