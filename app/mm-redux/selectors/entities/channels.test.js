@@ -1396,21 +1396,10 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
                 profiles,
             },
             general: {},
-        },
-    });
-
-    it('getRedirectChannelNameForTeam without advanced permissions', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '4.8.0',
-                },
+            roles: {
+                roles: {},
             },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
+        },
     });
 
     it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission', () => {
