@@ -96,6 +96,7 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
         "centerChannelBg": "#ffffff",
         "centerChannelColor": "#3d3c40",
         "codeTheme": "github",
+        "colorScheme": "light",
         "dndIndicator": "#f74343",
         "errorTextColor": "#fd5960",
         "linkColor": "#2389d7",
