@@ -1,9 +1,27 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 3b4e398..8e91f6b 100644
+index 2b30edf..5d01be0 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-@@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
-         reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
+@@ -33,6 +33,8 @@ import androidx.annotation.Nullable;
+ 
+ import static com.reactnativenavigation.utils.UiUtils.pxToDp;
+ 
++import android.app.Activity;
++
+ public class NavigationModule extends ReactContextBaseJavaModule {
+     private static final String NAME = "RNNBridgeModule";
+ 
+@@ -56,20 +58,30 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+             @Override
+             public void onHostPause() {
+                 super.onHostPause();
+-                navigator().onHostPause();
++                Navigator navigator = navigator();
++                if (navigator != null) {
++                    navigator().onHostPause();
++                }
+             }
+ 
              @Override
              public void onHostResume() {
 -                eventEmitter = new EventEmitter(reactContext);
@@ -14,22 +32,40 @@ index 3b4e398..8e91f6b 100644
 -                        navigator().getChildRegistry(),
 -                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
 -                );
+-                navigator().onHostResume();
 +                try {
 +                    eventEmitter = new EventEmitter(reactContext);
-+                    navigator().setEventEmitter(eventEmitter);
-+                    layoutFactory.init(
-+                            activity(),
-+                            eventEmitter,
-+                            navigator().getChildRegistry(),
-+                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
-+                    );
++                    Navigator navigator = navigator();
++                    if (navigator != null) {
++                        navigator().setEventEmitter(eventEmitter);
++                        layoutFactory.init(
++                                activity(),
++                                eventEmitter,
++                                navigator().getChildRegistry(),
++                                ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                        );
++                        navigator().onHostResume();
++                    }
 +                } catch (ClassCastException e) {
 +                    // The most current activity is not a NavigationActivity
 +                }
              }
          });
      }
-@@ -210,8 +214,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -206,7 +218,11 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+     }
+ 
+     private Navigator navigator() {
+-        return activity().getNavigator();
++        if (activity() instanceof NavigationActivity) {
++            NavigationActivity activity = (NavigationActivity) activity();
++            return activity.getNavigator();
++        }
++        return null;
+     }
+ 
+     private Options parse(@Nullable ReadableMap mergeOptions) {
+@@ -217,21 +233,26 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -40,9 +76,28 @@ index 3b4e398..8e91f6b 100644
 +                    task.run();
 +                }
 +            } catch (ClassCastException e) {
-+                // The most current activity is not a NavigationActivity
++                // The most current activity is not a NavigationActivity)
              }
          });
+     }
+ 
+-    protected NavigationActivity activity() {
+-        return (NavigationActivity) getCurrentActivity();
++    protected Activity activity() {
++        return getCurrentActivity();
+     }
+ 
+     @Override
+     public void onCatalystInstanceDestroy() {
+-        final NavigationActivity navigationActivity = activity();
+-        if (navigationActivity != null) {
+-            navigationActivity.onCatalystInstanceDestroy();
++        final Activity navigationActivity = activity();
++        if (navigationActivity != null && navigationActivity instanceof NavigationActivity) {
++            NavigationActivity activity = (NavigationActivity)navigationActivity;
++            activity.onCatalystInstanceDestroy();
+         }
+         super.onCatalystInstanceDestroy();
      }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/ViewController.java
 index 1e5751e..f921605 100644
@@ -71,28 +126,27 @@ index 1e5751e..f921605 100644
              view.setOnHierarchyChangeListener(null);
              if (view.getParent() instanceof ViewGroup) {
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-index 815e1c6..a35a087 100644
+index 934e7e7..19169a3 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-@@ -1,5 +1,7 @@
+@@ -1,6 +1,8 @@
  #import "RNNOverlayWindow.h"
  #import "RNNReactView.h"
+ #import <React/RCTModalHostView.h>
 +#import <react-native-safe-area-context/RNCSafeAreaView.h>
 +#import <react-native-safe-area-context/RNCSafeAreaProvider.h>
  
  @implementation RNNOverlayWindow
  
-@@ -7,7 +9,9 @@
-     UIView *hitTestResult = [super hitTest:point withEvent:event];
+@@ -9,6 +11,8 @@
  
      if ([hitTestResult isKindOfClass:[UIWindow class]] ||
--        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class]) {
-+        [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
+         [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
 +        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
-+        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]]) {
++        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]] ||
+         [hitTestResult isKindOfClass:[RCTModalHostView class]]) {
          return nil;
      }
- 
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
 index 2e60123..56830c8 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m

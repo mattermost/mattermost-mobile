@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import merge from 'deepmerge';
 import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import merge from 'deepmerge';
 
+import CompassIcon from '@components/compass_icon';
+import {DeviceTypes, NavigationTypes} from '@constants';
+import {CHANNEL} from '@constants/screen';
 import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
-
-import {DeviceTypes, NavigationTypes} from '@constants';
-import {CHANNEL} from '@constants/screen';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
@@ -373,12 +373,40 @@ export function showSearchModal(initialValue = '') {
     showModal(name, title, passProps, options);
 }
 
+export const showAppForm = async (form, call, theme) => {
+    const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+
+    let submitButtons;
+    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
+
+    if (!customSubmitButtons?.length) {
+        submitButtons = [{
+            id: 'submit-form',
+            showAsAction: 'always',
+            text: 'Submit',
+        }];
+    }
+
+    const options = {
+        topBar: {
+            leftButtons: [{
+                id: 'close-dialog',
+                icon: closeButton,
+            }],
+            rightButtons: submitButtons,
+        },
+    };
+
+    const passProps = {form, call};
+    showModal('AppForm', form.title, passProps, options);
+};
+
 export async function dismissModal(options = {}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = options.componentId || EphemeralStore.getNavigationTopComponentId();
 
     try {
         await Navigation.dismissModal(componentId, options);

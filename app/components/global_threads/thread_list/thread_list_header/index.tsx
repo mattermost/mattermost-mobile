@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 
@@ -62,13 +62,13 @@ function ThreadListHeader({haveUnreads, intl, markAllAsRead, style, testID, view
             </View>
             <View style={style.markAllReadIconContainer}>
                 <TouchableOpacity
-                    disabled={!haveUnreads}
+                    disabled={false/*!haveUnreads*/}
                     onPress={markAllAsRead}
                     testID={`${testID}.mark_all_read`}
                 >
                     <CompassIcon
                         name='playlist-check'
-                        style={[style.markAllReadIcon, haveUnreads ? undefined : style.markAllReadIconDisabled]}
+                        style={[style.markAllReadIcon/*, haveUnreads ? undefined : style.markAllReadIconDisabled*/]}
                     />
                 </TouchableOpacity>
             </View>

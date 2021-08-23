@@ -1,21 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated} from 'react-native';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Animated} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {General, RequestStatus} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import Loading from 'app/components/loading';
-import DeletedPost from 'app/components/deleted_post';
-import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
-import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
+import {popTopScreen, mergeNavigationOptions} from '@actions/navigation';
 import {Client4} from '@client/rest';
+import DeletedPost from '@components/deleted_post';
+import Loading from '@components/loading';
+import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
+import {General, RequestStatus} from '@mm-redux/constants';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
@@ -59,6 +58,9 @@ export default class ThreadBase extends PureComponent {
         const options = {};
 
         if (props.collapsedThreadsEnabled) {
+            // Without unique id, it breaks navigation from permalink view.
+            this.threadFollowId = Math.floor(Math.random() * 0x10000000000).toString(16);
+
             let titleText;
             if (channelType === General.DM_CHANNEL) {
                 titleText = formatMessage({id: 'mobile.routes.thread_dm', defaultMessage: 'Direct Message Thread'});
@@ -74,9 +76,9 @@ export default class ThreadBase extends PureComponent {
                 },
                 rightButtons: [
                     {
-                        id: '1',
+                        id: 1,
                         component: {
-                            id: 'ThreadFollow',
+                            id: this.threadFollowId,
                             name: 'ThreadFollow',
                             passProps: {
                                 active: thread?.is_following,
@@ -158,7 +160,7 @@ export default class ThreadBase extends PureComponent {
         }
 
         if (this.props.thread?.is_following !== nextProps.thread?.is_following) {
-            Navigation.updateProps('ThreadFollow', {active: nextProps.thread?.is_following});
+            Navigation.updateProps(this.threadFollowId, {active: nextProps.thread?.is_following});
         }
     }
 
@@ -177,6 +179,7 @@ export default class ThreadBase extends PureComponent {
         if (
             this.props.collapsedThreadsEnabled &&
             this.props.thread &&
+            this.props.thread.is_following &&
             (
                 hasNewPost ||
                 this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||

@@ -3,7 +3,6 @@
 
 import {getAddedDmUsersIfNecessary} from '@actions/helpers/channels';
 import {handleCRTPreferenceChange} from '@actions/views/crt';
-
 import {getPost} from '@actions/views/post';
 import {PreferenceTypes} from '@mm-redux/action_types';
 import {Preferences} from '@mm-redux/constants';

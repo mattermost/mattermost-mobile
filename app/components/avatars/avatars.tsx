@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {PureComponent} from 'react';
 import {Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 
+import {showModalOverCurrentContext} from '@actions/navigation';
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import type {Theme} from '@mm-redux/types/preferences';
-import {showModalOverCurrentContext} from '@actions/navigation';
 import {ViewTypes} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/preferences';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const size = ViewTypes.AVATAR_LIST_PICTURE_SIZE;

@@ -4,12 +4,10 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
+import {getNotificationProps} from '@utils/notify_props';
 
 import NotificationSettings from './notification_settings.js';
-
-import {getNotificationProps} from 'app/utils/notify_props';
 
 describe('NotificationSettings', () => {
     const currentUser = {id: 'current_user_id'};
@@ -23,11 +21,23 @@ describe('NotificationSettings', () => {
         updateMeRequest: {},
         currentUserStatus: 'status',
         enableAutoResponder: false,
+        isCollapsedThreadsEnabled: false,
     };
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <NotificationSettings {...baseProps}/>,
+        );
+
+        expect(wrapper.instance()).toMatchSnapshot();
+    });
+
+    test('should match snapshot, when CRT is ON', () => {
+        const wrapper = shallowWithIntl(
+            <NotificationSettings
+                {...baseProps}
+                isCollapsedThreadsEnabled={true}
+            />,
         );
 
         expect(wrapper.instance()).toMatchSnapshot();

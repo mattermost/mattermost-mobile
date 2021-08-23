@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {selectPost} from '@mm-redux/actions/posts';
 import {setThreadFollow, updateThreadRead} from '@mm-redux/actions/threads';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {AppBindingLocations} from '@mm-redux/constants/apps';
+import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {getChannel, getCurrentChannelId, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {getThread} from '@mm-redux/selectors/entities/threads';
-import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
-import {AppBindingLocations} from '@mm-redux/constants/apps';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
 
 import Thread from './thread';
 
@@ -38,7 +38,7 @@ function makeMapStateToProps() {
             myMember: getMyCurrentChannelMembership(state),
             postIds: getPostIdsForThread(state, ownProps.rootId),
             theme: getTheme(state),
-            thread: getThread(state, ownProps.rootId, true),
+            thread: collapsedThreadsEnabled ? getThread(state, ownProps.rootId, true) : null,
             threadLoadingStatus: state.requests.posts.getPostThread,
             postBindings,
             teamId: channel.team_id || getCurrentTeamId(state),

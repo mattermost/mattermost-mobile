@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -16,6 +16,7 @@ describe('QuickActions', () => {
         fileCount: 1,
         inputEventType: 'input-event-type',
         maxFileSize: 10,
+        screenId: 'Channel',
         theme: Preferences.THEMES.default,
     };
 

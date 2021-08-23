@@ -8,15 +8,15 @@
 // *******************************************************************
 
 import {
-    ChannelScreen,
-    MoreDirectMessagesScreen,
-    UserProfileScreen,
-} from '@support/ui/screen';
-import {
     Bot,
     Setup,
     Team,
 } from '@support/server_api';
+import {
+    ChannelScreen,
+    MoreDirectMessagesScreen,
+    UserProfileScreen,
+} from '@support/ui/screen';
 
 describe('Bot Account', () => {
     const {

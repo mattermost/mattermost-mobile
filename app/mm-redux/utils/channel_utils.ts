@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General, Preferences, Permissions, Users} from '../constants';
-
 import {hasNewPermissions} from '@mm-redux/selectors/entities/general';
 import {haveITeamPermission, haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {Channel, ChannelMembership, ChannelType, ChannelNotifyProps} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
-import {UserProfile, UsersState, UserNotifyProps} from '@mm-redux/types/users';
+import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {TeamMembership} from '@mm-redux/types/teams';
-import {PreferenceType} from '@mm-redux/types/preferences';
+import {UserProfile, UsersState, UserNotifyProps} from '@mm-redux/types/users';
 import {RelationOneToOne, IDMappedObjects} from '@mm-redux/types/utilities';
+
+import {General, Preferences, Permissions, Users} from '../constants';
 
 import {getPreferenceKey, getPreferencesByCategory} from './preference_utils';
 import {displayUsername} from './user_utils';
@@ -43,8 +43,10 @@ export function buildDisplayableChannelListWithUnreadSection(usersState: UsersSt
     const locale = getUserLocale(currentUserId, profiles);
     const missingDirectChannels = createMissingDirectChannels(currentUserId, myChannels, myPreferences);
     const channels = buildChannels(usersState, myChannels, missingDirectChannels, teammateNameDisplay, locale);
-    const unreadChannels = [...buildChannelsWithMentions(channels, myMembers, locale), ...buildUnreadChannels(channels, myMembers, locale)];
+    const unreadChannels = [...buildChannelsWithMentions(channels, myMembers, locale), ...buildUnreadChannels(channels, myMembers, locale, collapsedThreadsEnabled)];
+
     const notUnreadChannels = channels.filter((channel: Channel) => !isUnreadChannel(myMembers, channel, collapsedThreadsEnabled));
+
     const favoriteChannels = buildFavoriteChannels(notUnreadChannels, myPreferences, locale);
     const notFavoriteChannels = buildNotFavoriteChannels(notUnreadChannels, myPreferences);
     const directAndGroupChannels = buildDirectAndGroupChannels(notFavoriteChannels, myMembers, config, myPreferences, currentUserId, profiles, lastPosts, collapsedThreadsEnabled);
@@ -547,10 +549,10 @@ function channelHasMentions(members: RelationOneToOne<Channel, ChannelMembership
     return false;
 }
 
-function channelHasUnreadMessages(members: RelationOneToOne<Channel, ChannelMembership>, channel: Channel): boolean {
+function channelHasUnreadMessages(collapsedThreadsEnabled: boolean, members: RelationOneToOne<Channel, ChannelMembership>, channel: Channel): boolean {
     const member = members[channel.id];
     if (member) {
-        const msgCount = channel.total_msg_count - member.msg_count;
+        const msgCount = getMsgCountInChannel(collapsedThreadsEnabled, channel, member);
         const onlyMentions = member.notify_props && member.notify_props.mark_unread === General.MENTION;
         return (Boolean(msgCount) && !onlyMentions && member.mention_count === 0);
     }
@@ -712,8 +714,8 @@ function buildChannelsWithMentions(channels: Array<Channel>, members: RelationOn
         sort(sortChannelsByDisplayName.bind(null, locale));
 }
 
-function buildUnreadChannels(channels: Array<Channel>, members: RelationOneToOne<Channel, ChannelMembership>, locale: string) {
-    return channels.filter(channelHasUnreadMessages.bind(null, members)).
+function buildUnreadChannels(channels: Array<Channel>, members: RelationOneToOne<Channel, ChannelMembership>, locale: string, collapsedThreadsEnabled: boolean) {
+    return channels.filter(channelHasUnreadMessages.bind(null, collapsedThreadsEnabled, members)).
         sort(sortChannelsByDisplayName.bind(null, locale));
 }
 

@@ -1,24 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {loadChannelsForTeam, selectInitialChannel} from '@actions/views/channel';
 import {selectDefaultTeam} from '@actions/views/select_team';
+import {Client4} from '@client/rest';
 import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
-import {Client4} from '@client/rest';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {getViewingGlobalThreads} from '@selectors/threads';
 
 import Channel from './channel';
-import {getViewingGlobalThreads} from '@selectors/threads';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
@@ -46,6 +47,7 @@ function mapStateToProps(state) {
         currentUserId,
         isSupportedServer,
         isSystemAdmin,
+        selectedPost: getSelectedPost(state),
         showTermsOfService: shouldShowTermsOfService(state),
         teamName: currentTeam?.display_name,
         theme: getTheme(state),

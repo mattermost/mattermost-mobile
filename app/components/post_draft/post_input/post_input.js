@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, AppState, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Alert, AppState, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
 
 import PasteableTextInput from '@components/pasteable_text_input';
 import {NavigationTypes} from '@constants';
@@ -39,6 +39,7 @@ export default class PostInput extends PureComponent {
         isLandscape: PropTypes.bool,
         maxMessageLength: PropTypes.number,
         rootId: PropTypes.string,
+        screenId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         updateInitialValue: PropTypes.func.isRequired,
         userTyping: PropTypes.func.isRequired,
@@ -273,7 +274,7 @@ export default class PostInput extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {testID, channelDisplayName, isLandscape, theme} = this.props;
+        const {testID, channelDisplayName, screenId, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
         let maxHeight = DEVICE.POST_INPUT_MAX_HEIGHT;
@@ -300,6 +301,7 @@ export default class PostInput extends PureComponent {
                 textContentType='none'
                 autoCompleteType='off'
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                screenId={screenId}
             />
         );
     }

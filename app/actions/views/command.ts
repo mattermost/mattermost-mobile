@@ -3,18 +3,16 @@
 
 import {intlShape} from 'react-intl';
 
+import {doAppCall, postEphemeralCallResponseForCommandArgs} from '@actions/apps';
+import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
-import {CommandArgs} from '@mm-redux/types/integrations';
-
-import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
-
-import {doAppCall, postEphemeralCallResponseForCommandArgs} from '@actions/apps';
-import {appsEnabled} from '@utils/apps';
 import {AppCallResponse} from '@mm-redux/types/apps';
+import {CommandArgs} from '@mm-redux/types/integrations';
+import {appsEnabled} from '@utils/apps';
 
 export function executeCommand(message: string, channelId: string, rootId: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -26,7 +24,6 @@ export function executeCommand(message: string, channelId: string, rootId: strin
             channel_id: channelId,
             team_id: teamId,
             root_id: rootId,
-            parent_id: rootId,
         };
 
         let msg = message;
@@ -42,7 +39,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
 
         const appsAreEnabled = appsEnabled(state);
         if (appsAreEnabled) {
-            const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.root_id);
+            const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.team_id, args.root_id);
             if (parser.isAppCommand(msg)) {
                 const {call, errorMessage} = await parser.composeCallFromCommand(msg);
                 const createErrorMessage = (errMessage: string) => {
@@ -69,8 +66,14 @@ export function executeCommand(message: string, channelId: string, rootId: strin
                     }
                     return {data: {}};
                 case AppCallResponseTypes.FORM:
+                    return {data: {
+                        form: callResp.form,
+                        call,
+                    }};
                 case AppCallResponseTypes.NAVIGATE:
-                    return {data: {}};
+                    return {data: {
+                        goto_location: callResp.navigate_to_url,
+                    }};
                 default:
                     return createErrorMessage(intl.formatMessage({
                         id: 'apps.error.responses.unknown_type',

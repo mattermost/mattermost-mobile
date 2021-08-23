@@ -2,34 +2,37 @@
 // See LICENSE.txt for license information.
 
 import React, {useState} from 'react';
-import {Alert} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
+import {Alert} from 'react-native';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
+import {showAppForm} from '@actions/navigation';
+import {Client4} from '@client/rest';
+import {AppBindingLocations, AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
+import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
+import {Post} from '@mm-redux/types/posts';
+import {Theme} from '@mm-redux/types/preferences';
+import {UserProfile} from '@mm-redux/types/users';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
+import {createCallContext, createCallRequest} from '@utils/apps';
 
 import PostOption from '../post_option';
-import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
-import {Theme} from '@mm-redux/types/preferences';
-import {Post} from '@mm-redux/types/posts';
-import {UserProfile} from '@mm-redux/types/users';
-import {AppBindingLocations, AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
-import {createCallContext, createCallRequest} from '@utils/apps';
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
-import {Client4} from '@client/rest';
 
 type Props = {
-    bindings: AppBinding[] | null,
-    theme: Theme,
-    post: Post,
-    currentUser: UserProfile,
-    teamID: string,
-    closeWithAnimation: (cb?: () => void) => void,
-    appsEnabled: boolean,
-    intl: typeof intlShape,
+    bindings: AppBinding[] | null;
+    theme: Theme;
+    post: Post;
+    currentUser: UserProfile;
+    teamID: string;
+    closeWithAnimation: (cb?: () => void) => void;
+    appsEnabled: boolean;
+    intl: typeof intlShape;
     actions: {
         doAppCall: DoAppCall;
         postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
-    }
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
+    };
 }
 
 const fetchBindings = (userId: string, channelId: string, teamId: string, setState: React.Dispatch<React.SetStateAction<AppBinding[] | null>>) => {
@@ -83,22 +86,23 @@ const Bindings = injectIntl((props: Props) => {
 export default Bindings;
 
 type OptionProps = {
-    binding: AppBinding,
-    theme: Theme,
-    post: Post,
-    currentUser: UserProfile,
-    teamID: string,
-    closeWithAnimation: (cb?: () => void) => void,
-    intl: typeof intlShape,
+    binding: AppBinding;
+    theme: Theme;
+    post: Post;
+    currentUser: UserProfile;
+    teamID: string;
+    closeWithAnimation: (cb?: () => void) => void;
+    intl: typeof intlShape;
     actions: {
         doAppCall: DoAppCall;
         postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
-    },
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
+    };
 }
 
 class Option extends React.PureComponent<OptionProps> {
     onPress = async () => {
-        const {closeWithAnimation, post, teamID, binding, intl} = this.props;
+        const {post, teamID, binding, intl, theme} = this.props;
         const {doAppCall, postEphemeralCallResponseForPost} = this.props.actions;
 
         if (!binding.call) {
@@ -120,49 +124,58 @@ class Option extends React.PureComponent<OptionProps> {
             },
         );
 
-        closeWithAnimation(async () => {
-            const callPromise = doAppCall(call, AppCallTypes.SUBMIT, intl);
-            const res = await callPromise;
-            if (res.error) {
-                const errorResponse = res.error;
-                const title = intl.formatMessage({
-                    id: 'mobile.general.error.title',
-                    defaultMessage: 'Error',
-                });
-                const errorMessage = errorResponse.error || intl.formatMessage({
-                    id: 'apps.error.unknown',
-                    defaultMessage: 'Unknown error occurred.',
-                });
-                Alert.alert(title, errorMessage);
-                return;
-            }
+        const callPromise = doAppCall(call, AppCallTypes.SUBMIT, intl);
+        await this.close();
 
-            const callResp = (res as {data: AppCallResponse}).data;
-            switch (callResp.type) {
-            case AppCallResponseTypes.OK:
-                if (callResp.markdown) {
-                    postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
-                }
-                break;
-            case AppCallResponseTypes.NAVIGATE:
-            case AppCallResponseTypes.FORM:
-                break;
-            default: {
-                const title = intl.formatMessage({
-                    id: 'mobile.general.error.title',
-                    defaultMessage: 'Error',
-                });
-                const errMessage = intl.formatMessage({
-                    id: 'apps.error.responses.unknown_type',
-                    defaultMessage: 'App response type not supported. Response type: {type}.',
-                }, {
-                    type: callResp.type,
-                });
-                Alert.alert(title, errMessage);
+        const res = await callPromise;
+        if (res.error) {
+            const errorResponse = res.error;
+            const title = intl.formatMessage({
+                id: 'mobile.general.error.title',
+                defaultMessage: 'Error',
+            });
+            const errorMessage = errorResponse.error || intl.formatMessage({
+                id: 'apps.error.unknown',
+                defaultMessage: 'Unknown error occurred.',
+            });
+            Alert.alert(title, errorMessage);
+            return;
+        }
+
+        const callResp = (res as {data: AppCallResponse}).data;
+        switch (callResp.type) {
+        case AppCallResponseTypes.OK:
+            if (callResp.markdown) {
+                postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
             }
-            }
-        });
+            break;
+        case AppCallResponseTypes.NAVIGATE:
+            this.props.actions.handleGotoLocation(callResp.navigate_to_url!, intl);
+            break;
+        case AppCallResponseTypes.FORM:
+            showAppForm(callResp.form, call, theme);
+            break;
+        default: {
+            const title = intl.formatMessage({
+                id: 'mobile.general.error.title',
+                defaultMessage: 'Error',
+            });
+            const errMessage = intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            });
+            Alert.alert(title, errMessage);
+        }
+        }
     };
+
+    close = (): Promise<void> => {
+        return new Promise((resolve) => {
+            this.props.closeWithAnimation(resolve);
+        });
+    }
 
     render() {
         const {binding, theme} = this.props;

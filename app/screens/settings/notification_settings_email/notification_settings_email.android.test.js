@@ -3,11 +3,9 @@
 
 import React from 'react';
 
+import RadioButtonGroup from '@components/radio_button';
 import Preferences from '@mm-redux/constants/preferences';
-
-import {shallowWithIntl} from 'test/intl-test-helper';
-
-import RadioButtonGroup from 'app/components/radio_button';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import NotificationSettingsEmailAndroid from './notification_settings_email.android.js';
 
@@ -16,6 +14,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         currentUser: {id: 'current_user_id'},
         notifyProps: {
             email: 'true',
+            email_threads: 'all',
         },
         emailInterval: '30',
         enableEmailBatching: false,
@@ -26,6 +25,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         sendEmailNotifications: true,
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
+        isCollapsedThreadsEnabled: false,
     };
 
     test('should match snapshot', () => {
@@ -49,6 +49,33 @@ describe('NotificationSettingsEmailAndroid', () => {
 
         expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
         expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
+    });
+
+    test('should match snapshot, renderEmailThreadsSection', () => {
+        const props = {
+            ...baseProps,
+            isCollapsedThreadsEnabled: true,
+        };
+
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsEmailAndroid {...props}/>,
+        );
+
+        const style = {
+            divider: {},
+            modal: {},
+            modalBody: {},
+            modalTitleContainer: {},
+            modalTitle: {},
+            modalOptionDisabled: {},
+            modalHelpText: {},
+            modalFooter: {},
+            modalFooterContainer: {},
+            modalFooterOptionContainer: {},
+            modalFooterOption: {},
+        };
+
+        expect(wrapper.instance().renderEmailThreadsSection(style)).toMatchSnapshot();
     });
 
     test('should match state on setEmailInterval', () => {

@@ -2,32 +2,32 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode, useRef} from 'react';
-import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import ThreadFooter from '@components/global_threads/thread_footer';
+import SystemAvatar from '@components/post_list/system_avatar';
 import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import SystemAvatar from '@components/post_list/system_avatar';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
-import {UserProfile} from '@mm-redux/types/users';
+import {AppBinding} from '@mm-redux/types/apps';
 import {UserThread} from '@mm-redux/types/threads';
+import {UserProfile} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-
-import type {Post as PostType} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
 import Body from './body';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
-import {AppBinding} from '@mm-redux/types/apps';
+
+import type {Post as PostType} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/preferences';
 
 type PostProps = {
     canDelete: boolean;
@@ -52,7 +52,7 @@ type PostProps = {
     style?: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
     testID?: string;
-    theme: Theme
+    theme: Theme;
     bindings?: AppBinding[];
     thread: UserThread;
     threadStarter: UserProfile;
@@ -262,7 +262,7 @@ const Post = ({
         collapsedThreadsEnabled &&
         Boolean(thread) &&
         post.state !== Posts.POST_DELETED &&
-        thread?.participants?.length
+        (thread?.is_following || thread?.participants?.length)
     ) {
         footer = (
             <ThreadFooter

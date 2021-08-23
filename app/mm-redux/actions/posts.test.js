@@ -2,20 +2,22 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
-import fs from 'fs';
 import assert from 'assert';
+import fs from 'fs';
+
 import nock from 'nock';
 
-import * as Actions from '@mm-redux/actions/posts';
-import {getChannelStats} from '@mm-redux/actions/channels';
-import {login} from '@mm-redux/actions/users';
-import {createCustomEmoji} from '@mm-redux/actions/emojis';
 import {Client4} from '@client/rest';
-import {Preferences, Posts, RequestStatus} from '../constants';
 import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
+import {getChannelStats} from '@mm-redux/actions/channels';
+import {createCustomEmoji} from '@mm-redux/actions/emojis';
+import * as Actions from '@mm-redux/actions/posts';
+import {login} from '@mm-redux/actions/users';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
+
+import {Preferences, Posts, RequestStatus} from '../constants';
 
 const OK_RESPONSE = {status: 'OK'};
 
@@ -36,12 +38,14 @@ describe('Actions.Posts', () => {
     it('createPost', async () => {
         const channelId = TestHelper.basicChannel.id;
         const post = TestHelper.fakePost(channelId);
+        const createPost = jest.spyOn(Client4, 'createPost');
 
         nock(Client4.getBaseRoute()).
             post('/posts').
             reply(201, {...post, id: TestHelper.generateId()});
 
         await Actions.createPost(post)(store.dispatch, store.getState);
+        expect(createPost).toHaveBeenCalledWith(expect.objectContaining({id: ''}));
 
         const state = store.getState();
         const createRequest = state.requests.posts.createPost;

@@ -1,18 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
+
 import {getCurrentUser} from '@mm-redux/selectors/entities/common';
 import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
-import {createIdsSelector} from '@mm-redux/utils/helpers';
-import {Posts, Preferences} from '../../constants';
-import {isPostEphemeral, isSystemMessage, shouldFilterJoinLeavePost, comparePosts, isPostPendingOrFailed, isPostCommentMention} from '@mm-redux/utils/post_utils';
-import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
-import {GlobalState} from '@mm-redux/types/store';
+import {Channel} from '@mm-redux/types/channels';
 import {Post, PostWithFormatData, MessageHistory, PostOrderBlock} from '@mm-redux/types/posts';
 import {Reaction} from '@mm-redux/types/reactions';
+import {GlobalState} from '@mm-redux/types/store';
 import {UserProfile} from '@mm-redux/types/users';
-import {Channel} from '@mm-redux/types/channels';
 import {$ID, IDMappedObjects, RelationOneToOne, RelationOneToMany, Dictionary} from '@mm-redux/types/utilities';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
+import {isPostEphemeral, isSystemMessage, shouldFilterJoinLeavePost, comparePosts, isPostPendingOrFailed, isPostCommentMention} from '@mm-redux/utils/post_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+
+import {Posts, Preferences} from '../../constants';
 export function getAllPosts(state: GlobalState) {
     return state.entities.posts.posts;
 }
@@ -651,4 +653,21 @@ export const makeIsPostCommentMention = (): ((b: GlobalState, postId: $ID<Post>,
 
 export function getExpandedLink(state: GlobalState, link: string): string {
     return state.entities.posts.expandedURLs[link];
+}
+
+export function isPostSelected(state: GlobalState, id: $ID<Post>) {
+    if (!id) {
+        return false;
+    }
+
+    return state.entities.posts.selectedPostId === id;
+}
+
+export function getSelectedPost(state: GlobalState): Post | null {
+    const selectedPostId = state.entities.posts.selectedPostId;
+    if (selectedPostId) {
+        return getPost(state, selectedPostId);
+    }
+
+    return null;
 }

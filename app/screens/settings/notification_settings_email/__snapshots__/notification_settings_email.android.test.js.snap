@@ -147,3 +147,55 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
   </View>
 </Modal>
 `;
+
+exports[`NotificationSettingsEmailAndroid should match snapshot, renderEmailThreadsSection 1`] = `
+<View>
+  <sectionItem
+    action={[Function]}
+    actionType="toggle"
+    description={
+      <InjectIntl(FormattedText)
+        defaultMessage="Notify me about all replies to threads I'm following"
+        id="user.settings.notifications.email_threads.description"
+      />
+    }
+    label={
+      <InjectIntl(FormattedText)
+        defaultMessage="Thread reply notifications"
+        id="user.settings.notifications.email_threads.title_android"
+      />
+    }
+    selected={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+  <View />
+</View>
+`;
