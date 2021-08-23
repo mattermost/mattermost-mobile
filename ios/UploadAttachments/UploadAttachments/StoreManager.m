@@ -380,8 +380,8 @@
     }
     
     NSDictionary *config = [self getConfig];
-    // TODO: Update CloseUnusedDirectMessages boolean check for MM-37781
-    if (![[config objectForKey:@"CloseUnusedDirectMessages"] isEqualToString:@"true"] || [self isFavoriteChannel:channelId]) {
+    if ((![[config objectForKey:@"CloseUnusedDirectMessages"] isEqualToString:@"true"] && ![self isMinimumServerVersion:@"6.0.0"])
+        || [self isFavoriteChannel:channelId]) {
         return NO;
     }
 
@@ -414,6 +414,12 @@
     NSDictionary *preferences = [self getMyPreferences];
     NSDictionary *favoritePref = [preferences objectForKey:[NSString stringWithFormat:@"favorite_channel--%@", channelId]];
     return favoritePref != nil && [[favoritePref objectForKey:@"value"] isEqualToString:@"true"];
+}
+
+-(BOOL)isMinimumServerVersion:(NSString *)versionId {
+    NSDictionary *config = [self getConfig];
+    NSString* currentVersion = [config objectForKey:@"Version"];
+    return [versionId compare:currentVersion options:NSNumericSearch] == NSOrderedDescending;
 }
 
 -(NSNumber *)lastChannelPostActivity:(NSString *)channelId {
