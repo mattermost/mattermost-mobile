@@ -62,7 +62,6 @@ class Markdown extends PureComponent<MarkdownProps> {
         disableGallery: false,
         value: '',
         minimumHashtagLength: 3,
-        mentionKeys: [],
     };
 
     private parser: Parser;
@@ -227,7 +226,7 @@ class Markdown extends PureComponent<MarkdownProps> {
                 isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
                 onPostPress={this.props.onPostPress}
-                mentionKeys={this.props.mentionKeys || []}
+                mentionKeys={this.props.mentionKeys}
             />
         );
     };
