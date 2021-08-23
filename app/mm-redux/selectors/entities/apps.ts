@@ -19,6 +19,22 @@ export function getAppsBindings(state: GlobalState, location?: string): AppBindi
     return state.entities.apps.bindings;
 }
 
+export function getThreadAppsBindingsChannelID(state: GlobalState): string {
+    return state.entities.apps.threadBindingsChannelID;
+}
+
+export function getThreadAppsBindings(state: GlobalState, location?: string): AppBinding[] {
+    if (!state.entities.apps.threadBindings) {
+        return [];
+    }
+
+    if (location) {
+        const bindings = state.entities.apps.threadBindings.filter((b) => b.location === location);
+        return bindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
+    }
+    return state.entities.apps.threadBindings;
+}
+
 export const makeAppBindingsSelector = (location: string) => {
     return createSelector(
         (state: GlobalState) => state.entities.apps.bindings,
@@ -32,4 +48,27 @@ export const makeAppBindingsSelector = (location: string) => {
             return headerBindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
         },
     );
+};
+
+export const makeRHSAppBindingSelector = (location: string) => {
+    return createSelector(
+        (state: GlobalState) => state.entities.apps.threadBindings,
+        (state: GlobalState) => appsEnabled(state),
+        (bindings: AppBinding[], areAppsEnabled: boolean) => {
+            if (!areAppsEnabled || !bindings) {
+                return [];
+            }
+
+            const headerBindings = bindings.filter((b) => b.location === location);
+            return headerBindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
+        },
+    );
+};
+
+export const getAppCommandForm = (state: GlobalState, location: string) => {
+    return state.entities.apps.bindingsForms[location];
+};
+
+export const getAppRHSCommandForm = (state: GlobalState, location: string) => {
+    return state.entities.apps.threadBindingsForms[location];
 };

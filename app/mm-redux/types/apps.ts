@@ -18,6 +18,10 @@ export type AppModalState = {
 
 export type AppsState = {
     bindings: AppBinding[];
+    bindingsForms: AppCommandFormMap;
+    threadBindings: AppBinding[];
+    threadBindingsForms: AppCommandFormMap;
+    threadBindingsChannelID: string;
 };
 
 export type AppBinding = {
@@ -219,3 +223,5 @@ export type FormResponseData = {
 export type AppLookupResponse = {
     items: AppSelectOption[];
 }
+
+export type AppCommandFormMap = {[location: string]: AppForm}

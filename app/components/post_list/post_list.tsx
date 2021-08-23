@@ -9,7 +9,6 @@ import {DeepLinkTypes, NavigationTypes} from '@constants';
 import * as Screens from '@constants/screen';
 import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
-import {AppBinding} from '@mm-redux/types/apps';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import telemetry, {PERF_MARKERS} from '@telemetry';
@@ -57,7 +56,6 @@ type PostListProps = {
     showPermalink: (intl: typeof intlShape, teamName: string, postId: string, openAsPermalink?: boolean) => Promise<{}>;
     testID?: string;
     theme: Theme;
-    bindings?: AppBinding[];
 }
 
 type ViewableItemsChanged = {
@@ -97,7 +95,6 @@ const PostList = ({
     handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl, loadMorePostsVisible,
     location, onLoadMoreUp = emptyFunction, postIds = [], refreshChannelWithRetry, renderFooter = (() => null), rootId,
     serverURL = '', setDeepLinkURL, showMoreMessagesButton, showPermalink, siteURL = '', scrollViewNativeID, shouldRenderReplyButton, testID, theme,
-    bindings,
 }: PostListProps) => {
     const prevChannelId = useRef(channelId);
     const hasPostsKey = postIds.length ? 'true' : 'false';
@@ -247,7 +244,6 @@ const PostList = ({
                 highlight={highlightPostId === item}
                 postId={item}
                 style={styles.scale}
-                bindings={bindings}
                 testID={`${testID}.post`}
                 {...postProps}
             />

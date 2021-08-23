@@ -43,7 +43,6 @@ export default class ThreadAndroid extends ThreadBase {
                             lastViewedAt={this.state.lastViewedAt}
                             location={THREAD}
                             rootId={rootId}
-                            bindings={this.state.postBindings}
                         />
                     </Animated.View>
                     <PostDraft

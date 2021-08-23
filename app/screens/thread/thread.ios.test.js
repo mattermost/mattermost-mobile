@@ -17,6 +17,8 @@ describe('thread', () => {
         actions: {
             selectPost: jest.fn(),
             setThreadFollow: jest.fn(),
+            fetchThreadAppBindings: jest.fn(),
+            clearThreadAppBindings: jest.fn(),
         },
         channelId: 'channel_id',
         channelType: General.OPEN_CHANNEL,

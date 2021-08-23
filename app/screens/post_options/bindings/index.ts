@@ -7,7 +7,7 @@ import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
-import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
+import {getAppsBindings, getThreadAppsBindings, getThreadAppsBindingsChannelID} from '@mm-redux/selectors/entities/apps';
 import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -23,17 +23,16 @@ import Bindings from './bindings';
 
 type OwnProps = {
     post: Post;
-    bindings?: AppBinding[];
 }
 
 function mapStateToProps(state: GlobalState, props: OwnProps) {
     const apps = appsEnabled(state);
     let bindings: AppBinding[] | null = [];
     if (apps) {
-        if (props.bindings) {
-            bindings = props.bindings;
-        } else if (props.post.channel_id === getCurrentChannelId(state)) {
+        if (props.post.channel_id === getCurrentChannelId(state)) {
             bindings = getAppsBindings(state, AppBindingLocations.POST_MENU_ITEM);
+        } else if (props.post.channel_id === getThreadAppsBindingsChannelID(state)) {
+            bindings = getThreadAppsBindings(state, AppBindingLocations.POST_MENU_ITEM);
         } else {
             bindings = null;
         }

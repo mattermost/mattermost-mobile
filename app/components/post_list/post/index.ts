@@ -13,7 +13,6 @@ import {getMyPreferences, getTeammateNameDisplaySetting, isCollapsedThreadsEnabl
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getThread} from '@mm-redux/selectors/entities/threads';
 import {getUser} from '@mm-redux/selectors/entities/users';
-import {AppBinding} from '@mm-redux/types/apps';
 import {UserThread} from '@mm-redux/types/threads';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {canDeletePost} from '@selectors/permissions';
@@ -36,7 +35,6 @@ type OwnProps = {
     style?: StyleProp<ViewStyle>;
     testID: string;
     theme: Theme;
-    bindings?: AppBinding[];
 }
 
 function mapSateToProps(state: GlobalState, ownProps: OwnProps) {

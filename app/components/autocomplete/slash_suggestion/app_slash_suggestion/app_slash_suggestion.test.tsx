@@ -27,7 +27,12 @@ const makeStore = async (bindings: AppBinding[]) => {
         ...reduxTestState,
         entities: {
             ...reduxTestState.entities,
-            apps: {bindings},
+            apps: {
+                bindings,
+                bindingsForms: {},
+                threadBindings: bindings,
+                threadBindingsForms: {},
+            },
         },
     } as any;
     const testStore = await mockStore(initialState);

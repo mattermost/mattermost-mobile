@@ -12,7 +12,6 @@ import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
-import {AppBinding} from '@mm-redux/types/apps';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -53,7 +52,6 @@ type PostProps = {
     teammateNameDisplay: string;
     testID?: string;
     theme: Theme;
-    bindings?: AppBinding[];
     thread: UserThread;
     threadStarter: UserProfile;
 };
@@ -115,7 +113,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     canDelete, collapsedThreadsEnabled, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
     location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink, style,
-    teammateNameDisplay, testID, theme, thread, threadStarter, bindings,
+    teammateNameDisplay, testID, theme, thread, threadStarter,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const styles = getStyleSheet(theme);
@@ -166,7 +164,6 @@ const Post = ({
             location,
             post,
             showAddReaction,
-            bindings,
         };
 
         Keyboard.dismiss();

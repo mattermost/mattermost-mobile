@@ -8,12 +8,10 @@ import {Animated} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {popTopScreen, mergeNavigationOptions} from '@actions/navigation';
-import {Client4} from '@client/rest';
 import DeletedPost from '@components/deleted_post';
 import Loading from '@components/loading';
 import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
 import {General, RequestStatus} from '@mm-redux/constants';
-import {AppBindingLocations} from '@mm-redux/constants/apps';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 export default class ThreadBase extends PureComponent {
@@ -22,8 +20,11 @@ export default class ThreadBase extends PureComponent {
             selectPost: PropTypes.func.isRequired,
             setThreadFollow: PropTypes.func.isRequired,
             updateThreadRead: PropTypes.func,
+            fetchThreadAppBindings: PropTypes.func.isRequired,
+            clearThreadAppBindings: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
+        channelId: PropTypes.string,
         channelType: PropTypes.string,
         collapsedThreadsEnabled: PropTypes.bool,
         currentUserId: PropTypes.string,
@@ -35,10 +36,7 @@ export default class ThreadBase extends PureComponent {
         channelIsArchived: PropTypes.bool,
         thread: PropTypes.object,
         threadLoadingStatus: PropTypes.object,
-        postBindings: PropTypes.array,
-        userId: PropTypes.string.isRequired,
-        teamId: PropTypes.string.isRequired,
-        channelId: PropTypes.string.isRequired,
+        shouldFetchBindings: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -117,27 +115,12 @@ export default class ThreadBase extends PureComponent {
         this.typingAnimations = [];
     }
 
-    fetchBindings = () => {
-        Client4.getAppsBindings(this.props.userId, this.props.channelId, this.props.teamId).then(
-            (bindings) => {
-                const headerBindings = bindings.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM);
-                const postMenuBindings = headerBindings.reduce((accum, current) => accum.concat(current.bindings || []), []);
-                this.setState({postBindings: postMenuBindings});
-            },
-            () => {
-                this.setState({postBindings: []});
-            },
-        ).catch(() => {
-            this.setState({postBindings: []});
-        });
-    }
-
     componentDidMount() {
         this.markThreadRead();
         this.removeTypingAnimation = this.registerTypingAnimation(this.bottomPaddingAnimation);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
-        if (!this.state.bindings) {
-            this.fetchBindings();
+        if (this.props.shouldFetchBindings) {
+            this.props.actions.fetchThreadAppBindings(this.props.currentUserId, this.props.channelId);
         }
     }
 
@@ -149,10 +132,6 @@ export default class ThreadBase extends PureComponent {
 
         if (!this.state.lastViewedAt) {
             this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
-        }
-
-        if (nextProps.postBindings !== null && nextProps.postBindings !== this.state.postBindings) {
-            this.setState({postBindings: nextProps.postBindings});
         }
 
         if (this.props.postIds.length < nextProps.postIds.length) {
@@ -168,6 +147,9 @@ export default class ThreadBase extends PureComponent {
         this.props.actions.selectPost('');
         this.removeTypingAnimation();
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+        if (this.props.shouldFetchBindings) {
+            this.props.actions.clearThreadAppBindings();
+        }
     }
 
     handleThreadFollow() {

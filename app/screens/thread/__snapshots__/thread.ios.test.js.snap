@@ -143,7 +143,6 @@ exports[`thread should match snapshot, render footer 1`] = `
 
 exports[`thread should match snapshot, render footer 2`] = `
 <Connect(InjectIntl(PostList))
-  bindings={Array []}
   currentUserId="member_user_id"
   indicateNewMessages={false}
   lastViewedAt={0}

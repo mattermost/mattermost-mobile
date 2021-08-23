@@ -54,7 +54,6 @@ export default class PostOptions extends PureComponent {
         location: PropTypes.string,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        bindings: PropTypes.array,
         thread: PropTypes.object,
     };
 
@@ -275,7 +274,6 @@ export default class PostOptions extends PureComponent {
                 key='bindings'
                 post={post}
                 closeWithAnimation={this.closeWithAnimation}
-                bindings={this.props.bindings}
             />
         );
     }
