@@ -163,7 +163,7 @@ export default class Autocomplete extends PureComponent {
     };
 
     keyboardDidHide = () => {
-        this.setState({keyboardOffset: 0, cursorPosition: 0});
+        this.setState({keyboardOffset: 0});
         this.props.onKeyboardOffsetChanged(0);
     };
 
