@@ -162,4 +162,41 @@ describe('renderSystemMessage', () => {
         );
         expect(renderedMessage.toJSON()).toBeNull();
     });
+
+    test('uses renderer for Guest added and join to channel', () => {
+        const post = {
+            props: {
+                username: 'username',
+            },
+            type: Post.POST_TYPES.GUEST_JOIN_CHANNEL,
+        };
+        const joined = renderWithEverything(
+            <SystemMessage
+                post={post}
+                {...baseProps}
+            />,
+            {database},
+        );
+        expect(joined.toJSON()).toMatchSnapshot();
+        expect(joined.getByText('@username')).toBeTruthy();
+        expect(joined.getByText(' joined the channel as a guest.')).toBeTruthy();
+
+        post.type = Post.POST_TYPES.ADD_GUEST_TO_CHANNEL;
+        post.props = {
+            username: 'username',
+            addedUsername: 'other.user',
+        };
+
+        const added = renderWithEverything(
+            <SystemMessage
+                post={post}
+                {...baseProps}
+            />,
+            {database},
+        );
+        expect(added.toJSON()).toMatchSnapshot();
+        expect(added.getByText('@other.user')).toBeTruthy();
+        expect(added.getByText(' added to the channel as a guest by ')).toBeTruthy();
+        expect(added.getByText('@username.')).toBeTruthy();
+    });
 });

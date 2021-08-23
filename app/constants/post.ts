@@ -11,6 +11,7 @@ export const PostTypes: Record<string, string> = {
     HEADER_CHANGE: 'system_header_change',
     PURPOSE_CHANGE: 'system_purpose_change',
 
+    SYSTEM_MESSAGE_PREFIX: 'system_',
     JOIN_LEAVE: 'system_join_leave',
     JOIN_CHANNEL: 'system_join_channel',
     GUEST_JOIN_CHANNEL: 'system_guest_join_channel',

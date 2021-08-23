@@ -213,12 +213,46 @@ const renderUnarchivedMessage = ({post, author, styles, intl, theme}: RenderersP
     return renderMessage({post, styles, intl, localeHolder, values, theme});
 };
 
+const renderAddGuestToChannelMessage = ({post, styles, intl, theme}: RenderersProps) => {
+    if (!post.props.username || !post.props.addedUsername) {
+        return null;
+    }
+
+    const username = renderUsername(post.props.username);
+    const addedUsername = renderUsername(post.props.addedUsername);
+
+    const localeHolder = {
+        id: t('api.channel.add_guest.added'),
+        defaultMessage: '{addedUsername} added to the channel as a guest by {username}.',
+    };
+
+    const values = {username, addedUsername};
+    return renderMessage({post, styles, intl, localeHolder, values, theme});
+};
+
+const renderGuestJoinChannelMessage = ({post, styles, intl, theme}: RenderersProps) => {
+    if (!post.props.username) {
+        return null;
+    }
+
+    const username = renderUsername(post.props.username);
+    const localeHolder = {
+        id: t('api.channel.guest_join_channel.post_and_forget'),
+        defaultMessage: '{username} joined the channel as a guest.',
+    };
+
+    const values = {username};
+    return renderMessage({post, styles, intl, localeHolder, values, theme});
+};
+
 const systemMessageRenderers = {
     [Post.POST_TYPES.HEADER_CHANGE]: renderHeaderChangeMessage,
     [Post.POST_TYPES.DISPLAYNAME_CHANGE]: renderDisplayNameChangeMessage,
     [Post.POST_TYPES.PURPOSE_CHANGE]: renderPurposeChangeMessage,
     [Post.POST_TYPES.CHANNEL_DELETED]: renderArchivedMessage,
     [Post.POST_TYPES.CHANNEL_UNARCHIVED]: renderUnarchivedMessage,
+    [Post.POST_TYPES.GUEST_JOIN_CHANNEL]: renderGuestJoinChannelMessage,
+    [Post.POST_TYPES.ADD_GUEST_TO_CHANNEL]: renderAddGuestToChannelMessage,
 };
 
 export const SystemMessage = ({post, author}: SystemMessageProps) => {
