@@ -11,12 +11,11 @@ import {deleteChannel, getChannel, unarchiveChannel} from '@mm-redux/actions/cha
 import {General} from '@mm-redux/constants';
 import Permissions from '@mm-redux/constants/permissions';
 import {getCurrentChannel, isCurrentChannelReadOnly} from '@mm-redux/selectors/entities/channels';
-import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showDeleteOption} from '@mm-redux/utils/channel_utils';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 import {isGuest as isUserGuest} from '@utils/users';
 
@@ -40,20 +39,16 @@ function mapStateToProps(state) {
     const isArchived = currentChannel?.delete_at > 0;
     const canUnarchive = (isArchived && !isDirectMessage && !isGroupMessage);
     const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
-    const {serverVersion} = state.entities.general;
 
     let isReadOnly = false;
     if (currentUser?.id && currentChannel?.id) {
         isReadOnly = isCurrentChannelReadOnly(state) || false;
     }
 
-    let canUnarchiveChannel = false;
-    if (hasNewPermissions(state) && isMinimumServerVersion(serverVersion, 5, 20)) {
-        canUnarchiveChannel = haveITeamPermission(state, {
-            team: getCurrentTeamId(state),
-            permission: Permissions.MANAGE_TEAM,
-        });
-    }
+    const canUnarchiveChannel = haveITeamPermission(state, {
+        team: getCurrentTeamId(state),
+        permission: Permissions.MANAGE_TEAM,
+    });
 
     return {
         canArchive: (!isArchived && canLeave && canDelete && !isReadOnly),
