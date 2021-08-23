@@ -19,6 +19,15 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
 
 class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
+    onMobilePushThreadChanged = (value) => {
+        let pushThreads = 'mention';
+        if (value) {
+            pushThreads = 'all';
+        }
+
+        this.setMobilePushThreads(pushThreads, this.saveNotificationProps);
+    };
+
     renderMobilePushSection(style) {
         const {config, theme} = this.props;
 
@@ -88,6 +97,35 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
         );
     }
 
+    renderMobilePushThreadsSection(style) {
+        const {theme} = this.props;
+
+        return (
+            <Section
+                headerId={t('mobile.notification_settings.push_threads.title')}
+                headerDefaultMessage='THREAD REPLY NOTIFICATIONS'
+                footerId={t('mobile.notification_settings.push_threads.info')}
+                footerDefaultMessage={'When enabled, any reply to a thread you\'re following will send a mobile push notification'}
+                theme={theme}
+            >
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings.push_threads.description'
+                            defaultMessage={'Notify me about all replies to threads I\'m following'}
+                        />
+                    )}
+                    description={<View/>}
+                    action={this.onMobilePushThreadChanged}
+                    actionType='toggle'
+                    selected={this.state.push_threads === 'all'}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </Section>
+        );
+    }
+
     renderMobilePushStatusSection(style) {
         const {config, theme} = this.props;
 
@@ -148,7 +186,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
     }
 
     render() {
-        const {theme} = this.props;
+        const {theme, isCollapsedThreadsEnabled} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -167,6 +205,9 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                         alwaysBounceVertical={false}
                     >
                         {this.renderMobilePushSection(style)}
+                        {isCollapsedThreadsEnabled && this.state.push === 'mention' && (
+                            this.renderMobilePushThreadsSection(style)
+                        )}
                         {this.renderMobilePushStatusSection(style)}
                     </ScrollView>
                 </View>

@@ -654,3 +654,20 @@ export const makeIsPostCommentMention = (): ((b: GlobalState, postId: $ID<Post>,
 export function getExpandedLink(state: GlobalState, link: string): string {
     return state.entities.posts.expandedURLs[link];
 }
+
+export function isPostSelected(state: GlobalState, id: $ID<Post>) {
+    if (!id) {
+        return false;
+    }
+
+    return state.entities.posts.selectedPostId === id;
+}
+
+export function getSelectedPost(state: GlobalState): Post | null {
+    const selectedPostId = state.entities.posts.selectedPostId;
+    if (selectedPostId) {
+        return getPost(state, selectedPostId);
+    }
+
+    return null;
+}
