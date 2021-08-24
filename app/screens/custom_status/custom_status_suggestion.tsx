@@ -74,7 +74,9 @@ const CustomStatusSuggestion = ({handleSuggestionClick, emoji, text, theme, sepa
                                 textStyle={style.customStatusText}
                             />
                         </View>
-                        {Boolean(duration && isExpirySupported) && (
+                        {Boolean(duration &&
+                            duration !== CustomStatusDuration.DATE_AND_TIME &&
+                            isExpirySupported) && (
                             <View style={{paddingTop: 5}}>
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}
