@@ -16,9 +16,12 @@ import ChannelLink from '@components/channel_link';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import Store from '@store/store';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
+import LatexCodeBlock from './latex_code_block';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -314,6 +317,16 @@ export default class Markdown extends PureComponent {
     renderCodeBlock = (props) => {
         // These sometimes include a trailing newline
         const content = props.literal.replace(/\n$/, '');
+
+        if (getConfig(Store.redux?.getState()).EnableLatex === 'true' && props.language === 'latex') {
+            return (
+                <LatexCodeBlock
+                    content={content}
+                    language={props.language}
+                    textStyle={this.props.textStyles.codeBlock}
+                />
+            );
+        }
 
         return (
             <MarkdownCodeBlock

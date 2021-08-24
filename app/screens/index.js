@@ -108,6 +108,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'InteractiveDialog':
         screen = require('@screens/interactive_dialog').default;
         break;
+    case 'Latex':
+        screen = require('@screens/latex').default;
+        break;
     case 'Login':
         screen = require('@screens/login').default;
         break;

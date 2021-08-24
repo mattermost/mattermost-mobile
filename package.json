@@ -32,6 +32,7 @@
     "fuse.js": "6.4.6",
     "intl": "1.2.5",
     "jail-monkey": "2.6.0",
+    "katex": "0.13.13",
     "mime-db": "1.49.0",
     "moment-timezone": "0.5.33",
     "prop-types": "15.7.2",
