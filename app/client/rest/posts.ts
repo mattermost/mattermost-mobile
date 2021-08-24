@@ -126,7 +126,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getUserThreads = async (userId: string, teamId: string, before = '', after = '', perPage= PER_PAGE_DEFAULT, extended = false, deleted = false, unread = false, since = 0) => {
+    getUserThreads = async (userId: string, teamId: string, before = '', after = '', perPage = PER_PAGE_DEFAULT, extended = false, deleted = false, unread = false, since = 0) => {
         const serverVersion = this.getServerVersion();
         let queryStringObj;
         if (isMinimumServerVersion(serverVersion, 6, 0)) {
