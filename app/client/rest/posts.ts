@@ -4,7 +4,7 @@
 import {analytics} from '@init/analytics';
 import {FileInfo} from '@mm-redux/types/files';
 import {Post} from '@mm-redux/types/posts';
-import {buildQueryString} from '@mm-redux/utils/helpers';
+import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -126,9 +126,16 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getUserThreads = async (userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, extended = false, deleted = false, unread = false, since = 0) => {
+    getUserThreads = async (userId: string, teamId: string, before = '', after = '', perPage= PER_PAGE_DEFAULT, extended = false, deleted = false, unread = false, since = 0) => {
+        const serverVersion = this.getServerVersion();
+        let queryStringObj;
+        if (isMinimumServerVersion(serverVersion, 6, 0)) {
+            queryStringObj = {before, after, per_page: perPage, extended, deleted, unread, since};
+        } else {
+            queryStringObj = {before, after, pageSize: perPage, extended, deleted, unread, since};
+        }
         return this.doFetch(
-            `${this.getUserThreadsRoute(userId, teamId)}${buildQueryString({before, after, pageSize, extended, deleted, unread, since})}`,
+            `${this.getUserThreadsRoute(userId, teamId)}${buildQueryString(queryStringObj)}`,
             {method: 'get'},
         );
     };
