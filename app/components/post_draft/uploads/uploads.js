@@ -16,7 +16,7 @@ import * as Animatable from 'react-native-animatable';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import FormattedText from '@components/formatted_text';
-import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
+import {MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import {openGalleryAtIndex} from '@utils/gallery';
@@ -39,6 +39,7 @@ export default class Uploads extends PureComponent {
         handleRemoveLastFile: PropTypes.func.isRequired,
         initUploadFiles: PropTypes.func.isRequired,
         maxFileSize: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         screenId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -92,7 +93,7 @@ export default class Uploads extends PureComponent {
                 this.showOrHideContainer();
             }
 
-            if (prevProps.files.length === MAX_FILE_COUNT && this.state.showFileMaxWarning) {
+            if (prevProps.files.length === this.props.maxFileCount && this.state.showFileMaxWarning) {
                 this.hideError();
             }
         }
@@ -168,8 +169,8 @@ export default class Uploads extends PureComponent {
             return;
         }
 
-        const {canUploadFiles, maxFileSize} = this.props;
-        const availableCount = MAX_FILE_COUNT - this.props.files.length;
+        const {canUploadFiles, maxFileSize, maxFileCount} = this.props;
+        const availableCount = maxFileCount - this.props.files.length;
 
         if (!canUploadFiles) {
             this.handleUploadDisabled();
@@ -336,7 +337,10 @@ export default class Uploads extends PureComponent {
                             <FormattedText
                                 style={style.warning}
                                 id='mobile.file_upload.max_warning'
-                                defaultMessage='Uploads limited to 5 files maximum.'
+                                defaultMessage='Uploads limited to {count} files maximum.'
+                                values={{
+                                    count: this.props.maxFileCount,
+                                }}
                             />
                         )}
                         {Boolean(fileSizeWarning) &&
