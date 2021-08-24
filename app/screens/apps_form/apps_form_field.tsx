@@ -67,6 +67,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
             }
         }
         }
+
         this.state = {
             selected,
         };
