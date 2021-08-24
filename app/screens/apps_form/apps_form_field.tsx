@@ -49,9 +49,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 export default class AppsFormField extends React.PureComponent<Props, State> {
-    state = {
-        selected: null,
-    };
+    constructor(props: Props) {
+        super(props);
+
+        let selected = null;
+        switch (props.field.type) {
+        case AppFieldTypes.STATIC_SELECT:
+        case AppFieldTypes.DYNAMIC_SELECT:
+        case AppFieldTypes.USER:
+        case AppFieldTypes.CHANNEL: {
+            const value = props.value as AppSelectOption | null;
+            if (value) {
+                selected = {
+                    text: value.label,
+                    value: value.value,
+                };
+            }
+        }
+        }
+        this.state = {
+            selected,
+        };
+    }
 
     handleAutocompleteSelect = (selected: DialogOption) => {
         if (!selected) {
