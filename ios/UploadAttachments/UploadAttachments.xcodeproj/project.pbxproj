@@ -133,6 +133,8 @@
 			dependencies = (
 			);
 			name = UploadAttachments;
+			packageProductDependencies = (
+			);
 			productName = UploadAttachments;
 			productReference = 7FABE03622137F2900D0F595 /* libUploadAttachments.a */;
 			productType = "com.apple.product-type.library.static";

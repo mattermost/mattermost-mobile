@@ -1,4 +1,4 @@
-import DatabaseHelper
+import Gekidou
 import UserNotifications
 import UploadAttachments
 
@@ -14,38 +14,25 @@ class NotificationService: UNNotificationServiceExtension {
 
     let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
 
-    func fetchReceipt(notificationId: String, serverUrl: String?, receivedAt: Int, type: String, postId: String, idLoaded: Bool ) -> Void {
+    func fetchReceipt(_ ackNotification: AckNotification) -> Void {
       if (self.retryIndex >= fibonacciBackoffsInSeconds.count) {
         contentHandler(self.bestAttemptContent!)
         return
       }
 
-      UploadSession.shared.notificationReceipt(
-        notificationId: notificationId,
-        serverUrl: serverUrl,
-        receivedAt: receivedAt,
-        type: type,
-        postId: postId,
-        idLoaded: idLoaded) { data, response, error in
+      Network.default.postNotificationReceipt(ackNotification) { data, response, error in
           if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
             contentHandler(self.bestAttemptContent!)
             return
           }
 
           guard let data = data, error == nil else {
-            if (idLoaded) {
+            if (ackNotification.isIdLoaded) {
               // Receipt retrieval failed. Kick off retries.
               let backoffInSeconds = fibonacciBackoffsInSeconds[self.retryIndex]
 
               DispatchQueue.main.asyncAfter(deadline: .now() + backoffInSeconds, execute: {
-                fetchReceipt(
-                  notificationId: notificationId,
-                  serverUrl: serverUrl,
-                  receivedAt: Date().millisecondsSince1970,
-                  type: type,
-                  postId: postId,
-                  idLoaded: idLoaded
-                )
+                fetchReceipt(ackNotification)
               })
  
               self.retryIndex += 1
@@ -57,24 +44,10 @@ class NotificationService: UNNotificationServiceExtension {
     }
 
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
-    if let bestAttemptContent = bestAttemptContent {
-      let ackId = (bestAttemptContent.userInfo["ack_id"] ?? "") as! String
-      let type = (bestAttemptContent.userInfo["type"] ?? "") as! String
-      let postId = (bestAttemptContent.userInfo["post_id"] ?? "") as! String
-      let idLoaded = (bestAttemptContent.userInfo["id_loaded"] ?? false) as! Bool
-      var serverUrl = (bestAttemptContent.userInfo["server_url"]) as! String?
-      if (serverUrl == nil) {
-        serverUrl = try? DatabaseHelper.default.getOnlyServerUrl()
-      }
-
-      fetchReceipt(
-        notificationId: ackId,
-        serverUrl: serverUrl,
-        receivedAt: Date().millisecondsSince1970,
-        type: type,
-        postId: postId,
-        idLoaded: idLoaded
-      )
+    if let bestAttemptContent = bestAttemptContent,
+       let jsonData = try? JSONSerialization.data(withJSONObject: bestAttemptContent.userInfo),
+       let ackNotification = try? JSONDecoder().decode(AckNotification.self, from: jsonData) {
+      fetchReceipt(ackNotification)
     }
   }
 
