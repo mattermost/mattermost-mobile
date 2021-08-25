@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Keyboard, View, Text, StyleSheet} from 'react-native';
+import {Keyboard, View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import MathView from 'react-native-math-view';
 
 import {goToScreen} from '@actions/navigation';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {getKatexWebview} from '@utils/latex';
 import {getDisplayNameForLanguage} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -15,7 +15,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import MarkdownCodeBlock from '../markdown_code_block/markdown_code_block';
 
 const MAX_LINES = 2;
-const ZOOM = 2;
 
 export default class LatexCodeBlock extends MarkdownCodeBlock {
     constructor(props) {
@@ -121,18 +120,6 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
             );
         }
 
-        const katexDisplayStyleOptions = {
-            throwOnError: false,
-            displayMode: true,
-            maxSize: 200,
-            maxExpand: 100,
-            fleqn: true,
-        };
-
-        const htmlStyleOptions = {
-            zoom: ZOOM,
-        };
-
         return (
             <TouchableWithFeedback
                 onPress={this.handlePress}
@@ -141,8 +128,12 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
             >
                 <View style={style.container}>
                     <View style={style.rightColumn}>
-                        <View style={[style.code, {height: this.state.webViewHeight}]}>
-                            {getKatexWebview(content, katexDisplayStyleOptions, htmlStyleOptions, this.onWebViewMessage)}
+                        <View style={style.code}>
+                            <MathView
+                                math={content}
+                                onError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
+                                renderError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
+                            />
                         </View>
                         {plusMoreLines}
                     </View>

@@ -6,11 +6,12 @@ import React from 'react';
 import {
     BackHandler,
     ScrollView,
+    Text,
 } from 'react-native';
+import MathView from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen} from '@actions/navigation';
-import {getKatexWebview} from '@utils/latex';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Latex extends React.PureComponent {
@@ -35,18 +36,6 @@ export default class Latex extends React.PureComponent {
     render() {
         const style = getStyleSheet(this.props.theme);
 
-        const katexDisplayStyleOptions = {
-            throwOnError: false,
-            displayMode: true,
-            maxSize: 200,
-            maxExpand: 100,
-            fleqn: true,
-        };
-
-        const htmlStyleOptions = {
-            zoom: 3,
-        };
-
         return (
             <SafeAreaView
                 edges={['bottom', 'left', 'right']}
@@ -56,7 +45,11 @@ export default class Latex extends React.PureComponent {
                     style={[style.scrollContainer]}
                     contentContainerStyle={style.code}
                 >
-                    {getKatexWebview(this.props.content, katexDisplayStyleOptions, htmlStyleOptions)}
+                    <MathView
+                        math={this.props.content}
+                        onError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
+                        renderError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
+                    />
                 </ScrollView>
             </SafeAreaView>
         );
