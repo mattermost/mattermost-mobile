@@ -43,6 +43,13 @@ public struct AckNotification: Codable {
     }
 }
 
+public struct PostData: Codable {
+    let order: [String]
+    let next_post_id: String
+    let prev_post_id: String
+    let posts: [String:Post]?
+}
+
 public class Network: NSObject {
     internal let POST_CHUNK_SIZE = 60
     internal var session: URLSession?
@@ -56,9 +63,6 @@ public class Network: NSObject {
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 30
         config.httpMaximumConnectionsPerHost = 10
-        if #available(iOS 11.0, *) {
-            config.waitsForConnectivity = false
-        }
         
         self.session = URLSession.init(configuration: config, delegate: self, delegateQueue: nil)
     }
@@ -68,17 +72,24 @@ public class Network: NSObject {
     @objc public func fetchPostsForChannel(withId channelId: String, withServerUrl serverUrl: String) {
         let (since, count) = try! Database.default.queryPostsSinceAndCountForChannel(withId: channelId, withServerUrl: serverUrl)
         
+        // Fetch team if we don't have it
+        // Fetch channel if we don't have it
+        
         let queryParams = count < POST_CHUNK_SIZE ?
             "?page=0&per_page=\(POST_CHUNK_SIZE)" :
             "?since=\(since)"
         let url = URL(string: "\(serverUrl)/api/v4/channels/\(channelId)/posts\(queryParams)")!
         
         request(url, withMethod: "GET", withServerUrl: serverUrl) { data, response, error in
-            if (response as? HTTPURLResponse)?.statusCode == 200,
-               let data = data {
-                try? Database.default.insertChannelPostsResponse(serverUrl, channelId, data)
-            } else {
-                print("LOG: FAILED", response)
+            if (response as? HTTPURLResponse)?.statusCode == 200, let data = data {
+                do {
+                    let postData = try JSONDecoder().decode(PostData.self, from: data)
+                    if let posts = postData.posts?.values {
+                        try Database.default.insertPosts(serverUrl, channelId, Array(posts))
+                    }
+                } catch let error {
+                    print("Failed to fetch post data", error)
+                }
             }
         }
     }

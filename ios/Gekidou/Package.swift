@@ -20,7 +20,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Gekidou",
-            dependencies: []),
+            dependencies: [
+                .product(name: "SQLite", package: "SQLite.swift")
+            ]
+        ),
         .testTarget(
             name: "GekidouTests",
             dependencies: ["Gekidou"]),
