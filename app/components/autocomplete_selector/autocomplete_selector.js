@@ -23,7 +23,7 @@ const clearXHitSlop = {
     right: 20,
     top: 20,
     bottom: 20,
-}
+};
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
