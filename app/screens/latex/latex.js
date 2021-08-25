@@ -6,7 +6,6 @@ import React from 'react';
 import {
     BackHandler,
     ScrollView,
-    Platform,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -57,7 +56,7 @@ export default class Latex extends React.PureComponent {
                     style={[style.scrollContainer]}
                     contentContainerStyle={style.code}
                 >
-                    {getKatexWebview(this.props.content, style, katexDisplayStyleOptions, htmlStyleOptions)}
+                    {getKatexWebview(this.props.content, katexDisplayStyleOptions, htmlStyleOptions)}
                 </ScrollView>
             </SafeAreaView>
         );

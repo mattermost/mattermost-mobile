@@ -3,30 +3,51 @@
 
 import {renderToString} from 'katex';
 import React from 'react';
-import {Text} from 'react-native';
 import WebView from 'react-native-webview';
 
-export function getKatexWebview(content, style, katexOptions, htmlStyleOptions) {
+import FormattedText from '@components/formatted_text';
+
+export function getKatexWebview(content, katexOptions, htmlStyleOptions, onMessageFunc) {
     try {
         const katexHtml = getKatexHtml(content, katexOptions, htmlStyleOptions);
 
+        if (onMessageFunc === undefined) {
+            return (
+                <WebView
+                    source={{html: katexHtml}}
+                />
+            );
+        }
+
         return (
             <WebView
-                originWhitelist={['*']}
                 source={{html: katexHtml}}
+                onMessage={(event) => {
+                    onMessageFunc(parseInt(event.nativeEvent.data, 10));
+                }}
             />
         );
     } catch (e) {
+        if (onMessageFunc === undefined) {
+            return (
+                <FormattedText
+                    id='katex.error'
+                    defaultMessage="Couldn't compile your Latex code. Please review the syntax and try again."
+                />
+            );
+        }
+
         return (
-            <Text
+            <FormattedText
                 id='katex.error'
                 defaultMessage="Couldn't compile your Latex code. Please review the syntax and try again."
+                onMessage={(event) => onMessageFunc(event.nativeEvent.data)}
             />
         );
     }
 }
 
-function getKatexHtml(content, katexOptions, htmlStyleOptions) {
+function getKatexHtml(content, katexOptions, htmlStyleOptions = {}) {
     const katexHtml = renderToString(content, katexOptions);
 
     //Convert style object to css string
@@ -43,8 +64,13 @@ function getKatexHtml(content, katexOptions, htmlStyleOptions) {
         <style>
             .katexBox {${styleString}}
         </style>
-        <span class="katexBox">
-            ${katexHtml}
-        </span>
+        <body onLoad="{
+            setTimeout(() => {window.ReactNativeWebView.postMessage(document.getElementById('katexSpan').offsetHeight);}, 250);
+            true;    
+        }">
+            <div class="katexBox" id="katexSpan">
+                ${katexHtml}
+            </div>
+        </body>
     </html>`;
 }
