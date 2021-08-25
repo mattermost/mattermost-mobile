@@ -18,6 +18,13 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {ViewTypes} from '@constants';
 import {goToScreen} from '@actions/navigation';
 
+const clearXHitSlop = {
+    left: 30,
+    right: 20,
+    top: 20,
+    bottom: 20,
+}
+
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -224,13 +231,19 @@ export default class AutocompleteSelector extends PureComponent {
                             {text}
                         </Text>
                         {!disabled && onClear && selected && (
-                            <CompassIcon
-                                name='close-circle'
-                                color={changeOpacity(theme.centerChannelColor, 0.5)}
-                                style={style.clearx}
-                                size={20}
+                            <TouchableWithFeedback
+                                type={'opacity'}
                                 onPress={this.handleClear}
-                            />
+                                disabled={disabled}
+                                style={style.clearx}
+                                hitSlop={clearXHitSlop}
+                            >
+                                <CompassIcon
+                                    name='close-circle'
+                                    color={changeOpacity(theme.centerChannelColor, 0.5)}
+                                    size={20}
+                                />
+                            </TouchableWithFeedback>
                         )}
                     </View>
                 </TouchableWithFeedback>
@@ -281,8 +294,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             top: 1,
             right: 5,
             padding: 8,
-            paddingRight: 20,
-            paddingLeft: 40,
+            marginRight: 7,
         },
         labelContainer: {
             flexDirection: 'row',
