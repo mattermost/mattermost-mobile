@@ -1,6 +1,5 @@
 import UIKit
 import os.log
-import Gekidou
 
 @objc @objcMembers public class UploadSession: NSObject, URLSessionDataDelegate {
     public class var shared :UploadSession {
@@ -20,7 +19,7 @@ import Gekidou
         let store = StoreManager.shared() as StoreManager
         let _ = store.getEntities(true)
 
-        if let serverUrl = uploadSessionData.serverUrl, let sessionToken = try? Keychain.default.getToken(for: serverUrl) {
+        if let serverUrl = uploadSessionData.serverUrl, let sessionToken = store.getToken() {
             let urlString = "\(serverUrl)/api/v4/posts"
             
             guard let url = URL(string: urlString) else {
@@ -39,7 +38,7 @@ import Gekidou
                 
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
-                request.setValue("Bearer \(sessionToken!)", forHTTPHeaderField: "Authorization")
+                request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
                 request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
                 request.httpBody = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted)
                 

@@ -143,6 +143,34 @@
   return [self sortDictArrayByDisplayName:myTeams];
 }
 
+-(NSString *)getServerUrl {
+    NSDictionary *general = [self.entities objectForKey:@"general"];
+    NSDictionary *credentials = [general objectForKey:@"credentials"];
+  
+    if (credentials) {
+        return [credentials objectForKey:@"url"];
+    }
+    
+    return nil;
+}
+
+-(NSString *)getToken {
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *appGroupId = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
+    NSDictionary *options = @{
+        @"accessGroup": appGroupId
+    };
+    NSString* serverUrl = [self getServerUrl];
+
+    if (serverUrl) {
+        NSDictionary *credentials = [self.keychain getInternetCredentialsForServer:[self getServerUrl] withOptions:options];
+  
+        return [credentials objectForKey:@"password"];
+    }
+    
+    return nil;
+}
+
 -(UInt64)scanValueFromConfig:(NSDictionary *)config key:(NSString *)key {
   NSString *value = [config objectForKey:key];
   NSScanner *scanner = [NSScanner scannerWithString:value];
