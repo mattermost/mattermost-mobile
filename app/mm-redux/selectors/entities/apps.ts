@@ -7,32 +7,8 @@ import {AppBinding} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
 import {appsEnabled} from '@utils/apps';
 
-export function getAppsBindings(state: GlobalState, location?: string): AppBinding[] {
-    if (!state.entities.apps.bindings) {
-        return [];
-    }
-
-    if (location) {
-        const bindings = state.entities.apps.bindings.filter((b) => b.location === location);
-        return bindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
-    }
-    return state.entities.apps.bindings;
-}
-
 export function getThreadAppsBindingsChannelID(state: GlobalState): string {
     return state.entities.apps.threadBindingsChannelID;
-}
-
-export function getThreadAppsBindings(state: GlobalState, location?: string): AppBinding[] {
-    if (!state.entities.apps.threadBindings) {
-        return [];
-    }
-
-    if (location) {
-        const bindings = state.entities.apps.threadBindings.filter((b) => b.location === location);
-        return bindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
-    }
-    return state.entities.apps.threadBindings;
 }
 
 export const makeAppBindingsSelector = (location: string) => {

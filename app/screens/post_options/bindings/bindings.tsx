@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {Alert} from 'react-native';
 import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
@@ -48,11 +48,18 @@ const fetchBindings = (userId: string, channelId: string, teamId: string, setSta
 
 const Bindings = injectIntl((props: Props) => {
     const [bindings, setBindings] = useState(props.bindings);
+    useEffect(() => {
+        if (bindings) {
+            return;
+        }
 
-    if (!bindings) {
         setBindings([]);
+        if (!props.appsEnabled) {
+            return;
+        }
+
         fetchBindings(props.currentUser.id, props.post.channel_id, props.teamID, setBindings);
-    }
+    });
 
     if (!props.appsEnabled) {
         return null;

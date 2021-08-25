@@ -7,7 +7,7 @@ import {bindActionCreators, Dispatch, ActionCreatorsMapObject} from 'redux';
 import {doAppCall, postEphemeralCallResponseForChannel} from '@actions/apps';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {AppBindingLocations} from '@mm-redux/constants/apps';
-import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
+import {makeAppBindingsSelector} from '@mm-redux/selectors/entities/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
@@ -17,10 +17,12 @@ import {appsEnabled} from '@utils/apps';
 
 import Bindings from './bindings';
 
+const getAppsBindings = makeAppBindingsSelector(AppBindingLocations.CHANNEL_HEADER_ICON);
+
 function mapStateToProps(state: GlobalState) {
     const apps = appsEnabled(state);
     const currentChannel = getCurrentChannel(state) || {};
-    const bindings = apps ? getAppsBindings(state, AppBindingLocations.CHANNEL_HEADER_ICON) : [];
+    const bindings = apps ? getAppsBindings(state) : [];
 
     return {
         bindings,
