@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Keyboard, View, Text, StyleSheet} from 'react-native';
-import MathView from 'react-native-math-view';
+import MathView, {MathText} from 'react-native-math-view';
 
 import {goToScreen} from '@actions/navigation';
 import FormattedText from '@components/formatted_text';
@@ -71,13 +71,13 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
 
         if (numberOfLines > MAX_LINES) {
             return {
-                content: lines.slice(0, MAX_LINES).join('\\\\'),
+                content: lines.slice(0, MAX_LINES),
                 numberOfLines,
             };
         }
 
         return {
-            content,
+            content: lines,
             numberOfLines,
         };
     };
@@ -129,12 +129,17 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
                 <View style={style.container}>
                     <View style={style.rightColumn}>
                         <View style={style.code}>
-                            <MathView
-                                style={{height: 40}}
-                                math={content}
-                                onError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
-                                renderError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
-                            />
+                            {content.map((latexCode) => (
+                                <MathView
+                                    style={{maxHeight: 30}}
+                                    config={{ex: 50, em: 200}}
+                                    key={latexCode}
+                                    math={latexCode}
+                                    onError={({error}) => <Text>{error}</Text>}
+                                    renderError={({error}) => <Text>{error}</Text>}
+                                    resizeMode={'cover'}
+                                />
+                            ))}
                         </View>
                         {plusMoreLines}
                     </View>
@@ -176,9 +181,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 4,
         },
         code: {
-            flex: 1,
-            flexDirection: 'row',
-            overflow: 'scroll', // Doesn't actually cause a scrollbar, but stops text from wrapping
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),

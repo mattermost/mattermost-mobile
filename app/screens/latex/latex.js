@@ -8,7 +8,7 @@ import {
     ScrollView,
     Text,
 } from 'react-native';
-import MathView from 'react-native-math-view';
+import MathView, {MathText} from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen} from '@actions/navigation';
@@ -36,20 +36,30 @@ export default class Latex extends React.PureComponent {
     render() {
         const style = getStyleSheet(this.props.theme);
 
+        let lines = this.props.content.split('\\\\');
+
+        lines = joinNonLineBreaks(lines);
+
         return (
             <SafeAreaView
                 edges={['bottom', 'left', 'right']}
                 style={style.scrollContainer}
             >
                 <ScrollView
-                    style={[style.scrollContainer]}
+                    style={style.scrollContainer}
                     contentContainerStyle={style.code}
                 >
-                    <MathView
-                        math={this.props.content}
-                        onError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
-                        renderError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
-                    />
+                    {lines.map((latexCode) => (
+                        <MathView
+                            style={{maxHeight: 30, overflow: 'scroll'}}
+                            config={{ex: 50, em: 200}}
+                            key={latexCode}
+                            math={latexCode}
+                            onError={({error}) => <Text>{error}</Text>}
+                            renderError={({error}) => <Text>{error}</Text>}
+                            resizeMode={'contain'}
+                        />
+                    ))}
                 </ScrollView>
             </SafeAreaView>
         );
@@ -60,15 +70,37 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         scrollContainer: {
             flex: 1,
+            overflow: 'scroll',
         },
         container: {
             minHeight: '100%',
-            flexDirection: 'row',
         },
         code: {
             minHeight: '100%',
-            flexDirection: 'row',
+            flexDirection: 'column',
             paddingHorizontal: 6,
         },
     };
 });
+
+/**
+ * There is no new line in Latex if the line break occurs inside of curly brackets. This function joins these lines back together.
+ */
+function joinNonLineBreaks(lines) {
+    let outLines = lines.slice();
+
+    let i = 0;
+    while (i < outLines.length) {
+        if (outLines[i].split('{').length === outLines[i].split('}').length) { //Line has no linebreak in between brackets
+            i += 1;
+        } else if (i < outLines.length - 2) {
+            outLines = outLines.slice(0, i).concat([outLines[i] + outLines[i + 1]], outLines.slice(i + 2));
+        } else if (i === outLines.length - 2) {
+            outLines = outLines.slice(0, i).concat([outLines[i] + outLines[i + 1]]);
+        } else {
+            return outLines;
+        }
+    }
+
+    return outLines;
+}
