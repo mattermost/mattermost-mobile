@@ -21,7 +21,7 @@ type Props = {
     onRemove: (opt: DialogOption|UserProfile|Channel) => void;
 }
 
-export default function SelectedOptions(props: Props) {
+function SelectedOptions(props: Props, ref: React.Ref<ScrollView>) {
     const {theme, selectedOptions, onRemove, dataSource} = props;
     const options: React.ReactNode[] = [];
 
@@ -57,6 +57,7 @@ export default function SelectedOptions(props: Props) {
 
     return (
         <ScrollView
+            ref={ref}
             style={style.container}
             contentContainerStyle={style.scrollViewContent}
         >
@@ -66,6 +67,8 @@ export default function SelectedOptions(props: Props) {
         </ScrollView>
     );
 }
+
+export default React.forwardRef(SelectedOptions);
 
 const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     return {

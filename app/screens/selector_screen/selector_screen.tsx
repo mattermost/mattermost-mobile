@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     Platform,
+    ScrollView,
     View,
 } from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
@@ -80,6 +81,7 @@ export default class SelectorScreen extends PureComponent<Props, State> {
     private page = -1;
     private next: boolean;
     private searchBarRef = React.createRef<SearchBar>();
+    private selectedScroll = React.createRef<ScrollView>();
     constructor(props: Props) {
         super(props);
 
@@ -133,6 +135,7 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             return;
         }
 
+        let added = false;
         switch (this.props.dataSource) {
         case ViewTypes.DATA_SOURCE_USERS: {
             const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
@@ -141,10 +144,11 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (currentSelected[typedItem.id]) {
                 delete multiselectSelected[typedItem.id];
             } else {
+                added = true;
                 multiselectSelected[typedItem.id] = typedItem;
             }
             this.setState({multiselectSelected});
-            return;
+            break;
         }
         case ViewTypes.DATA_SOURCE_CHANNELS: {
             const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
@@ -153,10 +157,11 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (currentSelected[typedItem.id]) {
                 delete multiselectSelected[typedItem.id];
             } else {
+                added = true;
                 multiselectSelected[typedItem.id] = typedItem;
             }
             this.setState({multiselectSelected});
-            return;
+            break;
         }
         default: {
             const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
@@ -165,10 +170,15 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (currentSelected[typedItem.value]) {
                 delete multiselectSelected[typedItem.value];
             } else {
+                added = true;
                 multiselectSelected[typedItem.value] = typedItem;
             }
             this.setState({multiselectSelected});
         }
+        }
+
+        if (added && this.selectedScroll.current) {
+            this.selectedScroll.current.scrollToEnd();
         }
     };
 
@@ -489,11 +499,15 @@ export default class SelectorScreen extends PureComponent<Props, State> {
         const selectedItems = Object.values(this.state.multiselectSelected);
         if (selectedItems.length > 0) {
             selectedOptionsComponent = (
-                <SelectedOptions
-                    selectedOptions={selectedItems}
-                    dataSource={this.props.dataSource}
-                    onRemove={this.handleRemoveOption}
-                />
+                <>
+                    <SelectedOptions
+                        ref={this.selectedScroll}
+                        selectedOptions={selectedItems}
+                        dataSource={this.props.dataSource}
+                        onRemove={this.handleRemoveOption}
+                    />
+                    <View style={style.separator}/>
+                </>
             );
         }
 
@@ -574,6 +588,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         noResultText: {
             fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        separator: {
+            height: 1,
+            flex: 0,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
     };
 });
