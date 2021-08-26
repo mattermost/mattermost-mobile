@@ -45,9 +45,23 @@ public struct AckNotification: Codable {
 
 public struct PostData: Codable {
     let order: [String]
+    let posts: [Post]
     let next_post_id: String
     let prev_post_id: String
-    let posts: [String:Post]?
+    
+    public enum PostDataKeys: String, CodingKey {
+        case order, posts, next_post_id, prev_post_id
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: PostDataKeys.self)
+        order = try container.decode([String].self, forKey: .order)
+        next_post_id = try container.decode(String.self, forKey: .next_post_id)
+        prev_post_id = try container.decode(String.self, forKey: .prev_post_id)
+        
+        let decodedPosts = try container.decode([String:Post].self, forKey: .posts)
+        posts = Array(decodedPosts.values)
+    }
 }
 
 public class Network: NSObject {
@@ -69,13 +83,14 @@ public class Network: NSObject {
     
     @objc public static let `default` = Network()
     
+    // THIS SHOULD BE QUEUED
     @objc public func fetchPostsForChannel(withId channelId: String, withServerUrl serverUrl: String) {
-        let (since, count) = try! Database.default.queryPostsSinceAndCountForChannel(withId: channelId, withServerUrl: serverUrl)
+        let since = try! Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
         
         // Fetch team if we don't have it
         // Fetch channel if we don't have it
         
-        let queryParams = count < POST_CHUNK_SIZE ?
+        let queryParams = since == nil ?
             "?page=0&per_page=\(POST_CHUNK_SIZE)" :
             "?since=\(since)"
         let url = URL(string: "\(serverUrl)/api/v4/channels/\(channelId)/posts\(queryParams)")!
@@ -84,8 +99,8 @@ public class Network: NSObject {
             if (response as? HTTPURLResponse)?.statusCode == 200, let data = data {
                 do {
                     let postData = try JSONDecoder().decode(PostData.self, from: data)
-                    if let posts = postData.posts?.values {
-                        try Database.default.insertPosts(serverUrl, channelId, Array(posts))
+                    if postData.posts.count > 0 {
+                        try Database.default.handlePostData(postData, channelId, serverUrl, since != nil)
                     }
                 } catch let error {
                     print("Failed to fetch post data", error)
