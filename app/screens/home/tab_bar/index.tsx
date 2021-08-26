@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     separator: {
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
-        borderTopWidth: 1,
+        borderTopWidth: 0.5,
     },
     slider: {
         backgroundColor: theme.buttonBg,
