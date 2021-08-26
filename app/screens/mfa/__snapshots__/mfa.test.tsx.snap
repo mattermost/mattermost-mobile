@@ -65,6 +65,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
           style={
             Array [
               Object {
+                "color": "#3d3c40",
                 "fontSize": 32,
                 "fontWeight": "600",
                 "marginBottom": 15,
