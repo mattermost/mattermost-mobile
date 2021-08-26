@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Keyboard, View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {Keyboard, View, Text, StyleSheet} from 'react-native';
 import MathView from 'react-native-math-view';
 
 import {goToScreen} from '@actions/navigation';
@@ -130,6 +130,7 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
                     <View style={style.rightColumn}>
                         <View style={style.code}>
                             <MathView
+                                style={{height: 40}}
                                 math={content}
                                 onError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
                                 renderError={({error}) => <Text style={[{fontWeight: 'bold'}]}>{error}</Text>}
