@@ -11,8 +11,7 @@ import {validateBindings} from '@utils/apps';
 export function bindings(state: AppBinding[] = [], action: GenericAction): AppBinding[] {
     switch (action.type) {
     case AppsTypes.RECEIVED_APP_BINDINGS: {
-        validateBindings(action.data);
-        return action.data || [];
+        return validateBindings(action.data) || [];
     }
     case AppsTypes.CLEAR_APP_BINDINGS:
         if (state.length > 0) {
@@ -53,8 +52,7 @@ export function bindingsForms(state: AppCommandFormMap = {}, action: GenericActi
 export function threadBindings(state: AppBinding[] = [], action: GenericAction): AppBinding[] {
     switch (action.type) {
     case AppsTypes.RECEIVED_THREAD_APP_BINDINGS: {
-        validateBindings(action.data.bindings);
-        return action.data.bindings || [];
+        return validateBindings(action.data.bindings) || [];
     }
     case AppsTypes.CLEAR_THREAD_APP_BINDINGS:
         if (state.length > 0) {

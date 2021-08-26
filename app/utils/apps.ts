@@ -74,6 +74,7 @@ export function validateBindings(bindings?: AppBinding[]) {
     filterInvalidCommands(bindings);
     filterInvalidPostMenuBindings(bindings);
     bindings?.forEach(fillAndTrimBindingsInformation);
+    return bindings;
 }
 
 // filterInvalidCommands remove commands without a label
