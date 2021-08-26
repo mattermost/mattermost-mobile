@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import {changeOpacity} from '@mm-redux/utils/theme_utils';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThemeThumbnail from './theme_thumbnail';
 
@@ -90,7 +90,7 @@ ThemeTile.propTypes = {
     label: PropTypes.node.isRequired,
     selected: PropTypes.bool,
     activeTheme: PropTypes.object.isRequired,
-    tileTheme: PropTypes.object.isRequired
+    tileTheme: PropTypes.object.isRequired,
 };
 
 ThemeTile.defaultProps = {

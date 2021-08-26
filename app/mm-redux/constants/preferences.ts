@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Theme, ThemeKey} from '@mm-redux/types/theme';
-
 import {Dictionary} from '@mm-redux/types/utilities';
 
 const Preferences: Dictionary<any> = {

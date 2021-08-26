@@ -15,8 +15,8 @@ import {hasEmojisOnly} from '@utils/emoji_utils';
 import Body from './body';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/theme';
 import type {GlobalState} from '@mm-redux/types/store';
+import type {Theme} from '@mm-redux/types/theme';
 
 type OwnProps = {
     highlight: boolean;
