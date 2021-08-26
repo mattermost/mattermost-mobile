@@ -63,6 +63,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.BOTTOM_SHEET:
         screen = require('@screens/bottom_sheet').default;
         break;
+        case Screens.CHANNEL:
+        screen = withServerDatabase(require('@screens/channel').default);
+        break;
     // case 'ChannelAddMembers':
     //     screen = require('@screens/channel_add_members').default;
     //     break;
@@ -217,13 +220,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
-        case Screens.CHANNEL_LIST:
-            screen = require('@screens/channel_list').default;
-            break;
-
-        case Screens.MODAL:
-            screen = require('@screens/modal').default;
-            break;
     }
 
     if (screen) {
@@ -232,19 +228,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
 });
 
 export function registerScreens() {
-    // const channelScreen = require('@screens/channel').default;
+    const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-
-    // Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
-
-    const homeScreen = require('@screens/tab_home').default;
-    const searchScreen = require('@screens/tab_search').default;
-    const mentionScreen = require('@screens/tab_mention').default;
-    const accountScreen = require('@screens/tab_account').default;
-
-    Navigation.registerComponent(Screens.TAB_HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
-    Navigation.registerComponent(Screens.TAB_SEARCH, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(searchScreen))), undefined)));
-    Navigation.registerComponent(Screens.TAB_MENTION, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(mentionScreen))), undefined)));
-    Navigation.registerComponent(Screens.TAB_ACCOUNT, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(accountScreen))), undefined)));
+    Navigation.registerComponent(Screens.HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
 }

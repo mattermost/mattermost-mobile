@@ -6,11 +6,12 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator, EventSubscription, Image, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
+    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import tinyColor from 'tinycolor2';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -257,8 +258,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         );
     }
 
-    const barStyle = Platform.OS === 'android' ? 'light-content' : 'dark-content';
+    const statusColor = tinyColor(theme.centerChannelBg);
     const inputDisabled = managedConfig.allowOtherServers === 'false' || connecting;
+    let barStyle: StatusBarStyle = 'light-content';
+    if (Platform.OS === 'ios' && statusColor.isLight()) {
+        barStyle = 'dark-content';
+    }
 
     const inputStyle = [styles.inputBox];
     if (inputDisabled) {
@@ -333,13 +338,16 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                         }
                     </View>
                 </TouchableWithoutFeedback>
-                <AppVersion/>
+                <AppVersion textStyle={styles.appInfo}/>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    appInfo: {
+        color: theme.centerChannelColor,
+    },
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
@@ -387,6 +395,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         resizeMode: 'contain',
     },
     header: {
+        color: theme.centerChannelColor,
         textAlign: 'center',
         marginTop: 15,
         marginBottom: 15,

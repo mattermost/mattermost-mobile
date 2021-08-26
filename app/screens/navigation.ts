@@ -2,13 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {Appearance, DeviceEventEmitter, Keyboard, Platform} from 'react-native';
-import {Layout, Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {Preferences, Screens} from '@constants';
-import NavigationConstants, {TabBarStacks} from '@constants/navigation';
+import {Device, Preferences, Screens} from '@constants';
+import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import type {LaunchProps} from '@typings/launch';
+
+Navigation.setDefaultOptions({
+    layout: {
+
+        //@ts-expect-error all not defined in type definition
+        orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
+    },
+});
 
 function getThemeFromState() {
     if (EphemeralStore.theme) {
@@ -28,8 +36,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: Screens.CHANNEL,
-                name: Screens.CHANNEL,
+                id: Screens.HOME,
+                name: Screens.HOME,
                 passProps,
                 options: {
                     layout: {
@@ -54,34 +62,8 @@ export function resetToChannel(passProps = {}) {
         }],
     };
 
-    const platformStack: Layout = {stack};
-
-    // if (Platform.OS === 'android') {
-    //     platformStack = {
-    //         sideMenu: {
-    //             left: {
-    //                 component: {
-    //                     id: Screens.MAIN_SIDEBAR,
-    //                     name: Screens.MAIN_SIDEBAR,
-    //                 },
-    //             },
-    //             center: {
-    //                 stack,
-    //             },
-    //             right: {
-    //                 component: {
-    //                     id: Screens.SETTINGS_SIDEBAR,
-    //                     name: Screens.SETTINGS_SIDEBAR,
-    //                 },
-    //             },
-    //         },
-    //     };
-    // }
-
     Navigation.setRoot({
-        root: {
-            ...platformStack,
-        },
+        root: {stack},
     });
 }
 
@@ -130,144 +112,6 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
-export function resetToBottomTabs(passProps?: LaunchProps) {
-    const theme = getThemeFromState();
-
-    EphemeralStore.clearNavigationComponents();
-
-    const homeStack = {
-        stack: {
-            id: TabBarStacks.TAB_HOME,
-            children: [
-                {
-                    component: {
-                        name: Screens.TAB_HOME,
-                        id: Screens.TAB_HOME,
-                        passProps: {
-                            ...passProps,
-                            theme,
-                        },
-                    },
-                },
-            ],
-            options: {
-                topBar: {
-                    visible: false,
-                },
-                animations: {
-                    push: {
-                        content: {
-                            translationX: {
-                                from: require('react-native').Dimensions.get('window').width,
-                                to: 0,
-                                duration: 300,
-                            },
-                        },
-                    },
-                    pop: {
-                        content: {
-                            translationX: {
-                                to: require('react-native').Dimensions.get('window').width,
-                                from: 0,
-                                duration: 300,
-                            },
-                        },
-                    },
-                },
-            },
-        },
-    };
-
-    const searchStack = {
-        stack: {
-            id: TabBarStacks.TAB_SEARCH,
-            children: [
-                {
-                    component: {
-                        name: Screens.TAB_SEARCH,
-                        id: Screens.TAB_SEARCH,
-                        passProps: {
-                            ...passProps,
-                            theme,
-                        },
-                    },
-                },
-            ],
-            options: {
-                topBar: {
-                    visible: false,
-                },
-            },
-        },
-    };
-
-    const mentionStack = {
-        stack: {
-            id: TabBarStacks.TAB_MENTION,
-            children: [
-                {
-                    component: {
-                        name: Screens.TAB_MENTION,
-                        id: Screens.TAB_MENTION,
-                        passProps: {
-                            ...passProps,
-                            theme,
-                        },
-                    },
-                },
-            ],
-            options: {
-                topBar: {
-                    visible: false,
-                },
-            },
-        },
-    };
-
-    const accountStack = {
-        stack: {
-            id: TabBarStacks.TAB_ACCOUNT,
-            children: [
-                {
-                    component: {
-                        name: Screens.TAB_ACCOUNT,
-                        id: Screens.TAB_ACCOUNT,
-                        passProps: {
-                            ...passProps,
-                            theme,
-                        },
-                    },
-                },
-            ],
-            options: {
-                topBar: {
-                    visible: false,
-                },
-            },
-        },
-    };
-
-    Navigation.setRoot({
-        root: {
-            bottomTabs: {
-                children: [
-                    homeStack,
-                    searchStack,
-                    mentionStack,
-                    accountStack,
-                ],
-                options: {
-                    bottomTabs: {
-                        currentTabIndex: 0,
-                        visible: false,
-                        tabsAttachMode: 'onSwitchToTab',
-                    },
-                },
-            },
-        },
-    });
-}
-
 export function resetToTeams(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
@@ -311,9 +155,10 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
     });
 }
 
-export function goToScreen(name: string, title: string, passProps = {}, options = {}, stackId?: string) {
+export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
-    const componentId = stackId ?? EphemeralStore.getNavigationTopComponentId();
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+    DeviceEventEmitter.emit('tabBarVisible', false);
     const defaultOptions = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,

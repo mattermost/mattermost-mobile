@@ -8,7 +8,6 @@ class EphemeralStore {
     theme: Theme | undefined;
 
     getNavigationTopComponentId = () => {
-        console.log('>>>>>>>>>>>>>>> nav stack in store ', this.navigationComponentIdStack);
         return this.navigationComponentIdStack[0];
     }
 
@@ -33,8 +32,8 @@ class EphemeralStore {
 
     addToNavigationComponentIdStack = (componentId: string) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
-        if (index > 0) {
-            this.navigationComponentIdStack.slice(index, 1);
+        if (index >= 0) {
+            this.navigationComponentIdStack = this.navigationComponentIdStack.slice(index, 1);
         }
 
         this.navigationComponentIdStack.unshift(componentId);
