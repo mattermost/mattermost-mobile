@@ -14,7 +14,7 @@ import {useSelector} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {GlobalState} from '@mm-redux/types/store';
 
 type Props = {

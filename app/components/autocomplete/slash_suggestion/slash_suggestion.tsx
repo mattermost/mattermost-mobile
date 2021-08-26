@@ -11,7 +11,7 @@ import {
 import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

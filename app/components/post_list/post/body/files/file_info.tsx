@@ -9,7 +9,7 @@ import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {FileInfo as FileInfoType} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type FileInfoProps = {
     file: FileInfoType;

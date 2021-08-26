@@ -23,7 +23,7 @@ describe('Theme', () => {
         isLandscape: false,
         isTablet: false,
         teamId: 'test-team',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         userId: 'test-user',
     };
 

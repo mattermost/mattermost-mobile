@@ -10,7 +10,7 @@ import SystemMessage from './system_message';
 
 const baseProps = {
     ownerUsername: 'username',
-    theme: Preferences.THEMES.default,
+    theme: Preferences.THEMES.denim,
 };
 
 describe('renderSystemMessage', () => {

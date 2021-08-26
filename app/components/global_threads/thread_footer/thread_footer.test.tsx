@@ -24,7 +24,7 @@ describe('Global Thread Footer', () => {
         currentTeamId: 'team1',
         intl,
         testID,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         thread: {
             id: 'thread1',
             participants: [{

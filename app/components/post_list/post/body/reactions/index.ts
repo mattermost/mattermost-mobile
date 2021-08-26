@@ -16,7 +16,7 @@ import {selectEmojisCountFromReactions} from '@selectors/emojis';
 import Reactions from './reactions';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type{GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {

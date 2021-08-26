@@ -9,7 +9,7 @@ import ProfilePicture from '@components/profile_picture';
 import {General} from '@mm-redux/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     hasDraft: boolean;

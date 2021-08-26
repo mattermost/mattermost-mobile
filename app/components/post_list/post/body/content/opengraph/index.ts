@@ -11,7 +11,7 @@ import {getBool} from '@mm-redux/selectors/entities/preferences';
 import Opengraph from './opengraph';
 
 import type {Post, PostMetadata} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {

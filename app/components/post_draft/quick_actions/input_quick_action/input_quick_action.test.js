@@ -14,7 +14,7 @@ describe('InputQuickAction', () => {
         testID: 'post_draft.quick_actions.input_action',
         disabled: false,
         inputType: 'at',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         value: 'value',
     };
 

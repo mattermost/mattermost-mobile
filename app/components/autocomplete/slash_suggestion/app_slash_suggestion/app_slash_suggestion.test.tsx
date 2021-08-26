@@ -42,7 +42,7 @@ describe('components/autocomplete/app_slash_suggestion', () => {
         currentTeamId: '',
         isSearch: false,
         maxListHeight: 50,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
         value: '',

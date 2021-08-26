@@ -133,7 +133,7 @@ const getDefaultTheme = reselect.createSelector(getConfig, (config) => {
     }
 
     // If no config.DefaultTheme or value doesn't refer to a valid theme name...
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 });
 
 export const getTheme = createShallowSelector(

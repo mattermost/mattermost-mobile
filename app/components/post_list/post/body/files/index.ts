@@ -8,7 +8,7 @@ import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 
 import Files from './files';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {

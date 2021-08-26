@@ -13,7 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Reaction from './reaction';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {Reaction as ReactionType} from '@mm-redux/types/reactions';
 
 type ReactionsProps = {

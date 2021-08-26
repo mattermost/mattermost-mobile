@@ -9,7 +9,7 @@ import Preferences from '@mm-redux/constants/preferences';
 describe('components/custom_status/custom_status_text', () => {
     const baseProps = {
         text: 'In a meeting',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     it('should match snapshot', () => {

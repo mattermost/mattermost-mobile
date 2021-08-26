@@ -8,7 +8,7 @@ import {Alert, FlatList} from 'react-native';
 import ThreadList from './thread_list';
 
 import type {ActionResult} from '@mm-redux/types/actions';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {Team} from '@mm-redux/types/teams';
 import type {ThreadsState, UserThread} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';

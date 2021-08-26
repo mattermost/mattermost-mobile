@@ -33,7 +33,7 @@ interface ShareProps {
 }
 
 const ShareExtension = NativeModules.MattermostShare;
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const initialState: ShareState = {
     loading: true,

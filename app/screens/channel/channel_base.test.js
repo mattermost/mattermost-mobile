@@ -25,7 +25,7 @@ describe('ChannelBase', () => {
             selectInitialChannel: jest.fn(),
         },
         componentId: channelBaseComponentId,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
     const optionsForTheme = (theme) => {
         return {

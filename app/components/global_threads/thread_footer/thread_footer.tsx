@@ -14,7 +14,7 @@ import {$ID} from '@mm-redux/types/utilities';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 export type DispatchProps = {
     actions: {

@@ -11,7 +11,7 @@ import {useSelector} from 'react-redux';
 import Preferences from '@mm-redux/constants/preferences';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {GlobalState} from '@mm-redux/types/store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {getCurrentMomentForTimezone, getUtcOffsetForTimeZone} from '@utils/timezone';

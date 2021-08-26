@@ -52,7 +52,7 @@ describe('PostDraft', () => {
         registerTypingAnimation: () => jest.fn(),
         rootId: '',
         screenId: 'NavigationScreen1',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('Should render the DraftInput', () => {

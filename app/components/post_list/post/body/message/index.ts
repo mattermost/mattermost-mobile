@@ -9,7 +9,7 @@ import {makeGetMentionKeysForPost} from '@mm-redux/selectors/entities/search';
 import Message from './message';
 
 import type {Post as PostType} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {GlobalState} from '@mm-redux/types/store';
 
 type OwnProps = {

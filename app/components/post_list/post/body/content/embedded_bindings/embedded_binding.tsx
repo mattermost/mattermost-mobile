@@ -12,7 +12,7 @@ import EmbedTitle from './embed_title';
 import EmbedSubBindings from './embedded_sub_bindings';
 
 import type {AppBinding} from '@mm-redux/types/apps';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     embed: AppBinding;

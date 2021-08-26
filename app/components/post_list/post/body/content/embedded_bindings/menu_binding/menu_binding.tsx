@@ -8,7 +8,7 @@ import {showAppForm} from '@actions/navigation';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {createCallContext, createCallRequest} from '@utils/apps';
 
 import type {AppBinding} from '@mm-redux/types/apps';

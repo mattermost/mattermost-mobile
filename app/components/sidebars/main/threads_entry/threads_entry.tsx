@@ -14,7 +14,7 @@ import {makeStyleFromTheme} from '@mm-redux/utils/theme_utils';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {Team} from '@mm-redux/types/teams';
 import type {ThreadsState} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';
