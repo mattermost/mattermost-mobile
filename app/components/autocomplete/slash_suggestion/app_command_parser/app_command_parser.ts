@@ -222,6 +222,10 @@ export class ParsedCommand {
         }
 
         if (!this.binding) {
+            if (autocompleteMode) {
+                return this;
+            }
+
             return this.asError(this.intl.formatMessage({
                 id: 'apps.error.parser.no_match',
                 defaultMessage: '`{command}`: No matching command found in this workspace.',
@@ -230,13 +234,22 @@ export class ParsedCommand {
             }));
         }
 
-        this.form = this.binding.form;
-        if (!this.form) {
-            const fetched = await this.formsCache.getForm(this.location, this.binding);
-            if (fetched?.error) {
-                return this.asError(fetched.error);
+        if (!autocompleteMode && this.binding.bindings?.length) {
+            return this.asError(this.intl.formatMessage({
+                id: 'apps.error.parser.execute_non_leaf',
+                defaultMessage: 'You must select a subcommand.',
+            }));
+        }
+
+        if (!this.binding.bindings?.length) {
+            this.form = this.binding?.form;
+            if (!this.form) {
+                const fetched = await this.formsCache.getForm(this.location, this.binding);
+                if (fetched?.error) {
+                    return this.asError(fetched.error);
+                }
+                this.form = fetched?.form;
             }
-            this.form = fetched?.form;
         }
 
         return this;
@@ -798,7 +811,7 @@ export class AppCommandParser {
             return {call: null, errorMessage};
         }
 
-        const context = this.getAppContext(parsed.binding.app_id);
+        const context = this.getAppContext(parsed.binding);
         return {call: createCallRequest(call, context, {}, values, parsed.command)};
     }
 
@@ -957,10 +970,10 @@ export class AppCommandParser {
     }
 
     // getAppContext collects post/channel/team info for performing calls
-    private getAppContext = (appID: string): AppContext => {
+    private getAppContext = (binding: AppBinding): AppContext => {
         const context: AppContext = {
-            app_id: appID,
-            location: AppBindingLocations.COMMAND,
+            app_id: binding.app_id,
+            location: binding.location,
             root_id: this.rootPostID,
         };
 
@@ -983,7 +996,7 @@ export class AppCommandParser {
 
         const payload = createCallRequest(
             binding.call,
-            this.getAppContext(binding.app_id),
+            this.getAppContext(binding),
         );
 
         const res = await this.store.dispatch(doAppCall(payload, AppCallTypes.FORM, this.intl)) as DoAppCallResult;

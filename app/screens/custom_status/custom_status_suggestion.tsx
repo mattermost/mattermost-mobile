@@ -40,6 +40,10 @@ const CustomStatusSuggestion = ({handleSuggestionClick, emoji, text, theme, sepa
         }
     }, []);
 
+    const showCustomStatus = Boolean(duration &&
+        duration !== CustomStatusDuration.DATE_AND_TIME &&
+        isExpirySupported);
+
     const clearButton = handleClear && expires_at ?
         (
             <View style={style.clearButtonContainer}>
@@ -74,7 +78,7 @@ const CustomStatusSuggestion = ({handleSuggestionClick, emoji, text, theme, sepa
                                 textStyle={style.customStatusText}
                             />
                         </View>
-                        {Boolean(duration && isExpirySupported) && (
+                        {showCustomStatus && (
                             <View style={{paddingTop: 5}}>
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}
