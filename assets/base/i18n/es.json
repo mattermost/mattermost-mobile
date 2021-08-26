@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Error al preparar la solicitud de búsqueda: {errorMessage}",
   "apps.error.parser": "Error de análisis: {error}",
   "apps.error.parser.empty_value": "los valores vacíos no están permitidos",
-  "apps.error.parser.missing_binding": "Faltan enlaces de comandos.",
   "apps.error.parser.missing_call": "Falta la llamada vinculante.",
   "apps.error.parser.missing_field_value": "Falta el valor del campo.",
   "apps.error.parser.missing_quote": "Se espera que las comillas dobles coincidan antes del final de la entrada.",
