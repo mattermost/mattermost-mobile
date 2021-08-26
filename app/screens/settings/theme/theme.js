@@ -16,13 +16,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThemeTile from './theme_tile';
 
-const thumbnailImages = {
-    default: require('@assets/images/themes/mattermost.png'),
-    organization: require('@assets/images/themes/organization.png'),
-    mattermostDark: require('@assets/images/themes/mattermost_dark.png'),
-    windows10: require('@assets/images/themes/windows_dark.png'),
-};
-
 export default class Theme extends React.PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -86,8 +79,8 @@ export default class Theme extends React.PureComponent {
                 action={this.setTheme}
                 actionValue={allowedTheme.key}
                 selected={allowedTheme.type.toLowerCase() === theme.type.toLowerCase()}
-                theme={theme}
-                imageSrc={thumbnailImages[allowedTheme.key]}
+                tileTheme={allowedTheme}
+                activeTheme={theme}
                 isLandscape={isLandscape}
                 isTablet={isTablet}
             />
