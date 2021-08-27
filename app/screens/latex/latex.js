@@ -46,33 +46,38 @@ export default class Latex extends React.PureComponent {
                 style={style.scrollContainer}
             >
                 <ScrollView
-                    style={style.scrollContainer}
-                    contentContainerStyle={style.scrollCode}
-                    scrollEnabled={true}
-                    horizontal={true}
+                    style={[style.scrollContainer]}
+                    contentContainerStyle={style.container}
                 >
-                    {lines.map((latexCode) => (
-                        <View
-                            style={style.code}
-                            key={latexCode}
-                        >
-                            <MathView
-                                style={{maxHeight: 30}}
-                                config={{
-                                    ex: 50,
-                                    em: 200,
-                                }}
-                                math={latexCode}
-                                onError={(errorMsg) => {
-                                    return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
-                                }}
-                                renderError={(errorMsg) => {
-                                    return <Text style={style.errorText}>{'Render error: ' + errorMsg.error.message}</Text>;
-                                }}
-                                resizeMode={'cover'}
-                            />
-                        </View>
-                    ))}
+                    <ScrollView
+                        style={style.scrollContainer}
+                        contentContainerStyle={style.scrollCode}
+                        scrollEnabled={true}
+                        horizontal={true}
+                    >
+                        {lines.map((latexCode) => (
+                            <View
+                                style={style.code}
+                                key={latexCode}
+                            >
+                                <MathView
+                                    style={{maxHeight: 30}}
+                                    config={{
+                                        ex: 50,
+                                        em: 200,
+                                    }}
+                                    math={latexCode}
+                                    onError={(errorMsg) => {
+                                        return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
+                                    }}
+                                    renderError={(errorMsg) => {
+                                        return <Text style={style.errorText}>{'Render error: ' + errorMsg.error.message}</Text>;
+                                    }}
+                                    resizeMode={'cover'}
+                                />
+                            </View>
+                        ))}
+                    </ScrollView>
                 </ScrollView>
             </SafeAreaView>
         );
@@ -90,7 +95,8 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         scrollCode: {
             minHeight: '100%',
             flexDirection: 'column',
-            paddingHorizontal: 6,
+            paddingHorizontal: 10,
+            paddingVertical: 10,
         },
         code: {
             flexDirection: 'row',
