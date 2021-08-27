@@ -18,14 +18,6 @@ import MarkdownCodeBlock from '../markdown_code_block/markdown_code_block';
 const MAX_LINES = 2;
 
 export default class LatexCodeBlock extends MarkdownCodeBlock {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            webViewHeight: 10,
-        };
-    }
-
     static defaultProps = {
         language: 'latex',
     };
