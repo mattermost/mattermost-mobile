@@ -103,10 +103,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.sidebarText,
+            backgroundColor: theme.sidebarBg,
         },
         text: {
-            color: theme.sidebarBg,
+            color: theme.sidebarText,
             fontFamily: 'OpenSans',
             fontWeight: '600',
             fontSize: 15,
