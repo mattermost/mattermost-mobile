@@ -6,7 +6,7 @@ exports[`TeamIcon should match snapshot 1`] = `
     Array [
       Object {
         "alignItems": "center",
-        "backgroundColor": "#ffffff",
+        "backgroundColor": "#145dbf",
         "borderRadius": 2,
         "height": 30,
         "justifyContent": "center",
