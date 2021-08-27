@@ -149,9 +149,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         tilesContainer: {
             marginBottom: 30,
+            paddingLeft: 8,
             flexDirection: 'row',
             flexWrap: 'wrap',
-            justifyContent: 'center',
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderBottomWidth: 1,

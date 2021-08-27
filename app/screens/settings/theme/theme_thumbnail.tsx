@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet} from 'react-native';
-import Svg, {Rect, G, Circle} from 'react-native-svg';
+import Svg, {Rect, G, Circle, Path} from 'react-native-svg';
 
 type ThemeThumbnailProps = {
     width: number;
-    borderColor: string;
+    borderColorBase: string;
+    borderColorMix: string;
     sidebarBg: string;
     sidebarText: string;
     sidebarUnreadText: string;
@@ -22,7 +22,8 @@ type ThemeThumbnailProps = {
 
 function ThemeThumbnail({
     width = 180,
-    borderColor = '#E0E1E3',
+    borderColorBase = '#E0E1E3',
+    borderColorMix = '#E0E1E3',
     sidebarBg = '#174AB5',
     sidebarText = '#86A1D9',
     sidebarUnreadText = 'white',
@@ -34,16 +35,6 @@ function ThemeThumbnail({
     newMessageSeparator = '#1C58D9',
     buttonBg = '#15B7B7',
 }: ThemeThumbnailProps): JSX.Element {
-    const styles = StyleSheet.create({
-        border: {
-            borderRadius: 4,
-            borderWidth: 2,
-            borderStyle: 'solid',
-            borderColor,
-            overflow: 'hidden',
-        },
-    });
-
     // the original height of the thumbnail
     const baseWidth = 180;
     const baseHeight = 134;
@@ -66,22 +57,14 @@ function ThemeThumbnail({
         <Svg
             width={width}
             height={height}
-            viewBox={`0 0 ${baseWidth} ${baseHeight}`}
+            viewBox={`-2 -2 ${baseWidth + 4} ${baseHeight + 4}`}
             fill='none'
-            style={[styles.border]}
         >
             <Rect
                 fill={centerChannelBg}
                 x='0'
                 y='0'
                 width={baseWidth}
-                height={baseHeight}
-            />
-            <Rect
-                fill={centerChannelBg}
-                x={sidebarWidth}
-                y={0}
-                width={postsContainerWidth}
                 height={baseHeight}
             />
             <Rect
@@ -162,8 +145,8 @@ function ThemeThumbnail({
             <G>
                 <Rect
                     fill={sidebarBg}
-                    x={0}
-                    y={0}
+                    x='0'
+                    y='0'
                     width={sidebarWidth}
                     height={baseHeight}
                 />
@@ -288,6 +271,24 @@ function ThemeThumbnail({
                     />
                 </G>
             </G>
+            <Rect
+                x='-1'
+                y='-1'
+                width={baseWidth + 2}
+                height={baseHeight + 2}
+                rx='4'
+                stroke={borderColorBase}
+                strokeWidth='2'
+            />
+            <Rect
+                x='-1'
+                y='-1'
+                width={baseWidth + 2}
+                height={baseHeight + 2}
+                rx='4'
+                stroke={borderColorMix}
+                strokeWidth='2'
+            />
         </Svg>
     );
 }

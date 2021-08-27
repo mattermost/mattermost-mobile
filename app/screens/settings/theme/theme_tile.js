@@ -56,7 +56,8 @@ const ThemeTile = (props) => {
             <View style={[style.imageWrapper, layoutStyle.thumbnail]}>
                 <ThemeThumbnail
                     width={layoutStyle.thumbnail.width}
-                    borderColor={selected ? activeTheme.sidebarTextActiveBorder : changeOpacity(tileTheme.centerChannelColor, 0.16)}
+                    borderColorBase={selected ? activeTheme.sidebarTextActiveBorder : activeTheme.centerChannelBg}
+                    borderColorMix={selected ? activeTheme.sidebarTextActiveBorder : changeOpacity(activeTheme.centerChannelColor, 0.16)}
                     sidebarBg={tileTheme.sidebarBg}
                     sidebarText={changeOpacity(tileTheme.sidebarText, 0.48)}
                     sidebarUnreadText={tileTheme.sidebarUnreadText}

@@ -28,8 +28,8 @@ exports[`Theme should match snapshot 1`] = `
           "borderTopWidth": 1,
           "flexDirection": "row",
           "flexWrap": "wrap",
-          "justifyContent": "center",
           "marginBottom": 30,
+          "paddingLeft": 8,
         }
       }
     >
