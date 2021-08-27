@@ -8,6 +8,7 @@ import MathView from 'react-native-math-view';
 import {goToScreen} from '@actions/navigation';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {splitLatexCodeInLines} from '@utils/latex';
 import {getDisplayNameForLanguage} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -63,9 +64,7 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
     });
 
     trimContent = (content) => {
-        let lines = content.split('\\\\');
-
-        lines = joinNonLineBreaks(lines);
+        const lines = splitLatexCodeInLines(content);
 
         const numberOfLines = lines.length;
 
@@ -120,6 +119,11 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
             );
         }
 
+        /**
+         * Note on the error behavior of math view:
+         * - onError returns an Error object
+         * - renderError returns an options object with an error attribute that contains the real Error.
+         */
         return (
             <TouchableWithFeedback
                 onPress={this.handlePress}
@@ -135,10 +139,17 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
                             >
                                 <MathView
                                     style={{maxHeight: 30}}
-                                    config={{ex: 50, em: 200}}
+                                    config={{
+                                        ex: 50,
+                                        em: 200,
+                                    }}
                                     math={latexCode}
-                                    onError={({error}) => <Text>{error}</Text>}
-                                    renderError={({error}) => <Text>{error}</Text>}
+                                    onError={(errorMsg) => {
+                                        return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
+                                    }}
+                                    renderError={(errorMsg) => {
+                                        return <Text style={style.errorText}>{'Render error: ' + errorMsg.error.message}</Text>;
+                                    }}
                                     resizeMode={'cover'}
                                 />
                             </View>
@@ -170,6 +181,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            marginHorizontal: 5,
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),
@@ -195,27 +207,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.sidebarHeaderTextColor,
             fontSize: 12,
         },
+        errorText: {
+            fontSize: 14,
+            marginHorizontal: 5,
+            color: 'rgb(255, 0, 0)',
+        },
     };
 });
-
-/**
- * There is no new line in Latex if the line break occurs inside of curly brackets. This function joins these lines back together.
- */
-function joinNonLineBreaks(lines) {
-    let outLines = lines.slice();
-
-    let i = 0;
-    while (i < outLines.length) {
-        if (outLines[i].split('{').length === outLines[i].split('}').length) { //Line has no linebreak in between brackets
-            i += 1;
-        } else if (i < outLines.length - 2) {
-            outLines = outLines.slice(0, i).concat([outLines[i] + outLines[i + 1]], outLines.slice(i + 2));
-        } else if (i === outLines.length - 2) {
-            outLines = outLines.slice(0, i).concat([outLines[i] + outLines[i + 1]]);
-        } else {
-            return outLines;
-        }
-    }
-
-    return outLines;
-}

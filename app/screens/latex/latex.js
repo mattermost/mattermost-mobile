@@ -13,6 +13,7 @@ import MathView from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen} from '@actions/navigation';
+import {splitLatexCodeInLines} from '@utils/latex';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Latex extends React.PureComponent {
@@ -37,9 +38,7 @@ export default class Latex extends React.PureComponent {
     render() {
         const style = getStyleSheet(this.props.theme);
 
-        let lines = this.props.content.split('\\\\');
-
-        lines = joinNonLineBreaks(lines);
+        const lines = splitLatexCodeInLines(this.props.content);
 
         return (
             <SafeAreaView
@@ -59,10 +58,17 @@ export default class Latex extends React.PureComponent {
                         >
                             <MathView
                                 style={{maxHeight: 30}}
-                                config={{ex: 50, em: 200}}
+                                config={{
+                                    ex: 50,
+                                    em: 200,
+                                }}
                                 math={latexCode}
-                                onError={({error}) => <Text>{error}</Text>}
-                                renderError={({error}) => <Text>{error}</Text>}
+                                onError={(errorMsg) => {
+                                    return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
+                                }}
+                                renderError={(errorMsg) => {
+                                    return <Text style={style.errorText}>{'Render error: ' + errorMsg.error.message}</Text>;
+                                }}
                                 resizeMode={'cover'}
                             />
                         </View>
@@ -89,28 +95,12 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            marginHorizontal: 5,
+        },
+        errorText: {
+            fontSize: 14,
+            marginHorizontal: 5,
+            color: 'rgb(255, 0, 0)',
         },
     };
 });
-
-/**
- * There is no new line in Latex if the line break occurs inside of curly brackets. This function joins these lines back together.
- */
-function joinNonLineBreaks(lines) {
-    let outLines = lines.slice();
-
-    let i = 0;
-    while (i < outLines.length) {
-        if (outLines[i].split('{').length === outLines[i].split('}').length) { //Line has no linebreak in between brackets
-            i += 1;
-        } else if (i < outLines.length - 2) {
-            outLines = outLines.slice(0, i).concat([outLines[i] + outLines[i + 1]], outLines.slice(i + 2));
-        } else if (i === outLines.length - 2) {
-            outLines = outLines.slice(0, i).concat([outLines[i] + outLines[i + 1]]);
-        } else {
-            return outLines;
-        }
-    }
-
-    return outLines;
-}
