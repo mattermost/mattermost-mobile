@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import Svg, {Rect, G, Circle, Path} from 'react-native-svg';
+import Svg, {Rect, G, Circle} from 'react-native-svg';
 
 type ThemeThumbnailProps = {
     width: number;
