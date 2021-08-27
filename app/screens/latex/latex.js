@@ -60,7 +60,6 @@ export default class Latex extends React.PureComponent {
                                 key={latexCode}
                             >
                                 <MathView
-                                    style={{maxHeight: 30}}
                                     math={latexCode}
                                     onError={(errorMsg) => {
                                         return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
