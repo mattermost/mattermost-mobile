@@ -4,7 +4,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.03)",
+      "backgroundColor": "rgba(63,67,80,0.03)",
       "flex": 1,
     }
   }
@@ -24,7 +24,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
       id="channel_notifications.preference.header"
       style={
         Object {
-          "color": "rgba(61,60,64,0.56)",
+          "color": "rgba(63,67,80,0.56)",
           "fontSize": 13,
           "marginTop": 10,
           "padding": 16,
@@ -37,7 +37,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
     alwaysBounceVertical={false}
     contentContainerStyle={
       Object {
-        "backgroundColor": "rgba(61,60,64,0.03)",
+        "backgroundColor": "rgba(63,67,80,0.03)",
       }
     }
   >
@@ -60,7 +60,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.1)",
+                "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
                 "width": "100%",
@@ -85,31 +85,32 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             selected={true}
             theme={
               Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
                 "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
+                "centerChannelColor": "#3f4350",
                 "codeTheme": "github",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
                 "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
                 "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
                 "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveBorder": "#5d89ea",
                 "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
+                "sidebarTextHoverBg": "#28427b",
                 "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
+                "type": "Denim",
               }
             }
           />
@@ -118,7 +119,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.1)",
+                "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
                 "width": "100%",
@@ -138,31 +139,32 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             selected={false}
             theme={
               Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
                 "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
+                "centerChannelColor": "#3f4350",
                 "codeTheme": "github",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
                 "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
                 "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
                 "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveBorder": "#5d89ea",
                 "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
+                "sidebarTextHoverBg": "#28427b",
                 "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
+                "type": "Denim",
               }
             }
           />
@@ -171,7 +173,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.1)",
+                "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
                 "width": "100%",
@@ -191,31 +193,32 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             selected={false}
             theme={
               Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
                 "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
+                "centerChannelColor": "#3f4350",
                 "codeTheme": "github",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
                 "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
                 "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
                 "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveBorder": "#5d89ea",
                 "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
+                "sidebarTextHoverBg": "#28427b",
                 "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
+                "type": "Denim",
               }
             }
           />
@@ -224,7 +227,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.1)",
+                "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
                 "width": "100%",
@@ -244,31 +247,32 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             selected={false}
             theme={
               Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
                 "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
+                "centerChannelColor": "#3f4350",
                 "codeTheme": "github",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
                 "mentionBg": "#ffffff",
                 "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
                 "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
                 "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveBorder": "#5d89ea",
                 "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
+                "sidebarTextHoverBg": "#28427b",
                 "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
+                "type": "Denim",
               }
             }
           />
@@ -277,7 +281,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
       <View
         style={
           Object {
-            "backgroundColor": "rgba(61,60,64,0.1)",
+            "backgroundColor": "rgba(63,67,80,0.1)",
             "height": 1,
             "marginLeft": 16,
             "width": "100%",

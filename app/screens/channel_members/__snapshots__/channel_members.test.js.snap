@@ -38,8 +38,8 @@ exports[`ChannelMembers should match snapshot 1`] = `
         inputHeight={33}
         inputStyle={
           Object {
-            "backgroundColor": "rgba(61,60,64,0.2)",
-            "color": "#3d3c40",
+            "backgroundColor": "rgba(63,67,80,0.2)",
+            "color": "#3f4350",
             "fontSize": 15,
           }
         }
@@ -52,16 +52,16 @@ exports[`ChannelMembers should match snapshot 1`] = `
         onSearchButtonPress={[Function]}
         onSelectionChange={[Function]}
         placeholder="Search"
-        placeholderTextColor="rgba(61,60,64,0.5)"
+        placeholderTextColor="rgba(63,67,80,0.5)"
         returnKeyType="search"
         searchBarRightMargin={0}
         searchIconSize={24}
         showArrow={false}
         showCancel={true}
         testID="channel_members.search_bar"
-        tintColorDelete="rgba(61,60,64,0.5)"
-        tintColorSearch="rgba(61,60,64,0.5)"
-        titleCancelColor="#3d3c40"
+        tintColorDelete="rgba(63,67,80,0.5)"
+        tintColorSearch="rgba(63,67,80,0.5)"
+        titleCancelColor="#3f4350"
         value=""
       />
     </View>
@@ -81,31 +81,32 @@ exports[`ChannelMembers should match snapshot 1`] = `
       testID="channel_members.custom_list"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
           "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
     />

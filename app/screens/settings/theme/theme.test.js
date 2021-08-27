@@ -33,6 +33,6 @@ describe('Theme', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find(ThemeTile)).toHaveLength(4);
+        expect(wrapper.find(ThemeTile)).toHaveLength(5);
     });
 });
