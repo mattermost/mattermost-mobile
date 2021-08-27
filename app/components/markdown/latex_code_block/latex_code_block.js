@@ -139,10 +139,6 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
                             >
                                 <MathView
                                     style={{maxHeight: 30}}
-                                    config={{
-                                        ex: 50,
-                                        em: 200,
-                                    }}
                                     math={latexCode}
                                     onError={(errorMsg) => {
                                         return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;

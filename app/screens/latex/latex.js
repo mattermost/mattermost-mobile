@@ -52,7 +52,6 @@ export default class Latex extends React.PureComponent {
                     <ScrollView
                         style={style.scrollContainer}
                         contentContainerStyle={style.scrollCode}
-                        scrollEnabled={true}
                         horizontal={true}
                     >
                         {lines.map((latexCode) => (
@@ -62,10 +61,6 @@ export default class Latex extends React.PureComponent {
                             >
                                 <MathView
                                     style={{maxHeight: 30}}
-                                    config={{
-                                        ex: 50,
-                                        em: 200,
-                                    }}
                                     math={latexCode}
                                     onError={(errorMsg) => {
                                         return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
