@@ -39,7 +39,8 @@ class NotificationService: UNNotificationServiceExtension {
             }
             return
           }
-          self.processResponse(data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: contentHandler)
+        
+          self.processResponse(serverUrl: "ackNotification.serverUrl", data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: contentHandler)
         }
     }
 
@@ -51,7 +52,9 @@ class NotificationService: UNNotificationServiceExtension {
     }
   }
 
-  func processResponse(data: Data, bestAttemptContent: UNMutableNotificationContent, contentHandler: ((UNNotificationContent) -> Void)?) {
+  func processResponse(serverUrl: String, data: Data, bestAttemptContent: UNMutableNotificationContent, contentHandler: ((UNNotificationContent) -> Void)?) {
+    bestAttemptContent.userInfo["serverUrl"] = serverUrl
+    
     let json = try? JSONSerialization.jsonObject(with: data) as! [String: Any]
     if let json = json {
       if let message = json["message"] as? String {
@@ -68,6 +71,9 @@ class NotificationService: UNNotificationServiceExtension {
         }
       }
     }
+    
+    Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent)
+    
     if let contentHandler = contentHandler {
       contentHandler(bestAttemptContent)
     }

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Database+Posts.swift
 //  
 //
 //  Created by Miguel Alatzar on 8/26/21.
@@ -241,7 +241,7 @@ extension Database {
         try db.run(deleteQuery)
     }
     
-    private func insertAndDeletePosts(_ posts: [Post], _ serverUrl: String, _ channelId: String) throws {
+    private func insertAndDeletePosts(_ posts: [Post], _ channelId: String, _ serverUrl: String) throws {
         let db = try getDatabaseForServer(serverUrl)
         
         let setters = createPostSetters(from: posts)

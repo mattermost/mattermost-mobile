@@ -72,9 +72,6 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   [RNNotifications startMonitorNotifications];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-  
-  // TEST
-  [[Network default] fetchPostsForChannelWithId:@"8zmzcf6tytfidftn4ay384whec" withServerUrl:@"http://192.168.0.14:8065"];
 
 
   return YES;

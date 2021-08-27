@@ -40,9 +40,12 @@ public class Database: NSObject {
     internal let DEFAULT_DB_NAME = "app.db"
     internal var DEFAULT_DB_PATH: String
     internal var defaultDB: OpaquePointer? = nil
+    
     internal var serversTable = Table("Servers")
-    internal var postsInChannelTable = Table("PostsInChannel")
+    internal var teamTable = Table("Team")
+    internal var channelTable = Table("Channel")
     internal var postTable = Table("Post")
+    internal var postsInChannelTable = Table("PostsInChannel")
     
     @objc public static let `default` = Database()
     
@@ -84,7 +87,7 @@ public class Database: NSObject {
         throw DatabaseError.NoResults(query.asSQL())
     }
     
-    public func getDatabaseForServer(_ serverUrl: String) throws -> Connection {
+    internal func getDatabaseForServer(_ serverUrl: String) throws -> Connection {
         let db = try Connection(DEFAULT_DB_PATH)
         let url = Expression<String>("url")
         let dbPath = Expression<String>("db_path")
