@@ -618,6 +618,7 @@
   "mobile.user_removed.message": "You were removed from the channel.",
   "mobile.user_removed.title": "Removed from {channelName}",
   "mobile.user.settings.notifications.email.fifteenMinutes": "Every 15 minutes",
+  "mobile.video_playback.download": "Download Video",
   "mobile.video_playback.failed_description": "An error occurred while trying to play the video.\n",
   "mobile.video_playback.failed_title": "Video playback failed",
   "mobile.youtube_playback_error.description": "An error occurred while trying to play the YouTube video.\nDetails: {details}",
