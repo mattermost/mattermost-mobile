@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Keyboard, View, Text, StyleSheet} from 'react-native';
-import MathView, {MathText} from 'react-native-math-view';
+import MathView from 'react-native-math-view';
 
 import {goToScreen} from '@actions/navigation';
 import FormattedText from '@components/formatted_text';
@@ -128,19 +128,21 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
             >
                 <View style={style.container}>
                     <View style={style.rightColumn}>
-                        <View style={style.code}>
-                            {content.map((latexCode) => (
+                        {content.map((latexCode) => (
+                            <View
+                                style={style.code}
+                                key={latexCode}
+                            >
                                 <MathView
                                     style={{maxHeight: 30}}
                                     config={{ex: 50, em: 200}}
-                                    key={latexCode}
                                     math={latexCode}
                                     onError={({error}) => <Text>{error}</Text>}
                                     renderError={({error}) => <Text>{error}</Text>}
                                     resizeMode={'cover'}
                                 />
-                            ))}
-                        </View>
+                            </View>
+                        ))}
                         {plusMoreLines}
                     </View>
                     {language}
@@ -159,21 +161,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             flex: 1,
         },
-        lineNumbers: {
-            alignItems: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.05),
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRightWidth: StyleSheet.hairlineWidth,
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            paddingVertical: 4,
-            width: 21,
-        },
-        lineNumbersText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 12,
-            lineHeight: 18,
-        },
         rightColumn: {
             flexDirection: 'column',
             flex: 1,
@@ -181,6 +168,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 4,
         },
         code: {
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
         },
         codeText: {
             color: changeOpacity(theme.centerChannelColor, 0.65),

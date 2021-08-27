@@ -7,8 +7,9 @@ import {
     BackHandler,
     ScrollView,
     Text,
+    View,
 } from 'react-native';
-import MathView, {MathText} from 'react-native-math-view';
+import MathView from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen} from '@actions/navigation';
@@ -47,18 +48,24 @@ export default class Latex extends React.PureComponent {
             >
                 <ScrollView
                     style={style.scrollContainer}
-                    contentContainerStyle={style.code}
+                    contentContainerStyle={style.scrollCode}
+                    scrollEnabled={true}
+                    horizontal={true}
                 >
                     {lines.map((latexCode) => (
-                        <MathView
-                            style={{maxHeight: 30, overflow: 'scroll'}}
-                            config={{ex: 50, em: 200}}
+                        <View
+                            style={style.code}
                             key={latexCode}
-                            math={latexCode}
-                            onError={({error}) => <Text>{error}</Text>}
-                            renderError={({error}) => <Text>{error}</Text>}
-                            resizeMode={'contain'}
-                        />
+                        >
+                            <MathView
+                                style={{maxHeight: 30}}
+                                config={{ex: 50, em: 200}}
+                                math={latexCode}
+                                onError={({error}) => <Text>{error}</Text>}
+                                renderError={({error}) => <Text>{error}</Text>}
+                                resizeMode={'cover'}
+                            />
+                        </View>
                     ))}
                 </ScrollView>
             </SafeAreaView>
@@ -70,15 +77,18 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         scrollContainer: {
             flex: 1,
-            overflow: 'scroll',
         },
         container: {
             minHeight: '100%',
         },
-        code: {
+        scrollCode: {
             minHeight: '100%',
             flexDirection: 'column',
             paddingHorizontal: 6,
+        },
+        code: {
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
         },
     };
 });
