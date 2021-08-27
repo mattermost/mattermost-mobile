@@ -22,6 +22,7 @@ import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import LatexCodeBlock from './latex_code_block';
+import LatexInline from './latex_inline';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -171,6 +172,30 @@ export default class Markdown extends PureComponent {
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
+
+        if (getConfig(Store.redux?.getState()).EnableLatex === 'true') {
+            // eslint-disable-next-line no-useless-escape
+            const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
+
+            //Search for match
+            const match = inlineLatexRegEx.exec(literal);
+
+            if (match) {
+                const firstPart = literal.slice(0, match.index);
+                const latexCode = match[1];
+                const lastPart = literal.slice(match.index + match[0].length);
+
+                return (
+                    <Text>
+                        {this.renderText({context, literal: firstPart})}
+                        <LatexInline
+                            content={latexCode}
+                        />
+                        {this.renderText({context, literal: lastPart})}
+                    </Text>
+                );
+            }
+        }
 
         return (
             <Text
