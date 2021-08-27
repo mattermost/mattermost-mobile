@@ -27,6 +27,7 @@ exports[`TeamIcon should match snapshot 1`] = `
     style={
       Array [
         Object {
+          "backgroundColor": "white",
           "borderRadius": 2,
           "bottom": 0,
           "left": 0,

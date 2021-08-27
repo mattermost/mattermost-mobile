@@ -118,6 +118,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             bottom: 0,
             left: 0,
             right: 0,
+            backgroundColor: 'white',
         },
     };
 });
