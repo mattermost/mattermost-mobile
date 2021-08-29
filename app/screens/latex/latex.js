@@ -89,13 +89,14 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         scrollCode: {
             minHeight: '100%',
             flexDirection: 'column',
-            paddingHorizontal: 10,
+            paddingLeft: 10,
             paddingVertical: 10,
         },
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            marginHorizontal: 5,
+            marginLeft: 5,
+            paddingVertical: 4,
         },
         errorText: {
             fontSize: 14,

@@ -162,18 +162,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         rightColumn: {
             flexDirection: 'column',
             flex: 1,
-            paddingHorizontal: 6,
+            paddingLeft: 6,
             paddingVertical: 4,
         },
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            marginHorizontal: 5,
-        },
-        codeText: {
-            color: changeOpacity(theme.centerChannelColor, 0.65),
-            fontSize: 12,
-            lineHeight: 18,
+            marginLeft: 5,
+            paddingVertical: 4
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
