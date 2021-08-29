@@ -79,6 +79,11 @@ export default class Latex extends React.PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
+    const codeVerticalPadding = Platform.select({
+        ios: 4,
+        android: 0,
+    });
+
     return {
         scrollContainer: {
             flex: 1,
@@ -96,7 +101,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             marginLeft: 5,
-            paddingVertical: 4,
+            paddingVertical: codeVerticalPadding,
         },
         errorText: {
             fontSize: 14,

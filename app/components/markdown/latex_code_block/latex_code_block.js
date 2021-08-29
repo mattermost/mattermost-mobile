@@ -151,6 +151,11 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const codeVerticalPadding = Platform.select({
+        ios: 4,
+        android: 0,
+    });
+
     return {
         container: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.15),
@@ -169,7 +174,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             marginLeft: 5,
-            paddingVertical: 4
+            paddingVertical: codeVerticalPadding,
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
