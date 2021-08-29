@@ -8,6 +8,7 @@ import {
     ScrollView,
     Text,
     View,
+    Platform,
 } from 'react-native';
 import MathView from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';

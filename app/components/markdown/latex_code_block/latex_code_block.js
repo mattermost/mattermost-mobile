@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Keyboard, View, Text, StyleSheet} from 'react-native';
+import {Keyboard, View, Text, StyleSheet, Platform} from 'react-native';
 import MathView from 'react-native-math-view';
 
 import {goToScreen} from '@actions/navigation';
