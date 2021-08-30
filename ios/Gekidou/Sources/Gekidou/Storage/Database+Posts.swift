@@ -36,8 +36,62 @@ public struct PostMetadata: Codable {
     let images: Images?
 }
 
+public struct PostPropsAddChannelMember: Codable {
+    let post_id: String
+    let usernames: String
+    let not_in_channel_usernames: String
+    let user_ids: String
+    let not_in_channel_user_ids: String
+    let not_in_groups_usernames: String
+    let not_in_groups_user_ids: String
+}
+
+public struct PostPropsAttachment: Codable {
+    let id: Int64
+    let fallback: String
+    let color: String
+    let pretext: String
+    let author_name: String
+    let author_link: String
+    let author_icon: String
+    let title: String
+    let title_link: String
+    let text: String
+    let image_url: String
+    let thumb_url: String
+    let footer: String
+    let footer_icon: String
+    
+    // TODO:
+    // fields
+    // timestamp
+    // actions
+}
+
 public struct PostProps: Codable {
-    // TODO
+    let userId: String?
+    let username: String?
+    let addedUserId: String?
+    let removedUserId: String?
+    let removedUsername: String?
+    let deleteBy: String?
+    let old_header: String?
+    let new_header: String?
+    let old_purpose: String?
+    let new_purpose: String?
+    let old_displayname: String?
+    let new_displayname: String?
+    let mentionHighlightDisabled: Bool?
+    let disable_group_highlight: Bool?
+    let override_username: Bool?
+    let from_webhook: Bool?
+    let override_icon_url: Bool?
+    let override_icon_emoji: Bool?
+    let add_channel_member: PostPropsAddChannelMember?
+    let attachments: [PostPropsAttachment]?
+    
+    // TODO:
+    // appBindings
 }
 
 public struct Post: Codable {
@@ -53,7 +107,7 @@ public struct Post: Codable {
     let original_id: String
     let message: String
     let type: String
-    let props: PostProps?
+    var props: PostProps?
     let hashtag: String?
     let pending_post_id: String?
     let reply_count: Int64
@@ -243,16 +297,16 @@ extension Database {
     
     private func insertAndDeletePosts(_ posts: [Post], _ channelId: String, _ serverUrl: String) throws {
         let db = try getDatabaseForServer(serverUrl)
-        
+
         let setters = createPostSetters(from: posts)
         let insertQuery = postTable.insertMany(or: .replace, setters)
         try db.run(insertQuery)
-        
+
         let deleteIds = posts.reduce([String]()) { (accumulated, post) in
             if let deleteId = post.pending_post_id {
                 return accumulated + [deleteId]
             }
-            
+
             return accumulated
         }
         let id = Expression<String>("id")
@@ -284,6 +338,7 @@ extension Database {
 //        let ownPost = Expression<Bool?>("ownPost")
         let prevPostId = Expression<String?>("previous_post_id")
 //        let participants = Expression<String?>("participants")
+        let props = Expression<String?>("props")
         
         var setters: [[Setter]] = []
         for post in posts {
@@ -311,6 +366,11 @@ extension Database {
 //            setter.append(participants <- json(from: post.participants))
 
             // TODO: props and metadata
+            if let postProps = post.props {
+                let propsJSON = try! JSONEncoder().encode(postProps)
+                let propsString = String(data: propsJSON, encoding: String.Encoding.utf8)
+                setter.append(props <- propsString)
+            }
 
             setters.append(setter)
         }
