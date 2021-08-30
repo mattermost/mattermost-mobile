@@ -61,16 +61,19 @@ public struct Reaction: Codable {
     let create_at: Int64
 }
 
-public struct Images: Codable {
-    // TODO
+public struct Image: Codable {
+    let width: Int64
+    let height: Int64
+    let format: String
+    let frame_count: Int64
 }
 
 public struct PostMetadata: Codable {
     let embeds: [Embed]?
-    let emojis: [Emoji]?
-    let files: [File]?
-    let reactions: [Reaction]?
-    let images: Images?
+    let images: [String:Image]?
+    var emojis: [Emoji]?
+    var files: [File]?
+    var reactions: [Reaction]?
 }
 
 public struct PostPropsAddChannelMember: Codable {
@@ -462,18 +465,7 @@ extension Database {
         var emojiSetters: [[Setter]] = []
         
         for post in posts {
-            if let metadata = post.metadata {
-                // Metadata setter
-                var metadataSetter = [Setter]()
-                
-                metadataSetter.append(id <- post.id)
-                
-                let dataJSON = try! JSONEncoder().encode(post.metadata)
-                let dataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
-                metadataSetter.append(data <- dataString)
-                
-                postMetadataSetters.append(metadataSetter)
-                
+            if var metadata = post.metadata {
                 // Reaction setters
                 if let reactions = metadata.reactions {
                     for reaction in reactions {
@@ -485,6 +477,8 @@ extension Database {
                         
                         reactionSetters.append(reactionSetter)
                     }
+                    
+                    metadata.reactions = nil
                 }
                 
                 // File setters
@@ -504,6 +498,8 @@ extension Database {
                         
                         fileSetters.append(fileSetter)
                     }
+                    
+                    metadata.files = nil
                 }
                 
                 // Emoji setters
@@ -515,7 +511,20 @@ extension Database {
                         
                         emojiSetters.append(emojiSetter)
                     }
+                    
+                    metadata.emojis = nil
                 }
+                
+                // Metadata setter
+                var metadataSetter = [Setter]()
+                
+                metadataSetter.append(id <- post.id)
+                
+                let dataJSON = try! JSONEncoder().encode(metadata)
+                let dataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
+                metadataSetter.append(data <- dataString)
+                
+                postMetadataSetters.append(metadataSetter)
             }
         }
 
