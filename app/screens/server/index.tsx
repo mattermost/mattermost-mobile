@@ -5,9 +5,11 @@ import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    ActivityIndicator, EventSubscription, Image, Keyboard, KeyboardAvoidingView,
+    ActivityIndicator, EventSubscription, Keyboard, KeyboardAvoidingView,
     Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
+
+import {TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -282,19 +284,8 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                     accessible={false}
                 >
                     <View style={styles.formContainer}>
-                        <Image
-                            source={require('@assets/images/logo.png')}
-                            style={styles.logo}
-                        />
-
-                        <View testID='select_server.header.text'>
-                            <FormattedText
-                                style={styles.header}
-                                id='mobile.components.select_server_view.enterServerUrl'
-                                defaultMessage='Enter Server URL'
-                            />
-                        </View>
-                        <TextInput
+                        <PaperTextInput
+                            mode='outlined'
                             testID='select_server.server_url.input'
                             ref={input}
                             value={url}
@@ -305,9 +296,40 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'
+                            label={formatMessage({
+                                id: 'mobile.components.select_server_view.enterServerUrl',
+                                defaultMessage: 'Enter Server URL',
+                            })}
                             placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.siteUrlPlaceholder',
-                                defaultMessage: 'https://mattermost.example.com',
+                                id: 'mobile.components.select_server_view.enterServerUrl',
+                                defaultMessage: 'Enter Server URL',
+                            })}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            returnKeyType='go'
+                            underlineColorAndroid='transparent'
+                            disableFullscreenUI={true}
+                        />
+                        <PaperTextInput
+                            mode='outlined'
+                            testID='select_server.server_display_name.input'
+                            ref={input}
+
+                            //                            value={displayName}
+                            editable={!inputDisabled}
+                            onChangeText={handleTextChanged}
+                            onSubmitEditing={handleConnect}
+                            style={StyleSheet.flatten(inputStyle)}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+
+                            //keyboardType='url'
+                            label={formatMessage({
+                                id: 'mobile.components.select_server_view.displayName',
+                                defaultMessage: 'Display Name',
+                            })}
+                            placeholder={formatMessage({
+                                id: 'mobile.components.select_server_view.displayName',
+                                defaultMessage: 'Display Name',
                             })}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                             returnKeyType='go'
