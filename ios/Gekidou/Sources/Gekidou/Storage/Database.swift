@@ -52,6 +52,8 @@ public class Database: NSObject {
     internal var myChannelSettingsTable = Table("MyChannelSettings")
     internal var postTable = Table("Post")
     internal var postsInChannelTable = Table("PostsInChannel")
+    internal var postMetadataTable = Table("PostMetadata")
+    internal var reactionTable = Table("Reaction")
     
     @objc public static let `default` = Database()
     

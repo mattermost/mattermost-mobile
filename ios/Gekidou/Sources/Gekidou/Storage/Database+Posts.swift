@@ -8,8 +8,32 @@
 import Foundation
 import SQLite
 
+public struct EmbedMedia: Codable {
+    let type: String?
+    let url: String?
+    let secure_url: String?
+    let width: Int64?
+    let height: Int64?
+}
+
+public struct EmbedData: Codable {
+    let type: String?
+    let url: String?
+    let title: String?
+    let description: String?
+    let determiner: String?
+    let site_name: String?
+    let locale: String?
+    let locales_alternate: String?
+    let images: [EmbedMedia]?
+    let audios: [EmbedMedia]?
+    let videos: [EmbedMedia]?
+}
+
 public struct Embed: Codable {
-    // TODO
+    let type: String?
+    let url: String?
+    let data: EmbedData?
 }
 
 public struct Emoji: Codable {
@@ -21,7 +45,10 @@ public struct File: Codable {
 }
 
 public struct Reaction: Codable {
-    // TODO
+    let user_id: String
+    let post_id: String
+    let emoji_name: String
+    let create_at: Int64
 }
 
 public struct Images: Codable {
@@ -120,6 +147,11 @@ public struct Post: Codable {
     var prev_post_id: String?
 }
 
+struct MetadataSetters {
+    let postMetadataSetters: [[Setter]]
+    let reactionSetters: [[Setter]]
+}
+
 extension Database {
     public func queryPostsSinceForChannel(withId channelId: String, withServerUrl serverUrl: String) throws -> Int64? {
         let db = try getDatabaseForServer(serverUrl)
@@ -182,17 +214,14 @@ extension Database {
     }
     
     public func handlePostData(_ postData: PostData, _ channelId: String, _ serverUrl: String, _ usedSince: Bool = false) throws {
-        try handlePosts(postData, channelId, serverUrl)
+        try insertAndDeletePosts(postData.posts, channelId, serverUrl)
         try handlePostsInChannel(postData, channelId, serverUrl, usedSince)
+        try handlePostMetadata(postData.posts, channelId, serverUrl)
         // handlePostsInThread
         // handlePostReactions
         // handlePostFiles
         // handlePostMetadata
         // handlePostEmojis
-    }
-    
-    private func handlePosts(_ postData: PostData, _ channelId: String, _ serverUrl: String) throws {
-        try insertAndDeletePosts(postData.posts, channelId, serverUrl)
     }
     
     private func handlePostsInChannel(_ postData: PostData, _ channelId: String, _ serverUrl: String, _ usedSince: Bool = false) throws {
@@ -316,6 +345,22 @@ extension Database {
         try db.run(deleteQuery)
     }
     
+    private func handlePostMetadata(_ posts: [Post], _ channelId: String, _ serverUrl: String) throws {
+        let db = try getDatabaseForServer(serverUrl)
+
+        let setters = createPostMetadataSetters(from: posts)
+        
+        if !setters.postMetadataSetters.isEmpty {
+            let insertQuery = postMetadataTable.insertMany(or: .replace, setters.postMetadataSetters)
+            try db.run(insertQuery)
+        }
+        
+        if !setters.reactionSetters.isEmpty {
+            let insertQuery = reactionTable.insertMany(or: .replace, setters.reactionSetters)
+            try db.run(insertQuery)
+        }
+    }
+    
     private func createPostSetters(from posts: [Post]) -> [[Setter]] {
         let id = Expression<String>("id")
         let createAt = Expression<Int64>("create_at")
@@ -365,7 +410,6 @@ extension Database {
             setter.append(prevPostId <- post.prev_post_id)
 //            setter.append(participants <- json(from: post.participants))
 
-            // TODO: props and metadata
             if let postProps = post.props {
                 let propsJSON = try! JSONEncoder().encode(postProps)
                 let propsString = String(data: propsJSON, encoding: String.Encoding.utf8)
@@ -376,5 +420,47 @@ extension Database {
         }
         
         return setters
+    }
+    
+    private func createPostMetadataSetters(from posts: [Post]) -> MetadataSetters {
+        let id = Expression<String>("id")
+        let data = Expression<String>("data")
+        
+        let userId = Expression<String>("user_id")
+        let postId = Expression<String>("post_id")
+        let emojiName = Expression<String>("emoji_name")
+        let createAt = Expression<Int64>("create_at")
+        
+        var postMetadataSetters: [[Setter]] = []
+        var reactionSetters: [[Setter]] = []
+        
+        for post in posts {
+            if let metadata = post.metadata {
+                var metadataSetter = [Setter]()
+                
+                metadataSetter.append(id <- post.id)
+                
+                let dataJSON = try! JSONEncoder().encode(post.metadata)
+                let dataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
+                metadataSetter.append(data <- dataString)
+                
+                postMetadataSetters.append(metadataSetter)
+                
+                if let reactions = metadata.reactions {
+                    for reaction in reactions {
+                        var reactionSetter = [Setter]()
+                        reactionSetter.append(userId <- reaction.user_id)
+                        reactionSetter.append(postId <- reaction.post_id)
+                        reactionSetter.append(emojiName <- reaction.emoji_name)
+                        reactionSetter.append(createAt <- reaction.create_at)
+                        
+                        reactionSetters.append(reactionSetter)
+                    }
+                }
+            }
+        }
+
+        return MetadataSetters(postMetadataSetters: postMetadataSetters,
+                               reactionSetters: reactionSetters)
     }
 }
