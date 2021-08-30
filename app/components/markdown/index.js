@@ -17,6 +17,7 @@ function mapStateToProps(state, ownProps) {
         mentionKeys: ownProps.mentionKeys || getAllUserMentionKeys(state),
         minimumHashtagLength: MinimumHashtagLength ? parseInt(MinimumHashtagLength, 10) : 3,
         theme: getTheme(state),
+        enableLatex: getConfig(state).EnableLatex === 'true',
     };
 }
 
