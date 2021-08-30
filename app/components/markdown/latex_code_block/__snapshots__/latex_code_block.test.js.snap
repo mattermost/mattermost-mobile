@@ -39,7 +39,7 @@ exports[`LatexCodeBlock should have 2 lines 1`] = `
       >
         <ForwardRef
           color="black"
-          math="\\\\frac{2}{1} = 2 "
+          math="\\\\frac{2}{1} = 2"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"
@@ -57,7 +57,7 @@ exports[`LatexCodeBlock should have 2 lines 1`] = `
       >
         <ForwardRef
           color="black"
-          math=" 2_{nd} = line"
+          math="2_{nd} = line"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"
@@ -132,7 +132,7 @@ exports[`LatexCodeBlock should have moreLinesText 1`] = `
       >
         <ForwardRef
           color="black"
-          math="\\\\frac{5}{2} = 2 "
+          math="\\\\frac{5}{2} = 2"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"
@@ -150,7 +150,7 @@ exports[`LatexCodeBlock should have moreLinesText 1`] = `
       >
         <ForwardRef
           color="black"
-          math=" 2_{nd} = line "
+          math="2_{nd} = line"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"

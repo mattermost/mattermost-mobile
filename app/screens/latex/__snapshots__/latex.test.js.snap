@@ -50,7 +50,7 @@ exports[`Latex should have 2 lines 1`] = `
           Object {
             "flexDirection": "row",
             "justifyContent": "flex-start",
-            "marginLeft": 5,
+            "marginHorizontal": 5,
             "paddingVertical": 4,
           }
         }
@@ -118,7 +118,7 @@ exports[`Latex should have 4 lines 1`] = `
           Object {
             "flexDirection": "row",
             "justifyContent": "flex-start",
-            "marginLeft": 5,
+            "marginHorizontal": 5,
             "paddingVertical": 4,
           }
         }
@@ -186,7 +186,7 @@ exports[`Latex should match snapshot 1`] = `
           Object {
             "flexDirection": "row",
             "justifyContent": "flex-start",
-            "marginLeft": 5,
+            "marginHorizontal": 5,
             "paddingVertical": 4,
           }
         }

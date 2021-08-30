@@ -24,7 +24,7 @@ export function splitLatexCodeInLines(content: string): Array<string> {
         }
     }
 
-    return outLines;
+    return outLines.map((line) => line.trim());
 }
 
 function testLatexLineBreak(latexCode: string): boolean {

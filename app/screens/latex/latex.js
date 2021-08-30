@@ -101,7 +101,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            marginLeft: 5,
+            marginHorizontal: 5,
             paddingVertical: codeVerticalPadding,
         },
         errorText: {
