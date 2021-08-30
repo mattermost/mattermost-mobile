@@ -66,10 +66,9 @@ export default function Badge({
     }
 
     // @ts-expect-error: backgroundColor definitely exists
-    const {backgroundColor = theme.mentionBg, ...restStyle} =
+    const {backgroundColor = theme.buttonBg, ...restStyle} =
     StyleSheet.flatten(style) || {};
-    const textColor = theme.mentionColor;
-
+    const textColor = theme.buttonColor;
     const borderRadius = size / 2;
     const fontSize = Math.floor((size * 3) / 4);
 

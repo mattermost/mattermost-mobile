@@ -3,13 +3,13 @@
 
 import {Q} from '@nozbe/watermelondb';
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {MM_TABLES} from '@constants/database';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import DatabaseManager from '@database/manager';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Subscription} from 'rxjs';
 
@@ -34,20 +34,30 @@ const {SERVERS} = MM_TABLES.APP;
 const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     unread: {
-        fontSize: 11,
         left: 16,
-        top: 2,
+        top: 1,
+        borderColor: theme.centerChannelBg,
+        borderWidth: 2,
+        paddingHorizontal: 0,
     },
     mentions: {
-        fontSize: 16,
+        fontSize: 10,
+        fontWeight: 'bold',
+        fontFamily: 'Open Sans',
+        lineHeight: Platform.select({android: 15, ios: 12.6}),
+        borderColor: theme.centerChannelBg,
+        borderWidth: 2,
+        minWidth: 18,
+        height: 16,
     },
-});
+}));
 
 const Home = ({isFocused, theme}: Props) => {
     const db = DatabaseManager.appDatabase?.database;
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, messages: 0});
+    const style = getStyleSheet(theme);
 
     const updateTotal = () => {
         let messages = 0;
@@ -128,7 +138,7 @@ const Home = ({isFocused, theme}: Props) => {
         unreadStyle = style.mentions;
     } else if (total.messages) {
         unreadStyle = style.unread;
-        size = 10;
+        size = 12;
     }
 
     return (
@@ -139,7 +149,7 @@ const Home = ({isFocused, theme}: Props) => {
                 color={isFocused ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.48)}
             />
             <Badge
-                style={unreadStyle}
+                style={[unreadStyle]}
                 visible={!isFocused && Boolean(unreadStyle)}
                 size={size}
             >
