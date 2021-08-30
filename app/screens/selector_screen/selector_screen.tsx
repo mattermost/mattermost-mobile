@@ -135,7 +135,6 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             return;
         }
 
-        let added = false;
         switch (this.props.dataSource) {
         case ViewTypes.DATA_SOURCE_USERS: {
             const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
@@ -144,7 +143,6 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (currentSelected[typedItem.id]) {
                 delete multiselectSelected[typedItem.id];
             } else {
-                added = true;
                 multiselectSelected[typedItem.id] = typedItem;
             }
             this.setState({multiselectSelected});
@@ -157,7 +155,6 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (currentSelected[typedItem.id]) {
                 delete multiselectSelected[typedItem.id];
             } else {
-                added = true;
                 multiselectSelected[typedItem.id] = typedItem;
             }
             this.setState({multiselectSelected});
@@ -170,7 +167,6 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (currentSelected[typedItem.value]) {
                 delete multiselectSelected[typedItem.value];
             } else {
-                added = true;
                 multiselectSelected[typedItem.value] = typedItem;
             }
             this.setState({multiselectSelected});
@@ -181,7 +177,7 @@ export default class SelectorScreen extends PureComponent<Props, State> {
             if (this.selectedScroll.current) {
                 this.selectedScroll.current.scrollToEnd();
             }
-        })
+        });
     };
 
     navigationButtonPressed({buttonId}: {buttonId: string}) {
