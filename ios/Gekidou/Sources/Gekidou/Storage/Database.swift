@@ -42,8 +42,14 @@ public class Database: NSObject {
     internal var defaultDB: OpaquePointer? = nil
     
     internal var serversTable = Table("Servers")
+    internal var systemTable = Table("System")
     internal var teamTable = Table("Team")
+    internal var myTeamTable = Table("MyTeam")
     internal var channelTable = Table("Channel")
+    internal var channelInfoTable = Table("ChannelInfo")
+    internal var channelMembershipTable = Table("ChannelMembership")
+    internal var myChannelTable = Table("MyChannel")
+    internal var myChannelSettingsTable = Table("MyChannelSettings")
     internal var postTable = Table("Post")
     internal var postsInChannelTable = Table("PostsInChannel")
     
@@ -96,6 +102,20 @@ public class Database: NSObject {
         if let result = try db.pluck(query) {
             let path = try result.get(dbPath)
             return try Connection(path)
+        }
+        
+        throw DatabaseError.NoResults(query.asSQL())
+    }
+    
+    internal func queryCurrentUserId(_ serverUrl: String) throws -> String {
+        let db = try getDatabaseForServer(serverUrl)
+        
+        let idCol = Expression<String>("id")
+        let valueCol = Expression<String>("value")
+        let query = systemTable.where(idCol == "currentUserId")
+        
+        if let result = try db.pluck(query) {
+            return try result.get(valueCol).replacingOccurrences(of: "\"", with: "")
         }
         
         throw DatabaseError.NoResults(query.asSQL())

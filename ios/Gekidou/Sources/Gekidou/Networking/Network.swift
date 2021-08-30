@@ -12,6 +12,7 @@ public typealias ResponseHandler = (_ data: Data?, _ response: URLResponse?, _ e
 public class Network: NSObject {
     internal var session: URLSession?
     internal let queue = OperationQueue()
+    internal let urlVersion = "/api/v4"
     
     override init() {
         super.init()
@@ -21,8 +22,8 @@ public class Network: NSObject {
         let config = URLSessionConfiguration.default
         config.httpAdditionalHeaders = ["X-Requested-With": "XMLHttpRequest"]
         config.allowsCellularAccess = true
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 30
+        config.timeoutIntervalForRequest = 10
+        config.timeoutIntervalForResource = 10
         config.httpMaximumConnectionsPerHost = 10
         
         self.session = URLSession.init(configuration: config, delegate: self, delegateQueue: nil)
@@ -30,15 +31,15 @@ public class Network: NSObject {
     
     @objc public static let `default` = Network()
     
+    internal func buildApiUrl(_ serverUrl: String, _ endpoint: String) -> URL {
+        return URL(string: "\(serverUrl)\(urlVersion)\(endpoint)")!
+    }
+    
     internal func responseOK(_ response: URLResponse?) -> Bool {
         return (response as? HTTPURLResponse)?.statusCode == 200
     }
     
-    internal func request(_ url: URL, withMethod method: String, withServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
-        return request(url, withMethod: method, withBody: nil, withHeaders: nil, withServerUrl: serverUrl, completionHandler: completionHandler)
-    }
-    
-    internal func request(_ url: URL, withMethod method: String, withBody body: Data?, withHeaders headers: [String:String]?, withServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
+    internal func buildURLRequest(for url: URL, withMethod method: String, withBody body: Data?, withHeaders headers: [String:String]?, withServerUrl serverUrl: String) -> URLRequest {
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = method
         
@@ -56,7 +57,17 @@ public class Network: NSObject {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let task = session!.dataTask(with: request as URLRequest) { data, response, error in
+        return request as URLRequest
+    }
+    
+    internal func request(_ url: URL, withMethod method: String, withServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
+        return request(url, withMethod: method, withBody: nil, withHeaders: nil, withServerUrl: serverUrl, completionHandler: completionHandler)
+    }
+    
+    internal func request(_ url: URL, withMethod method: String, withBody body: Data?, withHeaders headers: [String:String]?, withServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
+        let urlRequest = buildURLRequest(for: url, withMethod: method, withBody: body, withHeaders: headers, withServerUrl: serverUrl)
+        
+        let task = session!.dataTask(with: urlRequest) { data, response, error in
             completionHandler(data, response, error)
         }
         

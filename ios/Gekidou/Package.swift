@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Gekidou",
-    platforms: [.iOS(.v11)],
+    platforms: [.iOS(.v12)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(

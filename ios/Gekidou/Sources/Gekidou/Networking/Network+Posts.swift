@@ -35,7 +35,8 @@ extension Network {
         let queryParams = since == nil ?
             "?page=0&per_page=\(POST_CHUNK_SIZE)" :
             "?since=\(since!)"
-        let url = URL(string: "\(serverUrl)/api/v4/channels/\(channelId)/posts\(queryParams)")!
+        let endpoint = "/channels/\(channelId)/posts\(queryParams)"
+        let url = buildApiUrl(serverUrl, endpoint)
         
         return request(url, withMethod: "GET", withServerUrl: serverUrl, completionHandler: completionHandler)
     }

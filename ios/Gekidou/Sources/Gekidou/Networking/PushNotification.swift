@@ -54,7 +54,8 @@ extension Network {
         do {
             let jsonData = try JSONEncoder().encode(ackNotification)
             let headers = ["Content-Type": "application/json; charset=utf-8"]
-            let url = URL(string: "\(ackNotification.serverUrl)/api/v4/notifications/ack")!
+            let endpoint = "/notifications/ack"
+            let url = buildApiUrl(ackNotification.serverUrl, endpoint)
             request(url, withMethod: "POST", withBody: jsonData, withHeaders: headers, withServerUrl: ackNotification.serverUrl, completionHandler: completionHandler)
         } catch {
             
@@ -63,60 +64,79 @@ extension Network {
     }
     
     public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent) {
+        // TODO: All DB writes should be made in a single transaction
         let operation = BlockOperation {
             let group = DispatchGroup()
+            var channel: Channel? = nil
+            var channelMembership: ChannelMembership?
         
-            do {
-                let teamId = notification.userInfo["team_id"] as! String? // "gmbz93nzk7drpnsxo8ki93q7ca"
-                let channelId = notification.userInfo["channel_id"] as! String // "mm5xuerwbibqdrkkfgt4ru6ssh"
-                let serverUrl =  notification.userInfo["server_url"] as! String // "http://192.168.0.14:8065"
+            let teamId = notification.userInfo["team_id"] as! String? // "gmbz93nzk7drpnsxo8ki93q7ca"
+            let channelId = notification.userInfo["channel_id"] as! String // "mm5xuerwbibqdrkkfgt4ru6ssh"
+            let serverUrl =  notification.userInfo["server_url"] as! String // "http://192.168.0.14:8065"
+            let currentUserId = try! Database.default.queryCurrentUserId(serverUrl)
 
-                if let teamId = teamId {
-                    if try! !Database.default.hasTeam(withId: teamId, withServerUrl: serverUrl) {
-                        group.enter()
-                        
-                        self.fetchTeam(withId: teamId, withServerUrl: serverUrl) { data, response, error in
-                            if self.responseOK(response), let data = data {
-                                let team = try! JSONDecoder().decode(Team.self, from: data)
-                                try! Database.default.insertTeam(team, serverUrl)
-                            }
-                            
-                            group.leave()
-                        }
-                    }
-                }
-                
-                if try !Database.default.hasChannel(withId: channelId, withServerUrl: serverUrl) {
+            if teamId != nil {
+                if try! !Database.default.hasMyTeam(withId: teamId, withServerUrl: serverUrl) {
                     group.enter()
-
-                    self.fetchChannel(withId: channelId, withServerUrl: serverUrl) { data, response, error in
+                    self.fetchTeam(withId: teamId, withServerUrl: serverUrl) { data, response, error in
                         if self.responseOK(response), let data = data {
-                            let channel = try! JSONDecoder().decode(Channel.self, from: data)
-                            try! Database.default.insertChannel(channel, serverUrl)
+                            let team = try! JSONDecoder().decode(Team.self, from: data)
+                            try! Database.default.insertTeam(team, serverUrl)
                         }
-
+                        
+                        group.leave()
+                    }
+                    
+                    group.enter()
+                    self.fetchTeamMembership(withTeamId: teamId, withUserId: currentUserId, withServerUrl: serverUrl) { data, response, error in
+                        if self.responseOK(response), let data = data {
+                            let teamMembership = try! JSONDecoder().decode(TeamMembership.self, from: data)
+                            if teamMembership.user_id == currentUserId {
+                                try! Database.default.insertMyTeam(teamMembership, serverUrl)
+                            }
+                        }
+                        
                         group.leave()
                     }
                 }
+            }
+            
 
-                group.enter()
-                let since = try! Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
-                self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl) { data, response, error in
-                    if self.responseOK(response), let data = data {
-                       let postData = try! JSONDecoder().decode(PostData.self, from: data)
-                       if postData.posts.count > 0 {
-                            try! Database.default.handlePostData(postData, channelId, serverUrl, since != nil)
-                        }
-                    }
-                    
-                    group.leave()
+            group.enter()
+            self.fetchChannel(withId: channelId, withServerUrl: serverUrl) { data, response, error in
+                if self.responseOK(response), let data = data {
+                    channel = try! JSONDecoder().decode(Channel.self, from: data)
                 }
-            } catch {
-                print("GEKIDOU fetchAndStoreDataForPushNotification error", error)
+
+                group.leave()
+            }
+            
+            group.enter()
+            self.fetchChannelMembership(withChannelId: channelId, withUserId: currentUserId, withServerUrl: serverUrl) { data, response, error in
+                if self.responseOK(response), let data = data {
+                    channelMembership = try! JSONDecoder().decode(ChannelMembership.self, from: data)
+                }
+
+                group.leave()
+            }
+
+            group.enter()
+            let since = try! Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
+            self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl) { data, response, error in
+                if self.responseOK(response), let data = data {
+                   let postData = try! JSONDecoder().decode(PostData.self, from: data)
+                   if postData.posts.count > 0 {
+                        try! Database.default.handlePostData(postData, channelId, serverUrl, since != nil)
+                    }
+                }
+                
+                group.leave()
             }
             
             group.wait()
-    }
+            
+            try! Database.default.handleChannelAndMembership(channel, channelMembership, serverUrl)
+        }
 
         queue.addOperation(operation)
     }
