@@ -13,10 +13,6 @@ export const MFA = 'MFA';
 export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
-export const TAB_ACCOUNT = 'Account';
-export const TAB_HOME = 'Home';
-export const TAB_MENTION = 'Mention';
-export const TAB_SEARCH = 'Search';
 export const THREAD = 'Thread';
 
 export default {
@@ -32,9 +28,5 @@ export default {
     SERVER,
     SETTINGS_SIDEBAR,
     SSO,
-    TAB_ACCOUNT,
-    TAB_HOME,
-    TAB_MENTION,
-    TAB_SEARCH,
     THREAD,
 };
