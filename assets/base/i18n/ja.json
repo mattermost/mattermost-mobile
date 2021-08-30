@@ -412,6 +412,7 @@
   "mobile.notification_settings.email": "電子メール",
   "mobile.notification_settings.email.send": "電子メール通知を送信する",
   "mobile.notification_settings.email_title": "電子メール通知",
+  "mobile.notification_settings.mentions": "あなたについての投稿",
   "mobile.notification_settings.mentions.channelWide": "チャンネル範囲のあなたについての投稿",
   "mobile.notification_settings.mentions.reply_title": "返信通知を送信する",
   "mobile.notification_settings.mentions.sensitiveName": "あなたの大文字小文字を区別した苗字",
