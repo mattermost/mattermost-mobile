@@ -84,6 +84,7 @@
   "channel_modal.optional": "(optional)",
   "channel_modal.purpose": "Purpose",
   "channel_modal.purposeEx": "E.g.: \"A channel to file bugs and improvements\"",
+  "channel_modal.type": "Private Channel",
   "channel_notifications.ignoreChannelMentions.settings": "Ignore @channel, @here, @all",
   "channel_notifications.muteChannel.settings": "Mute channel",
   "channel_notifications.preference.all_activity": "For all activity",
