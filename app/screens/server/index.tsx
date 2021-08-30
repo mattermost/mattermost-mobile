@@ -284,6 +284,21 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                     accessible={false}
                 >
                     <View style={styles.formContainer}>
+                        <FormattedText
+                            style={styles.header}
+                            id='mobile.components.select_server_view.msg_welcome'
+                            defaultMessage='Welcome'
+                        />
+                        <FormattedText
+                            style={styles.header}
+                            id='mobile.components.select_server_view.msg_connect'
+                            defaultMessage="Let's Connect to a Server"
+                        />
+                        <FormattedText
+                            style={styles.header}
+                            id='mobile.components.select_server_view.msg_description'
+                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                        />
                         <PaperTextInput
                             mode='outlined'
                             testID='select_server.server_url.input'
@@ -335,6 +350,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
+                        />
+                        <FormattedText
+                            style={styles.header}
+                            id='mobile.components.select_server_view.displayName.help'
+                            defaultMessage='Choose a display name for the server in your sidebar'
                         />
                         <Button
                             testID='select_server.connect.button'
