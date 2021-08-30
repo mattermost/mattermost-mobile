@@ -41,7 +41,16 @@ public struct Emoji: Codable {
 }
 
 public struct File: Codable {
-    // TODO
+    let id: String
+    let post_id: String
+    let name: String
+    let `extension`: String
+    let size: Int64
+    let mime_type: String
+    let width: Int64
+    let height: Int64
+    let local_path: String?
+    let mini_preview: String?
 }
 
 public struct Reaction: Codable {
@@ -150,6 +159,7 @@ public struct Post: Codable {
 struct MetadataSetters {
     let postMetadataSetters: [[Setter]]
     let reactionSetters: [[Setter]]
+    let fileSetters: [[Setter]]
 }
 
 extension Database {
@@ -218,10 +228,6 @@ extension Database {
         try handlePostsInChannel(postData, channelId, serverUrl, usedSince)
         try handlePostMetadata(postData.posts, channelId, serverUrl)
         // handlePostsInThread
-        // handlePostReactions
-        // handlePostFiles
-        // handlePostMetadata
-        // handlePostEmojis
     }
     
     private func handlePostsInChannel(_ postData: PostData, _ channelId: String, _ serverUrl: String, _ usedSince: Bool = false) throws {
@@ -359,6 +365,11 @@ extension Database {
             let insertQuery = reactionTable.insertMany(or: .replace, setters.reactionSetters)
             try db.run(insertQuery)
         }
+        
+        if !setters.fileSetters.isEmpty {
+            let insertQuery = fileTable.insertMany(or: .replace, setters.fileSetters)
+            try db.run(insertQuery)
+        }
     }
     
     private func createPostSetters(from posts: [Post]) -> [[Setter]] {
@@ -425,17 +436,26 @@ extension Database {
     private func createPostMetadataSetters(from posts: [Post]) -> MetadataSetters {
         let id = Expression<String>("id")
         let data = Expression<String>("data")
-        
         let userId = Expression<String>("user_id")
         let postId = Expression<String>("post_id")
         let emojiName = Expression<String>("emoji_name")
         let createAt = Expression<Int64>("create_at")
+        let name = Expression<String>("name")
+        let ext = Expression<String>("extension")
+        let size = Expression<Int64>("size")
+        let mimeType = Expression<String>("mime_type")
+        let width = Expression<Int64>("width")
+        let height = Expression<Int64>("height")
+        let localPath = Expression<String?>("local_path")
+        let imageThumbnail = Expression<String?>("image_thumbnail")
         
         var postMetadataSetters: [[Setter]] = []
         var reactionSetters: [[Setter]] = []
+        var fileSetters: [[Setter]] = []
         
         for post in posts {
             if let metadata = post.metadata {
+                // Metadata setter
                 var metadataSetter = [Setter]()
                 
                 metadataSetter.append(id <- post.id)
@@ -446,6 +466,7 @@ extension Database {
                 
                 postMetadataSetters.append(metadataSetter)
                 
+                // Reaction setters
                 if let reactions = metadata.reactions {
                     for reaction in reactions {
                         var reactionSetter = [Setter]()
@@ -457,10 +478,30 @@ extension Database {
                         reactionSetters.append(reactionSetter)
                     }
                 }
+                
+                // File setters
+                if let files = metadata.files {
+                    for file in files {
+                        var fileSetter = [Setter]()
+                        fileSetter.append(id <- file.id)
+                        fileSetter.append(postId <- file.post_id)
+                        fileSetter.append(name <- file.name)
+                        fileSetter.append(ext <- file.`extension`)
+                        fileSetter.append(size <- file.size)
+                        fileSetter.append(mimeType <- file.mime_type)
+                        fileSetter.append(width <- file.width)
+                        fileSetter.append(height <- file.height)
+                        fileSetter.append(localPath <- file.local_path)
+                        fileSetter.append(imageThumbnail <- file.mini_preview)
+                        
+                        fileSetters.append(fileSetter)
+                    }
+                }
             }
         }
 
         return MetadataSetters(postMetadataSetters: postMetadataSetters,
-                               reactionSetters: reactionSetters)
+                               reactionSetters: reactionSetters,
+                               fileSetters: fileSetters)
     }
 }
