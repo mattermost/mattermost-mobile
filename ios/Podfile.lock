@@ -12,6 +12,7 @@ PODS:
     - React-jsi (= 0.64.2)
     - ReactCommon/turbomodule/core (= 0.64.2)
   - glog (0.3.5)
+  - iosMath (0.9.4)
   - jail-monkey (2.6.0):
     - React-Core
   - libwebp (1.2.0):
@@ -373,6 +374,8 @@ PODS:
     - React-Core
   - RNLocalize (2.1.1):
     - React-Core
+  - RNMathView (1.0.0):
+    - iosMath
   - RNPermissions (3.0.5):
     - React-Core
   - RNReactNativeHapticFeedback (1.11.0):
@@ -505,6 +508,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNMathView (from `../node_modules/react-native-math-view/ios`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -521,6 +525,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - boost-for-react-native
+    - iosMath
     - libwebp
     - MMKV
     - MMKVCore
@@ -664,6 +669,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNMathView:
+    :path: "../node_modules/react-native-math-view/ios"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
@@ -698,8 +705,9 @@ SPEC CHECKSUMS:
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: cef0cc6d50abc92e8cf52f140aa22b5371cfec0b
+  FBReactNativeSpec: 7dc0edb13e25bd5ced7df6f8d920c92b7b4ccde9
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
+  iosMath: f7a6cbadf9d836d2149c2a84c435b1effc244cba
   jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
   MMKV: 22e5136f7d00197bc0fc9694b7f71519f0d1ca12
@@ -764,6 +772,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNKeychain: f75b8c8b2f17d3b2aa1f25b4a0ac5b83d947ff8f
   RNLocalize: 82a569022724d35461e2dc5b5d015a13c3ca995b
+  RNMathView: 4c8a3c081fa671ab3136c51fa0bdca7ffb708bd5
   RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: 9c13c86454bfd54dab7505c1a054470bfecd2563

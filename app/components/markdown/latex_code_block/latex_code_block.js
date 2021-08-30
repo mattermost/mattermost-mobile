@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Keyboard, View, Text, StyleSheet} from 'react-native';
+import {Keyboard, View, Text, StyleSheet, Platform} from 'react-native';
 import MathView from 'react-native-math-view';
 
 import {goToScreen} from '@actions/navigation';
@@ -130,7 +130,6 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
                                 key={latexCode}
                             >
                                 <MathView
-                                    style={{maxHeight: 30}}
                                     math={latexCode}
                                     onError={(errorMsg) => {
                                         return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
@@ -152,6 +151,11 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const codeVerticalPadding = Platform.select({
+        ios: 4,
+        android: 0,
+    });
+
     return {
         container: {
             borderColor: changeOpacity(theme.centerChannelColor, 0.15),
@@ -163,18 +167,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         rightColumn: {
             flexDirection: 'column',
             flex: 1,
-            paddingHorizontal: 6,
+            paddingLeft: 6,
             paddingVertical: 4,
         },
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
-            marginHorizontal: 5,
-        },
-        codeText: {
-            color: changeOpacity(theme.centerChannelColor, 0.65),
-            fontSize: 12,
-            lineHeight: 18,
+            marginLeft: 5,
+            paddingVertical: codeVerticalPadding,
         },
         plusMoreLinesText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),

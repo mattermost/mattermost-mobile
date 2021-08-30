@@ -8,6 +8,7 @@ import {
     ScrollView,
     Text,
     View,
+    Platform,
 } from 'react-native';
 import MathView from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -60,7 +61,6 @@ export default class Latex extends React.PureComponent {
                                 key={latexCode}
                             >
                                 <MathView
-                                    style={{maxHeight: 30}}
                                     math={latexCode}
                                     onError={(errorMsg) => {
                                         return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
@@ -80,6 +80,11 @@ export default class Latex extends React.PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
+    const codeVerticalPadding = Platform.select({
+        ios: 4,
+        android: 0,
+    });
+
     return {
         scrollContainer: {
             flex: 1,
@@ -90,13 +95,14 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         scrollCode: {
             minHeight: '100%',
             flexDirection: 'column',
-            paddingHorizontal: 10,
+            paddingLeft: 10,
             paddingVertical: 10,
         },
         code: {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             marginHorizontal: 5,
+            paddingVertical: codeVerticalPadding,
         },
         errorText: {
             fontSize: 14,
