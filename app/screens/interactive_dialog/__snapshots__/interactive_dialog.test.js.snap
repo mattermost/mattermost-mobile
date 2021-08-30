@@ -31,7 +31,6 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
           "errorTextColor": "#d24b4e",
           "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
           "mentionColor": "#1e325c",
           "mentionHighlightBg": "#ffd470",
           "mentionHighlightLink": "#1b1d22",

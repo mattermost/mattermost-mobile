@@ -100,7 +100,6 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
         "errorTextColor": "#d24b4e",
         "linkColor": "#386fe5",
         "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
         "mentionColor": "#1e325c",
         "mentionHighlightBg": "#ffd470",
         "mentionHighlightLink": "#1b1d22",
