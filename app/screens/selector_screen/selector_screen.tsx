@@ -177,9 +177,11 @@ export default class SelectorScreen extends PureComponent<Props, State> {
         }
         }
 
-        if (added && this.selectedScroll.current) {
-            this.selectedScroll.current.scrollToEnd();
-        }
+        setTimeout(() => {
+            if (this.selectedScroll.current) {
+                this.selectedScroll.current.scrollToEnd();
+            }
+        })
     };
 
     navigationButtonPressed({buttonId}: {buttonId: string}) {
