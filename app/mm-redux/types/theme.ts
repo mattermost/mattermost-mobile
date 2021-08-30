@@ -25,7 +25,6 @@ export type Theme = {
     awayIndicator: string;
     dndIndicator: string;
     mentionBg: string;
-    mentionBj: string;
     mentionColor: string;
     centerChannelBg: string;
     centerChannelColor: string;
