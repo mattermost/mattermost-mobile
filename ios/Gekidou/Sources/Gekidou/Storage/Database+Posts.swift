@@ -37,7 +37,8 @@ public struct Embed: Codable {
 }
 
 public struct Emoji: Codable {
-    // TODO
+    let id: String
+    let name: String
 }
 
 public struct File: Codable {
@@ -160,6 +161,7 @@ struct MetadataSetters {
     let postMetadataSetters: [[Setter]]
     let reactionSetters: [[Setter]]
     let fileSetters: [[Setter]]
+    let emojiSetters: [[Setter]]
 }
 
 extension Database {
@@ -370,6 +372,11 @@ extension Database {
             let insertQuery = fileTable.insertMany(or: .replace, setters.fileSetters)
             try db.run(insertQuery)
         }
+        
+        if !setters.emojiSetters.isEmpty {
+            let insertQuery = emojiTable.insertMany(or: .replace, setters.emojiSetters)
+            try db.run(insertQuery)
+        }
     }
     
     private func createPostSetters(from posts: [Post]) -> [[Setter]] {
@@ -452,6 +459,7 @@ extension Database {
         var postMetadataSetters: [[Setter]] = []
         var reactionSetters: [[Setter]] = []
         var fileSetters: [[Setter]] = []
+        var emojiSetters: [[Setter]] = []
         
         for post in posts {
             if let metadata = post.metadata {
@@ -497,11 +505,23 @@ extension Database {
                         fileSetters.append(fileSetter)
                     }
                 }
+                
+                // Emoji setters
+                if let emojis = metadata.emojis {
+                    for emoji in emojis {
+                        var emojiSetter = [Setter]()
+                        emojiSetter.append(id <- emoji.id)
+                        emojiSetter.append(name <- emoji.name)
+                        
+                        emojiSetters.append(emojiSetter)
+                    }
+                }
             }
         }
 
         return MetadataSetters(postMetadataSetters: postMetadataSetters,
                                reactionSetters: reactionSetters,
-                               fileSetters: fileSetters)
+                               fileSetters: fileSetters,
+                               emojiSetters: emojiSetters)
     }
 }

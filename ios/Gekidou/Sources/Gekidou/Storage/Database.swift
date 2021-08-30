@@ -55,6 +55,7 @@ public class Database: NSObject {
     internal var postMetadataTable = Table("PostMetadata")
     internal var reactionTable = Table("Reaction")
     internal var fileTable = Table("File")
+    internal var emojiTable = Table("CustomEmoji")
     
     @objc public static let `default` = Database()
     
