@@ -172,7 +172,7 @@ export default class Markdown extends PureComponent {
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
-        if (getConfig(Store.redux?.getState()).EnableLatex === 'true') {
+        if (this.props.enableLatex) { //For now we use the normal latex setting because inline latex is not yet merged
             // eslint-disable-next-line no-useless-escape
             const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
 
@@ -184,11 +184,16 @@ export default class Markdown extends PureComponent {
                 const latexCode = match[1];
                 const lastPart = literal.slice(match.index + match[0].length);
 
+                let lineHeight = style.lineHeight;
+
                 return (
-                    <Text>
+                    <Text style={{lineHeight}}>
                         {this.renderText({context, literal: firstPart})}
                         <LatexInline
                             content={latexCode}
+                            onLayout={(event) => {
+                                lineHeight = Math.max(event.nativeEvent.layout.height, style.lineHeight, lineHeight);
+                            }}
                         />
                         {this.renderText({context, literal: lastPart})}
                     </Text>
