@@ -1,41 +1,34 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Preferences} from '@constants';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
+const themes = Preferences.THEMES;
+
 describe('getKeyboardAppearanceFromTheme', () => {
-    const themes: Partial<Theme> = [
-        {
-            centerChannelBg: '#ffffff', // Mattermost
-        },
-        {
-            centerChannelBg: '#f2f4f8', // Organization
-        },
-        {
-            centerChannelBg: '#2f3e4e', // Mattermost Dark
-        },
-        {
-            centerChannelBg: '#1f1f1f', // Windows Dark
-        },
-    ];
+    it('should return "light" keyboard appearance for centerChannelBg="#ffffff"', () => {
+        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes.denim);
+        expect(keyboardAppearance).toBe('light');
+    });
 
     it('should return "light" keyboard appearance for centerChannelBg="#ffffff"', () => {
-        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes[0]);
+        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes.sapphire);
         expect(keyboardAppearance).toBe('light');
     });
 
-    it('should return "light" keyboard appearance for centerChannelBg="#f2f4f8"', () => {
-        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes[1]);
+    it('should return "dark" keyboard appearance for centerChannelBg="#ffffff"', () => {
+        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes.quartz);
         expect(keyboardAppearance).toBe('light');
     });
 
-    it('should return "dark" keyboard appearance for centerChannelBg="#2f3e4e"', () => {
-        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes[2]);
+    it('should return "dark" keyboard appearance for centerChannelBg="#0a111f"', () => {
+        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes.indigo);
         expect(keyboardAppearance).toBe('dark');
     });
 
-    it('should return "dark" keyboard appearance for centerChannelBg="#1f1f1f"', () => {
-        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes[3]);
+    it('should return "dark" keyboard appearance for centerChannelBg="#090a0b"', () => {
+        const keyboardAppearance = getKeyboardAppearanceFromTheme(themes.onyx);
         expect(keyboardAppearance).toBe('dark');
     });
 });

@@ -23,9 +23,9 @@ function getThemeFromState() {
         return EphemeralStore.theme;
     }
     if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.windows10;
+        return Preferences.THEMES.onyx;
     }
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 }
 
 export function resetToChannel(passProps = {}) {
