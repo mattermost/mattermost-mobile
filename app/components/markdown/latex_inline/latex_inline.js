@@ -13,6 +13,7 @@ export default class LatexInline extends PureComponent {
         content: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         onLayout: PropTypes.func,
+        maxMathWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     };
 
     render() {
@@ -20,19 +21,20 @@ export default class LatexInline extends PureComponent {
 
         return (
             <View
-                style={style.viewStyle}
+                style={[style.viewStyle]}
+                key={this.props.content}
+                onLayout={this.props.onLayout}
             >
                 <MathView
-                    style={style.mathStyle}
+                    style={[style.mathStyle, {maxWidth: this.props.maxMathWidth}]}
                     math={this.props.content}
-                    onLayout={this.props.onLayout}
                     onError={(errorMsg) => {
                         return <Text style={style.errorText}>{'Latex error: ' + errorMsg.message}</Text>;
                     }}
                     renderError={(errorMsg) => {
                         return <Text style={style.errorText}>{'Latex render error: ' + errorMsg.error.message}</Text>;
                     }}
-                    resizeMode={'cover'}
+                    resizeMode={'contain'}
                 />
             </View>
         );
@@ -42,14 +44,9 @@ export default class LatexInline extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         mathStyle: {
-            flexWrap: 'wrap',
-            overflow: 'visible',
         },
         viewStyle: {
-            flex: 1,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            maxHeight: 20,
+            resizeMode: 'contain',
         },
         errorText: {
             color: 'rgb(255, 0, 0)',

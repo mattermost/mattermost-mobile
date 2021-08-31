@@ -9,6 +9,7 @@ import {
     Platform,
     Text,
     View,
+    useWindowDimensions,
 } from 'react-native';
 
 import AtMention from '@components/at_mention';
@@ -81,6 +82,10 @@ export default class Markdown extends PureComponent {
 
         this.parser = this.createParser();
         this.renderer = this.createRenderer();
+
+        this.state = {
+            inlineLatexHeight: 20,
+        };
     }
 
     createParser = () => {
@@ -184,16 +189,18 @@ export default class Markdown extends PureComponent {
                 const latexCode = match[1];
                 const lastPart = literal.slice(match.index + match[0].length);
 
-                let lineHeight = style.lineHeight;
-
                 return (
-                    <Text style={{lineHeight}}>
+                    <Text
+                        style={{lineHeight: this.state.inlineLatexHeight}}
+                    >
                         {this.renderText({context, literal: firstPart})}
                         <LatexInline
                             content={latexCode}
                             onLayout={(event) => {
-                                lineHeight = Math.max(event.nativeEvent.layout.height, style.lineHeight, lineHeight);
+                                const mathLineHeight = Math.max(event.nativeEvent.layout.height, this.state.inlineLatexHeight);
+                                this.setState({inlineLatexHeight: mathLineHeight});
                             }}
+                            maxMathWidth={useWindowDimensions().width * 0.8}
                         />
                         {this.renderText({context, literal: lastPart})}
                     </Text>
