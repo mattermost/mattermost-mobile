@@ -21,9 +21,7 @@ export default {
     IMAGES_PATH: `${FileSystem.cacheDirectory}/Images`,
     IS_IPHONE_WITH_INSETS: Platform.OS === 'ios' && DeviceInfo.hasNotch(),
     IS_TABLET: DeviceInfo.isTablet(),
-    PERMANENT_SIDEBAR_SETTINGS: 'PERMANENT_SIDEBAR_SETTINGS',
     PUSH_NOTIFY_ANDROID_REACT_NATIVE: 'android_rn',
     PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
-    TABLET_WIDTH: 250,
     VIDEOS_PATH: `${FileSystem.cacheDirectory}/Videos`,
 };

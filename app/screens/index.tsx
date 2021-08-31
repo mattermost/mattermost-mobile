@@ -51,7 +51,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     let screen: any|undefined;
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
-    case 'About':
+        case Screens.ABOUT:
         screen =  withServerDatabase(require('@screens/about').default);
         break;
     // case 'AddReaction':
@@ -60,8 +60,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'AdvancedSettings':
     //     screen = require('@screens/settings/advanced_settings').default;
     //     break;
-    case 'BottomSheet':
+        case Screens.BOTTOM_SHEET:
         screen = require('@screens/bottom_sheet').default;
+        break;
+        case Screens.CHANNEL:
+        screen = withServerDatabase(require('@screens/channel').default);
         break;
     // case 'ChannelAddMembers':
     //     screen = require('@screens/channel_add_members').default;
@@ -108,7 +111,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'FlaggedPosts':
     //     screen = require('@screens/flagged_posts').default;
     //     break;
-    case 'ForgotPassword':
+    case Screens.FORGOT_PASSWORD:
         screen = require('@screens/forgot_password').default;
         break;
     // case 'Gallery':
@@ -117,10 +120,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'InteractiveDialog':
     //     screen = require('@screens/interactive_dialog').default;
     //     break;
-    case 'Login':
+    case Screens.LOGIN:
         screen = require('@screens/login').default;
         break;
-    case 'LoginOptions':
+    case Screens.LOGIN_OPTIONS:
         screen = require('@screens/login_options').default;
         break;
     // case 'LongPost':
@@ -129,7 +132,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'MainSidebar':
     //     screen = require('app/components/sidebars/main').default;
     //     break;
-    case 'MFA':
+    case Screens.MFA:
         screen = require('@screens/mfa').default;
         break;
     // case 'MoreChannels':
@@ -196,9 +199,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'SidebarSettings':
     //     screen = require('@screens/settings/sidebar').default;
     //     break;
-    case 'SSO':
-        screen = require('@screens/sso').default;
-        break;
+        case Screens.SSO:
+            screen = require('@screens/sso').default;
+            break;
     // case 'Table':
     //     screen = require('@screens/table').default;
     //     break;
@@ -225,9 +228,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
 });
 
 export function registerScreens() {
-    const channelScreen = require('@screens/channel').default;
+    const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-
-    Navigation.registerComponent(Screens.CHANNEL, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(channelScreen))), undefined)));
     Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
+    Navigation.registerComponent(Screens.HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
 }
