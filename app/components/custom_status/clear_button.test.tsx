@@ -11,7 +11,7 @@ describe('components/custom_status/clear_button', () => {
     const baseProps = {
         handlePress: jest.fn(),
         testID: 'clear_custom_status.button',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     it('should match snapshot', () => {
