@@ -651,6 +651,7 @@ platform :android do
       )
     end
 
+    helpers_dir = './android/app/src/main/java/com/mattermost/helpers/'
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
     release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
     if ENV['BUILD_FOR_RELEASE'] == 'true'
@@ -660,12 +661,6 @@ platform :android do
           new_string: 'return false;'
       )
     end
-
-    find_replace_string(
-      path_to_file: "#{beta_dir}MainApplication.java",
-      old_string: 'import com.mattermost.rnbeta.generated.BasePackageList;',
-      new_string: "import #{package_id}.generated.BasePackageList;"
-  )
 
     if release_dir != beta_dir
       unless Dir.exist?(".#{release_dir}")
@@ -688,11 +683,25 @@ platform :android do
         )
       end
 
+      find_replace_string(
+        path_to_file: "#{release_dir}MainApplication.java",
+        old_string: 'import com.mattermost.rnbeta.generated.BasePackageList;',
+        new_string: "import #{package_id}.generated.BasePackageList;"
+      )
+
       Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'import com.mattermost.rnbeta.MainApplication;',
             new_string: "import #{package_id}.MainApplication;"
+        )
+      end
+
+      Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.*;',
+            new_string: "import #{package_id}.*;"
         )
       end
     end
