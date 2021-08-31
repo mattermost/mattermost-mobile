@@ -14,7 +14,7 @@ describe('ForgotPassword', () => {
     const baseProps = {
         componentId: 'ForgotPassword',
         serverUrl: 'https://community.mattermost.com',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

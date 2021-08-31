@@ -1,7 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+type ThemeKey = 'denim' | 'sapphire' | 'quartz' | 'indigo' | 'onyx';
+
+type ThemeType = 'Denim' | 'Sapphire' | 'Quartz' | 'Indigo' | 'Onyx' | 'custom';
+
 type Theme = {
+    [key: string]: string | undefined;
     type?: string;
     sidebarBg: string;
     sidebarText: string;
@@ -15,7 +20,6 @@ type Theme = {
     awayIndicator: string;
     dndIndicator: string;
     mentionBg: string;
-    mentionBj: string;
     mentionColor: string;
     centerChannelBg: string;
     centerChannelColor: string;
@@ -27,5 +31,4 @@ type Theme = {
     mentionHighlightBg: string;
     mentionHighlightLink: string;
     codeTheme: string;
-    [key: string]: any;
 };

@@ -28,9 +28,9 @@ const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
 function getDefaultThemeByAppearance(): Theme {
     if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.windows10;
+        return Preferences.THEMES.onyx;
     }
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 }
 
 const ThemeContext = createContext(getDefaultThemeByAppearance());

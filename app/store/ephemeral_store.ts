@@ -7,7 +7,9 @@ class EphemeralStore {
     navigationModalStack: string[] = [];
     theme: Theme | undefined;
 
-    getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
+    getNavigationTopComponentId = () => {
+        return this.navigationComponentIdStack[0];
+    }
 
     clearNavigationComponents = () => {
         this.navigationComponentIdStack = [];
@@ -30,8 +32,8 @@ class EphemeralStore {
 
     addToNavigationComponentIdStack = (componentId: string) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
-        if (index > 0) {
-            this.navigationComponentIdStack.slice(index, 1);
+        if (index >= 0) {
+            this.navigationComponentIdStack = this.navigationComponentIdStack.slice(index, 1);
         }
 
         this.navigationComponentIdStack.unshift(componentId);
