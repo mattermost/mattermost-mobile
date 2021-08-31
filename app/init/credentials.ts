@@ -80,7 +80,6 @@ export const removeServerCredentials = async (serverUrl: string) => {
     const options: KeyChain.Options = {
         securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
     };
-    
 
     if (Platform.OS === 'ios') {
         const appGroup = getIOSAppGroupDetails();
