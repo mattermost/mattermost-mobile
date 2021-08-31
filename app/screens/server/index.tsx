@@ -307,7 +307,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                         <FormattedText
                             style={styles.msgConnect}
                             id='mobile.components.select_server_view.msg_connect'
-                            defaultMessage="Let's Connect to a Server"
+                            defaultMessage='Let’s Connect to a Server'
                         />
                         <FormattedText
                             style={styles.msgDescription}
