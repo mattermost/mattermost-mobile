@@ -327,9 +327,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCorrect={false}
                             keyboardType='url'
                             label={serverLabelText}
-                            placeholder={serverLabelText}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            theme={{colors: {primary: theme.buttonBg}}}
+                            theme={{colors: {primary: theme.buttonBg, placeholder: changeOpacity(theme.centerChannelColor, 0.5)}}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -346,9 +344,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCapitalize='none'
                             autoCorrect={false}
                             label={displayNameLabelText}
-                            placeholder={displayNameLabelText}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            theme={{colors: {primary: theme.buttonBg}}}
+                            theme={{colors: {primary: theme.buttonBg, placeholder: changeOpacity(theme.centerChannelColor, 0.5)}}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -501,15 +497,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontStyle: 'normal',
         fontWeight: 'normal',
         fontSize: 12,
+        alignItems: 'center',
+        alignSelf: 'stretch',
         lineHeight: 16,
         color: changeOpacity(theme.centerChannelColor, 0.64),
-
-        // flex: 'none',
-        // order: 1,
-        // flex-grow: 0,
-        // marginTop: 8,
-        // marginBottom: 0,
     },
+
     connectText: {
         textAlign: 'center',
         color: theme.buttonBg,
