@@ -161,7 +161,7 @@ function blendComponent(background: number, foreground: number, opacity: number)
     return ((1 - opacity) * background) + (opacity * foreground);
 }
 
-export function blendColors(background: string, foreground: string, opacity: number): string {
+export function blendColors(background: string, foreground: string, opacity: number, hex = false): string {
     const backgroundComponents = getComponents(background);
     const foregroundComponents = getComponents(foreground);
 
@@ -185,6 +185,24 @@ export function blendColors(background: string, foreground: string, opacity: num
         foregroundComponents.alpha,
         opacity,
     );
+
+    if (hex) {
+        let r = red.toString(16);
+        let g = green.toString(16);
+        let b = blue.toString(16);
+
+        if (r.length === 1) {
+            r = '0' + r;
+        }
+        if (g.length === 1) {
+            g = '0' + g;
+        }
+        if (b.length === 1) {
+            b = '0' + b;
+        }
+
+        return `#${r + g + b}`;
+    }
 
     return `rgba(${red},${green},${blue},${alpha})`;
 }

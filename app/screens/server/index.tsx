@@ -6,13 +6,14 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator, EventSubscription, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StyleSheet, TextInput, TouchableWithoutFeedback, View,
+    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 
 import {TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import tinyColor from 'tinycolor2';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -264,8 +265,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         );
     }
 
-    const barStyle = Platform.OS === 'android' ? 'light-content' : 'dark-content';
+    const statusColor = tinyColor(theme.centerChannelBg);
     const inputDisabled = managedConfig.allowOtherServers === 'false' || connecting;
+    let barStyle: StatusBarStyle = 'light-content';
+    if (Platform.OS === 'ios' && statusColor.isLight()) {
+        barStyle = 'dark-content';
+    }
 
     const inputStyle = [styles.inputBox];
     if (inputDisabled) {
@@ -371,13 +376,16 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                         }
                     </View>
                 </TouchableWithoutFeedback>
-                <AppVersion/>
+                <AppVersion textStyle={styles.appInfo}/>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    appInfo: {
+        color: theme.centerChannelColor,
+    },
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,

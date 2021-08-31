@@ -10,6 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '@context/theme';
 import {Device, View as ViewConstants} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {useSplitView} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelTitle from './channel_title';
@@ -25,12 +26,14 @@ type ChannelNavBar = {
 const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
+    const isSplitView = useSplitView();
     const style = getStyleFromTheme(theme);
 
     const dimensions = useWindowDimensions();
     const isLandscape = dimensions.width > dimensions.height;
 
     let height = 0;
+    let paddingTop = 0;
     let canHaveSubtitle = true;
 
     const onLayout = ({nativeEvent}: LayoutChangeEvent) => {
@@ -64,10 +67,15 @@ const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
             break;
     }
 
+    if (!Device.IS_TABLET || (Device.IS_TABLET && isSplitView)) {
+        height += insets.top;
+        paddingTop = insets.top;
+    }
+
     return (
         <View
             onLayout={onLayout}
-            style={[style.header, {height: height + insets.top, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}]}
+            style={[style.header, {height, paddingTop, paddingLeft: insets.left, paddingRight: insets.right}]}
         >
             <ChannelTitle
                 channel={channel}

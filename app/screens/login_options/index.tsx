@@ -36,6 +36,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     header: {
+        color: theme.centerChannelColor,
         textAlign: 'center',
         marginTop: 15,
         marginBottom: 15,

@@ -2,23 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {Appearance, DeviceEventEmitter, Keyboard, Platform} from 'react-native';
-import {Layout, Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {Navigation as NavigationConstants, Preferences, Screens} from '@constants';
-
+import {Device, Preferences, Screens} from '@constants';
+import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-
 import type {LaunchProps} from '@typings/launch';
+
+Navigation.setDefaultOptions({
+    layout: {
+
+        //@ts-expect-error all not defined in type definition
+        orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
+    },
+});
 
 function getThemeFromState() {
     if (EphemeralStore.theme) {
         return EphemeralStore.theme;
     }
     if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.windows10;
+        return Preferences.THEMES.onyx;
     }
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 }
 
 export function resetToChannel(passProps = {}) {
@@ -29,8 +36,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: Screens.CHANNEL,
-                name: Screens.CHANNEL,
+                id: Screens.HOME,
+                name: Screens.HOME,
                 passProps,
                 options: {
                     layout: {
@@ -55,34 +62,8 @@ export function resetToChannel(passProps = {}) {
         }],
     };
 
-    const platformStack: Layout = {stack};
-
-    // if (Platform.OS === 'android') {
-    //     platformStack = {
-    //         sideMenu: {
-    //             left: {
-    //                 component: {
-    //                     id: Screens.MAIN_SIDEBAR,
-    //                     name: Screens.MAIN_SIDEBAR,
-    //                 },
-    //             },
-    //             center: {
-    //                 stack,
-    //             },
-    //             right: {
-    //                 component: {
-    //                     id: Screens.SETTINGS_SIDEBAR,
-    //                     name: Screens.SETTINGS_SIDEBAR,
-    //                 },
-    //             },
-    //         },
-    //     };
-    // }
-
     Navigation.setRoot({
-        root: {
-            ...platformStack,
-        },
+        root: {stack},
     });
 }
 
@@ -177,6 +158,7 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const componentId = EphemeralStore.getNavigationTopComponentId();
+    DeviceEventEmitter.emit('tabBarVisible', false);
     const defaultOptions = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,

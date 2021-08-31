@@ -23,7 +23,7 @@ describe('*** MFA Screen ***', () => {
         password: 'passwd',
         license: {},
         serverUrl: 'https://locahost:8065',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('MFA screen should match snapshot', () => {
