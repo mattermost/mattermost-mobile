@@ -661,6 +661,12 @@ platform :android do
       )
     end
 
+    find_replace_string(
+      path_to_file: "#{beta_dir}MainApplication.java",
+      old_string: 'import com.mattermost.rnbeta.generated.BasePackageList;',
+      new_string: "import #{package_id}.generated.BasePackageList;"
+  )
+
     if release_dir != beta_dir
       unless Dir.exist?(".#{release_dir}")
         FileUtils.mkdir_p ".#{release_dir}"
