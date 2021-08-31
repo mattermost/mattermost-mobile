@@ -11,6 +11,8 @@ is_build_pr = false
 
 # Executes before anything else use to setup the script
 before_all do
+  ENV['SPACESHIP_SKIP_2FA_UPGRADE'] = '1'
+
   is_build_pr = ENV['BUILD_PR'] == 'true'
   if is_build_pr && ENV['CIRCLECI'] == 'true'
     ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
@@ -82,11 +84,11 @@ lane :set_app_version do
   unless version_number.nil? || version_number.empty?
     package = load_config_json('../package.json')
     package['version'] = version_number
-    save_config_json('../package.json', package)
+    save_json_as_file('../package.json', package)
 
     lock = load_config_json('../package-lock.json')
     lock['version'] = version_number
-    save_config_json('../package-lock.json', lock)
+    save_json_as_file('../package-lock.json', lock)
 
     android_set_version_name(
         gradle_file: './android/app/build.gradle',
@@ -591,7 +593,6 @@ platform :android do
     unless configured
       configure
     end
-    configure_telemetry_android
     update_identifiers
     replace_assets
     link_sentry_android
@@ -666,9 +667,9 @@ platform :android do
 
       Dir.glob(".#{release_dir}*.java") do |item|
         find_replace_string(
-            path_to_file: ".#{release_dir}MainApplication.java",
-            old_string: 'package com.mattermost.rnbeta;',
-            new_string: "package #{package_id};"
+          path_to_file: item[1..-1],
+          old_string: 'package com.mattermost.rnbeta;',
+          new_string: "package #{package_id};"
         )
       end
 
