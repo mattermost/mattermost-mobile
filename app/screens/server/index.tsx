@@ -52,6 +52,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     const [error, setError] = useState<Partial<ClientErrorProps>|string|undefined>(initialError);
 
     const [url, setUrl] = useState<string>('');
+    const [displayName, setDisplayName] = useState<string>('');
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -173,8 +174,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         input.current?.blur();
     }, []);
 
-    const handleTextChanged = useCallback((text: string) => {
+    const handleUrlTextChanged = useCallback((text: string) => {
         setUrl(text);
+    }, []);
+
+    const handleDisplayNameTextChanged = useCallback((text: string) => {
+        setDisplayName(text);
     }, []);
 
     useEffect(() => {
@@ -267,6 +272,16 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         inputStyle.push(styles.disabledInput);
     }
 
+    const serverLabelText = formatMessage({
+        id: 'mobile.components.select_server_view.enterServerUrl',
+        defaultMessage: 'Enter Server URL',
+    });
+
+    const displayNameLabelText = formatMessage({
+        id: 'mobile.components.select_server_view.displayName',
+        defaultMessage: 'Display Name',
+    });
+
     return (
         <SafeAreaView
             testID='select_server.screen'
@@ -285,17 +300,17 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 >
                     <View style={styles.formContainer}>
                         <FormattedText
-                            style={styles.header}
+                            style={styles.msgWelcome}
                             id='mobile.components.select_server_view.msg_welcome'
                             defaultMessage='Welcome'
                         />
                         <FormattedText
-                            style={styles.header}
+                            style={styles.msgConnect}
                             id='mobile.components.select_server_view.msg_connect'
                             defaultMessage="Let's Connect to a Server"
                         />
                         <FormattedText
-                            style={styles.header}
+                            style={styles.msgDescription}
                             id='mobile.components.select_server_view.msg_description'
                             defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                         />
@@ -305,21 +320,16 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             ref={input}
                             value={url}
                             editable={!inputDisabled}
-                            onChangeText={handleTextChanged}
+                            onChangeText={handleUrlTextChanged}
                             onSubmitEditing={handleConnect}
                             style={StyleSheet.flatten(inputStyle)}
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'
-                            label={formatMessage({
-                                id: 'mobile.components.select_server_view.enterServerUrl',
-                                defaultMessage: 'Enter Server URL',
-                            })}
-                            placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.enterServerUrl',
-                                defaultMessage: 'Enter Server URL',
-                            })}
+                            label={serverLabelText}
+                            placeholder={serverLabelText}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            theme={{colors: {primary: theme.buttonBg}}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -328,31 +338,23 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             mode='outlined'
                             testID='select_server.server_display_name.input'
                             ref={input}
-
-                            //                            value={displayName}
+                            value={displayName}
                             editable={!inputDisabled}
-                            onChangeText={handleTextChanged}
+                            onChangeText={handleDisplayNameTextChanged}
                             onSubmitEditing={handleConnect}
                             style={StyleSheet.flatten(inputStyle)}
                             autoCapitalize='none'
                             autoCorrect={false}
-
-                            //keyboardType='url'
-                            label={formatMessage({
-                                id: 'mobile.components.select_server_view.displayName',
-                                defaultMessage: 'Display Name',
-                            })}
-                            placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.displayName',
-                                defaultMessage: 'Display Name',
-                            })}
+                            label={displayNameLabelText}
+                            placeholder={displayNameLabelText}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            theme={{colors: {primary: theme.buttonBg}}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                         />
                         <FormattedText
-                            style={styles.header}
+                            style={styles.msgDisplayNameHelp}
                             id='mobile.components.select_server_view.displayName.help'
                             defaultMessage='Choose a display name for the server in your sidebar'
                         />
@@ -365,13 +367,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             {buttonText}
                         </Button>
                         {Boolean(error) &&
-                        <View>
                             <ErrorText
                                 testID='select_server.error.text'
                                 error={error!}
                                 theme={theme}
                             />
-                        </View>
                         }
                     </View>
                 </TouchableWithoutFeedback>
@@ -394,6 +394,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        alignSelf: 'stretch',
         paddingRight: 15,
         paddingLeft: 15,
     },
@@ -401,6 +402,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
     connectButton: {
+        flex: 0,
         borderRadius: 3,
         borderColor: theme.buttonBg,
         alignItems: 'center',
@@ -415,25 +417,106 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     inputBox: {
         fontSize: 16,
         height: 45,
-        borderColor: theme.centerChannelColor,
-        borderWidth: 1,
         marginTop: 5,
         marginBottom: 5,
-        paddingLeft: 10,
+        flex: 0,
+
+        // paddingLeft: 10,
         alignSelf: 'stretch',
-        borderRadius: 3,
+
+        // borderRadius: 3,
         color: theme.centerChannelColor,
     },
-    logo: {
-        height: 72,
-        resizeMode: 'contain',
-    },
-    header: {
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
+    msgWelcome: {
+        width: 374,
+        height: 28,
         fontSize: 20,
-        fontWeight: '400',
+        lineHeight: 28,
+        alignItems: 'center',
+        flex: 0,
+        alignSelf: 'stretch',
+
+        // flexGrow: 1,
+        marginTop: 12,
+        marginBottom: 0,
+
+        // position: 'static',
+        fontFamily: 'Metropolis',
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+
+        // display: 'flex',
+        // flex: 'none',
+        // order: 0,
+    },
+    msgConnect: {
+
+        //styleName: Heading 1000;
+        // font-family: Metropolis;
+        // font-size: 40px;
+        // line-height: 48px;
+        // letter-spacing: -0.02em;
+        // text-align: left;
+
+        width: 374,
+        height: 96,
+        alignItems: 'center',
+        flex: 0,
+        alignSelf: 'stretch',
+
+        // flexGrow: 1,
+
+        lineHeight: 48,
+        fontFamily: 'Metropolis',
+
+        // fontWeight: '700',
+        fontSize: 40,
+
+        // letterSpacing: 0.02,
+
+        // position: 'static',
+        // display: 'flex',
+        color: theme.buttonBg,
+
+        // order: 1,
+        marginTop: 12,
+        marginBottom: 0,
+    },
+    msgDescription: {
+        width: 374,
+        height: 48,
+
+        fontFamily: 'Open Sans',
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        fontSize: 16,
+        lineHeight: 24,
+
+        alignItems: 'center',
+        flex: 0,
+        alignSelf: 'stretch',
+        marginTop: 12,
+        marginBottom: 0,
+
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+
+        // flexGrow: 0,
+    },
+    msgDisplayNameHelp: {
+        width: 296,
+        height: 16,
+        flex: 0,
+        fontFamily: 'Open Sans',
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        fontSize: 12,
+        lineHeight: 16,
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+
+        // flex: 'none',
+        // order: 1,
+        // flex-grow: 0,
+        // marginTop: 8,
+        // marginBottom: 0,
     },
     connectText: {
         textAlign: 'center',
