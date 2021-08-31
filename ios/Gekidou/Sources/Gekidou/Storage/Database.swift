@@ -52,6 +52,7 @@ public class Database: NSObject {
     internal var myChannelSettingsTable = Table("MyChannelSettings")
     internal var postTable = Table("Post")
     internal var postsInChannelTable = Table("PostsInChannel")
+    internal var postsInThreadTable = Table("PostsInThread")
     internal var postMetadataTable = Table("PostMetadata")
     internal var reactionTable = Table("Reaction")
     internal var fileTable = Table("File")

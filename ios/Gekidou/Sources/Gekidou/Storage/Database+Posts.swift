@@ -232,7 +232,7 @@ extension Database {
         try insertAndDeletePosts(postData.posts, channelId, serverUrl)
         try handlePostsInChannel(postData, channelId, serverUrl, usedSince)
         try handlePostMetadata(postData.posts, channelId, serverUrl)
-        // handlePostsInThread
+        try handlePostsInThread(postData.posts, serverUrl)
     }
     
     private func handlePostsInChannel(_ postData: PostData, _ channelId: String, _ serverUrl: String, _ usedSince: Bool = false) throws {
@@ -247,6 +247,16 @@ extension Database {
             if (!updated) {
                 try insertPostsInChannel(earliest, latest, channelId, serverUrl)
             }
+        }
+    }
+    
+    private func handlePostsInThread(_ posts: [Post], _ serverUrl: String) throws {
+        let db = try getDatabaseForServer(serverUrl)
+        
+        let postsInThreadSetters = try createPostsInThreadSetters(from: posts, withServerUrl: serverUrl)
+        if !postsInThreadSetters.isEmpty {
+            let insertQuery = postsInThreadTable.insertMany(or: .replace, postsInThreadSetters)
+            try db.run(insertQuery)
         }
     }
     
@@ -406,7 +416,7 @@ extension Database {
 //        let participants = Expression<String?>("participants")
         let props = Expression<String?>("props")
         
-        var setters: [[Setter]] = []
+        var setters = [[Setter]]()
         for post in posts {
             var setter = [Setter]()
             setter.append(id <- post.id)
@@ -459,10 +469,10 @@ extension Database {
         let localPath = Expression<String?>("local_path")
         let imageThumbnail = Expression<String?>("image_thumbnail")
         
-        var postMetadataSetters: [[Setter]] = []
-        var reactionSetters: [[Setter]] = []
-        var fileSetters: [[Setter]] = []
-        var emojiSetters: [[Setter]] = []
+        var postMetadataSetters = [[Setter]]()
+        var reactionSetters = [[Setter]]()
+        var fileSetters = [[Setter]]()
+        var emojiSetters = [[Setter]]()
         
         for post in posts {
             if var metadata = post.metadata {
@@ -532,5 +542,55 @@ extension Database {
                                reactionSetters: reactionSetters,
                                fileSetters: fileSetters,
                                emojiSetters: emojiSetters)
+    }
+    
+    private func createPostsInThreadSetters(from posts: [Post], withServerUrl serverUrl: String) throws -> [[Setter]] {
+        let db = try getDatabaseForServer(serverUrl)
+        
+        var setters = [[Setter]]()
+        var postsInThread = [String: [Post]]()
+        
+        for post in posts {
+            if !post.root_id.isEmpty {
+                var threadPosts = postsInThread[post.root_id] ?? [Post]()
+                threadPosts.append(post)
+                
+                postsInThread.updateValue(threadPosts, forKey: post.root_id)
+            }
+        }
+        
+        let rootIdCol = Expression<String>("root_id")
+        let earliestCol = Expression<Int64>("earliest")
+        let latestCol = Expression<Int64>("latest")
+        
+        for (rootId, posts) in postsInThread {
+            let sortedPosts = posts.sorted(by: { $0.create_at < $1.create_at })
+            let earliest = sortedPosts.first!.create_at
+            let latest = sortedPosts.last!.create_at
+            
+            let query = postsInThreadTable
+                .where(rootIdCol == rootId)
+                .order(latestCol.desc)
+                .limit(1)
+            if let row = try? db.pluck(query) {
+                let rowEarliest = try row.get(earliestCol)
+                let rowLatest = try row.get(latestCol)
+                
+                let updateQuery = postsInThreadTable
+                    .where(rootIdCol == rootId && earliestCol == rowEarliest && latestCol == rowLatest)
+                    .update(earliestCol <- min(earliest, rowEarliest),
+                            latestCol <- max(latest, rowLatest))
+                try db.run(updateQuery)
+            } else {
+                var setter = [Setter]()
+                setter.append(rootIdCol <- rootId)
+                setter.append(earliestCol <- earliest)
+                setter.append(latestCol <- latest)
+                
+                setters.append(setter)
+            }
+        }
+        
+        return setters
     }
 }
