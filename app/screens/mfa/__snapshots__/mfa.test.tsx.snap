@@ -65,6 +65,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
           style={
             Array [
               Object {
+                "color": "#3f4350",
                 "fontSize": 32,
                 "fontWeight": "600",
                 "marginBottom": 15,
@@ -72,7 +73,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
                 "textAlign": "center",
               },
               Object {
-                "color": "rgba(61,60,64,0.6)",
+                "color": "rgba(63,67,80,0.6)",
                 "fontSize": 20,
                 "fontWeight": "400",
               },
@@ -86,7 +87,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "color": "#fd5960",
+              "color": "#d24b4e",
               "fontSize": 12,
               "marginBottom": 15,
               "marginTop": 15,
@@ -108,7 +109,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         onChangeText={[Function]}
         onSubmitEditing={[Function]}
         placeholder="MFA Token"
-        placeholderTextColor="rgba(61,60,64,0.5)"
+        placeholderTextColor="rgba(63,67,80,0.5)"
         rejectResponderTermination={true}
         returnKeyType="go"
         style={
@@ -117,7 +118,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
             "borderColor": "gainsboro",
             "borderRadius": 3,
             "borderWidth": 1,
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 16,
             "height": 45,
             "marginBottom": 5,
@@ -144,7 +145,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
           Object {
             "alignItems": "center",
             "alignSelf": "stretch",
-            "borderColor": "#166de0",
+            "borderColor": "#1c58d9",
             "borderRadius": 3,
             "borderWidth": 1,
             "marginTop": 10,
@@ -157,7 +158,7 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         <Text
           style={
             Object {
-              "color": "#166de0",
+              "color": "#1c58d9",
               "fontSize": 17,
               "textAlign": "center",
             }

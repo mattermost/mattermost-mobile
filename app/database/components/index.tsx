@@ -9,7 +9,8 @@ import {MM_TABLES} from '@constants/database';
 import ServerUrlProvider from '@context/server_url';
 import ThemeProvider from '@context/theme';
 import DatabaseManager from '@database/manager';
-import Servers from '@database/models/app/servers';
+
+import type ServersModel from '@typings/database/models/app/servers';
 
 type State = {
     database: Database;
@@ -25,7 +26,7 @@ export function withServerDatabase<T>(
         const [state, setState] = useState<State|undefined>();
         const db = DatabaseManager.appDatabase?.database;
 
-        const observer = async (servers: Servers[]) => {
+        const observer = (servers: ServersModel[]) => {
             const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
 
             const serverDatabase = DatabaseManager.serverDatabases[server?.url]?.database;

@@ -30,10 +30,7 @@ import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.mattermost.rnbeta.NotificationDismissService;
-import com.mattermost.rnbeta.NotificationPreferences;
-import com.mattermost.rnbeta.NotificationReplyBroadcastReceiver;
-import com.mattermost.rnbeta.R;
+import com.mattermost.rnbeta.*;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 

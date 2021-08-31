@@ -13,9 +13,9 @@ import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation} from '@constants';
+import {Device, Navigation} from '@constants';
 import {useServerUrl} from '@context/server_url';
-import {usePermanentSidebar, useSplitView} from '@hooks/device';
+import {useSplitView} from '@hooks/device';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
@@ -55,7 +55,6 @@ const MarkdownImage = ({
     const intl = useIntl();
     const isSplitView = useSplitView();
     const managedConfig = useManagedConfig();
-    const permanentSidebar = usePermanentSidebar();
     const genericFileId = useRef(generateId()).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
@@ -87,7 +86,7 @@ const MarkdownImage = ({
         height: originalSize.height,
     };
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, (permanentSidebar && !isSplitView)));
+    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, Device.IS_TABLET && !isSplitView));
 
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {

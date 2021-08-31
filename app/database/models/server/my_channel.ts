@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model from '@nozbe/watermelondb/Model';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -17,6 +17,10 @@ const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 export default class MyChannelModel extends Model {
     /** table (name) : MyChannel */
     static table = MY_CHANNEL;
+
+    static associations: Associations = {
+        [CHANNEL]: {type: 'belongs_to', key: 'id'},
+    };
 
     /** last_post_at : The timestamp for any last post on this channel */
     @field('last_post_at') lastPostAt!: number;
