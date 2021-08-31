@@ -425,6 +425,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
 
         // borderRadius: 3,
+        backgroundColor: '#FFFFFF',
         color: theme.centerChannelColor,
     },
     msgWelcome: {
@@ -440,7 +441,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 12,
         marginBottom: 0,
 
-        // position: 'static',
+        fontWeight: '600',
         fontFamily: 'Metropolis',
         color: changeOpacity(theme.centerChannelColor, 0.64),
 
@@ -449,37 +450,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         // order: 0,
     },
     msgConnect: {
-
-        //styleName: Heading 1000;
-        // font-family: Metropolis;
-        // font-size: 40px;
-        // line-height: 48px;
-        // letter-spacing: -0.02em;
-        // text-align: left;
-
-        width: 374,
+        width: 270,
         height: 96,
+
+        fontFamily: 'Metropolis',
+        fontSize: 40,
+        lineHeight: 48,
         alignItems: 'center',
+        letterSpacing: -1,
+
         flex: 0,
         alignSelf: 'stretch',
-
-        // flexGrow: 1,
-
-        lineHeight: 48,
-        fontFamily: 'Metropolis',
-
-        // fontWeight: '700',
-        fontSize: 40,
-
-        // letterSpacing: 0.02,
-
-        // position: 'static',
-        // display: 'flex',
         color: theme.buttonBg,
-
-        // order: 1,
         marginTop: 12,
         marginBottom: 0,
+
+        // order: 2,
+        flexGrow: 0,
+
+        fontWeight: '600',
+
+        // position: 'static',
+        display: 'flex',
     },
     msgDescription: {
         width: 374,
