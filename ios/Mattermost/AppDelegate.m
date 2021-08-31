@@ -100,8 +100,6 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     [self cleanNotificationsFromChannel:channelId];
   }
-  
-  // TODO: Fetch channel data if action is of type message
 
   [[Network default] postNotificationReceipt:userInfo];
 
