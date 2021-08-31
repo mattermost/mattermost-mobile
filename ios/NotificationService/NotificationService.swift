@@ -74,11 +74,7 @@ class NotificationService: UNNotificationServiceExtension {
       }
     }
     
-    Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent)
-    
-    if let contentHandler = contentHandler {
-      contentHandler(bestAttemptContent)
-    }
+    Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: contentHandler)
   }
   
   override func serviceExtensionTimeWillExpire() {

@@ -63,7 +63,7 @@ extension Network {
         
     }
     
-    public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent) {
+    public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent, withContentHandler contentHandler: ((UNNotificationContent) -> Void)?) {
         // TODO: All DB writes should be made in a single transaction
         let operation = BlockOperation {
             let group = DispatchGroup()
@@ -136,6 +136,10 @@ extension Network {
             group.wait()
             
             try! Database.default.handleChannelAndMembership(channel, channelMembership, serverUrl)
+            
+            if let contentHandler = contentHandler {
+                contentHandler(notification)
+            }
         }
 
         queue.addOperation(operation)
