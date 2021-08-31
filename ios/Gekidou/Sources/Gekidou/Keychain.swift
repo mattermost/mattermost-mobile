@@ -115,9 +115,7 @@ public class Keychain: NSObject {
         
         var attributes: [CFString: Any] = [
             kSecClass: kSecClassInternetPassword,
-            kSecAttrLabel: "token",
-            kSecAttrServer: serverUrlData,
-            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrServer: serverUrlData
         ]
 
         if let accessGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as! String? {

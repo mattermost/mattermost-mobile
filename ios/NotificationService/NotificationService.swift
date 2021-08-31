@@ -40,7 +40,7 @@ class NotificationService: UNNotificationServiceExtension {
             return
           }
         
-          self.processResponse(serverUrl: "ackNotification.serverUrl", data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: contentHandler)
+          self.processResponse(serverUrl: ackNotification.serverUrl, data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: contentHandler)
         }
     }
 
@@ -53,7 +53,7 @@ class NotificationService: UNNotificationServiceExtension {
   }
 
   func processResponse(serverUrl: String, data: Data, bestAttemptContent: UNMutableNotificationContent, contentHandler: ((UNNotificationContent) -> Void)?) {
-    bestAttemptContent.userInfo["serverUrl"] = serverUrl
+    bestAttemptContent.userInfo["server_url"] = serverUrl
     
     let json = try? JSONSerialization.jsonObject(with: data) as! [String: Any]
     if let json = json {

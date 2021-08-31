@@ -9,8 +9,8 @@ import Foundation
 import UserNotifications
 
 public struct AckNotification: Codable {
-    let id: String
     let type: String
+    let id: String
     let postId: String?
     public let serverUrl: String
     public let isIdLoaded: Bool
@@ -18,8 +18,8 @@ public struct AckNotification: Codable {
     let platform = "ios"
     
     public enum AckNotificationKeys: String, CodingKey {
-        case id
         case type
+        case id = "ack_id"
         case postId = "post_id"
         case serverUrl = "server_url"
         case isIdLoaded = "is_id_loaded"
