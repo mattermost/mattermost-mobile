@@ -77,7 +77,19 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    await KeyChain.resetInternetCredentials(serverUrl);
+    const options: KeyChain.Options = {
+        securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
+    };
+
+    if (Platform.OS === 'ios') {
+        const appGroup = getIOSAppGroupDetails();
+        options.accessGroup = appGroup.appGroupIdentifier;
+
+        await KeyChain.resetInternetCredentials(serverUrl, options);
+    } else {
+        await KeyChain.resetGenericPassword(options);
+    }
+
     await AsyncStorage.removeItem(ASYNC_STORAGE_CURRENT_SERVER_KEY);
 };
 
