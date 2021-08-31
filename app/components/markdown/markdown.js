@@ -186,8 +186,10 @@ export default class Markdown extends PureComponent {
 
             if (match) {
                 const firstPart = literal.slice(0, match.index);
-                const latexCode = match[1];
+                let latexCode = match[1];
                 const lastPart = literal.slice(match.index + match[0].length);
+
+                latexCode = latexCode.replace('&', '\\&'); //For some reason the slash before an & character is missing when you type it.
 
                 return (
                     <Text

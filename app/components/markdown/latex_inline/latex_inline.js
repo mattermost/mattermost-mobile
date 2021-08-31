@@ -44,12 +44,16 @@ export default class LatexInline extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         mathStyle: {
+            marginBottom: -7,
         },
         viewStyle: {
-            resizeMode: 'contain',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
         },
         errorText: {
+            flexDirection: 'row',
             color: 'rgb(255, 0, 0)',
+            flexWrap: 'wrap',
         },
     };
 });
