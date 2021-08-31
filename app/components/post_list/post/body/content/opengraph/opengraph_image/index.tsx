@@ -6,7 +6,7 @@ import {useWindowDimensions, View} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Device as DeviceConstant} from '@constants';
+import {Device as DeviceConstant, View as ViewConstants} from '@constants';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions} from '@utils/images';
@@ -44,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidth: number) => {
     const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
     const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
-    const tabletOffset = DeviceConstant.IS_TABLET ? DeviceConstant.TABLET_WIDTH : 0;
+    const tabletOffset = DeviceConstant.IS_TABLET ? ViewConstants.TABLET.SIDEBAR_WIDTH : 0;
 
     return viewPortWidth - tabletOffset;
 };

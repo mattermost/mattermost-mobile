@@ -3,9 +3,11 @@
 
 export const ABOUT = 'About';
 export const APP_FORM = 'AppForm';
+export const BOTTOM_SHEET = 'BottomSheet';
 export const CHANNEL = 'Channel';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
+export const HOME = 'Home';
 export const LOGIN = 'Login';
 export const LOGIN_OPTIONS = 'LoginOptions';
 export const MAIN_SIDEBAR = 'MainSidebar';
@@ -20,9 +22,11 @@ export const THREAD = 'Thread';
 export default {
     ABOUT,
     APP_FORM,
+    BOTTOM_SHEET,
     CHANNEL,
     FORGOT_PASSWORD,
     INTEGRATION_SELECTOR,
+    HOME,
     LOGIN,
     LOGIN_OPTIONS,
     MAIN_SIDEBAR,
@@ -31,5 +35,6 @@ export default {
     SEARCH,
     SERVER,
     SETTINGS_SIDEBAR,
+    SSO,
     THREAD,
 };

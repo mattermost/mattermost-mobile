@@ -27,7 +27,7 @@ describe('SSO', () => {
             IsLicensed: 'true',
         },
         ssoType: 'GITLAB',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         serverUrl: 'https://locahost:8065',
         launchType: LaunchType.Normal,
     };

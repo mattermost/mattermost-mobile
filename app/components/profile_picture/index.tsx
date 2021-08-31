@@ -62,7 +62,7 @@ const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusS
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
-    const buffer = STATUS_BUFFER || 0;
+    const buffer = showStatus ? (STATUS_BUFFER || 0) : 0;
     let client: Client | undefined;
 
     try {

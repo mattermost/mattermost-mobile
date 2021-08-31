@@ -13,10 +13,11 @@ import {getRedirectLocation} from '@actions/remote/general';
 import FileIcon from '@app/components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import useDidUpdate from '@hooks/did_update';
-import {usePermanentSidebar, useSplitView} from '@hooks/device';
+import {useSplitView} from '@hooks/device';
 import {generateId} from '@utils/general';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
@@ -55,11 +56,10 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
     const serverUrl = useServerUrl();
     const fileId = useRef(generateId()).current;
     const [imageUrl, setImageUrl] = useState(expandedLink || link);
-    const permanentSidebar = usePermanentSidebar();
     const splitView = useSplitView();
-    const hasPemanentSidebar = !splitView && permanentSidebar;
+    const tabletOffset = !splitView && Device.IS_TABLET;
     const imageProps = metadata.images![link];
-    const dimensions = calculateDimensions(imageProps.height, imageProps.width, getViewPortWidth(isReplyPost, hasPemanentSidebar));
+    const dimensions = calculateDimensions(imageProps.height, imageProps.width, getViewPortWidth(isReplyPost, tabletOffset));
 
     const onError = useCallback(() => {
         setError(true);

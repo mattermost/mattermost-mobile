@@ -15,7 +15,7 @@ describe('ErrorText', () => {
             fontSize: 14,
             marginHorizontal: 15,
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         error: 'Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols',
     };
 

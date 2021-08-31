@@ -5,7 +5,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
-import {Navigation as NavigationConstants, Screens} from './app/constants';
+import {Screens} from './app/constants';
 import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
 import GlobalEventHandler from './app/init/global_event_handler';
@@ -65,28 +65,21 @@ Navigation.events().registerAppLaunchedListener(async () => {
 const registerNavigationListeners = () => {
     Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
     Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
+    Navigation.events().registerComponentWillAppearListener(componentWillAppear);
 };
 
-function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
-    EphemeralStore.addNavigationComponentId(componentId);
-
-    switch (componentId) {
-        case 'MainSidebar':
-            DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_OPEN);
-            DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
-            break;
-        case 'SettingsSidebar':
-            DeviceEventEmitter.emit(NavigationConstants.BLUR_POST_DRAFT);
-            break;
+function componentWillAppear({componentId}: ComponentDidAppearEvent) {
+    if (componentId === Screens.HOME) {
+        DeviceEventEmitter.emit('tabBarVisible', true);
     }
 }
 
-function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
-    if (componentId !== Screens.CHANNEL) {
-        EphemeralStore.removeNavigationComponentId(componentId);
-    }
+function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
+    EphemeralStore.addNavigationComponentId(componentId);
+}
 
-    if (componentId === 'MainSidebar') {
-        DeviceEventEmitter.emit(NavigationConstants.MAIN_SIDEBAR_DID_CLOSE);
+function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
+    if (componentId !== Screens.HOME) {
+        EphemeralStore.removeNavigationComponentId(componentId);
     }
 }

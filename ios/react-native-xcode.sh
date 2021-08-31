@@ -74,7 +74,7 @@ if [[ "$ENTRY_FILE" ]]; then
 elif [[ -s "index.ios.js" ]]; then
    ENTRY_FILE=${1:-index.ios.js}
  else
-   ENTRY_FILE=${1:-index.js}
+   ENTRY_FILE=${1:-index.ts}
 fi
 
 # Path to react-native folder inside node_modules

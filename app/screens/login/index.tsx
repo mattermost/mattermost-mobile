@@ -460,6 +460,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 17,
     },
     header: {
+        color: theme.centerChannelColor,
         textAlign: 'center',
         marginTop: 15,
         marginBottom: 15,

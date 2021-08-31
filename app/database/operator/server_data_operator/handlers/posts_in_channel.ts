@@ -4,7 +4,6 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {Database} from '@constants';
-import {retrieveRecords} from '@database/operator/utils/general';
 import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getPostListEdges} from '@database//operator/utils/post';
 
@@ -129,11 +128,10 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         let latest = 0;
 
         let recentChunk: PostsInChannelModel|undefined;
-        const chunks = (await retrieveRecords({
-            database: this.database,
-            tableName: POSTS_IN_CHANNEL,
-            condition: (Q.where('id', firstPost.channel_id), Q.experimentalSortBy('latest', Q.desc)),
-        })) as PostsInChannelModel[];
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', firstPost.channel_id),
+            Q.experimentalSortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
 
         if (chunks.length) {
             recentChunk = chunks[0];

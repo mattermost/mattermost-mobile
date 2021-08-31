@@ -1,11 +1,13 @@
 package com.mattermost.rnbeta;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -53,10 +55,23 @@ public class CustomPushNotification extends PushNotification {
                 return;
             }
 
-            notifications.remove(notificationId);
-            saveNotificationsMap(context, notificationsInChannel);
-            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+            final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.cancel(notificationId);
+            notifications.remove(notificationId);
+            final StatusBarNotification[] statusNotifications = notificationManager.getActiveNotifications();
+            boolean hasMore = false;
+            for (final StatusBarNotification status : statusNotifications) {
+                if (status.getNotification().extras.getString("channel_id").equals(channelId)) {
+                    hasMore = true;
+                    break;
+                }
+            }
+
+            if (!hasMore) {
+                notificationsInChannel.remove(channelId);
+            }
+
+            saveNotificationsMap(context, notificationsInChannel);
         }
     }
 

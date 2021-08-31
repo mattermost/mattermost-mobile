@@ -43,6 +43,10 @@ export const MAX_BADGE_RIGHT_POSITION = -13;
 export const LARGE_BADGE_RIGHT_POSITION = -11;
 export const SMALL_BADGE_RIGHT_POSITION = -9;
 
+export const TABLET = {
+    SIDEBAR_WIDTH: 320,
+};
+
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
@@ -132,4 +136,5 @@ export default {
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
     INDICATOR_BAR_HEIGHT,
+    TABLET,
 };

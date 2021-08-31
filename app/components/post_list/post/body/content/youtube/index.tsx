@@ -12,8 +12,9 @@ import {switchMap} from 'rxjs/operators';
 
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {usePermanentSidebar, useSplitView} from '@hooks/device';
+import {useSplitView} from '@hooks/device';
 import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
@@ -52,16 +53,15 @@ const styles = StyleSheet.create({
 });
 
 const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
-    const permanentSidebar = usePermanentSidebar();
     const intl = useIntl();
     const splitView = useSplitView();
     const link = metadata.embeds![0].url;
     const videoId = getYouTubeVideoId(link);
-    const hasPermanentSidebar = !splitView && permanentSidebar;
+    const tabletOffset = !splitView && Device.IS_TABLET;
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        getViewPortWidth(isReplyPost, hasPermanentSidebar),
+        getViewPortWidth(isReplyPost, tabletOffset),
     );
 
     const getYouTubeTime = () => {
