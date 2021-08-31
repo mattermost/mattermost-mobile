@@ -70,12 +70,12 @@ extension Network {
             var channel: Channel? = nil
             var channelMembership: ChannelMembership?
         
-            let teamId = notification.userInfo["team_id"] as! String? // "gmbz93nzk7drpnsxo8ki93q7ca"
-            let channelId = notification.userInfo["channel_id"] as! String // "mm5xuerwbibqdrkkfgt4ru6ssh"
-            let serverUrl =  notification.userInfo["server_url"] as! String // "http://192.168.0.14:8065"
+            let teamId = notification.userInfo["team_id"] as! String?
+            let channelId = notification.userInfo["channel_id"] as! String
+            let serverUrl =  notification.userInfo["server_url"] as! String
             let currentUserId = try! Database.default.queryCurrentUserId(serverUrl)
 
-            if teamId != nil {
+            if let teamId = teamId {
                 if try! !Database.default.hasMyTeam(withId: teamId, withServerUrl: serverUrl) {
                     group.enter()
                     self.fetchTeam(withId: teamId, withServerUrl: serverUrl) { data, response, error in
