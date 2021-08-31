@@ -49,6 +49,8 @@ class NotificationService: UNNotificationServiceExtension {
        let jsonData = try? JSONSerialization.data(withJSONObject: bestAttemptContent.userInfo),
        let ackNotification = try? JSONDecoder().decode(AckNotification.self, from: jsonData) {
       fetchReceipt(ackNotification)
+    } else {
+      contentHandler(request.content)
     }
   }
 

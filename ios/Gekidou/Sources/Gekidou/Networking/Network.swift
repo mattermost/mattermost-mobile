@@ -84,14 +84,7 @@ extension Network: URLSessionDelegate, URLSessionTaskDelegate {
         var disposition: URLSession.AuthChallengeDisposition = .performDefaultHandling
 
         let authMethod = challenge.protectionSpace.authenticationMethod
-        if authMethod == NSURLAuthenticationMethodServerTrust {
-//            if let session = SessionManager.default.getSession(for: urlSession) {
-//                if session.trustSelfSignedServerCertificate {
-                    credential = URLCredential(trust: challenge.protectionSpace.serverTrust!)
-                    disposition = .useCredential
-//                }
-//            }
-        } else if authMethod == NSURLAuthenticationMethodClientCertificate {
+        if authMethod == NSURLAuthenticationMethodClientCertificate {
             let host = task.currentRequest!.url!.host!
             if let (identity, certificate) = try? Keychain.default.getClientIdentityAndCertificate(for: host) {
                 credential = URLCredential(identity: identity,
