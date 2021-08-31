@@ -61,6 +61,7 @@
     "react-native-localize": "2.1.1",
     "react-native-navigation": "7.18.1",
     "react-native-notifications": "4.1.1",
+    "react-native-paper": "4.9.2",
     "react-native-permissions": "3.0.5",
     "react-native-reanimated": "2.2.0",
     "react-native-redash": "16.1.1",
