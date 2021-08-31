@@ -357,7 +357,8 @@ function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel,
     const config = getConfig(state);
     const gmVisible = isGroupChannelVisible(myPreferences, channel);
     const {serverVersion} = state.entities.general;
-    const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0, serverVersion);
+    const currentChannelId = getCurrentChannelId(state);
+    const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0, currentChannelId, undefined, serverVersion);
     const channelMember = channelMembers.find((cm) => cm.channel_id === channel.id);
     let hasMentions = false;
     let isUnread = false;
