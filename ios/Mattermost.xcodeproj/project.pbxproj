@@ -33,7 +33,6 @@
 		7F240ADB220E089300637665 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F240ADA220E089300637665 /* Item.swift */; };
 		7F240ADD220E094A00637665 /* TeamsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F240ADC220E094A00637665 /* TeamsViewController.swift */; };
 		7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */ = {isa = PBXBuildFile; fileRef = 7F292A701E8AB73400A450A3 /* SplashScreenResource */; };
-		7F292AA71E8ABB1100A450A3 /* splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F292AA51E8ABB1100A450A3 /* splash.png */; };
 		7F581D35221ED5C60099E66B /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F581D34221ED5C60099E66B /* NotificationService.swift */; };
 		7F581D39221ED5C60099E66B /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7F581D32221ED5C60099E66B /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7F581F78221EEA7C0099E66B /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
@@ -669,7 +668,6 @@
 				279A77DD26A6F1BE00B515F1 /* compass-icons.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				7F0F4B0A24BA173900E14C60 /* LaunchScreen.storyboard in Resources */,
-				7F292AA71E8ABB1100A450A3 /* splash.png in Resources */,
 				7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */,
 				9358B95F95184EE0A4DCE629 /* OpenSans-Bold.ttf in Resources */,
 				55C6561DDBBA45929D88B6D1 /* OpenSans-BoldItalic.ttf in Resources */,
