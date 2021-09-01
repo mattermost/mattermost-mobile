@@ -1,7 +1,7 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '11.0'
+platform :ios, '12.1'
 
 target 'Mattermost' do
   # Pods for Mattermost
@@ -33,5 +33,10 @@ target 'Mattermost' do
     react_native_post_install(installer)
     puts 'Patching XCDYouTube so it can playback videos'
     %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+      end
+    end
   end
 end
