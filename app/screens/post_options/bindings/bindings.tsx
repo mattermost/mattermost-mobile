@@ -59,7 +59,7 @@ const Bindings = injectIntl((props: Props) => {
         }
 
         fetchBindings(props.currentUser.id, props.post.channel_id, props.teamID, setBindings);
-    });
+    }, []);
 
     if (!props.appsEnabled) {
         return null;

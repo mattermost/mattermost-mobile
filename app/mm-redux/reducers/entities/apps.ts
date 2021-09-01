@@ -64,7 +64,7 @@ export function threadBindings(state: AppBinding[] = [], action: GenericAction):
     }
 }
 
-export function threadBindingsChannelID(state = '', action: GenericAction): string {
+export function threadBindingsChannelId(state = '', action: GenericAction): string {
     switch (action.type) {
     case AppsTypes.RECEIVED_THREAD_APP_BINDINGS: {
         return action.data.channelID || '';
@@ -109,5 +109,5 @@ export default (combineReducers({
     bindingsForms,
     threadBindings,
     threadBindingsForms,
-    threadBindingsChannelID,
+    threadBindingsChannelId,
 }) as (b: AppsState, a: GenericAction) => AppsState);

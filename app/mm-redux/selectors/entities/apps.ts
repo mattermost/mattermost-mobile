@@ -7,8 +7,8 @@ import {AppBinding} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
 import {appsEnabled} from '@utils/apps';
 
-export function getThreadAppsBindingsChannelID(state: GlobalState): string {
-    return state.entities.apps.threadBindingsChannelID;
+export function getThreadAppsBindingsChannelId(state: GlobalState): string {
+    return state.entities.apps.threadBindingsChannelId;
 }
 
 export const makeAppBindingsSelector = (location: string) => {

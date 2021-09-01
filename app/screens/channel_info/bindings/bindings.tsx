@@ -20,7 +20,7 @@ import ChannelInfoRow from '../channel_info_row';
 type Props = {
     bindings: AppBinding[];
     theme: Theme;
-    currentChannel: Channel;
+    currentChannel?: Channel;
     appsEnabled: boolean;
     intl: typeof intlShape;
     currentTeamId: string;
@@ -32,11 +32,15 @@ type Props = {
 }
 
 const Bindings: React.FC<Props> = injectIntl((props: Props) => {
-    if (!props.appsEnabled) {
+    const {bindings, currentChannel, appsEnabled, ...optionProps} = props;
+    if (!appsEnabled) {
         return null;
     }
 
-    const {bindings, ...optionProps} = props;
+    if (!currentChannel) {
+        return null;
+    }
+
     if (bindings.length === 0) {
         return null;
     }
@@ -45,6 +49,7 @@ const Bindings: React.FC<Props> = injectIntl((props: Props) => {
         <Option
             key={b.app_id + b.location}
             binding={b}
+            currentChannel={currentChannel}
             {...optionProps}
         />
     ));

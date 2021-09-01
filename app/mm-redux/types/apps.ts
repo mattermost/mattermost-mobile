@@ -21,7 +21,7 @@ export type AppsState = {
     bindingsForms: AppCommandFormMap;
     threadBindings: AppBinding[];
     threadBindingsForms: AppCommandFormMap;
-    threadBindingsChannelID: string;
+    threadBindingsChannelId: string;
 };
 
 export type AppBinding = {
