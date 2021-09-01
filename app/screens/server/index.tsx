@@ -5,11 +5,11 @@ import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    ActivityIndicator, EventSubscription, Keyboard, KeyboardAvoidingView,
+    EventSubscription, Keyboard, KeyboardAvoidingView,
     Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 
-import {TextInput as PaperTextInput} from 'react-native-paper';
+import {ActivityIndicator, TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
