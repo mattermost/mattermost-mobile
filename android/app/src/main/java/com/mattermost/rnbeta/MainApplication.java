@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.mattermost.helpers.RealPathUtil;
+import com.mattermost.helpers.DatabaseHelper;
+import com.mattermost.helpers.Network;
 import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 
@@ -125,6 +127,9 @@ public class MainApplication extends NavigationApplication implements INotificat
   public void onCreate() {
     super.onCreate();
     instance = this;
+
+    //DatabaseHelper.init(getApplicationContext());
+    //Network.init(getApplicationContext());
 
     // Delete any previous temp files created by the app
     File tempFolder = new File(getApplicationContext().getCacheDir(), RealPathUtil.CACHE_DIR_NAME);

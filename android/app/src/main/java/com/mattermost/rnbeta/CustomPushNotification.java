@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
@@ -24,8 +23,6 @@ import java.util.Map;
 import com.mattermost.helpers.CustomPushNotificationHelper;
 import com.mattermost.helpers.DatabaseHelper;
 import com.mattermost.helpers.ResolvePromise;
-import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
-import com.wix.reactnativenotifications.core.ProxyService;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
@@ -144,6 +141,8 @@ public class CustomPushNotification extends PushNotification {
                 if (!mAppLifecycleFacade.isAppVisible()) {
                     if (type.equals(PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
+                            fetchAndStoreDataForPushNotification();
+
                             Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
                             List<Integer> list = notificationsInChannel.get(channelId);
                             if (list == null) {
@@ -234,7 +233,7 @@ public class CustomPushNotification extends PushNotification {
     private String addServerUrlToBundle(Bundle bundle) {
         String serverUrl = bundle.getString("server_url");
         if (serverUrl == null) {
-            serverUrl = DatabaseHelper.getOnlyServerUrl(mContext);
+            serverUrl = DatabaseHelper.getOnlyServerUrl();
             bundle.putString("server_url", serverUrl);
             mNotificationProps = createProps(bundle);
         }
@@ -279,5 +278,43 @@ public class CustomPushNotification extends PushNotification {
         }
 
         return outputMap;
+    }
+
+    private void fetchAndStoreDataForPushNotification() {
+        final Bundle initialData = mNotificationProps.asBundle();
+        final String serverUrl = initialData.getString("server_url");
+        if (serverUrl == null) {
+            return;
+        }
+
+        final String currentUserId = DatabaseHelper.queryCurrentUserId(serverUrl);
+        if (currentUserId == null) {
+            return;
+        }
+
+        final String teamId = initialData.getString("team_id");
+        final String channelId = initialData.getString("channel_id");
+
+//        if (teamId != null && !DatabaseHelper.hasMyTeam(teamId, serverUrl)) {
+//            fetchAndStoreTeamData(teamId, serverUrl);
+//        }
+
+        fetchAndStoreChannelData(channelId, serverUrl);
+        fetchAndStoreChannelMembershipData(channelId, currentUserId, serverUrl);
+        fetchAndStorePostData(channelId, serverUrl);
+    }
+
+    private void fetchAndStoreTeamData(String teamId, String serverUrl) {
+
+    }
+
+    private void fetchAndStoreChannelData(String channelId, String serverUrl) {
+
+    }
+    private void fetchAndStoreChannelMembershipData(String channelId, String currentUserId, String serverUrl) {
+
+    }
+    private void fetchAndStorePostData(String channelId, String serverUrl) {
+
     }
 }
