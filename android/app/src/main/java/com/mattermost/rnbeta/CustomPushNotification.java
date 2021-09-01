@@ -20,8 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.facebook.react.bridge.ReadableMap;
 import com.mattermost.helpers.CustomPushNotificationHelper;
 import com.mattermost.helpers.DatabaseHelper;
+import com.mattermost.helpers.Network;
 import com.mattermost.helpers.ResolvePromise;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -295,26 +297,95 @@ public class CustomPushNotification extends PushNotification {
         final String teamId = initialData.getString("team_id");
         final String channelId = initialData.getString("channel_id");
 
-//        if (teamId != null && !DatabaseHelper.hasMyTeam(teamId, serverUrl)) {
-//            fetchAndStoreTeamData(teamId, serverUrl);
-//        }
+        if (teamId != null && !DatabaseHelper.hasMyTeam(teamId, serverUrl)) {
+            fetchAndStoreTeamData(teamId, currentUserId, serverUrl);
+        }
 
-        fetchAndStoreChannelData(channelId, serverUrl);
-        fetchAndStoreChannelMembershipData(channelId, currentUserId, serverUrl);
+        fetchAndStoreChannelData(channelId, currentUserId, serverUrl);
         fetchAndStorePostData(channelId, serverUrl);
     }
 
-    private void fetchAndStoreTeamData(String teamId, String serverUrl) {
+    private void fetchAndStoreTeamData(String teamId, String currentUserId, String serverUrl) {
+        String teamEndpoint = "/teams/" + teamId;
+        Network.get(serverUrl, teamEndpoint, null, new ResolvePromise() {
+            @Override
+            public void resolve(@Nullable Object value) {
+                ReadableMap response = (ReadableMap) value;
+                Log.d("GEKIDOU", response.toString());
+                // TODO: store team data
+            }
 
+            @Override
+            public void reject(String code, String message) {
+                Log.e("ReactNative", code + ": " + message);
+            }
+        });
+
+        String membershipEndpoint = teamEndpoint + "/members/" + currentUserId;
+        Network.get(serverUrl, membershipEndpoint, null, new ResolvePromise() {
+            @Override
+            public void resolve(@Nullable Object value) {
+                ReadableMap response = (ReadableMap) value;
+                Log.d("GEKIDOU", response.toString());
+                // TODO: store team membership data
+            }
+
+            @Override
+            public void reject(String code, String message) {
+                Log.e("ReactNative", code + ": " + message);
+            }
+        });
     }
 
-    private void fetchAndStoreChannelData(String channelId, String serverUrl) {
+    private void fetchAndStoreChannelData(String channelId, String currentUserId, String serverUrl) {
+        String channelEndpoint = "/channels/" + channelId;
+        Network.get(serverUrl, channelEndpoint, null, new ResolvePromise() {
+            @Override
+            public void resolve(@Nullable Object value) {
+                ReadableMap response = (ReadableMap) value;
+                Log.d("GEKIDOU", response.toString());
+                // TODO: store channel data
+            }
 
-    }
-    private void fetchAndStoreChannelMembershipData(String channelId, String currentUserId, String serverUrl) {
+            @Override
+            public void reject(String code, String message) {
+                Log.e("ReactNative", code + ": " + message);
+            }
+        });
 
+        String membershipEndpoint = channelEndpoint + "/members/" + currentUserId;
+        Network.get(serverUrl, membershipEndpoint, null, new ResolvePromise() {
+            @Override
+            public void resolve(@Nullable Object value) {
+                ReadableMap response = (ReadableMap) value;
+                Log.d("GEKIDOU", response.toString());
+                // TODO: store channel membership data
+            }
+
+            @Override
+            public void reject(String code, String message) {
+                Log.e("ReactNative", code + ": " + message);
+            }
+        });
     }
+
     private void fetchAndStorePostData(String channelId, String serverUrl) {
+        Integer since = DatabaseHelper.queryPostSinceForChannel(channelId, serverUrl);
+        String queryParams = since == null ? "?page=0&per_page=60" : "?since=" + since.toString();
+        String endpoint = "/channels/" + channelId + "posts" + queryParams;
 
+        Network.get(serverUrl, endpoint, null, new ResolvePromise() {
+            @Override
+            public void resolve(@Nullable Object value) {
+                ReadableMap response = (ReadableMap) value;
+                Log.d("GEKIDOU", response.toString());
+                // TODO: store post data
+            }
+
+            @Override
+            public void reject(String code, String message) {
+                Log.e("ReactNative", code + ": " + message);
+            }
+        });
     }
 }

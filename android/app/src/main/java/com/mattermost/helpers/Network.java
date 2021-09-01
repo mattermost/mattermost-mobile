@@ -1,6 +1,8 @@
 package com.mattermost.helpers;
 
 import android.content.Context;
+import android.util.Log;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -24,6 +26,9 @@ public class Network {
         clientModule = new APIClientModule(reactContext);
 
         createClientOptions();
+
+        // TODO: This is for testing purposes. Remove.
+        fetchAndStoreTeamData("gmbz93nzk7drpnsxo8ki93q7ca", "http://192.168.0.14:8065");
     }
 
     public static void get(String baseUrl, String endpoint, ReadableMap options, Promise promise) {
@@ -35,6 +40,9 @@ public class Network {
     private static void createClientOptions() {
         WritableMap headers = Arguments.createMap();
         headers.putString("X-Requested-With", "XMLHttpRequest");
+//        headers.putString("Content-Type", "application/json");
+//        headers.putString("Accept", "application/json");
+//        headers.putString("User-Agent", System.getProperty("http.agent"));
         clientOptions.putMap("headers", headers);
 
         WritableMap retryPolicyConfiguration = Arguments.createMap();
@@ -58,7 +66,26 @@ public class Network {
     private static void createClientIfNeeded(String baseUrl) {
         HttpUrl url = HttpUrl.parse(baseUrl);
         if (!clientModule.hasClientFor(url)) {
+            Log.d("GEKIDOU", clientOptions.toString());
             clientModule.createClientFor(baseUrl, clientOptions, emptyPromise);
         }
+    }
+
+    // TODO: This is for testing purposes. Remove.
+    public static void fetchAndStoreTeamData(String teamId, String serverUrl) {
+        Log.d("GEKIDOU", "fetchAndStoreTeamData");
+        String endpoint = "/teams/" + teamId;
+        Network.get(serverUrl, endpoint, null, new ResolvePromise() {
+            @Override
+            public void resolve(@Nullable Object value) {
+                ReadableMap response = (ReadableMap) value;
+                Log.d("GEKIDOU", response.toString());
+            }
+
+            @Override
+            public void reject(String code, String message) {
+                Log.e("GEKIDOU", code + ": " + message);
+            }
+        });
     }
 }
