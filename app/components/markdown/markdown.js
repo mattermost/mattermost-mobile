@@ -17,6 +17,7 @@ import ChannelLink from '@components/channel_link';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
+import {escapeLatexInputPreParser, unEscapeLatexCodeInText} from '@utils/latex';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
@@ -189,6 +190,8 @@ export default class Markdown extends PureComponent {
                 let latexCode = match[1];
                 const lastPart = literal.slice(match.index + match[0].length);
 
+                latexCode = unEscapeLatexCodeInText(latexCode); //Unescape code
+
                 latexCode = latexCode.replace('&', '\\&'); //For some reason the slash before an & character is missing when you type it.
 
                 return (
@@ -202,7 +205,7 @@ export default class Markdown extends PureComponent {
                                 const mathLineHeight = Math.max(event.nativeEvent.layout.height, this.state.inlineLatexHeight);
                                 this.setState({inlineLatexHeight: mathLineHeight});
                             }}
-                            maxMathWidth={useWindowDimensions().width * 0.8}
+                            maxMathWidth={useWindowDimensions().width * 0.75}
                         />
                         {this.renderText({context, literal: lastPart})}
                     </Text>
@@ -497,7 +500,14 @@ export default class Markdown extends PureComponent {
     };
 
     render() {
-        let ast = this.parser.parse(this.props.value.toString());
+        let ast;
+
+        if (this.props.enableLatex) {
+            const escapedContent = escapeLatexInputPreParser(this.props.value.toString());
+            ast = this.parser.parse(escapedContent);
+        } else {
+            ast = this.parser.parse(this.props.value.toString());
+        }
 
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
