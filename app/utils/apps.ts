@@ -6,16 +6,16 @@ import {AppBinding, AppCall, AppCallRequest, AppCallValues, AppContext, AppExpan
 import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
-export function appsEnabled(state: GlobalState) { // eslint-disable-line @typescript-eslint/no-unused-vars
+export function appsEnabled(state: GlobalState): boolean { // eslint-disable-line @typescript-eslint/no-unused-vars
     const enabled = getConfig(state)?.['FeatureFlagAppsEnabled' as keyof Partial<Config>];
     return enabled === 'true';
 }
 
-export function cleanBinding(binding: AppBinding, topLocation: string) {
+export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {
     return cleanBindingRec(binding, topLocation, 0);
 }
 
-function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number) {
+function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number): AppBinding {
     if (!binding) {
         return binding;
     }
@@ -117,7 +117,7 @@ export function validateBindings(bindings: AppBinding[] = []): AppBinding[] {
     return postMenuBindings.filter(hasBindings).concat(channelHeaderBindings.filter(hasBindings), commandBindings.filter(hasBindings));
 }
 
-export function cleanForm(form?: AppForm) {
+export function cleanForm(form?: AppForm): void {
     if (!form) {
         return;
     }
@@ -166,7 +166,7 @@ export function cleanForm(form?: AppForm) {
     });
 }
 
-function cleanStaticSelect(field: AppField) {
+function cleanStaticSelect(field: AppField): void {
     const toRemove: number[] = [];
     const usedLabels: {[label: string]: boolean} = {};
     const usedValues: {[label: string]: boolean} = {};
@@ -248,4 +248,4 @@ export const makeCallErrorResponse = (errMessage: string) => {
     };
 };
 
-export const filterEmptyOptions = (option: AppSelectOption) => option.value && !option.value.match(/^[ \t]+$/);
+export const filterEmptyOptions = (option: AppSelectOption): boolean => Boolean(option.value && !option.value.match(/^[ \t]+$/));
