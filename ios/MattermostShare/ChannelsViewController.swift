@@ -45,22 +45,16 @@ class ChannelsViewController: UIViewController {
  
   func configureSearchBar() {
     searchController.searchResultsUpdater = self
-    searchController.hidesNavigationBarDuringPresentation = false
+    searchController.hidesNavigationBarDuringPresentation = true
     searchController.dimsBackgroundDuringPresentation = false
     searchController.searchBar.searchBarStyle = .minimal
     searchController.searchBar.autocapitalizationType = .none
     searchController.searchBar.delegate = self
 
-    self.definesPresentationContext = true
+    self.definesPresentationContext = false
     
     if #available(iOS 11.0, *) {
       // For iOS 11 and later, place the search bar in the navigation bar.
-      
-      // Give space at the top so provide a better look and feel
-      let offset = UIOffset(horizontal: 0.0, vertical: 6.0)
-      searchController.searchBar.searchFieldBackgroundPositionAdjustment = offset
-      
-      
       navigationItem.searchController = searchController
     } else {
       // For iOS 10 and earlier, place the search controller's search bar in the table view's header.
