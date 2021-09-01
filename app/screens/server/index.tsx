@@ -342,7 +342,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCorrect={false}
                             keyboardType='url'
                             label={serverLabelText}
-                            theme={{colors: {primary: theme.buttonBg, placeholder: changeOpacity(theme.centerChannelColor, 0.5)}}}
+                            theme={{colors:
+                                {primary: theme.buttonBg,
+                                    placeholder: changeOpacity(theme.centerChannelColor, 0.5),
+                                    text: theme.centerChannelColor,
+                                }}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -359,7 +363,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCapitalize='none'
                             autoCorrect={false}
                             label={displayNameLabelText}
-                            theme={{colors: {primary: theme.buttonBg, placeholder: changeOpacity(theme.centerChannelColor, 0.5)}}}
+                            theme={{colors:
+                                {primary: theme.buttonBg,
+                                    placeholder: changeOpacity(theme.centerChannelColor, 0.5),
+                                    text: theme.centerChannelColor,
+                                }}}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
