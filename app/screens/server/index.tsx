@@ -239,28 +239,38 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     let buttonIcon;
     let buttonText;
 
+    const buttonStyle = [styles.connectButton];
     if (connecting) {
+        buttonStyle.push(styles.buttonEnabled);
         buttonIcon = (
             <ActivityIndicator
                 animating={true}
                 size='small'
-                color={theme.buttonBg}
+                color={'#FFFFFF'}
                 style={styles.connectingIndicator}
             />
         );
         buttonText = (
             <FormattedText
                 id='mobile.components.select_server_view.connecting'
-                defaultMessage='Connecting...'
+                defaultMessage='Connecting'
                 style={styles.connectText}
             />
         );
     } else {
+        let buttonTextStyle = styles.connectText;
+        if (url && displayName) {
+            buttonStyle.push(styles.buttonEnabled);
+        } else {
+            buttonTextStyle = styles.connectInvalidText;
+            buttonStyle.push(styles.buttonDisabled);
+        }
+
         buttonText = (
             <FormattedText
                 id='mobile.components.select_server_view.connect'
                 defaultMessage='Connect'
-                style={styles.connectText}
+                style={buttonTextStyle}
             />
         );
     }
@@ -356,13 +366,13 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                         />
                         <FormattedText
                             style={styles.msgDisplayNameHelp}
-                            id='mobile.components.select_server_view.displayName.help'
+                            id='mobile.components.select_server_view.displayHelp'
                             defaultMessage='Choose a display name for the server in your sidebar'
                         />
                         <Button
                             testID='select_server.connect.button'
                             onPress={handleConnect}
-                            containerStyle={styles.connectButton}
+                            containerStyle={buttonStyle}
                         >
                             {buttonIcon}
                             {buttonText}
@@ -405,18 +415,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
+
+    buttonEnabled: {
+        backgroundColor: theme.buttonBg,
+    },
+
     connectButton: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         flex: 0,
         borderRadius: 3,
-        borderColor: theme.buttonBg,
         alignItems: 'center',
-        borderWidth: 1,
         alignSelf: 'stretch',
         marginTop: 10,
         padding: 15,
     },
     connectingIndicator: {
-        marginRight: 5,
+        marginRight: 10,
     },
     inputBox: {
         fontSize: 16,
@@ -494,8 +508,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 0,
 
         color: changeOpacity(theme.centerChannelColor, 0.64),
-
-        // flexGrow: 0,
     },
     msgDisplayNameHelp: {
         width: 296,
@@ -513,7 +525,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
     connectText: {
         textAlign: 'center',
-        color: theme.buttonBg,
+        color: '#FFFFFF',
+        fontSize: 17,
+    },
+
+    connectInvalidText: {
+        textAlign: 'center',
+        color: changeOpacity(theme.centerChannelColor, 0.32),
         fontSize: 17,
     },
 }));
