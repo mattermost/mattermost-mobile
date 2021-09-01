@@ -287,6 +287,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         inputStyle.push(styles.disabledInput);
     }
 
+    const inputTheme = {
+        colors:
+            {
+                primary: theme.buttonBg,
+                placeholder: changeOpacity(theme.centerChannelColor, 0.64),
+                text: theme.centerChannelColor,
+            }};
+
     const serverLabelText = formatMessage({
         id: 'mobile.components.select_server_view.enterServerUrl',
         defaultMessage: 'Enter Server URL',
@@ -337,16 +345,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             editable={!inputDisabled}
                             onChangeText={handleUrlTextChanged}
                             onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten(inputStyle)}
+                            style={StyleSheet.flatten([inputStyle, styles.inputBoxServerUrl])}
                             autoCapitalize='none'
                             autoCorrect={false}
                             keyboardType='url'
                             label={serverLabelText}
-                            theme={{colors:
-                                {primary: theme.buttonBg,
-                                    placeholder: changeOpacity(theme.centerChannelColor, 0.5),
-                                    text: theme.centerChannelColor,
-                                }}}
+                            theme={inputTheme}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -359,15 +363,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             editable={!inputDisabled}
                             onChangeText={handleDisplayNameTextChanged}
                             onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten(inputStyle)}
+                            style={StyleSheet.flatten([inputStyle, styles.inputBoxDisplayName])}
                             autoCapitalize='none'
                             autoCorrect={false}
                             label={displayNameLabelText}
-                            theme={{colors:
-                                {primary: theme.buttonBg,
-                                    placeholder: changeOpacity(theme.centerChannelColor, 0.5),
-                                    text: theme.centerChannelColor,
-                                }}}
+                            theme={inputTheme}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -417,8 +417,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'stretch',
-        paddingRight: 15,
-        paddingLeft: 15,
+        paddingRight: 20,
+        paddingLeft: 20,
     },
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -434,7 +434,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 3,
         alignItems: 'center',
         alignSelf: 'stretch',
-        marginTop: 10,
+        marginTop: 32,
         padding: 15,
     },
     connectingIndicator: {
@@ -442,18 +442,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     inputBox: {
         fontSize: 16,
-        height: 45,
-        marginTop: 5,
-        marginBottom: 5,
+        height: 48,
         flex: 0,
-
-        // paddingLeft: 10,
         alignSelf: 'stretch',
-
-        // borderRadius: 3,
         backgroundColor: '#FFFFFF',
-        color: theme.centerChannelColor,
     },
+    inputBoxDisplayName: {
+        marginTop: 20,
+        marginBottom: 0,
+    },
+    inputBoxServerUrl: {
+        marginTop: 20,
+        marginBottom: 0,
+    },
+
     msgWelcome: {
         width: 374,
         height: 28,
@@ -462,15 +464,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         flex: 0,
         alignSelf: 'stretch',
-
-        // flexGrow: 1,
         marginTop: 12,
         marginBottom: 0,
-
         fontWeight: '600',
         fontFamily: 'Metropolis',
         color: changeOpacity(theme.centerChannelColor, 0.64),
 
+        // flexGrow: 1,
         // display: 'flex',
         // flex: 'none',
         // order: 0,
@@ -484,25 +484,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 48,
         alignItems: 'center',
         letterSpacing: -1,
-
         flex: 0,
         alignSelf: 'stretch',
         color: theme.buttonBg,
         marginTop: 12,
         marginBottom: 0,
+        marginRight: 20,
+        flexGrow: 0,
+        fontWeight: '600',
+        display: 'flex',
 
         // order: 2,
-        flexGrow: 0,
-
-        fontWeight: '600',
-
         // position: 'static',
-        display: 'flex',
     },
     msgDescription: {
         width: 374,
         height: 48,
-
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
         fontWeight: 'normal',
@@ -514,12 +511,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
         marginTop: 12,
         marginBottom: 0,
+        marginRight: 20,
 
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     msgDisplayNameHelp: {
         width: 296,
         height: 16,
+        marginTop: 8,
         flex: 0,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
