@@ -55,6 +55,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
+    const [urlError, setUrlError] = useState<string>('');
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -110,11 +111,10 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
-            setError(intl.formatMessage({
+            setUrlError(intl.formatMessage({
                 id: 'mobile.server_url.empty',
                 defaultMessage: 'Please enter a valid server URL',
             }));
-
             return;
         }
 
@@ -255,11 +255,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             <FormattedText
                 id='mobile.components.select_server_view.connecting'
                 defaultMessage='Connecting'
-                style={styles.connectText}
+                style={styles.connectButtonText}
             />
         );
     } else {
-        let buttonTextStyle = styles.connectText;
+        let buttonTextStyle = styles.connectButtonText;
         if (url && displayName) {
             buttonStyle.push(styles.buttonEnabled);
         } else {
@@ -306,6 +306,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         defaultMessage: 'Display Name',
     });
 
+    const displayNameHelperText = formatMessage({
+        id: 'mobile.components.select_server_view.displayHelp',
+        defaultMessage: 'Choose a display name for the server in your sidebar',
+    });
+
     return (
         <SafeAreaView
             testID='select_server.screen'
@@ -325,17 +330,17 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                     <View style={styles.formContainer}>
                         <View>
                             <FormattedText
-                                style={styles.msgWelcome}
+                                style={styles.welcomeText}
                                 id='mobile.components.select_server_view.msg_welcome'
                                 defaultMessage='Welcome'
                             />
                             <FormattedText
-                                style={styles.msgConnect}
+                                style={styles.connectText}
                                 id='mobile.components.select_server_view.msg_connect'
                                 defaultMessage='Let’s Connect to a Server'
                             />
                             <FormattedText
-                                style={styles.msgDescription}
+                                style={styles.descriptionText}
                                 id='mobile.components.select_server_view.msg_description'
                                 defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                             />
@@ -358,6 +363,16 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                         />
+                        {Boolean(urlError) &&
+                            <View>
+                                <HelperText
+                                    type='error'
+                                    style={styles.urlHelper}
+                                >
+                                    {urlError}
+                                </HelperText>
+                            </View>
+                        }
                         <PaperTextInput
                             mode='outlined'
                             testID='select_server.server_display_name.input'
@@ -375,12 +390,13 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                         />
-                        <View>
-                            <FormattedText
-                                style={styles.msgDisplayNameHelp}
-                                id='mobile.components.select_server_view.displayHelp'
-                                defaultMessage='Choose a display name for the server in your sidebar'
-                            />
+                        <View >
+                            <HelperText
+                                type='info'
+                                style={styles.displayNameHelper}
+                            >
+                                {displayNameHelperText}
+                            </HelperText>
                         </View>
                         <Button
                             testID='select_server.connect.button'
@@ -458,7 +474,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 20,
         marginBottom: 0,
     },
-    msgWelcome: {
+    welcomeText: {
         width: 374,
         height: 28,
         fontSize: 20,
@@ -473,7 +489,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontFamily: 'Metropolis',
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
-    msgConnect: {
+    connectText: {
         width: 270,
         height: 96,
         left: 20,
@@ -492,7 +508,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontWeight: '600',
         display: 'flex',
     },
-    msgDescription: {
+    descriptionText: {
         width: 374,
         height: 48,
         left: 20,
@@ -509,7 +525,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 20,
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
-    msgDisplayNameHelp: {
+    displayNameHelper: {
         width: 374,
         height: 16,
         marginTop: 8,
@@ -524,7 +540,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 16,
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
-    connectText: {
+    urlHelper: {
+        width: 374,
+        height: 16,
+        flex: 0,
+        fontFamily: 'Open Sans',
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        fontSize: 12,
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        lineHeight: 16,
+    },
+    connectButtonText: {
         textAlign: 'center',
         color: Colors.white,
         fontSize: 17,
