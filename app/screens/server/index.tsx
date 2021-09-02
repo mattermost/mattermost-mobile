@@ -47,6 +47,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     const managedConfig = useManagedConfig<ManagedConfig>();
     const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(true);
     const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
         id: 'mobile.launchError.notification',
         defaultMessage: 'Did not find a server for this notification',
@@ -109,6 +110,8 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             return;
         }
 
+        setUrlError('');
+        setError('');
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
             setUrlError(intl.formatMessage({
@@ -175,6 +178,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     const blur = useCallback(() => {
         input.current?.blur();
     }, []);
+
+    useEffect(() => {
+        if (url && displayName) {
+            setButtonDisabled(false);
+            return;
+        }
+        setButtonDisabled(true);
+    }, [url, displayName]);
 
     const handleUrlTextChanged = useCallback((text: string) => {
         setUrl(text);
@@ -399,6 +410,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             </HelperText>
                         </View>
                         <Button
+                            disabled={buttonDisabled}
                             testID='select_server.connect.button'
                             onPress={handleConnect}
                             containerStyle={buttonStyle}
