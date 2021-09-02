@@ -32,7 +32,7 @@ const ImageQuickAction = ({disabled, fileCount = 0, intl, maxFileCount, onUpload
         const selectionLimit = maxFileCount - fileCount;
         const options: ImageLibraryOptions = {
             selectionLimit,
-            quality: 0.8,
+            quality: 1,
             mediaType: 'mixed',
             includeBase64: false,
         };
