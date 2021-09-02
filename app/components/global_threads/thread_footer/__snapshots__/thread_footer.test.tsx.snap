@@ -19,7 +19,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
     }
     userIds={
       Array [
-        "user1",
+        "user2",
       ]
     }
   />
@@ -99,6 +99,7 @@ exports[`Global Thread Footer Should render for global threads view 1`] = `
     userIds={
       Array [
         "user1",
+        "user2",
       ]
     }
   />
