@@ -8,6 +8,7 @@ import {
     EventSubscription, Keyboard, KeyboardAvoidingView,
     Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
+import CompassIcon from '@components/compass_icon';
 
 import {ActivityIndicator, TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
@@ -378,6 +379,9 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                                     type='error'
                                     style={styles.urlHelper}
                                 >
+                                    <CompassIcon
+                                        name='exclamation-thick'
+                                    />
                                     {urlError}
                                 </HelperText>
                             </View>
@@ -399,7 +403,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                         />
-                        <View >
+                        <View>
                             <HelperText
                                 type='info'
                                 style={styles.displayNameHelper}
@@ -537,9 +541,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     displayNameHelper: {
         width: 374,
-        height: 16,
-        marginTop: 8,
-        left: 20,
+        marginTop: 4,
+        marginBottom: 0,
+        padding: 0,
         flex: 0,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
@@ -547,12 +551,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 12,
         alignItems: 'center',
         alignSelf: 'stretch',
-        lineHeight: 16,
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     urlHelper: {
         width: 374,
-        height: 16,
+        marginTop: 4,
+        marginBottom: 0,
+        padding: 0,
         flex: 0,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
@@ -560,7 +565,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 12,
         alignItems: 'center',
         alignSelf: 'stretch',
-        lineHeight: 16,
     },
     connectButtonText: {
         textAlign: 'center',
