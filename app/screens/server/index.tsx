@@ -427,11 +427,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
-
     buttonEnabled: {
         backgroundColor: theme.buttonBg,
     },
-
     connectButton: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         flex: 0,
@@ -459,7 +457,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 20,
         marginBottom: 0,
     },
-
     msgWelcome: {
         width: 374,
         height: 28,
@@ -474,17 +471,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontWeight: '600',
         fontFamily: 'Metropolis',
         color: changeOpacity(theme.centerChannelColor, 0.64),
-
-        // flexGrow: 1,
-        // display: 'flex',
-        // flex: 'none',
-        // order: 0,
     },
     msgConnect: {
         width: 270,
         height: 96,
         left: 20,
-
         fontFamily: 'Metropolis',
         fontSize: 40,
         lineHeight: 48,
@@ -532,13 +523,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 16,
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
-
     connectText: {
         textAlign: 'center',
         color: '#FFFFFF',
         fontSize: 17,
     },
-
     connectInvalidText: {
         textAlign: 'center',
         color: changeOpacity(theme.centerChannelColor, 0.32),
