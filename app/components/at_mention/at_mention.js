@@ -16,6 +16,7 @@ import BottomSheet from '@utils/bottom_sheet';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
+        disableAtChannelMentionHighlight: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         mentionKeys: PropTypes.array,
         mentionName: PropTypes.string.isRequired,
@@ -177,7 +178,7 @@ export default class AtMention extends React.PureComponent {
                 const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
                 const mentionMatch = pattern.exec(mentionName);
 
-                if (mentionMatch) {
+                if (mentionMatch && !this.props.disableAtChannelMentionHighlight) {
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
                     isMention = true;

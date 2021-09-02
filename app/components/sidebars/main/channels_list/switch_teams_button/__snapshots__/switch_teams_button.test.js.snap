@@ -12,7 +12,7 @@ exports[`SwitchTeamsButton should match snapshot 1`] = `
       style={
         Object {
           "alignItems": "center",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "rgba(255,255,255,0.24)",
           "borderRadius": 2,
           "flexDirection": "row",
           "height": 36,
@@ -28,7 +28,7 @@ exports[`SwitchTeamsButton should match snapshot 1`] = `
         size={24}
         style={
           Object {
-            "color": "#1153ab",
+            "color": "#ffffff",
             "left": -2,
             "top": 1,
           }

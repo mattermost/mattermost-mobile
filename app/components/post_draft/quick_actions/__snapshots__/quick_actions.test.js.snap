@@ -88,7 +88,7 @@ exports[`QuickActions should match snapshot 1`] = `
   <InjectIntl(FileQuickAction)
     disabled={false}
     fileCount={1}
-    maxFileCount={5}
+    maxFileCount={10}
     onUploadFiles={[Function]}
     testID="post_draft.quick_actions.file_action"
     theme={
@@ -125,7 +125,7 @@ exports[`QuickActions should match snapshot 1`] = `
   <InjectIntl(ImageQuickAction)
     disabled={false}
     fileCount={1}
-    maxFileCount={5}
+    maxFileCount={10}
     onUploadFiles={[Function]}
     testID="post_draft.quick_actions.image_action"
     theme={
@@ -162,7 +162,7 @@ exports[`QuickActions should match snapshot 1`] = `
   <InjectIntl(CameraQuickAction)
     disabled={false}
     fileCount={1}
-    maxFileCount={5}
+    maxFileCount={10}
     onUploadFiles={[Function]}
     testID="post_draft.quick_actions.camera_action"
     theme={
