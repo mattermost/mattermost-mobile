@@ -266,7 +266,9 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     }, [componentId, url]);
 
     let buttonIcon;
-    let buttonText;
+    let id: string;
+    let defaultMessage: string;
+    let buttonTextStyle = styles.connectButtonText;
 
     const buttonStyle = [styles.connectButton];
     if (connecting) {
@@ -279,29 +281,26 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 style={styles.connectingIndicator}
             />
         );
-        buttonText = (
-            <FormattedText
-                id='mobile.components.select_server_view.connecting'
-                defaultMessage='Connecting'
-                style={styles.connectButtonText}
-            />
-        );
+        id = 'mobile.components.select_server_view.connecting';
+        defaultMessage = 'Connecting';
     } else {
-        let buttonTextStyle = styles.connectButtonText;
         if (buttonDisabled) {
             buttonStyle.push(styles.buttonDisabled);
             buttonTextStyle = styles.connectInvalidText;
         } else {
             buttonStyle.push(styles.buttonEnabled);
         }
-        buttonText = (
-            <FormattedText
-                id='mobile.components.select_server_view.connect'
-                defaultMessage='Connect'
-                style={buttonTextStyle}
-            />
-        );
+        id = 'mobile.components.select_server_view.connect';
+        defaultMessage = 'Connect';
     }
+
+    const buttonText = (
+        <FormattedText
+            id={id}
+            defaultMessage={defaultMessage}
+            style={buttonTextStyle}
+        />
+    );
 
     const statusColor = tinyColor(theme.centerChannelBg);
     const inputDisabled = managedConfig.allowOtherServers === 'false' || connecting;
