@@ -104,7 +104,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         setUrl(serverUrl);
     };
 
-    const genericServerUrlMessage = (intl.formatMessage({
+    const defaultServerUrlMessage = (intl.formatMessage({
         id: 'mobile.server_url.empty',
         defaultMessage: 'Please enter a valid server URL',
     }));
@@ -117,7 +117,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
-            setUrlError(genericServerUrlMessage);
+            setUrlError(defaultServerUrlMessage);
             return;
         }
 
@@ -160,14 +160,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             } else {
                 setConnecting(false);
             }
-            setUrlError(genericServerUrlMessage);
+            setUrlError(defaultServerUrlMessage);
             setButtonDisabled(true);
             return;
         }
 
         const data = await fetchConfigAndLicense(serverUrl);
         if (data.error) {
-            setUrlError(genericServerUrlMessage);
+            setUrlError(defaultServerUrlMessage);
             setButtonDisabled(true);
             setConnecting(false);
             return;
