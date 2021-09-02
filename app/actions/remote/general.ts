@@ -1,12 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Client} from '@client/rest';
 import NetworkManager from '@init/network_manager';
 
 import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 export const doPing = async (serverUrl: string) => {
-    const client = await NetworkManager.createClient(serverUrl);
+    let client: Client;
+    try {
+        client = await NetworkManager.createClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
 
     const certificateError = {
         id: 'mobile.server_requires_client_certificate',
