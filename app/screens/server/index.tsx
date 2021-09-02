@@ -12,6 +12,7 @@ import {
 import {ActivityIndicator, TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import tinyColor from 'tinycolor2';
 
@@ -246,7 +247,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             <ActivityIndicator
                 animating={true}
                 size='small'
-                color={'#FFFFFF'}
+                color={Colors.white}
                 style={styles.connectingIndicator}
             />
         );
@@ -447,7 +448,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 48,
         flex: 0,
         alignSelf: 'stretch',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: Colors.white,
     },
     inputBoxDisplayName: {
         marginTop: 20,
@@ -525,7 +526,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     connectText: {
         textAlign: 'center',
-        color: '#FFFFFF',
+        color: Colors.white,
         fontSize: 17,
     },
     connectInvalidText: {
