@@ -28,7 +28,7 @@ describe('Global Thread Footer', () => {
         thread: {
             id: 'thread1',
             participants: [{
-                id: 'user1',
+                id: 'user2',
             }],
             is_following: true,
             reply_count: 2,
