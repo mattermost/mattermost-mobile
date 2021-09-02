@@ -203,10 +203,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     }, [url, displayName]);
 
     const handleUrlTextChanged = useCallback((text: string) => {
+        setUrlError('');
         setUrl(text);
     }, []);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
+        setUrlError('');
         setDisplayName(text);
     }, []);
 
@@ -313,13 +315,20 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         inputStyle.push(styles.disabledInput);
     }
 
-    const inputTheme = {
-        colors:
+    const inputTheme = (type: string) => {
+        let primary = theme.buttonBg;
+        if (type === 'url' && urlError) {
+            primary = theme.errorTextColor;
+        }
+        return {
+            colors:
             {
-                primary: theme.buttonBg,
+                primary,
                 placeholder: changeOpacity(theme.centerChannelColor, 0.64),
                 text: theme.centerChannelColor,
-            }};
+            }}
+        ;
+    };
 
     return (
         <SafeAreaView
@@ -368,7 +377,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCorrect={false}
                             keyboardType='url'
                             label={serverLabelText}
-                            theme={inputTheme}
+                            theme={inputTheme('url')}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
@@ -398,7 +407,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             autoCapitalize='none'
                             autoCorrect={false}
                             label={displayNameLabelText}
-                            theme={inputTheme}
+                            theme={inputTheme('displayName')}
                             returnKeyType='go'
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
