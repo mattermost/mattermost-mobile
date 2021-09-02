@@ -316,15 +316,20 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     }
 
     const inputTheme = (type: string) => {
-        let primary = theme.buttonBg;
+        let primary: string;
+        let placeholder: string;
         if (type === 'url' && urlError) {
             primary = theme.errorTextColor;
+            placeholder = theme.errorTextColor;
+        } else {
+            primary = theme.buttonBg;
+            placeholder = changeOpacity(theme.centerChannelColor, 0.64);
         }
         return {
             colors:
             {
                 primary,
-                placeholder: changeOpacity(theme.centerChannelColor, 0.64),
+                placeholder,
                 text: theme.centerChannelColor,
             }}
         ;
