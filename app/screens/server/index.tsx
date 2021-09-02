@@ -104,26 +104,26 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         setUrl(serverUrl);
     };
 
+    const genericServerUrlMessage = (intl.formatMessage({
+        id: 'mobile.server_url.empty',
+        defaultMessage: 'Please enter a valid server URL',
+    }));
+
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
             cancelPing();
             return;
         }
 
-        setUrlError('');
-        setError('');
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
-            setUrlError(intl.formatMessage({
-                id: 'mobile.server_url.empty',
-                defaultMessage: 'Please enter a valid server URL',
-            }));
+            setUrlError(genericServerUrlMessage);
             return;
         }
 
         serverUrl = sanitizeUrl(serverUrl);
         if (!isValidUrl(serverUrl)) {
-            setError(formatMessage({
+            setUrlError(formatMessage({
                 id: 'mobile.server_url.invalid_format',
                 defaultMessage: 'URL must start with http:// or https://',
             }));
@@ -132,13 +132,13 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         }
 
         pingServer(serverUrl);
+
+        // setButtonDisabled(true);
     });
 
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
         setConnecting(true);
-        setError(undefined);
-
         cancelPing = () => {
             // We should not need this once we have the cancelable network-client library
             canceled = true;
@@ -158,16 +158,17 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                setError(result.error);
                 setConnecting(false);
             }
-
+            setUrlError(genericServerUrlMessage);
+            setButtonDisabled(true);
             return;
         }
 
         const data = await fetchConfigAndLicense(serverUrl);
         if (data.error) {
-            setError(data.error);
+            setUrlError(genericServerUrlMessage);
+            setButtonDisabled(true);
             setConnecting(false);
             return;
         }
@@ -271,13 +272,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         );
     } else {
         let buttonTextStyle = styles.connectButtonText;
-        if (url && displayName) {
-            buttonStyle.push(styles.buttonEnabled);
-        } else {
-            buttonTextStyle = styles.connectInvalidText;
+        if (buttonDisabled) {
             buttonStyle.push(styles.buttonDisabled);
+            buttonTextStyle = styles.connectInvalidText;
+        } else {
+            buttonStyle.push(styles.buttonEnabled);
         }
-
         buttonText = (
             <FormattedText
                 id='mobile.components.select_server_view.connect'
