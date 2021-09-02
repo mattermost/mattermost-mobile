@@ -45,8 +45,8 @@ class ChannelsViewController: UIViewController {
  
   func configureSearchBar() {
     searchController.searchResultsUpdater = self
-    searchController.hidesNavigationBarDuringPresentation = true
-    searchController.dimsBackgroundDuringPresentation = false
+    searchController.hidesNavigationBarDuringPresentation = false
+    searchController.obscuresBackgroundDuringPresentation = false
     searchController.searchBar.searchBarStyle = .minimal
     searchController.searchBar.autocapitalizationType = .none
     searchController.searchBar.delegate = self
