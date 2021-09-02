@@ -322,21 +322,23 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                     accessible={false}
                 >
                     <View style={styles.formContainer}>
-                        <FormattedText
-                            style={styles.msgWelcome}
-                            id='mobile.components.select_server_view.msg_welcome'
-                            defaultMessage='Welcome'
-                        />
-                        <FormattedText
-                            style={styles.msgConnect}
-                            id='mobile.components.select_server_view.msg_connect'
-                            defaultMessage='Let’s Connect to a Server'
-                        />
-                        <FormattedText
-                            style={styles.msgDescription}
-                            id='mobile.components.select_server_view.msg_description'
-                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
-                        />
+                        <View>
+                            <FormattedText
+                                style={styles.msgWelcome}
+                                id='mobile.components.select_server_view.msg_welcome'
+                                defaultMessage='Welcome'
+                            />
+                            <FormattedText
+                                style={styles.msgConnect}
+                                id='mobile.components.select_server_view.msg_connect'
+                                defaultMessage='Let’s Connect to a Server'
+                            />
+                            <FormattedText
+                                style={styles.msgDescription}
+                                id='mobile.components.select_server_view.msg_description'
+                                defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                            />
+                        </View>
                         <PaperTextInput
                             mode='outlined'
                             testID='select_server.server_url.input'
@@ -372,11 +374,13 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                         />
-                        <FormattedText
-                            style={styles.msgDisplayNameHelp}
-                            id='mobile.components.select_server_view.displayHelp'
-                            defaultMessage='Choose a display name for the server in your sidebar'
-                        />
+                        <View>
+                            <FormattedText
+                                style={styles.msgDisplayNameHelp}
+                                id='mobile.components.select_server_view.displayHelp'
+                                defaultMessage='Choose a display name for the server in your sidebar'
+                            />
+                        </View>
                         <Button
                             testID='select_server.connect.button'
                             onPress={handleConnect}
@@ -466,6 +470,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
         marginTop: 12,
         marginBottom: 0,
+        left: 20,
         fontWeight: '600',
         fontFamily: 'Metropolis',
         color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -478,6 +483,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     msgConnect: {
         width: 270,
         height: 96,
+        left: 20,
 
         fontFamily: 'Metropolis',
         fontSize: 40,
@@ -493,32 +499,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexGrow: 0,
         fontWeight: '600',
         display: 'flex',
-
-        // order: 2,
-        // position: 'static',
     },
     msgDescription: {
         width: 374,
         height: 48,
+        left: 20,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
         fontWeight: 'normal',
         fontSize: 16,
         lineHeight: 24,
-
         alignItems: 'center',
         flex: 0,
         alignSelf: 'stretch',
         marginTop: 12,
         marginBottom: 0,
         marginRight: 20,
-
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     msgDisplayNameHelp: {
-        width: 296,
+        width: 374,
         height: 16,
         marginTop: 8,
+        left: 20,
         flex: 0,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
