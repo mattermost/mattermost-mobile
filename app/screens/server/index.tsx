@@ -109,6 +109,21 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         defaultMessage: 'Please enter a valid server URL',
     }));
 
+    const serverLabelText = formatMessage({
+        id: 'mobile.components.select_server_view.enterServerUrl',
+        defaultMessage: 'Enter Server URL',
+    });
+
+    const displayNameLabelText = formatMessage({
+        id: 'mobile.components.select_server_view.displayName',
+        defaultMessage: 'Display Name',
+    });
+
+    const displayNameHelperText = formatMessage({
+        id: 'mobile.components.select_server_view.displayHelp',
+        defaultMessage: 'Choose a display name for the server in your sidebar',
+    });
+
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
             cancelPing();
@@ -132,8 +147,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         }
 
         pingServer(serverUrl);
-
-        // setButtonDisabled(true);
     });
 
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
@@ -306,21 +319,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 placeholder: changeOpacity(theme.centerChannelColor, 0.64),
                 text: theme.centerChannelColor,
             }};
-
-    const serverLabelText = formatMessage({
-        id: 'mobile.components.select_server_view.enterServerUrl',
-        defaultMessage: 'Enter Server URL',
-    });
-
-    const displayNameLabelText = formatMessage({
-        id: 'mobile.components.select_server_view.displayName',
-        defaultMessage: 'Display Name',
-    });
-
-    const displayNameHelperText = formatMessage({
-        id: 'mobile.components.select_server_view.displayHelp',
-        defaultMessage: 'Choose a display name for the server in your sidebar',
-    });
 
     return (
         <SafeAreaView
