@@ -42,7 +42,8 @@ describe('Theme', () => {
         lightTheme: Preferences.THEMES.default,
         darkTheme: Preferences.THEMES.windows10,
         userId,
-        disableThemeSync: false,
+        isThemeSyncWithOsAvailable: true,
+        enableThemeSync: true,
         teamId,
         isLandscape: false,
         isTablet: false,
@@ -114,7 +115,7 @@ describe('Theme', () => {
                         {...baseProps}
                         lightTheme={initialThemes[0]}
                         darkTheme={initialThemes[1]}
-                        disableThemeSync={true}
+                        enableThemeSync={false}
                     />
                 </ReduxIntlProvider>,
             );
@@ -124,18 +125,18 @@ describe('Theme', () => {
                         {...baseProps}
                         lightTheme={toSet}
                         darkTheme={initialThemes[1]}
-                        disableThemeSync={true}
+                        enableThemeSync={false}
                     />
                 </ReduxIntlProvider>,
             );
 
             fireEvent(getByTestId('os_sync.switch'), 'valueChange', true);
             const expectedPref = [
-                {category: 'disable_theme_sync', name: teamId, user_id: userId, value: 'false'},
-                {category: 'theme', name: teamId, user_id: userId, value: JSON.stringify(expectedLight)},
+                {category: Preferences.CATEGORY_ENABLE_THEME_SYNC, name: teamId, user_id: userId, value: 'true'},
+                {category: Preferences.CATEGORY_THEME, name: teamId, user_id: userId, value: JSON.stringify(expectedLight)},
             ];
             if (expectedDark) {
-                expectedPref.push({category: 'theme_dark', name: teamId, user_id: userId, value: JSON.stringify(expectedDark)});
+                expectedPref.push({category: Preferences.CATEGORY_THEME_DARK, name: teamId, user_id: userId, value: JSON.stringify(expectedDark)});
             }
             expect(savePreferences).toHaveBeenCalledWith(userId, expectedPref);
         },
@@ -150,7 +151,7 @@ describe('Theme', () => {
         const wrapper = shallowWithIntl(
             <Theme
                 {...baseProps}
-                disableThemeSync={true}
+                enableThemeSync={false}
             />,
         );
         expect(wrapper.getElement()).toMatchSnapshot();

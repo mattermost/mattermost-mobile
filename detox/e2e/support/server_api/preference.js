@@ -77,7 +77,7 @@ export const apiDeleteThemePreferences = async (userId) => {
         const preferences = await client.get(`/api/v4/users/${userId}/preferences`);
         const deleteResult = await client.post(
             `/api/v4/users/${userId}/preferences/delete`,
-            preferences.data.filter((pref) => ['disable_theme_sync', 'theme', 'theme_dark'].includes(pref.category)),
+            preferences.data.filter((pref) => ['enable_theme_sync', 'theme', 'theme_dark'].includes(pref.category)),
         );
 
         return {status: deleteResult.status};

@@ -88,6 +88,8 @@ export type AllowedTheme = ThemePreference & {key: string};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: ThemePreference) => ({
     tilesContainer: {
+        paddingLeft: 8,
+        paddingRight: 8,
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',

@@ -3,17 +3,11 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-    Dimensions,
-    Image,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {Image, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {changeOpacity} from '@mm-redux/utils/theme_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-const tilePadding = 8;
 
 const ThemeTile = (props) => {
     const {
@@ -36,45 +30,36 @@ const ThemeTile = (props) => {
     );
 
     const tilesPerLine = isLandscape || isTablet ? 4 : 2;
-    const {width: deviceWidth} = Dimensions.get('window');
-    const fullWidth = isLandscape ? deviceWidth - 40 : deviceWidth;
-    const layoutStyle = {
-        container: {
-            width: (fullWidth / tilesPerLine) - tilePadding,
-        },
-        thumbnail: {
-            width: (fullWidth / tilesPerLine) - (tilePadding + 20),
-        },
-    };
 
     return (
-        <TouchableOpacity
-            style={[style.container, layoutStyle.container]}
-            onPress={() => action(actionValue)}
-            testID={testID}
-        >
-            <View style={[style.imageWrapper, layoutStyle.thumbnail]}>
-                {imageSrc && (
-                    <Image
-                        source={imageSrc}
-                        style={[
-                            style.thumbnail,
-                            layoutStyle.thumbnail,
-                            selected ? style.selectedThumbnail : null,
-                        ]}
-                    />
-                )}
-                {selected && (
-                    <CompassIcon
-                        name='check-circle'
-                        size={31.2}
-                        style={style.check}
-                        {...testID && {testID: `${testID}.selected`}}
-                    />
-                )}
-            </View>
-            {labelComponent}
-        </TouchableOpacity>
+        <View style={{width: (100 / tilesPerLine) + '%'}}>
+            <TouchableOpacity
+                style={style.touchable}
+                onPress={() => action(actionValue)}
+                testID={testID}
+            >
+                <View style={style.imageWrapper}>
+                    {imageSrc && (
+                        <Image
+                            source={imageSrc}
+                            style={[
+                                style.thumbnail,
+                                selected ? style.selectedThumbnail : null,
+                            ]}
+                        />
+                    )}
+                    {selected && (
+                        <CompassIcon
+                            name='check-circle'
+                            size={31.2}
+                            style={style.check}
+                            {...testID && {testID: `${testID}.selected`}}
+                        />
+                    )}
+                </View>
+                {labelComponent}
+            </TouchableOpacity>
+        </View>
     );
 };
 
@@ -99,27 +84,32 @@ ThemeTile.defaultProps = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            flexDirection: 'column',
-            padding: tilePadding,
+        touchable: {
+            padding: 8,
             marginTop: 8,
         },
         imageWrapper: {
+            flexDirection: 'row',
             position: 'relative',
-            alignItems: 'flex-start',
             marginBottom: 12,
         },
         thumbnail: {
-            resizeMode: 'stretch',
+            borderRadius: 4,
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+            width: '100%',
+            flex: 1,
+            aspectRatio: 179 / 134,
         },
         selectedThumbnail: {
-            opacity: 0.5,
+            borderWidth: 2,
+            borderColor: theme.sidebarTextActiveBorder,
         },
         check: {
             position: 'absolute',
             right: 10,
             bottom: 10,
-            color: theme.buttonBg,
+            color: theme.sidebarTextActiveBorder,
         },
         label: {
             color: theme.centerChannelColor,

@@ -23,7 +23,8 @@ const Theme: FC<Props> = ({
     lightTheme,
     darkTheme,
     userId,
-    disableThemeSync,
+    isThemeSyncWithOsAvailable,
+    enableThemeSync,
     teamId,
     isLandscape,
     isTablet,
@@ -44,19 +45,19 @@ const Theme: FC<Props> = ({
     }, [lightTheme, darkTheme]);
 
     useEffect(() => {
-        if (disableThemeSync && tinycolor(lightTheme.centerChannelBg).isLight()) {
+        if (!enableThemeSync && tinycolor(lightTheme.centerChannelBg).isLight()) {
             setSavedLightTheme(lightTheme);
         }
-    }, [lightTheme, disableThemeSync]);
+    }, [lightTheme, enableThemeSync]);
 
     const handleOsSyncToggle = (syncWithOs: boolean) => {
         if (!syncWithOs) {
             actions.savePreferences(userId, [
                 {
                     user_id: userId,
-                    category: Preferences.CATEGORY_DISABLE_THEME_SYNC,
+                    category: Preferences.CATEGORY_ENABLE_THEME_SYNC,
                     name: teamId,
-                    value: 'true',
+                    value: 'false',
                 },
                 {
                     user_id: userId,
@@ -69,9 +70,9 @@ const Theme: FC<Props> = ({
         }
         const preferences = [{
             user_id: userId,
-            category: Preferences.CATEGORY_DISABLE_THEME_SYNC,
+            category: Preferences.CATEGORY_ENABLE_THEME_SYNC,
             name: teamId,
-            value: 'false',
+            value: 'true',
         }];
         const shouldSwapTheme = tinycolor(lightTheme.centerChannelBg).isDark();
         if (shouldSwapTheme || savedLightTheme) {
@@ -116,27 +117,15 @@ const Theme: FC<Props> = ({
                 contentContainerStyle={style.scrollViewContent}
                 alwaysBounceVertical={false}
             >
-                <OsSyncSection
-                    selected={!disableThemeSync}
-                    theme={theme}
-                    onToggle={handleOsSyncToggle}
-                    osColorScheme={osColorScheme}
-                />
-                {disableThemeSync ? (
-                    <ThemeSection
-                        testID='all_themes'
-                        headerId={t('user.settings.display.theme.chooseTheme')}
-                        headerDefaultMessage='Choose a theme'
+                {isThemeSyncWithOsAvailable && (
+                    <OsSyncSection
+                        selected={enableThemeSync}
                         theme={theme}
-                        allowedThemes={allowedThemes}
-                        activeThemeType={lightTheme.type}
-                        onSelect={handleThemeChange(false)}
-                        customThemeAvailable={Boolean(customTmpThemes.light)}
-                        isLandscape={isLandscape}
-                        isTablet={isTablet}
-                        allowCustomThemes={allowCustomThemes}
+                        onToggle={handleOsSyncToggle}
+                        osColorScheme={osColorScheme}
                     />
-                ) : (
+                )}
+                {enableThemeSync ? (
                     <>
                         <ThemeSection
                             testID='light_themes'
@@ -165,6 +154,20 @@ const Theme: FC<Props> = ({
                             allowCustomThemes={allowCustomThemes}
                         />
                     </>
+                ) : (
+                    <ThemeSection
+                        testID='all_themes'
+                        headerId={t('user.settings.display.theme.chooseTheme')}
+                        headerDefaultMessage='Choose a theme'
+                        theme={theme}
+                        allowedThemes={allowedThemes}
+                        activeThemeType={lightTheme.type}
+                        onSelect={handleThemeChange(false)}
+                        customThemeAvailable={Boolean(customTmpThemes.light)}
+                        isLandscape={isLandscape}
+                        isTablet={isTablet}
+                        allowCustomThemes={allowCustomThemes}
+                    />
                 )}
             </ScrollView>
         </SafeAreaView>
@@ -180,7 +183,8 @@ type Props = {
     lightTheme: ThemePreference;
     darkTheme: ThemePreference;
     userId: string;
-    disableThemeSync: boolean;
+    isThemeSyncWithOsAvailable: boolean;
+    enableThemeSync: boolean;
     teamId: string;
     isLandscape: boolean;
     isTablet: boolean;

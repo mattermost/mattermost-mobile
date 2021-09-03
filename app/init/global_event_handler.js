@@ -60,7 +60,7 @@ class GlobalEventHandler {
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
         Linking.addEventListener('url', this.onDeepLink);
-        Appearance.addChangeListener(({colorScheme}) => this.onColorSchemeChanged(colorScheme));
+        Appearance.addChangeListener(() => this.onColorSchemeChanged(Appearance.getColorScheme()));
     }
 
     appActive = async () => {

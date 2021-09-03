@@ -55,7 +55,7 @@ const Preferences: Dictionary<any> = {
     TEAMS_ORDER: 'teams_order',
     CATEGORY_THEME: 'theme',
     CATEGORY_THEME_DARK: 'theme_dark',
-    CATEGORY_DISABLE_THEME_SYNC: 'disable_theme_sync',
+    CATEGORY_ENABLE_THEME_SYNC: 'enable_theme_sync',
     THEMES: {
         default: {
             type: 'Mattermost',

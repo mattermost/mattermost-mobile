@@ -7,7 +7,7 @@ import {getConfig, getFeatureFlagValue, getLicense, getOsColorScheme} from '@mm-
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {PreferenceType, Theme} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
-import {createShallowSelector} from '@mm-redux/utils/helpers';
+import {createShallowSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
 import {General, Preferences} from '../../constants';
@@ -105,11 +105,24 @@ export const getTeammateNameDisplaySetting = reselect.createSelector(
     },
 );
 
-export const getDisableThemeSync = reselect.createSelector(getCurrentTeamId, getMyPreferences, (currentTeamId, preferences) => {
-    const preference = preferences[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, currentTeamId)] ||
-        preferences[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')];
-    return Boolean(preference) && preference.value === 'true';
-});
+export const isThemeSyncWithOsAvailable = (state: GlobalState) => {
+    const version = state.entities.general.serverVersion;
+    return isMinimumServerVersion(version, 6, 1) || version.indexOf('dev') !== -1;
+};
+
+export const getEnableThemeSync = reselect.createSelector(
+    isThemeSyncWithOsAvailable,
+    getCurrentTeamId,
+    getMyPreferences,
+    (themeSyncWithOsAvailable, currentTeamId, preferences) => {
+        if (!themeSyncWithOsAvailable) {
+            return false;
+        }
+        const preference = preferences[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, currentTeamId)] ||
+        preferences[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '')];
+        return !preference || preference.value === 'true';
+    },
+);
 
 export const getDefaultLightTheme = reselect.createSelector(getConfig, (config) => {
     if (config.DefaultTheme) {
@@ -162,12 +175,12 @@ export const getDarkTheme = createShallowSelector(
 export const getTheme = createShallowSelector(
     getLightThemePreference,
     getDarkThemePreference,
-    getDisableThemeSync,
+    getEnableThemeSync,
     getOsColorScheme,
     getDefaultDarkTheme,
     getDefaultLightTheme,
-    (lightThemePreference, darkThemePreference, disableThemeSync, osColorScheme, defaultDarkTheme, defaultLightTheme) => {
-        const isDarkActive = !disableThemeSync && osColorScheme === 'dark';
+    (lightThemePreference, darkThemePreference, enableThemeSync, osColorScheme, defaultDarkTheme, defaultLightTheme) => {
+        const isDarkActive = enableThemeSync && osColorScheme === 'dark';
         const themePreference = isDarkActive ? darkThemePreference : lightThemePreference;
         const defaultTheme = isDarkActive ? defaultDarkTheme : defaultLightTheme;
         return normalizeTheme(themePreference ? themePreference.value : defaultTheme, defaultTheme);

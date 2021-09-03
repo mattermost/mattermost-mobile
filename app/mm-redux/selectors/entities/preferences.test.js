@@ -172,27 +172,28 @@ describe('Selectors.Preferences', () => {
     });
 
     it.each([
-        [{}, {}, false],
-        [{currentTeamId: '1234'}, {}, false],
-        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'true'}}, true],
-        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'false'}}, false],
-        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '1234')]: {value: 'true'}}, true],
-        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '1234')]: {value: 'false'}}, false],
-        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, 'otherTeam')]: {value: 'true'}}, false],
+        [{}, {}, true],
+        [{currentTeamId: '1234'}, {}, true],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '')]: {value: 'true'}}, true],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '')]: {value: 'false'}}, false],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '1234')]: {value: 'true'}}, true],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '1234')]: {value: 'false'}}, false],
+        [{currentTeamId: '1234'}, {[getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, 'otherTeam')]: {value: 'false'}}, true],
         [
             {currentTeamId: '1234'},
             {
-                [getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'false'},
-                [getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '1234')]: {value: 'true'},
+                [getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '')]: {value: 'false'},
+                [getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '1234')]: {value: 'true'},
             },
             true,
         ],
-    ])('get disable theme sync', (teams, myPref, expected) => {
+    ])('get enable theme sync', (teams, myPref, expected) => {
         assert.strictEqual(
-            Selectors.getDisableThemeSync({
+            Selectors.getEnableThemeSync({
                 entities: {
                     teams,
                     preferences: {myPreferences: myPref},
+                    general: {serverVersion: 'dev'},
                 },
             }),
             expected,
@@ -209,6 +210,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -231,6 +233,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -257,6 +260,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -288,6 +292,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -309,6 +314,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -334,6 +340,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -406,6 +413,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -431,6 +439,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -459,6 +468,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -486,6 +496,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'default',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId,
@@ -508,6 +519,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'mattermostDark',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId: null,
@@ -527,6 +539,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'windows10',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId: null,
@@ -547,6 +560,7 @@ describe('Selectors.Preferences', () => {
                         config: {
                             DefaultTheme: 'fakedoesnotexist',
                         },
+                        serverVersion: 'dev',
                     },
                     teams: {
                         currentTeamId: null,
@@ -575,6 +589,7 @@ describe('Selectors.Preferences', () => {
                     entities: {
                         general: {
                             config: {},
+                            serverVersion: 'dev',
                             osColorScheme: 'dark',
                         },
                         teams,
@@ -592,6 +607,7 @@ describe('Selectors.Preferences', () => {
                         general: {
                             config: {},
                             osColorScheme: 'dark',
+                            serverVersion: 'dev',
                         },
                         teams: {currentTeamId: '1234'},
                         preferences: {myPreferences: {
@@ -611,6 +627,7 @@ describe('Selectors.Preferences', () => {
                         general: {
                             config: {},
                             osColorScheme: 'dark',
+                            serverVersion: 'dev',
                         },
                         teams: {currentTeamId},
                         preferences: {myPreferences: {
@@ -623,17 +640,18 @@ describe('Selectors.Preferences', () => {
             );
         });
 
-        it('returns light theme when OS appearance is dark and sync wit OS is disabled', () => {
+        it('returns light theme when OS appearance is dark and sync with OS is disabled', () => {
             assert.strictEqual(
                 Selectors.getTheme({
                     entities: {
                         general: {
                             config: {},
                             osColorScheme: 'dark',
+                            serverVersion: 'dev',
                         },
                         teams: {},
                         preferences: {myPreferences: {
-                            [getPreferenceKey(Preferences.CATEGORY_DISABLE_THEME_SYNC, '')]: {value: 'true'},
+                            [getPreferenceKey(Preferences.CATEGORY_ENABLE_THEME_SYNC, '')]: {value: 'false'},
                         }},
                     },
                 }).type,
@@ -652,6 +670,7 @@ describe('Selectors.Preferences', () => {
                     config: {
                         DefaultTheme: 'default',
                     },
+                    serverVersion: 'dev',
                 },
                 teams: {
                     currentTeamId,

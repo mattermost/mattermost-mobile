@@ -9,9 +9,10 @@ import {getAllowCustomThemes, getOsColorScheme} from '@mm-redux/selectors/entiti
 import {
     getDarkTheme,
     getDefaultLightTheme,
-    getDisableThemeSync,
+    getEnableThemeSync,
     getLightTheme,
     getTheme,
+    isThemeSyncWithOsAvailable,
 } from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
@@ -28,7 +29,8 @@ const mapStateToProps = (state: GlobalState) => ({
     lightTheme: getLightTheme(state),
     darkTheme: getDarkTheme(state),
     userId: getCurrentUserId(state),
-    disableThemeSync: getDisableThemeSync(state),
+    isThemeSyncWithOsAvailable: isThemeSyncWithOsAvailable(state),
+    enableThemeSync: getEnableThemeSync(state),
     teamId: getCurrentTeamId(state),
     isLandscape: isLandscape(state),
     isTablet: isTablet(state),
