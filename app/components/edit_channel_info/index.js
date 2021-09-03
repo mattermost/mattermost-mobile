@@ -268,7 +268,7 @@ export default class EditChannelInfo extends PureComponent {
                                     <View>
                                         <FormattedText
                                             style={style.title}
-                                            id='channel_modal.type'
+                                            id='channel_modal.channelType'
                                             defaultMessage='Type'
                                         />
                                     </View>
@@ -281,7 +281,7 @@ export default class EditChannelInfo extends PureComponent {
                                         >
                                             <FormattedText
                                                 style={style.touchableText}
-                                                id='channel_modal.type'
+                                                id='channel_modal.type.public'
                                                 defaultMessage='Public Channel'
                                             />
                                             {this.props.type === General.OPEN_CHANNEL &&
@@ -307,7 +307,7 @@ export default class EditChannelInfo extends PureComponent {
                                         >
                                             <FormattedText
                                                 style={style.touchableText}
-                                                id='channel_modal.type'
+                                                id='channel_modal.type.private'
                                                 defaultMessage='Private Channel'
                                             />
                                             {this.props.type === General.PRIVATE_CHANNEL &&

@@ -94,6 +94,7 @@ export default class List extends PureComponent {
     setSections(sections) {
         this.setState({sections});
     }
+
     setCategorySections(categorySections) {
         this.setState({categorySections});
     }
@@ -411,7 +412,7 @@ export default class List extends PureComponent {
             case CategoryTypes.UNREADS:
                 return intl.formatMessage({id: 'mobile.channel_list.unreads', defaultMessage: 'unreads'}).toUpperCase();
             case CategoryTypes.FAVORITES:
-                return intl.formatMessage({id: 'sidebar.favorite', defaultMessage: 'favorites'}).toUpperCase();
+                return intl.formatMessage({id: 'sidebar.favorites', defaultMessage: 'favorites'}).toUpperCase();
             case CategoryTypes.CHANNELS:
                 return intl.formatMessage({id: 'mobile.channel_list.channels', defaultMessage: 'channels'}).toUpperCase();
             case CategoryTypes.DIRECT_MESSAGES:

@@ -514,12 +514,11 @@ export function makeFilterAndSortChannelsForCategory() {
         channels = filterArchivedChannels(state, channels);
         channels = filterManuallyClosedDMs(state, channels);
         channels = filterAutoclosedDMs(state, channels, category.type);
-        channels = sortChannels(state, channels, category);
-
         const sidebarPreferences = getSidebarPreferences(state);
         if (sidebarPreferences.unreads_at_top === 'true') {
             channels = filterUnreadChannels(state, channels);
         }
+        channels = sortChannels(state, channels, category);
 
         return channels;
     };
