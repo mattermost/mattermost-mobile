@@ -14,7 +14,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     <Text
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 14,
           "marginLeft": 15,
         }
@@ -25,7 +25,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     <Text
       style={
         Object {
-          "color": "#fd5960",
+          "color": "#d24b4e",
           "fontSize": 14,
         }
       }
@@ -37,9 +37,9 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     style={
       Object {
         "backgroundColor": "#ffffff",
-        "borderBottomColor": "rgba(61,60,64,0.1)",
+        "borderBottomColor": "rgba(63,67,80,0.1)",
         "borderBottomWidth": 1,
-        "borderTopColor": "rgba(61,60,64,0.1)",
+        "borderTopColor": "rgba(63,67,80,0.1)",
         "borderTopWidth": 1,
       }
     }
@@ -74,7 +74,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       <View
         style={
           Object {
-            "backgroundColor": "rgba(61,60,64,0.1)",
+            "backgroundColor": "rgba(63,67,80,0.1)",
             "flex": 1,
             "height": 1,
             "marginLeft": 15,
@@ -112,7 +112,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       <View
         style={
           Object {
-            "backgroundColor": "rgba(61,60,64,0.1)",
+            "backgroundColor": "rgba(63,67,80,0.1)",
             "flex": 1,
             "height": 1,
             "marginLeft": 15,
@@ -150,7 +150,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           name="check"
           style={
             Object {
-              "color": "#2389d7",
+              "color": "#386fe5",
               "fontSize": 12,
             }
           }
@@ -162,7 +162,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     <Text
       style={
         Object {
-          "color": "#fd5960",
+          "color": "#d24b4e",
           "fontSize": 12,
           "marginHorizontal": 15,
           "marginTop": 10,

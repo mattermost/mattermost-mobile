@@ -3,7 +3,7 @@
 exports[`Search RecentItem should match snapshot and respond to events 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -36,7 +36,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           style={
             Object {
               "alignItems": "center",
-              "backgroundColor": "rgba(61,60,64,0.08)",
+              "backgroundColor": "rgba(63,67,80,0.08)",
               "borderRadius": 4,
               "fontWeight": "600",
               "marginRight": 5,
@@ -48,7 +48,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           <Text
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 10,
               }
             }
@@ -59,7 +59,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 15,
             }
           }
@@ -70,7 +70,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       <Text
         style={
           Object {
-            "color": "rgba(61,60,64,0.5)",
+            "color": "rgba(63,67,80,0.5)",
             "fontSize": 12,
             "marginTop": 5,
           }

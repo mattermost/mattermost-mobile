@@ -11,7 +11,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
 >
   <ForwardRef
     onPress={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+    underlayColor="rgba(40,66,123,0.5)"
   >
     <View
       style={
@@ -45,7 +45,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
         <Badge
           containerStyle={
             Object {
-              "borderColor": "#145dbf",
+              "borderColor": "#1e325c",
               "borderRadius": 14,
               "borderWidth": 2,
               "position": "absolute",
@@ -56,7 +56,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
           count={1}
           countStyle={
             Object {
-              "color": "#145dbf",
+              "color": "#1e325c",
               "fontSize": 10,
               "fontWeight": "bold",
             }

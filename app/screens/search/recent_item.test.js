@@ -17,7 +17,7 @@ describe('Search RecentItem', () => {
         item,
         removeSearchTerms: jest.fn(),
         setRecentValue: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot and respond to events', () => {

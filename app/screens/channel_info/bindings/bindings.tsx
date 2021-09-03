@@ -10,7 +10,7 @@ import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Channel} from '@mm-redux/types/channels';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {DoAppCall, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
 import Separator from '@screens/channel_info/separator';
 import {createCallContext, createCallRequest} from '@utils/apps';

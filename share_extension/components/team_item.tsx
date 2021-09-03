@@ -17,7 +17,7 @@ interface TeamItemProps {
     team: Team;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const TeamItem = ({onSelect, selected, team}: TeamItemProps) => {
     const onPress = preventDoubleTap(() => {

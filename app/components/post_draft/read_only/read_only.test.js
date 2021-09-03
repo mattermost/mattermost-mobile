@@ -11,7 +11,7 @@ import ReadOnly from './index';
 describe('PostDraft ReadOnly', () => {
     const baseProps = {
         testID: 'post_draft.read_only',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

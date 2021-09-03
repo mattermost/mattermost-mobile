@@ -19,7 +19,7 @@ describe('InteractiveDialog', () => {
         ],
         notifyOnCancel: false,
         state: 'somestate',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         actions: {
             submitInteractiveDialog: jest.fn(() => ({})),
             dismissModal: jest.fn(),
