@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import CompassIcon from '@components/compass_icon';
 
-import {ActivityIndicator, TextInput as PaperTextInput} from 'react-native-paper';
+import {ActivityIndicator, HelperText, TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -393,9 +393,9 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                                     style={styles.urlHelper}
                                 >
                                     <CompassIcon
-                                        name='exclamation-thick'
+                                        name='alert-outline'
                                     />
-                                    {urlError}
+                                    {' ' + urlError}
                                 </HelperText>
                             </View>
                         }
