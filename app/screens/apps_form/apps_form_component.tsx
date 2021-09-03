@@ -167,6 +167,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const callResponse = res.data!;
         switch (callResponse.type) {
         case AppCallResponseTypes.OK:
+            await this.handleHide();
+            return;
         case AppCallResponseTypes.NAVIGATE:
             await this.handleHide();
             this.props.actions.handleGotoLocation(callResponse.navigate_to_url!, this.context.intl);
