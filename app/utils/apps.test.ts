@@ -297,6 +297,42 @@ describe('Apps Utils', () => {
             cleanBinding(inBinding, '');
             expect(inBinding).toEqual(outBinding);
         });
+        test('Do not filter bindings with no call but with a form with a call', () => {
+            const inBinding = {
+                app_id: 'appID',
+                location: 'loc1',
+                bindings: [
+                    {
+                        location: 'loc2',
+                        form: {
+                            call: {
+                                path: 'url',
+                            },
+                        },
+                    } as AppBinding,
+                ],
+            } as AppBinding;
+
+            const outBinding = {
+                app_id: 'appID',
+                location: 'loc1',
+                bindings: [
+                    {
+                        app_id: 'appID',
+                        location: 'loc1/loc2',
+                        label: 'loc2',
+                        form: {
+                            call: {
+                                path: 'url',
+                            },
+                        },
+                    },
+                ],
+            } as AppBinding;
+
+            cleanBinding(inBinding, '');
+            expect(inBinding).toEqual(outBinding);
+        });
     });
     describe('cleanForm', () => {
         test('no field filter on names', () => {

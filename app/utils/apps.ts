@@ -82,7 +82,7 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
             }
         } else {
             // Remove leaves without a call
-            if (!b.call) {
+            if (!b.call && !b.form?.call) {
                 toRemove.unshift(i);
                 return;
             }
