@@ -129,7 +129,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
       style={
         Array [
           Object {
-            "color": "rgba(61,60,64,0.6)",
+            "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
@@ -148,7 +148,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
     <Text
       style={
         Object {
-          "color": "rgba(61,60,64,0.6)",
+          "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
         }
@@ -178,7 +178,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
       style={
         Array [
           Object {
-            "color": "rgba(61,60,64,0.6)",
+            "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
@@ -197,7 +197,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
     <Text
       style={
         Object {
-          "color": "rgba(61,60,64,0.6)",
+          "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
         }
@@ -210,7 +210,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
       style={
         Array [
           Object {
-            "color": "rgba(61,60,64,0.6)",
+            "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
