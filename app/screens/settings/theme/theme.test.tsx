@@ -19,15 +19,15 @@ describe('Theme', () => {
         return mockComponent('react-native/Libraries/Components/Switch/Switch');
     });
 
-    const lightPremade = Preferences.THEMES.default;
-    const darkPremade = Preferences.THEMES.windows10;
-    const lightCustom = {...Preferences.THEMES.default, type: 'custom'};
-    const darkCustom = {...Preferences.THEMES.windows10, type: 'custom'};
+    const lightPremade = Preferences.THEMES.denim;
+    const darkPremade = Preferences.THEMES.indigo;
+    const lightCustom = {...Preferences.THEMES.denim, type: 'custom'};
+    const darkCustom = {...Preferences.THEMES.indigo, type: 'custom'};
 
-    const toSetLightPremade = Preferences.THEMES.organization;
-    const toSetDarkPremade = Preferences.THEMES.mattermostDark;
-    const toSetLightCustom = {...Preferences.THEMES.organization, type: 'custom'};
-    const toSetDarkCustom = {...Preferences.THEMES.mattermostDark, type: 'custom'};
+    const toSetLightPremade = Preferences.THEMES.sapphire;
+    const toSetDarkPremade = Preferences.THEMES.onyx;
+    const toSetLightCustom = {...Preferences.THEMES.sapphire, type: 'custom'};
+    const toSetDarkCustom = {...Preferences.THEMES.onyx, type: 'custom'};
 
     const initialPremadeThemes = [lightPremade, darkPremade];
     const initialCustomThemes = [lightCustom, darkCustom];
@@ -36,11 +36,11 @@ describe('Theme', () => {
     const teamId = 'dummyTeamId';
     const savePreferences = jest.fn();
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         allowedThemes: Object.keys(Preferences.THEMES).map((key) => ({key, ...Preferences.THEMES[key]})),
-        defaultLightTheme: Preferences.THEMES.default,
-        lightTheme: Preferences.THEMES.default,
-        darkTheme: Preferences.THEMES.windows10,
+        defaultLightTheme: Preferences.THEMES.denim,
+        lightTheme: Preferences.THEMES.denim,
+        darkTheme: Preferences.THEMES.indigo,
         userId,
         isThemeSyncWithOsAvailable: true,
         enableThemeSync: true,

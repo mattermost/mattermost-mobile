@@ -4,7 +4,7 @@ import React, {FC, useMemo} from 'react';
 import {Text, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {Theme as ThemePreference} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import Section from '@screens/settings/section';
 import SectionItem from '@screens/settings/section_item';
 import ThemeTile from '@screens/settings/theme/theme_tile';
@@ -43,8 +43,8 @@ const ThemeSection: FC<Props> = ({
                         actionValue={allowedTheme.key}
                         label={<Text>{allowedTheme.type}</Text>}
                         isLandscape={isLandscape}
-                        theme={theme}
-                        imageSrc={thumbnailImages[allowedTheme.key]}
+                        activeTheme={theme}
+                        tileTheme={allowedTheme}
                         isTablet={isTablet}
                         selected={allowedTheme.type?.toLowerCase() === activeThemeType?.toLowerCase()}
                     />
@@ -75,7 +75,7 @@ type Props = {
     allowedThemes: AllowedTheme[];
     headerId: string;
     headerDefaultMessage: string;
-    theme: ThemePreference;
+    theme: Theme;
     onSelect: (themeKey: string) => void;
     customThemeAvailable: boolean;
     isLandscape: boolean;
@@ -84,15 +84,14 @@ type Props = {
     testID: string;
 };
 
-export type AllowedTheme = ThemePreference & {key: string};
+export type AllowedTheme = Theme & {key: string};
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: ThemePreference) => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tilesContainer: {
         paddingLeft: 8,
         paddingRight: 8,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'center',
         backgroundColor: theme.centerChannelBg,
         borderTopWidth: 1,
         borderBottomWidth: 1,
@@ -100,12 +99,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: ThemePreference) => ({
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
 }));
-
-const thumbnailImages: {[themeKey: string]: number} = {
-    default: require('@assets/images/themes/mattermost.png'),
-    organization: require('@assets/images/themes/organization.png'),
-    mattermostDark: require('@assets/images/themes/mattermost_dark.png'),
-    windows10: require('@assets/images/themes/windows_dark.png'),
-};
 
 export default ThemeSection;

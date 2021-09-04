@@ -44,7 +44,7 @@ exports[`user_profile should match snapshot 1`] = `
       <Text
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
           }
@@ -93,7 +93,7 @@ exports[`user_profile should match snapshot 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 15,
             }
           }
@@ -124,32 +124,31 @@ exports[`user_profile should match snapshot 1`] = `
       textId="mobile.routes.user_profile.send_message"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       togglable={false}
@@ -202,7 +201,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
       <Text
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
           }
@@ -251,7 +250,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 15,
             }
           }
@@ -295,32 +294,31 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
             size={16}
             theme={
               Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
                 "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
+                "centerChannelColor": "#3f4350",
                 "codeTheme": "github",
-                "colorScheme": "light",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
                 "mentionBg": "#ffffff",
-                "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
                 "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
                 "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveBorder": "#5d89ea",
                 "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
+                "sidebarTextHoverBg": "#28427b",
                 "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
+                "type": "Denim",
               }
             }
             type="O"
@@ -328,7 +326,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
           <Text
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 15,
               }
             }
@@ -359,32 +357,31 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
       textId="mobile.routes.user_profile.send_message"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       togglable={false}
@@ -437,7 +434,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       <Text
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
           }
@@ -493,7 +490,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
           <Text
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "marginBottom": 3,
                 "marginRight": 5,
               }
@@ -517,38 +514,37 @@ exports[`user_profile should match snapshot with custom status 1`] = `
               text="In a meeting"
               textStyle={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 15,
                 }
               }
               theme={
                 Object {
-                  "awayIndicator": "#ffbc42",
-                  "buttonBg": "#166de0",
+                  "awayIndicator": "#ffbc1f",
+                  "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
                   "centerChannelBg": "#ffffff",
-                  "centerChannelColor": "#3d3c40",
+                  "centerChannelColor": "#3f4350",
                   "codeTheme": "github",
-                  "colorScheme": "light",
-                  "dndIndicator": "#f74343",
-                  "errorTextColor": "#fd5960",
-                  "linkColor": "#2389d7",
+                  "dndIndicator": "#d24b4e",
+                  "errorTextColor": "#d24b4e",
+                  "linkColor": "#386fe5",
                   "mentionBg": "#ffffff",
-                  "mentionBj": "#ffffff",
-                  "mentionColor": "#145dbf",
-                  "mentionHighlightBg": "#ffe577",
-                  "mentionHighlightLink": "#166de0",
-                  "newMessageSeparator": "#ff8800",
-                  "onlineIndicator": "#06d6a0",
-                  "sidebarBg": "#145dbf",
-                  "sidebarHeaderBg": "#1153ab",
+                  "mentionColor": "#1e325c",
+                  "mentionHighlightBg": "#ffd470",
+                  "mentionHighlightLink": "#1b1d22",
+                  "newMessageSeparator": "#cc8f00",
+                  "onlineIndicator": "#3db887",
+                  "sidebarBg": "#1e325c",
+                  "sidebarHeaderBg": "#192a4d",
                   "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarTeamBarBg": "#14213e",
                   "sidebarText": "#ffffff",
-                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveBorder": "#5d89ea",
                   "sidebarTextActiveColor": "#ffffff",
-                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarTextHoverBg": "#28427b",
                   "sidebarUnreadText": "#ffffff",
-                  "type": "Mattermost",
+                  "type": "Denim",
                 }
               }
             />
@@ -576,7 +572,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 15,
             }
           }
@@ -607,32 +603,31 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       textId="mobile.routes.user_profile.send_message"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       togglable={false}
@@ -685,7 +680,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       <Text
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
           }
@@ -741,7 +736,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
           <Text
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "marginBottom": 3,
                 "marginRight": 5,
               }
@@ -765,38 +760,37 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               text="In a meeting"
               textStyle={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 15,
                 }
               }
               theme={
                 Object {
-                  "awayIndicator": "#ffbc42",
-                  "buttonBg": "#166de0",
+                  "awayIndicator": "#ffbc1f",
+                  "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
                   "centerChannelBg": "#ffffff",
-                  "centerChannelColor": "#3d3c40",
+                  "centerChannelColor": "#3f4350",
                   "codeTheme": "github",
-                  "colorScheme": "light",
-                  "dndIndicator": "#f74343",
-                  "errorTextColor": "#fd5960",
-                  "linkColor": "#2389d7",
+                  "dndIndicator": "#d24b4e",
+                  "errorTextColor": "#d24b4e",
+                  "linkColor": "#386fe5",
                   "mentionBg": "#ffffff",
-                  "mentionBj": "#ffffff",
-                  "mentionColor": "#145dbf",
-                  "mentionHighlightBg": "#ffe577",
-                  "mentionHighlightLink": "#166de0",
-                  "newMessageSeparator": "#ff8800",
-                  "onlineIndicator": "#06d6a0",
-                  "sidebarBg": "#145dbf",
-                  "sidebarHeaderBg": "#1153ab",
+                  "mentionColor": "#1e325c",
+                  "mentionHighlightBg": "#ffd470",
+                  "mentionHighlightLink": "#1b1d22",
+                  "newMessageSeparator": "#cc8f00",
+                  "onlineIndicator": "#3db887",
+                  "sidebarBg": "#1e325c",
+                  "sidebarHeaderBg": "#192a4d",
                   "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarTeamBarBg": "#14213e",
                   "sidebarText": "#ffffff",
-                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveBorder": "#5d89ea",
                   "sidebarTextActiveColor": "#ffffff",
-                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarTextHoverBg": "#28427b",
                   "sidebarUnreadText": "#ffffff",
-                  "type": "Mattermost",
+                  "type": "Denim",
                 }
               }
             />
@@ -817,32 +811,31 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               size={20}
               theme={
                 Object {
-                  "awayIndicator": "#ffbc42",
-                  "buttonBg": "#166de0",
+                  "awayIndicator": "#ffbc1f",
+                  "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
                   "centerChannelBg": "#ffffff",
-                  "centerChannelColor": "#3d3c40",
+                  "centerChannelColor": "#3f4350",
                   "codeTheme": "github",
-                  "colorScheme": "light",
-                  "dndIndicator": "#f74343",
-                  "errorTextColor": "#fd5960",
-                  "linkColor": "#2389d7",
+                  "dndIndicator": "#d24b4e",
+                  "errorTextColor": "#d24b4e",
+                  "linkColor": "#386fe5",
                   "mentionBg": "#ffffff",
-                  "mentionBj": "#ffffff",
-                  "mentionColor": "#145dbf",
-                  "mentionHighlightBg": "#ffe577",
-                  "mentionHighlightLink": "#166de0",
-                  "newMessageSeparator": "#ff8800",
-                  "onlineIndicator": "#06d6a0",
-                  "sidebarBg": "#145dbf",
-                  "sidebarHeaderBg": "#1153ab",
+                  "mentionColor": "#1e325c",
+                  "mentionHighlightBg": "#ffd470",
+                  "mentionHighlightLink": "#1b1d22",
+                  "newMessageSeparator": "#cc8f00",
+                  "onlineIndicator": "#3db887",
+                  "sidebarBg": "#1e325c",
+                  "sidebarHeaderBg": "#192a4d",
                   "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarTeamBarBg": "#14213e",
                   "sidebarText": "#ffffff",
-                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveBorder": "#5d89ea",
                   "sidebarTextActiveColor": "#ffffff",
-                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarTextHoverBg": "#28427b",
                   "sidebarUnreadText": "#ffffff",
-                  "type": "Mattermost",
+                  "type": "Denim",
                 }
               }
             />
@@ -870,7 +863,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 15,
             }
           }
@@ -901,32 +894,31 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       textId="mobile.routes.user_profile.send_message"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       togglable={false}
@@ -979,7 +971,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       <Text
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
           }
@@ -1036,32 +1028,31 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
             }
             theme={
               Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
                 "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
+                "centerChannelColor": "#3f4350",
                 "codeTheme": "github",
-                "colorScheme": "light",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
                 "mentionBg": "#ffffff",
-                "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
                 "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
                 "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveBorder": "#5d89ea",
                 "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
+                "sidebarTextHoverBg": "#28427b",
                 "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
+                "type": "Denim",
               }
             }
             time="2200-04-13T18:09:12.451Z"
@@ -1078,7 +1069,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
           <Text
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "marginBottom": 3,
                 "marginRight": 5,
               }
@@ -1102,38 +1093,37 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
               text="In a meeting"
               textStyle={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 15,
                 }
               }
               theme={
                 Object {
-                  "awayIndicator": "#ffbc42",
-                  "buttonBg": "#166de0",
+                  "awayIndicator": "#ffbc1f",
+                  "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
                   "centerChannelBg": "#ffffff",
-                  "centerChannelColor": "#3d3c40",
+                  "centerChannelColor": "#3f4350",
                   "codeTheme": "github",
-                  "colorScheme": "light",
-                  "dndIndicator": "#f74343",
-                  "errorTextColor": "#fd5960",
-                  "linkColor": "#2389d7",
+                  "dndIndicator": "#d24b4e",
+                  "errorTextColor": "#d24b4e",
+                  "linkColor": "#386fe5",
                   "mentionBg": "#ffffff",
-                  "mentionBj": "#ffffff",
-                  "mentionColor": "#145dbf",
-                  "mentionHighlightBg": "#ffe577",
-                  "mentionHighlightLink": "#166de0",
-                  "newMessageSeparator": "#ff8800",
-                  "onlineIndicator": "#06d6a0",
-                  "sidebarBg": "#145dbf",
-                  "sidebarHeaderBg": "#1153ab",
+                  "mentionColor": "#1e325c",
+                  "mentionHighlightBg": "#ffd470",
+                  "mentionHighlightLink": "#1b1d22",
+                  "newMessageSeparator": "#cc8f00",
+                  "onlineIndicator": "#3db887",
+                  "sidebarBg": "#1e325c",
+                  "sidebarHeaderBg": "#192a4d",
                   "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarTeamBarBg": "#14213e",
                   "sidebarText": "#ffffff",
-                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveBorder": "#5d89ea",
                   "sidebarTextActiveColor": "#ffffff",
-                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarTextHoverBg": "#28427b",
                   "sidebarUnreadText": "#ffffff",
-                  "type": "Mattermost",
+                  "type": "Denim",
                 }
               }
             />
@@ -1161,7 +1151,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 15,
             }
           }
@@ -1192,32 +1182,31 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       textId="mobile.routes.user_profile.send_message"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       togglable={false}

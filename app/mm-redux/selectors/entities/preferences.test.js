@@ -220,7 +220,7 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }), Preferences.THEMES.default);
+            }), Preferences.THEMES.denim);
         });
 
         it('custom theme', () => {
@@ -452,13 +452,13 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }).mentionHighlightLink, Preferences.THEMES.default.mentionHighlightLink);
+            }).mentionHighlightLink, Preferences.THEMES.denim.mentionHighlightLink);
         });
 
         it('system theme with missing colours', () => {
             const currentTeamId = '1234';
             const theme = {
-                type: Preferences.THEMES.mattermostDark.type,
+                type: Preferences.THEMES.indigo.type,
                 sidebarBg: '#ff0000',
             };
 
@@ -481,13 +481,13 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }).sidebarText, Preferences.THEMES.mattermostDark.sidebarText);
+            }).sidebarText, Preferences.THEMES.indigo.sidebarText);
         });
 
         it('non-default system theme', () => {
             const currentTeamId = '1234';
             const theme = {
-                type: Preferences.THEMES.windows10.type,
+                type: Preferences.THEMES.onyx.type,
             };
 
             assert.equal(Selectors.getTheme({
@@ -509,7 +509,7 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }).codeTheme, Preferences.THEMES.windows10.codeTheme);
+            }).codeTheme, Preferences.THEMES.onyx.codeTheme);
         });
 
         it('should return the server-configured theme by default', () => {
@@ -517,7 +517,7 @@ describe('Selectors.Preferences', () => {
                 entities: {
                     general: {
                         config: {
-                            DefaultTheme: 'mattermostDark',
+                            DefaultTheme: 'indigo',
                         },
                         serverVersion: 'dev',
                     },
@@ -530,14 +530,14 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }).codeTheme, Preferences.THEMES.mattermostDark.codeTheme);
+            }).codeTheme, Preferences.THEMES.indigo.codeTheme);
 
             // Opposite case
             assert.notEqual(Selectors.getTheme({
                 entities: {
                     general: {
                         config: {
-                            DefaultTheme: 'windows10',
+                            DefaultTheme: 'onyx',
                         },
                         serverVersion: 'dev',
                     },
@@ -550,7 +550,7 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }).codeTheme, Preferences.THEMES.mattermostDark.codeTheme);
+            }).codeTheme, Preferences.THEMES.indigo.codeTheme);
         });
 
         it('returns the "default" theme if the server-configured value is not present', () => {
@@ -571,7 +571,7 @@ describe('Selectors.Preferences', () => {
                         },
                     },
                 },
-            }).codeTheme, Preferences.THEMES.default.codeTheme);
+            }).codeTheme, Preferences.THEMES.denim.codeTheme);
         });
 
         it.each([
@@ -580,7 +580,7 @@ describe('Selectors.Preferences', () => {
                 {currentTeamId: '1234'},
                 {
                     [getPreferenceKey(Preferences.CATEGORY_THEME, '1234')]: {value: JSON.stringify(Preferences.THEMES.organization)},
-                    [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, 'otherTeam')]: {value: JSON.stringify(Preferences.THEMES.mattermostDark)},
+                    [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, 'otherTeam')]: {value: JSON.stringify(Preferences.THEMES.onyx)},
                 },
             ],
         ])('returns default dark theme when system appearance is dark', (teams, myPref) => {
@@ -596,7 +596,7 @@ describe('Selectors.Preferences', () => {
                         preferences: {myPreferences: myPref},
                     },
                 }).type,
-                Preferences.THEMES.windows10.type,
+                Preferences.THEMES.indigo.type,
             );
         });
 
@@ -611,11 +611,11 @@ describe('Selectors.Preferences', () => {
                         },
                         teams: {currentTeamId: '1234'},
                         preferences: {myPreferences: {
-                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, '')]: {value: JSON.stringify(Preferences.THEMES.mattermostDark)},
+                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, '')]: {value: JSON.stringify(Preferences.THEMES.onyx)},
                         }},
                     },
                 }).type,
-                Preferences.THEMES.mattermostDark.type,
+                Preferences.THEMES.onyx.type,
             );
         });
 
@@ -631,12 +631,12 @@ describe('Selectors.Preferences', () => {
                         },
                         teams: {currentTeamId},
                         preferences: {myPreferences: {
-                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, currentTeamId)]: {value: JSON.stringify(Preferences.THEMES.mattermostDark)},
+                            [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, currentTeamId)]: {value: JSON.stringify(Preferences.THEMES.onyx)},
                             [getPreferenceKey(Preferences.CATEGORY_THEME_DARK, '')]: {value: JSON.stringify({type: 'custom'})},
                         }},
                     },
                 }).type,
-                Preferences.THEMES.mattermostDark.type,
+                Preferences.THEMES.onyx.type,
             );
         });
 
@@ -655,7 +655,7 @@ describe('Selectors.Preferences', () => {
                         }},
                     },
                 }).type,
-                Preferences.THEMES.default.type,
+                Preferences.THEMES.denim.type,
             );
         });
     });

@@ -17,7 +17,7 @@ describe('NotificationSettings', () => {
         },
         componentId: 'component-id',
         currentUser,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         updateMeRequest: {},
         currentUserStatus: 'status',
         enableAutoResponder: false,

@@ -24,7 +24,7 @@ describe('CustomList', () => {
         listScrollRenderAheadDistance: 0,
         showSections: true,
         selectable: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot with FlatList', () => {

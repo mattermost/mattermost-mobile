@@ -5,10 +5,12 @@ import * as reselect from 'reselect';
 
 import {getConfig, getFeatureFlagValue, getLicense, getOsColorScheme} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {PreferenceType, Theme} from '@mm-redux/types/preferences';
+import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
+import {Theme} from '@mm-redux/types/theme';
 import {createShallowSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import {setThemeDefaults} from '@mm-redux/utils/theme_utils';
 
 import {General, Preferences} from '../../constants';
 
@@ -133,7 +135,7 @@ export const getDefaultLightTheme = reselect.createSelector(getConfig, (config) 
     }
 
     // If no config.DefaultTheme or value doesn't refer to a valid theme name...
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 });
 
 const getLightThemePreference = createShallowSelector(
@@ -153,7 +155,7 @@ export const getLightTheme = createShallowSelector(
     },
 );
 
-const getDefaultDarkTheme = () => Preferences.THEMES.windows10;
+const getDefaultDarkTheme = () => Preferences.THEMES.indigo;
 
 const getDarkThemePreference = createShallowSelector(
     getCurrentTeamId,
@@ -187,40 +189,12 @@ export const getTheme = createShallowSelector(
     },
 );
 
-const normalizeTheme = (themeToNormalize: any, defaultTheme: Theme) => {
-    let theme = themeToNormalize;
-    if (typeof theme === 'string') {
-        // A custom theme will be a JSON-serialized object stored in a preference
-        theme = JSON.parse(theme);
-    }
-
+const normalizeTheme = (themeValue: Theme | string, defaultTheme: Theme) => {
+    // A custom theme will be a JSON-serialized object stored in a preference
     // At this point, the theme should be a plain object
+    const theme: Theme = typeof themeValue === 'string' ? JSON.parse(themeValue) : themeValue;
 
-    // If this is a system theme, find it in case the user's theme is missing any fields
-    if (theme.type && theme.type !== 'custom') {
-        const match = Object.values(Preferences.THEMES).find((v: any) => v.type === theme.type) as any;
-        if (match) {
-            if (!match.mentionBg) {
-                match.mentionBg = match.mentionBj;
-            }
-
-            return match;
-        }
-    }
-
-    for (const key of Object.keys(defaultTheme)) {
-        if (theme[key]) {
-            // Fix a case where upper case theme colours are rendered as black
-            theme[key] = theme[key].toLowerCase();
-        }
-    }
-
-    // Backwards compatability with old name
-    if (!theme.mentionBg) {
-        theme.mentionBg = theme.mentionBj;
-    }
-
-    return Object.assign({}, defaultTheme, theme);
+    return setThemeDefaults(theme, defaultTheme);
 };
 
 export function makeGetStyleFromTheme() {

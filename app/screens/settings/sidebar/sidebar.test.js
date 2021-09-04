@@ -17,7 +17,7 @@ jest.mock('app/mattermost_managed', () => ({
 
 describe('SidebarSettings', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match, full snapshot', async () => {
@@ -61,7 +61,7 @@ describe('SidebarSettings', () => {
             deviceWidth: 10,
             isLandscape: false,
             teamsCount: 2,
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
         };
 
         const mainSidebar = shallowWithIntl(

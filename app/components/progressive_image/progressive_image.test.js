@@ -18,7 +18,7 @@ describe('ProgressiveImage', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: undefined,
         };
@@ -34,7 +34,7 @@ describe('ProgressiveImage', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
         };
 
@@ -49,7 +49,7 @@ describe('ProgressiveImage', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: null,
         };
@@ -67,7 +67,7 @@ describe('MiniPreview', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: null,
             inViewPort: false,
@@ -84,7 +84,7 @@ describe('MiniPreview', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: null,
             inViewPort: false,

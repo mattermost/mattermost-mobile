@@ -100,7 +100,7 @@ describe('Theme', () => {
             await ThemeSettingsScreen.osSyncSwitch.tap();
 
             // * Verify that active theme not changed - it is default theme
-            await expect(ThemeSettingsScreen.allThemesDefaultSelected).toBeVisible();
+            await expect(ThemeSettingsScreen.allThemesDenimSelected).toBeVisible();
         });
 
         test('switching OS sync on => off not changes currently applied custom theme', async () => {
@@ -111,6 +111,7 @@ describe('Theme', () => {
             await ThemeSettingsScreen.osSyncSwitch.tap();
 
             // * Verify that active theme not changed - it is custom theme
+            await ThemeSettingsScreen.scrollBottom();
             await expect(ThemeSettingsScreen.allThemesCustomThemeItemSelected).toBeVisible();
         });
     });
@@ -118,27 +119,31 @@ describe('Theme', () => {
     test.each([
         {
             scheme: 'light',
-            themeToTap: ThemeSettingsScreen.allThemesOrganization,
-            expectedVisible: ThemeSettingsScreen.lightThemesOrganizationSelected,
+            themeToTap: ThemeSettingsScreen.allThemesSapphire,
+            expectedVisible: ThemeSettingsScreen.lightThemesSapphireSelected,
         },
         {
             scheme: 'dark',
-            themeToTap: ThemeSettingsScreen.allThemesMattermostDark,
-            expectedVisible: ThemeSettingsScreen.darkThemesMattermostDarkSelected,
+            themeToTap: ThemeSettingsScreen.allThemesOnyx,
+            expectedVisible: ThemeSettingsScreen.darkThemesOnyxSelected,
         },
     ])(
         'switching OS sync off => on sets current premade theme as $scheme when its centerChannelBg is $scheme',
         async ({themeToTap, expectedVisible}) => {
             // # Switch sync with OS off
+            await ThemeSettingsScreen.scrollTop();
             await ThemeSettingsScreen.osSyncSwitch.tap();
 
             // # Set premade theme
+            await ThemeSettingsScreen.scrollBottom();
             await themeToTap.tap();
 
             // # Switch sync with OS on
+            await ThemeSettingsScreen.scrollTop();
             await ThemeSettingsScreen.osSyncSwitch.tap();
 
             // * Verify that active theme was properly categorized by color scheme
+            await ThemeSettingsScreen.scrollBottom();
             await expect(expectedVisible).toBeVisible();
         },
     );
@@ -148,18 +153,19 @@ describe('Theme', () => {
             scheme: 'light',
             themeToSave: customLight,
             expectedLightVisible: ThemeSettingsScreen.lightThemesCustomThemeItemSelected,
-            expectedDarkVisible: ThemeSettingsScreen.darkThemesWindows10Selected,
+            expectedDarkVisible: ThemeSettingsScreen.darkThemesIndigoSelected,
         },
         {
             scheme: 'dark',
             themeToSave: customDark,
-            expectedLightVisible: ThemeSettingsScreen.lightThemesDefaultSelected,
+            expectedLightVisible: ThemeSettingsScreen.lightThemesDenimSelected,
             expectedDarkVisible: ThemeSettingsScreen.darkThemesCustomThemeItemSelected,
         },
     ])(
         'switching OS sync off => on sets current custom theme as $scheme when its centerChannelBg is $scheme',
         async ({themeToSave, expectedLightVisible, expectedDarkVisible}) => {
             // # Switch sync with OS off
+            await ThemeSettingsScreen.scrollTop();
             await ThemeSettingsScreen.osSyncSwitch.tap();
 
             // # Set custom theme
@@ -169,6 +175,7 @@ describe('Theme', () => {
             await ThemeSettingsScreen.osSyncSwitch.tap();
 
             // * Verify that active theme was properly categorized by color scheme
+            await ThemeSettingsScreen.scrollBottom();
             await expect(expectedLightVisible).toBeVisible();
             await expect(expectedDarkVisible).toBeVisible();
         },
@@ -180,9 +187,10 @@ describe('Theme', () => {
         await Team.apiAddUserToTeam(userId, team.id);
 
         // # Change current team theme
+        await ThemeSettingsScreen.scrollTop();
         await ThemeSettingsScreen.osSyncSwitch.tap();
-        await ThemeSettingsScreen.allThemesOrganization.tap();
-        await expect(ThemeSettingsScreen.allThemesOrganizationSelected).toBeVisible();
+        await ThemeSettingsScreen.allThemesSapphire.tap();
+        await expect(ThemeSettingsScreen.allThemesSapphireSelected).toBeVisible();
 
         // # Go to team sidebar and switch to already created team
         await ThemeSettingsScreen.back();
@@ -198,7 +206,8 @@ describe('Theme', () => {
         await ThemeSettingsScreen.open();
 
         // * Verify that theme's settings of recently created team were not modified
-        await expect(ThemeSettingsScreen.lightThemesDefaultSelected).toBeVisible();
-        await expect(ThemeSettingsScreen.darkThemesWindows10Selected).toBeVisible();
+        await ThemeSettingsScreen.scrollBottom();
+        await expect(ThemeSettingsScreen.lightThemesDenimSelected).toBeVisible();
+        await expect(ThemeSettingsScreen.darkThemesIndigoSelected).toBeVisible();
     });
 });

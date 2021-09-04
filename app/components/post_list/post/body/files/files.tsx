@@ -7,7 +7,7 @@ import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-
 import {Client4} from '@client/rest';
 import {usePermanentSidebar, useSplitView} from '@hooks/permanent_sidebar';
 import {FileInfo} from '@mm-redux/types/files';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {isGif, isImage} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';

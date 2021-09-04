@@ -15,7 +15,7 @@ describe('SearchResultPost', () => {
         highlightPinnedOrFlagged: false,
         skipFlaggedHeader: false,
         skipPinnedHeader: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', async () => {

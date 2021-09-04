@@ -27,7 +27,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
     <View
       style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
+          "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 50,
           "paddingLeft": 8,
           "paddingVertical": 5,
@@ -48,7 +48,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
         inputStyle={
           Object {
             "backgroundColor": "#ffffff",
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 13,
           }
         }
@@ -61,16 +61,16 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
         onChangeText={[Function]}
         onSelectionChange={[Function]}
         placeholder="Search"
-        placeholderTextColor="rgba(61,60,64,0.5)"
+        placeholderTextColor="rgba(63,67,80,0.5)"
         returnKeyType="search"
         searchBarRightMargin={0}
         searchIconSize={24}
         showArrow={false}
         showCancel={true}
         testID="emoji_picker.search_bar"
-        tintColorDelete="rgba(61,60,64,0.5)"
-        tintColorSearch="rgba(61,60,64,0.8)"
-        titleCancelColor="#3d3c40"
+        tintColorDelete="rgba(63,67,80,0.5)"
+        tintColorSearch="rgba(63,67,80,0.8)"
+        titleCancelColor="#3f4350"
         value=""
       />
     </View>
@@ -12917,8 +12917,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.1)",
-                "borderTopColor": "rgba(61,60,64,0.3)",
+                "backgroundColor": "rgba(63,67,80,0.1)",
+                "borderTopColor": "rgba(63,67,80,0.3)",
                 "borderTopWidth": 1,
                 "flexDirection": "row",
                 "justifyContent": "space-between",
@@ -12943,10 +12943,10 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     Object {
-                      "color": "#3d3c40",
+                      "color": "#3f4350",
                     },
                   ]
                 }
@@ -12969,7 +12969,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -12993,7 +12993,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13017,7 +13017,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13041,7 +13041,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13065,7 +13065,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13089,7 +13089,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13113,7 +13113,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13137,7 +13137,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]
@@ -13161,7 +13161,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 style={
                   Array [
                     Object {
-                      "color": "rgba(61,60,64,0.3)",
+                      "color": "rgba(63,67,80,0.3)",
                     },
                     false,
                   ]

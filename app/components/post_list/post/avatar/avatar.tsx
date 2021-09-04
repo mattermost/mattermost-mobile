@@ -20,7 +20,7 @@ import {fromAutoResponder, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {preventDoubleTap} from '@utils/tap';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {ImageSource} from 'react-native-vector-icons/Icon';
 
 type AvatarProps = {

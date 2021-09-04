@@ -4,7 +4,7 @@ import React, {FC} from 'react';
 
 import FormattedText from '@components/formatted_text';
 import {OsColorSchemeName} from '@mm-redux/types/general';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import Section from '@screens/settings/section';
 import SectionItem from '@screens/settings/section_item';
 import {t} from '@utils/i18n';

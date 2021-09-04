@@ -37,32 +37,31 @@ exports[`channel_info_header should match snapshot 1`] = `
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="O"
@@ -72,7 +71,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -107,7 +106,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -116,7 +115,7 @@ exports[`channel_info_header should match snapshot 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -151,7 +150,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -160,7 +159,7 @@ exports[`channel_info_header should match snapshot 1`] = `
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -171,7 +170,7 @@ exports[`channel_info_header should match snapshot 1`] = `
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -201,7 +200,7 @@ exports[`channel_info_header should match snapshot 1`] = `
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -252,14 +251,14 @@ exports[`channel_info_header should match snapshot 1`] = `
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -344,32 +343,31 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="D"
@@ -379,7 +377,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -411,7 +409,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         style={
           Object {
             "backgroundColor": "transparent",
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 13,
             "marginBottom": 10,
           }
@@ -442,7 +440,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -451,7 +449,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -486,7 +484,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -495,7 +493,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -506,7 +504,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -536,7 +534,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -587,14 +585,14 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -679,32 +677,31 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="D"
@@ -714,7 +711,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -749,7 +746,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -758,7 +755,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -793,7 +790,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -802,7 +799,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -813,7 +810,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -843,7 +840,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -894,14 +891,14 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -986,32 +983,31 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="G"
@@ -1021,7 +1017,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -1053,7 +1049,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         style={
           Object {
             "backgroundColor": "transparent",
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 13,
             "marginBottom": 10,
           }
@@ -1084,7 +1080,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -1093,7 +1089,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -1128,7 +1124,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -1137,7 +1133,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -1148,7 +1144,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -1178,7 +1174,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -1229,14 +1225,14 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -1321,32 +1317,31 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="O"
@@ -1356,7 +1351,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -1391,7 +1386,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -1400,7 +1395,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -1435,7 +1430,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -1444,7 +1439,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -1455,7 +1450,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -1485,7 +1480,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -1536,14 +1531,14 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -1649,32 +1644,31 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="O"
@@ -1684,7 +1678,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -1716,7 +1710,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         style={
           Object {
             "backgroundColor": "transparent",
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 13,
             "marginBottom": 10,
           }
@@ -1747,7 +1741,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -1756,7 +1750,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -1791,7 +1785,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -1800,7 +1794,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -1811,7 +1805,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -1841,7 +1835,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -1892,14 +1886,14 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -1984,32 +1978,31 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="D"
@@ -2019,7 +2012,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -2053,7 +2046,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       textStyle={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "marginRight": 8,
           },
           Object {
@@ -2075,7 +2068,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         text="In a meeting"
         textStyle={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "flex": 1,
             "fontSize": 15,
             "height": "100%",
@@ -2083,32 +2076,31 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         }
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "colorScheme": "light",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
       />
@@ -2137,7 +2129,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -2146,7 +2138,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -2181,7 +2173,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -2190,7 +2182,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -2201,7 +2193,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -2231,7 +2223,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -2282,14 +2274,14 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",
@@ -2374,32 +2366,31 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       testID="channel_info.header.channel_icon"
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "colorScheme": "light",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       type="D"
@@ -2409,7 +2400,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       numberOfLines={1}
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
           "fontWeight": "600",
@@ -2443,7 +2434,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       textStyle={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "marginRight": 8,
           },
           Object {
@@ -2465,7 +2456,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         text="In a meeting"
         textStyle={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "flex": 1,
             "fontSize": 15,
             "height": "100%",
@@ -2473,32 +2464,31 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         }
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "colorScheme": "light",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
       />
@@ -2512,32 +2502,31 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         }
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "colorScheme": "light",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         time="2200-04-13T18:09:12.451Z"
@@ -2567,7 +2556,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -2576,7 +2565,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         <Text
           style={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -2611,7 +2600,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           style={
             Object {
               "backgroundColor": "transparent",
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "marginBottom": 10,
             }
@@ -2620,7 +2609,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         <Connect(Markdown)
           baseTextStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
@@ -2631,7 +2620,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
                 "marginTop": 6,
               },
               "horizontalRule": Object {
-                "backgroundColor": "#3d3c40",
+                "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
@@ -2661,7 +2650,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
                 "fontStyle": "italic",
               },
               "error": Object {
-                "color": "#fd5960",
+                "color": "#d24b4e",
               },
               "heading1": Object {
                 "fontSize": 17,
@@ -2712,14 +2701,14 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
                 "paddingBottom": 8,
               },
               "link": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention": Object {
-                "color": "#2389d7",
+                "color": "#386fe5",
               },
               "mention_highlight": Object {
-                "backgroundColor": "#ffe577",
-                "color": "#166de0",
+                "backgroundColor": "#ffd470",
+                "color": "#1b1d22",
               },
               "strong": Object {
                 "fontWeight": "bold",

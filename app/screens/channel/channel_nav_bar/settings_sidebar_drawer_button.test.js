@@ -11,7 +11,7 @@ import {SettingsSidebarDrawerButton} from './settings_sidebar_drawer_button';
 describe('SettingsSidebarDrawerButton', () => {
     const baseProps = {
         openSidebar: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match, full snapshot', () => {

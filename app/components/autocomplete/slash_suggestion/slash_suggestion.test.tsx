@@ -55,7 +55,7 @@ describe('components/autocomplete/slash_suggestion', () => {
         commands: [sampleCommand],
         isSearch: false,
         maxListHeight: 50,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
         value: '',

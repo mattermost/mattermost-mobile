@@ -9,7 +9,8 @@ import StatusBar from '@components/status_bar';
 import {Preferences} from '@mm-redux/constants';
 import {ActionResult} from '@mm-redux/types/actions';
 import {OsColorSchemeName} from '@mm-redux/types/general';
-import {PreferenceType, Theme as ThemePreference} from '@mm-redux/types/preferences';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {Theme as ThemePreference} from '@mm-redux/types/theme';
 import OsSyncSection from '@screens/settings/theme/os_sync_section';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -116,6 +117,7 @@ const Theme: FC<Props> = ({
                 style={style.scrollView}
                 contentContainerStyle={style.scrollViewContent}
                 alwaysBounceVertical={false}
+                testID='theme_settings.scroll'
             >
                 {isThemeSyncWithOsAvailable && (
                     <OsSyncSection

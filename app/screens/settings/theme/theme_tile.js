@@ -3,26 +3,28 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {Image, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity} from '@mm-redux/utils/theme_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import ThemeThumbnail from './theme_thumbnail';
+
 const ThemeTile = (props) => {
     const {
         action,
         actionValue,
-        imageSrc,
         isLandscape,
         isTablet,
         label,
         selected,
-        theme,
+        activeTheme,
+        tileTheme,
         testID,
     } = props;
 
-    const style = getStyleSheet(theme);
+    const style = getStyleSheet(activeTheme);
 
     const labelComponent = React.cloneElement(
         label,
@@ -39,15 +41,21 @@ const ThemeTile = (props) => {
                 testID={testID}
             >
                 <View style={style.imageWrapper}>
-                    {imageSrc && (
-                        <Image
-                            source={imageSrc}
-                            style={[
-                                style.thumbnail,
-                                selected ? style.selectedThumbnail : null,
-                            ]}
-                        />
-                    )}
+                    <ThemeThumbnail
+                        borderColorBase={selected ? activeTheme.sidebarTextActiveBorder : activeTheme.centerChannelBg}
+                        borderColorMix={selected ? activeTheme.sidebarTextActiveBorder : changeOpacity(activeTheme.centerChannelColor, 0.16)}
+                        sidebarBg={tileTheme.sidebarBg}
+                        sidebarText={changeOpacity(tileTheme.sidebarText, 0.48)}
+                        sidebarUnreadText={tileTheme.sidebarUnreadText}
+                        sidebarTextActiveBorder={activeTheme.sidebarTextActiveBorder}
+                        onlineIndicator={tileTheme.onlineIndicator}
+                        awayIndicator={tileTheme.awayIndicator}
+                        dndIndicator={tileTheme.dndIndicator}
+                        centerChannelColor={changeOpacity(tileTheme.centerChannelColor, 0.16)}
+                        centerChannelBg={tileTheme.centerChannelBg}
+                        newMessageSeparator={tileTheme.newMessageSeparator}
+                        buttonBg={tileTheme.buttonBg}
+                    />
                     {selected && (
                         <CompassIcon
                             name='check-circle'
@@ -66,15 +74,12 @@ const ThemeTile = (props) => {
 ThemeTile.propTypes = {
     action: PropTypes.func,
     actionValue: PropTypes.string,
-    imageSrc: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.object,
-    ]).isRequired,
     isLandscape: PropTypes.bool.isRequired,
     isTablet: PropTypes.bool.isRequired,
     label: PropTypes.node.isRequired,
     selected: PropTypes.bool,
-    theme: PropTypes.object.isRequired,
+    activeTheme: PropTypes.object.isRequired,
+    tileTheme: PropTypes.object.isRequired,
     testID: PropTypes.string,
 };
 
@@ -93,22 +98,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
             marginBottom: 12,
         },
-        thumbnail: {
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-            width: '100%',
-            flex: 1,
-            aspectRatio: 179 / 134,
-        },
-        selectedThumbnail: {
-            borderWidth: 2,
-            borderColor: theme.sidebarTextActiveBorder,
-        },
         check: {
             position: 'absolute',
-            right: 10,
-            bottom: 10,
+            right: 5,
+            bottom: 5,
             color: theme.sidebarTextActiveBorder,
         },
         label: {

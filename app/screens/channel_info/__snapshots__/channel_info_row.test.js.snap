@@ -45,7 +45,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
     <Text
       style={
         Object {
-          "color": "rgba(61,60,64,0.5)",
+          "color": "rgba(63,67,80,0.5)",
           "fontSize": 15,
           "marginHorizontal": 7,
         }
@@ -58,7 +58,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
       size={24}
       style={
         Object {
-          "color": "rgba(61,60,64,0.32)",
+          "color": "rgba(63,67,80,0.32)",
           "marginRight": -4,
         }
       }

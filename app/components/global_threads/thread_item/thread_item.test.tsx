@@ -34,7 +34,7 @@ describe('Global Thread Item', () => {
         } as Post,
         threadId: 'post1',
         testID,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         thread: {
             id: 'post1',
             unread_replies: 5,

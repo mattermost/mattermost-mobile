@@ -33,37 +33,36 @@ exports[`screens/clear_after_menu_item should match snapshot 1`] = `
           text="Don't clear"
           textStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
             }
           }
           theme={
             Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
               "buttonColor": "#ffffff",
               "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
+              "centerChannelColor": "#3f4350",
               "codeTheme": "github",
-              "colorScheme": "light",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
               "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
               "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
               "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveBorder": "#5d89ea",
               "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
+              "sidebarTextHoverBg": "#28427b",
               "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
+              "type": "Denim",
             }
           }
         />
@@ -106,37 +105,36 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
           text="Don't clear"
           textStyle={
             Object {
-              "color": "#3d3c40",
+              "color": "#3f4350",
             }
           }
           theme={
             Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
               "buttonColor": "#ffffff",
               "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
+              "centerChannelColor": "#3f4350",
               "codeTheme": "github",
-              "colorScheme": "light",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
               "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
               "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
               "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
+              "sidebarTextActiveBorder": "#5d89ea",
               "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
+              "sidebarTextHoverBg": "#28427b",
               "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
+              "type": "Denim",
             }
           }
         />
@@ -154,7 +152,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
             style={
               Object {
                 "borderRadius": 1000,
-                "color": "#166de0",
+                "color": "#1c58d9",
               }
             }
           />
@@ -164,7 +162,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
     <View
       style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
+          "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
           "marginHorizontal": 16,
         }

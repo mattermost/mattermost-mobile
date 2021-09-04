@@ -45,7 +45,7 @@ describe('channelInfo', () => {
         currentChannelMemberCount: 2,
         currentChannelGuestCount: 0,
         currentUserId: '1234',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         isTeammateGuest: false,
         isDirectMessage: false,
         isLandscape: false,
