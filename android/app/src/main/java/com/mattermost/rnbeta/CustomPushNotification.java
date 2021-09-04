@@ -4,7 +4,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
@@ -37,6 +38,7 @@ import org.json.JSONObject;
 
 public class CustomPushNotification extends PushNotification {
     private static final String PUSH_NOTIFICATIONS = "PUSH_NOTIFICATIONS";
+    private static final String VERSION_PREFERENCE = "VERSION_PREFERENCE";
     private static final String PUSH_TYPE_MESSAGE = "message";
     private static final String PUSH_TYPE_CLEAR = "clear";
     private static final String PUSH_TYPE_SESSION = "session";
@@ -45,6 +47,29 @@ public class CustomPushNotification extends PushNotification {
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         CustomPushNotificationHelper.createNotificationChannels(context);
+
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            String version = String.valueOf(pInfo.versionCode);
+            String storedVersion = null;
+            SharedPreferences pSharedPref = context.getSharedPreferences(VERSION_PREFERENCE, Context.MODE_PRIVATE);
+            if (pSharedPref != null) {
+                storedVersion = pSharedPref.getString("Version", "");
+            }
+
+            if (!version.equals(storedVersion)) {
+                if (pSharedPref != null) {
+                    SharedPreferences.Editor editor = pSharedPref.edit();
+                    editor.putString("Version", version);
+                    editor.apply();
+                }
+
+                Map<String, List<Integer>> inputMap = new HashMap<>();
+                saveNotificationsMap(context, inputMap);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void cancelNotification(Context context, String channelId, Integer notificationId) {
