@@ -180,7 +180,7 @@ public class CustomPushNotification extends PushNotification {
                                 // Add the summary notification id as well
                                 list.add(0, notificationId + 1);
                             }
-                            
+
                             notificationsInChannel.put(channelId, list);
                             saveNotificationsMap(mContext, notificationsInChannel);
                         }
