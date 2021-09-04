@@ -73,6 +73,7 @@ exports[`PinnedPosts should match snapshot when getPinnedPosts failed 1`] = `
         "centerChannelBg": "#ffffff",
         "centerChannelColor": "#3f4350",
         "codeTheme": "github",
+        "colorScheme": "light",
         "dndIndicator": "#d24b4e",
         "errorTextColor": "#d24b4e",
         "linkColor": "#386fe5",
