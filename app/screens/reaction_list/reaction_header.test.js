@@ -13,7 +13,7 @@ describe('ReactionHeader', () => {
         selected: 'smile',
         onSelectReaction: jest.fn(),
         reactions: [{name: 'smile', count: 2}, {name: '+1', count: 1}],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

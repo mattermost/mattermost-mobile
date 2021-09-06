@@ -10,7 +10,7 @@ import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/con
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {UserProfile} from '@mm-redux/types/users';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';

@@ -23,7 +23,7 @@ describe('Theme', () => {
         isLandscape: false,
         isTablet: false,
         teamId: 'test-team',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         userId: 'test-user',
     };
 
@@ -33,6 +33,6 @@ describe('Theme', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find(ThemeTile)).toHaveLength(4);
+        expect(wrapper.find(ThemeTile)).toHaveLength(5);
     });
 });

@@ -1399,20 +1399,6 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
         },
     });
 
-    it('getRedirectChannelNameForTeam without advanced permissions', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '4.8.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
-    });
-
     it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission', () => {
         const modifiedState = {
             ...testState,
@@ -1504,20 +1490,6 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
             },
         };
         assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
-    });
-
-    it('getRedirectChannelNameForTeam without advanced permissions in not current team', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '4.8.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team2.id), General.DEFAULT_CHANNEL);
     });
 
     it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission in not current team', () => {

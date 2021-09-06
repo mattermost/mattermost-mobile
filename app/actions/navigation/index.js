@@ -92,7 +92,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
 
     EphemeralStore.clearNavigationComponents();
 

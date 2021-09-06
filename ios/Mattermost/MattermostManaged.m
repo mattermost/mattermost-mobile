@@ -182,7 +182,7 @@ RCT_EXPORT_METHOD(supportsFaceId:(RCTPromiseResolveBlock)resolve
   [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error];
 
   resolve(@{
-            @"supportsFaceId": @(context.biometryType == LABiometryTypeFaceID && @available(iOS 11.0, *))
+            @"supportsFaceId": @(context.biometryType == LABiometryTypeFaceID)
             });
 }
 

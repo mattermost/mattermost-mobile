@@ -21,7 +21,7 @@ describe('screens/custom_status_modal', () => {
             unsetCustomStatus: jest.fn(),
             removeRecentCustomStatus: jest.fn(),
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         customStatus,
         recentCustomStatuses: [customStatus],
     };

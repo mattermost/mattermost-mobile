@@ -33,7 +33,6 @@ import {getTeamByName as selectTeamByName, getCurrentTeam, getTeamMemberships} f
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getChannelReachable} from '@selectors/channel';
 import {getViewingGlobalThreads} from '@selectors/threads';
 import telemetry, {PERF_MARKERS} from '@telemetry';
@@ -637,11 +636,10 @@ function loadGroupData(isReconnect = false) {
         const actions = [];
         const team = getCurrentTeam(state);
         const currentUserId = getCurrentUserId(state);
-        const serverVersion = state.entities.general.serverVersion;
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
 
-        if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 24)) {
+        if (hasLicense && team) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     if (team.group_constrained) {

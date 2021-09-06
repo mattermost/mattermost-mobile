@@ -1,10 +1,14 @@
 package com.mattermost.rnbeta;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -34,6 +38,7 @@ import org.json.JSONObject;
 
 public class CustomPushNotification extends PushNotification {
     private static final String PUSH_NOTIFICATIONS = "PUSH_NOTIFICATIONS";
+    private static final String VERSION_PREFERENCE = "VERSION_PREFERENCE";
     private static final String PUSH_TYPE_MESSAGE = "message";
     private static final String PUSH_TYPE_CLEAR = "clear";
     private static final String PUSH_TYPE_SESSION = "session";
@@ -42,6 +47,29 @@ public class CustomPushNotification extends PushNotification {
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         CustomPushNotificationHelper.createNotificationChannels(context);
+
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            String version = String.valueOf(pInfo.versionCode);
+            String storedVersion = null;
+            SharedPreferences pSharedPref = context.getSharedPreferences(VERSION_PREFERENCE, Context.MODE_PRIVATE);
+            if (pSharedPref != null) {
+                storedVersion = pSharedPref.getString("Version", "");
+            }
+
+            if (!version.equals(storedVersion)) {
+                if (pSharedPref != null) {
+                    SharedPreferences.Editor editor = pSharedPref.edit();
+                    editor.putString("Version", version);
+                    editor.apply();
+                }
+
+                Map<String, List<Integer>> inputMap = new HashMap<>();
+                saveNotificationsMap(context, inputMap);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void cancelNotification(Context context, String channelId, Integer notificationId) {
@@ -52,10 +80,23 @@ public class CustomPushNotification extends PushNotification {
             if (notifications == null) {
                 return;
             }
+            final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.cancel(notificationIdStr);
             notifications.remove(notificationIdStr);
+            final StatusBarNotification[] statusNotifications = notificationManager.getActiveNotifications();
+            boolean hasMore = false;
+            for (final StatusBarNotification status : statusNotifications) {
+                if (status.getNotification().extras.getString("channel_id").equals(channelId)) {
+                    hasMore = true;
+                    break;
+                }
+            }
+
+            if (!hasMore) {
+                notificationsInChannel.remove(channelId);
+            }
+
             saveNotificationsMap(context, notificationsInChannel);
-            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-            notificationManager.cancel(notificationId);
         }
     }
 

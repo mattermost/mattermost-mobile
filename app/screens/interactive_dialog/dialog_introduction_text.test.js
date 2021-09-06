@@ -10,7 +10,7 @@ import DialogIntroductionText from './dialog_introduction_text.js';
 
 describe('DialogIntroductionText', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         value: '**bold** *italic* [link](https://mattermost.com/) <br/> [link target blank](!https://mattermost.com/)',
     };
 

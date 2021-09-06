@@ -7,7 +7,7 @@ import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 import Markdown from '@components/markdown';
 import {MessageAttachmentField} from '@mm-redux/types/message_attachments';
 import {PostMetadata} from '@mm-redux/types/posts';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {

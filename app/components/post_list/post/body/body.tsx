@@ -19,7 +19,7 @@ import Message from './message';
 import Reactions from './reactions';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type BodyProps = {
     appsEnabled: boolean;

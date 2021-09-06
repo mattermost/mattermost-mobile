@@ -109,7 +109,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "rgba(61,60,64,0.07)",
+        "backgroundColor": "rgba(63,67,80,0.07)",
         "paddingLeft": 10,
         "paddingVertical": 2,
       }
@@ -118,7 +118,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
     <Text
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontWeight": "600",
         }
       }
@@ -133,7 +133,7 @@ exports[`CustomList should match snapshot, renderSeparator 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.1)",
+      "backgroundColor": "rgba(63,67,80,0.1)",
       "flex": 1,
       "height": 1,
     }
