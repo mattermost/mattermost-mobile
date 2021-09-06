@@ -4,7 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {Database} from '@constants';
-import {getRawRecordPairs, getValidRecordsForUpdate, retrieveRecords} from '@database/operator/utils/general';
+import {getRawRecordPairs, getValidRecordsForUpdate} from '@database/operator/utils/general';
 import {transformPostInThreadRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getPostListEdges} from '@database//operator/utils/post';
 
@@ -13,7 +13,6 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 
 export interface PostsInThreadHandlerMix {
     handleReceivedPostsInThread: (postsMap: Record<string, Post[]>, prepareRecordsOnly?: boolean) => Promise<PostsInThreadModel[]>;
-    handleReceivedPostForThread: (post: Post, prepareRecordsOnly?: boolean) => Promise<PostsInThreadModel[]>;
 }
 
 const {POSTS_IN_THREAD} = Database.MM_TABLES.SERVER;
@@ -29,11 +28,10 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
         const ids = Object.keys(postsMap);
         for await (const rootId of ids) {
             const {firstPost, lastPost} = getPostListEdges(postsMap[rootId]);
-            const chunks = (await retrieveRecords({
-                database: this.database,
-                tableName: POSTS_IN_THREAD,
-                condition: Q.where('root_id', rootId),
-            })) as PostsInThreadModel[];
+            const chunks = (await this.database.get(POSTS_IN_THREAD).query(
+                Q.where('root_id', rootId),
+                Q.experimentalSortBy('latest', Q.desc),
+            ).fetch()) as PostsInThreadModel[];
 
             if (chunks.length) {
                 const chunk = chunks[0];
@@ -70,10 +68,6 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
 
         return postInThreadRecords;
     };
-
-    handleReceivedPostForThread = async (post: Post, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
-        throw new Error(`handleReceivedPostForThread Not implemented yet. postId ${post.id} prepareRecordsOnly=${prepareRecordsOnly}`);
-    }
 };
 
 export default PostsInThreadHandler;

@@ -14,7 +14,6 @@ export {default as GroupModel} from './group';
 export {default as MyChannelSettingsModel} from './my_channel_settings';
 export {default as MyChannelModel} from './my_channel';
 export {default as MyTeamModel} from './my_team';
-export {default as PostMetadataModel} from './post_metadata';
 export {default as PostsInChannelModel} from './posts_in_channel';
 export {default as PostsInThreadModel} from './posts_in_thread';
 export {default as PostModel} from './post';

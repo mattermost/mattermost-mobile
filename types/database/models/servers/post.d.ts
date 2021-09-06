@@ -35,6 +35,9 @@ export default class PostModel extends Model {
     /** message : Message in the post */
     message: string;
 
+    /** metadata: All the extra data associated with this Post */
+    metadata: PostMetadata | null;
+
     /** original_id : Any post will have this value empty unless it is updated */
     originalId: string;
 
@@ -43,6 +46,8 @@ export default class PostModel extends Model {
 
     /** previous_post_id : Id of the previous post.  If this value is empty, this implies that it is not in the db and we will request it from server */
     previousPostId: string;
+
+    root: Query<PostModel>;
 
     /** root_id : Used in threads. All posts under a thread will have this id in common */
     rootId: string;
@@ -54,7 +59,7 @@ export default class PostModel extends Model {
     userId: string;
 
     /** props : Additional attributes for this props */
-    props: object;
+    props: any;
 
     /** drafts  : Every drafts associated with this Post */
     drafts: Query<DraftModel>;
@@ -64,9 +69,6 @@ export default class PostModel extends Model {
 
     /** postsInThread: Every posts associated to a thread */
     postsInThread: Query<PostInThreadModel>;
-
-    /** metadata: All the extra data associated with this Post */
-    metadata: Relation<PostMetadataModel>;
 
     /** reactions: All the reactions associated with this Post */
     reactions: Query<ReactionModel>;

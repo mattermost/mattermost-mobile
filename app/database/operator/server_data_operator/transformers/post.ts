@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
@@ -10,7 +9,6 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import {OperationType} from '@typings/database/enums';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
-import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
@@ -20,7 +18,6 @@ const {
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
-    POST_METADATA,
 } = MM_TABLES.SERVER;
 
 /**
@@ -44,7 +41,8 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
         post.editAt = raw.edit_at;
         post.updateAt = raw.update_at;
         post.isPinned = Boolean(raw.is_pinned);
-        post.message = Q.sanitizeLikeString(raw.message);
+        post.message = raw.message;
+        post.metadata = Object.keys(raw.metadata).length ? raw.metadata : null;
         post.userId = raw.user_id;
         post.originalId = raw.original_id;
         post.pendingPostId = raw.pending_post_id;
@@ -124,32 +122,6 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
         value,
         fieldsMapper,
     }) as Promise<FileModel>;
-};
-
-/**
- * transformPostMetadataRecord: Prepares a record of the SERVER database 'PostMetadata' table for update or create actions.
- * @param {TransformerArgs} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<PostMetadataModel>}
- */
-export const transformPostMetadataRecord = ({action, database, value}: TransformerArgs): Promise<PostMetadataModel> => {
-    const raw = value.raw as Metadata;
-    const record = value.record as PostMetadataModel;
-    const isCreateAction = action === OperationType.CREATE;
-
-    const fieldsMapper = (postMeta: PostMetadataModel) => {
-        postMeta._raw.id = isCreateAction ? (raw.id || postMeta.id) : record.id;
-        postMeta.data = raw.data;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: POST_METADATA,
-        value,
-        fieldsMapper,
-    }) as Promise<PostMetadataModel>;
 };
 
 /**

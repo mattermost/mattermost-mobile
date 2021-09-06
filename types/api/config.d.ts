@@ -49,6 +49,7 @@ interface ClientConfig {
     EnableConfirmNotificationsToChannel: string;
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
+    EnableCustomUserStatuses: string;
     EnableCustomTermsOfService: string;
     EnableDeveloper: string;
     EnableDiagnostics: string;
@@ -110,6 +111,7 @@ interface ClientConfig {
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
+    FeatureFlagAppsEnabled?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;

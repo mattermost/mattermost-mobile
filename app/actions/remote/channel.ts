@@ -7,11 +7,13 @@ import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
-import type {Model} from '@nozbe/watermelondb';
-
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
-import {fetchProfilesPerChannels} from './user';
+import {fetchProfilesPerChannels, fetchUsersByIds} from './user';
+
+import type {Model} from '@nozbe/watermelondb';
+
+import type {Client} from '@client/rest';
 
 export type MyChannelsRequest = {
     channels?: Channel[];
@@ -19,8 +21,39 @@ export type MyChannelsRequest = {
     error?: never;
 }
 
+export const addMembersToChannel = async (serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const promises = userIds.map((id) => client.addToChannel(id, channelId, postRootId));
+        const channelMemberships: ChannelMembership[] = await Promise.all(promises);
+        await fetchUsersByIds(serverUrl, userIds, false);
+
+        if (!fetchOnly) {
+            await operator.handleChannelMembership({
+                channelMemberships,
+                prepareRecordsOnly: false,
+            });
+        }
+        return {channelMemberships};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const fetchChannelByName = async (serverUrl: string, teamId: string, channelName: string, fetchOnly = false) => {
-    let client;
+    let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
@@ -45,7 +78,7 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
 };
 
 export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false): Promise<MyChannelsRequest> => {
-    let client;
+    let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
@@ -140,7 +173,7 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
         return {error: `${serverUrl} database not found`};
     }
 
-    let client;
+    let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {

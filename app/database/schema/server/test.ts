@@ -24,7 +24,6 @@ const {
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
-    POST_METADATA,
     PREFERENCE,
     REACTION,
     ROLE,
@@ -201,15 +200,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'latest', type: 'number'},
                     ],
                 },
-                [POST_METADATA]: {
-                    name: POST_METADATA,
-                    columns: {
-                        data: {name: 'data', type: 'string'},
-                    },
-                    columnArray: [
-                        {name: 'data', type: 'string'},
-                    ],
-                },
                 [POST]: {
                     name: POST,
                     columns: {
@@ -220,6 +210,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         edit_at: {name: 'edit_at', type: 'number'},
                         is_pinned: {name: 'is_pinned', type: 'boolean'},
                         message: {name: 'message', type: 'string'},
+                        metadata: {name: 'metadata', type: 'string', isOptional: true},
                         original_id: {name: 'original_id', type: 'string'},
                         pending_post_id: {name: 'pending_post_id', type: 'string', isIndexed: true},
                         previous_post_id: {name: 'previous_post_id', type: 'string'},
@@ -236,6 +227,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'edit_at', type: 'number'},
                         {name: 'is_pinned', type: 'boolean'},
                         {name: 'message', type: 'string'},
+                        {name: 'metadata', type: 'string', isOptional: true},
                         {name: 'original_id', type: 'string'},
                         {name: 'pending_post_id', type: 'string', isIndexed: true},
                         {name: 'previous_post_id', type: 'string'},

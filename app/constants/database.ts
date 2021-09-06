@@ -26,7 +26,6 @@ export const MM_TABLES = {
         POST: 'Post',
         POSTS_IN_CHANNEL: 'PostsInChannel',
         POSTS_IN_THREAD: 'PostsInThread',
-        POST_METADATA: 'PostMetadata',
         PREFERENCE: 'Preference',
         REACTION: 'Reaction',
         ROLE: 'Role',
@@ -53,6 +52,9 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_TEAM_ID: 'currentTeamId',
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
+    EXPANDED_LINKS: 'expandedLinks',
+    RECENT_REACTIONS: 'recentReactions',
+    INTEGRATION_TRIGGER_ID: 'IntegreationTriggerId',
     LICENSE: 'license',
     WEBSOCKET: 'WebSocket',
 };

@@ -12,11 +12,10 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostInThreadModel from '@typings/database/models/servers/posts_in_thread';
-import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USER} = MM_TABLES.SERVER;
+const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, USER} = MM_TABLES.SERVER;
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
@@ -68,6 +67,9 @@ export default class PostModel extends Model {
     /** message : Message in the post */
     @field('message') message!: string;
 
+    /** metadata: All the extra data associated with this Post */
+    @json('metadata', safeParseJSON) metadata!: PostMetadata | null;
+
     /** original_id : Any post will have this value empty unless it is updated */
     @field('original_id') originalId!: string;
 
@@ -87,26 +89,39 @@ export default class PostModel extends Model {
     @field('user_id') userId!: string;
 
     /** props : Additional attributes for this props */
-    @json('props', safeParseJSON) props!: object;
+    @json('props', safeParseJSON) props!: any;
 
     // A draft can be associated with this post for as long as this post is a parent post
     @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<DraftModel>;
 
+    @lazy root = this.collection.query(Q.where('id', this.rootId)) as Query<PostModel>;
+
     /** postsInThread: The thread to which this post is associated */
-    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(Q.on(POST, 'id', this.id)) as Query<PostInThreadModel>;
+    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(
+        Q.where('root_id', this.rootId || this.id),
+        Q.experimentalSortBy('latest', Q.desc),
+        Q.experimentalTake(1),
+    ) as Query<PostInThreadModel>;
 
     /** files: All the files associated with this Post */
-    @children(FILE) files!: FileModel[];
-
-    /** metadata: All the extra data associated with this Post */
-    @immutableRelation(POST_METADATA, 'id') metadata!: Relation<PostMetadataModel>;
+    @children(FILE) files!: Query<FileModel>;
 
     /** reactions: All the reactions associated with this Post */
-    @children(REACTION) reactions!: ReactionModel[];
+    @children(REACTION) reactions!: Query<ReactionModel>;
 
     /** author: The author of this Post */
     @immutableRelation(USER, 'user_id') author!: Relation<UserModel>;
 
     /** channel: The channel which is presenting this Post */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+
+    async destroyPermanently() {
+        await this.reactions.destroyAllPermanently();
+        await this.files.destroyAllPermanently();
+        await this.draft.destroyAllPermanently();
+        await this.collections.get(POSTS_IN_THREAD).query(
+            Q.where('root_id', this.id),
+        ).destroyAllPermanently();
+        super.destroyPermanently();
+    }
 }

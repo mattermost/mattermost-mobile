@@ -48,18 +48,13 @@ export function getEmoticonName(value: string) {
     return Object.keys(RE_EMOTICON).find((key) => value.match(RE_EMOTICON[key]) !== null);
 }
 
-export function hasEmojisOnly(message: string, customEmojis: Map<string, CustomEmoji>) {
-    if (!message || message.length === 0 || (/^\s{4}/).test(message)) {
-        return {isEmojiOnly: false, isJumboEmoji: false};
-    }
-
-    const chunks = message.trim().replace(/\n/g, ' ').split(' ').filter((m) => m && m.length > 0);
-
-    if (chunks.length === 0) {
-        return {isEmojiOnly: false, isJumboEmoji: false};
-    }
-
+export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {
     let emojiCount = 0;
+    const chunks = message.trim().replace(/\n/g, ' ').split(' ').filter((m) => m && m.length > 0);
+    if (chunks.length === 0) {
+        return false;
+    }
+
     for (const chunk of chunks) {
         if (doesMatchNamedEmoji(chunk)) {
             const emojiName = chunk.substring(1, chunk.length - 1);
@@ -68,7 +63,7 @@ export function hasEmojisOnly(message: string, customEmojis: Map<string, CustomE
                 continue;
             }
 
-            if (customEmojis && customEmojis.has(emojiName)) {
+            if (customEmojis && customEmojis.includes(emojiName)) {
                 emojiCount++;
                 continue;
             }
@@ -85,13 +80,10 @@ export function hasEmojisOnly(message: string, customEmojis: Map<string, CustomE
             continue;
         }
 
-        return {isEmojiOnly: false, isJumboEmoji: false};
+        return false;
     }
 
-    return {
-        isEmojiOnly: true,
-        isJumboEmoji: emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS,
-    };
+    return emojiCount > 0 && emojiCount <= MAX_JUMBO_EMOJIS;
 }
 
 export function doesMatchNamedEmoji(emojiName: string) {

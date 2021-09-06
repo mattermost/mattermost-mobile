@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment from 'moment-timezone';
 import {General, Preferences} from '@constants';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type {UserMentionKey} from '@typings/global/markdown';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
     let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
@@ -140,3 +142,50 @@ export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGr
 
     return keys;
 };
+
+export const getUserTimezone = (user: UserModel) => {
+    return getTimezone(user.timezone);
+};
+
+export const getTimezone = (timezone: UserTimezone | null) => {
+    if (!timezone) {
+        return '';
+    }
+
+    const {useAutomaticTimezone} = timezone;
+    let useAutomatic = useAutomaticTimezone;
+    if (typeof useAutomaticTimezone === 'string') {
+        useAutomatic = useAutomaticTimezone === 'true';
+    }
+
+    if (useAutomatic) {
+        return timezone.automaticTimezone;
+    }
+
+    return timezone.manualTimezone;
+};
+
+export const getUserCustomStatus = (user: UserModel) => {
+    if (user.props?.customStatus) {
+        return user.props.customStatus as UserCustomStatus;
+    }
+
+    return undefined;
+};
+
+export function isCustomStatusExpired(user: UserModel) {
+    const customStatus = getUserCustomStatus(user);
+
+    if (!customStatus) {
+        return true;
+    }
+
+    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
+        return false;
+    }
+
+    const expiryTime = moment(customStatus.expires_at);
+    const timezone = getUserTimezone(user);
+    const currentTime = timezone ? moment.tz(timezone) : moment();
+    return currentTime.isSameOrAfter(expiryTime);
+}

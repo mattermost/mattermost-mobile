@@ -7,6 +7,8 @@ import nock from 'nock';
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
 import GENERAL_CONSTANTS from '@constants/general';
+import DatabaseManager from '@database/manager';
+import {prepareCommonSystemValues} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 
 const PASSWORD = 'password1';
@@ -25,6 +27,41 @@ class TestHelper {
         this.basicPost = null;
         this.basicRoles = null;
         this.basicScheme = null;
+    }
+
+    setupServerDatabase = async () => {
+        const serverUrl = 'https://appv1.mattermost.com';
+        await DatabaseManager.init([serverUrl]);
+        const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
+
+        this.initMockEntities();
+
+        // Add current user
+        await operator.handleUsers({
+            users: [this.basicUser],
+            prepareRecordsOnly: false,
+        });
+
+        // Add one team
+        await operator.handleTeam({
+            teams: [this.basicTeam],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleMyTeam({
+            myTeams: [this.basicTeamMember],
+            prepareRecordsOnly: false,
+        });
+
+        const systems = await prepareCommonSystemValues(operator, {
+            config: {},
+            license: {},
+            currentChannelId: '',
+            currentTeamId: this.basicTeam.id,
+            currentUserId: this.basicUser.id,
+        });
+        await operator.batchRecords(systems);
+
+        return {database, operator};
     }
 
     activateMocking() {
@@ -95,6 +132,7 @@ class TestHelper {
 
     fakeChannelMember = (userId, channelId) => {
         return {
+            id: channelId,
             user_id: userId,
             channel_id: channelId,
             notify_props: {},
@@ -163,6 +201,7 @@ class TestHelper {
 
     fakeTeamMember = (userId, teamId) => {
         return {
+            id: teamId,
             user_id: userId,
             team_id: teamId,
             roles: 'team_user',

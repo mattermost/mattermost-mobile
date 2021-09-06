@@ -1,10 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getTranslations} from '@i18n';
+import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import {render} from '@testing-library/react-native';
 import React, {ReactElement} from 'react';
-import {IntlProvider} from 'react-intl';
+import {createIntl, IntlProvider} from 'react-intl';
+
+import {ThemeContext, getDefaultThemeByAppearance} from '@context/theme';
+import {getTranslations} from '@i18n';
+
+import type Database from '@nozbe/watermelondb/Database';
+
+export function getIntlShape(locale = 'en') {
+    return createIntl({
+        locale,
+        messages: getTranslations(locale),
+    });
+}
 
 export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOptions} = {}) {
     function Wrapper({children}: {children: ReactElement}) {
@@ -15,6 +27,46 @@ export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOption
             >
                 {children}
             </IntlProvider>
+        );
+    }
+
+    return render(ui, {wrapper: Wrapper, ...renderOptions});
+}
+
+export function renderWithIntlAndTheme(ui: ReactElement, {locale = 'en', ...renderOptions} = {}) {
+    function Wrapper({children}: {children: ReactElement}) {
+        return (
+            <IntlProvider
+                locale={locale}
+                messages={getTranslations(locale)}
+            >
+                <ThemeContext.Provider value={getDefaultThemeByAppearance()}>
+                    {children}
+                </ThemeContext.Provider>
+            </IntlProvider>
+        );
+    }
+
+    return render(ui, {wrapper: Wrapper, ...renderOptions});
+}
+
+export function renderWithEverything(ui: ReactElement, {locale = 'en', database, ...renderOptions}: {locale?: string; database?: Database; renderOptions?: any} = {}) {
+    function Wrapper({children}: {children: ReactElement}) {
+        if (!database) {
+            return null;
+        }
+
+        return (
+            <DatabaseProvider database={database as unknown as Database}>
+                <IntlProvider
+                    locale={locale}
+                    messages={getTranslations(locale)}
+                >
+                    <ThemeContext.Provider value={getDefaultThemeByAppearance()}>
+                        {children}
+                    </ThemeContext.Provider>
+                </IntlProvider>
+            </DatabaseProvider>
         );
     }
 
