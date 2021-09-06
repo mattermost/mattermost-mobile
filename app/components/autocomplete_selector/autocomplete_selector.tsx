@@ -14,7 +14,7 @@ import {ViewTypes} from '@constants';
 import {ActionResult} from '@mm-redux/types/actions';
 import {Channel} from '@mm-redux/types/channels';
 import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {UserProfile} from '@mm-redux/types/users';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';

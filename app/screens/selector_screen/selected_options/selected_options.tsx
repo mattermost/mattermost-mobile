@@ -11,7 +11,7 @@ import SelectedOption from './selected_option';
 
 import type {Channel} from '@mm-redux/types/channels';
 import type {DialogOption} from '@mm-redux/types/integrations';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
 
 type Props = {

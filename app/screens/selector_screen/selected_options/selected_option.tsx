@@ -12,7 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import {ViewTypes} from '@constants';
 import {Channel} from '@mm-redux/types/channels';
 import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {UserProfile} from '@mm-redux/types/users';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

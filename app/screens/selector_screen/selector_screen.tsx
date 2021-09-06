@@ -25,7 +25,7 @@ import {General} from '@mm-redux/constants';
 import {ActionResult} from '@mm-redux/types/actions';
 import {Channel} from '@mm-redux/types/channels';
 import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {filterChannelsMatchingTerm} from '@mm-redux/utils/channel_utils';
