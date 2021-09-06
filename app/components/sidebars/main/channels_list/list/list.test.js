@@ -19,7 +19,7 @@ describe('ChannelsList List', () => {
         favoriteChannelIds: [],
         unreadChannelIds: [],
         styles: {},
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         orderedChannelIds: [],
         isLandscape: false,
     };

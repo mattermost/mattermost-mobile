@@ -15,7 +15,7 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     currentUserId: $ID<UserProfile>;

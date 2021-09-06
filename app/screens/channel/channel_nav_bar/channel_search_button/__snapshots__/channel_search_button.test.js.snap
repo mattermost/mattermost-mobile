@@ -37,7 +37,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
         size={24}
         style={
           Object {
-            "backgroundColor": "#1153ab",
+            "backgroundColor": "#192a4d",
             "color": "#ffffff",
           }
         }

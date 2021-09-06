@@ -15,7 +15,7 @@ exports[`InputQuickAction should match snapshot 1`] = `
   type="opacity"
 >
   <CompassIcon
-    color="rgba(61,60,64,0.64)"
+    color="rgba(63,67,80,0.64)"
     name="at"
     size={24}
   />

@@ -3,7 +3,7 @@
 exports[`ChannelItem should match snapshot 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -43,38 +43,38 @@ exports[`ChannelItem should match snapshot 1`] = `
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="O"
@@ -114,7 +114,7 @@ exports[`ChannelItem should match snapshot 1`] = `
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -132,7 +132,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
     <View
       style={
         Object {
-          "backgroundColor": "#579eff",
+          "backgroundColor": "#5d89ea",
           "width": 5,
         }
       }
@@ -165,38 +165,38 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="D"
@@ -234,7 +234,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) when isSearchResult 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -252,7 +252,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
     <View
       style={
         Object {
-          "backgroundColor": "#579eff",
+          "backgroundColor": "#5d89ea",
           "width": 5,
         }
       }
@@ -285,38 +285,38 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="D"
@@ -354,7 +354,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
 exports[`ChannelItem should match snapshot for deactivated user and is currentChannel 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -372,7 +372,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
     <View
       style={
         Object {
-          "backgroundColor": "#579eff",
+          "backgroundColor": "#5d89ea",
           "width": 5,
         }
       }
@@ -405,38 +405,38 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="D"
@@ -474,7 +474,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
 exports[`ChannelItem should match snapshot for deactivated user and is searchResult 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -514,38 +514,38 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="D"
@@ -585,7 +585,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
 exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -625,38 +625,38 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="D"
@@ -696,7 +696,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
 exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -736,38 +736,38 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="O"
@@ -811,7 +811,7 @@ exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -851,38 +851,38 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="O"
@@ -942,7 +942,7 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
 exports[`ChannelItem should match snapshot with draft 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -982,38 +982,38 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="O"
@@ -1053,7 +1053,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
 exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
 <ForwardRef
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -1095,38 +1095,38 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         size={24}
         statusStyle={
           Object {
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         type="O"
@@ -1161,7 +1161,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
       <Badge
         containerStyle={
           Object {
-            "borderColor": "#1153ab",
+            "borderColor": "#192a4d",
             "borderRadius": 14,
             "borderWidth": 0,
             "marginRight": 16,
@@ -1172,7 +1172,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         count={1}
         countStyle={
           Object {
-            "color": "#145dbf",
+            "color": "#1e325c",
             "fontSize": 12,
             "fontWeight": "bold",
           }
