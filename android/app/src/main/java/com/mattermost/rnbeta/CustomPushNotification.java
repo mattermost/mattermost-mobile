@@ -15,14 +15,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.facebook.react.bridge.ReadableArray;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -32,8 +28,6 @@ import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_
 
 import com.mattermost.react_native_interface.ResolvePromise;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class CustomPushNotification extends PushNotification {
@@ -94,8 +88,9 @@ public class CustomPushNotification extends PushNotification {
 
             if (!hasMore) {
                 notificationsInChannel.remove(channelId);
+            } else {
+                notificationsInChannel.put(channelId, notifications);
             }
-
             saveNotificationsMap(context, notificationsInChannel);
         }
     }
