@@ -11,6 +11,7 @@ import {popTopScreen, mergeNavigationOptions} from '@actions/navigation';
 import DeletedPost from '@components/deleted_post';
 import Loading from '@components/loading';
 import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
+import PushNotifications from '@init/push_notifications';
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
@@ -22,6 +23,7 @@ export default class ThreadBase extends PureComponent {
             updateThreadRead: PropTypes.func,
         }).isRequired,
         componentId: PropTypes.string,
+        channelId: PropTypes.string,
         channelType: PropTypes.string,
         collapsedThreadsEnabled: PropTypes.bool,
         currentUserId: PropTypes.string,
@@ -148,17 +150,17 @@ export default class ThreadBase extends PureComponent {
     }
 
     markThreadRead(hasNewPost = false) {
+        const {thread} = this.props;
         if (
-            this.props.collapsedThreadsEnabled &&
-            this.props.thread &&
-            this.props.thread.is_following &&
+            this.props.collapsedThreadsEnabled && thread && thread.is_following &&
             (
                 hasNewPost ||
-                this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
-                this.props.thread.unread_mentions ||
-                this.props.thread.unread_replies
+                thread.last_viewed_at < thread.last_reply_at ||
+                thread.unread_mentions ||
+                thread.unread_replies
             )
         ) {
+            PushNotifications.clearChannelNotifications(this.props.channelId, thread.id);
             this.props.actions.updateThreadRead(
                 this.props.currentUserId,
                 this.props.rootId,

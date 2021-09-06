@@ -9,10 +9,12 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.net.Uri;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -118,6 +120,10 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
             WritableMap map = Arguments.createMap();
             Notification n = sbn.getNotification();
             Bundle bundle = n.extras;
+            String postId = bundle.getString("post_id");
+            map.putString("post_id", postId);
+            String rootId = bundle.getString("root_id");
+            map.putString("root_id", rootId);
             String channelId = bundle.getString("channel_id");
             map.putString("channel_id", channelId);
             result.pushMap(map);
@@ -126,8 +132,9 @@ public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void removeDeliveredNotifications(String channelId) {
+    public void removeDeliveredNotifications(String channelId, String rootId, Boolean isCRTEnabled) {
         final Context context = mApplication.getApplicationContext();
-        CustomPushNotification.clearChannelNotifications(context, channelId);
+        CustomPushNotification.clearChannelNotifications(context, channelId, rootId, isCRTEnabled);
     }
+
 }
